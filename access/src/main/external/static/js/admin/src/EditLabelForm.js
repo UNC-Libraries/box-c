@@ -19,7 +19,6 @@ define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
 	EditLabelForm.prototype.validationErrors = function() {
 		var errors = [];
 		var label = $("input[name='label']", this.$form).val();
-		console.log(label);
 		// Validate input
 		if (!label)
 			errors.push("You must specify a label.");
@@ -32,7 +31,7 @@ define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
 	};
 	
 	EditLabelForm.prototype.getErrorMessage = function(data) {
-		return "An error occurred while creating whil editing the label";
+		return "An error occurred while editing the label";
 	};
 	
 	
@@ -40,7 +39,7 @@ define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
 		AbstractFileUploadForm.prototype.remove.apply(this);
 		this.options.actionHandler.addEvent({
 			action : 'RefreshResult',
-			target : this.options.resultObject,
+			target : this.resultObject,
 			waitForUpdate : true
 		});
 		

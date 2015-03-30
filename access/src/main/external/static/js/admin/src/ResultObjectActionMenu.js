@@ -123,7 +123,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
 			items["editAccess"] = {name : 'Edit Access'};
 		
-		//Adding EditLabel Option
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editLabel"] = {name : 'Edit Label'};
 		}
@@ -301,14 +300,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		});
 	};
 	
-	//For edit label modal
 	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
 		var editLabelForm = new EditLabelForm({
 			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler,
-			resultObject : resultObject
+			actionHandler : this.actionHandler
 		});
-		editLabelForm.open(resultObject.metadata.id, resultObject.metadata);
+		editLabelForm.open(resultObject);
 		
 	};
 	

@@ -636,7 +636,7 @@ public class ManagementClient extends WebServiceTemplate {
 		req.setLogMessage(message);
 		req.setOwnerId(ownerid);
 		req.setPid(pid.getPid());
-		req.setState(state == null? null : state.id);
+		req.setState(state == null ? null : state.id);
 		ModifyObjectResponse resp = (ModifyObjectResponse) this.callService(req, Action.modifyObject);
 		return resp.getModifiedDate();
 	}

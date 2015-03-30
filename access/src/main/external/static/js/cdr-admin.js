@@ -440,8 +440,8 @@ define('detachplus', [ 'jquery'], function($) {
  * Implements functionality and UI for the generic Ingest Package form
  */
 define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
-		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities) {
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'ResultObject', 'AlertHandler'], 
+		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities, ResultObject) {
 	
 	var defaultOptions = {
 		iframeSelector : "#upload_file_frame",
@@ -456,7 +456,16 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		return defaultOptions;
 	};
 	
-	AbstractFileUploadForm.prototype.open = function(pid, metadata) {
+	AbstractFileUploadForm.prototype.open = function(resultObject) {
+		var pid;
+		var metadata;
+		if (resultObject instanceof ResultObject) {
+			pid = resultObject.metadata.id;
+			metadata = resultObject.metadata;
+			this.resultObject = resultObject;
+		} else {
+			pid = resultObject;
+		}
 		var self = this;
 		var formContents = this.options.createFormTemplate({pid : pid, metadata: metadata});
 		this.closed = false;
@@ -1771,7 +1780,6 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	EditLabelForm.prototype.validationErrors = function() {
 		var errors = [];
 		var label = $("input[name='label']", this.$form).val();
-		console.log(label);
 		// Validate input
 		if (!label)
 			errors.push("You must specify a label.");
@@ -1784,7 +1792,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	EditLabelForm.prototype.getErrorMessage = function(data) {
-		return "An error occurred while creating whil editing the label";
+		return "An error occurred while editing the label";
 	};
 	
 	
@@ -1792,7 +1800,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		AbstractFileUploadForm.prototype.remove.apply(this);
 		this.options.actionHandler.addEvent({
 			action : 'RefreshResult',
-			target : this.options.resultObject,
+			target : this.resultObject,
 			waitForUpdate : true
 		});
 		
@@ -2542,7 +2550,6 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
 			items["editAccess"] = {name : 'Edit Access'};
 		
-		//Adding EditLabel Option
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editLabel"] = {name : 'Edit Label'};
 		}
@@ -2720,14 +2727,12 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 		});
 	};
 	
-	//For edit label modal
 	ResultObjectActionMenu.prototype.editLabel = function(resultObject) {
 		var editLabelForm = new EditLabelForm({
 			alertHandler : this.options.alertHandler,
-			actionHandler : this.actionHandler,
-			resultObject : resultObject
+			actionHandler : this.actionHandler
 		});
-		editLabelForm.open(resultObject.metadata.id, resultObject.metadata);
+		editLabelForm.open(resultObject);
 		
 	};
 	

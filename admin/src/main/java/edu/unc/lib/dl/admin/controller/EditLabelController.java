@@ -35,14 +35,13 @@ public class EditLabelController {
 			} catch (FedoraException e) {
 				throw new IngestException("Could not update label for " + pid, e);
 			}
-		}
-		else {
+		} else {
 			Map <String, String> response = new HashMap<>();
-			response.put("message","error");
+			response.put("message", "error");
 			return response ;
 		}
 		Map <String, String> response = new HashMap<>();
-		response.put("message","success");
+		response.put("message", "success");
 		return response;
 	}
 }
