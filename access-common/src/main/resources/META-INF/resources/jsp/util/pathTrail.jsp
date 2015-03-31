@@ -18,7 +18,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<c:set var="fieldName" value="${searchSettings.searchFieldParams[param.fieldKey]}"/>
+
 <c:choose>
 	<c:when test="${not empty param.queryPath}"><c:set var="queryPath" value="${param.queryPath}"/></c:when>
 	<c:otherwise><c:set var="queryPath" value="search"/></c:otherwise>
@@ -34,31 +34,20 @@
 </c:choose>
 
 <span class="hierarchicalTrail">  
-	<c:if test="${param.displayHome == true }">
-		<c:url var="shiftFacetUrl" scope="page" value='${shiftFacetUrlBase}'>
-			<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${searchSettings.actions["REMOVE_FACET"]}:${searchSettings.searchFieldParams["ANCESTOR_PATH"]}'/>
-		</c:url>
-		<a href="<c:out value="${shiftFacetUrl}"/>">Home</a>
-	</c:if>
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
-		<c:if test="${!status.first || param.displayHome}">
-			&gt; 
+		<c:if test="${!param.hideLast || !status.last}">
+			<c:if test="${!status.first}">
+				&gt; 
+			</c:if>
+			<c:choose>
+				<c:when test="${status.last && param.linkLast != true}">
+					<c:out value="${pathEntry.name}" />
+				</c:when>
+				<c:otherwise>
+					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
+				</c:otherwise>
+			</c:choose>
 		</c:if>
-		<c:choose>
-			<c:when test="${status.last && param.linkLast != true}">
-				<c:out value="${pathEntry.name}" />
-			</c:when>
-			<c:otherwise>
-				<c:choose>
-					<c:when test="${param.limitToContainer == true}">
-						<c:url var="shiftFacetUrl" scope="page" value="list/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-					</c:when>
-					<c:otherwise>
-						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-					</c:otherwise>
-				</c:choose>
-				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
-			</c:otherwise>
-		</c:choose>
 	</c:forEach>
 </span>

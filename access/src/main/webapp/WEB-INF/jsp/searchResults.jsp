@@ -28,10 +28,8 @@
 		<c:if test="${not empty resultResponse.selectedContainer}">
 			<c:set var="objectPath" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
 			<c:import url="/jsp/util/pathTrail.jsp">
-				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
 				<c:param name="linkLast">true</c:param>
-				<c:param name="displayHome">false</c:param>
-				<c:param name="limitToContainer">true</c:param>
+				<c:param name="queryPath">list</c:param>
 				<c:param name="ignoreSearchState">true</c:param>
 			</c:import>
 		</c:if>

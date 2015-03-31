@@ -108,9 +108,9 @@ public class ObjectPathFactory {
 		// Refresh the cache for the object being looked up if it is a container
 		if (isContainer(bom.getResourceType())) {
 			pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
-			// Add object to its own path path
-			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
 		}
+		// Add object to its own path path
+		entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
 
 		return new ObjectPath(entries);
 	}
