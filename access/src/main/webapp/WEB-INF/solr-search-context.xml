@@ -92,6 +92,7 @@
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
 		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="pathFactory" ref="pathFactory" />
 	</bean>
 	
 	<bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">

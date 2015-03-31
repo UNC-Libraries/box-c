@@ -1,6 +1,6 @@
 <span class="path_trail">
 	<% for (var tier in objectPath) {
-		if (tier != objectPath.length || !skipLast) {
+		if (tier != objectPath.length - 1 || !skipLast) {
 			if (tier > 0) { %><span>&gt;</span><%}
 			var url = "/admin/" + queryMethod + "/" + objectPath[tier].pid;
 			if (filterParams)

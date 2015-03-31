@@ -60,42 +60,43 @@
 	</c:if>
 	<c:if test="${not empty searchState.facets}">
 		<c:forEach items="${searchState.facets}" var="field">
-			<c:set var="fieldName" value="${searchSettings.searchFieldParams[field.key]}" />
-			<c:choose>
-				<c:when test="${field.key == 'ANCESTOR_PATH'}">
-					<c:url var="removeUrl" scope="page" value='${queryMethod}${searchStateParameters}'></c:url>
-				</c:when>
-				<c:otherwise>
-					<c:url var="removeUrl" scope="page" value='${queryPath}${cdr:removeParameter(searchStateParameters, fieldName)}'>
-					</c:url>
-				</c:otherwise>
-			</c:choose>
-			
-			<c:if test="${field.value.getClass().name == 'java.lang.String' || not empty field.value.displayValue}">
-				<li>
-					(<a href="<c:out value="${removeUrl}"/>">x</a>)
-					<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: 
-					<c:choose>
-						<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet" || 
-								field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet"}'>
-							<c:set var="facetNodes" scope="request" value="${field.value.facetNodes}"/>
-							<c:import url="/jsp/util/hierarchyTrail.jsp">
-								<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
-								<c:param name="linkLast">false</c:param>
-								<c:param name="queryPath" value="${queryMethod}"/>
-								<c:param name="limitToContainer">true</c:param>
-								<c:param name="selectedContainer"><c:if test="${not empty resultResponse.selectedContainer}">${resultResponse.selectedContainer.id}</c:if></c:param>
-								<c:param name="isPath">${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet"}</c:param>
-							</c:import>
-						</c:when>
-						<c:when test="${field.value.getClass().name == 'java.lang.String'}">
-							<c:out value="${field.value}" />
-						</c:when>
-						<c:otherwise>
-							<c:out value="${field.value.displayValue}" />
-						</c:otherwise>
-					</c:choose>
-				</li>
+			<c:if test='${field.value.getClass().name != "edu.unc.lib.dl.search.solr.model.CutoffFacet"}'>
+				<c:set var="fieldName" value="${searchSettings.searchFieldParams[field.key]}" />
+				<c:choose>
+					<c:when test="${field.key == 'ANCESTOR_PATH'}">
+						<c:url var="removeUrl" scope="page" value='${queryMethod}${searchStateParameters}'></c:url>
+					</c:when>
+					<c:otherwise>
+						<c:url var="removeUrl" scope="page" value='${queryPath}${cdr:removeParameter(searchStateParameters, fieldName)}'>
+						</c:url>
+					</c:otherwise>
+				</c:choose>
+				
+				<c:if test="${field.value.getClass().name == 'java.lang.String' || not empty field.value.displayValue}">
+					<li>
+						(<a href="<c:out value="${removeUrl}"/>">x</a>)
+						<c:out value="${searchSettings.searchFieldLabels[field.key]}" />: 
+						<c:choose>
+							<c:when test='${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet"}'>
+								<c:set var="facetNodes" scope="request" value="${field.value.facetNodes}"/>
+								<c:import url="/jsp/util/hierarchyTrail.jsp">
+									<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
+									<c:param name="linkLast">false</c:param>
+									<c:param name="queryPath" value="${queryMethod}"/>
+									<c:param name="limitToContainer">true</c:param>
+									<c:param name="selectedContainer"><c:if test="${not empty resultResponse.selectedContainer}">${resultResponse.selectedContainer.id}</c:if></c:param>
+									<c:param name="isPath">${field.value.getClass().name == "edu.unc.lib.dl.search.solr.model.CutoffFacet"}</c:param>
+								</c:import>
+							</c:when>
+							<c:when test="${field.value.getClass().name == 'java.lang.String'}">
+								<c:out value="${field.value}" />
+							</c:when>
+							<c:otherwise>
+								<c:out value="${field.value.displayValue}" />
+							</c:otherwise>
+						</c:choose>
+					</li>
+				</c:if>
 			</c:if>
 		</c:forEach>
 	</c:if>

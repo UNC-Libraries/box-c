@@ -27,7 +27,7 @@
 	<div class="results_header_hierarchy_path">
 		<c:if test="${not empty selectedContainer}">
 			<c:set var="facetNodes" scope="request" value="${selectedContainer.path.facetNodes}"/>
-			<c:import url="common/hierarchyTrail.jsp">
+			<c:import url="/jsp/util/pathTrail.jsp">
 				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
 				<c:param name="linkLast">true</c:param>
 				<c:param name="displayHome">true</c:param>

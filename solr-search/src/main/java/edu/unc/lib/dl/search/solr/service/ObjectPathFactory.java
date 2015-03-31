@@ -26,7 +26,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap.Builder;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
@@ -36,7 +36,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
- * Factory for generating hierarchical path information
+ * Factory for generating and retrieving hierarchical path information, including retrieving names of ancestors
  *
  * @author bbpennel
  * @date Mar 18, 2015
@@ -62,7 +62,7 @@ public class ObjectPathFactory {
 
 	@PostConstruct
 	public void init() {
-		Builder<String, PathCacheData> mapBuilder = new Builder<String, PathCacheData>();
+		ConcurrentLinkedHashMap.Builder<String, PathCacheData> mapBuilder = new ConcurrentLinkedHashMap.Builder<String, PathCacheData>();
 		mapBuilder.maximumWeightedCapacity(cacheSize);
 		this.pathCache = mapBuilder.build();
 
@@ -95,11 +95,6 @@ public class ObjectPathFactory {
 		if (bom.getAncestorPathFacet() == null)
 			return null;
 
-		// Refresh the cache for the object being looked up if it is a container
-		if (isContainer(bom.getResourceType())) {
-			pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
-		}
-
 		List<ObjectPathEntry> entries = new ArrayList<>();
 
 		// Retrieve path data for each node in the ancestor path
@@ -108,6 +103,13 @@ public class ObjectPathFactory {
 			PathCacheData pathData = getPathData(pid);
 
 			entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
+		}
+
+		// Refresh the cache for the object being looked up if it is a container
+		if (isContainer(bom.getResourceType())) {
+			pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
+			// Add object to its own path path
+			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
 		}
 
 		return new ObjectPath(entries);

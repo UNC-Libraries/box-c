@@ -285,7 +285,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 				parentName = pathFactory.getName(parentCollection);
 			}
 		} else {
-			parentName = objectPath.getName(id);
+			parentName = objectPath.getName(parentCollection);
 		}
 
 		return parentName;

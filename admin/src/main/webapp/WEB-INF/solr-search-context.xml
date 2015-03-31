@@ -92,6 +92,7 @@
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
 		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="pathFactory" ref="pathFactory" />
 	</bean>
 	
 	<util:list id="tagProviders" value-type="edu.unc.lib.dl.search.solr.tags.TagProvider">
@@ -101,7 +102,7 @@
 	
 	<bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
 		<property name="search" ref="queryLayer" />
-		<property name="cacheSize" value="1000" />
+		<property name="cacheSize" value="5000" />
 		<property name="timeToLiveMilli" value="10000" />
 		<property name="solrSettings" ref="solrSettings" />
 	</bean>

@@ -29,7 +29,7 @@
 		<tr>
 			<th>${searchSettings.searchFieldLabels['ANCESTOR_PATH']}</th>
 			<td>
-				<c:import url="common/hierarchyTrail.jsp">
+				<c:import url="/jsp/util/pathTrail.jsp">
 					<c:param name="fieldKey"><c:out value="${'ANCESTOR_PATH'}"/></c:param>
 					<c:param name="linkLast"><c:choose><c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">false</c:when><c:otherwise>true</c:otherwise></c:choose></c:param>
 					<c:param name="limitToContainer">true</c:param>

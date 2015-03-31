@@ -58,6 +58,7 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -75,6 +76,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrQueryLayerService.class);
 	protected SearchStateFactory searchStateFactory;
 	protected PID collectionsPid;
+	protected ObjectPathFactory pathFactory;
 
 	/**
 	 * Returns a list of the most recently added items in the collection
@@ -183,27 +185,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SearchResultResponse resultResponse = getSearchResults(facetRequest);
 		resultResponse.setSelectedContainer(selectedContainer);
 
-		// If this facet list contains parent collections, then get further metadata about them
-		if (resultResponse.getFacetFields() != null
-				&& (searchState.getFacetsToRetrieve() == null || searchState.getFacetsToRetrieve().contains(
-						SearchFieldKeys.PARENT_COLLECTION.name()))) {
+		// If this facet list contains parent collections, then retrieve display names for them
+		if (resultResponse.getFacetFields() != null && (searchState.getFacetsToRetrieve() == null
+				|| searchState.getFacetsToRetrieve().contains(SearchFieldKeys.PARENT_COLLECTION.name()))) {
+
 			FacetFieldObject parentCollectionFacet = resultResponse.getFacetFields().get(
 					SearchFieldKeys.PARENT_COLLECTION.name());
-			List<BriefObjectMetadataBean> parentCollectionValues = getParentCollectionValues(resultResponse
-					.getFacetFields().get(SearchFieldKeys.PARENT_COLLECTION.name()));
-			int i;
-			// If the parent collection facet yielded further metadata, then edit the original facet value to contain the
-			// additional metadata
-			if (parentCollectionFacet != null && parentCollectionValues != null) {
+
+			if (parentCollectionFacet != null) {
 				for (GenericFacet pidFacet : parentCollectionFacet.getValues()) {
-					String pid = pidFacet.getSearchValue();
-					for (i = 0; i < parentCollectionValues.size() && !pid.equals(parentCollectionValues.get(i).getId()); i++)
-						;
-					if (i < parentCollectionValues.size()) {
-						CutoffFacet parentPath = parentCollectionValues.get(i).getPath();
+					String parentName = pathFactory.getName(pidFacet.getSearchValue());
+
+					if (parentName != null) {
 						pidFacet.setFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-						pidFacet.setDisplayValue(parentPath.getDisplayValue());
-						pidFacet.setValue(parentPath.getSearchValue());
+						pidFacet.setDisplayValue(parentName);
 					}
 				}
 			}
@@ -1244,6 +1239,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 		roleString.append(')');
 
 		return roleString.toString();
+	}
+
+	public void setPathFactory(ObjectPathFactory pathFactory) {
+		this.pathFactory = pathFactory;
 	}
 
 }

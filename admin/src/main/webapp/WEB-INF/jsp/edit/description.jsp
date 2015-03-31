@@ -36,12 +36,7 @@
 <div class="edit_desc_page contentarea">
 	<div>
 		<h2>Editing Description</h2>
-		<c:set var="facetNodes" scope="request" value="${resultObject.path.facetNodes}"/>
-		<div class="results_header_hierarchy_path">
-			<c:import url="/jsp/util/pathTrail.jsp">
-				<c:param name="resultOperation">${sessionScope.resultOperation}</c:param>
-			</c:import>
-		</div>
+		<div class="results_header_hierarchy_path"></div>
 	</div>
 
 	<div>
