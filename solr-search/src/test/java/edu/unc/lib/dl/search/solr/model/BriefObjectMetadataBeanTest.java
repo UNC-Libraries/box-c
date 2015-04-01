@@ -112,15 +112,4 @@ public class BriefObjectMetadataBeanTest extends Assert {
 		assertEquals(2, mdb.getGroupRoleMap().size());
 		assertEquals(2, mdb.getRoleGroup().size());
 	}
-	
-	@Test
-	public void labelFromRelation() {
-		BriefObjectMetadataBean mdb = new BriefObjectMetadataBean();
-
-		mdb.setRelations(Arrays.asList("label|hello.jpg"));
-		assertEquals("hello.jpg", mdb.getLabel());
-
-		mdb.setRelations(Arrays.asList("blah|xyz"));
-		assertEquals(null, mdb.getLabel());
-	}
 }

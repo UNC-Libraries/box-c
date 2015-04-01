@@ -46,7 +46,6 @@ public class SetRelationsFilterTest extends Assert {
 		filter.filter(dip);
 
 		assertTrue(idb.getRelations().contains("defaultWebObject|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
-		assertTrue(idb.getRelations().contains("label|A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model"));
 	}
 
 	@Test
@@ -62,7 +61,6 @@ public class SetRelationsFilterTest extends Assert {
 		filter.filter(dip);
 
 		assertTrue(idb.getRelations().contains("defaultWebData|uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"));
-		assertTrue(idb.getRelations().contains("label|A1100-A800 NS final.jpg"));
 		assertTrue(idb.getRelations().contains("sourceData|uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"));
 	}
 
@@ -96,6 +94,5 @@ public class SetRelationsFilterTest extends Assert {
 		filter.filter(dip);
 
 		assertTrue(idb.getRelations().contains("sortOrder|ordered"));
-		assertTrue(idb.getRelations().contains("label|Field notes"));
 	}
 }
