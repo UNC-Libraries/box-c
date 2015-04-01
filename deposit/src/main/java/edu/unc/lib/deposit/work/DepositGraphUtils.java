@@ -78,7 +78,7 @@ public class DepositGraphUtils {
 	/**
 	 *
 	 * Walk the children of the given bag in depth first order, storing children
-	 * in the given pids collection
+	 * in the given pids collection. Duplicate PIDs are ignored.
 	 *
 	 * @param bag bag to retrieve children from
 	 * @param pids collection to store bag children into, in depth first ordering
@@ -90,7 +90,11 @@ public class DepositGraphUtils {
 		NodeIterator childIt = bag.iterator();
 		while (childIt.hasNext()) {
 			Resource childResource = (Resource) childIt.next();
-			pids.add(childResource.getURI());
+			
+			if (!pids.contains(childResource.getURI())) {
+				pids.add(childResource.getURI());
+			}
+			
 			if (recursive) {
 				Bag childBag = childResource.getModel().getBag(childResource);
 				walkChildrenDepthFirst(childBag, pids, recursive);
@@ -99,7 +103,8 @@ public class DepositGraphUtils {
 	}
 
 	/**
-	 * Walk the children in depth first order, returning each as a resource
+	 * Walk the children in depth first order, returning each as a resource.
+	 * Duplicate resources are ignored.
 	 *
 	 * @param bag
 	 * @param children
@@ -108,7 +113,10 @@ public class DepositGraphUtils {
 		NodeIterator childIt = bag.iterator();
 		while (childIt.hasNext()) {
 			Resource childResource = (Resource) childIt.next();
-			children.add(childResource);
+
+			if (!children.contains(childResource)) {
+				children.add(childResource);
+			}
 
 			Bag childBag = childResource.getModel().getBag(childResource);
 			walkObjectsDepthFirst(childBag, children);

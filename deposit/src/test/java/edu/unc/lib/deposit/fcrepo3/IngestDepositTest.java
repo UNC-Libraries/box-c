@@ -50,7 +50,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -154,6 +156,35 @@ public class IngestDepositTest {
 		Model model = job.getWritableModel();
 		model.read(new File(depositFolder, "everything.n3").getAbsolutePath());
 		job.closeModel();
+		
+	}
+	
+	@Test
+	public void testDuplicateBagEntry() throws Exception {
+		
+		// Add a duplicate bag entry
+		
+		Model model = job.getWritableModel();
+		Bag bag = model.getBag("info:fedora/uuid:bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae");
+		Resource resource = model.getResource("info:fedora/uuid:1faf9dbd-2c34-431b-a1e1-319437871b43");
+		bag.add(resource);
+		job.closeModel();
+		
+		Thread jobThread = new Thread(job);
+		Thread finishThread = new Thread(jmsListener);
+
+		jobThread.start();
+		finishThread.start();
+
+		// Start processing with a timelimit to prevent infinite wait in case of failure
+		
+		jobThread.join(5000L);
+		finishThread.join(5000L);
+		
+		// Ensure that we counted and ingested the correct number of objects, even though one of the bags had a duplicate
+		
+		assertEquals("Incorrect number of objects counted", 9, job.getIngestObjectCount());
+		verify(client, times(job.getIngestObjectCount() + 1)).ingestRaw(any(byte[].class), any(Format.class), anyString());
 		
 	}
 
