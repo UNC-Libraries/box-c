@@ -125,6 +125,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 					if (parent.list().length == 0) {
 						try {
 							Files.delete(parent.toPath());
+							LOG.debug("deleted {}", parent.toPath());
 						} catch (IOException e) {
 							LOG.error(
 									"Cannot delete an empty staging directory: "
@@ -155,6 +156,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 						try {
 							URI depositStagingFolderURI = area.getStorageURI(sfuri);
 							FileUtils.deleteDirectory(new File(depositStagingFolderURI));
+							LOG.debug("deleted {}", new File(depositStagingFolderURI));
 						} catch (StagingException e) {
 							LOG.error("Cannot obtain storage location for deposit staging folder URI: "
 									+ sfuris, e);
@@ -173,6 +175,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		// delete deposit folder
 		try {
 			FileUtils.deleteDirectory(getDepositDirectory());
+			LOG.debug("deleted {}", getDepositDirectory());
 		} catch (IOException e) {
 			LOG.error("Cannot delete deposit directory: "
 					+ getDepositDirectory().getAbsolutePath(), e);

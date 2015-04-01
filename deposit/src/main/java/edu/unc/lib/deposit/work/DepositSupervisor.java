@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.PrepareResubmitJob;
-import edu.unc.lib.deposit.SendDepositorEmailJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
 import edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob;
@@ -71,6 +70,9 @@ public class DepositSupervisor implements WorkerListener {
 	
 	@Autowired
 	private WorkerPool cdrMetsDepositWorkerPool;
+	
+	@Autowired
+	private DepositEmailHandler depositEmailHandler;
 
 	public net.greghaines.jesque.Config getJesqueConfig() {
 		return jesqueConfig;
@@ -382,6 +384,8 @@ public class DepositSupervisor implements WorkerListener {
 					depositStatusFactory.fail(depositUUID);
 				}
 				
+				depositEmailHandler.sendDepositResults(depositUUID);
+				
 				return;
 			default:
 				break;
@@ -393,7 +397,7 @@ public class DepositSupervisor implements WorkerListener {
 			return;
 		}
 		
-		if(CleanupDepositJob.class.getName().equals(job.getClassName())) {
+		if (CleanupDepositJob.class.getName().equals(job.getClassName())) {
 			LOG.debug("Job {} is cleanup job, deposit state will expire", depositUUID);
 			return;
 		}
@@ -515,12 +519,6 @@ public class DepositSupervisor implements WorkerListener {
 			return makeJob(IngestDeposit.class, depositUUID);
 		}
 
-		// Email the depositor, do not reattempt the email.
-		if (status.containsKey(DepositField.depositorEmail.name())
-				&& !successfulJobs.contains(SendDepositorEmailJob.class.getName())) {
-			return makeJob(SendDepositorEmailJob.class, depositUUID);
-		}
-
 		return null;
 	}
 
@@ -552,6 +550,8 @@ public class DepositSupervisor implements WorkerListener {
 			c.end();
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
+			
+			depositEmailHandler.sendDepositResults(depositUUID);
 
 			Client c = makeJesqueClient();
 			// schedule cleanup job after the configured delay

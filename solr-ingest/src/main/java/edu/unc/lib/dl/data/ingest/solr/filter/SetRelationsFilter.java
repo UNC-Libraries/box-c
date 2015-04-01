@@ -70,8 +70,9 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 			
 			// Retrieve and store label
 			List<String> label = triples.get(FedoraProperty.label.toString());
-			if (label != null)
-				relations.add(FedoraProperty.label.getFragment() + "|" + label.get(0));
+			if (label != null) {
+				dip.getDocument().setLabel(label.get(0));
+			}
 			
 			// Retrieve the default sort order for a container if specified
 			List<String> defaultSortOrder = triples.get(CDRProperty.sortOrder.toString());

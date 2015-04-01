@@ -103,6 +103,15 @@
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 
+	<bean id="depositEmailHandler" class="edu.unc.lib.deposit.work.DepositEmailHandler" >
+		<property name="depositStatusFactory" ref="depositStatusFactory" />
+		<property name="baseUrl" value="${baseUrl:https://www.example.com}" />
+		<property name="mailSender" ref="mailSender" />
+		<property name="fromAddress" value="${from.email:no-reply@example.com}" />
+		<property name="htmlTemplate" ref="htmlTemplate" />
+		<property name="textTemplate" ref="textTemplate" />
+	</bean>
+
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
@@ -330,15 +339,6 @@
 				<constructor-arg type="java.io.File" value="${deposit.email.template:classpath:email_text.txt}" />
 			</bean>
 		</constructor-arg>
-	</bean>
-
-	<bean id="SendDepositorEmailJob" class="edu.unc.lib.deposit.SendDepositorEmailJob"
-		scope="prototype">
-		<property name="baseUrl" value="${baseUrl:https://www.example.com}" />
-		<property name="mailSender" ref="mailSender" />
-		<property name="fromAddress" value="${from.email:no-reply@example.com}" />
-		<property name="htmlTemplate" ref="htmlTemplate" />
-		<property name="textTemplate" ref="textTemplate" />
 	</bean>
 	
 	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
