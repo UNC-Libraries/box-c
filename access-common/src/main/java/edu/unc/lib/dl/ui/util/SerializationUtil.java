@@ -136,8 +136,10 @@ public class SerializationUtil {
 		if (metadata.getIdentifier() != null)
 			result.put("identifier", metadata.getIdentifier());
 
-		if (metadata.getAncestorPathFacet() != null)
+		if (metadata.getAncestorPathFacet() != null) {
 			result.put("ancestorPath", cutoffFacetToMap(metadata.getAncestorPathFacet()));
+			result.put("objectPath", metadata.getObjectPath().getEntries());
+		}
 
 		if (metadata.getAncestorNames() != null)
 			result.put("ancestorNames", metadata.getAncestorNames());

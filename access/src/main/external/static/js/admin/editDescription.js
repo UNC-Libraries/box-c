@@ -1,25 +1,30 @@
 require.config({
 	urlArgs: "v=3.4-SNAPSHOT",
-	baseUrl: '/static/js/',
+	baseUrl: "/static/js/",
 	paths: {
-		'jquery' : 'cdr-admin',
-		'jquery-ui' : 'cdr-admin',
-		'text' : 'xmleditor/lib/text',
-		'autosize' : 'xmleditor/lib/jquery.autosize-min',
-		'json2' : 'xmleditor/lib/json2',
-		'cycle' : 'xmleditor/lib/cycle',
-		'ace' : 'xmleditor/lib/ace/src-min/ace',
-		'vkbeautify' : 'xmleditor/lib/vkbeautify',
-		'xmleditor' : 'xmleditor/jquery.xmleditor'
+		"jquery" : "cdr-admin",
+		"jquery-ui" : "cdr-admin",
+		"text" : "lib/text",
+		"underscore" : "lib/underscore",
+		"tpl" : "lib/tpl",
+		"autosize" : "xmleditor/lib/jquery.autosize-min",
+		"json2" : "xmleditor/lib/json2",
+		"cycle" : "xmleditor/lib/cycle",
+		"ace" : "xmleditor/lib/ace/src-min/ace",
+		"vkbeautify" : "xmleditor/lib/vkbeautify",
+		"xmleditor" : "xmleditor/jquery.xmleditor"
 	},
 	shim: {
-		'ace' : ['jquery'],
-		'autosize' : ['jquery'],
-		'xmleditor' : ['jquery-ui', 'text', 'autosize', 'json2', 'cycle', 'ace', 'vkbeautify']
+		"ace" : ["jquery"],
+		"autosize" : ["jquery"],
+		"xmleditor" : ["jquery-ui", "text", "autosize", "json2", "cycle", "ace", "vkbeautify"],
+		"underscore": {
+			exports: "_"
+		}
 	}
 });
 
-define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'], function(module, $, ui, ace) {
+define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", "tpl!../templates/admin/pathTrail"], function(module, $, ui, ace, xmleditor, pathTemplate) {
 	
 	var pid = window.location.pathname;
 	pid = pid.substring(pid.lastIndexOf("/") + 1);
@@ -27,6 +32,15 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 	$.getJSON("describeInfo/" + pid, function(data) {
 		var resultObject = data.resultObject;
 		var vocabTerms = data.vocabTerms;
+		
+		var containerPath = pathTemplate({
+			objectPath : resultObject.objectPath.entries,
+			queryMethod : 'list',
+			filterParams : "",
+			skipLast : false
+		});
+		
+		$(".results_header_hierarchy_path").html(containerPath);
 	
 		var tags = resultObject.tags;
 		if (tags) {
@@ -69,28 +83,28 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 		var recordUrl = module.config().recordUrl;
 		var menuEntries = [{
 			insertPath : ["View"],
-			label : 'View in CDR',
+			label : "View in CDR",
 			enabled : true,
 			binding : null,
 			action : recordUrl
 		}, {
-			label : 'View in CDR',
+			label : "View in CDR",
 			enabled : true, 
-			itemClass : 'header_menu_link',
+			itemClass : "header_menu_link",
 			action : recordUrl
 		}];
 		if (originalUrl && originalUrl.length > 1){
 			menuEntries.push({
 				insertPath : ["View"],
-				label : 'View original file',
+				label : "View original file",
 				enabled : true,
 				binding : null,
 				action : originalUrl
 			});
 			menuEntries.push({
-				label : 'View File',
+				label : "View File",
 				enabled : true, 
-				itemClass : 'header_menu_link',
+				itemClass : "header_menu_link",
 				action : originalUrl
 			});
 		}
@@ -104,8 +118,8 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 			libPath : "../../static/js/xmleditor/lib/",
 			menuEntries: menuEntries,
 			enforceOccurs: false,
-			xmlEditorLabel : 'Form',
-			textEditorLabel : 'XML'
+			xmlEditorLabel : "Form",
+			textEditorLabel : "XML"
 		};
 		
 		if (vocabTerms) {
@@ -113,7 +127,7 @@ define('editDescription', ['module', 'jquery', 'jquery-ui', 'ace', 'xmleditor'],
 			if (terms) {
 				terms = terms.sort();
 				editorOptions["elementUpdated"] = function(event) {
-					if (event.action == 'render' && this.objectType.localName == 'affiliation') {
+					if (event.action == "render" && this.objectType.localName == "affiliation") {
 						this.textInput.autocomplete({
 							source : terms,
 							minLength : 0

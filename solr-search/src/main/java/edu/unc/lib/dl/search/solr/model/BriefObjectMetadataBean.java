@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
@@ -43,8 +44,13 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefObjectMetadata {
 	private static final Logger LOG = LoggerFactory.getLogger(BriefObjectMetadataBean.class);
 
+	protected static ObjectPathFactory pathFactory;
+
 	protected CutoffFacet ancestorPathFacet;
 	protected CutoffFacet path;
+	protected ObjectPath objectPath;
+	protected String ancestorNames;
+	protected String parentName;
 	protected List<MultivaluedHierarchicalFacet> contentTypeFacet;
 	protected List<Datastream> datastreamObjects;
 	// Inverted map of the roleGroup, clustering roles into buckets by group
@@ -97,7 +103,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 						0L);
 			} else {
 				path = new CutoffFacet(ancestorPathFacet);
-				path.addNode(id, title);
+				path.addNode(id);
 			}
 		}
 		return path;
@@ -268,10 +274,21 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	}
 
 	@Override
-	public CutoffFacetNode getParentCollectionObject() {
-		if (ancestorPathFacet == null || parentCollection == null)
-			return null;
-		return (CutoffFacetNode) this.ancestorPathFacet.getNode(this.parentCollection);
+	public String getParentCollectionName() {
+
+		if (parentName != null) {
+			return parentName;
+		}
+
+		if (objectPath == null) {
+			if (pathFactory != null && parentCollection != null) {
+				parentName = pathFactory.getName(parentCollection);
+			}
+		} else {
+			parentName = objectPath.getName(parentCollection);
+		}
+
+		return parentName;
 	}
 
 	@Override
@@ -320,5 +337,44 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 			return result;
 		}
 		return null;
+	}
+
+	@Override
+	public ObjectPath getObjectPath() {
+		// Retrieve the ancestor path on demand if it is not already set
+		if (objectPath == null && pathFactory != null) {
+			this.objectPath = pathFactory.getPath(this);
+		}
+
+		return objectPath;
+	}
+
+	@Override
+	public void setObjectPath(ObjectPath objectPath) {
+		this.objectPath = objectPath;
+	}
+
+	public static void setPathFactory(ObjectPathFactory pathFactory) {
+		BriefObjectMetadataBean.pathFactory = pathFactory;
+	}
+
+	@Override
+	public String getAncestorNames() {
+		if (ancestorNames == null) {
+			if (objectPath == null && pathFactory != null) {
+				objectPath = pathFactory.getPath(this);
+			}
+
+			if (objectPath != null) {
+				StringBuilder ancestorNames = new StringBuilder();
+				for (ObjectPathEntry entry : objectPath.getEntries()) {
+					ancestorNames.append('/').append(entry.getName().replaceAll("\\/", "\\\\/"));
+				}
+
+				this.ancestorNames = ancestorNames.toString();
+			}
+		}
+
+		return ancestorNames;
 	}
 }

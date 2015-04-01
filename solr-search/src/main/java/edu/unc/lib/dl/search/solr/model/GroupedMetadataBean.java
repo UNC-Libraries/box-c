@@ -102,8 +102,8 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	}
 
 	@Override
-	public CutoffFacetNode getParentCollectionObject() {
-		return this.representative.getParentCollectionObject();
+	public String getParentCollectionName() {
+		return this.representative.getParentCollectionName();
 	}
 
 	@Override
@@ -354,5 +354,20 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	@Override
 	public Date getActiveEmbargo() {
 		return representative.getActiveEmbargo();
+	}
+
+	@Override
+	public ObjectPath getObjectPath() {
+		return representative.getObjectPath();
+	}
+
+	@Override
+	public void setObjectPath(ObjectPath objectPath) {
+		representative.setObjectPath(objectPath);
+	}
+
+	@Override
+	public String getAncestorIds() {
+		return representative.getAncestorIds();
 	}
 }

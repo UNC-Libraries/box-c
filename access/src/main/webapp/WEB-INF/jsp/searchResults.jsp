@@ -26,12 +26,10 @@
 	<h2>${pageSubtitle}</h2>
 	<div class="results_header_hierarchy_path">
 		<c:if test="${not empty resultResponse.selectedContainer}">
-			<c:set var="facetNodes" scope="request" value="${resultResponse.selectedContainer.path.facetNodes}"/>
-			<c:import url="common/hierarchyTrail.jsp">
-				<c:param name="fieldKey">ANCESTOR_PATH</c:param>
+			<c:set var="objectPath" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
+			<c:import url="/jsp/util/pathTrail.jsp">
 				<c:param name="linkLast">true</c:param>
-				<c:param name="displayHome">false</c:param>
-				<c:param name="limitToContainer">true</c:param>
+				<c:param name="queryPath">list</c:param>
 				<c:param name="ignoreSearchState">true</c:param>
 			</c:import>
 		</c:if>
@@ -116,7 +114,7 @@
 							<c:import url="searchResults/selectedContainerEntry.jsp">
 							</c:import>
 							
-							<c:set var="collectionName"><c:out value='${metadata.parentCollectionObject.displayValue}' /></c:set>
+							<c:set var="collectionName"><c:out value='${metadata.parentCollectionName}' /></c:set>
 							<c:if test="${empty collectionName && metadata.resourceType == 'Collection'}">
 								<c:set var="collectionName"><c:out value='${metadata.title}' /></c:set>
 							</c:if>

@@ -64,7 +64,12 @@ public class ExportController extends AbstractSolrSearchController {
 		SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
 		
 		SearchState searchState = searchRequest.getSearchState();
-		searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_NAMES.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RELATIONS.name()));
+		searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+				SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_IDS.name(),
+				SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
+				SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
+				SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
+				SearchFieldKeys.RELATIONS.name()));
 		searchState.setSortType("export");
 		searchState.setRowsPerPage(2000);
 		

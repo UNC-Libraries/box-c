@@ -106,9 +106,9 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 		facetNodes.add(node);
 	}
 	
-	public void addNode(String searchValue, String displayValue){
+	public void addNode(String searchValue){
 		int highestTier = getHighestTier();
-		CutoffFacetNode node = new CutoffFacetNode(displayValue, searchValue, highestTier + 1);
+		CutoffFacetNode node = new CutoffFacetNode(searchValue, highestTier + 1);
 		this.facetNodes.add(node);
 	}
 	
@@ -142,10 +142,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 	
 	@Override
 	public String getDisplayValue() {
-		CutoffFacetNode lastNode = this.getHighestTierNode();
-		if (lastNode == null)
-			return null;
-		return lastNode.getDisplayValue();
+		return getSearchKey();
 	}
 	
 	@Override

@@ -2951,7 +2951,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 				var containerPath = null;
 				if (container) {
 					containerPath = pathTrailTemplate({
-						ancestorPath : container.ancestorPath,
+						objectPath : container.objectPath,
 						queryMethod : 'list',
 						filterParams : data.searchQueryUrl,
 						skipLast : true

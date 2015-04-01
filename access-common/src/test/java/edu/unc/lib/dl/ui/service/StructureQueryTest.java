@@ -116,7 +116,7 @@ public class StructureQueryTest extends AbstractSolrQueryLayerTest {
 		newDoc.addField("rollup", COLLECTIONS_PID);
 		newDoc.addField("roleGroup", "public");
 		newDoc.addField("readGroup", "public");
-		newDoc.addField("ancestorNames", "");
+		newDoc.addField("ancestorIds", "");
 		newDoc.addField("resourceType", "Folder");
 		docs.add(newDoc);
 
@@ -126,8 +126,8 @@ public class StructureQueryTest extends AbstractSolrQueryLayerTest {
 		newDoc.addField("rollup", "uuid:2");
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
-		newDoc.addField("ancestorNames", "/Collections/A_collection");
-		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID + ",Collections"));
+		newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/uuid:2");
+		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID));
 		newDoc.addField("resourceType", "Collection");
 		docs.add(newDoc);
 
@@ -137,8 +137,8 @@ public class StructureQueryTest extends AbstractSolrQueryLayerTest {
 		newDoc.addField("rollup", "uuid:4");
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
-		newDoc.addField("ancestorNames", "/Collections/A_collection/Subfolder_1");
-		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID + ",Collections", "2,uuid:2,A collection"));
+		newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/uuid:2/uuid:4");
+		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID, "2,uuid:2"));
 		newDoc.addField("resourceType", "Folder");
 		docs.add(newDoc);
 
@@ -148,8 +148,8 @@ public class StructureQueryTest extends AbstractSolrQueryLayerTest {
 		newDoc.addField("rollup", "uuid:6");
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
-		newDoc.addField("ancestorNames", "/Collections/A_collection");
-		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID + ",Collections", "2,uuid:2,A collection"));
+		newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/uuid:2");
+		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID, "2,uuid:2"));
 		newDoc.addField("resourceType", "File");
 		docs.add(newDoc);
 
@@ -159,8 +159,8 @@ public class StructureQueryTest extends AbstractSolrQueryLayerTest {
 		newDoc.addField("rollup", "uuid:3");
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
-		newDoc.addField("ancestorNames", "/Collections/Second_collection");
-		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID + ",Collections"));
+		newDoc.addField("ancestorIds", "/" + COLLECTIONS_PID + "/uuid:3");
+		newDoc.addField("ancestorPath", Arrays.asList("1," + COLLECTIONS_PID));
 		newDoc.addField("resourceType", "Collection");
 		docs.add(newDoc);
 

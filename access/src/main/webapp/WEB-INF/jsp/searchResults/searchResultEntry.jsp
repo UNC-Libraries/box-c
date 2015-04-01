@@ -30,14 +30,6 @@
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
-<%--<c:choose>
-	<c:when test="${param.resultNumber % 2 == 0 }">
-		<c:set var="resultEntryClass" value="even" scope="page"/>
-	</c:when>
-	<c:otherwise>
-		<c:set var="resultEntryClass" value="" scope="page"/>
-	</c:otherwise>
-</c:choose>--%>
 <c:choose>
 	<c:when test="${not empty metadata.countMap}">
 		<c:set var="childCount" value="${metadata.countMap.child}"/>
@@ -96,18 +88,20 @@
 					</h2>
 					
 					<div class="halfwidth">
-						<c:choose>
-							<c:when test="${not empty metadata.creator}">
-								<p>${searchSettings.searchFieldLabels['CREATOR']}:
-									<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
-										<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
-									</c:forEach>
-								</p>		
-							</c:when>
-							<c:otherwise>
-								<p>${searchSettings.searchFieldLabels['DATE_ADDED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
-							</c:otherwise>
-						</c:choose>
+						<c:if test="${not empty metadata.creator}">
+							<p>${searchSettings.searchFieldLabels['CREATOR']}:
+								<c:forEach var="creatorObject" items="${metadata.creator}" varStatus="creatorStatus">
+									<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
+								</c:forEach>
+							</p>
+						</c:if>
+						<p>${searchSettings.searchFieldLabels['DATE_ADDED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateAdded}" /></p>
+						<c:if test="${not empty metadata.parentCollection && metadata.resourceType == searchSettings.resourceTypeFolder}">
+							<p>
+								<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}" />
+								${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionName}"/></a>
+							</p>
+						</c:if>
 					</div>
 					<div class="halfwidth">
 						<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}" /></p> 
@@ -152,9 +146,8 @@
 						</c:if>
 						<c:if test="${not empty metadata.parentCollection}">
 							<p>
-								<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}">
-								</c:url>
-								${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionObject.displayValue}"/></a>
+								<c:url var="parentUrl" scope="page" value="record/${metadata.parentCollection}" />
+								${searchSettings.searchFieldLabels['PARENT_COLLECTION']}: <a href="<c:out value='${parentUrl}' />"><c:out value="${metadata.parentCollectionName}"/></a>
 							</p>
 						</c:if>
 					</div>

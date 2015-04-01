@@ -25,14 +25,14 @@
 <div class="metadata">
 	<table>		
 		<c:set var="searchStateUrl" scope="request" value=""/>
-		<c:set var="facetNodes" scope="request" value="${briefObject.path.facetNodes}"/>
+		<c:set var="objectPath" scope="request" value="${briefObject.objectPath}"/>
 		<tr>
 			<th>${searchSettings.searchFieldLabels['ANCESTOR_PATH']}</th>
 			<td>
-				<c:import url="common/hierarchyTrail.jsp">
-					<c:param name="fieldKey"><c:out value="${'ANCESTOR_PATH'}"/></c:param>
-					<c:param name="linkLast"><c:choose><c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">false</c:when><c:otherwise>true</c:otherwise></c:choose></c:param>
-					<c:param name="limitToContainer">true</c:param>
+				<c:import url="/jsp/util/pathTrail.jsp">
+					<c:param name="hideLast"><c:choose><c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">true</c:when><c:otherwise>false</c:otherwise></c:choose></c:param>
+					<c:param name="linkLast">true</c:param>
+					<c:param name="queryPath">list</c:param>
 				</c:import>
 			</td>
 		</tr>
@@ -43,7 +43,7 @@
 				<td>
 					<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}">
 					</c:url>
-					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionObject.displayValue}"/></a>
+					<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
 				</td>
 			</tr>
 		</c:if>

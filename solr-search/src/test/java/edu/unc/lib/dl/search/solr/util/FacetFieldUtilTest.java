@@ -41,7 +41,7 @@ public class FacetFieldUtilTest extends Assert {
 		String[] filterQueries = query.getFilterQueries();
 		assertEquals(2, filterQueries.length);
 		
-		assertEquals("ancestorPath:2,uuid\\:test,*", filterQueries[0]);
+		assertEquals("ancestorPath:2,uuid\\:test", filterQueries[0]);
 		assertEquals("!ancestorPath:3,*", filterQueries[1]);
 		
 //		for (String filterQuery: query.getFilterQueries()){

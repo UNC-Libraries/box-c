@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -29,16 +28,17 @@ import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.ProcessingStatus;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.test.TestHelpers;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
@@ -48,18 +48,18 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 	private SearchSettings searchSettings;
 	@Mock
 	private SolrSettings solrSettings;
-	@Mock
 	private SolrSearchService solrSearchService;
 	@Mock
 	private BriefObjectMetadataBean metadata;
 	@Mock
 	CutoffFacet path;
 
-	@Before
 	@Override
+	@Before
 	public void setup() throws Exception {
 		super.setup();
 
+		when(solrSettings.getFieldName(eq(SearchFieldKeys.ID.name()))).thenReturn("id");
 		when(solrSettings.getFieldName(eq(SearchFieldKeys.ANCESTOR_PATH.name()))).thenReturn("ancestorPath");
 		when(solrSettings.getFieldName(eq(SearchFieldKeys.TIMESTAMP.name()))).thenReturn("timestamp");
 		((IndexTreeInplaceAction) action).setSolrSettings(solrSettings);
@@ -67,8 +67,12 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 		when(path.getSearchValue()).thenReturn("");
 		when(metadata.getPath()).thenReturn(path);
 
-		when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(metadata);
+		solrSearchService = new SolrSearchService();
+		solrSearchService.setSolrSettings(solrSettings);
+		solrSearchService.setSearchSettings(searchSettings);
+		TestHelpers.setField(solrSearchService, "server", server);
 		action.setSolrSearchService(solrSearchService);
+		action.setAccessGroups(new AccessGroupSet("admin"));
 	}
 
 	@Override
@@ -80,7 +84,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 	public void verifyOrphanCleanup() throws Exception {
 
 		when(metadata.getId()).thenReturn("uuid:2");
-		when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1,Collections"));
+		when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1"));
 		when(path.getSearchValue()).thenReturn("2,uuid:2");
 
 		SolrDocumentList docListBefore = getDocumentList();
@@ -139,7 +143,8 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 	@Test(expected = IndexingException.class)
 	public void testNoAncestorBean() throws Exception {
 
-		when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(null);
+		server.deleteById("uuid:2");
+		server.commit();
 
 		SolrUpdateRequest request = new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD);
 		request.setStatus(ProcessingStatus.ACTIVE);

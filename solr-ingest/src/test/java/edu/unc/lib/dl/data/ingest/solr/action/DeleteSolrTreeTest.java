@@ -88,7 +88,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 	public void deleteTree() throws Exception {
 
 		when(metadata.getId()).thenReturn("uuid:2");
-		when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1,Collections"));
+		when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1"));
 		when(metadata.getResourceType()).thenReturn("Collection");
 		CutoffFacet path = mock(CutoffFacet.class);
 		when(path.getSearchValue()).thenReturn("2,uuid:2");
@@ -162,7 +162,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
 		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorNames", "/Collections");
+		newDoc.addField("ancestorIds", "/uuid:1");
 		newDoc.addField("resourceType", "Folder");
 		docs.add(newDoc);
 
@@ -173,8 +173,8 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
 		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorNames", "/Collections/A_collection");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections"));
+		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
 		newDoc.addField("resourceType", "Collection");
 		docs.add(newDoc);
 
@@ -185,8 +185,8 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
 		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorNames", "/Collections/A_collection");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections", "2,uuid:2,A collection"));
+		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
 		newDoc.addField("resourceType", "File");
 		docs.add(newDoc);
 
@@ -197,8 +197,8 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 		newDoc.addField("roleGroup", "public admin");
 		newDoc.addField("readGroup", "public");
 		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorNames", "/Collections/Second_collection");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1,Collections"));
+		newDoc.addField("ancestorIds", "/uuid:1/uuid:3");
+		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
 		newDoc.addField("resourceType", "Collection");
 		docs.add(newDoc);
 

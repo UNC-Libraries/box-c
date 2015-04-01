@@ -18,29 +18,36 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <c:choose>
-	<c:when test="${not empty param.resultOperation}"><c:set var="resultOperation" value="${param.resultOperation}"/></c:when>
-	<c:otherwise><c:set var="resultOperation" value="list"/></c:otherwise>
+	<c:when test="${not empty param.queryPath}"><c:set var="queryPath" value="${param.queryPath}"/></c:when>
+	<c:otherwise><c:set var="queryPath" value="search"/></c:otherwise>
 </c:choose>
-<span class="path_trail">  
-	<c:if test="${param.displayHome == true }">
-		<a href="<c:out value="${resultOperation}"/><c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>">Home</a>
-	</c:if>
-	<c:forEach items="${facetNodes}" var="facetNode" varStatus="status">
-		<c:if test="${!(status.last && param.skipLast)}">
-			<c:if test="${!status.first || param.displayHome}"> &gt; </c:if>
+
+<c:choose>
+	<c:when test="${empty searchStateUrl || param.ignoreSearchState == true}">
+		<c:set var="shiftFacetUrlBase" value=""/>
+	</c:when>
+	<c:otherwise>
+		<c:set var="shiftFacetUrlBase" value="?${searchStateUrl}"/>
+	</c:otherwise>
+</c:choose>
+
+<span class="hierarchicalTrail">  
+	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
+		<c:if test="${!param.hideLast || !status.last}">
+			<c:if test="${!status.first}">
+				&gt; 
+			</c:if>
 			<c:choose>
 				<c:when test="${status.last && param.linkLast != true}">
-					<c:out value="${facetNode.displayValue}" />
+					<c:out value="${pathEntry.name}" />
 				</c:when>
 				<c:otherwise>
-					<c:set var="shiftPathUrl">
-						${resultOperation}/${facetNode.searchKey}<c:if test="${not empty searchStateUrl && param.ignoreSearchState == false}">?${searchStateUrl}</c:if>
-					</c:set>
-					<a href="<c:out value="${shiftPathUrl}"/>"><c:out value="${facetNode.displayValue}" /></a>
+					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
 				</c:otherwise>
 			</c:choose>
 		</c:if>
 	</c:forEach>
-	<c:if test="${param.trailingSeparator}"> &gt;</c:if>
 </span>

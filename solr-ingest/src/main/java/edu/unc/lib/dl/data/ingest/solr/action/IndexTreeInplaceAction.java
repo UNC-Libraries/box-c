@@ -65,7 +65,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
 				// Limit cleanup scope to root pid
 				query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
-						.append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue())).append(",*");
+						.append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
 			}
 
 			// Target any children with timestamp older than start time.
