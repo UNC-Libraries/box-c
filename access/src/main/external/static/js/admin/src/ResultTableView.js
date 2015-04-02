@@ -96,13 +96,15 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self.contextMenus = [new ResultObjectActionMenu({
 					selector : ".action_gear",
 					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler
 				}), new ResultObjectActionMenu({
 					trigger : 'right',
 					positionAtTrigger : false,
 					selector : ".res_entry td",
 					containerSelector : ".res_entry,.container_entry",
 					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler,
 					multipleSelectionEnabled : true,
 					resultList : self.resultObjectList,
 					batchActions : self.options.resultActions

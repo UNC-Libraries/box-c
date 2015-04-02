@@ -3490,7 +3490,17 @@ h1 {
 .ui-autocomplete {
 	max-height: 7em;
 	overflow-y: auto;
-}/** Deposit Bin Collector */
+}
+
+/** Edit Label Form */
+#edit_label_form {
+	margin-top: 10px;
+}
+
+#edit_label_form label {
+	width: 135px;
+}
+/** Deposit Bin Collector */
 
 #collector h2 {
 	color: #000;

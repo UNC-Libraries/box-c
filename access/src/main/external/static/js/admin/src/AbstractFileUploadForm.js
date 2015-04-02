@@ -2,8 +2,8 @@
  * Implements functionality and UI for the generic Ingest Package form
  */
 define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
-		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities) {
+		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'ResultObject', 'AlertHandler'], 
+		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities, ResultObject) {
 	
 	var defaultOptions = {
 		iframeSelector : "#upload_file_frame",
@@ -18,9 +18,18 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		return defaultOptions;
 	};
 	
-	AbstractFileUploadForm.prototype.open = function(pid) {
+	AbstractFileUploadForm.prototype.open = function(resultObject) {
+		var pid;
+		var metadata;
+		if (resultObject instanceof ResultObject) {
+			pid = resultObject.metadata.id;
+			metadata = resultObject.metadata;
+			this.resultObject = resultObject;
+		} else {
+			pid = resultObject;
+		}
 		var self = this;
-		var formContents = this.options.createFormTemplate({pid : pid});
+		var formContents = this.options.createFormTemplate({pid : pid, metadata: metadata});
 		this.closed = false;
 		
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");

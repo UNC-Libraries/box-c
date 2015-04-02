@@ -68,7 +68,12 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 			} else if (JMSMessageUtil.FedoraActions.INGEST.equals(action)) {
 				this.offer(message.getTargetID(), IndexingActionType.RECURSIVE_ADD);
 			} else if (JMSMessageUtil.FedoraActions.MODIFY_OBJECT.equals(action)) {
-				this.offer(message.getTargetID(), IndexingActionType.UPDATE_STATUS);
+				if (!((FedoraEventMessage) message).getArgument("fedora-types:label").equals("null")) {
+					this.offer(message.getTargetID(), IndexingActionType.UPDATE_DESCRIPTION);
+				}
+				if (!((FedoraEventMessage) message).getArgument("fedora-types:state").equals("null")) {
+					this.offer(message.getTargetID(), IndexingActionType.UPDATE_STATUS);
+				}
 			} else if (ContentModelHelper.Datastream.MD_DESCRIPTIVE.equals(datastream)
 					&& (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
 							|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action)
