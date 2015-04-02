@@ -45,5 +45,9 @@ define('EditLabelForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChang
 		
 	};
 	
+	EditLabelForm.prototype.close = function() {
+		AbstractFileUploadForm.prototype.remove.apply(this);
+	};
+	
 	return EditLabelForm;
 });

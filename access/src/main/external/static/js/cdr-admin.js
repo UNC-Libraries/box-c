@@ -1806,6 +1806,10 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		
 	};
 	
+	EditLabelForm.prototype.close = function() {
+		AbstractFileUploadForm.prototype.remove.apply(this);
+	};
+	
 	return EditLabelForm;
 });/**
  * Implements functionality and UI for the generic Ingest Package form
@@ -3034,7 +3038,8 @@ define('ParentResultObject', [ 'jquery', 'ResultObject'],
 				self.contextMenus = [new ResultObjectActionMenu({
 					selector : ".action_gear",
 					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler
 				}), new ResultObjectActionMenu({
 					trigger : 'right',
 					positionAtTrigger : false,
