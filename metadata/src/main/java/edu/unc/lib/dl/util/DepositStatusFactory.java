@@ -166,26 +166,17 @@ public class DepositStatusFactory {
 		getJedisPool().returnResource(jedis);
 	}
 
-	public void fail(String depositUUID, Throwable e) {
+	public void fail(String depositUUID, String message) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.state.name(), DepositState.failed.name());
-		
-		// Set the error message to be the Throwable's message if it has one, otherwise display the class name
-		String message = e.getLocalizedMessage();
-		if (message == null) {
-			message = e.getClass().getName();
+		if (message != null) {
+			jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), message);
 		}
-		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.errorMessage.name(), message);
-		
-		// Also include the stack trace
-		StackTraceElement[] stackTrace = e.getStackTrace();
-		StringBuilder builder = new StringBuilder();
-		for (StackTraceElement element : stackTrace) {
-			builder.append(element.toString()).append("\n");
-		}
-		jedis.hset(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.stackTrace.name(), builder.toString());
-		
 		getJedisPool().returnResource(jedis);
+	}
+	
+	public void fail(String depositUUID) {
+		fail(depositUUID, null);
 	}
 
 	/**

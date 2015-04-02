@@ -36,6 +36,8 @@ public class FedoraFaultMessageResolver {
 				throw new FileSystemException(e);
 			} else if (r.contains("org.fcrepo.server.security.xacml.pep.AuthzDeniedException")) {
 				throw new AuthorizationException(e);
+			} else if (r.contains("FOXML IO stream was bad")) {
+				throw new ObjectIntegrityException(e);
 			} else {
 				throw new FedoraException(e);
 			}

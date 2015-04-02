@@ -138,6 +138,7 @@
 .status_details_content {
 	padding: 10px;
 	overflow-x: auto;
+	white-space: normal;
 }
 
 .status_details p {
@@ -288,6 +289,18 @@
 .show_details #ingest_monitor_jobs td:last-child, .show_details #ingest_monitor_jobs th:last-child {
 	width: 0;
 	visibility: hidden;
+}
+
+.status_details .error_message {
+	color: #111;
+	background-color: #f7b2ac;
+	padding: 6px 8px;
+	text-indent: 0;
+	font-style: normal;
+}
+
+.status_details .error_message label {
+	color: #d00;
 }
 
 .status_details .ingested_files {

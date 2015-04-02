@@ -39,6 +39,8 @@ import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
 import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
+import edu.unc.lib.dl.fedora.ObjectExistsException;
+import edu.unc.lib.dl.fedora.ObjectIntegrityException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
@@ -259,7 +261,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					verifyRunning();
 				}
 			} catch (DepositException e) {
-				failJob(e, Type.INGESTION, "Ingest of object {0} failed", ingestPid);
+				failJob(e, Type.INGESTION, e.getLocalizedMessage(), ingestPid);
 				return;
 			}
 
@@ -339,7 +341,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		try {
 			foxmlDoc = builder.build(foxml);
 		} catch (Exception e) {
-			throw new DepositException("Failed to parse FOXML for object " + pid.getPid(), e);
+			throw new DepositException("Failed to parse FOXML for object " + pid.getPid() + ".", e);
 		}
 
 		// Add ingestion event to PREMIS log
@@ -368,8 +370,10 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			if (confirmExisting) {
 				ingestsAwaitingConfirmation.remove(ingestPid);
 			} else {
-				throw new DepositException("Failed to ingest object " + pid.getPid() + " into Fedora.", e);
+				throw new DepositException("Object " + pid.getPid() + " already exists in the repository.", e);
 			}
+		} catch (ObjectIntegrityException e) {
+			throw new DepositException("Checksum mismatch for object " + pid.getPid() + ".", e);
 		} catch (Exception e) {
 			throw new DepositException("Failed to ingest object " + pid.getPid() + " into Fedora.", e);
 		}

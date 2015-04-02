@@ -41,14 +41,6 @@ public class JobStatusFactory {
 		getJedisPool().returnResource(jedis);
 	}
 
-	public void failed(String jobUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.failed.name());
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
-		getJedisPool().returnResource(jedis);
-	}
-
 	public void interrupted(String jobUUID) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.queued.name());
@@ -58,13 +50,18 @@ public class JobStatusFactory {
 	}
 
 	public void failed(String jobUUID, String message) {
-		failed(jobUUID);
+		Jedis jedis = getJedisPool().getResource();
+		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.failed.name());
+		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+				JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
 		if (message != null) {
-			Jedis jedis = getJedisPool().getResource();
-			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-					JobField.message.name(), message);
-			getJedisPool().returnResource(jedis);
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.message.name(), message);
 		}
+		getJedisPool().returnResource(jedis);
+	}
+
+	public void failed(String jobUUID) {
+		failed(jobUUID, null);
 	}
 
 	/**
