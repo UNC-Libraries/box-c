@@ -154,3 +154,12 @@
 	max-height: 7em;
 	overflow-y: auto;
 }
+
+/** Edit Label Form */
+#edit_label_form {
+	margin-top: 10px;
+}
+
+#edit_label_form label {
+	width: 135px;
+}
