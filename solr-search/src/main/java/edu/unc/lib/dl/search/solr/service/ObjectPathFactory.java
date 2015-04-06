@@ -83,10 +83,12 @@ public class ObjectPathFactory {
 	}
 
 	/**
-	 * Retrieve the path of ancestor information leading up to the provided object.
+	 * Retrieve the path of ancestor information leading up to and including the provided object. If no title is present,
+	 * then the object will not be included in the result path, only the objects preceding it in the path will be
+	 * present.
 	 *
-	 * Path is determined by the ancestorPath field of the BriefObjectMetadata object, so no path information can be
-	 * retrieved if ancestorPath is not provided.
+	 * The path is determined by the ancestorPath field of the BriefObjectMetadata object. If ancestorPath is not
+	 * present, then null will be returned.
 	 *
 	 * @param bom
 	 * @return
@@ -105,12 +107,19 @@ public class ObjectPathFactory {
 			entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
 		}
 
-		// Refresh the cache for the object being looked up if it is a container
-		if (isContainer(bom.getResourceType())) {
-			pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
+		if (bom.getTitle() != null) {
+			// Refresh the cache for the object being looked up if it is a container
+			if (isContainer(bom.getResourceType())) {
+				try {
+					pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
+				} catch (InvalidPathDataException e) {
+					log.debug("Did not cache path data for the provided object {}", bom.getId(), e);
+				}
+			}
+
+			// Add the provided metadata object into the path as the last entry, if it had a title
+			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
 		}
-		// Add object to its own path path
-		entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
 
 		return new ObjectPath(entries);
 	}
@@ -143,7 +152,7 @@ public class ObjectPathFactory {
 			log.debug("Retrieved path information for {} from solr", pid);
 
 			return pathData;
-		} catch (SolrServerException e) {
+		} catch (SolrServerException | InvalidPathDataException e) {
 			log.error("Failed to get object path information for {}", pid, e);
 		}
 		return null;
@@ -177,10 +186,20 @@ public class ObjectPathFactory {
 
 		public long retrievedAt;
 
-		public PathCacheData(String name, boolean isContainer) {
+		public PathCacheData(String name, boolean isContainer) throws InvalidPathDataException {
+			if (name == null)
+				throw new InvalidPathDataException("No name value provided");
 			this.name = name;
 			this.isContainer = isContainer;
 			retrievedAt = System.currentTimeMillis();
+		}
+	}
+
+	public static class InvalidPathDataException extends Exception {
+		private static final long serialVersionUID = 1L;
+
+		public InvalidPathDataException(String message) {
+			super(message);
 		}
 	}
 }
