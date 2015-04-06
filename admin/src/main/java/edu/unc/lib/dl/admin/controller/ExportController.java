@@ -69,7 +69,7 @@ public class ExportController extends AbstractSolrSearchController {
 				SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
 				SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
 				SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-				SearchFieldKeys.RELATIONS.name()));
+				SearchFieldKeys.LABEL.name()));
 		searchState.setSortType("export");
 		searchState.setRowsPerPage(2000);
 		
