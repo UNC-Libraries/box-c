@@ -37,8 +37,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import org.apache.solr.client.solrj.util.ClientUtils;
-
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -71,7 +69,7 @@ public class ExportController extends AbstractSolrSearchController {
 				SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
 				SearchFieldKeys.LABEL.name()));
 		searchState.setSortType("export");
-		searchState.setRowsPerPage(2000);
+		searchState.setRowsPerPage(searchSettings.maxPerPage);
 		
 		BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
 		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
