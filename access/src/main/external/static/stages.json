@@ -27,5 +27,14 @@
         "confirmFile":"tag_sfc_storhouse",
         "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
         "readOnly":"true"
+    },
+    "tag:cdr.lib.unc.edu,2015:/other_storhouse/":{
+        "name":"Other Storhouse drive (Pre-staged)",
+        "mappings":[
+            "file:/mnt/other_storhouse"
+        ],
+        "confirmFile":"tag_storhouse_other",
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS",
+        "readOnly":"true"
     }
 }
