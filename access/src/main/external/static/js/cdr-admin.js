@@ -1502,6 +1502,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 				viewformat: 'MM/DD/YYYY',
 				template: 'MM/DD/YYYY',
 				clear: true,
+				onblur:'ignore',
 				combodate: {
 					minYear: moment().year(),
 					maxYear: moment().add('years', 75).year(),
@@ -1515,6 +1516,12 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 				}
 				var formattedDate = moment(params.newValue).format('YYYY-MM-DD[T]HH:mm:ss');
 				self.addAttribute(self.accessControlModel, 'embargo-until', formattedDate, self.aclNS, self.aclPrefix);
+			}).on('hidden', function(e, reason) {
+				if(reason === 'cancel') {
+			        $(".add_embargo", this.element).editable('setValue', null);
+					return;
+			    } 
+			    
 			});
 			
 			$(".roles_granted .remove_group", this.element).hide();
