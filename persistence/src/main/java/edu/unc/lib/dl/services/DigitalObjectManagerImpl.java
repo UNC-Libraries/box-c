@@ -26,9 +26,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -615,7 +617,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 	/**
 	 * Returns response containing the jdom document representing the datastream and the last modified date. If it does
-	 * not exist, then null is returned. If the document cannot be parsed
+	 * not exist, then null is returned. If the document cannot be parsed, a ServiceException is thrown.
 	 *
 	 * @param pid
 	 * @param datastreamName
@@ -623,29 +625,42 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @throws FedoraException
 	 */
 	private DatastreamDocument getXMLDatastreamIfExists(PID pid, String datastreamName) throws FedoraException {
-
-		if (tripleStoreQueryService.hasDisseminator(pid, datastreamName)) {
-			MIMETypedStream mts = accessClient.getDatastreamDissemination(pid, datastreamName, null);
-
-			// Capture the last modified date of the datastream to return with the document
-			// Fri, 06 Feb 2015 14:54:45 GMT
-			String lastModified = null;
-			for (edu.unc.lib.dl.fedora.types.Property header : mts.getHeader().getProperty()) {
-				if ("Last-Modified".equals(header.getName())) {
-					lastModified = header.getValue();
-					break;
+		
+		log.debug("Attempting to get datastream " + datastreamName + " for object " + pid);
+		
+		try {
+			
+			while (true) {
+		
+				edu.unc.lib.dl.fedora.types.Datastream datastream = managementClient.getDatastream(pid, datastreamName);
+			
+				if (datastream == null) {
+					return null;
 				}
+				
+				log.debug("Got datastream, attempting to get dissemination version with create date " + managementClient.getDatastream(pid, datastreamName).getCreateDate());
+			
+				try {
+			
+					MIMETypedStream mts = accessClient.getDatastreamDissemination(pid, datastreamName, datastream.getCreateDate());
+				
+					try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
+						Document dsDoc = new SAXBuilder().build(bais);
+						return new DatastreamDocument(dsDoc, datastream.getCreateDate());
+					} catch (JDOMException | IOException e) {
+						throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
+					}
+					
+				} catch (NotFoundException e) {
+					log.debug("No dissemination version for create date " + datastream.getCreateDate() + " found, retrying");
+				}
+				
 			}
-
-			try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
-				Document dsDoc = new SAXBuilder().build(bais);
-				return new DatastreamDocument(dsDoc, lastModified);
-			} catch (JDOMException | IOException e) {
-				throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
-			}
+			
+		} catch (NotFoundException e) {
+			return null;
 		}
 
-		return null;
 	}
 
 	@Override
@@ -832,9 +847,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throws FedoraException, IngestException {
 		removeRelsExt: do {
 			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+			
 			if (relsExtResp == null) {
 				throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");
 			}
+			
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
@@ -859,7 +876,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 				if (log.isDebugEnabled()) {
 					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-					log.info("Removing children from container{}:\n{}", container, outputter.outputString(relsExt));
+					log.debug("Attempting to update RELS-EXT for {} to remove children:\n{}", container, outputter.outputString(relsExt));
 				}
 
 				managementClient.modifyDatastream(container, RELS_EXT.getName(),
@@ -881,7 +898,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 					if (log.isDebugEnabled()) {
 						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-						log.info("MD_CONTENTS after removing from {}:\n{}", container,
+						log.debug("Attempting to update MD_CONTENTS for {} to remove children:\n{}", container,
 								outputter.outputString(mdContents.getDocument()));
 					}
 
@@ -891,7 +908,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 				break removeMDContents;
 			} catch (OptimisticLockException e) {
-				log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
+				log.debug("Unable to update MD_CONTENTS for {}, retrying", container, e);
 			}
 		} while (true);
 	}
@@ -914,6 +931,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					throw new IngestException("Unable to retrieve RELS-EXT for container " + container
 							+ ", aborting move operation");
 				}
+				
 				Document relsExt = relsExtResp.getDocument();
 
 				Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
@@ -932,13 +950,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 						newChildEl.setAttribute("resource", newChild.getURI(), JDOMNamespaceUtil.RDF_NS);
 						descriptionEl.addContent(newChildEl);
 					} else {
-						log.warn("container {} already contained moved child {}", container, newChild);
+						log.warn("Container {} already contained moved child {}", container, newChild);
 					}
 				}
 
 				if (log.isDebugEnabled()) {
 					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-					log.info("RELS-EXT after removing children from {}:\n{}", container, outputter.outputString(relsExt));
+					log.debug("Attempting to update RELS-EXT for {} to add children:\n{}", container, outputter.outputString(relsExt));
 				}
 
 				// Push changes out to the container container
@@ -961,7 +979,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 					if (log.isDebugEnabled()) {
 						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-						log.info("MD_CONTENTS after adding children to {}:\n{}", container,
+						log.debug("Attempting to update MD_CONTENTS for {} to add children:\n{}", container,
 								outputter.outputString(mdContents));
 					}
 
@@ -988,9 +1006,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
 			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+			
 			if (relsExtResp == null) {
 				throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");
 			}
+			
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
@@ -1010,7 +1030,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 				if (log.isDebugEnabled()) {
 					XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-					log.info("RELS-EXT after cleaning up children in {}:\n{}", container, outputter.outputString(relsExt));
+					log.debug("Attempting to update RELS-EXT for {} to clean up children:\n{}", container, outputter.outputString(relsExt));
 				}
 
 				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Cleaning up moved children",
