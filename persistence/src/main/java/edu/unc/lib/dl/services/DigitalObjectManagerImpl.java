@@ -638,7 +638,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					return null;
 				}
 				
-				log.debug("Got datastream, attempting to get dissemination version with create date " + managementClient.getDatastream(pid, datastreamName).getCreateDate());
+				log.debug("Got datastream, attempting to get dissemination version with create date " + datastream.getCreateDate());
 			
 				try {
 			
