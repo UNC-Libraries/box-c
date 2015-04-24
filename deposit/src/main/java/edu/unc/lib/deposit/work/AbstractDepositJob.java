@@ -277,9 +277,9 @@ public abstract class AbstractDepositJob implements Runnable {
 				} catch (JDOMException e) {
 					log.warn("Failed to parse existing events file for {}, backing up corrupt log and creating a new log", e);
 					try {
-						Files.move(file.toPath(), Paths.get(file.getAbsolutePath() + ".corrupt"));
+						Files.move(file.toPath(), Paths.get(file.getAbsolutePath() + ".backup." + System.currentTimeMillis()));
 					} catch (IOException e2) {
-						failJob(e2, "Failed to backup corrupt log file {}.", file.getAbsoluteFile());
+						failJob(e2, "Failed to backup corrupt log file for object {}.", pid);
 					}
 					dom = createNewEventsFile(pid, file);
 				}
