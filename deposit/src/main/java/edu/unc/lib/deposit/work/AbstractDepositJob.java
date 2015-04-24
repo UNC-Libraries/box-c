@@ -6,6 +6,8 @@ import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.manifestURI;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
@@ -201,8 +203,7 @@ public abstract class AbstractDepositJob implements Runnable {
 		return new File(path);
 	}
 
-	public void recordDepositEvent(Type type, String messageformat,
-			Object... args) {
+	public void recordDepositEvent(Type type, String messageformat, Object... args) {
 		String message = MessageFormat.format(messageformat, args);
 		Element event = getEventLog().logEvent(type, message,
 				this.getDepositPID());
@@ -210,30 +211,20 @@ public abstract class AbstractDepositJob implements Runnable {
 		appendDepositEvent(getDepositPID(), event);
 	}
 
-	public void failJob(Type type, String message, String details) {
+	public void failJob(String message, String details) {
 		log.debug("failed deposit: {}", message);
-		Element event = getEventLog().logEvent(type, message,
-				this.getDepositPID());
-		event = PremisEventLogger.addDetailedOutcome(event, "failed", details,
-				null);
-		appendDepositEvent(getDepositPID(), event);
 		throw new JobFailedException(message);
 	}
 
-	public void failJob(Throwable throwable, Type type, String messageformat,
-			Object... args) {
+	public void failJob(Throwable throwable, String messageformat, Object... args) {
 		String message = MessageFormat.format(messageformat, args);
 		log.debug("failed deposit: {}", message, throwable);
-		Element event = getEventLog().logException(message, throwable);
-		event = PremisEventLogger.addLinkingAgentIdentifier(event,
-				"SIP Processing Job", this.getClass().getName(), "Software");
-		appendDepositEvent(getDepositPID(), event);
 		throw new JobFailedException(message, throwable);
 	}
-	
+
 	protected void verifyRunning() {
 		DepositState state = getDepositStatusFactory().getState(getDepositUUID());
-		
+
 		if (!DepositState.running.equals(state)) {
 			throw new JobInterruptedException("State for job " + getDepositUUID()
 					+ " is no longer running, interrupting");
@@ -261,7 +252,8 @@ public abstract class AbstractDepositJob implements Runnable {
 	}
 
 	/**
-	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist.
+	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist or
+	 * is corrupt.
 	 *
 	 * @param pid
 	 * @param event
@@ -274,30 +266,57 @@ public abstract class AbstractDepositJob implements Runnable {
 			Document dom;
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
-				file.createNewFile();
-				dom = new Document();
-				Element premis = new Element("premis",
-						JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger.getObjectElement(pid));
-				dom.setRootElement(premis);
+				dom = createNewEventsFile(pid, file);
 			} else {
 				// Not appending anything, so return before attempting to load existing file
 				if (event == null)
 					return file;
 
-				dom = new SAXBuilder().build(file);
+				try {
+					dom = new SAXBuilder().build(file);
+				} catch (JDOMException e) {
+					log.warn("Failed to parse existing events file for {}, backing up corrupt log and creating a new log", e);
+					try {
+						Files.move(file.toPath(), Paths.get(file.getAbsolutePath() + ".corrupt"));
+					} catch (IOException e2) {
+						failJob(e2, "Failed to backup corrupt log file {}.", file.getAbsoluteFile());
+					}
+					dom = createNewEventsFile(pid, file);
+				}
 			}
 
-			if (event != null)
+			if (event != null) {
 				dom.getRootElement().addContent(event.detach());
+			}
 
 			try (FileOutputStream out = new FileOutputStream(file, false)) {
 				new XMLOutputter(Format.getPrettyFormat()).output(dom, out);
 			}
 
 			return file;
-		} catch (JDOMException | IOException e1) {
-			throw new Error("Unexpected problem with deposit events file", e1);
+		} catch (IOException e) {
+			failJob(e, "Unexpected problem with deposit events file {}.", file.getAbsoluteFile());
 		}
+
+		return null;
+	}
+
+	/**
+	 * Creates a new PREMIS event log file for the given PID using the provided file instance
+	 *
+	 * @param pid
+	 * @param file
+	 * @return Returns the document representing the created PREMIS event log.
+	 * @throws IOException
+	 */
+	private Document createNewEventsFile(PID pid, File file) throws IOException {
+		file.createNewFile();
+		Document dom = new Document();
+		Element premis = new Element("premis", JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger
+				.getObjectElement(pid));
+		dom.setRootElement(premis);
+
+		return dom;
 	}
 
 	public Model getWritableModel() {

@@ -97,11 +97,11 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			log.debug("NPE", ignored);
 			// no embedded metadata
 		} catch (TransformerException e) {
-			failJob(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS.");
+			failJob(e, "Failed during transform of EPDCX to MODS.");
 		} catch (FileNotFoundException e) {
-			failJob(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS.");
+			failJob(e, "Failed during transform of EPDCX to MODS.");
 		} catch (IOException e) {
-			failJob(e, Type.NORMALIZATION, "Failed during transform of EPDCX to MODS.");
+			failJob(e, "Failed during transform of EPDCX to MODS.");
 		}
 
 		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}", PackagingType.METS_DSPACE_SIP_1.getUri(), PackagingType.BAG_WITH_N3.getUri());

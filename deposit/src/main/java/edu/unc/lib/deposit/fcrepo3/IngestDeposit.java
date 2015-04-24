@@ -34,7 +34,6 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
-import edu.unc.lib.dl.fedora.ObjectExistsException;
 import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
 import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -50,7 +49,6 @@ import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
@@ -225,7 +223,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			// When ingesting, assume that an "object exists" exception is confirmation
 			// that the object exists, rather than an error.
 			boolean confirmExisting;
-			
+
 			if (Boolean.parseBoolean(depositStatus.get(DepositField.isResubmit.name()))) {
 				confirmExisting = true;
 			} else {
@@ -261,7 +259,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					verifyRunning();
 				}
 			} catch (DepositException e) {
-				failJob(e, Type.INGESTION, e.getLocalizedMessage(), ingestPid);
+				failJob(e, e.getLocalizedMessage(), ingestPid);
 				return;
 			}
 

@@ -104,9 +104,9 @@ public class VirusScanJob extends AbstractDepositJob {
 					storageURI = getStages().getStorageURI(manifestURI);
 				}
 			} catch (URISyntaxException e) {
-				failJob(e, Type.VIRUS_CHECK, "Unable to parse manifest URI: {0}", href.getValue());
+				failJob(e, "Unable to parse manifest URI: {0}", href.getValue());
 			} catch (StagingException e) {
-				failJob(e, Type.VIRUS_CHECK, "Unable to resolve staging location for file: {0}", href.getValue());
+				failJob(e, "Unable to resolve staging location for file: {0}", href.getValue());
 			}
 			if (storageURI.getScheme() == null
 					|| storageURI.getScheme().contains("file")) {
@@ -153,10 +153,10 @@ public class VirusScanJob extends AbstractDepositJob {
 			for(String uri : failures.keySet()) {
 				sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
 			}
-			failJob(Type.VIRUS_CHECK, failures.size() + " virus check(s) failed.", sb.toString());
+			failJob(failures.size() + " virus check(s) failed.", sb.toString());
 		} else {
 			if (scannedObjects != hrefs.size()) {
-				failJob(Type.VIRUS_CHECK, "Virus scan job did not attempt to scan all files.",
+				failJob("Virus scan job did not attempt to scan all files.",
 						(hrefs.size() - scannedObjects) + " objects were not scanned.");
 			}
 			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", scannedObjects);

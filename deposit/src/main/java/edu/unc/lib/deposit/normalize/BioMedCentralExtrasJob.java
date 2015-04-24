@@ -73,10 +73,10 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob {
 			aggregate = model.getBag(ni.next().asResource());
 			ni.close();
 			if(!model.contains(aggregate, hasModel, aggregateModel)) {
-				failJob(Type.NORMALIZATION, "Cannot find aggregate work.", null);
+				failJob("Cannot find aggregate work.", null);
 			}
 		} catch(NoSuchElementException e) {
-			failJob(e, Type.NORMALIZATION, "Cannot find top contents of deposit.");
+			failJob(e, "Cannot find top contents of deposit.");
 		}
 		log.debug("identified aggregate {}", aggregate);
 
@@ -153,7 +153,7 @@ public class BioMedCentralExtrasJob extends AbstractDepositJob {
 					}
 				}
 			} catch (Exception e) {
-				failJob(e, Type.NORMALIZATION, "Cannot extract metadata from BioMed Central article XML.");
+				failJob(e, "Cannot extract metadata from BioMed Central article XML.");
 			}
 		}
 

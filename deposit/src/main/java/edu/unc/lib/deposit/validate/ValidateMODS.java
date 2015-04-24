@@ -125,7 +125,7 @@ public class ValidateMODS extends AbstractDepositJob {
 
 		if((invalidVocab + invalidXSD) > 0) {
 			String message = MessageFormat.format("{0} invalid against XSD; {1} invalid against vocabularies", invalidXSD, invalidVocab);
-			failJob(Type.VALIDATION, "Some descriptive metadata (MODS) did not meet requirements.", message);
+			failJob("Some descriptive metadata (MODS) did not meet requirements.", message);
 		} else {
 			recordDepositEvent(Type.VALIDATION, "{0} MODS records validated", count);
 		}
