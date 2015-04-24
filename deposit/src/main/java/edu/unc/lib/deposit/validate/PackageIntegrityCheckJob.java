@@ -14,7 +14,6 @@ import java.util.Map;
 import org.apache.commons.codec.binary.Hex;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class PackageIntegrityCheckJob extends AbstractDepositJob {
@@ -27,11 +26,12 @@ public class PackageIntegrityCheckJob extends AbstractDepositJob {
 	public PackageIntegrityCheckJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
-	
+
 	public PackageIntegrityCheckJob() {
 		super();
 	};
 
+	@Override
 	public void runJob() {
 		Map<String, String> status = getDepositStatus();
 		String md5 = status.get(DepositField.depositMd5.name());
@@ -54,7 +54,7 @@ public class PackageIntegrityCheckJob extends AbstractDepositJob {
 			String computed = String.valueOf(Hex.encodeHex(digest));
 			if(!md5.equals(computed)) {
 				String msg = MessageFormat.format("The computed checksum ({1}) did not match the one provided ({0}) for \"{2}\".", md5, computed, file);
-				failJob(Type.FIXITY_CHECK, "The deposit file \""+file+"\" was corrupted during submission or upload.", msg);
+				failJob("The deposit file \"" + file + "\" was corrupted during submission or upload.", msg);
 			}
 		}
 	}

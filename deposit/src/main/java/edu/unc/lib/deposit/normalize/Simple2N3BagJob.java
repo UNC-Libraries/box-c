@@ -109,7 +109,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 	private void populateSimple(Model model, Resource primaryResource, String alabel, String filename) {
 		File contentFile = new File(this.getDataDirectory(), filename);
 		if (!contentFile.exists()) {
-			failJob(Type.NORMALIZATION, "Failed to find upload file for simple deposit: " + filename,
+			failJob("Failed to find upload file for simple deposit: " + filename,
 					contentFile.getAbsolutePath());
 		}
 
