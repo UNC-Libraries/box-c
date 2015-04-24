@@ -53,6 +53,7 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
 import org.springframework.ws.client.WebServiceIOException;
@@ -604,20 +605,29 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public void modifyDatastream(PID pid, String dsid, String message,
 			String lastModifiedDate, byte[] content) throws FedoraException {
+		
+		// PutMethod ignores query parameters, so put them in the URI:
+		
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.getFedoraContextUrl());
+		builder.pathSegment("objects");
+		builder.pathSegment(pid.getPid());
+		builder.pathSegment("datastreams");
+		builder.pathSegment(dsid);
 
-		PutMethod method = new PutMethod(this.getFedoraContextUrl() + "/objects/" + pid.getPid() + "/datastreams/" + dsid);
-		method.setRequestEntity(new ByteArrayRequestEntity(content));
-
-		HttpMethodParams params = method.getParams();
 		if (message != null) {
-			params.setParameter("logMessage", message);
+			builder.queryParam("logMessage", message);
 		}
+		
 		if (lastModifiedDate != null) {
-			params.setParameter("lastModifiedDate", lastModifiedDate);
+			builder.queryParam("lastModifiedDate", lastModifiedDate);
 		}
+		
+		PutMethod method = new PutMethod(builder.build().encode().toUriString());
+		method.setRequestEntity(new ByteArrayRequestEntity(content));
 
 		try {
 			int response = httpClient.executeMethod(method);
+			
 			if (response == 409) {
 				throw new OptimisticLockException("Datastream " + dsid + " on object " + pid
 						+ " has been modified more recently than the specified last modified date");
@@ -627,6 +637,7 @@ public class ManagementClient extends WebServiceTemplate {
 		} finally {
 			method.releaseConnection();
 		}
+		
 	}
 
 	public String modifyObject(PID pid, String label, String ownerid, State state, String message)
