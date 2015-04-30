@@ -372,6 +372,13 @@ public class DepositSupervisor implements WorkerListener {
 				
 				if (ex != null) {
 					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed with exception", ex);
+					
+					if (ex instanceof JobFailedException) {
+						String details = ((JobFailedException) ex).getDetails();
+						if (details != null) {
+							LOG.error("Details for failed job " + jobUUID + " in deposit " + depositUUID + ": " + details);
+						}
+					}
 				} else {
 					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed");
 				}
