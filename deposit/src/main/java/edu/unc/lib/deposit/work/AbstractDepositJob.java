@@ -213,7 +213,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	public void failJob(String message, String details) {
 		log.debug("failed deposit: {}", message);
-		throw new JobFailedException(message);
+		throw new JobFailedException(message, details);
 	}
 
 	public void failJob(Throwable throwable, String messageformat, Object... args) {
