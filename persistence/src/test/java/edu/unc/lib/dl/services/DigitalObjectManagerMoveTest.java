@@ -65,6 +65,7 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream.Header;
 import edu.unc.lib.dl.fedora.types.Property;
@@ -120,7 +121,6 @@ public class DigitalObjectManagerMoveTest {
 				Arrays.asList(new PID("uuid:Collections"), new PID("uuid:collection")));
 
 		when(tripleStoreQueryService.lookupContentModels(destPID)).thenReturn(Arrays.asList(CONTAINER.getURI()));
-		when(tripleStoreQueryService.hasDisseminator(any(PID.class), eq(RELS_EXT.getName()))).thenReturn(true);
 
 		InputStream relsExtStream2 = this.getClass().getResourceAsStream("/fedora/containerRELSEXT2.xml");
 		MIMETypedStream mts2 = mock(MIMETypedStream.class);
@@ -128,6 +128,10 @@ public class DigitalObjectManagerMoveTest {
 		when(mts2.getStream()).thenReturn(IOUtils.toByteArray(relsExtStream2));
 		when(accessClient.getDatastreamDissemination(eq(destPID), eq(RELS_EXT.getName()), anyString())).thenReturn(
 				mts2);
+		
+		Datastream ds = mock(Datastream.class);
+		when(ds.getCreateDate()).thenReturn(new String());
+		when(managementClient.getDatastream(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(ds);
 
 		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.addRemoveContents)))
 				.thenReturn(true);
@@ -195,6 +199,10 @@ public class DigitalObjectManagerMoveTest {
 
 		when(accessClient.getDatastreamDissemination(eq(targetPID), eq(RELS_EXT.getName()), anyString())).thenAnswer(
 				sourceRelsExtAnswer);
+		
+		Datastream ds = mock(Datastream.class);
+		when(ds.getCreateDate()).thenReturn(new String());
+		when(managementClient.getDatastream(eq(targetPID), eq(RELS_EXT.getName()))).thenReturn(ds);
 	}
 
 	@Test
@@ -246,12 +254,15 @@ public class DigitalObjectManagerMoveTest {
 	}
 
 	private void makeDatastream(String contentPath, String datastream, PID pid) throws Exception {
-		when(tripleStoreQueryService.hasDisseminator(eq(pid), eq(datastream))).thenReturn(true);
 		InputStream mdContentsStream = this.getClass().getResourceAsStream(contentPath);
 		MIMETypedStream mts = mock(MIMETypedStream.class);
 		when(mts.getHeader()).thenReturn(dsHeaders);
 		when(mts.getStream()).thenReturn(IOUtils.toByteArray(mdContentsStream));
 		when(accessClient.getDatastreamDissemination(eq(pid), eq(datastream), anyString())).thenReturn(mts);
+
+		Datastream ds = mock(Datastream.class);
+		when(ds.getCreateDate()).thenReturn(new String());
+		when(managementClient.getDatastream(eq(pid), eq(datastream))).thenReturn(ds);
 	}
 
 	@Test
@@ -296,6 +307,10 @@ public class DigitalObjectManagerMoveTest {
 
 		when(accessClient.getDatastreamDissemination(eq(source1PID), eq(RELS_EXT.getName()), anyString()))
 				.thenAnswer(sourceRelsExtAnswer);
+
+		Datastream ds = mock(Datastream.class);
+		when(ds.getCreateDate()).thenReturn(new String());
+		when(managementClient.getDatastream(eq(source1PID), eq(RELS_EXT.getName()))).thenReturn(ds);
 
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
@@ -407,8 +422,8 @@ public class DigitalObjectManagerMoveTest {
 
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
 				.thenReturn(null).thenReturn(null);
-
-		when(tripleStoreQueryService.hasDisseminator(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(false);
+		
+		when(managementClient.getDatastream(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(null);
 
 		try {
 			digitalMan.move(moving, destPID, "user", "");
@@ -458,9 +473,11 @@ public class DigitalObjectManagerMoveTest {
 
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
 				.thenReturn(destPID).thenReturn(destPID);
-
-		when(tripleStoreQueryService.hasDisseminator(any(PID.class), eq(RELS_EXT.getName()))).thenReturn(true)
-				.thenReturn(true).thenReturn(false).thenReturn(true);
+		
+		Datastream ds = mock(Datastream.class);
+		when(ds.getCreateDate()).thenReturn(new String());
+		when(managementClient.getDatastream(any(PID.class), eq(RELS_EXT.getName())))
+				.thenReturn(ds).thenReturn(ds).thenReturn(null).thenReturn(ds);
 
 		try {
 			digitalMan.move(moving, destPID, "user", "");
