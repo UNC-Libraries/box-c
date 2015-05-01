@@ -18,7 +18,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 				viewformat: 'MM/DD/YYYY',
 				template: 'MM/DD/YYYY',
 				clear: true,
-				onblur:'ignore',
+				onblur:'submit',
 				combodate: {
 					minYear: moment().year(),
 					maxYear: moment().add('years', 75).year(),
@@ -35,6 +35,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 			}).on('hidden', function(e, reason) {
 				if(reason === 'cancel') {
 			        $(".add_embargo", this.element).editable('setValue', null);
+			        self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
 					return;
 			    } 
 			    

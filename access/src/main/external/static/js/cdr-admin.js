@@ -1502,7 +1502,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 				viewformat: 'MM/DD/YYYY',
 				template: 'MM/DD/YYYY',
 				clear: true,
-				onblur:'ignore',
+				onblur:'submit',
 				combodate: {
 					minYear: moment().year(),
 					maxYear: moment().add('years', 75).year(),
@@ -1519,6 +1519,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			}).on('hidden', function(e, reason) {
 				if(reason === 'cancel') {
 			        $(".add_embargo", this.element).editable('setValue', null);
+			        self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
 					return;
 			    } 
 			    
@@ -1607,6 +1608,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			$('.update_button').click(function(){
 				var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
 				var overlay = new ModalLoadingOverlay(container);
+				console.log(self.xml2Str(self.accessControlModel));
 				$.ajax({
 					url : self.options.updateUrl,
 					type : 'PUT',
