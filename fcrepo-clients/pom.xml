@@ -120,9 +120,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>sunxacml</artifactId>
-			<version>1.2-PATCHED</version>
+			<groupId>org.jboss.security</groupId>
+			<artifactId>jboss-sunxacml</artifactId>
+			<version>${xacml.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

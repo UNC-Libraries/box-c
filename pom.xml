@@ -80,6 +80,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jargon.version>3.3.1</jargon.version>
+		<xacml.version>2.0.9.Final</xacml.version>
 	</properties>
 
 	<distributionManagement>
@@ -346,16 +347,6 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>duraspace</id>
-			<name>Duraspace Public Repo</name>
-			<url>https://m2.duraspace.org/content/repositories/public/</url>
-		</repository>
-		<repository>
-			<id>duraspace-releases</id>
-			<name>Duraspace Releases</name>
-			<url>https://m2.duraspace.org/content/repositories/releases/</url>
-		</repository>
-		<repository>
 			<id>java-net-maven2-repository</id>
 			<name>Java.net Maven 2 Repository</name>
 			<url>http://download.java.net/maven/2</url>
@@ -374,6 +365,16 @@
 			<id>renci-releases</id>
 			<name>RENCI Maven repository</name>
 			<url>http://ci-dev.renci.org/nexus/content/repositories/releases/</url>
+		</repository>
+		<repository>
+			<id>jboss</id>
+			<url>https://repository.jboss.org/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 
