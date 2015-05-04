@@ -33,9 +33,9 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 				var formattedDate = moment(params.newValue).format('YYYY-MM-DD[T]HH:mm:ss');
 				self.addAttribute(self.accessControlModel, 'embargo-until', formattedDate, self.aclNS, self.aclPrefix);
 			}).on('hidden', function(e, reason) {
-				if(reason === 'cancel') {
+				if (reason === 'cancel') {
 					$(".add_embargo", this.element).editable('setValue', null);
-			        self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
+					self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
 					return;
 			    } 
 			    
