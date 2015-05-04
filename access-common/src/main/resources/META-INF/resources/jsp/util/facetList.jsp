@@ -59,9 +59,12 @@
 	<c:set var="additionalLimitActions" value="${param.additionalLimitActions}|"/>
 </c:if>
 <c:forEach items="${facetFields}" var="facetField">
+	<c:set var="facetLimit">
+		<c:if test="${not empty searchState.facetLimits[facetField.name]}">${searchState.facetLimits[facetField.name]}</c:if>
+	</c:set>
 	<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}">
 		<c:choose>
-			<c:when test="${empty facetField.values && not empty searchState.facetLimits[facetField.name] && searchState.facetLimits[facetField.name] == 0}">
+			<c:when test="${empty facetField.values && not empty facetLimit}">
 				<c:url var="facetOpenUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 					<c:param name="a.${searchSettings.actions['REMOVE_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}'/>
 				</c:url>
@@ -89,7 +92,7 @@
 			<ul id="facet_field_<c:out value="${searchSettings.searchFieldParams[facetField.name]}_list" />" class="facets">
 				<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
 					<c:choose>
-						<c:when test="${status.count == searchSettings.facetsPerGroup && (empty searchState.facetLimits[facetField.name] || status.count == searchState.facetLimits[facetField.name])}">
+						<c:when test="${status.count == searchSettings.facetsPerGroup && (empty facetLimit || status.count == facetLimit)}">
 							<c:url var="facetExpandUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 								<c:param name="a.${searchSettings.actions['SET_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}:${searchSettings.expandedFacetsPerGroup}'/>
 							</c:url>
@@ -116,9 +119,9 @@
 									<a class="res_link refresh_facet" href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
 								</li>
 							</c:if>
-							<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty searchState.facetLimits[facetValue.fieldName]}">
+							<c:if test="${status.last && status.count >= searchSettings.facetsPerGroup && not empty facetLimit}">
 								<c:url var="facetReduceUrl" scope="page" value='${queryPath}${searchStateParameters}'>
-									<c:param name="a.${searchSettings.actions['REMOVE_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetValue.fieldName]}'/>
+									<c:param name="a.${searchSettings.actions['REMOVE_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}'/>
 								</c:url>
 								<li class="facet_view_expand_toggle"><a href="<c:out value="${facetReduceUrl}"/>">...Show less</a></li>
 							</c:if>

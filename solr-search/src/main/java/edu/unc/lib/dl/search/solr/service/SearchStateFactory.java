@@ -32,8 +32,10 @@ import edu.unc.lib.dl.search.solr.exception.InvalidFacetException;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
+import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
@@ -46,6 +48,8 @@ public class SearchStateFactory {
 	private SearchSettings searchSettings;
 	@Autowired
 	private FacetFieldFactory facetFieldFactory;
+	@Autowired
+	private FacetFieldUtil facetFieldUtil;
 	
 	public SearchStateFactory(){
 		
@@ -71,8 +75,8 @@ public class SearchStateFactory {
 	}
 	
 	/**
-	 * Creates and returns a SearchState object starting from the default options for a 
-	 * collection browse search, and then populating it with the search state. 
+	 * Creates and returns a SearchState object starting from the default options for a
+	 * collection browse search, and then populating it with the search state.
 	 * from the http request.
 	 * @param request
 	 * @return SearchState object containing the search state for a collection browse
@@ -93,12 +97,12 @@ public class SearchStateFactory {
 	}
 	
 	/**
-	 * Creates and returns a SearchState object starting from the default options for a 
-	 * normal search, and then populating it with the search state. 
+	 * Creates and returns a SearchState object starting from the default options for a
+	 * normal search, and then populating it with the search state.
 	 * from the http request.
 	 * @param request
 	 * @return SearchState object containing the search state
-	 */	
+	 */
 	public SearchState createSearchState(Map<String,String[]> request){
 		SearchState searchState = createSearchState();
 		populateSearchState(searchState, request);
@@ -147,7 +151,7 @@ public class SearchStateFactory {
 	}
 	
 	/**
-	 * Returns a search state for results listing the containers within a hierarchy. 
+	 * Returns a search state for results listing the containers within a hierarchy.
 	 * @return
 	 */
 	public SearchState createHierarchyListSearchState(){
@@ -223,8 +227,8 @@ public class SearchStateFactory {
 	}
 	
 	/**
-	 * Returns a search state usable for looking up all facet values for the facet field 
-	 * specified.  A base value may be given for the facet being queried, for use in 
+	 * Returns a search state usable for looking up all facet values for the facet field
+	 * specified.  A base value may be given for the facet being queried, for use in
 	 * querying specific tiers in a hierarchical facet.
 	 * @param facetField
 	 * @param baseValue
@@ -286,7 +290,8 @@ public class SearchStateFactory {
 				searchFields.put(key, value);
 			} else if (searchSettings.facetNames.contains(key)) {
 				try {
-					facetFields.put(key, this.facetFieldFactory.createFacet(key, value));
+					GenericFacet facet = this.facetFieldFactory.createFacet(key, value);
+					facetFields.put(facet.getFieldName(), facet);
 				} catch (InvalidFacetException e) {
 					log.debug("Invalid facet " + key + " with value " + value, e);
 				}
@@ -302,7 +307,7 @@ public class SearchStateFactory {
 	
 	
 	/**
-	 * Populates the attributes of the given SearchState object with search state 
+	 * Populates the attributes of the given SearchState object with search state
 	 * parameters retrieved from the request mapping.
 	 * @param searchState SearchState object to populate
 	 * @param request
@@ -315,23 +320,19 @@ public class SearchStateFactory {
 		//retrieve facet limits
 		String parameter = getParameter(request, searchSettings.searchStateParam("FACET_LIMIT_FIELDS"));
 		if (parameter != null){
-			HashMap<String,Integer> facetLimits = new HashMap<String,Integer>();
 			String parameterArray[] = parameter.split("\\|");
 			for (String parameterPair: parameterArray){
 				String parameterPairArray[] = parameterPair.split(":", 2);
 				if (parameterPairArray.length > 1){
-					String fieldKey = searchSettings.searchFieldKey(parameterPairArray[0]);
-					//if a field label is specified, store the facet under it.
-					if (fieldKey != null && searchSettings.facetNames.contains(fieldKey)){
-						try {
-							facetLimits.put(fieldKey, Integer.parseInt(parameterPairArray[1]));
-						} catch (Exception e){
-							log.error("Failed to add facet limit: " + parameterPairArray[1]);
-						}
+					try {
+						facetFieldUtil.setFacetLimit(searchSettings.searchFieldKey(parameterPairArray[0]),
+								Integer.parseInt(parameterPairArray[1]), searchState);
+					} catch (Exception e) {
+						log.warn("Failed to add facet limit {} to field {}", new Object[] { parameterPairArray[0],
+								parameterPairArray[1] }, e);
 					}
 				}
 			}
-			searchState.setFacetLimits(facetLimits);
 		}
 		
 		//Set the base facet limit if one is provided

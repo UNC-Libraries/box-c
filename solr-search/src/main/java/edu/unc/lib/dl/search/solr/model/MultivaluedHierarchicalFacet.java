@@ -42,6 +42,9 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	}
 	
 	private void populateFacetNodes(String facetString) {
+		if (facetString == null)
+			return;
+		
 		String[] tiers = MultivaluedHierarchicalFacetNode.extractFacetParts.split(facetString);
 		if (tiers.length == 0)
 			throw new InvalidHierarchicalFacetException("Empty facet string");
@@ -82,7 +85,7 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	}
 	
 	public MultivaluedHierarchicalFacet(MultivaluedHierarchicalFacet facet) {
-		super((GenericFacet)facet);
+		super(facet);
 		this.displayValue = facet.getDisplayValue();
 		
 		for (HierarchicalFacetNode node: facet.getFacetNodes()) {
@@ -93,6 +96,7 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 
 	public void sortTiers() {
 		Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>(){
+			@Override
 			public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
 				return ((MultivaluedHierarchicalFacetNode)node1).getTiers().size() - ((MultivaluedHierarchicalFacetNode)node2).getTiers().size();
 			}
@@ -133,12 +137,12 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 	
 	public void setDisplayValues(MultivaluedHierarchicalFacet facet) {
 		int startingCount = this.facetNodes.size();
-		String targetJoined = ((MultivaluedHierarchicalFacetNode)this.getLastNode()).joinTiers(false);
+		String targetJoined = this.getLastNode().joinTiers(false);
 		for (HierarchicalFacetNode node: facet.getFacetNodes()) {
 			MultivaluedHierarchicalFacetNode targetNode = (MultivaluedHierarchicalFacetNode)this.getNodeBySearchValue(node.getSearchValue());
 			if (targetNode != null) {
 				log.debug("Adding in display value " + node.getDisplayValue());
-				((MultivaluedHierarchicalFacetNode)targetNode).setDisplayValue(node.getDisplayValue());
+				targetNode.setDisplayValue(node.getDisplayValue());
 			} else {
 				String joined = ((MultivaluedHierarchicalFacetNode)node).joinTiers(false);
 				if (targetJoined.indexOf(joined) == 0) {
