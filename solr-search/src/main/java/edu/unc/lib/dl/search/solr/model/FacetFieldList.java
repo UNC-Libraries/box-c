@@ -67,6 +67,14 @@ public class FacetFieldList extends ArrayList<FacetFieldObject> {
 		return j;
 	}
 
+	@Override
+	public boolean contains(Object facetObject) {
+		if (facetObject instanceof String) {
+			return this.indexOf((String) facetObject) != -1;
+		}
+		return super.contains(facetObject);
+	}
+
 	/**
 	 * Reorders the list of facets according to the order of field names specified in orderedList, using a pseudo bubble
 	 * sort.

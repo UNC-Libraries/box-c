@@ -27,6 +27,7 @@ import org.springframework.stereotype.Component;
 
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
 /**
@@ -40,6 +41,8 @@ public class SearchActionService {
 	private SearchSettings searchSettings;
 	@Autowired
 	private FacetFieldFactory facetFieldFactory;
+	@Autowired
+	private FacetFieldUtil facetFieldUtil;
 	
 	public SearchActionService(){
 	}
@@ -196,7 +199,7 @@ public class SearchActionService {
 			if (key == null)
 				continue;
 			try {
-				searchState.getFacetLimits().put(key, Integer.parseInt(valueArray[1]));
+				facetFieldUtil.setFacetLimit(key, Integer.parseInt(valueArray[1]), searchState);
 			} catch (NumberFormatException e){
 				LOG.error("Failed to perform set facet limit action: " + valueArray[1]);
 			}
@@ -274,7 +277,7 @@ public class SearchActionService {
 	private void resetNavigation(SearchState searchState, String[] values){
 		if (values.length == 0)
 			return;
-		String mode = values[0]; 
+		String mode = values[0];
 		if (mode.equals("search")){
 			searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.getFacetNames()));
 			searchState.setRowsPerPage(searchSettings.defaultPerPage);

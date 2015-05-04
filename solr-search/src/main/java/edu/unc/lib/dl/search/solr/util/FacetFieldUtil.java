@@ -18,18 +18,23 @@ package edu.unc.lib.dl.search.solr.util;
 import java.util.List;
 
 import org.apache.solr.client.solrj.SolrQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacetNode;
+import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 
 public class FacetFieldUtil {
 
 	private SearchSettings searchSettings;
 	private SolrSettings solrSettings;
+	@Autowired
+	private FacetFieldFactory facetFieldFactory;
 
 	/**
 	 * Apply facet restrictions to a solr query based on the type of facet provided
@@ -116,6 +121,12 @@ public class FacetFieldUtil {
 		} else if (MultivaluedHierarchicalFacet.class.equals(facetClass)) {
 			solrQuery.add("f." + solrFieldName + ".facet.prefix", "^");
 		}
+	}
+
+	public void setFacetLimit(String fieldKey, Integer facetLimit, SearchState searchState) {
+		// Create a new facet object for the facet being limited
+		GenericFacet facet = facetFieldFactory.createFacet(fieldKey, null);
+		searchState.getFacetLimits().put(facet.getFieldName(), facetLimit);
 	}
 
 	public void setSearchSettings(SearchSettings searchSettings) {
