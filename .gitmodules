@@ -4,5 +4,7 @@
 [submodule "oai4solr"]
 	url = https://github.com/UNC-Libraries/oai4solr.git
 	branch = dynamic-set
+	path = oai4solr
 [submodule "clamavj"]
 	url = https://github.com/UNC-Libraries/clamavj.git
+	path = clamavj
