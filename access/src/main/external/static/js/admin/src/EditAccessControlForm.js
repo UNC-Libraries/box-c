@@ -18,6 +18,7 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 				viewformat: 'MM/DD/YYYY',
 				template: 'MM/DD/YYYY',
 				clear: true,
+				onblur:'submit',
 				combodate: {
 					minYear: moment().year(),
 					maxYear: moment().add('years', 75).year(),
@@ -31,6 +32,13 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 				}
 				var formattedDate = moment(params.newValue).format('YYYY-MM-DD[T]HH:mm:ss');
 				self.addAttribute(self.accessControlModel, 'embargo-until', formattedDate, self.aclNS, self.aclPrefix);
+			}).on('hidden', function(e, reason) {
+				if (reason === 'cancel') {
+					$(".add_embargo", this.element).editable('setValue', null);
+					self.removeAttribute(self.accessControlModel, 'embargo-until', self.aclPrefix);
+					return;
+			    } 
+			    
 			});
 			
 			$(".roles_granted .remove_group", this.element).hide();
@@ -114,25 +122,28 @@ define('EditAccessControlForm', [ 'jquery', 'jquery-ui', 'ModalLoadingOverlay', 
 			
 			var containing = this.options.containingDialog;
 			$('.update_button').click(function(){
-				var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
-				var overlay = new ModalLoadingOverlay(container);
-				$.ajax({
-					url : self.options.updateUrl,
-					type : 'PUT',
-					data : self.xml2Str(self.accessControlModel),
-					success : function(data) {
-						containing.data('can-close', true);
-						overlay.remove();
-						if (self.options.containingDialog != null) {
-							self.options.containingDialog.dialog('close');
+				setTimeout(function() {
+					var container = ((self.options.containingDialog)? self.options.containingDialog : $(body));
+					var overlay = new ModalLoadingOverlay(container);
+					$.ajax({
+						url : self.options.updateUrl,
+						type : 'PUT',
+						data : self.xml2Str(self.accessControlModel),
+						success : function(data) {
+							containing.data('can-close', true);
+							overlay.remove();
+							if (self.options.containingDialog != null) {
+								self.options.containingDialog.dialog('close');
+							}
+							self.alertHandler.alertHandler('success', 'Access control changes saved');
+						},
+						error : function(data) {
+							overlay.remove();
+							self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
 						}
-						self.alertHandler.alertHandler('success', 'Access control changes saved');
-					},
-					error : function(data) {
-						overlay.remove();
-						self.alertHandler.alertHandler('error', 'Failed to save changes: ' + data);
-					}
-				});
+					});
+				}, 0);
+				
 			});
 			
 			if (this.options.containingDialog) {
