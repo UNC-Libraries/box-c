@@ -73,6 +73,9 @@ public class DepositSupervisor implements WorkerListener {
 	
 	@Autowired
 	private DepositEmailHandler depositEmailHandler;
+	
+	@Autowired
+	private DepositMessageHandler depositMessageHandler;
 
 	public net.greghaines.jesque.Config getJesqueConfig() {
 		return jesqueConfig;
@@ -559,6 +562,7 @@ public class DepositSupervisor implements WorkerListener {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
 			
 			depositEmailHandler.sendDepositResults(depositUUID);
+			depositMessageHandler.sendDepositMessage(depositUUID);
 
 			Client c = makeJesqueClient();
 			// schedule cleanup job after the configured delay

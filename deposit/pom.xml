@@ -57,6 +57,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>persistence</artifactId>
+			<version>${cdr.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>net.greghaines</groupId>
 			<artifactId>jesque</artifactId>
 		</dependency>
