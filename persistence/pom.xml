@@ -33,12 +33,6 @@
 			<artifactId>jdom</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>jrdf</groupId>
-			<artifactId>jrdf</artifactId>
-			<version>0.4.1.1</version>
-			<!--TODO <version>0.5.6.3</version>
-		--></dependency>
-		<dependency>
 			<groupId>org.apache.abdera</groupId>
 			<artifactId>abdera-client</artifactId>
 			<version>1.1.1</version>

@@ -53,23 +53,6 @@
 			<version>1.6.1</version>
 			<scope>compile</scope>
 		</dependency>
-		<dependency>
-			<groupId>de.stefanheintz</groupId>
-			<artifactId>logjmxservice</artifactId>
-			<version>1.1.1</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jms</artifactId>
-					<groupId>javax.jms</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 
 		<!-- Tomcat -->
 		<dependency>
@@ -180,23 +163,6 @@
 			<version>3.4.3</version>
 			<type>jar</type>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>de.stefanheintz</groupId>
-			<artifactId>logjmxservice</artifactId>
-			<version>1.1.1</version>
-			<type>jar</type>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jms</artifactId>
-					<groupId>javax.jms</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<!-- Testing -->
