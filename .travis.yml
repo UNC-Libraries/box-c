@@ -1,6 +1,0 @@
----
-language: java
-services:
-  - redis-server
-before_install:
-  - sudo apt-get install clamav
