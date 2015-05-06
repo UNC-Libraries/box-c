@@ -79,22 +79,39 @@
 
 	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
 		<constructor-arg name="workerFactory">
-			<bean id="workerFactory" class="net.greghaines.jesque.worker.WorkerImplFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
 				<constructor-arg name="config" ref="jesqueConfig" />
 				<constructor-arg name="queues">
 					<util:list>
 						<value>PREPARE</value>
+						<value>DELAYED_PREPARE</value>
 					</util:list>
 				</constructor-arg>
 				<constructor-arg ref="jobFactory" />
 			</bean>
 		</constructor-arg>
-		<constructor-arg name="numWorkers" value="5" />
+		<constructor-arg name="numWorkers" value="${workers.num:4}" />
+	</bean>
+	
+	<bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>CDRMETSCONVERT</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.mets.num:1}" />
 	</bean>
 
 	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
 		<property name="jesqueConfig" ref="jesqueConfig"/>
 		<property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
+		<property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
 	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.deposit.work.SpringJobFactory" />
@@ -110,6 +127,12 @@
 		<property name="fromAddress" value="${from.email:no-reply@example.com}" />
 		<property name="htmlTemplate" ref="htmlTemplate" />
 		<property name="textTemplate" ref="textTemplate" />
+	</bean>
+	
+	<bean id="depositMessageHandler" class="edu.unc.lib.deposit.work.DepositMessageHandler" >
+		<property name="depositStatusFactory" ref="depositStatusFactory" />
+		<property name="operationsMessageSender" ref="operationsMessageSender" />
+		<property name="dataset" ref="dataSet" />
 	</bean>
 
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
@@ -139,7 +162,7 @@
 	</bean>
 
 	<bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
-		factory-method="newInstance">
+		factory-method="newInstance" scope="prototype">
 		<constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
 	</bean>
 
@@ -170,7 +193,7 @@
 	</bean>
 
 	<bean id="transformerFactory" class="javax.xml.transform.TransformerFactory"
-		factory-method="newInstance">
+		factory-method="newInstance" scope="prototype">
 		<property name="uRIResolver">
 			<bean class="edu.unc.lib.dl.xml.ClasspathURIResolver">
 			</bean>
@@ -178,7 +201,7 @@
 	</bean>
 
 	<bean id="epdcx2modsTransformer" factory-bean="transformerFactory"
-		factory-method="newTransformer">
+		factory-method="newTransformer" scope="prototype">
 		<constructor-arg>
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>
@@ -189,7 +212,7 @@
 	</bean>
 	
 	<bean id="proquest2ModsTransformer" factory-bean="transformerFactory"
-		factory-method="newTransformer">
+		factory-method="newTransformer" scope="prototype">
 		<constructor-arg>
 			<bean class="org.springframework.xml.transform.ResourceSource">
 				<constructor-arg>
@@ -203,6 +226,10 @@
 		<property name="templateLoader"> <bean class="freemarker.cache.ClassTemplateLoader"> 
 		<constructor-arg index="0" type="java.lang.Class" value="edu.unc.lib.deposit.clean.MailNotifier"/> 
 		<constructor-arg index="1" value=""/> </bean> </property> </bean> -->
+
+	<bean id="PrepareResubmitJob" class="edu.unc.lib.deposit.PrepareResubmitJob"
+		scope="prototype">
+	</bean>
 
 	<bean id="PackageIntegrityCheckJob" class="edu.unc.lib.deposit.validate.PackageIntegrityCheckJob"
 		scope="prototype">
@@ -236,14 +263,18 @@
 	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob"
 		scope="prototype">
 	</bean>
+	
+	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
+		scope="prototype">
+	</bean>
 
 	<bean id="VirusScanJob" class="edu.unc.lib.deposit.validate.VirusScanJob"
 		scope="prototype">
 		<property name="clamScan">
 			<bean class="com.philvarner.clamavj.ClamScan">
-				<constructor-arg type="String" value="${clamd.host:localhost}" />
-				<constructor-arg type="int" value="${clamd.port:3310}" />
-				<constructor-arg type="int" value="${clamd.timeout:60000}" />
+				<constructor-arg type="String" value="${clamd.host:localhost}" index="0" />
+				<constructor-arg type="int" value="${clamd.port:3310}" index="1" />
+				<constructor-arg type="int" value="${clamd.timeout:60000}" index="2" />
 			</bean>
 		</property>
 	</bean>
@@ -281,29 +312,22 @@
 	<bean id="MakeFOXML" class="edu.unc.lib.deposit.fcrepo3.MakeFOXML"
 		scope="prototype">
 	</bean>
-	
-	<bean id="deptUtil" class="edu.unc.lib.dl.xml.DepartmentOntologyUtil">
-	</bean>
-	
-	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
-		scope="prototype">
+
+	<!-- a pooling based JMS provider -->
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL">
+					<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
+				</property>
+			</bean>
+		</property>
 	</bean>
 
 	<bean id="jmsContainer"
 		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-		<property name="connectionFactory">
-			<!-- a pooling based JMS provider -->
-			<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-				destroy-method="stop">
-				<property name="connectionFactory">
-					<bean class="org.apache.activemq.ActiveMQConnectionFactory">
-						<property name="brokerURL">
-							<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
-						</property>
-					</bean>
-				</property>
-			</bean>
-		</property>
+		<property name="connectionFactory" ref="jmsFactory"/>
 		<property name="destinationName" value="fedora.apim.update" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
@@ -311,6 +335,16 @@
 	</bean>
 
 	<bean name="jobForwardingJMSListener" class="edu.unc.lib.dl.fedora.JobForwardingJMSListener" />
+	
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
+	
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
 
 	<bean id="IngestDeposit" class="edu.unc.lib.deposit.fcrepo3.IngestDeposit"
 		scope="prototype">
@@ -327,20 +361,20 @@
 	<bean id="htmlTemplate" factory-bean="mustacheCompiler"
 		factory-method="compile">
 		<constructor-arg>
-			<bean class="java.io.FileReader">
-				<constructor-arg type="java.io.File" value="classpath:email_html.txt" />
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="classpath:email_html.txt" />
 			</bean>
 		</constructor-arg>
 	</bean>
 	<bean id="textTemplate" factory-bean="mustacheCompiler"
 		factory-method="compile">
 		<constructor-arg>
-			<bean class="java.io.FileReader">
-				<constructor-arg type="java.io.File" value="${deposit.email.template:classpath:email_text.txt}" />
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="${deposit.email.template:classpath:email_text.txt}" />
 			</bean>
 		</constructor-arg>
 	</bean>
-	
+
 	<bean id="CleanupDepositJob" class="edu.unc.lib.deposit.CleanupDepositJob"
 		scope="prototype">
 		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
