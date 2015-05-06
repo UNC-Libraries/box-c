@@ -36,6 +36,9 @@
 	<bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
 		<property name="searchSettings" ref="searchSettings" />
 	</bean>
+	<bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
+		<property name="searchSettings" ref="searchSettings" />
+	</bean>
 	<bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">
 	</bean>
 	<bean id="searchStateUtil" class="edu.unc.lib.dl.search.solr.util.SearchStateUtil">
