@@ -135,7 +135,6 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					self.$resultTableView.resultTableView("render", data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
-						self.searchMenu.searchMenu("updateFacets", url);
 					}
 					
 					// Modify the public UI link to reflect the currently selected container

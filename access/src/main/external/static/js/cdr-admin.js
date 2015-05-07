@@ -3673,7 +3673,6 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					self.$resultTableView.resultTableView("render", data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
-						self.searchMenu.searchMenu("updateFacets", url);
 					}
 					
 					// Modify the public UI link to reflect the currently selected container
@@ -3796,7 +3795,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					collapsible: true,
 					active: false,
 					beforeActivate: function(event, ui) {
-						if (ui.newPanel.attr('data-href') != null && !ui.newPanel.data('contentLoaded')) {
+						if (ui.newPanel.data('href') != null && !ui.newPanel.data('contentLoaded')) {
 							var isStructureBrowse = (ui.newPanel.attr('id') == "structure_facet");
 							self.updatePanel(ui.newPanel, isStructureBrowse);
 						}
@@ -3844,20 +3843,22 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			}
 			
 			$(".container_id", this.element).val(uuid);
+			
+			this.updateFacets(uuid);
+			
 		},
 		
-		updateFacets : function(url, containerId) {
-			var panel = $(".limits_panel", this.element);
+		updateFacets : function(uuid) {
+			var limitsPanel = $(".limits_panel", this.element);
+			var limitsRegex = /(.*facets)\/?([^\?]+)?(\?.+)?/;
+			var limitsPath = limitsPanel.data("href");
+			var pathParts = limitsPath.match(limitsRegex);
+			var newLimitPath = pathParts[1] + "/" + uuid + pathParts[3];
 			
-			var filters = "";
-			if (url.indexOf("?") != -1) {
-				filters = url.substring(url.indexOf("?") + 1);
-			}
-			panel.attr('data-href', "facets" + (containerId? "/" + containerId : "") 
-					+ "?facetSelect=" + panel.attr('data-facets') + (filters? "&" + filters : ""));
+			limitsPanel.data("href", newLimitPath).removeData("contentLoaded");
 			
-			if (panel.hasClass("ui-accordion-content-active")) {
-				this.updatePanel(panel, false);
+			if (limitsPanel.hasClass("ui-accordion-content-active")) {
+				this.updatePanel(limitsPanel, false);
 			}
 		},
 
@@ -3865,7 +3866,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			var self = this;
 			
 			$.ajax({
-				url : URLUtilities.uriEncodeParameters(panel.attr('data-href')),
+				url : URLUtilities.uriEncodeParameters(panel.data('href')),
 				dataType : isStructureBrowse? 'json' : null,
 				success : function(data) {
 					if (isStructureBrowse) {
