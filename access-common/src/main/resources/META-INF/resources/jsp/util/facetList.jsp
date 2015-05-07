@@ -103,7 +103,7 @@
 								<li>
 									<c:choose>
 										<c:when test="${facetField.name == 'PARENT_COLLECTION'}">
-											<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${fn:substringAfter(facetValue.searchValue, ",")}${searchStateParameters}'>
+											<c:url var="facetActionUrl" scope="page" value='${queryMethod}/${facetValue.searchValue}${searchStateParameters}'>
 												<c:if test='${not empty additionalLimitActions}'>
 													<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}'/>
 												</c:if>
