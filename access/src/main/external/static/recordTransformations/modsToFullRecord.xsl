@@ -336,8 +336,7 @@
 <!-- mods:originInfo dates -->	
 	<xsl:template name="modsOriginDates">
 		<xsl:for-each-group select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
-			<xsl:variable name="groupKey" select="current-grouping-key()"/>
-			
+			<xsl:variable name="groupKey" select="current-grouping-key()"/>	
 			<tr>
 				<th>
 					<xsl:choose>
@@ -548,8 +547,6 @@
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-
-	<!-- mods:location  p.s. why is there uri here?  that isn't a valid mods element. sn March 2015 -->
 	<xsl:template name="modsLocations">
 		<xsl:for-each-group select="*[local-name() = 'location']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
@@ -566,7 +563,7 @@
 				</th><xsl:value-of select="$newline"/>
 				<td>
 					<xsl:for-each select="current-group()">
-						<xsl:for-each select="./*[local-name() = 'url']|*[local-name() = 'uri']|./*[local-name() = 'physicalLocation']">
+						<xsl:for-each select="./*[local-name() = 'url']|./*[local-name() = 'physicalLocation']">
 							<xsl:if test="@displayLabel">
 								<xsl:value-of select="concat(upper-case(substring(@displayLabel,1,1)), substring(@displayLabel,2))"/><xsl:text>: </xsl:text>
 							</xsl:if>
@@ -795,7 +792,7 @@
       				    <xsl:when test="$groupKey = 'succeeding'">
       				        <xsl:attribute name="title">Information about a successor to this resource</xsl:attribute>
       				        <xsl:text>Related:</xsl:text> <br/>
-      				        <xsl:value-of>Suceeding resource</xsl:value-of>
+      				        <xsl:value-of>Succeeding resource</xsl:value-of>
       				    </xsl:when>
       				    <xsl:when test="$groupKey = 'original'">
       				        <xsl:attribute name="title">Information about the original version of this resource</xsl:attribute>
@@ -839,8 +836,7 @@
 						<xsl:otherwise>
 							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
 						</xsl:otherwise>
-					</xsl:choose>
-						
+					</xsl:choose>	
 				</th>
 				<td>
 					<table>
@@ -921,14 +917,12 @@
 				<xsl:call-template name="modsTitles"/>
 			</table>
 		</xsl:if>
-		
 		<xsl:variable name="subject" select="*[local-name() = 'subject']"/>
 		<xsl:if test="boolean($subject)">
 			<table>
 				<xsl:call-template name="modsSubjects"/>
 			</table>
 		</xsl:if>
-		
 		<xsl:variable name="language" select="*[local-name() = 'language']"/>
 		<xsl:variable name="typeOfResource" select="*[local-name() = 'typeOfResource']"/>
 		<xsl:variable name="genre" select="*[local-name() = 'genre']"/>
