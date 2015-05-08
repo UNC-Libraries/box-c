@@ -122,6 +122,12 @@
 		<property name="htmlTemplate" ref="htmlTemplate" />
 		<property name="textTemplate" ref="textTemplate" />
 	</bean>
+	
+	<bean id="depositMessageHandler" class="edu.unc.lib.deposit.work.DepositMessageHandler" >
+		<property name="depositStatusFactory" ref="depositStatusFactory" />
+		<property name="operationsMessageSender" ref="operationsMessageSender" />
+		<property name="dataset" ref="dataSet" />
+	</bean>
 
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />
@@ -349,21 +355,21 @@
 		<property name="collectionsPID" ref="collectionsPid" />
 	</bean>
 
-	<bean id="jmsContainer"
-		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+	<!-- a pooling based JMS provider -->
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+		destroy-method="stop">
 		<property name="connectionFactory">
-			<!-- a pooling based JMS provider -->
-			<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-				destroy-method="stop">
-				<property name="connectionFactory">
-					<bean class="org.apache.activemq.ActiveMQConnectionFactory">
-						<property name="brokerURL">
-							<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
-						</property>
-					</bean>
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL">
+					<value>tcp://${jms.host:localhost}:${jms.port:61617}</value>
 				</property>
 			</bean>
 		</property>
+	</bean>
+
+	<bean id="jmsContainer"
+		class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory"/>
 		<property name="destinationName" value="fedora.apim.update" />
 		<property name="pubSubDomain" value="true" />
 		<property name="messageListener" ref="jobForwardingJMSListener" />
@@ -371,6 +377,16 @@
 	</bean>
 
 	<bean name="jobForwardingJMSListener" class="edu.unc.lib.dl.fedora.JobForwardingJMSListener" />
+	
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
+	
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
 
 	<bean id="IngestDeposit" class="edu.unc.lib.deposit.fcrepo3.IngestDeposit"
 		scope="prototype">
