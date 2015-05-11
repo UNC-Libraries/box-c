@@ -3,6 +3,7 @@ package edu.unc.lib.deposit.fcrepo3;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayDeque;
@@ -65,6 +66,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestDeposit.class);
 
 	private static long COMPLETE_CHECK_DELAY = 500L;
+	
+	private static long CONNECT_EXCEPTION_DELAY = 30000L;
 
 	@Autowired
 	private JobForwardingJMSListener listener;
@@ -396,35 +399,46 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 				URI uri = new URI(ref);
 				// Upload local file reference
 				if (uri.getScheme() == null || uri.getScheme().contains("file")) {
-					try {
-						String path = uri.getPath();
-						File file = getDepositDirectory().toPath().resolve(path).toFile();
 
-						// Make sure the file was inside the deposit directory
-						if (!file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
-							throw new ServiceException("File path was outside the deposit directory");
+					String path = uri.getPath();
+					File file = getDepositDirectory().toPath().resolve(path).toFile();
+
+					// Make sure the file was inside the deposit directory
+					if (!file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
+						throw new DepositException("File path was outside the deposit directory");
+					}
+
+					repeatUpload: while (true) {
+						try {
+							if (!file.exists()) {
+								throw new IOException("File not found: " + ref);
+							}
+	
+							log.debug("uploading " + file.getPath());
+							newref = client.upload(file);
+	
+							cLocation.setAttribute("REF", newref);
+							break repeatUpload;
+						} catch (FedoraTimeoutException e) {
+							log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);
+							throw e;
+						} catch (IOException e) {
+							throw new DepositException("Data file missing: " + ref, e);
+						} catch (ServiceException e) {
+							if (e.getCause() instanceof ConnectException) {
+								log.warn("Unable to connect to Fedora to upload {}, retrying after a delay", uri.getPath());
+								Thread.sleep(CONNECT_EXCEPTION_DELAY);
+							} else {
+								throw new DepositException("Problem uploading file: " + ref, e);
+							}
 						}
-
-						if (!file.exists()) {
-							throw new IOException("File not found: " + ref);
-						}
-
-						log.debug("uploading " + file.getPath());
-						newref = client.upload(file);
-
-						cLocation.setAttribute("REF", newref);
-					} catch (FedoraTimeoutException e) {
-						log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);
-						throw e;
-					} catch (IOException e) {
-						throw new DepositException("Data file missing: " + ref, e);
-					} catch (ServiceException e) {
-						throw new DepositException("Problem uploading file: " + ref, e);
 					}
 				} else {
 					continue;
 				}
 			} catch (URISyntaxException e) {
+				throw new DepositException("Bad URI syntax for file ref", e);
+			} catch (InterruptedException e) {
 				throw new DepositException("Bad URI syntax for file ref", e);
 			}
 			log.debug("uploaded " + ref + " to Fedora " + newref + " for " + pid);
