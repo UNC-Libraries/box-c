@@ -768,6 +768,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 			SOAPMessage message = messageFactory.createMessage();
 			message.getMimeHeaders().setHeader("SOAPAction",
 					"itqlbean:executeQueryToString");
+			message.setProperty(SOAPMessage.CHARACTER_SET_ENCODING, "UTF-16");
 			SOAPBody soapBody = message.getSOAPPart().getEnvelope().getBody();
 			soapBody.addNamespaceDeclaration("xsd",
 					JDOMNamespaceUtil.XSD_NS.getURI());
