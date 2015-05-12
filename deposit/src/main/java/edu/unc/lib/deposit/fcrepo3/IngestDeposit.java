@@ -484,6 +484,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					throw new ServiceException("Attempt to reconnect to Fedora was interrupted.");
 				}
 
+				verifyRunning();
 				if (client.isRepositoryAvailable()) {
 					return;
 				}
