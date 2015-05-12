@@ -230,9 +230,6 @@ public class ObjectAccessControlsBeanTest extends Assert {
 
 		Set<String> groupsByPermission = aclBean.getGroupsByPermission(Permission.viewDescription);
 		assertTrue(groupsByPermission.contains("unc:app:lib:cdr:patron"));
-
-		groupsByPermission = aclBean.getGroupsByPermission(Permission.viewAdminUI);
-		System.out.println(groupsByPermission);
 	}
 
 	@Test
@@ -269,9 +266,6 @@ public class ObjectAccessControlsBeanTest extends Assert {
 		assertTrue(groupsByPermission.contains("unc:app:lib:cdr:patron"));
 		Set<String> listGroups = aclBean.getGroupsByUserRole(UserRole.list);
 		assertNull(listGroups);
-
-		groupsByPermission = aclBean.getGroupsByPermission(Permission.viewAdminUI);
-		System.out.println(groupsByPermission);
 	}
 
 	@Test

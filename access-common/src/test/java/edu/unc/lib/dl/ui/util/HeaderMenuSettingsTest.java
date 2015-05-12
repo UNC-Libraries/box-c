@@ -38,8 +38,6 @@ public class HeaderMenuSettingsTest extends Assert {
 		menuSettings.setProperties(properties);
 		menuSettings.init();
 		
-		System.out.println(menuSettings.getMenuRoot());
-		
 		assertEquals(4, menuSettings.getMenuRoot().getSubMenus().size());
 		
 		HeaderMenu contactMenu = menuSettings.getMenuRoot().getSubMenus().get("about");

@@ -102,8 +102,6 @@ public class DepositReportingUtilTest extends Assert {
 		links = receiptEntry.getLinks(UriRegistry.REL_STATEMENT);
 		assertEquals(1, links.size());
 		assertEquals(config.getSwordPath() + SwordConfigurationImpl.STATE_PATH + "/" + pid.getPid(), links.get(0).getAttributeValue("href"));
-		
-		receiptEntry.writeTo(System.out);
 	}
 	
 	@Test

@@ -53,7 +53,6 @@ public class SolrSettingsTest extends Assert {
 	@Test
 	public void tokenizeSearchTermsContainingQuote() {
 		List<String> tokens = SolrSettings.getSearchTermFragments("\"Level 1, 0-6\\\" BS\"");
-		System.out.println(tokens.get(0));
 		assertEquals("\"Level\\ 1,\\ 0\\-6\\\"\\ BS\"", tokens.get(0));
 		assertEquals(1, tokens.size());
 	}

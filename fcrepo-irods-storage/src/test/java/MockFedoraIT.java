@@ -81,7 +81,6 @@ public class MockFedoraIT extends Assert {
 			e.printStackTrace();
 			fail("got an exception:" + e.getLocalizedMessage());
 		}
-		System.out.println("module loaded");
 		return result;
 	}
 

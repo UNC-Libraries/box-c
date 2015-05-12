@@ -27,13 +27,6 @@ import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.fedora.PID;
 
 public class FailedEnhancementMapTest extends Assert {
-
-	@Test
-	public void test() throws Exception {
-		java.util.List<String> test = Arrays.asList("one", "two");
-		test.set(1, "barf");
-		System.out.println(test);
-	}
 	
 	private FailedEnhancementMap createExampleMap(String baseFolderPath) {
 		FailedEnhancementMap failedMap = new FailedEnhancementMap();
@@ -106,12 +99,9 @@ public class FailedEnhancementMapTest extends Assert {
 			assertTrue(failedMap.contains("uuid:test2", TechnicalMetadataEnhancementService.class.getName()));
 			
 			java.util.Set<String> pidSet = failedMap.getServiceToPID().get(TechnicalMetadataEnhancementService.class.getName()).keySet();
-			System.out.println(pidSet.contains("uuid:test3"));
 			
 			failedMap.add(new PID("uuid:test3"), TechnicalMetadataEnhancementService.class,
 					new EnhancementMessage(), new Exception("Test exception"));
-			
-			System.out.println(pidSet.contains("uuid:test3"));
 			
 		} finally {
 			if (baseFolder != null && baseFolder.exists())

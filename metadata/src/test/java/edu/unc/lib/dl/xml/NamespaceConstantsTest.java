@@ -35,7 +35,6 @@ public class NamespaceConstantsTest extends TestCase {
 	for (Field field : nsClass.getDeclaredFields()) {
 	    if (field.getName().endsWith("URI")) {
 		try {
-		    System.out.println(field.getName());
 		    new URI((String) field.get(null));
 		    assertTrue(true);
 		} catch (URISyntaxException e) {

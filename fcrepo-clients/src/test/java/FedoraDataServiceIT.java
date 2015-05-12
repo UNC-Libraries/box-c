@@ -121,17 +121,11 @@ public class FedoraDataServiceIT {
 	try {
 	    String collPath = this.getTripleStoreQueryService().fetchAllCollectionPaths().get(0);
 	    Assert.assertNotNull("Have to be able to find at least one collection for integration test", collPath);
-	    System.out.println("found collection path: "+collPath);
 	    String pid = this.getTripleStoreQueryService().fetchByRepositoryPath(collPath).getPid();
-	    System.out.println("using test PID:" + pid);
 	    Document d = this.getFedoraDataService().getObjectViewXML(pid);
-	    XMLOutputter out = new XMLOutputter();
-	    out.output(d, System.out);
 	} catch(FedoraException e) {
 	    e.printStackTrace();
 	    fail(e.getLocalizedMessage());
-	} catch(IOException e) {
-	    throw new Error("Error in test code", e);
 	} catch(NullPointerException e) {
 	    fail("NPE, this can be caused by Fedora not having been initialized and/or absence of any collections: "+e.getLocalizedMessage());
 	    e.printStackTrace();

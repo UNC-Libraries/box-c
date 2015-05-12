@@ -71,26 +71,8 @@ public class RELSEXTUIPFilterTest extends Assert {
 		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
 		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
-		//this.outputDatastreams(datastreamMap);
 		assertEquals(11, description.getChildren().size());
 		assertEquals("Very small mp3", description.getChildText("slug", JDOMNamespaceUtil.CDR_NS));
-
 	}
-	
-	protected void outputDatastreams(Map<String, org.jdom2.Element> datastreamMap) throws IOException {
-		if (datastreamMap == null)
-			return;
-		XMLOutputter outputter = new XMLOutputter();
-		java.util.Iterator<java.util.Map.Entry<String, org.jdom2.Element>> it = datastreamMap.entrySet().iterator();
-
-		while (it.hasNext()) {
-			java.util.Map.Entry<String, org.jdom2.Element> element = it.next();
-			if (element.getValue() == null) {
-				System.out.println(element.getKey() + ": null");
-				continue;
-			}
-			System.out.println(element.getKey() + ":\n");
-			outputter.output(element.getValue(), System.out);
-		}
-	}
+  
 }

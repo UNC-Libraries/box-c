@@ -83,7 +83,6 @@ public class DepositGenerator {
 				.format("Generating METS into {4} with {0} files, {1} depth, {2} branching, MODS is {3}",
 						totalRecords, levels, folderBranches, addMODS,
 						output.getAbsolutePath());
-		System.out.println(label);
 		XMLOutputFactory fact = XMLOutputFactory.newInstance();
 		try (OutputStream os = new FileOutputStream(output)) {
 			w = new IndentingXMLStreamWriter(fact.createXMLStreamWriter(os));
@@ -149,8 +148,6 @@ public class DepositGenerator {
 		} catch (XMLStreamException e) {
 			throw new Error(e);
 		}
-		System.out.println("div count: " + divCount);
-		System.out.println("MODS count: " + modsCount);
 		return output.length();
 	}
 

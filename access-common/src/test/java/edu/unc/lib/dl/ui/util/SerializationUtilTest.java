@@ -32,8 +32,6 @@ public class SerializationUtilTest extends Assert {
 		md.setTitle("Test Item");
 		md.setIsPart(Boolean.FALSE);
 		md.setDatastream(Arrays.asList("DATA_FILE|image/jpeg|orig|582753|]"));
-
-		System.out.print(SerializationUtil.objectToJSON(md));
 	}
 
 	@Test
