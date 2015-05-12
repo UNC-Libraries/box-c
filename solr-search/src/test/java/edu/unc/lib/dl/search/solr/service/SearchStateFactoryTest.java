@@ -73,8 +73,6 @@ public class SearchStateFactoryTest extends Assert {
 		
 		sas.executeActions(searchState, parameters);
 		
-		System.out.println(searchState);
-		
 		assertTrue(searchState.getFacets().containsKey("ANCESTOR_PATH"));
 		CutoffFacet facet = (CutoffFacet)searchState.getFacets().get("ANCESTOR_PATH");
 		assertEquals(3, facet.getCutoff().intValue());

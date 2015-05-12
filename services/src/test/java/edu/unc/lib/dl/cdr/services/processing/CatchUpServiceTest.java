@@ -337,7 +337,6 @@ public class CatchUpServiceTest extends Assert {
 		Runnable deactivateRunnable = new Runnable() {
 			public void run(){
 				catchup.deactivate();
-				System.out.println("Deactivated " + System.currentTimeMillis());
 			}
 		};
 		

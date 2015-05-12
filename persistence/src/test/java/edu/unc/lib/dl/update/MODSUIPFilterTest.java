@@ -211,15 +211,6 @@ public class MODSUIPFilterTest extends Assert {
 
 		filter.doFilter(uip);
 
-		for (Object elementObject : uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())
-				.getChildren()) {
-			Element element = (Element) elementObject;
-			System.out.println(element.getName());
-		}
-
-		XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-		outputter.output(uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), System.out);
-
 		assertEquals(incomingChildrenCount,
 				uip.getIncomingData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()).getChildren().size());
 		assertEquals(incomingChildrenCount,

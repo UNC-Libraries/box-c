@@ -67,9 +67,5 @@ public class AtomicUpdateTest {
 		
 		StringWriter writer = new StringWriter();
 		ClientUtils.writeXML(sid, writer);
-		
-		System.out.println(writer.toString());
-		
-		System.out.println(sid.toString());
 	}
 }

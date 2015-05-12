@@ -68,7 +68,6 @@ public class IrodsLlsIT extends Assert {
 			IRODSFileSystem irodsFileSystem = IRODSFileSystem.instance();
 			result = new IrodsIFileSystem(this.bufferSize, irodsFileSystem,
 					this.account);
-			System.out.println("module loaded");
 			return result;
 		} catch (Exception e) {
 			throw new Error("got an exception creating module", e);
@@ -99,13 +98,11 @@ public class IrodsLlsIT extends Assert {
 					filename)) {
 				module.write(testFile, content);
 			}
-			System.out.println("copied big XML into test location");
 
 			// read/parse test file
 			InputStream read = module.read(testFile);
 			SAXParser irodsparser = spf.newSAXParser();
 			irodsparser.parse(read, new DefaultHandler());
-			System.err.println("parsed");
 
 			// delete test file
 			module.delete(testFile);
@@ -142,12 +139,9 @@ public class IrodsLlsIT extends Assert {
 			InputStream content = this.getClass().getResourceAsStream(filename);
 			File testFile = new File(this.getTestPath() + filename);
 			module.write(testFile, content);
-			System.out.println("copied big XML into test location");
 
 			InputStream read = module.read(testFile);
 
-			System.out
-					.println("reading supposedly buffered stream byte by byte");
 			while (read.read() != -1) {
 				continue;
 			}

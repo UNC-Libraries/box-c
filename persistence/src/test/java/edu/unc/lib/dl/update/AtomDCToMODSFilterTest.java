@@ -109,7 +109,6 @@ public class AtomDCToMODSFilterTest extends Assert {
 		filter.doFilter(uip);
 
 		XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-		outputter.output(uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), System.out);
 		log.debug(outputter.outputString(uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())));
 
 		assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));

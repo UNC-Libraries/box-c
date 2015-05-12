@@ -159,7 +159,6 @@ public class EnhancementConductorExceptionHandlingTest extends Assert{
 		Thread.sleep(100L);
 		
 		int numberAborted = enhancementConductor.getFailedPids().size();
-		//System.out.println(enhancementConductor.queuesToString());
 		
 		//Each aborted runnable should have printed a stack trace
 		verify(exception, times(numberAborted)).printStackTrace(any(PrintWriter.class));

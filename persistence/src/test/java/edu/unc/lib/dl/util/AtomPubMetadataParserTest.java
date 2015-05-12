@@ -53,8 +53,6 @@ public class AtomPubMetadataParserTest extends Assert {
 		assertTrue(modsDS.getName().equals("mods"));
 		assertTrue(dcDS.getName().equals("dc"));
 		assertTrue(relsExtDS.getName().equals("RDF"));
-		
-		//this.outputDatastreams(datastreamMap);
 	}
 	
 	@Test
@@ -78,17 +76,6 @@ public class AtomPubMetadataParserTest extends Assert {
 		
 		//Make sure everything has been unwrapped
 		assertTrue(dcDS.getName().equals("dc"));
-	}
-	
-	private void outputDatastreams(Map<String,org.jdom2.Element> datastreamMap) throws IOException {
-		XMLOutputter outputter = new XMLOutputter();
-		java.util.Iterator<java.util.Map.Entry<String,org.jdom2.Element>> it = datastreamMap.entrySet().iterator();
-		
-		while (it.hasNext()){
-			java.util.Map.Entry<String,org.jdom2.Element> element = it.next();
-			System.out.println(element.getKey() + ":\n");
-			outputter.output(element.getValue(), System.out);
-		}
 	}
 	
 	@Test

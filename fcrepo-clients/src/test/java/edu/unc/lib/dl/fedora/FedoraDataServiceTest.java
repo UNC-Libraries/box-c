@@ -161,9 +161,6 @@ public class FedoraDataServiceTest extends Assert {
 
 		Document objectView = dataService.getObjectViewXML(pid);
 		assertNotNull(objectView);
-		/*XMLOutputter outputter = new XMLOutputter();;
-		System.out.println(outputter.outputString(objectView));
-		System.out.println(objectView.getRootElement().getContentSize());*/
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));
 		verify(managementClient).getObjectXML(any(PID.class));
 		verify(tripleStoreQueryService).lookupRepositoryPathInfo(any(PID.class));

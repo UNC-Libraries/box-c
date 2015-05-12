@@ -52,7 +52,6 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 			}
 
 			String xmlstr = xml.toString();
-			System.out.println("test" + xmlstr);
 			new SAXBuilder().build(new StringReader(xmlstr));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
