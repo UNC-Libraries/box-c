@@ -33,6 +33,18 @@ public class ServiceException extends RuntimeException {
 		super(message, cause);
 	}
 
+	public Throwable getRootCause() {
+		Throwable cause = this.getCause();
+		if (cause == null) {
+			return null;
+		}
+		while (cause.getCause() != null) {
+			cause = cause.getCause();
+		}
+
+		return cause;
+	}
+
 	/**
      *
      */

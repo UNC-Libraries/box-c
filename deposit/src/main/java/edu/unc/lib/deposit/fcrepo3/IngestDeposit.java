@@ -3,6 +3,7 @@ package edu.unc.lib.deposit.fcrepo3;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayDeque;
@@ -65,6 +66,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestDeposit.class);
 
 	private static long COMPLETE_CHECK_DELAY = 500L;
+	
+	private static long CONNECT_EXCEPTION_DELAY = 30000L;
 
 	@Autowired
 	private JobForwardingJMSListener listener;
@@ -296,23 +299,17 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		if (!topLevelPids.contains(pid))
 			return;
 
-		try {
-			client.addObjectRelationship(destinationPID, Relationship.contains.getURI().toString(), new PID(pid));
-		} catch (FedoraTimeoutException e) {
-			throw e;
-		} catch (FedoraException e) {
-			throw new DepositException("Failed to add object " + pid + " to destination " + destinationPID.getPid(), e);
-		} catch (ServiceException e) {
-			// If there was a web service transport error, make sure Fedora is still available
-			if (e.getCause() instanceof Exception && ((Exception) e.getCause()) instanceof WebServiceTransportException) {
-				if (!client.isRepositoryAvailable()) {
-					// Exception was because Fedora became unavailable, so rethrow as a timeout exception
-					throw new FedoraTimeoutException("Failed to connect to Fedora while adding object " + pid
-							+ " to its parent");
-				}
+		while (true) {
+			try {
+				client.addObjectRelationship(destinationPID, Relationship.contains.getURI().toString(), new PID(pid));
+				return;
+			} catch (FedoraTimeoutException e) {
+				throw e;
+			} catch (FedoraException e) {
+				throw new DepositException("Failed to add object " + pid + " to destination " + destinationPID.getPid(), e);
+			} catch (ServiceException e) {
+				waitIfConnectionLostOrRethrow(e);
 			}
-
-			throw e;
 		}
 	}
 
@@ -358,8 +355,15 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			XMLOutputter xmlOutput = new XMLOutputter();
 			xmlOutput.output(foxmlDoc, outputStream);
 
-			log.debug("Ingesting foxml for {}", ingestPid);
-			client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
+			while (true) {
+				try {
+					log.debug("Ingesting foxml for {}", ingestPid);
+					client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
+					return;
+				} catch (ServiceException e) {
+					waitIfConnectionLostOrRethrow(e);
+				}
+			}
 
 		} catch (FedoraTimeoutException e) {
 			log.info("Fedora ingest timed out, awaiting ingest confirmation and proceeding with the remainder of the deposit: "
@@ -396,30 +400,34 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 				URI uri = new URI(ref);
 				// Upload local file reference
 				if (uri.getScheme() == null || uri.getScheme().contains("file")) {
-					try {
-						String path = uri.getPath();
-						File file = getDepositDirectory().toPath().resolve(path).toFile();
 
-						// Make sure the file was inside the deposit directory
-						if (!file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
-							throw new ServiceException("File path was outside the deposit directory");
+					String path = uri.getPath();
+					File file = getDepositDirectory().toPath().resolve(path).toFile();
+
+					// Make sure the file was inside the deposit directory
+					if (!file.toPath().toAbsolutePath().startsWith(getDepositDirectory().toPath().toAbsolutePath())) {
+						throw new DepositException("File path was outside the deposit directory");
+					}
+
+					repeatUpload: while (true) {
+						try {
+							if (!file.exists()) {
+								throw new IOException("File not found: " + ref);
+							}
+	
+							log.debug("uploading " + file.getPath());
+							newref = client.upload(file);
+	
+							cLocation.setAttribute("REF", newref);
+							break repeatUpload;
+						} catch (FedoraTimeoutException e) {
+							log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);
+							throw e;
+						} catch (IOException e) {
+							throw new DepositException("Data file missing: " + ref, e);
+						} catch (ServiceException e) {
+							waitIfConnectionLostOrRethrow(e);
 						}
-
-						if (!file.exists()) {
-							throw new IOException("File not found: " + ref);
-						}
-
-						log.debug("uploading " + file.getPath());
-						newref = client.upload(file);
-
-						cLocation.setAttribute("REF", newref);
-					} catch (FedoraTimeoutException e) {
-						log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);
-						throw e;
-					} catch (IOException e) {
-						throw new DepositException("Data file missing: " + ref, e);
-					} catch (ServiceException e) {
-						throw new DepositException("Problem uploading file: " + ref, e);
 					}
 				} else {
 					continue;
@@ -442,12 +450,48 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		destinationPremis.logEvent(PremisEventLogger.Type.INGESTION,
 				"added " + ingestObjectCount + " child object(s) to this container", destinationPID);
-		try {
-			client.writePremisEventsToFedoraObject(destinationPremis, destinationPID);
-		} catch (FedoraException e) {
-			log.error("Failed to update PREMIS events after completing ingest to " + destinationPID.getPid(), e);
-		}
 
+		while (true) {
+			try {
+				client.writePremisEventsToFedoraObject(destinationPremis, destinationPID);
+				return;
+			} catch (FedoraException e) {
+				log.error("Failed to update PREMIS events after completing ingest to " + destinationPID.getPid(), e);
+				return;
+			} catch (ServiceException e) {
+				waitIfConnectionLostOrRethrow(e);
+			}
+		}
+	}
+
+	/**
+	 * If the given exception indicates that it was caused by a lost connection, then wait until
+	 * the repository is available again.  Otherwise, rethrow the exception
+	 *
+	 * @param e
+	 * @throws ServiceException
+	 */
+	private void waitIfConnectionLostOrRethrow(ServiceException e) throws ServiceException {
+
+		Throwable rootCause = e.getRootCause();
+		if (rootCause instanceof ConnectException || rootCause instanceof WebServiceTransportException) {
+
+			while (true) {
+				log.warn("Unable to connect to Fedora repository, waiting before retrying.");
+				try {
+					Thread.sleep(CONNECT_EXCEPTION_DELAY);
+				} catch (InterruptedException e1) {
+					throw new ServiceException("Attempt to reconnect to Fedora was interrupted.");
+				}
+
+				verifyRunning();
+				if (client.isRepositoryAvailable()) {
+					return;
+				}
+			}
+		} else {
+			throw e;
+		}
 	}
 
 	public Queue<String> getIngestPids() {
