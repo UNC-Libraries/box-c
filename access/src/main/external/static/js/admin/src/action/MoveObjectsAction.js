@@ -17,7 +17,6 @@ define('MoveObjectsAction', ['jquery'], function($) {
 		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.title;
 		$.each(this.context.targets, function() {
 			moveData.ids.push(this.pid);
-			this.element.hide();
 		});
 		// Store a reference to the targeted item list since moving happens asynchronously
 		$.ajax({
@@ -27,10 +26,9 @@ define('MoveObjectsAction', ['jquery'], function($) {
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 			success : function(data) {
-				$.each(action.context.targets, function() {
-					this.deleteElement();
-				});
-				action.context.alertHandler.alertHandler("success", "Moved " + action.context.targets.length 
+				action.context.view.moveMonitor.addMove(data.id, moveData.ids, destTitle);
+				
+				action.context.alertHandler.alertHandler("message", "Started moving " + action.context.targets.length 
 						+ " object" + (action.context.targets.length > 1? "s" : "") 
 						+ " to " + destTitle);
 			},

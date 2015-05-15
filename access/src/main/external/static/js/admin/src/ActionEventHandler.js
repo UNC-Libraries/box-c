@@ -9,9 +9,9 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	ActionEventHandler.prototype._create = function(options) {
 		this.options = $.extend({}, defaultOptions, options);
 		
-		this.baseContext = {
+		this.baseContext = $.extend({
 			actionHandler : this
-		};
+		}, options.baseContext? options.baseContext : {});
 	};
 	
 	ActionEventHandler.prototype.addToBaseContext = function(key, value) {

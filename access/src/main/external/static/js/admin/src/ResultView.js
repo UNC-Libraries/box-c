@@ -1,6 +1,6 @@
 define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'MoveActionMonitor', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, MoveActionMonitor, ResultTableView) {
 	$.widget("cdr.resultView", {
 		options : {
 			url : null,
@@ -62,15 +62,20 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					};
 			}
 			
-			var actionHandler = new ActionEventHandler();
+			var actionHandler = new ActionEventHandler({
+				baseContext : {
+					view : this
+				}
+			});
+			this.moveMonitor = new MoveActionMonitor(this.$alertHandler);
+			
+			// Register event to update the window when results have rendered
+			document.addEventListener("cdrResultsRendered", $.proxy(this.postRender, this), false);
 			
 			// Setup the result table component
-			self.$resultTableView = $(".result_area > div", self.element);
-			self.$resultTableView.resultTableView({
+			self.resultTableView = new ResultTableView($(".result_area > div", self.element), {
 				alertHandler : this.$alertHandler,
 				resultFields : self.options.resultFields,
-				postRender : $.proxy(self.postRender, self),
-				postInit : $.proxy(self.resizeResults, self),
 				actionHandler : actionHandler,
 				resultActions : self.options.resultActions,
 				resultTableTemplate : self.options.resultTableTemplate,
@@ -112,7 +117,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		
 		changePage : function(url, updateHistory) {
 			var self = this;
-			var sortData = self.$resultTableView.resultTableView("getCurrentSort");
+			var sortData = self.resultTableView.getCurrentSort();
 			if (sortData["type"]) {
 				var sortParams = sortData.type + "," + (sortData.order? "" : "reverse");
 				url = URLUtilities.setParameter(url, "sort", sortParams);
@@ -132,7 +137,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					if (this.addMenu) {
 						$("#add_menu").remove();
 					}
-					self.$resultTableView.resultTableView("render", data);
+					self.resultTableView.render(data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
 					}
@@ -155,6 +160,11 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		postRender : function (data) {
 			var self = this;
 			
+			self.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
+			if (!self.moveMonitor.active) {
+				self.moveMonitor.activate();
+			}
+			
 			this.$resultView = $('#result_view');
 			this.$columnHeaders = $('.column_headers', this.element);
 			this.$resultHeader = $('.result_header', this.element);
@@ -173,7 +183,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					container : container,
 					containerPath : this.options.containerPath,
 					resultUrl : this.options.resultUrl,
-					resultTableView : $(".result_area > div"),
+					resultTableView : self.resultTableView,
 					selectedId : container? container.id : false,
 				});
 

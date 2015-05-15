@@ -146,6 +146,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 			this.element.switchClass("idle followup", "working", this.options.animateSpeed);
 		} else if ("followup" == state) {
 			this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
+		} else if ("moving" == state) {
+			this.element.addClass("working moving");
 		}
 	};
 	
