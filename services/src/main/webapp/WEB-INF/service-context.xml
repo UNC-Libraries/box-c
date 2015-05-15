@@ -331,27 +331,27 @@
 		<property name="targetMethod" value="rollbackAllFailed" />
 	</bean>
 	
-	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="embargoJobDetail" />
 		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
 	</bean>
 	
-	<bean id="catchUpActivateCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="catchUpActivateCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="catchUpActivateJobDetail" />
 		<property name="cronExpression" value="${scheduled.catchUpActivate.cron}" />
 	</bean>
 	
-	<bean id="catchUpDeactivateCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="catchUpDeactivateCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="catchUpDeactivateJobDetail" />
 		<property name="cronExpression" value="${scheduled.catchUpDeactivate.cron}" />
 	</bean>
 	
-	<bean id="cleanupFinishedEnhancementsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="cleanupFinishedEnhancementsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="cleanupFinishedEnhancementsJobDetail" />
 		<property name="cronExpression" value="${scheduled.cleanupFinishedEnhancements.cron}" />
 	</bean>
 	
-	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
 		<property name="jobDetail" ref="rollbackMoveJobDetail" />
 		<property name="repeatCount" value="0"/>
 		<property name="repeatInterval" value="1"/>
