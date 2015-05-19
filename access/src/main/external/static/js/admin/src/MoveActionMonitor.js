@@ -1,13 +1,14 @@
 define('MoveActionMonitor', [ 'jquery'], function($) {
 
 	var defaultOptions = {
-		updateInterval : 1000
+		updateInterval : 5000
 	};
 	
 	function MoveActionMonitor(alertHandler, options) {
 		this.options = $.extend({}, defaultOptions, options);
 		
 		this.alerts = alertHandler;
+		this.processedCompletes = [];
 	}
 	
 	function setDifference(A, B) {
@@ -54,16 +55,16 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 				var moveData = self.getMoveData();
 				var localMoves = Object.keys(moveData);
 				
-				var remoteMoves = data == null? [] : data;
+				var remoteMoves = data == null? {} : data;
 				
 				try {
+					
+					self.cleanMoveTombstones(moveData, remoteMoves);
 					// Clean up completed move operations
-					var completedMoves = setDifference(localMoves, remoteMoves);
-					self.completeMoves(moveData, completedMoves);
+					self.completeMoves(moveData, remoteMoves);
 				
 					// Indicate new move options
-					var newMoves = setDifference(remoteMoves, localMoves);
-					self.addMoves(newMoves);
+					self.addMoves(remoteMoves);
 					
 				} finally {
 					// Queue up the next run
@@ -76,11 +77,67 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		});
 	};
 	
-	MoveActionMonitor.prototype.completeMoves = function(moveData, completed) {
+	MoveActionMonitor.prototype.cleanMoveTombstones = function(moveData, remoteMoves) {
+		var localInactive = [];
+		for (var moveId in moveData) {
+			if (moveData[moveId].inactive) {
+				localInactive.push(moveId);
+			}
+		}
+		
+		if (localInactive.length == 0)
+			return;
+		
+		// Catch moves that completed in another browser window
+		var unprocessedComplete = setDifference(localInactive, this.processedCompletes);
+		for (var index in unprocessedComplete) {
+			this.cleanupResults(moveData[unprocessedComplete[index]].pids);
+		}
+		
+		// Cleanable tombstones = Inactive Local Moves - Remote Moves
+		var cleanable = setDifference(localInactive, Object.keys(remoteMoves));
+		
+		if (cleanable.length == 0)
+			return;
+		
+		try {
+			for (var index in cleanable) {
+				var cleanableId = cleanable[index];
+				delete moveData[cleanableId];
+				delete this.processedCompletes[cleanableId];
+			}
+		} finally {
+			this.setMoveData(moveData);
+		}
+	};
+	
+	MoveActionMonitor.prototype.completeMoves = function(moveData, remoteMoves) {
+
+		// Get the set of move ids which were in progress according to the server
+		var remoteActive = [];
+		for (var moveId in remoteMoves) {
+			if (remoteMoves[moveId]) {
+				remoteActive.push(moveId);
+			}
+		}
+		
+		// Get the list of move ids considered in progress locally
+		var localActive = [];
+		for (var moveId in moveData) {
+			if (!moveData[moveId].inactive) {
+				localActive.push(moveId);
+			}
+		}
+		
+		var localMoves = Object.keys(moveData);
+		// Completed jobs = Local Moves - Active Remote Moves
+		var completed = setDifference(localActive, remoteActive);
+		
 		if (completed.length == 0)
 			return;
 		
 		try {
+			// Process the set of completed moves to remove them from local memory and inform the user
 			for (var index in completed) {
 				var completedMove = completed[index];
 			
@@ -93,28 +150,48 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 								+ " to " + moveDetails.destinationTitle);
 					}
 				
-					var pids = moveDetails.pids;
-					for (var pindex in pids) {
-						var pid = pids[pindex];
-						var resultEntry = this.resultList.getResultObject(pid);
-						if (resultEntry != null) {
-							resultEntry.deleteElement();
-						}
-					}
+					this.cleanupResults(moveDetails.pids)
 				}
-			
-				delete moveData[completedMove];
+				
+				// If the move is inactive remotely, then store that.  Otherwise, purge the move
+				if (completedMove in remoteMoves) {
+					moveData[completedMove].inactive = true;
+					this.processedCompletes.push(completedMove);
+				} else {
+					delete moveData[completedMove];
+				}
+				
 			}
 		} finally {
 			this.setMoveData(moveData);
 		}
 	};
 	
-	MoveActionMonitor.prototype.addMoves = function(newMoves) {
+	// Removes results with ids in the given list of pids
+	MoveActionMonitor.prototype.cleanupResults = function(completedPids) {
+		for (var pindex in completedPids) {
+			var pid = completedPids[pindex];
+			var resultEntry = this.resultList.getResultObject(pid);
+			if (resultEntry != null) {
+				resultEntry.deleteElement();
+			}
+		}
+	};
+	
+	// Store details newly started moves and mark individual results as being moved
+	MoveActionMonitor.prototype.addMoves = function(remoteMoves) {
 		var self = this;
+		var moveData = this.getMoveData();
+		
+		var localMoves = Object.keys(moveData);
+		var newMoves = setDifference(Object.keys(remoteMoves), localMoves);
+		
+		if (!newMoves || newMoves.length == 0)
+			return;
 		
 		for (var index in newMoves) {
 			var moveId = newMoves[index];
+			var remoteActive = remoteMoves[moveId];
 			
 			$.ajax({
 				url : "/services/api/listMoves/" + moveId + "/objects",
@@ -128,9 +205,17 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 					
 					var moveData = self.getMoveData();
 					try {
+						// Add in new move operations
 						self.setMovePids(moveData, moveId, data);
 					
+						// Mark the items being moved
 						self.markMoving(data);
+						
+						// The operation was inactive at first retrieval, cleanup and discard it
+						if (!remoteActive) {
+							self.cleanupResults(data);
+							moveData[moveId].inactive = true;
+						}
 					} finally {
 						self.setMoveData(moveData);
 					}

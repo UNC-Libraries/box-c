@@ -17,8 +17,10 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
@@ -48,6 +50,8 @@ public class MoveObjectsController {
 	private TripleStoreQueryService tripleStoreQueryService;
 	@Autowired
 	private DigitalObjectManager digitalObjectManager;
+	
+	private final Long TIME_TO_LIVE_AFTER_FINISH = 12000L;
 	
 	private final Map<String, MoveRequest> activeMoveRequests;
 	
@@ -85,7 +89,20 @@ public class MoveObjectsController {
 	@RequestMapping(value = "listMoves", method = RequestMethod.GET)
 	public @ResponseBody
 	Object listMoves() {
-		return this.activeMoveRequests.keySet();
+		Map<String, Boolean> moves = new HashMap<>(this.activeMoveRequests.size());
+		
+		Iterator<Entry<String, MoveRequest>> moveIt = activeMoveRequests.entrySet().iterator();
+		while (moveIt.hasNext()) {
+			Entry<String, MoveRequest> move = moveIt.next();
+			long finishedAt = move.getValue().finishedAt;
+			if (finishedAt == -1 || finishedAt + TIME_TO_LIVE_AFTER_FINISH > System.currentTimeMillis()) {
+				moves.put(move.getKey(), finishedAt == -1);
+			} else {
+				moveIt.remove();
+			}
+		}
+		
+		return moves;
 	}
 
 	@RequestMapping(value = "listMoves/{moveId}/objects", method = RequestMethod.GET)
@@ -112,6 +129,7 @@ public class MoveObjectsController {
 		private List<String> ids;
 		private String user;
 		private String moveId;
+		private long finishedAt = -1;
 
 		public MoveRequest() {
 			moveId = UUID.randomUUID().toString();
@@ -155,6 +173,14 @@ public class MoveObjectsController {
 		public void setMoveId(String moveId) {
 			this.moveId = moveId;
 		}
+
+		public long getFinishedAt() {
+			return finishedAt;
+		}
+
+		public void setFinishedAt(long finishedAt) {
+			this.finishedAt = finishedAt;
+		}
 	}
 
 	public class MoveRunnable implements Runnable {
@@ -182,7 +208,7 @@ public class MoveObjectsController {
 			} catch (IngestException e) {
 				log.error("Failed to move objects to {}", request.getNewParent(), e);
 			} finally {
-				activeMoveRequests.remove(request.getMoveId());
+				request.setFinishedAt(System.currentTimeMillis());
 				GroupsThreadStore.clearStore();
 			}
 		}
