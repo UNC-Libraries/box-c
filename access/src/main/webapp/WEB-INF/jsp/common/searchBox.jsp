@@ -76,7 +76,7 @@
 		<h2 class="fpsearch_browse_separator italics">or</h2>
 		<div class="fpsearch_browse_links">
 			<a href="collections">Browse the Collections</a><br/>
-			<a href="browseDepartments">Browse Departments</a>
+			<a href="browse/depts/">Browse Departments</a>
 		</div>
 	</c:if>
 </div>

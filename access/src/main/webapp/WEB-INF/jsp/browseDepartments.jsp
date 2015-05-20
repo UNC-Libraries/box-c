@@ -22,7 +22,7 @@
 
 <div class="content-wrap">
 <div class="contentarea">
-	<h2>Browse Departments</h2>
+	<h2>Browse Departments <c:if test="${not empty pid}">(<c:out value="${departmentFacet.name}"/>)</c:if></h2>
 </div>
 <div class="onecol light">
 	<ul class="lightest twocol shadowtop browse_departments">

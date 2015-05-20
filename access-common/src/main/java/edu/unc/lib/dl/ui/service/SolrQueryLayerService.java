@@ -123,12 +123,21 @@ public class SolrQueryLayerService extends SolrSearchService {
 		return getSearchResults(searchRequest);
 	}
 
-	public FacetFieldObject getDepartmentList(AccessGroupSet accessGroups) {
-		SearchState searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index",
+	public FacetFieldObject getDepartmentList(AccessGroupSet accessGroups, String pid) {
+		SearchState searchState;
+		Boolean has_pid = (pid != null) ? true : false;
+			
+		searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index",
 				Integer.MAX_VALUE);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups, true);
-
+		searchRequest.setRootPid(pid);
+		
+		if (has_pid) {
+			BriefObjectMetadata selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
+					searchRequest.isApplyCutoffs());
+		}
+		
 		SearchResultResponse results = getSearchResults(searchRequest);
 
 		if (results.getFacetFields() != null && results.getFacetFields().size() > 0) {

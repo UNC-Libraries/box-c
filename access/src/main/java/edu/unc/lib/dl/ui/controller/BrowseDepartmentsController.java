@@ -17,6 +17,7 @@ package edu.unc.lib.dl.ui.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -28,17 +29,28 @@ import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
  * @author bbpennel
  */
 @Controller
-@RequestMapping("/browseDepartments")
+@RequestMapping("/browse/dept")
 public class BrowseDepartmentsController extends AbstractSolrSearchController {
 	
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model){
-		FacetFieldObject deptField = queryLayer.getDepartmentList(GroupsThreadStore.getGroups());
+	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+	public String handleRequest(@PathVariable("pid") String pid, Model model){
+		FacetFieldObject deptField;
+		
+		if (pid != null) {
+			deptField = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
+		} else {
+			deptField = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), null);
+		}		
 
 		if (deptField != null)
 			model.addAttribute("departmentFacets", deptField);
 		model.addAttribute("resultType", "departmentBrowse");
 		model.addAttribute("menuId", "browse");
 		return "browseDepartments";
+	}
+	
+	@RequestMapping(method = RequestMethod.GET)
+	public String handleRequest(Model model){
+		return handleRequest(null, model);
 	}
 }

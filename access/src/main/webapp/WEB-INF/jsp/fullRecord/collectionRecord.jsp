@@ -71,8 +71,8 @@
 			
 			<div class="clear"></div>
 			<p class="full_record_browse">
-				<c:url var="collectionResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>
-				<a href="<c:out value='${collectionResultsUrl}' />">Browse&nbsp;(<c:out value="${childCount}"/> items)</a> or
+				<c:url var="collectionResultsUrl" scope="page" value='browse/dept/${briefObject.id}'></c:url>
+				<a href="<c:out value='${collectionResultsUrl}' />">Browse by Dept. within Collection&nbsp;(<c:out value="${childCount}"/> items)</a> or
 				<a href="<c:out value='${structureUrl}' />">
 					View ${fn:toLowerCase(briefObject.resourceType)} structure
 				</a>
