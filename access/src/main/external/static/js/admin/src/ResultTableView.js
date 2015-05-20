@@ -28,7 +28,6 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
 			
-			console.log("Render");
 			self.element.html("");
 			
 			self.pagingActive = data.pageRows < data.resultCount;

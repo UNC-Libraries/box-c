@@ -3304,7 +3304,6 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		
 		require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
 			
-			console.log("Render");
 			self.element.html("");
 			
 			self.pagingActive = data.pageRows < data.resultCount;
@@ -3954,6 +3953,9 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					if (this.addMenu) {
 						$("#add_menu").remove();
 					}
+					
+					self.resultData = data;
+					
 					self.resultTableView.render(data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
@@ -3974,7 +3976,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			});
 		},
 		
-		postRender : function (data) {
+		postRender : function () {
 			var self = this;
 			
 			self.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
@@ -3991,7 +3993,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			this.$resultTableWrap = $('.result_table_wrap', this.element);
 			this.$resultArea = $('.result_area', this.element);
 			
-			var container = data.container;
+			var container = this.resultData.container;
 		
 			if (!this.searchMenu) {
 				// Keep result area the right size when the menu is resized

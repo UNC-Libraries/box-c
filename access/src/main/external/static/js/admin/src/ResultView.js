@@ -137,6 +137,9 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 					if (this.addMenu) {
 						$("#add_menu").remove();
 					}
+					
+					self.resultData = data;
+					
 					self.resultTableView.render(data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
@@ -157,7 +160,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			});
 		},
 		
-		postRender : function (data) {
+		postRender : function () {
 			var self = this;
 			
 			self.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
@@ -174,7 +177,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			this.$resultTableWrap = $('.result_table_wrap', this.element);
 			this.$resultArea = $('.result_area', this.element);
 			
-			var container = data.container;
+			var container = this.resultData.container;
 		
 			if (!this.searchMenu) {
 				// Keep result area the right size when the menu is resized
