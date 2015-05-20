@@ -309,19 +309,32 @@
 						<xsl:for-each select="current-group()">
 							<xsl:choose>
 								<xsl:when test="boolean(text())">
-									<xsl:if test="boolean(@xlink:href)">
-										<a href="{@xlink:href}" target="_blank">
-		   									<xsl:analyze-string select="text()" regex="\n">
-		   										<xsl:matching-substring>
-		   											<br/>
-		   										</xsl:matching-substring>
-		   										<xsl:non-matching-substring>
-		   											<xsl:value-of select="normalize-space(.)"/>
-		   										</xsl:non-matching-substring>					
-		   									</xsl:analyze-string>
-										</a>
-									</xsl:if>
-									<br/><xsl:value-of select="$newline"/>
+									<xsl:choose>
+										<xsl:when test="boolean(@xlink:href)">
+											<a href="{@xlink:href}" target="_blank">
+												<xsl:analyze-string select="text()" regex="\n">
+													<xsl:matching-substring>
+														<br />
+													</xsl:matching-substring>
+													<xsl:non-matching-substring>
+														<xsl:value-of select="normalize-space(.)" />
+													</xsl:non-matching-substring>
+												</xsl:analyze-string>
+											</a>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:analyze-string select="text()" regex="\n">
+												<xsl:matching-substring>
+													<br />
+												</xsl:matching-substring>
+												<xsl:non-matching-substring>
+													<xsl:value-of select="normalize-space(.)" />
+												</xsl:non-matching-substring>
+											</xsl:analyze-string>
+										</xsl:otherwise>
+									</xsl:choose>
+									<br />
+									<xsl:value-of select="$newline" />
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of select="./@*[local-name() = 'href']"/><br/><xsl:value-of select="$newline"/>
