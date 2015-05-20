@@ -38,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -50,8 +49,6 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
 
-	@Mock
-	private SolrUpdateService updateService;
 	@Mock
 	protected DocumentIndexingPackageFactory dipFactory;
 	@Mock
@@ -93,7 +90,6 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		action.setTsqs(tsqs);
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
-		action.setSolrUpdateService(updateService);
 		action.setDipFactory(dipFactory);
 		action.setAddDocumentMode(false);
 		action.setCollectionsPid(new PID("uuid:1"));

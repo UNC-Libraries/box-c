@@ -62,16 +62,14 @@ public class MessageDirectorTest extends Assert {
 		when(enhancementConductor.getIdentifier()).thenReturn(EnhancementConductor.identifier);
 		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
 		when(failedPids.get(anyString())).thenReturn(null);
-		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
 		
 		conductors.add(enhancementConductor);
 		conductors.add(solrConductor);
 		
 		List<MessageFilter> filters = new ArrayList<MessageFilter>();
 		filters.add(new SolrUpdateMessageFilter());
-		ServicesQueueMessageFilter servicesFilter = new ServicesQueueMessageFilter();
+		EnhancementMessageFilter servicesFilter = new EnhancementMessageFilter();
 		servicesFilter.setServices(services);
-		servicesFilter.setenhancementConductor(enhancementConductor);
 		filters.add(servicesFilter);
 		messageDirector.setFilters(filters);
 		

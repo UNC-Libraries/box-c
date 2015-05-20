@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
@@ -51,8 +50,6 @@ public class IndexTreeCleanActionTest {
 	@Mock
 	private DocumentIndexingPackageFactory dipFactory;
 	@Mock
-	private SolrUpdateService updateService;
-	@Mock
 	private DeleteSolrTreeAction deleteAction;
 	@Mock
 	private SolrUpdateRequest request;
@@ -73,7 +70,6 @@ public class IndexTreeCleanActionTest {
 		action.setTsqs(tsqs);
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
-		action.setSolrUpdateService(updateService);
 		action.setDipFactory(dipFactory);
 		action.setCollectionsPid(new PID("uuid:1"));
 		action.init();

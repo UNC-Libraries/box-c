@@ -40,15 +40,6 @@
 		<value>${access.group.admin}</value>
 	</util:set>
 
-	<bean id="solrUpdateConductor"
-		class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
-		init-method="init" destroy-method="destroy">
-		<property name="solrUpdateRunnableFactory" ref="solrUpdateRunnableFactory"/>
-		<property name="maxThreads" value="${conductor.solr.maxThreads}" />
-		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
-		<property name="finishedQueueSize" value="1024"/>
-	</bean>
-
 	<bean id="solrUpdateDriver"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
 		init-method="init">
@@ -248,7 +239,6 @@
 	<bean id="deleteObjectAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
 	</bean>
 
 	<bean id="deleteSolrTreeAction"
@@ -306,14 +296,5 @@
 		<entry key="MOVE" value-ref="moveObjectsAction" />
 		<entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
 	</util:map>
-	
-	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">
-		<lookup-method name="createJob" bean="solrUpdateRunnable" />
-	</bean> 
-	
-	<bean id="solrUpdateRunnable"
-		class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable" scope="prototype">
-		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
-		<property name="solrUpdateService" ref="solrUpdateConductor" />
-	</bean>
+
 </beans>

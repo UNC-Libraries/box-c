@@ -86,16 +86,5 @@
 	<util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
 		<value>unc:app:lib:cdr:admin</value>
 	</util:set>
-	
-	<!-- Update service -->
-	
-	<bean id="solrUpdateService" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateService"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraDataService" ref="fedoraDataService" />
-		<property name="updateDocTransformer" ref="updateDocTransformer" />
-		<property name="solrDataAccessLayer" ref="solrDataAccessLayer" />
-		<property name="solrSearchService" ref="solrSearchService" />
-		<property name="maxThreads" value="${maxSolrIngestThreads}" />
-		<property name="accessGroups" ref="accessGroups" />
-	</bean>
+  
 </beans>

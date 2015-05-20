@@ -19,35 +19,13 @@ package edu.unc.lib.dl.cdr.services.processing;
 import edu.unc.lib.dl.message.ActionMessage;
 
 public interface MessageConductor {
+	
 	void add(ActionMessage message);
-
-	/**
-	 * Get the number of messages queued for processing
-	 * @return
-	 */
-	int getQueueSize();
 
 	/**
 	 * Returns the identifier string for this conductor
 	 * @return
 	 */
 	public String getIdentifier();
-
-	/**
-	 * Clear the queue(s).  confirm parameter must be "yes" for the operation to occur
-	 */
-	void clearQueue();
-
-	/**
-	 * Clears message processing state objects.
-	 */
-	void clearState();
-
-	String queuesToString();
-
-	/**
-	 * Indicates if the conductor is ready to receive new messages.
-	 * @return
-	 */
-	public boolean isReady();
+	
 }

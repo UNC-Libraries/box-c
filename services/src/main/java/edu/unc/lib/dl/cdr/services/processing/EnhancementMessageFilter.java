@@ -19,7 +19,6 @@ package edu.unc.lib.dl.cdr.services.processing;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,18 +35,16 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
  * @author bbpennel
  *
  */
-public class ServicesQueueMessageFilter implements MessageFilter {
-	private static final Logger LOG = LoggerFactory.getLogger(ServicesQueueMessageFilter.class);
+public class EnhancementMessageFilter implements MessageFilter {
+	private static final Logger LOG = LoggerFactory.getLogger(EnhancementMessageFilter.class);
 	
 	private List<ObjectEnhancementService> services;
-	
-	private EnhancementConductor enhancementConductor;
 	
 	public void setServices(List<ObjectEnhancementService> services) {
 		this.services = Collections.unmodifiableList(services);
 	}
 	
-	public ServicesQueueMessageFilter(){
+	public EnhancementMessageFilter(){
 	}
 	
 	@Override
@@ -68,8 +65,6 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		List<String> messageServices = new ArrayList<String>(services.size());
 		message.setFilteredServices(messageServices);
 		
-		Set<String> failedServices = enhancementConductor.getFailedPids().getFailedServices(message.getTargetID());
-		
 		boolean applyServiceStack = JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction());
 		boolean serviceReached = !applyServiceStack || message.getServiceName() == null;
 		
@@ -84,8 +79,7 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 				 
 				if (serviceReached){
 					//add services to the message's service list which have not failed previously and pass the prefilter method.
-					if (!(failedServices != null && failedServices.contains(s.getClass().getName()))
-							&& s.prefilterMessage(message)){
+					if (s.prefilterMessage(message)){
 						messageServices.add(s.getClass().getName());
 					} else {
 						//If the starting service doesn't pass, then skip the rest of the stack 
@@ -115,10 +109,5 @@ public class ServicesQueueMessageFilter implements MessageFilter {
 		
 		return true;
 	}
-
-	public void setenhancementConductor(EnhancementConductor enhancementConductor) {
-		this.enhancementConductor = enhancementConductor;
-	}
-	
 	
 }

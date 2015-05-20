@@ -5454,69 +5454,6 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	};
 	
 	return DepositMonitor;
-});define('EnhancementMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/enhancementMonitorJob', 'tpl!../templates/admin/statusMonitor/enhancementMonitorJobDetails'],
-		function($, ui, _, AbstractStatusMonitor, enhancementMonitorJobTemplate, enhancementMonitorDetailsTemplate) {
-			
-	var defaultOptions = {
-		name : "enhancement",
-		jobConfig : {
-			url : "/services/api/status/enhancement/{name}?begin=0&end=20",
-			template : enhancementMonitorJobTemplate,
-			detailsUrl : "/services/api/status/enhancement/job/{id}?type={name}",
-			detailsTemplate : enhancementMonitorDetailsTemplate,
-			fields : ["Status", "Label", "Enhancements", "Triggered by"],
-			jobTypes : [
-				{name : "active", refresh : 10000},
-				{name : "queued", refresh : 10000},
-				{name : "blocked", refresh : 10000},
-				{name : "finished", refresh : 10000},
-				{name : "failed", refresh : 10000}
-			]
-		},
-		overviewConfig : {
-			url : "/services/api/status/enhancement"
-		}
-	};
-			
-	function EnhancementMonitor(options) {
-		this.options = $.extend(true, {}, AbstractStatusMonitor.prototype.getDefaultOptions(), defaultOptions, options);
-	}
-	
-	EnhancementMonitor.prototype.constructor = EnhancementMonitor;
-	EnhancementMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
-	
-	return EnhancementMonitor;
-});define('IndexingMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/indexingMonitorJob', 'tpl!../templates/admin/statusMonitor/indexingMonitorJobDetails'],
-		function($, ui, _, AbstractStatusMonitor, indexingMonitorJobTemplate, indexingMonitorDetailsTemplate) {
-			
-	var defaultOptions = {
-		name : "indexing",
-		jobConfig : {
-			url : "/services/api/status/indexing/{name}",
-			template : indexingMonitorJobTemplate,
-			detailsUrl : "/services/api/status/indexing/job/{id}",
-			detailsTemplate : indexingMonitorDetailsTemplate,
-			fields : ["Status", "Label", "Action", "Progress"],
-			jobTypes : [
-				{name : "active", refresh : 2000, detailsRefresh : 2000},
-				{name : "queued", refresh : 5000},
-				{name : "finished", refresh : 10000},
-				{name : "failed", refresh : 10000}
-			]
-		},
-		overviewConfig : {
-			url : "/services/api/status/indexing"
-		}
-	};
-			
-	function IndexingMonitor(options) {
-		this.options = $.extend(true, {}, AbstractStatusMonitor.prototype.getDefaultOptions(), defaultOptions, options);
-	}
-	
-	IndexingMonitor.prototype.constructor = IndexingMonitor;
-	IndexingMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
-	
-	return IndexingMonitor;
 });define('IngestMonitor', [ 'jquery', 'jquery-ui', 'underscore', 'AbstractStatusMonitor', 'tpl!../templates/admin/statusMonitor/ingestMonitorJob', 'tpl!../templates/admin/statusMonitor/ingestMonitorJobDetails'],
 		function($, ui, _, AbstractStatusMonitor, ingestMonitorJobTemplate, ingestMonitorDetailsTemplate) {
 			
@@ -5548,8 +5485,8 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	IngestMonitor.prototype = Object.create( AbstractStatusMonitor.prototype );
 	
 	return IngestMonitor;
-});define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'DepositMonitor', 'IndexingMonitor', 'EnhancementMonitor'],
-		function($, ui, _, DepositMonitor, IndexingMonitor, EnhancementMonitor) {
+});define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'DepositMonitor'],
+		function($, ui, _, DepositMonitor) {
 			
 	function StatusMonitorManager(element, options) {
 		this.$alertHandler = $("<div id='alertHandler'></div>");
@@ -5589,8 +5526,6 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	
 	StatusMonitorManager.prototype.addMonitors = function() {
 		this.addMonitor(new DepositMonitor($.extend({}, { alertHandler: this.$alertHandler }, this.options)));
-		this.addMonitor(new IndexingMonitor());
-		this.addMonitor(new EnhancementMonitor());
 	};
 	
 	StatusMonitorManager.prototype.addMonitor = function(monitor) {

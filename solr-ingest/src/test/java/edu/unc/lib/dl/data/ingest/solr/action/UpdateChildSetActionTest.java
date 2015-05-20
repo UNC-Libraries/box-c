@@ -37,7 +37,6 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -50,8 +49,6 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateChildSetActionTest {
 
-	@Mock
-	private SolrUpdateService updateService;
 	@Mock
 	private SolrUpdateDriver driver;
 	@Mock
@@ -75,7 +72,6 @@ public class UpdateChildSetActionTest {
 		action.setTsqs(tsqs);
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
-		action.setSolrUpdateService(updateService);
 		action.setDipFactory(dipFactory);
 		action.setAddDocumentMode(false);
 		action.setCollectionsPid(new PID("uuid:1"));

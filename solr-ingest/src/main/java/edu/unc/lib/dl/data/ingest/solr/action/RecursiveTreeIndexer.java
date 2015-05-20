@@ -57,10 +57,6 @@ public class RecursiveTreeIndexer {
 			// Force wait before each document being indexed
 			if (this.action.getUpdateDelay() > 0)
 				Thread.sleep(this.action.getUpdateDelay());
-			// Wait if the service is paused
-			while (this.action.getSolrUpdateService().isPaused()) {
-				Thread.sleep(1000L);
-			}
 
 			// Get the DIP for the next object being indexed
 			dip = this.action.getDocumentIndexingPackage(pid, parent);

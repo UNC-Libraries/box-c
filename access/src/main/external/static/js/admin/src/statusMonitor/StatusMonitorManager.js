@@ -1,5 +1,5 @@
-define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'DepositMonitor', 'IndexingMonitor', 'EnhancementMonitor'],
-		function($, ui, _, DepositMonitor, IndexingMonitor, EnhancementMonitor) {
+define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'DepositMonitor'],
+		function($, ui, _, DepositMonitor) {
 			
 	function StatusMonitorManager(element, options) {
 		this.$alertHandler = $("<div id='alertHandler'></div>");
@@ -39,8 +39,6 @@ define('StatusMonitorManager', [ 'jquery', 'jquery-ui', 'underscore', 'DepositMo
 	
 	StatusMonitorManager.prototype.addMonitors = function() {
 		this.addMonitor(new DepositMonitor($.extend({}, { alertHandler: this.$alertHandler }, this.options)));
-		this.addMonitor(new IndexingMonitor());
-		this.addMonitor(new EnhancementMonitor());
 	};
 	
 	StatusMonitorManager.prototype.addMonitor = function(monitor) {
