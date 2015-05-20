@@ -8,7 +8,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		this.options = $.extend({}, defaultOptions, options);
 		
 		this.alerts = alertHandler;
-		this.processedCompletes = [];
+		this.moveData = {};
 	}
 	
 	function setDifference(A, B) {
@@ -34,8 +34,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		
 		// Mark objects that were previously known to be moving
 		var self = this;
-		var moveData = this.getMoveData();
-		$.each(moveData, function(moveId, moveDetails) {
+		$.each(this.moveData, function(moveId, moveDetails) {
 			self.markMoving(moveDetails.pids);
 		});
 		
@@ -52,16 +51,13 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 			success : function(data) {
-				var moveData = self.getMoveData();
-				var localMoves = Object.keys(moveData);
-				
 				var remoteMoves = data == null? {} : data;
 				
 				try {
-					
-					self.cleanMoveTombstones(moveData, remoteMoves);
+					// Clean up inactive move operations that have been removed remotely
+					self.cleanMoveTombstones(remoteMoves);
 					// Clean up completed move operations
-					self.completeMoves(moveData, remoteMoves);
+					self.completeMoves(remoteMoves);
 				
 					// Indicate new move options
 					self.addMoves(remoteMoves);
@@ -73,45 +69,38 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			},
 			error : function() {
 				console.error("Failed to retrieve move information from server");
+				// Keep refreshing alive, but wait a bit longer
+				setTimeout($.proxy(self.update, self), self.options.updateInterval * 2);
 			}
 		});
 	};
 	
-	MoveActionMonitor.prototype.cleanMoveTombstones = function(moveData, remoteMoves) {
+	MoveActionMonitor.prototype.cleanMoveTombstones = function(remoteMoves) {
+
 		var localInactive = [];
-		for (var moveId in moveData) {
-			if (moveData[moveId].inactive) {
+		for (var moveId in this.moveData) {
+			if (this.moveData[moveId].inactive) {
 				localInactive.push(moveId);
 			}
 		}
 		
 		if (localInactive.length == 0)
 			return;
-		
-		// Catch moves that completed in another browser window
-		var unprocessedComplete = setDifference(localInactive, this.processedCompletes);
-		for (var index in unprocessedComplete) {
-			this.cleanupResults(moveData[unprocessedComplete[index]].pids);
-		}
-		
+
 		// Cleanable tombstones = Inactive Local Moves - Remote Moves
 		var cleanable = setDifference(localInactive, Object.keys(remoteMoves));
 		
 		if (cleanable.length == 0)
 			return;
 		
-		try {
-			for (var index in cleanable) {
-				var cleanableId = cleanable[index];
-				delete moveData[cleanableId];
-				delete this.processedCompletes[cleanableId];
-			}
-		} finally {
-			this.setMoveData(moveData);
+		for (var index in cleanable) {
+			var cleanableId = cleanable[index];
+			delete this.moveData[cleanableId];
+			this.removeUserMove(cleanableId);
 		}
 	};
 	
-	MoveActionMonitor.prototype.completeMoves = function(moveData, remoteMoves) {
+	MoveActionMonitor.prototype.completeMoves = function(remoteMoves) {
 
 		// Get the set of move ids which were in progress according to the server
 		var remoteActive = [];
@@ -123,47 +112,43 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		
 		// Get the list of move ids considered in progress locally
 		var localActive = [];
-		for (var moveId in moveData) {
-			if (!moveData[moveId].inactive) {
+		for (var moveId in this.moveData) {
+			if (!this.moveData[moveId].inactive) {
 				localActive.push(moveId);
 			}
 		}
 		
-		var localMoves = Object.keys(moveData);
+		var localMoves = Object.keys(this.moveData);
 		// Completed jobs = Local Moves - Active Remote Moves
 		var completed = setDifference(localActive, remoteActive);
 		
 		if (completed.length == 0)
 			return;
 		
-		try {
-			// Process the set of completed moves to remove them from local memory and inform the user
-			for (var index in completed) {
-				var completedMove = completed[index];
+		var userMoves = this.getUserMoves();
+		// Process the set of completed moves to remove them from local memory and inform the user
+		for (var index in completed) {
+			var completedMove = completed[index];
+		
+			var moveDetails = this.moveData[completedMove];
+			if (moveDetails && moveDetails.pids) {
+				// If the user initiated this move, then tell them it has completed
+				if (completedMove in userMoves) {
+					this.alerts.alertHandler("success", "Moved " + moveDetails.pids.length 
+							+ " object" + (moveDetails.pids.length > 1? "s" : "")
+							+ " to " + userMoves[completedMove].destinationTitle);
+				}
 			
-				var moveDetails = moveData[completedMove];
-				if (moveDetails && moveDetails.pids) {
-					// If the user initiated this move, then tell them it has completed
-					if (moveDetails.byUser && moveDetails.destinationTitle) {
-						this.alerts.alertHandler("success", "Moved " + moveDetails.pids.length 
-								+ " object" + (moveDetails.pids.length > 1? "s" : "")
-								+ " to " + moveDetails.destinationTitle);
-					}
-				
-					this.cleanupResults(moveDetails.pids)
-				}
-				
-				// If the move is inactive remotely, then store that.  Otherwise, purge the move
-				if (completedMove in remoteMoves) {
-					moveData[completedMove].inactive = true;
-					this.processedCompletes.push(completedMove);
-				} else {
-					delete moveData[completedMove];
-				}
-				
+				this.cleanupResults(moveDetails.pids)
 			}
-		} finally {
-			this.setMoveData(moveData);
+			
+			// If the move is inactive remotely, then store that.  Otherwise, purge the move
+			if (completedMove in remoteMoves) {
+				this.moveData[completedMove].inactive = true;
+			} else {
+				delete this.moveData[completedMove];
+				this.removeUserMove(completedMoved);
+			}
 		}
 	};
 	
@@ -181,9 +166,8 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 	// Store details newly started moves and mark individual results as being moved
 	MoveActionMonitor.prototype.addMoves = function(remoteMoves) {
 		var self = this;
-		var moveData = this.getMoveData();
 		
-		var localMoves = Object.keys(moveData);
+		var localMoves = Object.keys(this.moveData);
 		var newMoves = setDifference(Object.keys(remoteMoves), localMoves);
 		
 		if (!newMoves || newMoves.length == 0)
@@ -191,7 +175,6 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		
 		for (var index in newMoves) {
 			var moveId = newMoves[index];
-			var remoteActive = remoteMoves[moveId];
 			
 			$.ajax({
 				url : "/services/api/listMoves/" + moveId + "/objects",
@@ -203,21 +186,16 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 						return;
 					}
 					
-					var moveData = self.getMoveData();
-					try {
-						// Add in new move operations
-						self.setMovePids(moveData, moveId, data);
+					// Add in new move operations
+					self.setMovePids(moveId, data);
+				
+					// Mark the items being moved
+					self.markMoving(data);
 					
-						// Mark the items being moved
-						self.markMoving(data);
-						
-						// The operation was inactive at first retrieval, cleanup and discard it
-						if (!remoteActive) {
-							self.cleanupResults(data);
-							moveData[moveId].inactive = true;
-						}
-					} finally {
-						self.setMoveData(moveData);
+					// The operation was inactive at first retrieval, cleanup and discard it
+					if (!remoteMoves[moveId]) {
+						self.cleanupResults(data);
+						self.moveData[moveId].inactive = true;
 					}
 				}
 			});
@@ -229,15 +207,15 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			return;
 		}
 		
-		var moveData = this.getMoveData();
 		try {
-			this.setMovePids(moveData, moveId, pids);
-			moveData[moveId].byUser = true;
-			moveData[moveId].destinationTitle = destinationTitle;
+			this.setMovePids(moveId, pids);
+			
+			var userMoves = this.getUserMoves();
+			userMoves[moveId] = destinationTitle;
 		
 			this.markMoving(pids);
 		} finally {
-			this.setMoveData(moveData);
+			this.setUserMoves(userMoves);
 		}
 	};
 	
@@ -251,20 +229,26 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		}
 	};
 	
-	MoveActionMonitor.prototype.setMovePids = function(moveData, moveId, pids) {
-		if (!(moveId in moveData)) {
-			moveData[moveId] = {};
+	MoveActionMonitor.prototype.setMovePids = function(moveId, pids) {
+		if (!(moveId in this.moveData)) {
+			this.moveData[moveId] = {};
 		}
-		moveData[moveId].pids = pids;
+		this.moveData[moveId].pids = pids;
 	};
 	
-	MoveActionMonitor.prototype.getMoveData = function() {
-		var ongoing = localStorage.getItem("ongoing_move_actions");
-		return ongoing == null? {} : JSON.parse(ongoing);
+	MoveActionMonitor.prototype.getUserMoves = function() {
+		var userMoves = localStorage.getItem("move_actions");
+		return userMoves == null? {} : JSON.parse(userMoves);
 	};
 	
-	MoveActionMonitor.prototype.setMoveData = function(moveData) {
-		localStorage.setItem("ongoing_move_actions", JSON.stringify(moveData));
+	MoveActionMonitor.prototype.setUserMoves = function(userMoves) {
+		localStorage.setItem("move_actions", JSON.stringify(userMoves));
+	};
+	
+	MoveActionMonitor.prototype.removeUserMove = function(id) {
+		var moves = this.getUserMoves();
+		delete moves[id];
+		this.setUserMoves(moves);
 	};
 	
 	return MoveActionMonitor;
