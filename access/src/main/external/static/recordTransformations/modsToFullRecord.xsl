@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    xmlns:xlink="http://www.w3.org/1999/xlink">
+	xmlns:xlink="http://www.w3.org/1999/xlink">
 	<xsl:import href="languageNames.xsl"/>
 	<xsl:import href="scriptNames.xsl"/>
 	<xsl:output method="xml" omit-xml-declaration="yes" indent="no"/>
@@ -310,16 +310,16 @@
 							<xsl:choose>
 								<xsl:when test="boolean(text())">
 									<xsl:if test="boolean(@xlink:href)">
-									    <a href="{@xlink:href}" target="_blank">
-           								    <xsl:analyze-string select="text()" regex="\n">
-           										<xsl:matching-substring>
-           											<br/>
-           										</xsl:matching-substring>
-           										<xsl:non-matching-substring>
-           											<xsl:value-of select="normalize-space(.)"/>
-           										</xsl:non-matching-substring>					
-           								    </xsl:analyze-string>
-									    </a>
+										<a href="{@xlink:href}" target="_blank">
+		   									<xsl:analyze-string select="text()" regex="\n">
+		   										<xsl:matching-substring>
+		   											<br/>
+		   										</xsl:matching-substring>
+		   										<xsl:non-matching-substring>
+		   											<xsl:value-of select="normalize-space(.)"/>
+		   										</xsl:non-matching-substring>					
+		   									</xsl:analyze-string>
+										</a>
 									</xsl:if>
 									<br/><xsl:value-of select="$newline"/>
 								</xsl:when>
@@ -567,9 +567,9 @@
 							<xsl:if test="@displayLabel">
 								<xsl:value-of select="concat(upper-case(substring(@displayLabel,1,1)), substring(@displayLabel,2))"/><xsl:text>: </xsl:text>
 							</xsl:if>
-						    <a href="{text()}" target="_blank">
-							     <xsl:value-of select="text()"/>
-						    </a>
+							<a href="{text()}" target="_blank">
+								 <xsl:value-of select="text()"/>
+							</a>
 							<xsl:if test="local-name() = 'url'">
 								<xsl:for-each select="@access|@note">
 									<xsl:if test="position() = 1">
@@ -778,61 +778,61 @@
 			<tr>
 				<xsl:variable name="groupKey" select="current-grouping-key()"/>
 				<th>
-				    <xsl:choose>
+					<xsl:choose>
 						<xsl:when test="$groupKey = 'isReferencedBy'">
-						    <xsl:attribute name="title">Finding aid, catalog record, or similar description referencing this resource</xsl:attribute>
-						    <xsl:text>Related:</xsl:text> <br/>
+							<xsl:attribute name="title">Finding aid, catalog record, or similar description referencing this resource</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
 							<xsl:value-of>Description</xsl:value-of>
 						</xsl:when>
-       				    <xsl:when test="$groupKey = 'preceding'">
-       				        <xsl:attribute name="title">Information about a predecessor to this resource</xsl:attribute>
-       				        <xsl:text>Related:</xsl:text> <br/>
-       				        <xsl:value-of>Preceeding resource</xsl:value-of>
-       				    </xsl:when>
-      				    <xsl:when test="$groupKey = 'succeeding'">
-      				        <xsl:attribute name="title">Information about a successor to this resource</xsl:attribute>
-      				        <xsl:text>Related:</xsl:text> <br/>
-      				        <xsl:value-of>Succeeding resource</xsl:value-of>
-      				    </xsl:when>
-      				    <xsl:when test="$groupKey = 'original'">
-      				        <xsl:attribute name="title">Information about the original version of this resource</xsl:attribute>
-      				        <xsl:text>Related:</xsl:text> <br/>
-      				        <xsl:value-of>Original version</xsl:value-of>
-      				    </xsl:when>
-       				    <xsl:when test="$groupKey = 'constituent'">
-       				        <xsl:attribute name="title">Description of a part, subset, or supplement of this resource</xsl:attribute>
-       				        <xsl:text>Related:</xsl:text> <br/>
-       				        <xsl:value-of>Part or supplement</xsl:value-of>
-       				    </xsl:when>
-       				    <xsl:when test="$groupKey = 'series'">
-       				        <xsl:attribute name="title">Series in which the resource was issued</xsl:attribute>
-       				        <xsl:text>Related:</xsl:text> <br/>
-       				        <xsl:value-of>Series</xsl:value-of>
-       				    </xsl:when>
-       				    <xsl:when test="$groupKey = 'otherVersion'">
-       				        <xsl:attribute name="title">Another version of the resource; a change in intellectual content</xsl:attribute>
-       				        <xsl:text>Related:</xsl:text> <br/>
-       				        <xsl:value-of>Version or edition</xsl:value-of>
-       				    </xsl:when>				
-    				    <xsl:when test="$groupKey = 'otherFormat'">
-    				        <xsl:attribute name="title">The resource in another physical format, but same content</xsl:attribute>
-    				        <xsl:text>Related:</xsl:text> <br/>
-    				        <xsl:value-of>Format</xsl:value-of>
-    				    </xsl:when>
-    				    <xsl:when test="$groupKey = 'references'">
-    				        <xsl:text>Related:</xsl:text> <br/>
-    				        <xsl:value-of>References</xsl:value-of>
-    				    </xsl:when>
-    				    <xsl:when test="$groupKey = 'reviewOf'">
-    				        <xsl:attribute name="title">Information about a review of this resource</xsl:attribute>
-    				        <xsl:text>Related:</xsl:text> <br/>
-    				        <xsl:value-of>Review</xsl:value-of>
-    				    </xsl:when>	
-				        <xsl:when test="$groupKey = 'host'">
-				            <xsl:attribute name="title">Information about the item or collection this resource is part of</xsl:attribute>
-				            <xsl:text>Related:</xsl:text> <br/>
-				            <xsl:value-of>Host item or collection</xsl:value-of>
-				        </xsl:when>	
+	   					<xsl:when test="$groupKey = 'preceding'">
+	   						<xsl:attribute name="title">Information about a predecessor to this resource</xsl:attribute>
+	   						<xsl:text>Related:</xsl:text> <br/>
+	   						<xsl:value-of>Preceeding resource</xsl:value-of>
+	   					</xsl:when>
+	  					<xsl:when test="$groupKey = 'succeeding'">
+	  						<xsl:attribute name="title">Information about a successor to this resource</xsl:attribute>
+	  						<xsl:text>Related:</xsl:text> <br/>
+	  						<xsl:value-of>Succeeding resource</xsl:value-of>
+	  					</xsl:when>
+	  					<xsl:when test="$groupKey = 'original'">
+	  						<xsl:attribute name="title">Information about the original version of this resource</xsl:attribute>
+	  						<xsl:text>Related:</xsl:text> <br/>
+	  						<xsl:value-of>Original version</xsl:value-of>
+	  					</xsl:when>
+	   					<xsl:when test="$groupKey = 'constituent'">
+	   						<xsl:attribute name="title">Description of a part, subset, or supplement of this resource</xsl:attribute>
+	   						<xsl:text>Related:</xsl:text> <br/>
+	   						<xsl:value-of>Part or supplement</xsl:value-of>
+	   					</xsl:when>
+	   					<xsl:when test="$groupKey = 'series'">
+	   						<xsl:attribute name="title">Series in which the resource was issued</xsl:attribute>
+	   						<xsl:text>Related:</xsl:text> <br/>
+	   						<xsl:value-of>Series</xsl:value-of>
+	   					</xsl:when>
+	   					<xsl:when test="$groupKey = 'otherVersion'">
+	   						<xsl:attribute name="title">Another version of the resource; a change in intellectual content</xsl:attribute>
+	   						<xsl:text>Related:</xsl:text> <br/>
+	   						<xsl:value-of>Version or edition</xsl:value-of>
+	   					</xsl:when>				
+						<xsl:when test="$groupKey = 'otherFormat'">
+							<xsl:attribute name="title">The resource in another physical format, but same content</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Format</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'references'">
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>References</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'reviewOf'">
+							<xsl:attribute name="title">Information about a review of this resource</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Review</xsl:value-of>
+						</xsl:when>	
+						<xsl:when test="$groupKey = 'host'">
+							<xsl:attribute name="title">Information about the item or collection this resource is part of</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Host item or collection</xsl:value-of>
+						</xsl:when>	
 						<xsl:otherwise>
 							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
 						</xsl:otherwise>
