@@ -47,31 +47,28 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		
 		$.ajax({
 			url : "/services/api/listMoves",
-			type : "GET",
 			contentType: "application/json; charset=utf-8",
-			dataType: "json",
-			success : function(data) {
-				var remoteMoves = data == null? {} : data;
+			dataType: "json"
+		}).done(function(data) {
+			var remoteMoves = data == null? {} : data;
+			
+			try {
+				// Clean up inactive move operations that have been removed remotely
+				self.cleanMoveTombstones(remoteMoves);
+				// Clean up completed move operations
+				self.completeMoves(remoteMoves);
+			
+				// Indicate new move options
+				self.addMoves(remoteMoves);
 				
-				try {
-					// Clean up inactive move operations that have been removed remotely
-					self.cleanMoveTombstones(remoteMoves);
-					// Clean up completed move operations
-					self.completeMoves(remoteMoves);
-				
-					// Indicate new move options
-					self.addMoves(remoteMoves);
-					
-				} finally {
-					// Queue up the next run
-					setTimeout($.proxy(self.update, self), self.options.updateInterval);
-				}
-			},
-			error : function() {
-				console.error("Failed to retrieve move information from server");
-				// Keep refreshing alive, but wait a bit longer
-				setTimeout($.proxy(self.update, self), self.options.updateInterval * 2);
+			} finally {
+				// Queue up the next run
+				setTimeout($.proxy(self.update, self), self.options.updateInterval);
 			}
+		}).fail(function() {
+			console.error("Failed to retrieve move information from server");
+			// Keep refreshing alive, but wait a bit longer
+			setTimeout($.proxy(self.update, self), self.options.updateInterval * 2);
 		});
 	};
 	
@@ -136,7 +133,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 				if (completedMove in userMoves) {
 					this.alerts.alertHandler("success", "Moved " + moveDetails.pids.length 
 							+ " object" + (moveDetails.pids.length > 1? "s" : "")
-							+ " to " + userMoves[completedMove].destinationTitle);
+							+ " to " + userMoves[completedMove]);
 				}
 			
 				this.cleanupResults(moveDetails.pids)
@@ -178,25 +175,23 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			
 			$.ajax({
 				url : "/services/api/listMoves/" + moveId + "/objects",
-				type : "GET",
 				contentType: "application/json; charset=utf-8",
-				dataType: "json",
-				success : function(data) {
-					if (!data) {
-						return;
-					}
-					
-					// Add in new move operations
-					self.setMovePids(moveId, data);
+				dataType: "json"
+			}).done(function(data) {
+				if (!data) {
+					return;
+				}
 				
-					// Mark the items being moved
-					self.markMoving(data);
-					
-					// The operation was inactive at first retrieval, cleanup and discard it
-					if (!remoteMoves[moveId]) {
-						self.cleanupResults(data);
-						self.moveData[moveId].inactive = true;
-					}
+				// Add in new move operations
+				self.setMovePids(moveId, data);
+			
+				// Mark the items being moved
+				self.markMoving(data);
+				
+				// The operation was inactive at first retrieval, cleanup and discard it
+				if (!remoteMoves[moveId]) {
+					self.cleanupResults(data);
+					self.moveData[moveId].inactive = true;
 				}
 			});
 		}

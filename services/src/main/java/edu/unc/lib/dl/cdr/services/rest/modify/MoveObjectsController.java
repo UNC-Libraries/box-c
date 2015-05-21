@@ -64,10 +64,10 @@ public class MoveObjectsController {
 	Map<String, Object> moveObjects(@RequestBody MoveRequest moveRequest, HttpServletResponse response) {
 		Map<String, Object> results = new HashMap<>();
 		// Validate that the request contains the newPath and ids fields.
-		if (moveRequest == null || moveRequest.ids == null || moveRequest.ids.size() == 0
-				|| moveRequest.getNewParent() == null || moveRequest.getNewParent().length() == 0) {
+		if (moveRequest == null || moveRequest.moved == null || moveRequest.moved.size() == 0
+				|| moveRequest.getDestination() == null || moveRequest.getDestination().length() == 0) {
 			response.setStatus(400);
-			results.put("error", "Request must provide a newParent destination and a list of ids");
+			results.put("error", "Request must provide a destination destination and a list of ids");
 			return results;
 		}
 		
@@ -75,14 +75,14 @@ public class MoveObjectsController {
 
 		Thread moveThread = new Thread(new MoveRunnable(moveRequest, GroupsThreadStore.getGroups()));
 		log.info("User {} is starting move operation of {} objects to destination {}",
-				new Object[] { GroupsThreadStore.getUsername(), moveRequest.ids.size(), moveRequest.getNewParent()});
+				new Object[] { GroupsThreadStore.getUsername(), moveRequest.moved.size(), moveRequest.getDestination()});
 		moveThread.start();
 
 		response.setStatus(200);
 		
-		results.put("id", moveRequest.getMoveId());
-		results.put("message", "Operation to move " + moveRequest.ids.size() + " objects into container "
-				+ moveRequest.getNewParent() + " has begun");
+		results.put("id", moveRequest.id);
+		results.put("message", "Operation to move " + moveRequest.moved.size() + " objects into container "
+				+ moveRequest.getDestination() + " has begun");
 		return results;
 	}
 
@@ -113,7 +113,7 @@ public class MoveObjectsController {
 			return null;
 		}
 		
-		return request.getIds();
+		return request.getMoved();
 	}
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
@@ -125,37 +125,37 @@ public class MoveObjectsController {
 	}
 
 	public static class MoveRequest {
-		private String newParent;
-		private List<String> ids;
+		private String destination;
+		private List<String> moved;
 		private String user;
-		private String moveId;
+		private final String id;
 		private long finishedAt = -1;
 
 		public MoveRequest() {
-			moveId = UUID.randomUUID().toString();
+			id = UUID.randomUUID().toString();
 		}
 
-		public String getNewParent() {
-			return newParent;
+		public String getDestination() {
+			return destination;
 		}
 
-		public void setNewParent(String newParent) {
-			this.newParent = newParent;
+		public void setDestination(String destination) {
+			this.destination = destination;
 		}
 
-		public List<PID> getMoved() {
-			List<PID> moved = new ArrayList<PID>(ids.size());
-			for (String id : ids)
-				moved.add(new PID(id));
+		public List<PID> getMovedPids() {
+			List<PID> movedPids = new ArrayList<PID>(moved.size());
+			for (String id : moved)
+				movedPids.add(new PID(id));
+			return movedPids;
+		}
+
+		public void setMoved(List<String> moved) {
+			this.moved = moved;
+		}
+
+		public List<String> getMoved() {
 			return moved;
-		}
-
-		public void setIds(List<String> ids) {
-			this.ids = ids;
-		}
-
-		public List<String> getIds() {
-			return ids;
 		}
 
 		public String getUser() {
@@ -166,12 +166,8 @@ public class MoveObjectsController {
 			this.user = user;
 		}
 
-		public String getMoveId() {
-			return moveId;
-		}
-
-		public void setMoveId(String moveId) {
-			this.moveId = moveId;
+		public String getId() {
+			return id;
 		}
 
 		public long getFinishedAt() {
@@ -196,17 +192,17 @@ public class MoveObjectsController {
 		@Override
 		public void run() {
 			try {
-				activeMoveRequests.put(request.getMoveId(), request);
+				activeMoveRequests.put(request.getId(), request);
 				
 				GroupsThreadStore.storeGroups(groups);
 				GroupsThreadStore.storeUsername(request.getUser());
-				digitalObjectManager.move(request.getMoved(), new PID(request.getNewParent()),
+				digitalObjectManager.move(request.getMovedPids(), new PID(request.getDestination()),
 						request.getUser(), "Moved through API");
 				
 				log.info("Finished move operation of {} objects to destination {} for user {}", new Object[] {
-						request.getMoved().size(), request.getNewParent(), GroupsThreadStore.getUsername() });
+						request.getMoved().size(), request.getDestination(), GroupsThreadStore.getUsername() });
 			} catch (IngestException e) {
-				log.error("Failed to move objects to {}", request.getNewParent(), e);
+				log.error("Failed to move objects to {}", request.getDestination(), e);
 			} finally {
 				request.setFinishedAt(System.currentTimeMillis());
 				GroupsThreadStore.clearStore();

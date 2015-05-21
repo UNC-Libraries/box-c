@@ -2015,31 +2015,28 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		
 		$.ajax({
 			url : "/services/api/listMoves",
-			type : "GET",
 			contentType: "application/json; charset=utf-8",
-			dataType: "json",
-			success : function(data) {
-				var remoteMoves = data == null? {} : data;
+			dataType: "json"
+		}).done(function(data) {
+			var remoteMoves = data == null? {} : data;
+			
+			try {
+				// Clean up inactive move operations that have been removed remotely
+				self.cleanMoveTombstones(remoteMoves);
+				// Clean up completed move operations
+				self.completeMoves(remoteMoves);
+			
+				// Indicate new move options
+				self.addMoves(remoteMoves);
 				
-				try {
-					// Clean up inactive move operations that have been removed remotely
-					self.cleanMoveTombstones(remoteMoves);
-					// Clean up completed move operations
-					self.completeMoves(remoteMoves);
-				
-					// Indicate new move options
-					self.addMoves(remoteMoves);
-					
-				} finally {
-					// Queue up the next run
-					setTimeout($.proxy(self.update, self), self.options.updateInterval);
-				}
-			},
-			error : function() {
-				console.error("Failed to retrieve move information from server");
-				// Keep refreshing alive, but wait a bit longer
-				setTimeout($.proxy(self.update, self), self.options.updateInterval * 2);
+			} finally {
+				// Queue up the next run
+				setTimeout($.proxy(self.update, self), self.options.updateInterval);
 			}
+		}).fail(function() {
+			console.error("Failed to retrieve move information from server");
+			// Keep refreshing alive, but wait a bit longer
+			setTimeout($.proxy(self.update, self), self.options.updateInterval * 2);
 		});
 	};
 	
@@ -2104,7 +2101,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				if (completedMove in userMoves) {
 					this.alerts.alertHandler("success", "Moved " + moveDetails.pids.length 
 							+ " object" + (moveDetails.pids.length > 1? "s" : "")
-							+ " to " + userMoves[completedMove].destinationTitle);
+							+ " to " + userMoves[completedMove]);
 				}
 			
 				this.cleanupResults(moveDetails.pids)
@@ -2146,25 +2143,23 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			
 			$.ajax({
 				url : "/services/api/listMoves/" + moveId + "/objects",
-				type : "GET",
 				contentType: "application/json; charset=utf-8",
-				dataType: "json",
-				success : function(data) {
-					if (!data) {
-						return;
-					}
-					
-					// Add in new move operations
-					self.setMovePids(moveId, data);
+				dataType: "json"
+			}).done(function(data) {
+				if (!data) {
+					return;
+				}
 				
-					// Mark the items being moved
-					self.markMoving(data);
-					
-					// The operation was inactive at first retrieval, cleanup and discard it
-					if (!remoteMoves[moveId]) {
-						self.cleanupResults(data);
-						self.moveData[moveId].inactive = true;
-					}
+				// Add in new move operations
+				self.setMovePids(moveId, data);
+			
+				// Mark the items being moved
+				self.markMoving(data);
+				
+				// The operation was inactive at first retrieval, cleanup and discard it
+				if (!remoteMoves[moveId]) {
+					self.cleanupResults(data);
+					self.moveData[moveId].inactive = true;
 				}
 			});
 		}
@@ -4802,12 +4797,12 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	MoveObjectsAction.prototype.execute = function() {
 		var action = this;
 		var moveData = {
-				newParent : this.context.newParent.id,
-				ids : []
+				destination : this.context.newParent.id,
+				moved : []
 			};
 		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.title;
 		$.each(this.context.targets, function() {
-			moveData.ids.push(this.pid);
+			moveData.moved.push(this.pid);
 		});
 		// Store a reference to the targeted item list since moving happens asynchronously
 		$.ajax({
@@ -4817,7 +4812,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
 			success : function(data) {
-				action.context.view.moveMonitor.addMove(data.id, moveData.ids, destTitle);
+				action.context.view.moveMonitor.addMove(data.id, moveData.moved, destTitle);
 				
 				action.context.alertHandler.alertHandler("message", "Started moving " + action.context.targets.length 
 						+ " object" + (action.context.targets.length > 1? "s" : "") 
