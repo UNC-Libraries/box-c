@@ -53,10 +53,10 @@ public class MoveObjectsController {
 	
 	private final Long TIME_TO_LIVE_AFTER_FINISH = 12000L;
 	
-	private final Map<String, MoveRequest> activeMoveRequests;
+	private final Map<String, MoveRequest> moveRequests;
 	
 	public MoveObjectsController() {
-		activeMoveRequests = new HashMap<>();
+		moveRequests = new HashMap<>();
 	}
 
 	@RequestMapping(value = "edit/move", method = RequestMethod.POST)
@@ -86,29 +86,38 @@ public class MoveObjectsController {
 		return results;
 	}
 
-	@RequestMapping(value = "listMoves", method = RequestMethod.GET)
+	@RequestMapping(value = "listMoveStatus", method = RequestMethod.GET)
 	public @ResponseBody
 	Object listMoves() {
-		Map<String, Boolean> moves = new HashMap<>(this.activeMoveRequests.size());
-		
-		Iterator<Entry<String, MoveRequest>> moveIt = activeMoveRequests.entrySet().iterator();
+		Map<String, Object> results = new HashMap<>(2);
+		List<String> active = new ArrayList<>();
+		List<String> complete = new ArrayList<>();
+
+		Iterator<Entry<String, MoveRequest>> moveIt = moveRequests.entrySet().iterator();
 		while (moveIt.hasNext()) {
 			Entry<String, MoveRequest> move = moveIt.next();
 			long finishedAt = move.getValue().finishedAt;
 			if (finishedAt == -1 || finishedAt + TIME_TO_LIVE_AFTER_FINISH > System.currentTimeMillis()) {
-				moves.put(move.getKey(), finishedAt == -1);
+				if (finishedAt == -1) {
+					active.add(move.getKey());
+				} else {
+					complete.add(move.getKey());
+				}
 			} else {
 				moveIt.remove();
 			}
 		}
 		
-		return moves;
+		results.put("active", active);
+		results.put("complete", complete);
+		
+		return results;
 	}
 
 	@RequestMapping(value = "listMoves/{moveId}/objects", method = RequestMethod.GET)
 	public @ResponseBody
 	Object getMovedObjects(@PathVariable("moveId") String moveId) {
-		MoveRequest request = this.activeMoveRequests.get(moveId);
+		MoveRequest request = this.moveRequests.get(moveId);
 		if (request == null) {
 			return null;
 		}
@@ -192,7 +201,7 @@ public class MoveObjectsController {
 		@Override
 		public void run() {
 			try {
-				activeMoveRequests.put(request.getId(), request);
+				moveRequests.put(request.getId(), request);
 				
 				GroupsThreadStore.storeGroups(groups);
 				GroupsThreadStore.storeUsername(request.getUser());

@@ -1976,7 +1976,10 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		this.options = $.extend({}, defaultOptions, options);
 		
 		this.alerts = alertHandler;
-		this.moveData = {};
+		// Object containing 
+		this.activeMoves = [];
+		this.completedMoves = [];
+		this.moveObjects = {};
 	}
 	
 	function setDifference(A, B) {
@@ -2000,12 +2003,6 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	MoveActionMonitor.prototype.activate = function() {
 		this.active = true;
 		
-		// Mark objects that were previously known to be moving
-		var self = this;
-		$.each(this.moveData, function(moveId, moveDetails) {
-			self.markMoving(moveDetails.pids);
-		});
-		
 		// Start refresh loop
 		this.update();
 	};
@@ -2014,22 +2011,22 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		var self = this;
 		
 		$.ajax({
-			url : "/services/api/listMoves",
+			url : "/services/api/listMoveStatus",
 			contentType: "application/json; charset=utf-8",
 			dataType: "json"
 		}).done(function(data) {
-			var remoteMoves = data == null? {} : data;
-			
 			try {
 				// Clean up inactive move operations that have been removed remotely
-				self.cleanMoveTombstones(remoteMoves);
+				self.cleanMoveTombstones(data);
 				// Clean up completed move operations
-				self.completeMoves(remoteMoves);
+				self.completeMoves(data);
 			
 				// Indicate new move options
-				self.addMoves(remoteMoves);
+				self.addMoves(data);
 				
 			} finally {
+				self.activeMoves = data.active;
+				self.completedMoves = data.complete;
 				// Queue up the next run
 				setTimeout($.proxy(self.update, self), self.options.updateInterval);
 			}
@@ -2040,52 +2037,28 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		});
 	};
 	
+	// Cleans up leftover data from completed move operations which are no longer being tracked remotely
 	MoveActionMonitor.prototype.cleanMoveTombstones = function(remoteMoves) {
-
-		var localInactive = [];
-		for (var moveId in this.moveData) {
-			if (this.moveData[moveId].inactive) {
-				localInactive.push(moveId);
-			}
-		}
 		
-		if (localInactive.length == 0)
+		if (this.completedMoves.length == 0)
 			return;
 
-		// Cleanable tombstones = Inactive Local Moves - Remote Moves
-		var cleanable = setDifference(localInactive, Object.keys(remoteMoves));
-		
+		// Cleanable tombstones = Completed Local Moves - All Remote Moves
+		var cleanable = setDifference(this.completedMoves, remoteMoves.active.concat(remoteMoves.complete));
 		if (cleanable.length == 0)
 			return;
 		
 		for (var index in cleanable) {
 			var cleanableId = cleanable[index];
-			delete this.moveData[cleanableId];
+			delete this.moveObjects[cleanableId];
 			this.removeUserMove(cleanableId);
 		}
 	};
 	
 	MoveActionMonitor.prototype.completeMoves = function(remoteMoves) {
 
-		// Get the set of move ids which were in progress according to the server
-		var remoteActive = [];
-		for (var moveId in remoteMoves) {
-			if (remoteMoves[moveId]) {
-				remoteActive.push(moveId);
-			}
-		}
-		
-		// Get the list of move ids considered in progress locally
-		var localActive = [];
-		for (var moveId in this.moveData) {
-			if (!this.moveData[moveId].inactive) {
-				localActive.push(moveId);
-			}
-		}
-		
-		var localMoves = Object.keys(this.moveData);
 		// Completed jobs = Local Moves - Active Remote Moves
-		var completed = setDifference(localActive, remoteActive);
+		var completed = setDifference(this.activeMoves, remoteMoves.active);
 		
 		if (completed.length == 0)
 			return;
@@ -2095,23 +2068,21 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		for (var index in completed) {
 			var completedMove = completed[index];
 		
-			var moveDetails = this.moveData[completedMove];
-			if (moveDetails && moveDetails.pids) {
+			var moveDetails = this.moveObjects[completedMove];
+			if (moveDetails) {
 				// If the user initiated this move, then tell them it has completed
 				if (completedMove in userMoves) {
-					this.alerts.alertHandler("success", "Moved " + moveDetails.pids.length 
-							+ " object" + (moveDetails.pids.length > 1? "s" : "")
+					this.alerts.alertHandler("success", "Moved " + moveDetails.length 
+							+ " object" + (moveDetails.length > 1? "s" : "")
 							+ " to " + userMoves[completedMove]);
 				}
 			
-				this.cleanupResults(moveDetails.pids)
+				this.cleanupResults(moveDetails);
 			}
 			
-			// If the move is inactive remotely, then store that.  Otherwise, purge the move
-			if (completedMove in remoteMoves) {
-				this.moveData[completedMove].inactive = true;
-			} else {
-				delete this.moveData[completedMove];
+			// If the move was no longer reported on remotely, then purge it locally
+			if (remoteMoves.complete.indexOf(completedMove) == -1) {
+				delete this.moveObjects[completedMove];
 				this.removeUserMove(completedMoved);
 			}
 		}
@@ -2128,12 +2099,13 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		}
 	};
 	
-	// Store details newly started moves and mark individual results as being moved
+	// Store details newly started moves and mark individual results as moving
 	MoveActionMonitor.prototype.addMoves = function(remoteMoves) {
 		var self = this;
 		
-		var localMoves = Object.keys(this.moveData);
-		var newMoves = setDifference(Object.keys(remoteMoves), localMoves);
+		// New moves are the set of all Remote Moves minus the set of all local moves
+		var newMoves = setDifference(remoteMoves.active.concat(remoteMoves.complete),
+				this.activeMoves.concat(this.completedMoves));
 		
 		if (!newMoves || newMoves.length == 0)
 			return;
@@ -2150,16 +2122,15 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 					return;
 				}
 				
-				// Add in new move operations
-				self.setMovePids(moveId, data);
+				if (remoteMoves.complete.indexOf(moveId) == -1) {
+					// New move in progress, mark relevant results and store the list of objects
+					self.moveObjects[moveId] = data;
 			
-				// Mark the items being moved
-				self.markMoving(data);
-				
-				// The operation was inactive at first retrieval, cleanup and discard it
-				if (!remoteMoves[moveId]) {
+					// Mark the items being moved
+					self.markMoving(data);
+				} else {
+					// Operation was complete at first retrieval, cleanup relevant results
 					self.cleanupResults(data);
-					self.moveData[moveId].inactive = true;
 				}
 			});
 		}
@@ -2171,7 +2142,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		}
 		
 		try {
-			this.setMovePids(moveId, pids);
+			this.moveObjects[moveId] = pids;
 			
 			var userMoves = this.getUserMoves();
 			userMoves[moveId] = destinationTitle;
@@ -2190,13 +2161,6 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				resultEntry.setState("moving");
 			}
 		}
-	};
-	
-	MoveActionMonitor.prototype.setMovePids = function(moveId, pids) {
-		if (!(moveId in this.moveData)) {
-			this.moveData[moveId] = {};
-		}
-		this.moveData[moveId].pids = pids;
 	};
 	
 	MoveActionMonitor.prototype.getUserMoves = function() {
@@ -4811,22 +4775,20 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			data : JSON.stringify(moveData),
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
-			success : function(data) {
-				action.context.view.moveMonitor.addMove(data.id, moveData.moved, destTitle);
-				
-				action.context.alertHandler.alertHandler("message", "Started moving " + action.context.targets.length 
-						+ " object" + (action.context.targets.length > 1? "s" : "") 
-						+ " to " + destTitle);
-			},
-			error : function() {
-				$.each(action.context.targets, function() {
-					this.element.show();
-				});
-				action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
-						+ " object" + (action.context.targets.length > 1? "s" : "") 
-						+ " to " + destTitle);
-				
-			}
+		}).done(function(data) {
+			action.context.view.moveMonitor.addMove(data.id, moveData.moved, destTitle);
+			
+			action.context.alertHandler.alertHandler("message", "Started moving " + action.context.targets.length 
+					+ " object" + (action.context.targets.length > 1? "s" : "") 
+					+ " to " + destTitle);
+		}).fail(function() {
+			$.each(action.context.targets, function() {
+				this.element.show();
+			});
+			action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
+					+ " object" + (action.context.targets.length > 1? "s" : "") 
+					+ " to " + destTitle);
+			
 		});
 	};
 
