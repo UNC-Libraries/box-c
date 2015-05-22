@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -86,7 +85,7 @@ public class MoveObjectsController {
 		return results;
 	}
 
-	@RequestMapping(value = "listMoveStatus", method = RequestMethod.GET)
+	@RequestMapping(value = "listMoves/status", method = RequestMethod.GET)
 	public @ResponseBody
 	Object listMoves() {
 		Map<String, Object> results = new HashMap<>(2);
@@ -114,15 +113,19 @@ public class MoveObjectsController {
 		return results;
 	}
 
-	@RequestMapping(value = "listMoves/{moveId}/objects", method = RequestMethod.GET)
+	@RequestMapping(value = "listMoves/objects", method = RequestMethod.POST)
 	public @ResponseBody
-	Object getMovedObjects(@PathVariable("moveId") String moveId) {
-		MoveRequest request = this.moveRequests.get(moveId);
-		if (request == null) {
-			return null;
+	Object getMovedObjects(@RequestBody List<String> moveIds) {
+		Map<String, List<String>> results = new HashMap<>();
+		
+		for (String moveId : moveIds) {
+			MoveRequest move = this.moveRequests.get(moveId);
+			if (move != null) {
+				results.put(moveId, this.moveRequests.get(moveId).moved);
+			}
 		}
 		
-		return request.getMoved();
+		return results;
 	}
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {

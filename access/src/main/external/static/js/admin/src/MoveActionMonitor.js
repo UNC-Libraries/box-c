@@ -43,7 +43,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		var self = this;
 		
 		$.ajax({
-			url : "/services/api/listMoveStatus",
+			url : "/services/api/listMoves/status",
 			contentType: "application/json; charset=utf-8",
 			dataType: "json"
 		}).done(function(data) {
@@ -142,30 +142,32 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		if (!newMoves || newMoves.length == 0)
 			return;
 		
-		for (var index in newMoves) {
-			var moveId = newMoves[index];
+		$.ajax({
+			url : "/services/api/listMoves/objects",
+			type : "POST",
+			contentType: "application/json; charset=utf-8",
+			dataType: "json",
+			data : JSON.stringify(newMoves)
+		}).done(function(moveMap) {
+			if (!moveMap) {
+				return;
+			}
 			
-			$.ajax({
-				url : "/services/api/listMoves/" + moveId + "/objects",
-				contentType: "application/json; charset=utf-8",
-				dataType: "json"
-			}).done(function(data) {
-				if (!data) {
-					return;
-				}
+			for (var moveId in moveMap) {
+				var movedObjects = moveMap[moveId];
 				
 				if (remoteMoves.complete.indexOf(moveId) == -1) {
 					// New move in progress, mark relevant results and store the list of objects
-					self.moveObjects[moveId] = data;
+					self.moveObjects[moveId] = movedObjects;
 			
 					// Mark the items being moved
-					self.markMoving(data);
+					self.markMoving(movedObjects);
 				} else {
 					// Operation was complete at first retrieval, cleanup relevant results
-					self.cleanupResults(data);
+					self.cleanupResults(movedObjects);
 				}
-			});
-		}
+			}
+		});
 	};
 	
 	MoveActionMonitor.prototype.addMove = function(moveId, pids, destinationTitle) {
