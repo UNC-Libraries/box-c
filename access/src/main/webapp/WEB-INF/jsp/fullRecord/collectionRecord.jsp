@@ -73,10 +73,10 @@
 			<p class="full_record_browse">
 				<c:url var="collectionResultsUrl" scope="page" value='browse/dept/${briefObject.id}'></c:url>
 				<c:if test="${not empty facetFields.get('DEPARTMENT').getValues()}">
-					<a href="<c:out value='${collectionResultsUrl}' />">Browse by department&nbsp;(<c:out value="${childCount}"/> items)</a> or
+					<a href="<c:out value='${collectionResultsUrl}' />">Browse by department</a> or
 				</c:if>			
-				<a href="<c:out value='${structureUrl}' />">
-					View ${fn:toLowerCase(briefObject.resourceType)} structure
+				<a href="list/<c:out value='${briefObject.id}' />">
+					Browse all&nbsp;(<c:out value="${childCount}"/> items)
 				</a>
 			</p>
 		</div>
