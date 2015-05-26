@@ -49,8 +49,8 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 			SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
 			model.addAttribute("collectionList", collectionResultResponse.getResultList());
 			
-			FacetFieldObject departmentFacetFieldObject = queryLayer.getDepartmentList(accessGroups, null);
-			model.addAttribute("departmentList", departmentFacetFieldObject.getValues());
+			SearchResultResponse departmentFieldObject = queryLayer.getDepartmentList(accessGroups, null);
+			model.addAttribute("departmentList", departmentFieldObject);
 			
 			model.addAttribute("pageSubtitle", "Advanced Search");
 			
