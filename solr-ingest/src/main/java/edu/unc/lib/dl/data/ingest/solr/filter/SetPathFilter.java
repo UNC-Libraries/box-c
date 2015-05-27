@@ -141,7 +141,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		idb.setAncestorIds(ancestorIds.toString());
 
 		// If this item is in an aggregate object then it should rollup as part of its parent
-		if (firstAggregate != null) {
+		if (firstAggregate != null && !firstAggregate.pid.equals(idb.getPid())) {
 			idb.setRollup(firstAggregate.pid.getPid());
 			idb.setIsPart(Boolean.TRUE);
 			log.debug("From query, parent is in an aggregate: " + idb.getRollup());
@@ -233,7 +233,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		}
 		idb.setAncestorIds(ancestorIds.toString());
 
-		// If the parent has a rollup other than its own id, that means its nested inside an aggregate, so it inherits
+		// If the parent has a rollup other than its own id, that means it is nested inside an aggregate, so it inherits
 		if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
 			if (parentDIP.getDocument().getRollup() == null) {
 				idb.setRollup(idb.getId());
