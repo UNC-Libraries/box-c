@@ -40,12 +40,12 @@ public class BrowseDepartmentsController extends AbstractSolrSearchController {
 		if (pid != null) {
 			result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
 		} else {
-		    result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), null);
+			result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), null);
 		}		
 
 		if (result != null) {
 			model.addAttribute("departmentFacets", result.getFacetFields().get(0));
-		    model.addAttribute("container", result.getSelectedContainer());
+			model.addAttribute("container", result.getSelectedContainer());
 		}
 			
 		model.addAttribute("resultType", "departmentBrowse");
