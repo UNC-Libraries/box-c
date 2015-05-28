@@ -2021,7 +2021,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				// Clean up completed move operations
 				self.completeMoves(data);
 			
-				// Indicate new move options
+				// Indicate new move operations
 				self.addMoves(data);
 				
 			} finally {

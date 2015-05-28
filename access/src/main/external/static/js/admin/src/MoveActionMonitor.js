@@ -53,7 +53,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 				// Clean up completed move operations
 				self.completeMoves(data);
 			
-				// Indicate new move options
+				// Indicate new move operations
 				self.addMoves(data);
 				
 			} finally {
