@@ -54,7 +54,7 @@
 				</select>
 				<select name="${searchSettings.searchFieldParams['DEPARTMENT']}" class="advsearch_select">
 					<option value="">Department</option>
-					<c:forEach items="${departmentList}" var="departmentFacet">
+					<c:forEach items="${departmentList.values}" var="departmentFacet">
 						<option value="<c:out value='${departmentFacet.value}' />"><c:out value="${departmentFacet.displayValue}" /></option>
 					</c:forEach>
 				</select>
