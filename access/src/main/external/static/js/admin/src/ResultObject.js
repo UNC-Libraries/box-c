@@ -123,6 +123,19 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.checkbox.prop("checked", false);
 	};
 	
+	ResultObject.prototype.isSelectable = function() {
+		return this.options.selectable;
+	};
+	
+	ResultObject.prototype.setSelectable = function(selectable) {
+		if (selectable) {
+			this.checkbox.removeAttr("disabled");
+		} else {
+			this.checkbox.attr("disabled", true);
+		}
+		this.options.selectable = selectable;
+	};
+	
 	ResultObject.prototype.highlight = function() {
 		this.element.addClass("highlighted");
 	};
@@ -147,6 +160,8 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		} else if ("followup" == state) {
 			this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
 		} else if ("moving" == state) {
+			this.unselect();
+			this.setSelectable(false);
 			this.element.addClass("working moving");
 		}
 	};

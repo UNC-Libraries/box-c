@@ -1966,7 +1966,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	return ModalLoadingOverlay;
-});define('MoveActionMonitor', [ 'jquery'], function($) {
+});define('MoveActionMonitor', ['jquery', 'moment'], function($) {
 
 	var defaultOptions = {
 		updateInterval : 5000
@@ -2011,7 +2011,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		var self = this;
 		
 		$.ajax({
-			url : "/services/api/listMoves/status",
+			url : "/services/api/listMoves",
 			contentType: "application/json; charset=utf-8",
 			dataType: "json"
 		}).done(function(data) {
@@ -2094,6 +2094,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			var pid = completedPids[pindex];
 			var resultEntry = this.resultList.getResultObject(pid);
 			if (resultEntry != null) {
+				this.resultList.removeResultObject(pid);
 				resultEntry.deleteElement();
 			}
 		}
@@ -2111,7 +2112,7 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			return;
 		
 		$.ajax({
-			url : "/services/api/listMoves/objects",
+			url : "/services/api/listMoves/details",
 			type : "POST",
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
@@ -2122,7 +2123,8 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 			}
 			
 			for (var moveId in moveMap) {
-				var movedObjects = moveMap[moveId];
+				var details = moveMap[moveId];
+				var movedObjects = details.moved;
 				
 				if (remoteMoves.complete.indexOf(moveId) == -1) {
 					// New move in progress, mark relevant results and store the list of objects
@@ -2132,7 +2134,11 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 					self.markMoving(movedObjects);
 				} else {
 					// Operation was complete at first retrieval, cleanup relevant results
-					self.cleanupResults(movedObjects);
+					var repRecord = self.resultList.getResultObject(movedObjects[0]);
+					console.log(repRecord.metadata.timestamp, details.finishedAt);
+					if (repRecord && repRecord.metadata.timestamp < details.finishedAt) {
+						self.cleanupResults(movedObjects);
+					}
 				}
 			}
 		});
@@ -2611,6 +2617,19 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		this.checkbox.prop("checked", false);
 	};
 	
+	ResultObject.prototype.isSelectable = function() {
+		return this.options.selectable;
+	};
+	
+	ResultObject.prototype.setSelectable = function(selectable) {
+		if (selectable) {
+			this.checkbox.removeAttr("disabled");
+		} else {
+			this.checkbox.attr("disabled", true);
+		}
+		this.options.selectable = selectable;
+	};
+	
 	ResultObject.prototype.highlight = function() {
 		this.element.addClass("highlighted");
 	};
@@ -2635,6 +2654,8 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		} else if ("followup" == state) {
 			this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
 		} else if ("moving" == state) {
+			this.unselect();
+			this.setSelectable(false);
 			this.element.addClass("working moving");
 		}
 	};
@@ -3659,10 +3680,13 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		
 		function setSelected(element) {
 			var resultObject = element.closest(".res_entry").data("resultObject");
+			if (!resultObject) {
+				return;
+			}
 			if (resultObject.selected) {
 				var selecteResults = self.resultObjectList.getSelected();
 				self.dragTargets = selecteResults;
-			} else {
+			} else if (resultObject.isSelectable()){
 				self.dragTargets = [resultObject];
 			}
 		}

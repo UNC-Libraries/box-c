@@ -438,10 +438,13 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		
 		function setSelected(element) {
 			var resultObject = element.closest(".res_entry").data("resultObject");
+			if (!resultObject) {
+				return;
+			}
 			if (resultObject.selected) {
 				var selecteResults = self.resultObjectList.getSelected();
 				self.dragTargets = selecteResults;
-			} else {
+			} else if (resultObject.isSelectable()){
 				self.dragTargets = [resultObject];
 			}
 		}

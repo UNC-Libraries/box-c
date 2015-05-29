@@ -1,4 +1,4 @@
-define('MoveActionMonitor', [ 'jquery'], function($) {
+define('MoveActionMonitor', ['jquery', 'moment'], function($) {
 
 	var defaultOptions = {
 		updateInterval : 5000
@@ -43,7 +43,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 		var self = this;
 		
 		$.ajax({
-			url : "/services/api/listMoves/status",
+			url : "/services/api/listMoves",
 			contentType: "application/json; charset=utf-8",
 			dataType: "json"
 		}).done(function(data) {
@@ -126,6 +126,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			var pid = completedPids[pindex];
 			var resultEntry = this.resultList.getResultObject(pid);
 			if (resultEntry != null) {
+				this.resultList.removeResultObject(pid);
 				resultEntry.deleteElement();
 			}
 		}
@@ -143,7 +144,7 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			return;
 		
 		$.ajax({
-			url : "/services/api/listMoves/objects",
+			url : "/services/api/listMoves/details",
 			type : "POST",
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
@@ -154,7 +155,8 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 			}
 			
 			for (var moveId in moveMap) {
-				var movedObjects = moveMap[moveId];
+				var details = moveMap[moveId];
+				var movedObjects = details.moved;
 				
 				if (remoteMoves.complete.indexOf(moveId) == -1) {
 					// New move in progress, mark relevant results and store the list of objects
@@ -164,7 +166,10 @@ define('MoveActionMonitor', [ 'jquery'], function($) {
 					self.markMoving(movedObjects);
 				} else {
 					// Operation was complete at first retrieval, cleanup relevant results
-					self.cleanupResults(movedObjects);
+					var repRecord = self.resultList.getResultObject(movedObjects[0]);
+					if (repRecord && repRecord.metadata.timestamp < details.finishedAt) {
+						self.cleanupResults(movedObjects);
+					}
 				}
 			}
 		});

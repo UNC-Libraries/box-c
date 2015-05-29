@@ -85,7 +85,7 @@ public class MoveObjectsController {
 		return results;
 	}
 
-	@RequestMapping(value = "listMoves/status", method = RequestMethod.GET)
+	@RequestMapping(value = "listMoves", method = RequestMethod.GET)
 	public @ResponseBody
 	Object listMoves() {
 		Map<String, Object> results = new HashMap<>(2);
@@ -113,15 +113,23 @@ public class MoveObjectsController {
 		return results;
 	}
 
-	@RequestMapping(value = "listMoves/objects", method = RequestMethod.POST)
+	@RequestMapping(value = "listMoves/details", method = RequestMethod.POST)
 	public @ResponseBody
 	Object getMovedObjects(@RequestBody List<String> moveIds) {
-		Map<String, List<String>> results = new HashMap<>();
+		Map<String, Object> results = new HashMap<>();
 		
 		for (String moveId : moveIds) {
+			Map<String, Object> details = new HashMap<>();
+			
 			MoveRequest move = this.moveRequests.get(moveId);
 			if (move != null) {
 				results.put(moveId, this.moveRequests.get(moveId).moved);
+				details.put("moved", this.moveRequests.get(moveId).moved);
+				if (move.finishedAt != -1) {
+					details.put("finishedAt", move.finishedAt);
+				}
+				
+				results.put(moveId, details);
 			}
 		}
 		
