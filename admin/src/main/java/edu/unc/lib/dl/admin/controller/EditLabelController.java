@@ -35,8 +35,8 @@ public class EditLabelController {
 
 				this.client.modifyObject(pidObject, label, null, null, null);
 				
-				Element event = logger.logEvent(PremisEventLogger.Type.NORMALIZATION, "Object renamed to " + label, pidObject);
-				PremisEventLogger.addDetailedOutcome(event, "success", "Message: Object renamed successfully", null);
+				Element event = logger.logEvent(PremisEventLogger.Type.MIGRATION, "Object renamed to " + label, pidObject);
+				PremisEventLogger.addDetailedOutcome(event, "success", "Object renamed successfully", null);
 				this.client.writePremisEventsToFedoraObject(logger, pidObject);
 			} catch (FedoraException e) {
 				throw new IngestException("Could not update label for " + pid, e);
