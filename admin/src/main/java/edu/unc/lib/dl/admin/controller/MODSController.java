@@ -141,7 +141,7 @@ public class MODSController extends AbstractSwordController {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET, produces = {"application/json; charset=UTF-8"})
+	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET, produces = {"text/xml; charset=UTF-8"})
 	public @ResponseBody
 	String getMods(@PathVariable("pid") String pid) {
 		String mods = null;
