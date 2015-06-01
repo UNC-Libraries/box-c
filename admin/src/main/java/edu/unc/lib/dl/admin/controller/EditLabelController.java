@@ -3,6 +3,7 @@ package edu.unc.lib.dl.admin.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jdom2.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,13 +15,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.ingest.IngestException;
-
+import edu.unc.lib.dl.util.PremisEventLogger;
 
 @Controller
-public class EditLabelController {
-	
+public class EditLabelController {	
 	@Autowired
 	private ManagementClient client;
 	
@@ -31,7 +30,14 @@ public class EditLabelController {
 		
 		if (label != null && label.trim().length() > 0) {
 			try {
-				this.client.modifyObject(new PID(pid), label, null, null, null);
+				PremisEventLogger logger = new PremisEventLogger(pid);
+				PID pidObject = new PID(pid);
+
+				this.client.modifyObject(pidObject, label, null, null, null);
+				
+				Element event = logger.logEvent(PremisEventLogger.Type.MIGRATION, "Object renamed to " + label, pidObject);
+				PremisEventLogger.addDetailedOutcome(event, "success", "Object renamed successfully", null);
+				this.client.writePremisEventsToFedoraObject(logger, pidObject);
 			} catch (FedoraException e) {
 				throw new IngestException("Could not update label for " + pid, e);
 			}
