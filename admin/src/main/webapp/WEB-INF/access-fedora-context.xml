@@ -45,6 +45,7 @@
 				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
 			</list>
 		</property>
+		<property name="accessClient" ref="forwardedAccessClient"></property>
 	</bean>
 	<bean id="forwardedAccessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">

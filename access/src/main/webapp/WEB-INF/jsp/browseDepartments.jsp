@@ -22,7 +22,7 @@
 
 <div class="content-wrap">
 <div class="contentarea">
-	<h2>Browse Departments</h2>
+	<h2>Browse Departments <c:if test="${not empty container}">in Collection <c:out value=" ${container.title}"/></c:if></h2>
 </div>
 <div class="onecol light">
 	<ul class="lightest twocol shadowtop browse_departments">
@@ -34,8 +34,8 @@
 					<c:out value="</ul><ul class='light twocol light browse_departments'>" escapeXml="false" />
 				</c:if>
 				<li>
-					<c:url var="resultsUrl" scope="page" value="search">
-						<c:param name="dept" value='${departmentFacet.searchValue}'/>
+					<c:url var="resultsUrl" scope="page" value="search/${container.id}">
+						<c:param name="dept" value='${departmentFacet.searchValue}'/>		
 					</c:url>
 					<a href="<c:out value='${resultsUrl}' />"><c:out value="${departmentFacet.displayValue}"/></a> (<c:out value="${departmentFacet.count}"/>)
 				</li>
