@@ -165,6 +165,10 @@ public class SerializationUtil {
 
 		if (metadata.getDateCreated() != null)
 			result.put("created", metadata.getDateCreated());
+		
+		if (metadata.getTimestamp() != null) {
+			result.put("timestamp", metadata.getTimestamp());
+		}
 
 		if (groups != null && metadata.getAccessControlBean() != null)
 			result.put("permissions", metadata.getAccessControlBean().getPermissionsByGroups(groups));

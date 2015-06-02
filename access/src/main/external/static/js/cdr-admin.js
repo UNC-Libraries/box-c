@@ -792,9 +792,9 @@ define('ActionEventHandler', [ 'jquery'], function($) {
 	ActionEventHandler.prototype._create = function(options) {
 		this.options = $.extend({}, defaultOptions, options);
 		
-		this.baseContext = {
+		this.baseContext = $.extend({
 			actionHandler : this
-		};
+		}, options.baseContext? options.baseContext : {});
 	};
 	
 	ActionEventHandler.prototype.addToBaseContext = function(key, value) {
@@ -1966,6 +1966,234 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 	};
 	
 	return ModalLoadingOverlay;
+});define('MoveActionMonitor', ['jquery', 'moment'], function($) {
+
+	var defaultOptions = {
+		updateInterval : 5000
+	};
+	
+	function MoveActionMonitor(alertHandler, options) {
+		this.options = $.extend({}, defaultOptions, options);
+		
+		this.alerts = alertHandler;
+		// Object containing 
+		this.activeMoves = [];
+		this.completedMoves = [];
+		this.moveObjects = {};
+	}
+	
+	function setDifference(A, B) {
+		var map = {}, C = [];
+
+		for (var i = B.length; i--; )
+			map[B[i]] = null;
+
+		for (var i = A.length; i--; ) {
+			if (!map.hasOwnProperty(A[i]))
+				C.push(A[i]);
+		}
+
+		return C;
+	}
+	
+	MoveActionMonitor.prototype.setResultList = function(resultList) {
+		this.resultList = resultList;
+	};
+	
+	MoveActionMonitor.prototype.activate = function() {
+		this.active = true;
+		
+		// Start refresh loop
+		this.update();
+	};
+	
+	MoveActionMonitor.prototype.update = function() {
+		var self = this;
+		
+		$.ajax({
+			url : "/services/api/listMoves",
+			contentType: "application/json; charset=utf-8",
+			dataType: "json"
+		}).done(function(data) {
+			try {
+				// Clean up inactive move operations that have been removed remotely
+				self.cleanMoveTombstones(data);
+				// Clean up completed move operations
+				self.completeMoves(data);
+			
+				// Indicate new move operations
+				self.addMoves(data);
+				
+			} finally {
+				self.activeMoves = data.active;
+				self.completedMoves = data.complete;
+				// Queue up the next run
+				setTimeout($.proxy(self.update, self), self.options.updateInterval);
+			}
+		}).fail(function() {
+			console.error("Failed to retrieve move information from server");
+			// Keep refreshing alive, but wait a bit longer
+			setTimeout($.proxy(self.update, self), self.options.updateInterval * 2);
+		});
+	};
+	
+	// Cleans up leftover data from completed move operations which are no longer being tracked remotely
+	MoveActionMonitor.prototype.cleanMoveTombstones = function(remoteMoves) {
+		
+		if (this.completedMoves.length == 0)
+			return;
+
+		// Cleanable tombstones = Completed Local Moves - All Remote Moves
+		var cleanable = setDifference(this.completedMoves, remoteMoves.active.concat(remoteMoves.complete));
+		if (cleanable.length == 0)
+			return;
+		
+		for (var index in cleanable) {
+			var cleanableId = cleanable[index];
+			delete this.moveObjects[cleanableId];
+			this.removeUserMove(cleanableId);
+		}
+	};
+	
+	MoveActionMonitor.prototype.completeMoves = function(remoteMoves) {
+
+		// Completed jobs = Local Moves - Active Remote Moves
+		var completed = setDifference(this.activeMoves, remoteMoves.active);
+		
+		if (completed.length == 0)
+			return;
+		
+		var userMoves = this.getUserMoves();
+		// Process the set of completed moves to remove them from local memory and inform the user
+		for (var index in completed) {
+			var completedMove = completed[index];
+		
+			var moveDetails = this.moveObjects[completedMove];
+			if (moveDetails) {
+				// If the user initiated this move, then tell them it has completed
+				if (completedMove in userMoves) {
+					this.alerts.alertHandler("success", "Moved " + moveDetails.length 
+							+ " object" + (moveDetails.length > 1? "s" : "")
+							+ " to " + userMoves[completedMove]);
+				}
+			
+				this.cleanupResults(moveDetails);
+			}
+			
+			// If the move was no longer reported on remotely, then purge it locally
+			if (remoteMoves.complete.indexOf(completedMove) == -1) {
+				delete this.moveObjects[completedMove];
+				this.removeUserMove(completedMoved);
+			}
+		}
+	};
+	
+	// Removes results with ids in the given list of pids
+	MoveActionMonitor.prototype.cleanupResults = function(completedPids) {
+		for (var pindex in completedPids) {
+			var pid = completedPids[pindex];
+			var resultEntry = this.resultList.getResultObject(pid);
+			if (resultEntry != null) {
+				this.resultList.removeResultObject(pid);
+				resultEntry.deleteElement();
+			}
+		}
+	};
+	
+	// Store details newly started moves and mark individual results as moving
+	MoveActionMonitor.prototype.addMoves = function(remoteMoves) {
+		var self = this;
+		
+		// New moves are the set of all Remote Moves minus the set of all local moves
+		var newMoves = setDifference(remoteMoves.active.concat(remoteMoves.complete),
+				this.activeMoves.concat(this.completedMoves));
+		
+		if (!newMoves || newMoves.length == 0)
+			return;
+		
+		$.ajax({
+			url : "/services/api/listMoves/details",
+			type : "POST",
+			contentType: "application/json; charset=utf-8",
+			dataType: "json",
+			data : JSON.stringify(newMoves)
+		}).done(function(moveMap) {
+			if (!moveMap) {
+				return;
+			}
+			
+			for (var moveId in moveMap) {
+				var details = moveMap[moveId];
+				var movedObjects = details.moved;
+				
+				if (remoteMoves.complete.indexOf(moveId) == -1) {
+					// New move in progress, mark relevant results and store the list of objects
+					self.moveObjects[moveId] = movedObjects;
+			
+					// Mark the items being moved
+					self.markMoving(movedObjects);
+				} else {
+					// Operation was complete at first retrieval, cleanup relevant results
+					var repRecord = self.resultList.getResultObject(movedObjects[0]);
+					if (repRecord && repRecord.metadata.timestamp < details.finishedAt) {
+						self.cleanupResults(movedObjects);
+					}
+				}
+			}
+		});
+	};
+	
+	MoveActionMonitor.prototype.addMove = function(moveId, pids, destinationTitle) {
+		if (!moveId || !pids) {
+			return;
+		}
+		
+		try {
+			this.moveObjects[moveId] = pids;
+			
+			var userMoves = this.getUserMoves();
+			userMoves[moveId] = destinationTitle;
+		
+			this.markMoving(pids);
+		} finally {
+			this.setUserMoves(userMoves);
+		}
+	};
+	
+	MoveActionMonitor.prototype.refreshMarked = function() {
+		for (var moveId in this.moveObjects) {
+			if (this.activeMoves.indexOf(moveId) != -1) {
+				this.markMoving(this.moveObjects[moveId]);
+			}
+		}
+	};
+	
+	MoveActionMonitor.prototype.markMoving = function(pids) {
+		for (var pindex in pids) {
+			var pid = pids[pindex];
+			var resultEntry = this.resultList.getResultObject(pid);
+			if (resultEntry){
+				resultEntry.setState("moving");
+			}
+		}
+	};
+	
+	MoveActionMonitor.prototype.getUserMoves = function() {
+		var userMoves = localStorage.getItem("move_actions");
+		return userMoves == null? {} : JSON.parse(userMoves);
+	};
+	
+	MoveActionMonitor.prototype.setUserMoves = function(userMoves) {
+		localStorage.setItem("move_actions", JSON.stringify(userMoves));
+	};
+	
+	MoveActionMonitor.prototype.removeUserMove = function(id) {
+		var moves = this.getUserMoves();
+		delete moves[id];
+		this.setUserMoves(moves);
+	};
+	
+	return MoveActionMonitor;
 });define('MoveDropLocation', [ 'jquery', 'jquery-ui', 'ConfirmationDialog'], 
 		function($, ui, ConfirmationDialog) {
 			
@@ -2396,6 +2624,19 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		this.checkbox.prop("checked", false);
 	};
 	
+	ResultObject.prototype.isSelectable = function() {
+		return this.options.selectable;
+	};
+	
+	ResultObject.prototype.setSelectable = function(selectable) {
+		if (selectable) {
+			this.checkbox.removeAttr("disabled");
+		} else {
+			this.checkbox.attr("disabled", true);
+		}
+		this.options.selectable = selectable;
+	};
+	
 	ResultObject.prototype.highlight = function() {
 		this.element.addClass("highlighted");
 	};
@@ -2419,6 +2660,10 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			this.element.switchClass("idle followup", "working", this.options.animateSpeed);
 		} else if ("followup" == state) {
 			this.element.removeClass("idle").addClass("followup", this.options.animateSpeed);
+		} else if ("moving" == state) {
+			this.unselect();
+			this.setSelectable(false);
+			this.element.addClass("working moving");
 		}
 	};
 	
@@ -2844,9 +3089,13 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 							self.resultObjects[metadata.id] = new ResultObject({metadata : metadata, resultObjectList : self, template : resultEntryTemplate});
 							if (self.options.parent)
 								self.options.parent.append(self.resultObjects[metadata.id].element);
+							
+							document.dispatchEvent(new CustomEvent("cdrResultsRendered"));
 						}
 						//console.timeEnd("Second batch");
 					}, 100);
+				} else {
+					document.dispatchEvent(new CustomEvent("cdrResultsRendered"));
 				}
 				//console.timeEnd("Initialize entries");
 			});
@@ -3001,544 +3250,525 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 });define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
 		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
-	$.widget("cdr.resultTableView", {
-		options : {
+	
+	function ResultTableView(element, options) {
+		this.element = element;
+		this.options = $.extend({}, defaultOptions, options);
+		
+		// Instantiate the result table view and add it to the page
+		this.actionHandler = this.options.actionHandler;
+		this.actionHandler.addToBaseContext('resultTable', this);
+		this.firstRender = true;
+	}
+	
+	var defaultOptions = {
 			enableSort : true,
 			ajaxSort : false,
 			enableArrange : false,
 			enableMove : false,
 			resultFields : undefined,
 			resultHeader : undefined,
-			postRender : undefined,
 			resultActions : undefined,
 			headerHeightClass : ''
-		},
+		};
+	
+	ResultTableView.prototype.render = function(data) {
+		var self = this;
 		
-		_create : function() {
-			// Instantiate the result table view and add it to the page
-			var self = this;
+		require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
 			
-			this.actionHandler = this.options.actionHandler;
-			this.actionHandler.addToBaseContext('resultTable', this);
-			this.firstRender = true;
-		},
+			self.element.html("");
+			
+			self.pagingActive = data.pageRows < data.resultCount;
+			
+			self.resultUrl = document.location.href;
+			var container = data.container;
 		
-		render : function(data) {
-			var self = this;
-			
-			require([this.options.resultTableTemplate, this.options.resultEntryTemplate, this.options.resultTableHeaderTemplate, this.options.navBarTemplate, this.options.pathTrailTemplate], function(resultTableTemplate, resultEntryTemplate, resultTableHeaderTemplate, navigationBarTemplate, pathTrailTemplate){
-				
-				self.element.html("");
-				
-				self.pagingActive = data.pageRows < data.resultCount;
-				
-				self.resultUrl = document.location.href;
-				var container = data.container;
-			
-				var navigationBar = navigationBarTemplate({
-					pageNavigation : data,
-					resultUrl : self.resultUrl,
-					URLUtilities : URLUtilities
-				});
-			
-				var containerPath = null;
-				if (container) {
-					containerPath = pathTrailTemplate({
-						objectPath : container.objectPath,
-						queryMethod : 'list',
-						filterParams : data.searchQueryUrl,
-						skipLast : true
-					});
-				}
-				
-				var resultTableHeader = resultTableHeaderTemplate({
-					data : data,
-					container : container,
-					navigationBar : navigationBar,
-					containerPath : containerPath,
-					queryMethod : data.queryMethod
-				});
-				
-				var headerHeightClass = self.options.headerHeightClass;
-				if (container && container.ancestorPath) {
-					headerHeightClass += " with_path";
-				} else {
-					headerHeightClass += " with_container";
-				}
-				
-				if (self.$resultView) {
-					self.$resultView.remove();
-				}
-				self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
-						resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
-				self.$resultTable = self.$resultView.find('.result_table').eq(0);
-				self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
-				self.$noResults = self.$resultView.find('.no_results').eq(0);
-				self.element.append(self.$resultView);
-			
-				if (self.options.postRender)
-					self.options.postRender(data);
-			
-				self.populateResults(data.metadata);
-			
-				// Activate sorting
-				if (self.options.enableSort)
-					self._initSort();
-				
-				// Initialize batch operation buttons
-				self._initBatchOperations();
-			
-				if (self.firstRender) {
-					self._initEventHandlers();
-				}
-			
-				// Activate the result entry context menus, on the action gear and right clicking
-				self.contextMenus = [new ResultObjectActionMenu({
-					selector : ".action_gear",
-					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler,
-					alertHandler : self.options.alertHandler
-				}), new ResultObjectActionMenu({
-					trigger : 'right',
-					positionAtTrigger : false,
-					selector : ".res_entry td",
-					containerSelector : ".res_entry,.container_entry",
-					actionHandler : self.actionHandler,
-					alertHandler : self.options.alertHandler,
-					multipleSelectionEnabled : true,
-					resultList : self.resultObjectList,
-					batchActions : self.options.resultActions
-				})];
-			
-				// Initialize click and drag operations
-				self._initMoveLocations();
-				self._initReordering();
-				
-				self.firstRender = false;
-			});
-		},
-		
-		populateResults : function(metadataObjects) {
-
-			this.$resultTable.children('tbody').html("");
-			
-			// Generate result entries
-			this.resultObjectList = new ResultObjectList({
-				metadataObjects : metadataObjects, 
-				parent : this.$resultTable.children('tbody'),
-				resultEntryTemplate : this.options.resultEntryTemplate
+			var navigationBar = navigationBarTemplate({
+				pageNavigation : data,
+				resultUrl : self.resultUrl,
+				URLUtilities : URLUtilities
 			});
 		
-			// No results message
-			if (metadataObjects.length == 0) {
-				this.$noResults.removeClass("hidden");
+			var containerPath = null;
+			if (container) {
+				containerPath = pathTrailTemplate({
+					objectPath : container.objectPath,
+					queryMethod : 'list',
+					filterParams : data.searchQueryUrl,
+					skipLast : true
+				});
+			}
+			
+			var resultTableHeader = resultTableHeaderTemplate({
+				data : data,
+				container : container,
+				navigationBar : navigationBar,
+				containerPath : containerPath,
+				queryMethod : data.queryMethod
+			});
+			
+			var headerHeightClass = self.options.headerHeightClass;
+			if (container && container.ancestorPath) {
+				headerHeightClass += " with_path";
 			} else {
-				this.$noResults.addClass("hidden");
+				headerHeightClass += " with_container";
 			}
-		},
+			
+			if (self.$resultView) {
+				self.$resultView.remove();
+			}
+			self.$resultView = $(resultTableTemplate({resultFields : self.options.resultFields, container : container,
+					resultHeader : resultTableHeader, headerHeightClass : headerHeightClass}));
+			self.$resultTable = self.$resultView.find('.result_table').eq(0);
+			self.$resultHeaderTop = self.$resultView.find('.result_header_top').eq(0);
+			self.$noResults = self.$resultView.find('.no_results').eq(0);
+			self.element.append(self.$resultView);
 		
-		// Initialize sorting headers according to whether or not paging is active
-		_initSort : function() {
-			var $resultTable = this.$resultTable;
-			var self = this;
+			self.populateResults(data.metadata);
+		
+			// Activate sorting
+			if (self.options.enableSort)
+				self._initSort();
 			
-			if (!self.sortType) {
-				var sortOrder = true;
-				var sortParam = URLUtilities.getParameter('sort');
-				if (sortParam != null) {
-					sortParam = sortParam.split(",");
-					if (sortParam.length > 1)
-						sortOrder = "reverse" != sortParam[1];
-					if (sortParam.length > 0)
-						sortParam = sortParam[0];
-				}
-				self.sortType = sortParam;
-				self.sortOrder = sortOrder;
+			// Initialize batch operation buttons
+			self._initBatchOperations();
+		
+			if (self.firstRender) {
+				self._initEventHandlers();
 			}
+		
+			// Activate the result entry context menus, on the action gear and right clicking
+			self.contextMenus = [new ResultObjectActionMenu({
+				selector : ".action_gear",
+				containerSelector : ".res_entry,.container_entry",
+				actionHandler : self.actionHandler,
+				alertHandler : self.options.alertHandler
+			}), new ResultObjectActionMenu({
+				trigger : 'right',
+				positionAtTrigger : false,
+				selector : ".res_entry td",
+				containerSelector : ".res_entry,.container_entry",
+				actionHandler : self.actionHandler,
+				alertHandler : self.options.alertHandler,
+				multipleSelectionEnabled : true,
+				resultList : self.resultObjectList,
+				batchActions : self.options.resultActions
+			})];
+		
+			// Initialize click and drag operations
+			self._initMoveLocations();
+			self._initReordering();
 			
-			$("th.sort_col", $resultTable).each(function(){
-				var $this = $(this);
-				$this.addClass('sorting');
-				var sortField = $this.attr('data-field');
-				if (sortField) {
-					// If the results are already sorted at init time, make the column reflect that
-					var isCurrentSortField = self.sortType == sortField;
-					if (isCurrentSortField) {
-						if (self.sortOrder) {
-							$this.addClass('desc');
-						} else {
-							$this.addClass('asc');
-						}
+			self.firstRender = false;
+		});
+	};
+	
+	ResultTableView.prototype.populateResults = function(metadataObjects) {
+
+		this.$resultTable.children('tbody').html("");
+		
+		// Generate result entries
+		this.resultObjectList = new ResultObjectList({
+			metadataObjects : metadataObjects, 
+			parent : this.$resultTable.children('tbody'),
+			resultEntryTemplate : this.options.resultEntryTemplate
+		});
+	
+		// No results message
+		if (metadataObjects.length == 0) {
+			this.$noResults.removeClass("hidden");
+		} else {
+			this.$noResults.addClass("hidden");
+		}
+	};
+	
+	// Initialize sorting headers according to whether or not paging is active
+	ResultTableView.prototype._initSort = function() {
+		var $resultTable = this.$resultTable;
+		var self = this;
+		
+		if (!self.sortType) {
+			var sortOrder = true;
+			var sortParam = URLUtilities.getParameter('sort');
+			if (sortParam != null) {
+				sortParam = sortParam.split(",");
+				if (sortParam.length > 1)
+					sortOrder = "reverse" != sortParam[1];
+				if (sortParam.length > 0)
+					sortParam = sortParam[0];
+			}
+			self.sortType = sortParam;
+			self.sortOrder = sortOrder;
+		}
+		
+		$("th.sort_col", $resultTable).each(function(){
+			var $this = $(this);
+			$this.addClass('sorting');
+			var sortField = $this.attr('data-field');
+			if (sortField) {
+				// If the results are already sorted at init time, make the column reflect that
+				var isCurrentSortField = self.sortType == sortField;
+				if (isCurrentSortField) {
+					if (self.sortOrder) {
+						$this.addClass('desc');
+					} else {
+						$this.addClass('asc');
 					}
-					// Set the sort URL for the column
-					var orderParam = isCurrentSortField && self.sortOrder? ",reverse" : "";
-					var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
-					this.children[0].href = sortUrl;
+				}
+				// Set the sort URL for the column
+				var orderParam = isCurrentSortField && self.sortOrder? ",reverse" : "";
+				var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', sortField + orderParam);
+				this.children[0].href = sortUrl;
+				
+				// If we're in paging mode, make the column link trigger a retrieval from server
+				if (self.pagingActive) {
+					$("a", $this).addClass("res_link");
+				}
+				
+				var $th = $(this);
+				var thIndex = $th.index();
+				var dataType = $th.attr("data-type");
+				
+				$th.click(function(){
+					if (!$th.hasClass('sorting')) return;
+					//console.time("Sort total");
+					var inverse = $th.hasClass('desc');
+					$('.sorting', $resultTable).removeClass('asc desc');
+					if (inverse)
+						$th.addClass('asc');
+					else 
+						$th.addClass('desc');
 					
-					// If we're in paging mode, make the column link trigger a retrieval from server
-					if (self.pagingActive) {
-						$("a", $this).addClass("res_link");
-					}
-					
-					var $th = $(this);
-					var thIndex = $th.index();
-					var dataType = $th.attr("data-type");
-					
-					$th.click(function(){
-						if (!$th.hasClass('sorting')) return;
-						//console.time("Sort total");
-						var inverse = $th.hasClass('desc');
-						$('.sorting', $resultTable).removeClass('asc desc');
-						if (inverse)
-							$th.addClass('asc');
-						else 
-							$th.addClass('desc');
+					self.sortType = $th.attr("data-field");
+					if (!self.pagingActive) {
+						self.sortOrder = !inverse;
 						
-						self.sortType = $th.attr("data-field");
-						if (!self.pagingActive) {
-							self.sortOrder = !inverse;
-							
-							var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
-							if (history.pushState) {
-								history.pushState({}, "", sortUrl);
-							}
-					
-							// Apply sort function based on data-type
-							if (dataType == 'index') {
-								self._originalOrderSort(inverse);
-							} else if (dataType == 'title') {
-								self._titleSort(inverse);
-							} else {
-								self._alphabeticSort(thIndex, inverse);
-							}
-							inverse = !inverse;
-							return false;
+						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
+						if (history.pushState) {
+							history.pushState({}, "", sortUrl);
+						}
+				
+						// Apply sort function based on data-type
+						if (dataType == 'index') {
+							self._originalOrderSort(inverse);
+						} else if (dataType == 'title') {
+							self._titleSort(inverse);
 						} else {
-							self.sortOrder = !inverse;
+							self._alphabeticSort(thIndex, inverse);
 						}
-						//console.timeEnd("Sort total");
-					});
-					
-					
-				}
-			});
-		},
-		
-		getCurrentSort : function() {
-			return {type : this.sortType, order : this.sortOrder};
-		},
-		
-		// Base row sorting function
-		_sortEntries : function($entries, matchMap, getSortable) {
-			//console.time("Reordering elements");
-			var $resultTable = this.$resultTable;
-			
-			$resultTable.detach(function(){
-				var fragment = document.createDocumentFragment();
-				if (matchMap) {
-					if ($.isFunction(getSortable)) {
-						for (var i = 0, length = matchMap.length; i < length; i++) {
-							fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
-						}
+						inverse = !inverse;
+						return false;
 					} else {
-						for (var i = 0, length = matchMap.length; i < length; i++) {
-							fragment.appendChild($entries[matchMap[i].index].parentNode);
-						}
+						self.sortOrder = !inverse;
+					}
+					//console.timeEnd("Sort total");
+				});
+				
+				
+			}
+		});
+	};
+	
+	ResultTableView.prototype.getCurrentSort = function() {
+		return {type : this.sortType, order : this.sortOrder};
+	};
+	
+	// Base row sorting function
+	ResultTableView.prototype._sortEntries = function($entries, matchMap, getSortable) {
+		//console.time("Reordering elements");
+		var $resultTable = this.$resultTable;
+		
+		$resultTable.detach(function(){
+			var fragment = document.createDocumentFragment();
+			if (matchMap) {
+				if ($.isFunction(getSortable)) {
+					for (var i = 0, length = matchMap.length; i < length; i++) {
+						fragment.appendChild(getSortable.call($entries[matchMap[i].index]));
 					}
 				} else {
-					if ($.isFunction(getSortable)) {
-						for (var i = 0, length = $entries.length; i < length; i++) {
-							fragment.appendChild(getSortable.call($entries[i]));
-						}
-					} else {
-						for (var i = 0, length = $entries.length; i < length; i++) {
-							fragment.appendChild($entries[i].parentNode);
-						}
+					for (var i = 0, length = matchMap.length; i < length; i++) {
+						fragment.appendChild($entries[matchMap[i].index].parentNode);
 					}
 				}
-				var resultTable = $resultTable[0];
-				resultTable.appendChild(fragment);
-			});
-			
-			//console.timeEnd("Reordering elements");
-		},
-		
-		// Simple alphanumeric result entry sorting
-		_alphabeticSort : function(thIndex, inverse) {
-			var $resultTable = this.$resultTable;
-			var matchMap = [];
-			//console.time("Finding elements");
-			var $entries = $resultTable.find('tr.res_entry').map(function() {
-				return this.children[thIndex];
-			});
-			//console.timeEnd("Finding elements");
-			for (var i = 0, length = $entries.length; i < length; i++) {
-				matchMap.push({
-					index : i,
-					value : $entries[i].children[0].innerHTML.toUpperCase()
-				});
-			}
-			//console.time("Sorting");
-			matchMap.sort(function(a, b){
-				if(a.value == b.value)
-					return 0;
-				return a.value > b.value ?
-						inverse ? -1 : 1
-						: inverse ? 1 : -1;
-			});
-			//console.timeEnd("Sorting");
-			this._sortEntries($entries, matchMap);
-		},
-		
-		// Sort by the order the items appeared at page load
-		_originalOrderSort : function(inverse) {
-			//console.time("Finding elements");
-			var $entries = [];
-			for (var index in this.resultObjectList.resultObjects) {
-				var resultObject = this.resultObjectList.resultObjects[index];
-				$entries.push(resultObject.getElement()[0]);
-			}
-			if (inverse)
-				$entries = $entries.reverse();
-			
-			//console.timeEnd("Finding elements");
-
-			this._sortEntries($entries, null, function(){
-				return this;
-			});
-		},
-		
-		// Sort with a combination of alphabetic and number detection
-		_titleSort : function(inverse) {
-			var $resultTable = this.$resultTable;
-			var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
-			var matchMap = [];
-			//console.time("Finding elements");
-			var $entries = $resultTable.find('.res_entry > .itemdetails');
-			//console.timeEnd("Finding elements");
-			for (var i = 0, length = $entries.length; i < length; i++) {
-				var text = $entries[i].children[0].children[0].innerHTML.toUpperCase();
-				var textParts = text.match(titleRegex);
-				matchMap.push({
-					index : i,
-					text : text,
-					value : (textParts == null) ? [] : textParts
-				});
-			}
-			//console.time("Sorting");
-			matchMap.sort(function(a, b) {
-				if (a.text == b.text)
-					return 0;
-				var i = 0;
-				for (; i < a.value.length && i < b.value.length && a.value[i] == b.value[i]; i++);
-				
-				// Whoever ran out of entries first, loses
-				if (i == a.value.length)
-					if (i == b.value.length)
-						return 0;
-					else return inverse ? 1 : -1;
-				if (i == b.value.length)
-					return inverse ? -1 : 1;
-				
-				// Do int comparison of unmatched elements
-				var aInt = parseInt(a.value[i]);
-				if (!isNaN(aInt)) {
-						var bInt = parseInt(b.value[i]);
-						if (!isNaN(bInt))
-							return aInt > bInt ?
-									inverse ? -1 : 1
-									: inverse ? 1 : -1;
-				}
-				return a.text > b.text ?
-						inverse ? -1 : 1
-						: inverse ? 1 : -1;
-			});
-			//console.timeEnd("Sorting");
-			this._sortEntries($entries, matchMap);
-		},
-		
-		_initBatchOperations : function() {
-			var self = this;
-			
-			$(".select_all").click(function(){
-				var checkbox = $(this).children("input");
-				var toggleFn = checkbox.prop("checked") ? "select" : "unselect";
-				var resultObjects = self.resultObjectList.resultObjects;
-				for (var index in resultObjects) {
-					resultObjects[index][toggleFn]();
-				}
-				self.selectionUpdated();
-			}).children("input").prop("checked", false);
-
-			this.actionMenu = new ResultTableActionMenu({
-				resultObjectList : this.resultObjectList, 
-				groups : this.options.resultActions,
-				actionHandler : this.actionHandler
-			}, $(".result_table_action_menu", this.$resultHeaderTop));
-		},
-		
-		_initEventHandlers : function() {
-			var self = this;
-			$(document).on('click', ".res_entry", function(e){
-				$(this).data('resultObject').toggleSelect();
-				self.selectionUpdated();
-			});
-		},
-		
-		selectionUpdated : function() {
-			this.actionMenu.selectionUpdated();
-			var selectedCount = 0;
-			for (var index in this.resultObjectList.resultObjects) {
-				if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
-			}
-			this.contextMenus[1].setSelectedCount(selectedCount);
-		},
-		
-		//Initializes the droppable elements used in move operations
-		_initMoveLocations : function() {
-			// Jquery result containing all elements to use as move drop zones
-			this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
-				var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
-				// Needs to be a valid container with sufficient perms
-				if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1) return false;
-				return dropObject.metadata;
-			});
-		},
-		
-		deactivateMove : function() {
-			this.dragTargets = null;
-			this.dropActive = false;
-			this.move = false;
-			for (var index in this.dropLocations) {
-				this.dropLocations[index].setMoveActive(false);
-			}
-		},
-		
-		activateMove : function() {
-			this.move = true;
-			for (var index in this.dropLocations) {
-				this.dropLocations[index].setMoveActive(true);
-			}
-		},
-		
-		addMoveDropLocation : function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
-			if (!this.dropLocations)
-				this.dropLocations = [];
-			var dropLocation = new MoveDropLocation($dropLocation, {
-				dropTargetSelector : dropTargetSelector,
-				dropTargetGetDataFunction : dropTargetGetDataFunction,
-				manager : this,
-				actionHandler : this.actionHandler
-			});
-			this.dropLocations.push(dropLocation);
-		},
-		
-		// Initializes draggable elements used in move and reorder operations
-		_initReordering : function() {
-			var self = this;
-			var arrangeMode = false;
-			var $resultTable = this.$resultTable;
-			
-			function setSelected(element) {
-				var resultObject = element.closest(".res_entry").data("resultObject");
-				if (resultObject.selected) {
-					var selecteResults = self.resultObjectList.getSelected();
-					self.dragTargets = selecteResults;
-				} else {
-					self.dragTargets = [resultObject];
-				}
-			}
-			
-			$resultTable.sortable({
-				delay : 200,
-				items: '.res_entry',
-				cursorAt : { top: -2, left: -5 },
-				forceHelperSize : false,
-				scrollSpeed: 100,
-				connectWith: '.result_table, .structure_content',
-				placeholder : 'arrange_placeholder',
-				helper: function(e, element){
-					if (!self.dragTargets)
-						setSelected(element);
-					var representative = element.closest(".res_entry").data("resultObject");
-					var metadata = representative.metadata;
-					
-					// Indicate how many items are being moved
-					var howManyItemsText;
-					if (self.dragTargets.length == 1) {
-						howManyItemsText = "";
-					} else {
-						howManyItemsText = " (" + self.dragTargets.length + " items)";
-					}
-					
-					// Return helper for representative entry
-					var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
-					
-					//helper.width(300);
-					return helper;
-				},
-				appendTo: document.body,
-				start: function(e, ui) {
-					// Hide the original items for a reorder operation
-					if (self.dragTargets && false) {
-						$.each(self.dragTargets, function() {
-							this.element.hide();
-						});
-					} else {
-						ui.item.show();
-					}
-					// Set the table to move mode and enable drop zone hover highlighting
-					self.activateMove();
-				},
-				stop: function(e, ui) {
-					// Move drop mode overrides reorder
-					if (self.dropActive) {
-						return false;
-					}
-					if (self.dragTargets) {
-						$.each(self.dragTargets, function() {
-							this.element.show();
-						});
-						self.dragTargets = null;
-					}
-					self.deactivateMove();
-					return false;
-					
-					/*if (!moving && !arrangeMode)
-						return false;
-					var self = this;
-					if (this.selected) {
-						$.each(this.selected, function(index){
-							if (index < self.itemSelectedIndex)
-								ui.item.before(self.selected[index]);
-							else if (index > self.itemSelectedIndex)
-								$(self.selected[index - 1]).after(self.selected[index]);
-						});
-					}*/
-				},
-				update: function (e, ui) {
-					/*if (!moving && !arrangeMode)
-						return false;
-					if (ui.item.hasClass('selected') && this.selected.length > 0)
-						this.selected.hide().show(300);
-					else ui.item.hide().show(300);*/
-				}
-			});
-		},
-		
-		setEnableSort : function(value) {
-			this.options.enableSort = value;
-			if (value) {
-				$("th.sort_col").removeClass("sorting");
 			} else {
-				$("th.sort_col").addClass("sorting");
+				if ($.isFunction(getSortable)) {
+					for (var i = 0, length = $entries.length; i < length; i++) {
+						fragment.appendChild(getSortable.call($entries[i]));
+					}
+				} else {
+					for (var i = 0, length = $entries.length; i < length; i++) {
+						fragment.appendChild($entries[i].parentNode);
+					}
+				}
+			}
+			var resultTable = $resultTable[0];
+			resultTable.appendChild(fragment);
+		});
+		
+		//console.timeEnd("Reordering elements");
+	};
+	
+	// Simple alphanumeric result entry sorting
+	ResultTableView.prototype._alphabeticSort = function(thIndex, inverse) {
+		var $resultTable = this.$resultTable;
+		var matchMap = [];
+		//console.time("Finding elements");
+		var $entries = $resultTable.find('tr.res_entry').map(function() {
+			return this.children[thIndex];
+		});
+		//console.timeEnd("Finding elements");
+		for (var i = 0, length = $entries.length; i < length; i++) {
+			matchMap.push({
+				index : i,
+				value : $entries[i].children[0].innerHTML.toUpperCase()
+			});
+		}
+		//console.time("Sorting");
+		matchMap.sort(function(a, b){
+			if(a.value == b.value)
+				return 0;
+			return a.value > b.value ?
+					inverse ? -1 : 1
+					: inverse ? 1 : -1;
+		});
+		//console.timeEnd("Sorting");
+		this._sortEntries($entries, matchMap);
+	};
+	
+	// Sort by the order the items appeared at page load
+	ResultTableView.prototype._originalOrderSort = function(inverse) {
+		//console.time("Finding elements");
+		var $entries = [];
+		for (var index in this.resultObjectList.resultObjects) {
+			var resultObject = this.resultObjectList.resultObjects[index];
+			$entries.push(resultObject.getElement()[0]);
+		}
+		if (inverse)
+			$entries = $entries.reverse();
+		
+		//console.timeEnd("Finding elements");
+
+		this._sortEntries($entries, null, function(){
+			return this;
+		});
+	};
+	
+	// Sort with a combination of alphabetic and number detection
+	ResultTableView.prototype._titleSort = function(inverse) {
+		var $resultTable = this.$resultTable;
+		var titleRegex = new RegExp('(\\d+|[^\\d]+)', 'g');
+		var matchMap = [];
+		//console.time("Finding elements");
+		var $entries = $resultTable.find('.res_entry > .itemdetails');
+		//console.timeEnd("Finding elements");
+		for (var i = 0, length = $entries.length; i < length; i++) {
+			var text = $entries[i].children[0].children[0].innerHTML.toUpperCase();
+			var textParts = text.match(titleRegex);
+			matchMap.push({
+				index : i,
+				text : text,
+				value : (textParts == null) ? [] : textParts
+			});
+		}
+		//console.time("Sorting");
+		matchMap.sort(function(a, b) {
+			if (a.text == b.text)
+				return 0;
+			var i = 0;
+			for (; i < a.value.length && i < b.value.length && a.value[i] == b.value[i]; i++);
+			
+			// Whoever ran out of entries first, loses
+			if (i == a.value.length)
+				if (i == b.value.length)
+					return 0;
+				else return inverse ? 1 : -1;
+			if (i == b.value.length)
+				return inverse ? -1 : 1;
+			
+			// Do int comparison of unmatched elements
+			var aInt = parseInt(a.value[i]);
+			if (!isNaN(aInt)) {
+					var bInt = parseInt(b.value[i]);
+					if (!isNaN(bInt))
+						return aInt > bInt ?
+								inverse ? -1 : 1
+								: inverse ? 1 : -1;
+			}
+			return a.text > b.text ?
+					inverse ? -1 : 1
+					: inverse ? 1 : -1;
+		});
+		//console.timeEnd("Sorting");
+		this._sortEntries($entries, matchMap);
+	};
+	
+	ResultTableView.prototype._initBatchOperations = function() {
+		var self = this;
+		
+		$(".select_all").click(function(){
+			var checkbox = $(this).children("input");
+			var toggleFn = checkbox.prop("checked") ? "select" : "unselect";
+			var resultObjects = self.resultObjectList.resultObjects;
+			for (var index in resultObjects) {
+				resultObjects[index][toggleFn]();
+			}
+			self.selectionUpdated();
+		}).children("input").prop("checked", false);
+
+		this.actionMenu = new ResultTableActionMenu({
+			resultObjectList : this.resultObjectList, 
+			groups : this.options.resultActions,
+			actionHandler : this.actionHandler
+		}, $(".result_table_action_menu", this.$resultHeaderTop));
+	};
+	
+	ResultTableView.prototype._initEventHandlers = function() {
+		var self = this;
+		$(document).on('click', ".res_entry", function(e){
+			$(this).data('resultObject').toggleSelect();
+			self.selectionUpdated();
+		});
+	};
+	
+	ResultTableView.prototype.selectionUpdated = function() {
+		this.actionMenu.selectionUpdated();
+		var selectedCount = 0;
+		for (var index in this.resultObjectList.resultObjects) {
+			if (this.resultObjectList.resultObjects[index].isSelected()) selectedCount++;
+		}
+		this.contextMenus[1].setSelectedCount(selectedCount);
+	};
+	
+	//Initializes the droppable elements used in move operations
+	ResultTableView.prototype._initMoveLocations = function() {
+		// Jquery result containing all elements to use as move drop zones
+		this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
+			var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
+			// Needs to be a valid container with sufficient perms
+			if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1) return false;
+			return dropObject.metadata;
+		});
+	};
+	
+	ResultTableView.prototype.deactivateMove = function() {
+		this.dragTargets = null;
+		this.dropActive = false;
+		this.move = false;
+		for (var index in this.dropLocations) {
+			this.dropLocations[index].setMoveActive(false);
+		}
+	};
+	
+	ResultTableView.prototype.activateMove = function() {
+		this.move = true;
+		for (var index in this.dropLocations) {
+			this.dropLocations[index].setMoveActive(true);
+		}
+	};
+	
+	ResultTableView.prototype.addMoveDropLocation = function($dropLocation, dropTargetSelector, dropTargetGetDataFunction) {
+		if (!this.dropLocations)
+			this.dropLocations = [];
+		var dropLocation = new MoveDropLocation($dropLocation, {
+			dropTargetSelector : dropTargetSelector,
+			dropTargetGetDataFunction : dropTargetGetDataFunction,
+			manager : this,
+			actionHandler : this.actionHandler
+		});
+		this.dropLocations.push(dropLocation);
+	};
+	
+	// Initializes draggable elements used in move and reorder operations
+	ResultTableView.prototype._initReordering = function() {
+		var self = this;
+		var arrangeMode = false;
+		var $resultTable = this.$resultTable;
+		
+		function setSelected(element) {
+			var resultObject = element.closest(".res_entry").data("resultObject");
+			if (!resultObject) {
+				return;
+			}
+			if (resultObject.selected) {
+				var selecteResults = self.resultObjectList.getSelected();
+				self.dragTargets = selecteResults;
+			} else if (resultObject.isSelectable()){
+				self.dragTargets = [resultObject];
 			}
 		}
-	});
+		
+		$resultTable.sortable({
+			delay : 200,
+			items: '.res_entry',
+			cursorAt : { top: -2, left: -5 },
+			forceHelperSize : false,
+			scrollSpeed: 100,
+			connectWith: '.result_table, .structure_content',
+			placeholder : 'arrange_placeholder',
+			cancel : '.working, .moving',
+			helper : function(e, element){
+				if (!self.dragTargets) {
+					setSelected(element);
+				}
+
+				var representative = element.closest(".res_entry").data("resultObject");
+				var metadata = representative.metadata;
+				
+				// Indicate how many items are being moved
+				var howManyItemsText;
+				if (self.dragTargets.length == 1) {
+					howManyItemsText = "";
+				} else {
+					howManyItemsText = " (" + self.dragTargets.length + " items)";
+				}
+				
+				// Return helper for representative entry
+				var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
+				
+				return helper;
+			},
+			appendTo: document.body,
+			start: function(e, ui) {
+				ui.item.show();
+				// Set the table to move mode and enable drop zone hover highlighting
+				self.activateMove();
+			},
+			stop: function(e, ui) {
+				// Move drop mode overrides reorder
+				if (self.dropActive) {
+					return false;
+				}
+				if (self.dragTargets) {
+					$.each(self.dragTargets, function() {
+						this.element.show();
+					});
+					self.dragTargets = null;
+				}
+				self.deactivateMove();
+				return false;
+			}
+		});
+	};
+	
+	ResultTableView.prototype.setEnableSort = function(value) {
+		this.options.enableSort = value;
+		if (value) {
+			$("th.sort_col").removeClass("sorting");
+		} else {
+			$("th.sort_col").addClass("sorting");
+		}
+	};
+	
+	ResultTableView.prototype.getResultObjectList = function () {
+		return this.resultObjectList;
+	};
+	
+	return ResultTableView;
 });
 	define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
-		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu) {
+		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'ActionEventHandler', 'AlertHandler', 'ParentResultObject', 'AddMenu', 'MoveActionMonitor', 'ResultTableView', 'SearchMenu', 'detachplus', 'qtip'], 
+		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, ActionEventHandler, AlertHandler, ParentResultObject, AddMenu, MoveActionMonitor, ResultTableView) {
 	$.widget("cdr.resultView", {
 		options : {
 			url : null,
@@ -3600,15 +3830,20 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					};
 			}
 			
-			var actionHandler = new ActionEventHandler();
+			var actionHandler = new ActionEventHandler({
+				baseContext : {
+					view : this
+				}
+			});
+			this.moveMonitor = new MoveActionMonitor(this.$alertHandler);
+			
+			// Register event to update the window when results have rendered
+			document.addEventListener("cdrResultsRendered", $.proxy(this.postRender, this), false);
 			
 			// Setup the result table component
-			self.$resultTableView = $(".result_area > div", self.element);
-			self.$resultTableView.resultTableView({
+			self.resultTableView = new ResultTableView($(".result_area > div", self.element), {
 				alertHandler : this.$alertHandler,
 				resultFields : self.options.resultFields,
-				postRender : $.proxy(self.postRender, self),
-				postInit : $.proxy(self.resizeResults, self),
 				actionHandler : actionHandler,
 				resultActions : self.options.resultActions,
 				resultTableTemplate : self.options.resultTableTemplate,
@@ -3650,7 +3885,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		
 		changePage : function(url, updateHistory) {
 			var self = this;
-			var sortData = self.$resultTableView.resultTableView("getCurrentSort");
+			var sortData = self.resultTableView.getCurrentSort();
 			if (sortData["type"]) {
 				var sortParams = sortData.type + "," + (sortData.order? "" : "reverse");
 				url = URLUtilities.setParameter(url, "sort", sortParams);
@@ -3670,7 +3905,10 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					if (this.addMenu) {
 						$("#add_menu").remove();
 					}
-					self.$resultTableView.resultTableView("render", data);
+					
+					self.resultData = data;
+					
+					self.resultTableView.render(data);
 					if (self.searchMenu) {
 						self.searchMenu.searchMenu("changeFolder", data.container? data.container.id : "");
 					}
@@ -3690,8 +3928,15 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			});
 		},
 		
-		postRender : function (data) {
+		postRender : function () {
 			var self = this;
+			
+			this.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
+			if (!this.moveMonitor.active) {
+				this.moveMonitor.activate();
+			} else {
+				this.moveMonitor.refreshMarked();
+			}
 			
 			this.$resultView = $('#result_view');
 			this.$columnHeaders = $('.column_headers', this.element);
@@ -3702,7 +3947,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			this.$resultTableWrap = $('.result_table_wrap', this.element);
 			this.$resultArea = $('.result_area', this.element);
 			
-			var container = data.container;
+			var container = this.resultData.container;
 		
 			if (!this.searchMenu) {
 				// Keep result area the right size when the menu is resized
@@ -3711,7 +3956,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					container : container,
 					containerPath : this.options.containerPath,
 					resultUrl : this.options.resultUrl,
-					resultTableView : $(".result_area > div"),
+					resultTableView : self.resultTableView,
 					selectedId : container? container.id : false,
 				});
 
@@ -3883,7 +4128,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 						$structureView.addClass('inset facet');
 						// Inform the result view that the structure browse is ready for move purposes
 						if (self.options.resultTableView) {
-							self.options.resultTableView.resultTableView('addMoveDropLocation', 
+							self.options.resultTableView.addMoveDropLocation(
 								$structureView.find(".structure_content"),
 								'.entry > .primary_action', 
 								function($dropTarget){
@@ -3892,7 +4137,8 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 									if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
 										return false;
 									return dropObject.metadata;
-							});
+								}
+							);
 							data = $structureView;
 						}
 						
@@ -4526,13 +4772,12 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	MoveObjectsAction.prototype.execute = function() {
 		var action = this;
 		var moveData = {
-				newParent : this.context.newParent.id,
-				ids : []
+				destination : this.context.newParent.id,
+				moved : []
 			};
 		var destTitle = this.context.destTitle? this.context.destTitle : this.context.newParent.title;
 		$.each(this.context.targets, function() {
-			moveData.ids.push(this.pid);
-			this.element.hide();
+			moveData.moved.push(this.pid);
 		});
 		// Store a reference to the targeted item list since moving happens asynchronously
 		$.ajax({
@@ -4541,23 +4786,20 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			data : JSON.stringify(moveData),
 			contentType: "application/json; charset=utf-8",
 			dataType: "json",
-			success : function(data) {
-				$.each(action.context.targets, function() {
-					this.deleteElement();
-				});
-				action.context.alertHandler.alertHandler("success", "Moved " + action.context.targets.length 
-						+ " object" + (action.context.targets.length > 1? "s" : "") 
-						+ " to " + destTitle);
-			},
-			error : function() {
-				$.each(action.context.targets, function() {
-					this.element.show();
-				});
-				action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
-						+ " object" + (action.context.targets.length > 1? "s" : "") 
-						+ " to " + destTitle);
-				
-			}
+		}).done(function(data) {
+			action.context.view.moveMonitor.addMove(data.id, moveData.moved, destTitle);
+			
+			action.context.alertHandler.alertHandler("message", "Started moving " + action.context.targets.length 
+					+ " object" + (action.context.targets.length > 1? "s" : "") 
+					+ " to " + destTitle);
+		}).fail(function() {
+			$.each(action.context.targets, function() {
+				this.element.show();
+			});
+			action.context.alertHandler.alertHandler("error", "Failed to move " + action.context.targets.length 
+					+ " object" + (action.context.targets.length > 1? "s" : "") 
+					+ " to " + destTitle);
+			
 		});
 	};
 

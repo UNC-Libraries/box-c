@@ -16,16 +16,19 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -46,32 +49,91 @@ public class MoveObjectsController {
 	private TripleStoreQueryService tripleStoreQueryService;
 	@Autowired
 	private DigitalObjectManager digitalObjectManager;
+	
+	private final Long TIME_TO_LIVE_AFTER_FINISH = 12000L;
+	
+	private final Map<String, MoveRequest> moveRequests;
+	
+	public MoveObjectsController() {
+		moveRequests = new HashMap<>();
+	}
 
 	@RequestMapping(value = "edit/move", method = RequestMethod.POST)
 	public @ResponseBody
-	String moveObjects(@RequestBody MoveRequest moveRequest, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
+	Map<String, Object> moveObjects(@RequestBody MoveRequest moveRequest, HttpServletResponse response) {
+		Map<String, Object> results = new HashMap<>();
 		// Validate that the request contains the newPath and ids fields.
-		if (moveRequest == null || moveRequest.ids == null || moveRequest.ids.size() == 0
-				|| moveRequest.getNewParent() == null || moveRequest.getNewParent().length() == 0) {
+		if (moveRequest == null || moveRequest.moved == null || moveRequest.moved.size() == 0
+				|| moveRequest.getDestination() == null || moveRequest.getDestination().length() == 0) {
 			response.setStatus(400);
-			return "{\"error\": \"Request must provide a newParent destination and a list of ids\"}";
+			results.put("error", "Request must provide a destination destination and a list of ids");
+			return results;
 		}
+		
+		moveRequest.setUser(GroupsThreadStore.getUsername());
 
-		List<PID> pids = new ArrayList<PID>(moveRequest.getIds().size());
-		for (String id : moveRequest.getIds())
-			pids.add(new PID(id));
-		PID parent = new PID(moveRequest.getNewParent());
-
-		Thread moveThread = new Thread(new MoveRunnable(pids, parent, GroupsThreadStore.getUsername(),
-				GroupsThreadStore.getGroups()));
+		Thread moveThread = new Thread(new MoveRunnable(moveRequest, GroupsThreadStore.getGroups()));
 		log.info("User {} is starting move operation of {} objects to destination {}",
-				new Object[] { GroupsThreadStore.getUsername(), pids.size(), parent });
+				new Object[] { GroupsThreadStore.getUsername(), moveRequest.moved.size(), moveRequest.getDestination()});
 		moveThread.start();
 
-		response.setStatus(204);
-		return "{\"message\": \"Operation to move " + pids.size() + " objects into container " + parent.getPid()
-				+ " has begun\"}";
+		response.setStatus(200);
+		
+		results.put("id", moveRequest.id);
+		results.put("message", "Operation to move " + moveRequest.moved.size() + " objects into container "
+				+ moveRequest.getDestination() + " has begun");
+		return results;
+	}
+
+	@RequestMapping(value = "listMoves", method = RequestMethod.GET)
+	public @ResponseBody
+	Object listMoves() {
+		Map<String, Object> results = new HashMap<>(2);
+		List<String> active = new ArrayList<>();
+		List<String> complete = new ArrayList<>();
+
+		Iterator<Entry<String, MoveRequest>> moveIt = moveRequests.entrySet().iterator();
+		while (moveIt.hasNext()) {
+			Entry<String, MoveRequest> move = moveIt.next();
+			long finishedAt = move.getValue().finishedAt;
+			if (finishedAt == -1 || finishedAt + TIME_TO_LIVE_AFTER_FINISH > System.currentTimeMillis()) {
+				if (finishedAt == -1) {
+					active.add(move.getKey());
+				} else {
+					complete.add(move.getKey());
+				}
+			} else {
+				moveIt.remove();
+			}
+		}
+		
+		results.put("active", active);
+		results.put("complete", complete);
+		
+		return results;
+	}
+
+	@RequestMapping(value = "listMoves/details", method = RequestMethod.POST)
+	public @ResponseBody
+	Object getMovedObjects(@RequestBody List<String> moveIds) {
+		Map<String, Object> results = new HashMap<>();
+		
+		for (String moveId : moveIds) {
+			Map<String, Object> details = new HashMap<>();
+			
+			MoveRequest move = this.moveRequests.get(moveId);
+			if (move != null) {
+				results.put(moveId, this.moveRequests.get(moveId).moved);
+				details.put("moved", this.moveRequests.get(moveId).moved);
+				if (move.finishedAt != -1) {
+					details.put("finishedAt", move.finishedAt);
+				}
+				
+				results.put(moveId, details);
+			}
+		}
+		
+		return results;
 	}
 
 	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
@@ -83,57 +145,88 @@ public class MoveObjectsController {
 	}
 
 	public static class MoveRequest {
-		private String newParent;
-		private List<String> ids;
+		private String destination;
+		private List<String> moved;
+		private String user;
+		private final String id;
+		private long finishedAt = -1;
 
 		public MoveRequest() {
+			id = UUID.randomUUID().toString();
 		}
 
-		public String getNewParent() {
-			return newParent;
+		public String getDestination() {
+			return destination;
 		}
 
-		public void setNewParent(String newParent) {
-			this.newParent = newParent;
+		public void setDestination(String destination) {
+			this.destination = destination;
 		}
 
-		public List<String> getIds() {
-			return ids;
+		public List<PID> getMovedPids() {
+			List<PID> movedPids = new ArrayList<PID>(moved.size());
+			for (String id : moved)
+				movedPids.add(new PID(id));
+			return movedPids;
 		}
 
-		public void setIds(List<String> ids) {
-			this.ids = ids;
+		public void setMoved(List<String> moved) {
+			this.moved = moved;
+		}
+
+		public List<String> getMoved() {
+			return moved;
+		}
+
+		public String getUser() {
+			return user;
+		}
+
+		public void setUser(String user) {
+			this.user = user;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public long getFinishedAt() {
+			return finishedAt;
+		}
+
+		public void setFinishedAt(long finishedAt) {
+			this.finishedAt = finishedAt;
 		}
 	}
 
 	public class MoveRunnable implements Runnable {
 
-		private final List<PID> moved;
-		private final PID destination;
-		private final String username;
+		private final MoveRequest request;
 		private final AccessGroupSet groups;
 
-		public MoveRunnable(List<PID> moved, PID destination, String username, AccessGroupSet groups) {
-			this.moved = moved;
-			this.destination = destination;
-			this.username = username;
+		public MoveRunnable(MoveRequest request, AccessGroupSet groups) {
+			this.request = request;
 			this.groups = groups;
 		}
 
 		@Override
 		public void run() {
 			try {
+				moveRequests.put(request.getId(), request);
+				
 				GroupsThreadStore.storeGroups(groups);
-				GroupsThreadStore.storeUsername(username);
-				digitalObjectManager.move(moved, destination, username, "Moved through API");
+				GroupsThreadStore.storeUsername(request.getUser());
+				digitalObjectManager.move(request.getMovedPids(), new PID(request.getDestination()),
+						request.getUser(), "Moved through API");
+				
 				log.info("Finished move operation of {} objects to destination {} for user {}", new Object[] {
-						moved.size(), destination, GroupsThreadStore.getUsername() });
+						request.getMoved().size(), request.getDestination(), GroupsThreadStore.getUsername() });
 			} catch (IngestException e) {
-				log.error("Failed to move objects to {}", destination, e);
+				log.error("Failed to move objects to {}", request.getDestination(), e);
 			} finally {
+				request.setFinishedAt(System.currentTimeMillis());
 				GroupsThreadStore.clearStore();
 			}
 		}
-
 	}
 }
