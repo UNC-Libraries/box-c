@@ -192,6 +192,14 @@ define('MoveActionMonitor', ['jquery', 'moment'], function($) {
 		}
 	};
 	
+	MoveActionMonitor.prototype.refreshMarked = function() {
+		for (var moveId in this.moveObjects) {
+			if (this.activeMoves.indexOf(moveId) != -1) {
+				this.markMoving(this.moveObjects[moveId]);
+			}
+		}
+	};
+	
 	MoveActionMonitor.prototype.markMoving = function(pids) {
 		for (var pindex in pids) {
 			var pid = pids[pindex];

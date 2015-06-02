@@ -163,9 +163,11 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 		postRender : function () {
 			var self = this;
 			
-			self.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
-			if (!self.moveMonitor.active) {
-				self.moveMonitor.activate();
+			this.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
+			if (!this.moveMonitor.active) {
+				this.moveMonitor.activate();
+			} else {
+				this.moveMonitor.refreshMarked();
 			}
 			
 			this.$resultView = $('#result_view');

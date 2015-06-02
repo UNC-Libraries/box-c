@@ -2160,6 +2160,14 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 		}
 	};
 	
+	MoveActionMonitor.prototype.refreshMarked = function() {
+		for (var moveId in this.moveObjects) {
+			if (this.activeMoves.indexOf(moveId) != -1) {
+				this.markMoving(this.moveObjects[moveId]);
+			}
+		}
+	};
+	
 	MoveActionMonitor.prototype.markMoving = function(pids) {
 		for (var pindex in pids) {
 			var pid = pids[pindex];
@@ -3923,9 +3931,11 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		postRender : function () {
 			var self = this;
 			
-			self.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
-			if (!self.moveMonitor.active) {
-				self.moveMonitor.activate();
+			this.moveMonitor.setResultList(self.resultTableView.getResultObjectList());
+			if (!this.moveMonitor.active) {
+				this.moveMonitor.activate();
+			} else {
+				this.moveMonitor.refreshMarked();
 			}
 			
 			this.$resultView = $('#result_view');
