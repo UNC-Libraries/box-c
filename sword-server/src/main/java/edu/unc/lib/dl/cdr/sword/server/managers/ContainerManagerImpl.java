@@ -87,8 +87,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		} catch (UIPException e) {
 			log.warn("Failed to process UIP for " + targetPID.getPid(), e);
 			throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500,
-					"A problem occurred while attempting to perform the requested update operation on " + editIRI + ".\n"
-							+ e.getMessage());
+					"A problem occurred while attempting to perform the requested update operation on " + editIRI);
 		}
 
 		DepositReceipt receipt = new DepositReceipt();

@@ -634,12 +634,27 @@ $.widget( "xml.xmlEditor", {
 				}
 			},
 			error : function(jqXHR, exception) {
+				var error_response, 
+				    error_text, 
+				    error_msg_array,
+				    user_msg;
+				
 				if (jqXHR.status === 0) {
 					alert('Not connect.\n Verify Network.');
 				} else if (jqXHR.status == 404) {
 					alert('Requested page not found. [404]');
-				} else if (jqXHR.status == 500) {
-					alert('Internal Server Error [500].');
+				} else if (jqXHR.status == 500) {			
+					error_response = $(jqXHR.responseText).find("sword\\:verboseDescription").text();
+					error_text = error_response.match(/SAXParseException.*/);
+					
+					if (error_text.length) {
+						error_msg_array = error_text[0].split(':');
+						// Remove leading SaxParser error boilerplate
+						user_msg = error_message_array.slice(1, error_msg_array.length);
+						alert($.trim(user_msg.join(' ')));
+					} else {
+						alert('Internal Server Error [500].');
+					}				
 				} else if (exception === 'parsererror') {
 					alert('Requested JSON parse failed.');
 				} else if (exception === 'timeout') {
