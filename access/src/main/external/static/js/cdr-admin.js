@@ -2135,7 +2135,6 @@ define('IngestPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateC
 				} else {
 					// Operation was complete at first retrieval, cleanup relevant results
 					var repRecord = self.resultList.getResultObject(movedObjects[0]);
-					console.log(repRecord.metadata.timestamp, details.finishedAt);
 					if (repRecord && repRecord.metadata.timestamp < details.finishedAt) {
 						self.cleanupResults(movedObjects);
 					}
@@ -3699,9 +3698,12 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			scrollSpeed: 100,
 			connectWith: '.result_table, .structure_content',
 			placeholder : 'arrange_placeholder',
+			cancel : '.working, .moving',
 			helper : function(e, element){
-				if (!self.dragTargets)
+				if (!self.dragTargets) {
 					setSelected(element);
+				}
+
 				var representative = element.closest(".res_entry").data("resultObject");
 				var metadata = representative.metadata;
 				
@@ -3716,19 +3718,11 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 				// Return helper for representative entry
 				var helper = $("<div class='move_helper'><span><div class='resource_icon " + metadata.type.toLowerCase() + "'></div>" + metadata.title + "</span>" + howManyItemsText + "</div>");
 				
-				//helper.width(300);
 				return helper;
 			},
 			appendTo: document.body,
 			start: function(e, ui) {
-				// Hide the original items for a reorder operation
-				if (self.dragTargets && false) {
-					$.each(self.dragTargets, function() {
-						this.element.hide();
-					});
-				} else {
-					ui.item.show();
-				}
+				ui.item.show();
 				// Set the table to move mode and enable drop zone hover highlighting
 				self.activateMove();
 			},
@@ -3745,25 +3739,6 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 				}
 				self.deactivateMove();
 				return false;
-				
-				/*if (!moving && !arrangeMode)
-					return false;
-				var self = this;
-				if (this.selected) {
-					$.each(this.selected, function(index){
-						if (index < self.itemSelectedIndex)
-							ui.item.before(self.selected[index]);
-						else if (index > self.itemSelectedIndex)
-							$(self.selected[index - 1]).after(self.selected[index]);
-					});
-				}*/
-			},
-			update: function (e, ui) {
-				/*if (!moving && !arrangeMode)
-					return false;
-				if (ui.item.hasClass('selected') && this.selected.length > 0)
-					this.selected.hide().show(300);
-				else ui.item.hide().show(300);*/
 			}
 		});
 	};
