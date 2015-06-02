@@ -339,7 +339,7 @@
 	font-size: 70%;
 }
 
-.moving .resource_icon {
+.res_entry.moving .resource_icon {
 	opacity : 0.3;
 }
 
