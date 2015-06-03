@@ -112,7 +112,7 @@
 	
 	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject">
-			<ref local="tripleStoreQueryService" />
+			<ref bean="tripleStoreQueryService" />
 		</property>
 		<property name="targetMethod">
 			<value>fetchByRepositoryPath</value>
