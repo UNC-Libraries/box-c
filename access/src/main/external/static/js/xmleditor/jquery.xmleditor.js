@@ -88,6 +88,8 @@ $.widget( "xml.xmlEditor", {
 		},
 		// Function triggered after uploading XML document, to interpret if the response was successful or not.  If upload failed, an error message should be returned.
 		submitResponseHandler : null,
+		// Function triggered after uploading XML document, if an error occurs. Gives full text of error, instead of a boilerplate "500 server error" message.
+		submitErrorHandler : null,
 		// Event function trigger after an xml element is update via the gui
 		elementUpdated : undefined,
 		// Title for the document, displayed in the header
@@ -180,6 +182,26 @@ $.widget( "xml.xmlEditor", {
 	_init: function() {
 		if (this.options.submitResponseHandler == null)
 			this.options.submitResponseHandler = this.swordSubmitResponseHandler;
+		
+		if (this.options.submitErrorHandler == null) {
+			this.options.submitErrorHandler = function(jqXHR, exception) {
+				if (jqXHR.status === 0) {
+					alert('Not connect.\n Verify Network.');
+				} else if (jqXHR.status == 404) {
+					alert('Requested page not found. [404]');
+				} else if (jqXHR.status == 500) {			
+					alert('Internal Server Error [500].');
+				} else if (exception === 'parsererror') {
+					alert('Requested JSON parse failed.');
+				} else if (exception === 'timeout') {
+					alert('Time out error.');
+				} else if (exception === 'abort') {
+					alert('Ajax request aborted.');
+				} else {
+					alert('Uncaught Error.\n' + jqXHR.responseText);
+				}
+			};
+		}
 		
 		// Retrieve the local xml content before we start populating the editor.
 		var localXMLContent = null;
@@ -634,59 +656,7 @@ $.widget( "xml.xmlEditor", {
 				}
 			},
 			error : function(jqXHR, exception) {
-				var error_response,
-					error_full_text,
-				    schematron_error_text,
-				    schematron_text,
-				    schematron_array;
-				
-				var error_response_msg = function(error_msg) {
-					// Remove leading SaxParser error boilerplate
-					var error_msg_array = error_msg[0].split(':');				
-					var user_msg = error_msg_array.slice(1, error_msg_array.length);
-					
-					alert($.trim(user_msg.join(' ')));
-				};
-				
-				if (jqXHR.status === 0) {
-					alert('Not connect.\n Verify Network.');
-				} else if (jqXHR.status == 404) {
-					alert('Requested page not found. [404]');
-				} else if (jqXHR.status == 500) {			
-					error_response = $(jqXHR.responseText).find("sword\\:verboseDescription").text();
-					error_full_text = error_response.match(/SAXParseException.*/);
-					
-					if (error_full_textt === null) {
-						// There's nothing very useful to match on. So go to start of next stack trace line
-						schematron_error_text = error_response.match(/UIPException[\s\S]*?edu/);
-						
-						if (schematron_error_text !== null) {
-							// Transform error text into nicer format.
-							schematron_text = schematron_error_text[0].split(/\s{2,}/);
-							schematron_array = $.map(schematron_text, function(d) {
-								return (d === '') ? null : d;
-							});
-							
-							schematron_error_text[0] = schematron_array.join(' ').replace(/.{3}edu$/, '');
-						}				
-					}
-					
-					if (error_full_text !== null && error_full_text.length) {
-						error_response_msg(error_full_text);
-					} else if (schematron_error_text !== null && schematron_error_text.length) {
-						error_response_msg(schematron_error_text);
-					} else {
-						alert('Internal Server Error [500].');
-					}				
-				} else if (exception === 'parsererror') {
-					alert('Requested JSON parse failed.');
-				} else if (exception === 'timeout') {
-					alert('Time out error.');
-				} else if (exception === 'abort') {
-					alert('Ajax request aborted.');
-				} else {
-					alert('Uncaught Error.\n' + jqXHR.responseText);
-				}
+				self.options.submitErrorHandler(jqHXR, exception);
 			}
 		});
 	},
