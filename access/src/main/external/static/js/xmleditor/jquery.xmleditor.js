@@ -656,7 +656,7 @@ $.widget( "xml.xmlEditor", {
 				}
 			},
 			error : function(jqXHR, exception) {
-				self.options.submitErrorHandler(jqHXR, exception);
+				self.options.submitErrorHandler(jqXHR, exception);
 			}
 		});
 	},
