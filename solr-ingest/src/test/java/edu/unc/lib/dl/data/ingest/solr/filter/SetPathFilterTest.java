@@ -34,7 +34,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.search.solr.util.ResourceType;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class SetPathFilterTest extends Assert {

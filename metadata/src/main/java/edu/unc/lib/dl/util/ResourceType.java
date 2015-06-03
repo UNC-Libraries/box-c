@@ -13,19 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.util;
+package edu.unc.lib.dl.util;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
+
+import java.util.Arrays;
 import java.util.List;
 
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public enum ResourceType {
-	Collection(1), Aggregate(3), Folder(2), File(3);
+	Collection(1, Arrays.asList(CONTAINER, COLLECTION)),
+			Aggregate(3, Arrays.asList(CONTAINER, AGGREGATE_WORK)),
+			Folder(2, Arrays.asList(CONTAINER)),
+			File(3,  Arrays.asList(SIMPLE));
 	
 	private int displayOrder;
+	private List<Model> contentModels;
 	
-	ResourceType(int displayOrder) {
+	ResourceType(int displayOrder, List<Model> contentModels) {
 		this.displayOrder = displayOrder;
+		this.contentModels = contentModels;
 	}
 	
 	public int getDisplayOrder(){
@@ -36,17 +47,21 @@ public enum ResourceType {
 		return this.name().equals(name);
 	}
 	
+	public List<Model> getContentModels() {
+		return contentModels;
+	}
+
 	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
-		if (contentModels.contains(ContentModelHelper.Model.COLLECTION.getPID().getURI())) {
+		if (contentModels.contains(COLLECTION.getPID().getURI())) {
 			return Collection;
 		}
-		if (contentModels.contains(ContentModelHelper.Model.AGGREGATE_WORK.getPID().getURI())) {
+		if (contentModels.contains(AGGREGATE_WORK.getPID().getURI())) {
 			return Aggregate;
 		}
-		if (contentModels.contains(ContentModelHelper.Model.CONTAINER.getPID().getURI())) {
+		if (contentModels.contains(CONTAINER.getPID().getURI())) {
 			return Folder;
 		}
-		if (contentModels.contains(ContentModelHelper.Model.SIMPLE.getPID().getURI())) {
+		if (contentModels.contains(SIMPLE.getPID().getURI())) {
 			return File;
 		}
 		return null;
