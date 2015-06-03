@@ -634,10 +634,19 @@ $.widget( "xml.xmlEditor", {
 				}
 			},
 			error : function(jqXHR, exception) {
-				var error_response, 
-				    error_text, 
-				    error_msg_array,
-				    user_msg;
+				var error_response,
+					error_text,
+				    schematron_error_text,
+				    schematron_text,
+				    schematron_array;
+				
+				var error_response_msg = function(error_msg) {
+					// Remove leading SaxParser error boilerplate
+					var error_msg_array = error_msg[0].split(':');				
+					var user_msg = error_msg_array.slice(1, error_msg_array.length);
+					
+					alert($.trim(user_msg.join(' ')));
+				};
 				
 				if (jqXHR.status === 0) {
 					alert('Not connect.\n Verify Network.');
@@ -647,11 +656,25 @@ $.widget( "xml.xmlEditor", {
 					error_response = $(jqXHR.responseText).find("sword\\:verboseDescription").text();
 					error_text = error_response.match(/SAXParseException.*/);
 					
-					if (error_text.length) {
-						error_msg_array = error_text[0].split(':');
-						// Remove leading SaxParser error boilerplate
-						user_msg = error_message_array.slice(1, error_msg_array.length);
-						alert($.trim(user_msg.join(' ')));
+					if (error_text === null) {
+						// There's nothing very useful to match on. So go to start of next stack trace line
+						schematron_error_text = error_response.match(/UIPException[\s\S]*?edu/);
+						
+						if (schematron_error_text !== null) {
+							// Transform error text into nicer format.
+							schematron_text = schematron_error_text[0].split(/\s{2,}/);
+							schematron_array = $.map(schematron_text, function(d) {
+								return (d === '') ? null : d;
+							});
+							
+							schematron_error_text[0] = schematron_array.join(' ').replace(/.{3}edu$/, '');
+						}				
+					}
+					
+					if (error_text !== null && error_text.length) {
+						error_response_msg(error_text);
+					} else if (schematron_error_text !== null && schematron_error_text.length) {
+						error_response_msg(schematron_error_text);
 					} else {
 						alert('Internal Server Error [500].');
 					}				
