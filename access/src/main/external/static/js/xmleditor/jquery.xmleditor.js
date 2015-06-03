@@ -635,7 +635,7 @@ $.widget( "xml.xmlEditor", {
 			},
 			error : function(jqXHR, exception) {
 				var error_response,
-					error_text,
+					error_full_text,
 				    schematron_error_text,
 				    schematron_text,
 				    schematron_array;
@@ -654,9 +654,9 @@ $.widget( "xml.xmlEditor", {
 					alert('Requested page not found. [404]');
 				} else if (jqXHR.status == 500) {			
 					error_response = $(jqXHR.responseText).find("sword\\:verboseDescription").text();
-					error_text = error_response.match(/SAXParseException.*/);
+					error_full_text = error_response.match(/SAXParseException.*/);
 					
-					if (error_text === null) {
+					if (error_full_textt === null) {
 						// There's nothing very useful to match on. So go to start of next stack trace line
 						schematron_error_text = error_response.match(/UIPException[\s\S]*?edu/);
 						
@@ -671,8 +671,8 @@ $.widget( "xml.xmlEditor", {
 						}				
 					}
 					
-					if (error_text !== null && error_text.length) {
-						error_response_msg(error_text);
+					if (error_full_text !== null && error_full_text.length) {
+						error_response_msg(error_full_text);
 					} else if (schematron_error_text !== null && schematron_error_text.length) {
 						error_response_msg(schematron_error_text);
 					} else {
