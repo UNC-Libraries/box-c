@@ -635,7 +635,7 @@ $.widget( "xml.xmlEditor", {
 			},
 			error : function(jqXHR, exception) {
 				var error_response,
-				error_full_text,
+					error_full_text,
 				    schematron_error_text,
 				    schematron_text,
 				    schematron_array;
