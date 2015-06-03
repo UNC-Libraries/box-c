@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.util.Map;
+
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.log4j.Logger;
 import org.swordapp.server.AuthCredentials;
@@ -87,7 +88,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		} catch (UIPException e) {
 			log.warn("Failed to process UIP for " + targetPID.getPid(), e);
 			throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500,
-					"A problem occurred while attempting to perform the requested update operation on " + editIRI);
+					"A problem occurred while attempting to perform the requested update operation on " + editIRI, e);
 		}
 
 		DepositReceipt receipt = new DepositReceipt();
