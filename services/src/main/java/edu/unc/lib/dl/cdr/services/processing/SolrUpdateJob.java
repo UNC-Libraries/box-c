@@ -40,7 +40,7 @@ public class SolrUpdateJob implements Runnable {
 				indexingAction.performAction(updateRequest);
 			}
 		} catch (IndexingException e) {
-			LOG.error("Error attempting perform action " + updateRequest.getAction() + " on object " + updateRequest.getTargetID(), e);
+			LOG.error("Error attempting to perform action " + updateRequest.getAction() + " on object " + updateRequest.getTargetID(), e);
 		}
 	}
 
