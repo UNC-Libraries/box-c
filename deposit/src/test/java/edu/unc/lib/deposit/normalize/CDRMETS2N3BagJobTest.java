@@ -16,8 +16,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.deposit.DepositTestUtils;
-import edu.unc.lib.deposit.work.SpringJobFactory;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.SpringJobFactory;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })

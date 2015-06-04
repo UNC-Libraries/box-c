@@ -104,11 +104,6 @@
 			<version>${cdr.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>deposit</artifactId>
-			<version>${cdr.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
 			<version>5.5.1</version>

@@ -22,8 +22,8 @@ import org.springframework.util.Assert;
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.deposit.work.SpringJobFactory;
 import edu.unc.lib.dl.util.DepositStatusFactory;
+import edu.unc.lib.dl.util.SpringJobFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 @RunWith(SpringJUnit4ClassRunner.class)
