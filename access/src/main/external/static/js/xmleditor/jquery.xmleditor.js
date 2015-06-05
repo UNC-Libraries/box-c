@@ -88,6 +88,8 @@ $.widget( "xml.xmlEditor", {
 		},
 		// Function triggered after uploading XML document, to interpret if the response was successful or not.  If upload failed, an error message should be returned.
 		submitResponseHandler : null,
+		// Function triggered after uploading XML document, if an error occurs. Gives full text of error, instead of a boilerplate "500 server error" message.
+		submitErrorHandler : null,
 		// Event function trigger after an xml element is update via the gui
 		elementUpdated : undefined,
 		// Title for the document, displayed in the header
@@ -180,6 +182,26 @@ $.widget( "xml.xmlEditor", {
 	_init: function() {
 		if (this.options.submitResponseHandler == null)
 			this.options.submitResponseHandler = this.swordSubmitResponseHandler;
+		
+		if (this.options.submitErrorHandler == null) {
+			this.options.submitErrorHandler = function(jqXHR, exception) {
+				if (jqXHR.status === 0) {
+					alert('Not connect.\n Verify Network.');
+				} else if (jqXHR.status == 404) {
+					alert('Requested page not found. [404]');
+				} else if (jqXHR.status == 500) {			
+					alert('Internal Server Error [500].');
+				} else if (exception === 'parsererror') {
+					alert('Requested JSON parse failed.');
+				} else if (exception === 'timeout') {
+					alert('Time out error.');
+				} else if (exception === 'abort') {
+					alert('Ajax request aborted.');
+				} else {
+					alert('Uncaught Error.\n' + jqXHR.responseText);
+				}
+			};
+		}
 		
 		// Retrieve the local xml content before we start populating the editor.
 		var localXMLContent = null;
@@ -634,21 +656,7 @@ $.widget( "xml.xmlEditor", {
 				}
 			},
 			error : function(jqXHR, exception) {
-				if (jqXHR.status === 0) {
-					alert('Not connect.\n Verify Network.');
-				} else if (jqXHR.status == 404) {
-					alert('Requested page not found. [404]');
-				} else if (jqXHR.status == 500) {
-					alert('Internal Server Error [500].');
-				} else if (exception === 'parsererror') {
-					alert('Requested JSON parse failed.');
-				} else if (exception === 'timeout') {
-					alert('Time out error.');
-				} else if (exception === 'abort') {
-					alert('Ajax request aborted.');
-				} else {
-					alert('Uncaught Error.\n' + jqXHR.responseText);
-				}
+				self.options.submitErrorHandler(jqXHR, exception);
 			}
 		});
 	},
