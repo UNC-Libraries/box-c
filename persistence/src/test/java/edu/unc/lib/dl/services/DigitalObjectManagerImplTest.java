@@ -56,7 +56,10 @@ import org.mockito.stubbing.Answer;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
@@ -91,6 +94,9 @@ public class DigitalObjectManagerImplTest {
 
 	@Resource
 	AccessClient accessClient = null;
+	
+	@Resource
+	FedoraAccessControlService aclService = null;
 
 	@Resource
 	TripleStoreQueryService tripleStoreQueryService = null;
@@ -413,10 +419,13 @@ public class DigitalObjectManagerImplTest {
 		
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(relsName), anyString())).thenReturn(datastream);
 		
+		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.changeResourceType)))
+		.thenReturn(true);
+		
 		this.digitalObjectManagerImpl.changeResourceType(Arrays.asList(new PID("pid")), ResourceType.Aggregate, "user");
 		
 		ArgumentCaptor<Document> newRelsCaptor = ArgumentCaptor.forClass(Document.class);
-		verify(forwardedManagementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),
+		verify(managementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),
 				eq("2015-06-03"), newRelsCaptor.capture());
 		
 		Document newRels = newRelsCaptor.getValue();

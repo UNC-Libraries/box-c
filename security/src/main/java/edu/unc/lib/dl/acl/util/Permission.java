@@ -18,7 +18,10 @@ package edu.unc.lib.dl.acl.util;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 public enum Permission {
-	addRemoveContents, editAccessControl, editDescription, moveToTrash, publish, purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed, viewOriginal;
+	addRemoveContents, editAccessControl, editDescription, moveToTrash, publish,
+	purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
+	viewOriginal, changeResourceType;
+	
 	private Permission() {}
 	
 	public static Permission getPermission(String permissionName) {

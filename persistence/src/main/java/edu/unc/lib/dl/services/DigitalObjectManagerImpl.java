@@ -175,6 +175,16 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throw new UpdateException("Cannot change to type " + newType + ", operation not supported");
 		}
 		
+		// Check that the user has permissions to add/remove from all sources and the destination
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		for (PID subject : subjects) {
+			if (!aclService.hasAccess(subject, groups, Permission.changeResourceType)) {
+				throw new UpdateException("Insufficient permissions to perform change type", new AuthorizationException(
+						"Cannot complete change type operation, user " + user + " does not have permission to modify "
+						+ subject));
+			}
+		}
+		
 		for (PID subject : subjects) {
 			do {
 				try {
@@ -234,7 +244,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					}
 	
 					// Push the changes to the objects relations
-					forwardedManagementClient
+					managementClient
 							.modifyDatastream(subject, RELS_EXT.getName(), null, relsExtResp.getLastModified(), relsExt);
 					
 					// Add premis event for the resource type change

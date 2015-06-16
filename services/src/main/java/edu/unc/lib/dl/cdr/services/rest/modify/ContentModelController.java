@@ -124,7 +124,7 @@ public class ContentModelController {
 				try {
 					dom.changeResourceType(changeRequest.pids, changeRequest.getNewType(), changeRequest.user);
 				} catch (UpdateException e) {
-					log.warn("Failed to change model to {}", changeRequest.newType);
+					log.warn("Failed to change model to {}", changeRequest.newType, e);
 				}
 			} finally {
 				GroupsThreadStore.clearStore();

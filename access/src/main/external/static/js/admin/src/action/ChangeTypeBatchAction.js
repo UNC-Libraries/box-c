@@ -7,7 +7,7 @@ define('ChangeTypeBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templ
 	ChangeTypeBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	ChangeTypeBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() && $.inArray("addRemoveContents", target.metadata.permissions) != -1
+		return target.isSelected() && target.isEnabled() && $.inArray("changeResourceType", target.metadata.permissions) != -1
 			&& ("Collection" == target.getMetadata().type
 			|| "Aggregate" == target.getMetadata().type
 			|| "Folder" == target.getMetadata().type);

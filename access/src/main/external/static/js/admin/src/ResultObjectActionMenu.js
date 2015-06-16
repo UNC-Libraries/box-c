@@ -134,7 +134,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			}
 		}
 		
-		if ($.inArray('editAccessControl', metadata.permissions) != -1
+		if ($.inArray('changeResourceType', metadata.permissions) != -1
 				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
 			items["changeType"] = {name : 'Change Type'};
 		}
