@@ -21,6 +21,11 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			resultActions : [
 						{
 							actions : [
+								{action : 'ChangeTypeBatch', label : 'Change Type'}
+							]
+						},
+						{
+							actions : [
 								{action : 'PublishBatch', label : 'Publish'},
 								{action : 'UnpublishBatch', label : 'Unpublish'}
 							]

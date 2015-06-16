@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -31,17 +32,25 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Resource;
 
+import org.apache.commons.io.IOUtils;
+import org.jdom2.Attribute;
 import org.jdom2.Document;
+import org.jdom2.filter.Filters;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.context.ContextConfiguration;
@@ -52,11 +61,16 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.PremisEventLogger;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author Gregory Jansen
@@ -71,6 +85,9 @@ public class DigitalObjectManagerImplTest {
 
 	@Resource
 	ManagementClient forwardedManagementClient = null;
+	
+	@Resource
+	ManagementClient managementClient = null;
 
 	@Resource
 	AccessClient accessClient = null;
@@ -375,6 +392,49 @@ public class DigitalObjectManagerImplTest {
 				"The repository manager is unavailable for a test of the availability check.");
 		this.getDigitalObjectManagerImpl().addRelationship(new PID("foo"), ContentModelHelper.Relationship.member,
 				new PID("bar"));
+	}
+	
+	@Test(expected = UpdateException.class)
+	public void testChangeResourceTypeInvalidNewType() throws Exception {
+		this.digitalObjectManagerImpl.changeResourceType(Arrays.asList(new PID("pid")), null, "user");
+	}
+	
+	@Test
+	public void testChangeResourceType() throws Exception {
+		String relsName = ContentModelHelper.Datastream.RELS_EXT.toString();
+		
+		Datastream relsDS = mock(Datastream.class);
+		when(relsDS.getCreateDate()).thenReturn("2015-06-03");
+		when(managementClient.getDatastream(any(PID.class), eq(relsName))).thenReturn(relsDS);
+		
+		MIMETypedStream datastream = mock(MIMETypedStream.class);
+		byte[] stream = IOUtils.toByteArray(getClass().getResourceAsStream("/datastream/collectionRels.xml"));
+		when(datastream.getStream()).thenReturn(stream);
+		
+		when(accessClient.getDatastreamDissemination(any(PID.class), eq(relsName), anyString())).thenReturn(datastream);
+		
+		this.digitalObjectManagerImpl.changeResourceType(Arrays.asList(new PID("pid")), ResourceType.Aggregate, "user");
+		
+		ArgumentCaptor<Document> newRelsCaptor = ArgumentCaptor.forClass(Document.class);
+		verify(forwardedManagementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),
+				eq("2015-06-03"), newRelsCaptor.capture());
+		
+		Document newRels = newRelsCaptor.getValue();
+		
+		XPathFactory xFactory = XPathFactory.instance();
+		
+		XPathExpression<Attribute> expr = xFactory.compile("//fedModel:hasModel/@rdf:resource", Filters.attribute(),
+				null, JDOMNamespaceUtil.RDF_NS, JDOMNamespaceUtil.FEDORA_MODEL_NS);
+		List<Attribute> modelAttrs = expr.evaluate(newRels);
+		List<String> modelValues = new ArrayList<>();
+		for (Attribute attr : modelAttrs) {
+			modelValues.add(attr.getValue());
+		}
+
+		assertTrue(modelValues.contains(Model.CONTAINER.toString()));
+		assertTrue(modelValues.contains(Model.AGGREGATE_WORK.toString()));
+		assertFalse(modelValues.contains(Model.COLLECTION.toString()));
+		assertTrue(modelValues.contains(Model.PRESERVEDOBJECT.toString()));
 	}
 
 	/**

@@ -39,7 +39,8 @@ import org.springframework.jms.core.MessageCreator;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
-import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * @author Gregory Jansen
@@ -53,7 +54,7 @@ public class OperationsMessageSender {
 	public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
 			Collection<PID> reordered, String depositId) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), "add");
+		Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), CDRActions.ADD.getName());
 		Element add = new Element("add", CDR_MESSAGE_NS);
 		contentEl.addContent(add);
 
@@ -81,7 +82,7 @@ public class OperationsMessageSender {
 
 	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed, Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destination, "remove");
+		Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REMOVE.getName());
 		Element remove = new Element("remove", CDR_MESSAGE_NS);
 		contentEl.addContent(remove);
 
@@ -106,7 +107,7 @@ public class OperationsMessageSender {
 	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
 			Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destination, "move");
+		Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.MOVE.getName());
 		Element move = new Element("move", CDR_MESSAGE_NS);
 		contentEl.addContent(move);
 
@@ -135,7 +136,7 @@ public class OperationsMessageSender {
 
 	public void sendReorderOperation(String userid, String timestamp, PID destination, Collection<PID> reordered) {
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destination, "reorder");
+		Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REORDER.getName());
 		Element reorder = new Element("reorder", CDR_MESSAGE_NS);
 		contentEl.addContent(reorder);
 
@@ -161,7 +162,7 @@ public class OperationsMessageSender {
 	public String sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
 		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), "publish", messageId);
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.PUBLISH.getName(), messageId);
 		
 		Element publishEl = new Element("publish", CDR_MESSAGE_NS);
 		contentEl.addContent(publishEl);
@@ -185,10 +186,33 @@ public class OperationsMessageSender {
 		return messageId;
 	}
 	
+	public String sendChangeTypeOperation(String userid, Collection<PID> pids, ResourceType newType) {
+		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
+		Document msg = new Document();
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.CHANGE_TYPE.getName(), messageId);
+		
+		Element newTypeEl = new Element("newType", CDR_MESSAGE_NS);
+		contentEl.addContent(newTypeEl);
+
+		Element newTypeValueEl = new Element("value", CDR_MESSAGE_NS);
+		newTypeEl.addContent(newTypeValueEl);
+		newTypeEl.setText(newType.name());
+
+		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+		newTypeEl.addContent(subjects);
+		for (PID sub : pids) {
+			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+		}
+
+		sendMessage(msg);
+		
+		return messageId;
+	}
+	
 	public String sendIndexingOperation(String userid, Collection<PID> pids, IndexingActionType type) {
 		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), JMSMessageUtil.CDRActions.INDEX.getName(), messageId);
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.INDEX.getName(), messageId);
 		
 		Element indexEl = new Element(type.getName(), CDR_MESSAGE_NS);
 		contentEl.addContent(indexEl);

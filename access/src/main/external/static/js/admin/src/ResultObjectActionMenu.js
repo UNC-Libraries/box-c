@@ -134,8 +134,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			}
 		}
 		
+		if ($.inArray('editAccessControl', metadata.permissions) != -1
+				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+			items["changeType"] = {name : 'Change Type'};
+		}
 		
-	    items["copyid"] = {name : 'Copy PID to Clipboard'};
+		
+		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepadmin"] = "";
 			items["reindex"] = {name : 'Reindex'};
@@ -186,7 +191,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "editLabel" :
 						self.editLabel(resultObject);
 						break;
-					
+					case "changeType" :
+						self.actionHandler.addEvent({
+							action : 'ChangeTypeBatch',
+							targets : [resultObject]
+						});
+						break;
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;

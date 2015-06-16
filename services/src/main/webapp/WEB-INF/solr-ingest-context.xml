@@ -173,6 +173,16 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="solrChangeTypePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setPathFilter" />
+				<ref bean="setCollectionSupplementalInformationFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
@@ -286,6 +296,14 @@
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
+	
+	<bean id="changeTypeAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetRelationsAction">
+		<property name="pipeline" ref="solrChangeTypePipeline" />
+		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+	</bean>
 
 	<util:map id="solrIndexingActionMap"
 		key-type="edu.unc.lib.dl.util.IndexingActionType"
@@ -305,6 +323,7 @@
 		<entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
 		<entry key="MOVE" value-ref="moveObjectsAction" />
 		<entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
+		<entry key="CHANGE_TYPE" value-ref="changeTypeAction" />
 	</util:map>
 	
 	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">

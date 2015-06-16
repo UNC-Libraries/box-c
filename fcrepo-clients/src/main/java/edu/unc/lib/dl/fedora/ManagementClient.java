@@ -624,6 +624,10 @@ public class ManagementClient extends WebServiceTemplate {
 		
 		PutMethod method = new PutMethod(builder.build().encode().toUriString());
 		method.setRequestEntity(new ByteArrayRequestEntity(content));
+		if (GroupsThreadStore.getGroups() != null) {
+			method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER,
+					GroupsThreadStore.getGroups().joinAccessGroups(";", null, false));
+		}
 
 		try {
 			int response = httpClient.executeMethod(method);
