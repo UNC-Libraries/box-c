@@ -210,7 +210,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 						existingModels.add(modelEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
 					}
 					ResourceType existingType = ResourceType.getResourceTypeByContentModels(existingModels);
-					
+
+					// If the resource type hasn't changed from what is present in Fedora, then skip changing
+					if (existingType.equals(newType)) {
+						break;
+					}
+
 					// Validate that the conversion is allowed
 					if (existingType.equals(ResourceType.File)) {
 						// Can't convert from file currently
