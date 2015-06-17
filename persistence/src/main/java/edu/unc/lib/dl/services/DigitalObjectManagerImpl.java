@@ -165,10 +165,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 	}
 	
-	/**
-	 * Keys for originalRelations and newRelations must be enumerations of types Relationship, CDRProperty, or
-	 * FedoraProperty
-	 */
 	@Override
 	public void changeResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException {
 		if (newType == null || ResourceType.File.equals(newType)) {
