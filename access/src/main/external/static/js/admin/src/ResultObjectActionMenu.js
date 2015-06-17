@@ -194,7 +194,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "editLabel" :
 						self.editLabel(resultObject);
 						break;
-					case "changeType" :
+					case "editType" :
 						self.actionHandler.addEvent({
 							action : 'EditTypeBatch',
 							targets : [resultObject]

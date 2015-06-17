@@ -2928,7 +2928,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					case "editLabel" :
 						self.editLabel(resultObject);
 						break;
-					case "changeType" :
+					case "editType" :
 						self.actionHandler.addEvent({
 							action : 'EditTypeBatch',
 							targets : [resultObject]
