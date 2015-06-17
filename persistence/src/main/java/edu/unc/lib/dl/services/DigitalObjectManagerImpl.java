@@ -166,17 +166,17 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	}
 	
 	@Override
-	public void changeResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException {
+	public void editResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException {
 		if (newType == null || ResourceType.File.equals(newType)) {
-			throw new UpdateException("Cannot change to type " + newType + ", operation not supported");
+			throw new UpdateException("Cannot edit to type " + newType + ", operation not supported");
 		}
 		
 		// Check that the user has permissions to add/remove from all sources and the destination
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
 		for (PID subject : subjects) {
-			if (!aclService.hasAccess(subject, groups, Permission.changeResourceType)) {
-				throw new UpdateException("Insufficient permissions to perform change type", new AuthorizationException(
-						"Cannot complete change type operation, user " + user + " does not have permission to modify "
+			if (!aclService.hasAccess(subject, groups, Permission.editResourceType)) {
+				throw new UpdateException("Insufficient permissions to perform edit type", new AuthorizationException(
+						"Cannot complete edit type operation, user " + user + " does not have permission to modify "
 						+ subject));
 			}
 		}
@@ -187,7 +187,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(subject, RELS_EXT.getName());
 	
 					if (relsExtResp == null) {
-						throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot change models");
+						throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot edit models");
 					}
 	
 					Document relsExt = relsExtResp.getDocument();
@@ -215,7 +215,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					// Validate that the conversion is allowed
 					if (existingType.equals(ResourceType.File)) {
 						// Can't convert from file currently
-						throw new UpdateException("Cannot change object " + subject + " from type File, operation not supported");
+						throw new UpdateException("Cannot edit object " + subject + " from type File, operation not supported");
 					}
 					
 					// Remove existing content models
@@ -240,7 +240,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	
 					if (log.isDebugEnabled()) {
 						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-						log.debug("Attempting to update RELS-EXT for {} to change models:\n{}", subject,
+						log.debug("Attempting to update RELS-EXT for {} to edit models:\n{}", subject,
 								outputter.outputString(relsExt));
 					}
 	
@@ -267,7 +267,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		
 		if (this.getOperationsMessageSender() != null) {
-			this.getOperationsMessageSender().sendChangeTypeOperation(user, subjects, newType);
+			this.getOperationsMessageSender().sendEditTypeOperation(user, subjects, newType);
 		}
 	}
 

@@ -20,7 +20,7 @@ import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 public enum Permission {
 	addRemoveContents, editAccessControl, editDescription, moveToTrash, publish,
 	purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
-	viewOriginal, changeResourceType;
+	viewOriginal, editResourceType;
 	
 	private Permission() {}
 	

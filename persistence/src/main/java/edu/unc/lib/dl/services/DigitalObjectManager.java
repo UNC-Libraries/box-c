@@ -52,7 +52,7 @@ public interface DigitalObjectManager {
 	 * @param newType
 	 * @throws IngestException
 	 */
-	public void changeResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException;
+	public void editResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException;
 
 	/**
 	 * Completely removes the specified objects and any children. Updates containing objects to remove any references.

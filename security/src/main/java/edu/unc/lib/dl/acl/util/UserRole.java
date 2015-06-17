@@ -47,11 +47,11 @@ public enum UserRole {
 	curator("curator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents,
 			Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl,
 			Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal,
-			Permission.changeResourceType}),
+			Permission.editResourceType}),
 	administrator("administrator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
 			Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash,
 			Permission.editAccessControl, Permission.purgeForever, Permission.viewDescription, Permission.viewDerivative,
-			Permission.viewOriginal, Permission.changeResourceType});
+			Permission.viewOriginal, Permission.editResourceType});
 	private URI uri;
 	private String predicate;
 	private Set<Permission> permissions;

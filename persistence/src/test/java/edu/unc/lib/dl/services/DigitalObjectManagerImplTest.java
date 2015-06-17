@@ -402,7 +402,7 @@ public class DigitalObjectManagerImplTest {
 	
 	@Test(expected = UpdateException.class)
 	public void testChangeResourceTypeInvalidNewType() throws Exception {
-		this.digitalObjectManagerImpl.changeResourceType(Arrays.asList(new PID("pid")), null, "user");
+		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), null, "user");
 	}
 	
 	@Test
@@ -419,10 +419,10 @@ public class DigitalObjectManagerImplTest {
 		
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(relsName), anyString())).thenReturn(datastream);
 		
-		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.changeResourceType)))
+		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editResourceType)))
 		.thenReturn(true);
 		
-		this.digitalObjectManagerImpl.changeResourceType(Arrays.asList(new PID("pid")), ResourceType.Aggregate, "user");
+		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), ResourceType.Aggregate, "user");
 		
 		ArgumentCaptor<Document> newRelsCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),

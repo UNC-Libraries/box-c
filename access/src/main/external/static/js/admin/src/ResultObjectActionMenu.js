@@ -134,9 +134,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			}
 		}
 		
-		if ($.inArray('changeResourceType', metadata.permissions) != -1
+		if ($.inArray('editResourceType', metadata.permissions) != -1
 				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-			items["changeType"] = {name : 'Change Type'};
+			items["editType"] = {name : 'Edit Type'};
 		}
 		
 		
@@ -193,7 +193,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 						break;
 					case "changeType" :
 						self.actionHandler.addEvent({
-							action : 'ChangeTypeBatch',
+							action : 'EditTypeBatch',
 							targets : [resultObject]
 						});
 						break;

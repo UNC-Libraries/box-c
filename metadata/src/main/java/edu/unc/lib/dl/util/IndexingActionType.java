@@ -43,7 +43,7 @@ public enum IndexingActionType {
 	MOVE("Move", "Partial update which updates the location and access control of an object and all its children"),
 	UPDATE_ACCESS("Update access control", "Partial update which refreshes the access control for an object and all its children"),
 	ADD_SET_TO_PARENT("Add Set To Parent", "Indexes a set of newly added children contained by a shared parent"),
-	CHANGE_TYPE("Change Type", "Change the resource type of a set of objects");
+	EDIT_TYPE("Edit Type", "Edit the resource type of a set of objects");
 	
 	private final String label;
 	private final String description;

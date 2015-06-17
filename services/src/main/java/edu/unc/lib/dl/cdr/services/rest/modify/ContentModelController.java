@@ -50,34 +50,34 @@ public class ContentModelController {
 	@Autowired
 	private DigitalObjectManager dom;
 
-	@RequestMapping(value = "edit/changeType", method = RequestMethod.POST)
-	public @ResponseBody Object changeResourceType(@RequestBody ChangeResourceTypeRequest changeRequest,
+	@RequestMapping(value = "edit/editType", method = RequestMethod.POST)
+	public @ResponseBody Object editResourceType(@RequestBody EditResourceTypeRequest editRequest,
 			HttpServletResponse response) {
 		
 		Map<String, Object> results = new HashMap<>();
 		
-		if (changeRequest.newType == null || changeRequest.newType.equals(ResourceType.File)) {
-			results.put("error", "Invalid type " + changeRequest.newType
+		if (editRequest.newType == null || editRequest.newType.equals(ResourceType.File)) {
+			results.put("error", "Invalid type " + editRequest.newType
 					+ " specified as the new type.  Only container types are supported currently.");
 			response.setStatus(400);
 			return results;
 		}
 		
-		changeRequest.user = GroupsThreadStore.getUsername();
-		changeRequest.groupSet = GroupsThreadStore.getGroups();
+		editRequest.user = GroupsThreadStore.getUsername();
+		editRequest.groupSet = GroupsThreadStore.getGroups();
 		
-		ChangeTypeRunnable changeType = new ChangeTypeRunnable(changeRequest);
-		Thread changeThread = new Thread(changeType);
-		changeThread.start();
+		EditTypeRunnable editType = new EditTypeRunnable(editRequest);
+		Thread editThread = new Thread(editType);
+		editThread.start();
 		
-		results.put("message", "Operation to change " + changeRequest.pids.size() + " objects to type "
-				+ changeRequest.newType + " has begun");
+		results.put("message", "Operation to edit " + editRequest.pids.size() + " objects to type "
+				+ editRequest.newType + " has begun");
 		
 		response.setStatus(200);
 		return results;
 	}
 
-	public static class ChangeResourceTypeRequest {
+	public static class EditResourceTypeRequest {
 		private List<PID> pids;
 		private ResourceType newTypeObject;
 		private String newType;
@@ -105,12 +105,12 @@ public class ContentModelController {
 		}
 	}
 	
-	private class ChangeTypeRunnable implements Runnable {
+	private class EditTypeRunnable implements Runnable {
 		
-		private final ChangeResourceTypeRequest changeRequest;
+		private final EditResourceTypeRequest editRequest;
 		
-		public ChangeTypeRunnable(ChangeResourceTypeRequest changeRequest) {
-			this.changeRequest = changeRequest;
+		public EditTypeRunnable(EditResourceTypeRequest editRequest) {
+			this.editRequest = editRequest;
 		}
 
 		@Override
@@ -118,20 +118,20 @@ public class ContentModelController {
 			Long start = System.currentTimeMillis();
 			
 			try {
-				GroupsThreadStore.storeGroups(changeRequest.groupSet);
-				GroupsThreadStore.storeUsername(changeRequest.user);
+				GroupsThreadStore.storeGroups(editRequest.groupSet);
+				GroupsThreadStore.storeUsername(editRequest.user);
 				
 				try {
-					dom.changeResourceType(changeRequest.pids, changeRequest.getNewType(), changeRequest.user);
+					dom.editResourceType(editRequest.pids, editRequest.getNewType(), editRequest.user);
 				} catch (UpdateException e) {
-					log.warn("Failed to change model to {}", changeRequest.newType, e);
+					log.warn("Failed to edit model to {}", editRequest.newType, e);
 				}
 			} finally {
 				GroupsThreadStore.clearStore();
 			}
 			
 			log.info("Finished changing content models for {} object(s) in {}ms",
-					changeRequest.pids.size(), (System.currentTimeMillis() - start));
+					editRequest.pids.size(), (System.currentTimeMillis() - start));
 		}
 		
 	}

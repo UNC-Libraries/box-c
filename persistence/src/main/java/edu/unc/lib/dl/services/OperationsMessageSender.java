@@ -186,10 +186,10 @@ public class OperationsMessageSender {
 		return messageId;
 	}
 	
-	public String sendChangeTypeOperation(String userid, Collection<PID> pids, ResourceType newType) {
+	public String sendEditTypeOperation(String userid, Collection<PID> pids, ResourceType newType) {
 		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
 		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.CHANGE_TYPE.getName(), messageId);
+		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.EDIT_TYPE.getName(), messageId);
 		
 		Element newTypeEl = new Element("newType", CDR_MESSAGE_NS);
 		contentEl.addContent(newTypeEl);
