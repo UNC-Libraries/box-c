@@ -40,6 +40,14 @@ public class ApplyEnhancementServicesJob implements Runnable {
 			}
 			
 			try {
+				if (!service.isApplicable(message)) {
+					continue;
+				}
+			} catch (EnhancementException e) {
+				LOG.error("Error determining applicability for service " + service.getClass().getName() + " and object " + message.getTargetID(), e);
+			}
+			
+			try {
 				applyService(service);
 			} catch (EnhancementException e) {
 				LOG.error("Error applying service " + service.getClass().getName() + " to object " + message.getTargetID(), e);
