@@ -66,21 +66,18 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 		
 		for (Object elementObject : elements) {
 			Element element = (Element) elementObject;
-			
-			if ("identifier".equals(element.getName())) {
-				if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
-					idb.getDynamicFields().put(CATALOG_FIELD, element.getTextTrim());
-				}
-			} else if ("subject".equals(element.getName())) {
-				if (SITE_CODE_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
-					Element geographicEl = element.getChild("geographic", JDOMNamespaceUtil.MODS_V3_NS);
+
+			if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
+				idb.getDynamicFields().put(CATALOG_FIELD, element.getTextTrim());
+			} else if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
+				idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
+			} else if (SITE_CODE_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
+				Element geographicEl = element.getChild("geographic", JDOMNamespaceUtil.MODS_V3_NS);
+				if (geographicEl != null) {
 					idb.getDynamicFields().put(SITE_CODE_FIELD, geographicEl.getTextTrim());
 				}
-			} else if ("note".equals(element.getName())) {
-				if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
-					idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
-				}
 			}
+
 		}
 	}
 }
