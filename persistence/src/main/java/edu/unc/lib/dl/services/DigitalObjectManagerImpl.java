@@ -187,7 +187,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(subject, RELS_EXT.getName());
 	
 					if (relsExtResp == null) {
-						throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot edit models");
+						throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot change models");
 					}
 	
 					Document relsExt = relsExtResp.getDocument();
@@ -240,7 +240,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	
 					if (log.isDebugEnabled()) {
 						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-						log.debug("Attempting to update RELS-EXT for {} to edit models:\n{}", subject,
+						log.debug("Attempting to update RELS-EXT for {} to change models:\n{}", subject,
 								outputter.outputString(relsExt));
 					}
 	

@@ -174,7 +174,7 @@
 		</property>
 	</bean>
 	
-	<bean id="solrEditTypePipeline"
+	<bean id="solrUpdateTypePipeline"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
 		<property name="filters">
 			<list>
@@ -297,9 +297,9 @@
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 	
-	<bean id="editTypeAction"
+	<bean id="updateTypeAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetRelationsAction">
-		<property name="pipeline" ref="solrEditTypePipeline" />
+		<property name="pipeline" ref="solrUpdateTypePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="dipFactory" ref="documentIndexingPackageFactory" />
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
@@ -323,7 +323,7 @@
 		<entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
 		<entry key="MOVE" value-ref="moveObjectsAction" />
 		<entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
-		<entry key="EDIT_TYPE" value-ref="editTypeAction" />
+		<entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
 	</util:map>
 	
 	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">
