@@ -48,8 +48,24 @@
 		<property name="updateThreads" value="2" />
 	</bean>
 
-	<bean id="documentIndexingPackageFactory"
+	<bean id="dipFactory"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+	</bean>
+
+	<bean id="foxmlDIPFactory"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.FOXMLDocumentIndexingPackageFactory">
+		<property name="managementClient" ref="managementClient" />
+		<property name="accessClient" ref="accessClient" />
+		<property name="retryDelay" value="10000" />
+		<property name="maxRetries" value="3" />
+	</bean>
+
+	<bean id="relationsDIPFactory"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.RelationsDocumentIndexingPackageFactory">
+	</bean>
+
+	<bean id="mdcontentsDIPFactory"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.MDContentsDocumentIndexingPackageFactory">
 		<property name="managementClient" ref="managementClient" />
 		<property name="accessClient" ref="accessClient" />
 		<property name="retryDelay" value="10000" />
@@ -59,11 +75,11 @@
 	<!-- Ingest filters -->
 	<bean id="setDatastreamContentFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
-		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory" />
+		<property name="documentIndexingPackageFactory" ref="foxmlDIPFactory" />
 	</bean>
 	<bean id="setDisplayOrderFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
-		<property name="documentIndexingPackageFactory" ref="documentIndexingPackageFactory" />
+		<property name="documentIndexingPackageFactory" ref="foxmlDIPFactory" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	<bean id="setRelationsFilter"
@@ -179,14 +195,14 @@
 	<bean id="updateObjectAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 	</bean>
 	
 	<bean id="updateDescriptionAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
 		<property name="pipeline" ref="solrDescriptionUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="addDocumentMode" value="false" />
 	</bean>
@@ -194,7 +210,7 @@
 	<bean id="updateDatastreamsAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
 		<property name="pipeline" ref="solrDatastreamUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="addDocumentMode" value="false" />
 	</bean>
@@ -202,7 +218,7 @@
 	<bean id="updateFullTextAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
 		<property name="pipeline" ref="solrFullTextUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="addDocumentMode" value="false" />
 	</bean>
@@ -210,7 +226,7 @@
 	<bean id="updateTreeAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrSearchService" ref="queryLayer" />
 		<property name="collectionsPid" ref="collectionsPid" />
@@ -221,7 +237,7 @@
 	<bean id="indexTreeInplaceAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="solrSettings" ref="solrSettings" />
 		<property name="collectionsPid" ref="collectionsPid" />
@@ -234,7 +250,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
 		<property name="deleteAction" ref="deleteSolrTreeAction" />
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
 		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="solrSearchService" ref="queryLayer" />
@@ -265,9 +281,11 @@
 	</bean>
 	
 	<bean id="updateAccessControlAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateAccessAction">
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
 		<property name="pipeline" ref="solrAccessControlUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
+		<property name="dipFactory" ref="dipFactory" />
+		<property name="addDocumentMode" value="false" />
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 	
@@ -275,7 +293,8 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateChildSetAction">
 		<property name="pipeline" ref="solrFullUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
+		<property name="parentDipFactory" ref="foxmlDIPFactory" />
 		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
 	</bean>
 	
@@ -283,15 +302,17 @@
 		class="edu.unc.lib.dl.data.ingest.solr.action.MoveObjectsAction">
 		<property name="pipeline" ref="solrMoveUpdatePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="foxmlDIPFactory" />
+		<property name="parentDipFactory" ref="mdcontentsDIPFactory" />
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 	
 	<bean id="updateTypeAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetRelationsAction">
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateChildSetAction">
 		<property name="pipeline" ref="solrUpdateTypePipeline" />
 		<property name="solrUpdateDriver" ref="solrUpdateDriver" />
-		<property name="dipFactory" ref="documentIndexingPackageFactory" />
+		<property name="dipFactory" ref="relationsDIPFactory" />
+		<property name="parentDipFactory" ref="relationsDIPFactory" />
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 

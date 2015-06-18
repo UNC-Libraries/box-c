@@ -71,7 +71,7 @@ public class MoveObjectsActionTest extends Assert {
 
 		when(parentDip.getMdContents()).thenReturn(mdContents);
 
-		when(dipFactory.createDocumentIndexingPackageWithMDContents(any(PID.class))).thenReturn(parentDip);
+		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenReturn(parentDip);
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("0")));
 
@@ -101,7 +101,7 @@ public class MoveObjectsActionTest extends Assert {
 		triples.put(ContentModelHelper.Relationship.contains.toString(), Arrays.asList("c3"));
 		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples, (Map<String, List<String>>) null);
 
-		when(dipFactory.createDocumentIndexingPackageWithMDContents(any(PID.class))).thenReturn(parentDip);
+		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenReturn(parentDip);
 
 		ChildSetRequest request = new ChildSetRequest("c0", Arrays.asList("c1", "c2"),
 				IndexingActionType.MOVE);
@@ -110,7 +110,7 @@ public class MoveObjectsActionTest extends Assert {
 		// Check that pipeline ran on the parent, 2 immediate children, and 1 nested child
 		verify(pipeline, times(4)).process(any(DocumentIndexingPackage.class));
 
-		verify(dipFactory).createDocumentIndexingPackageWithMDContents(any(PID.class));
+		verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
 		assertEquals(3, request.getChildrenProcessed());
 
 		ArgumentCaptor<IndexDocumentBean> idbCaptor = ArgumentCaptor.forClass(IndexDocumentBean.class);
@@ -139,7 +139,7 @@ public class MoveObjectsActionTest extends Assert {
 		action.performAction(request);
 
 		verify(pipeline, times(3)).process(any(DocumentIndexingPackage.class));
-		verify(dipFactory).createDocumentIndexingPackageWithMDContents(any(PID.class));
+		verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
 		assertEquals(2, request.getChildrenProcessed());
 
 	}

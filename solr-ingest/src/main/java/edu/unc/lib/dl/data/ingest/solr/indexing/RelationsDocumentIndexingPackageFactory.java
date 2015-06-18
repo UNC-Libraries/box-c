@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.data.ingest.solr.action;
+package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
- * Updates the access control of an object and all of its children
- * 
  * @author bbpennel
- *
+ * @date Jun 17, 2015
  */
-public class UpdateAccessAction extends UpdateTreeAction {
-
-	public UpdateAccessAction() {
-		this.addDocumentMode = false;
-	}
+public class RelationsDocumentIndexingPackageFactory extends DocumentIndexingPackageFactory {
+	
+	@Autowired
+	private TripleStoreQueryService tsqs;
 
 	@Override
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) {
-		// Create a blank starting entry, the pipeline will provide the necessary data
-		DocumentIndexingPackage dip = new DocumentIndexingPackage();
-		dip.getDocument().setId(pid.getPid());
-		dip.setPid(pid);
+	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) throws IndexingException {
+		DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
 		dip.setParentDocument(parent);
-
+		// Get all triples in order to retrieve children
+		dip.setTriples(tsqs.fetchAllTriples(dip.getPid()));
+		
 		return dip;
 	}
 }

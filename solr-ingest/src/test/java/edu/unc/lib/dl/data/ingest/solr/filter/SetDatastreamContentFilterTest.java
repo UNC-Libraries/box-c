@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -26,11 +30,10 @@ import org.junit.Test;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.dl.data.ingest.solr.indexing.FOXMLDocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-
-import static org.mockito.Mockito.*;
 
 public class SetDatastreamContentFilterTest extends Assert {
 	@Test
@@ -82,7 +85,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 		SAXBuilder builder = new SAXBuilder();
 		Document dwoFOXML = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
-		DocumentIndexingPackageFactory dipFactory = new DocumentIndexingPackageFactory();
+		DocumentIndexingPackageFactory dipFactory = new FOXMLDocumentIndexingPackageFactory();
 		ManagementClient managementClient = mock(ManagementClient.class);
 		when(managementClient.getObjectXML(any(PID.class))).thenReturn(dwoFOXML);
 		dipFactory.setManagementClient(managementClient);
@@ -151,7 +154,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:aggregate",
 				"src/test/resources/foxml/aggregateSplitDepartments.xml");
 
-		DocumentIndexingPackageFactory dipFactory = new DocumentIndexingPackageFactory();
+		DocumentIndexingPackageFactory dipFactory = new FOXMLDocumentIndexingPackageFactory();
 		ManagementClient managementClient = mock(ManagementClient.class);
 		dipFactory.setManagementClient(managementClient);
 
@@ -184,7 +187,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 	}
 
 	@Test
-	public void punctuationInExtension() throws Exception {		
+	public void punctuationInExtension() throws Exception {
 		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8",
 				"src/test/resources/foxml/punctuationContentFileName.xml");
 		
@@ -195,7 +198,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 	}
 	
 	@Test
-	public void noExtension() throws Exception {		
+	public void noExtension() throws Exception {
 		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8",
 				"src/test/resources/foxml/noExtension.xml");
 		

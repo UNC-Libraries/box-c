@@ -73,6 +73,7 @@ public class UpdateChildSetActionTest {
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
 		action.setDipFactory(dipFactory);
+		action.setParentDipFactory(dipFactory);
 		action.setAddDocumentMode(false);
 		action.setCollectionsPid(new PID("uuid:1"));
 		action.init();

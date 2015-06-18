@@ -39,7 +39,7 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	@Override
 	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
 		// Store the MD_CONTENTS of the parents so new children can be correctly located
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackageWithMDContents(childSetRequest.getPid());
+		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(childSetRequest.getPid());
 		// Process the parent to get its inheritable properties
 		this.pipeline.process(dip);
 		return dip;

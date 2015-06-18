@@ -54,14 +54,20 @@ public class DocumentIndexingPackageFactoryTest extends Assert {
 	private Document mockFoxml;
 
 	private DocumentIndexingPackageFactory dipFactory;
+	
+	private DocumentIndexingPackageFactory mdcFactory;
 
 	@Before
 	public void setup() {
 		initMocks(this);
 
-		dipFactory = new DocumentIndexingPackageFactory();
+		dipFactory = new FOXMLDocumentIndexingPackageFactory();
 		dipFactory.setAccessClient(accessClient);
 		dipFactory.setManagementClient(managementClient);
+		
+		mdcFactory = new MDContentsDocumentIndexingPackageFactory();
+		mdcFactory.setAccessClient(accessClient);
+		mdcFactory.setManagementClient(managementClient);
 	}
 
 	@Test
@@ -73,7 +79,7 @@ public class DocumentIndexingPackageFactoryTest extends Assert {
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.MD_CONTENTS.getName()), anyString()))
 				.thenReturn(datastream);
 
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackageWithMDContents(new PID("pid"));
+		DocumentIndexingPackage dip = mdcFactory.createDocumentIndexingPackage(new PID("pid"));
 
 		assertNotNull("Factory must return a dip", dip);
 		assertNotNull("Factory must have assigned md contents", dip.getMdContents());
@@ -88,7 +94,7 @@ public class DocumentIndexingPackageFactoryTest extends Assert {
 		when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.MD_CONTENTS.getName()), anyString()))
 			.thenThrow(new NotFoundException(""));
 
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackageWithMDContents(new PID("pid"));
+		DocumentIndexingPackage dip = mdcFactory.createDocumentIndexingPackage(new PID("pid"));
 
 		assertNotNull("Factory must return a dip", dip);
 		assertNull("No MD-CONTENTS should have been assigned", dip.getMdContents());
@@ -104,43 +110,10 @@ public class DocumentIndexingPackageFactoryTest extends Assert {
 			.thenThrow(new FedoraException(""));
 
 		try {
-			dipFactory.createDocumentIndexingPackageWithMDContents(new PID("pid"));
+			mdcFactory.createDocumentIndexingPackage(new PID("pid"));
 		} finally {
 			verify(accessClient).getDatastreamDissemination(any(PID.class), eq(Datastream.MD_CONTENTS.getName()),
 					anyString());
-		}
-
-	}
-
-	@Test
-	public void testCreateDocumentIndexingPackageWithRelsExt() throws Exception {
-
-		byte[] stream = IOUtils.toByteArray(getClass().getResourceAsStream("/datastream/relsExt.xml"));
-
-		when(datastream.getStream()).thenReturn(stream);
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.RELS_EXT.getName()), anyString()))
-				.thenReturn(datastream);
-
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackageWithRelsExt(new PID("pid"));
-
-		assertNotNull("Factory must return a dip", dip);
-		assertNotNull("Factory must have assigned md contents", dip.getRelsExt());
-
-		verify(accessClient).getDatastreamDissemination(any(PID.class), eq(Datastream.RELS_EXT.getName()), anyString());
-
-	}
-
-	@Test(expected = IndexingException.class)
-	public void testCreateDocumentIndexingPackageWithNoRelsExt() throws Exception {
-
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.RELS_EXT.getName()), anyString()))
-				.thenThrow(new NotFoundException(""));
-
-		try {
-			dipFactory.createDocumentIndexingPackageWithRelsExt(new PID("pid"));
-		} finally {
-			verify(accessClient)
-					.getDatastreamDissemination(any(PID.class), eq(Datastream.RELS_EXT.getName()), anyString());
 		}
 
 	}
