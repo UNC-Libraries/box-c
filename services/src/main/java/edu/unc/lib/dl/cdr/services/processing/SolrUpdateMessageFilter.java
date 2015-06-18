@@ -43,7 +43,8 @@ public class SolrUpdateMessageFilter implements MessageFilter {
 		String action = message.getQualifiedAction();
 		if (JMSMessageUtil.CDRActions.MOVE.equals(action) || JMSMessageUtil.CDRActions.ADD.equals(action)
 				|| JMSMessageUtil.CDRActions.REORDER.equals(action) || JMSMessageUtil.CDRActions.REINDEX.equals(action)
-				|| JMSMessageUtil.CDRActions.PUBLISH.equals(action) || JMSMessageUtil.CDRActions.INDEX.equals(action)) {
+				|| JMSMessageUtil.CDRActions.PUBLISH.equals(action) || JMSMessageUtil.CDRActions.INDEX.equals(action)
+				|| JMSMessageUtil.CDRActions.EDIT_TYPE.equals(action)) {
 			return true;
 		}
 		if (!(message instanceof FedoraEventMessage))

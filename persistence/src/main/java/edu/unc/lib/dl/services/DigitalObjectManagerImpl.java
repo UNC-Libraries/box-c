@@ -26,11 +26,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,6 +45,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.transform.JDOMSource;
@@ -82,6 +81,7 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil.ObjectProperty;
@@ -162,6 +162,112 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			} else {
 				throw new Error("Unexpected Fedora fault when adding relationship.", e);
 			}
+		}
+	}
+	
+	@Override
+	public void editResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException {
+		if (newType == null || ResourceType.File.equals(newType)) {
+			throw new UpdateException("Cannot edit to type " + newType + ", operation not supported");
+		}
+		
+		// Check that the user has permissions to add/remove from all sources and the destination
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		for (PID subject : subjects) {
+			if (!aclService.hasAccess(subject, groups, Permission.editResourceType)) {
+				throw new UpdateException("Insufficient permissions to perform edit type", new AuthorizationException(
+						"Cannot complete edit type operation, user " + user + " does not have permission to modify "
+						+ subject));
+			}
+		}
+		
+		for (PID subject : subjects) {
+			do {
+				try {
+					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(subject, RELS_EXT.getName());
+	
+					if (relsExtResp == null) {
+						throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot change models");
+					}
+	
+					Document relsExt = relsExtResp.getDocument();
+					
+					Element descriptionEl = relsExt.getDocument().getRootElement()
+							.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+					
+					String hasModelPredicate = ContentModelHelper.FedoraProperty.hasModel.getFragment();
+					Namespace hasModelNS = ContentModelHelper.FedoraProperty.hasModel.getNamespace();
+	
+					List<Element> matchingEls = descriptionEl.getChildren(hasModelPredicate, hasModelNS);
+					
+					// Determine what the starting content model profile is
+					List<String> existingModels = new ArrayList<>(matchingEls.size());
+					for (Element modelEl : matchingEls) {
+						existingModels.add(modelEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
+					}
+					ResourceType existingType = ResourceType.getResourceTypeByContentModels(existingModels);
+
+					// If the resource type hasn't changed from what is present in Fedora, then skip changing
+					if (existingType.equals(newType)) {
+						break;
+					}
+
+					// Validate that the conversion is allowed
+					if (existingType.equals(ResourceType.File)) {
+						// Can't convert from file currently
+						throw new UpdateException("Cannot edit object " + subject + " from type File, operation not supported");
+					}
+					
+					// Remove existing content models
+					for (ContentModelHelper.Model typeModels : existingType.getContentModels()) {
+	
+						Iterator<Element> matchingIt = matchingEls.iterator();
+						while (matchingIt.hasNext()) {
+							Element match = matchingIt.next();
+							String existingValue = match.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
+							if (existingValue != null && existingValue.equals(typeModels.toString())) {
+								matchingIt.remove();
+							}
+						}
+					}
+	
+					// Add new content models
+					for (ContentModelHelper.Model newModel : newType.getContentModels()) {
+						Element newRelationEl = new Element(hasModelPredicate, hasModelNS);
+						newRelationEl.setAttribute("resource", newModel.toString(), JDOMNamespaceUtil.RDF_NS);
+						descriptionEl.addContent(newRelationEl);
+					}
+	
+					if (log.isDebugEnabled()) {
+						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+						log.debug("Attempting to update RELS-EXT for {} to change models:\n{}", subject,
+								outputter.outputString(relsExt));
+					}
+	
+					// Push the changes to the objects relations
+					managementClient
+							.modifyDatastream(subject, RELS_EXT.getName(), null, relsExtResp.getLastModified(), relsExt);
+					
+					// Add premis event for the resource type change
+					PremisEventLogger logger = new PremisEventLogger(user);
+					Element event = logger.logEvent(PremisEventLogger.Type.MIGRATION, "Changed resource type to "
+							+ newType.name(), subject);
+					PremisEventLogger.addDetailedOutcome(event, "success", "Changed resource type from " + existingType.name()
+							+ " to " + newType.name(), null);
+					this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, subject);
+	
+					break;
+				} catch (OptimisticLockException e) {
+					log.debug("Unable to update RELS-EXT for {}, retrying", subject, e);
+				} catch (FedoraException e) {
+					throw new UpdateException("Error while updating relations for " + subject, e);
+				}
+				// Repeat rels-ext update if the source changed since the datastream was retrieved
+			} while (true);
+		}
+		
+		if (this.getOperationsMessageSender() != null) {
+			this.getOperationsMessageSender().sendEditTypeOperation(user, subjects, newType);
 		}
 	}
 

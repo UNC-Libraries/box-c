@@ -29,8 +29,8 @@ import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelExceptio
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.search.solr.util.ResourceType;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for the object being processed. It also sets

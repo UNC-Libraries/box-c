@@ -1,0 +1,22 @@
+<form id="edit_type_form" method="post" action="services/api/edit/editType" class="edit_form edit_type_form">
+	<p>
+		<div class="form_field">
+			<label>Type</label>
+			<select id="edit_type_new_type">
+				<option value="Folder" <%= "Folder" == defaultType? "selected='selected'" : "" %>>Folder</option>
+				<option value="Collection" <%= "Collection" == defaultType? "selected='selected'" : " "%>>Collection</option>
+				<option value="Aggregate" <%= "Aggregate" == defaultType? "selected='selected'" : "" %>>Aggregate Work</option>
+			</select>
+		</div>
+	
+		<div class="update_field">
+			<input type="submit" id="edit_type_submit_button" class="update_button" value="Update" />
+		</div>
+	</p>
+	
+	<div class="errors">
+		<h3>Errors</h3>
+		<div class="error_stack">
+		</div>
+	</div>
+</form>

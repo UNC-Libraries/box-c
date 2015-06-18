@@ -32,14 +32,26 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public enum UserRole {
 	list("list", new Permission[] {}),
-	accessCopiesPatron("access-copies-patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative}),
+	accessCopiesPatron("access-copies-patron", new Permission[] {Permission.viewDescription,
+			Permission.viewDerivative}),
 	metadataPatron("metadata-patron", new Permission[] {Permission.viewDescription}),
 	patron("patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	observer("observer", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	ingester("ingester", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.editDescription, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	processor("processor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	curator("curator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	administrator("administrator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl, Permission.purgeForever, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal});
+	observer("observer", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.viewDescription,
+			Permission.viewDerivative, Permission.viewOriginal}),
+	ingester("ingester", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
+			Permission.addRemoveContents, Permission.editDescription, Permission.viewDescription,
+			Permission.viewDerivative, Permission.viewOriginal}),
+	processor("processor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
+			Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash,
+			Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
+	curator("curator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents,
+			Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl,
+			Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal,
+			Permission.editResourceType}),
+	administrator("administrator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
+			Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash,
+			Permission.editAccessControl, Permission.purgeForever, Permission.viewDescription, Permission.viewDerivative,
+			Permission.viewOriginal, Permission.editResourceType});
 	private URI uri;
 	private String predicate;
 	private Set<Permission> permissions;

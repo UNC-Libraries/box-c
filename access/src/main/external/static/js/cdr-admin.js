@@ -2851,6 +2851,8 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			items["viewTrash"] = {name : "View trash for this collection"};
 			items["review"] = {name : "Review unpublished"};
 		}
+		
+		// Modification options
 		items["sepedit"] = "";
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
@@ -2863,24 +2865,30 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
-			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-				items["exportCSV"] = {name : 'Export as CSV'};
-			}
 		}
 		
-		
-	    items["copyid"] = {name : 'Copy PID to Clipboard'};
-		if ($.inArray('purgeForever', metadata.permissions) != -1) {
-			items["sepadmin"] = "";
-			items["reindex"] = {name : 'Reindex'};
+		if ($.inArray('editResourceType', metadata.permissions) != -1
+				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+			items["editType"] = {name : 'Edit Type'};
 		}
+		
+		// Export actions
+		items["sepexport"] = "";
+		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+			items["exportCSV"] = {name : 'Export as CSV'};
+		}
+		items["copyid"] = {name : 'Copy PID to Clipboard'};
+		
+		// Admin actions
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
+			items["reindex"] = {name : 'Reindex'};
 			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
 		}
 		
+		// Trash actions
 		if ($.inArray('moveToTrash', metadata.permissions) != -1) {
-			items["sepdel"] = "";
+			items["septrash"] = "";
 			items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
 			items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
 		}
@@ -2920,7 +2928,12 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					case "editLabel" :
 						self.editLabel(resultObject);
 						break;
-					
+					case "editType" :
+						self.actionHandler.addEvent({
+							action : 'EditTypeBatch',
+							targets : [resultObject]
+						});
+						break;
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;
@@ -3787,6 +3800,11 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			
 			resultFields : undefined,
 			resultActions : [
+						{
+							actions : [
+								{action : 'EditTypeBatch', label : 'Edit Type'}
+							]
+						},
 						{
 							actions : [
 								{action : 'PublishBatch', label : 'Publish'},
@@ -4759,6 +4777,89 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	};
 
 	return DestroyResultAction;
+});define('EditTypeBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/editTypeForm"], function($, AbstractBatchAction, editTypeTemplate) {
+	function EditTypeBatchAction(context) {
+		this._create(context);
+	};
+	
+	EditTypeBatchAction.prototype.constructor = EditTypeBatchAction;
+	EditTypeBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	EditTypeBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && target.isEnabled() && $.inArray("editResourceType", target.metadata.permissions) != -1
+			&& ("Collection" == target.getMetadata().type
+			|| "Aggregate" == target.getMetadata().type
+			|| "Folder" == target.getMetadata().type);
+	};
+	
+	EditTypeBatchAction.prototype.getTargets = function(targets) {
+		if (this.context.targets) {
+			return this.context.targets;
+		} 
+		return AbstractBatchAction.prototype.getTargets.call(this);
+	};
+	
+	EditTypeBatchAction.prototype.execute = function() {
+		var self = this;
+		
+		this.targets = this.getTargets();
+		var title;
+		var defaultType;
+		if (this.targets.length == 1) {
+			title = "Edit Type for " + this.targets[0].metadata.title.substring(0, 30);
+			defaultType = this.targets[0].metadata.type;
+		} else {
+			title = "Edit Type for " + this.targets.length + " containers";
+		}
+		
+		var editTypeForm = editTypeTemplate({defaultType : defaultType});
+		this.dialog = $("<div class='containingDialog'>" + editTypeForm + "</div>");
+		this.dialog.dialog({
+			autoOpen: true,
+			width: 'auto',
+			minWidth: '500',
+			height: 'auto',
+			modal: true,
+			title: title
+		});
+		this.$form = this.dialog.first();
+		
+		this.$form.submit(function(e){
+			var newType = $("#edit_type_new_type", self.$form).val();
+			var pids = [];
+			for (var index in self.targets) {
+				pids.push(self.targets[index].getPid());
+				// Trigger refreshing of results
+				self.context.actionHandler.addEvent({
+					action : 'RefreshResult',
+					target : self.targets[index],
+					waitForUpdate : true
+				});
+			}
+			
+			$.ajax({
+				url : "/services/api/edit/editType",
+				type : "POST",
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				data : JSON.stringify({
+					newType : newType,
+					pids : pids
+				})
+			}).done(function(reponse) {
+				self.context.view.$alertHandler.alertHandler("message", "Conversion of " + self.targets.length + " object(s) to type " 
+					+ newType + " has started.");
+				self.dialog.remove();
+			}).fail(function() {
+				self.context.view.$alertHandler.alertHandler("error", "Failed to edit type for " + self.targets.length + " object(s) to type " 
+					+ newType);
+			});
+			
+			e.preventDefault();
+		});
+	}
+	
+	return EditTypeBatchAction;
 });define('MoveObjectsAction', ['jquery'], function($) {
 	
 	// Context parameters:

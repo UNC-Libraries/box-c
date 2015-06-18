@@ -25,6 +25,7 @@ import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
+import edu.unc.lib.dl.util.ResourceType;
 
 public interface DigitalObjectManager {
 
@@ -43,6 +44,15 @@ public interface DigitalObjectManager {
 	 */
 	public void addRelationship(PID subject, ContentModelHelper.Relationship rel, PID object) throws NotFoundException,
 			IngestException;
+	
+	/**
+	 * Changes the content models of the subject to the content models necessary to change to the new resource type
+	 * 
+	 * @param subject
+	 * @param newType
+	 * @throws IngestException
+	 */
+	public void editResourceType(List<PID> subjects, ResourceType newType, String user) throws UpdateException;
 
 	/**
 	 * Completely removes the specified objects and any children. Updates containing objects to remove any references.

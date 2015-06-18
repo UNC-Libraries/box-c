@@ -104,7 +104,8 @@ public class JMSMessageUtil {
 		REORDER ("reorder"),
 		PUBLISH ("publish"),
 		REINDEX ("reindex"),
-		INDEX ("index");
+		INDEX ("index"),
+		EDIT_TYPE("editType");
 
 		private String name;
 		private final URI uri;

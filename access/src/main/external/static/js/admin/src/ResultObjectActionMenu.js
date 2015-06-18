@@ -117,6 +117,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["viewTrash"] = {name : "View trash for this collection"};
 			items["review"] = {name : "Review unpublished"};
 		}
+		
+		// Modification options
 		items["sepedit"] = "";
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
@@ -129,24 +131,30 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
-			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-				items["exportCSV"] = {name : 'Export as CSV'};
-			}
 		}
 		
-		
-	    items["copyid"] = {name : 'Copy PID to Clipboard'};
-		if ($.inArray('purgeForever', metadata.permissions) != -1) {
-			items["sepadmin"] = "";
-			items["reindex"] = {name : 'Reindex'};
+		if ($.inArray('editResourceType', metadata.permissions) != -1
+				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+			items["editType"] = {name : 'Edit Type'};
 		}
+		
+		// Export actions
+		items["sepexport"] = "";
+		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+			items["exportCSV"] = {name : 'Export as CSV'};
+		}
+		items["copyid"] = {name : 'Copy PID to Clipboard'};
+		
+		// Admin actions
 		if ($.inArray('purgeForever', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
+			items["reindex"] = {name : 'Reindex'};
 			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
 		}
 		
+		// Trash actions
 		if ($.inArray('moveToTrash', metadata.permissions) != -1) {
-			items["sepdel"] = "";
+			items["septrash"] = "";
 			items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
 			items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
 		}
@@ -186,7 +194,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "editLabel" :
 						self.editLabel(resultObject);
 						break;
-					
+					case "editType" :
+						self.actionHandler.addEvent({
+							action : 'EditTypeBatch',
+							targets : [resultObject]
+						});
+						break;
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;

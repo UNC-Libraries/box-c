@@ -117,6 +117,10 @@ public class SolrUpdateConductor extends SolrUpdateService implements MessageCon
 				for (String pidString : cdrMessage.getSubjects()) {
 					this.offer(pidString, IndexingActionType.UPDATE_STATUS);
 				}
+			} else if (JMSMessageUtil.CDRActions.EDIT_TYPE.equals(action)) {
+				SolrUpdateRequest request = new ChildSetRequest(cdrMessage.getTargetID(), cdrMessage.getSubjects(),
+						IndexingActionType.UPDATE_TYPE);
+				this.offer(request);
 			}
 		} else {
 			// For all other message types, do a single record update
