@@ -37,7 +37,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateService;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
@@ -54,8 +53,6 @@ public class MoveObjectsActionTest extends Assert {
 	private DocumentIndexingPackageFactory dipFactory;
 	@Mock
 	private DocumentIndexingPipeline pipeline;
-	@Mock
-	private SolrUpdateService updateService;
 	@Mock
 	private TripleStoreQueryService tsqs;
 	@Mock
@@ -84,7 +81,6 @@ public class MoveObjectsActionTest extends Assert {
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
 		action.setDipFactory(dipFactory);
-		action.setSolrUpdateService(updateService);
 		action.setAddDocumentMode(false);
 		action.init();
 	}

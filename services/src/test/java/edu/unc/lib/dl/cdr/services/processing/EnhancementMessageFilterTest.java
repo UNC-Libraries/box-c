@@ -40,12 +40,12 @@ import edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
-public class ServicesQueueMessageFilterTest extends Assert {
+public class EnhancementMessageFilterTest extends Assert {
 
-	private ServicesQueueMessageFilter servicesMessageFilter;
+	private EnhancementMessageFilter servicesMessageFilter;
 	private List<ObjectEnhancementService> services;
 	
-	public ServicesQueueMessageFilterTest(){
+	public EnhancementMessageFilterTest() {
 		services = new ArrayList<ObjectEnhancementService>();
 		services.add(new TechnicalMetadataEnhancementService());
 		services.add(new ThumbnailEnhancementService());
@@ -55,15 +55,8 @@ public class ServicesQueueMessageFilterTest extends Assert {
 	
 	@Before
    public void setUp() throws Exception {
-		servicesMessageFilter = new ServicesQueueMessageFilter();
+		servicesMessageFilter = new EnhancementMessageFilter();
 		servicesMessageFilter.setServices(services);
-		
-		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
-		when(failedPids.get(anyString())).thenReturn(null);
-		
-		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
-		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
-		servicesMessageFilter.setenhancementConductor(enhancementConductor);
 	}
 	
 	@Test
@@ -199,127 +192,12 @@ public class ServicesQueueMessageFilterTest extends Assert {
 		message.setAction(JMSMessageUtil.FedoraActions.PURGE_RELATIONSHIP.getName());
 		assertFalse(servicesMessageFilter.filter(message));
 	}
-	
-	@Test
-	public void applyStackStartingServicesFailures(){
-		Set<String> failedServices = new HashSet<String>();
-		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
-		
-		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
-		when(failedPids.getFailedServices(anyString())).thenReturn(failedServices);
-		
-		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
-		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
-		servicesMessageFilter.setenhancementConductor(enhancementConductor);
-		
-		//Full stack run with the first service failing but no starting service
-		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-		
-		assertTrue(servicesMessageFilter.filter(message));
-		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
-		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
-		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
-		
-		//Invalid starting service
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), "");
-		assertFalse(servicesMessageFilter.filter(message));
-		assertNull(message.getFilteredServices());
-		
-		//Fail on the starting point
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
-		assertFalse(servicesMessageFilter.filter(message));
-		assertNull(message.getFilteredServices());
-		
-		//Fail before the starting point
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), ThumbnailEnhancementService.class.getName());
-		assertTrue(servicesMessageFilter.filter(message));
-		assertFalse(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
-		assertTrue(message.filteredServicesContains(ThumbnailEnhancementService.class));
-		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
-		
-		//Fail after the starting point
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName(), TechnicalMetadataEnhancementService.class.getName());
-		failedServices.clear();
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		assertTrue(servicesMessageFilter.filter(message));
-		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
-		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
-		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
-	}
-	
-	@Test
-	public void applyServicesFailure(){
-		Set<String> failedServices = new HashSet<String>();
-		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		failedServices.add(ImageEnhancementService.class.getName());
-		failedServices.add(SolrUpdateEnhancementService.class.getName());
-		
-		FailedEnhancementMap failedPids = mock(FailedEnhancementMap.class);
-		when(failedPids.getFailedServices(anyString())).thenReturn(failedServices);
-		
-		EnhancementConductor enhancementConductor = mock(EnhancementConductor.class);
-		when(enhancementConductor.getFailedPids()).thenReturn(failedPids);
-		servicesMessageFilter.setenhancementConductor(enhancementConductor);
-		
-		//fail techmd call
-		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
-		
-		assertFalse(servicesMessageFilter.filter(message));
-		assertNull(message.getFilteredServices());
-		
-		//fail full stack
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-		
-		assertFalse(servicesMessageFilter.filter(message));
-		assertNull(message.getFilteredServices());
-		
-		//fail full stack, without solr being present in fail list.
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-		
-		failedServices.clear();
-		failedServices.add(TechnicalMetadataEnhancementService.class.getName());
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		failedServices.add(ImageEnhancementService.class.getName());
-		
-		assertFalse(servicesMessageFilter.filter(message));
-		assertNull(message.getFilteredServices());
-		
-		//pass techmd call
-		failedServices.clear();
-		failedServices.add(ThumbnailEnhancementService.class.getName());
-		failedServices.add(ImageEnhancementService.class.getName());
-		
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
-		
-		assertTrue(servicesMessageFilter.filter(message));
-		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
-		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
-		assertFalse(message.filteredServicesContains(SolrUpdateEnhancementService.class));
-		
-		//pass only techmd and solr from full stack
-		message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-		assertTrue(servicesMessageFilter.filter(message));
-		assertTrue(message.filteredServicesContains(TechnicalMetadataEnhancementService.class));
-		assertFalse(message.filteredServicesContains(ThumbnailEnhancementService.class));
-		assertTrue(message.filteredServicesContains(SolrUpdateEnhancementService.class));
-	}
 
-	public ServicesQueueMessageFilter getServicesMessageFilter() {
+	public EnhancementMessageFilter getEnhancementMessageFilter() {
 		return servicesMessageFilter;
 	}
 
-	public void setServicesMessageFilter(ServicesQueueMessageFilter servicesMessageFilter) {
+	public void setEnhancementMessageFilter(EnhancementMessageFilter servicesMessageFilter) {
 		this.servicesMessageFilter = servicesMessageFilter;
 	}
 

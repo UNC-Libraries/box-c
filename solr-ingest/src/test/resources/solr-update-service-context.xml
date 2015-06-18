@@ -21,13 +21,6 @@
 		<value>admin</value>
 	</util:set>
 
-	<bean id="solrUpdateService"
-		class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateService"
-		init-method="init" destroy-method="destroy">
-		<property name="solrUpdateRunnableFactory" ref="solrUpdateRunnableFactory"/>
-		<property name="maxThreads" value="3" />
-	</bean>
-
 	<bean id="solrUpdateDriver" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"/>
 	</bean>
@@ -64,14 +57,5 @@
 		value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
 		<entry key="ADD" value-ref="updateObjectAction" />
 	</util:map>
-	
-	<bean id="solrUpdateRunnableFactory" class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnableFactory">
-		<lookup-method name="createJob" bean="solrUpdateRunnable" />
-	</bean> 
-	
-	<bean id="solrUpdateRunnable"
-		class="edu.unc.lib.dl.data.ingest.solr.SolrUpdateRunnable" scope="prototype">
-		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
-		<property name="solrUpdateService" ref="solrUpdateService" />
-	</bean>
+
 </beans>

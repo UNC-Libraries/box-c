@@ -170,16 +170,78 @@
 		<property name="failureLogPath" value="${services.enhancements.failed.path}"/>
 	</bean>
 	
+	<bean id="ApplyEnhancementServicesJob" class="edu.unc.lib.dl.cdr.services.processing.ApplyEnhancementServicesJob"
+		scope="prototype">
+		<property name="services" ref="servicesList"/>
+		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
+	</bean>
+	
+	<bean id="SolrUpdateJob" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateJob"
+		scope="prototype">
+		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+	</bean>
+	
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="${redis.host:localhost}" />
+		<constructor-arg value="${redis.port:6379}" />
+		<constructor-arg value="2000" />
+		<constructor-arg>
+			<null />
+		</constructor-arg>
+		<constructor-arg value="resque" />
+		<constructor-arg value="0" />
+	</bean>
+
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
+		scope="prototype">
+		<constructor-arg ref="jesqueConfig" />
+	</bean>
+
+	<bean id="jobFactory" class="edu.unc.lib.dl.util.SpringJobFactory" />
+	
+	<bean id="enhancementWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>enhancement</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.num:3}" />
+	</bean>
+	
+	<bean id="solrUpdateWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>solr-update</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.num:3}" />
+	</bean>
+	
 	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
 		init-method="init" destroy-method="destroy">
-		<property name="services" ref="servicesList"/>
-		<property name="maxThreads" value="${conductor.services.maxThreads}"/>
-		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
-		<property name="unexpectedExceptionDelay" value="${conductor.services.unexpectedExceptionDelay}"/>
-		<property name="beforeExecuteDelay" value="${conductor.services.beforeExecuteDelay}"/>
-		<property name="failedPids" ref="servicesFailedPids"/>
-		<property name="finishedMessageTimeout" value="${scheduled.cleanupFinishedEnhancements.windowMilli}"/>
-		<property name="maxFinishedMessages" value="${conductor.services.maxFinishedMessages}"/>
+		<property name="jesqueClient" ref="jesqueClient"/>
+		<property name="workerPool" ref="enhancementWorkerPool"/>
+		<property name="queueName" value="enhancement"/>
+	</bean>
+	
+	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
+		init-method="init" destroy-method="destroy">
+		<property name="jesqueClient" ref="jesqueClient"/>
+		<property name="workerPool" ref="solrUpdateWorkerPool"/>
+		<property name="queueName" value="solr-update"/>
+		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
 	</bean>
 	
 	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
@@ -188,9 +250,8 @@
 		<ref bean="solrUpdateConductor"/>
 	</util:list>
 	
-	<bean id="servicesMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.ServicesQueueMessageFilter">
+	<bean id="enhancementMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.EnhancementMessageFilter">
 		<property name="services" ref="servicesList"/>
-		<property name="enhancementConductor" ref="enhancementConductor"/>
 	</bean>
 	
 	<bean id="solrUpdateMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateMessageFilter">
@@ -198,7 +259,7 @@
 	
 	<util:list id="messageFilterList" list-class="java.util.ArrayList" 
 		value-type="edu.unc.lib.dl.cdr.services.processing.MessageFilter">
-		<ref bean="servicesMessageFilter"/>
+		<ref bean="enhancementMessageFilter"/>
 		<ref bean="solrUpdateMessageFilter"/>
 	</util:list>
 	
@@ -222,23 +283,6 @@
 		<property name="messageClass">
 			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.FedoraEventMessage</value>
 		</property>
-	</bean>
-		
-	<bean id="catchUpService" class="edu.unc.lib.dl.cdr.services.processing.CatchUpService">
-		<property name="enhancementConductor" ref="enhancementConductor"/>
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="services">
-			<list>
-				<ref bean="technicalMetadataEnhancementService"/>
-				<ref bean="imageEnhancementService"/>
-				<ref bean="thumbnailEnhancementService"/>
-				<ref bean="fullTextEnhancementService"/>
-			</list>
-		</property>
-		<property name="active" value="false"/>
-		<property name="enabled" value="${services.catchup.enabled:true}"/>
-		<property name="pageSize" value="${catchup.pageSize}"/>
-		<property name="catchUpCheckDelay" value="${catchup.catchUpCheckDelay}"/>
 	</bean>
 	
 	<!-- Services -->
@@ -304,24 +348,9 @@
 	
 	<!-- Scheduler -->
 	
-	<bean id="catchUpActivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="catchUpService" />
-		<property name="targetMethod" value="activate" />
-	</bean>
-	
-	<bean id="catchUpDeactivateJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="catchUpService" />
-		<property name="targetMethod" value="deactivate" />
-	</bean>
-	
 	<bean id="embargoJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<property name="targetObject" ref="embargoUpdateService" />
 		<property name="targetMethod" value="updateEmbargoes" />
-	</bean>
-	
-	<bean id="cleanupFinishedEnhancementsJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="enhancementConductor" />
-		<property name="targetMethod" value="cleanupFinishedMessages" />
 	</bean>
 	
 	<bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
@@ -336,21 +365,6 @@
 		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
 	</bean>
 	
-	<bean id="catchUpActivateCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="catchUpActivateJobDetail" />
-		<property name="cronExpression" value="${scheduled.catchUpActivate.cron}" />
-	</bean>
-	
-	<bean id="catchUpDeactivateCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="catchUpDeactivateJobDetail" />
-		<property name="cronExpression" value="${scheduled.catchUpDeactivate.cron}" />
-	</bean>
-	
-	<bean id="cleanupFinishedEnhancementsCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="cleanupFinishedEnhancementsJobDetail" />
-		<property name="cronExpression" value="${scheduled.cleanupFinishedEnhancements.cron}" />
-	</bean>
-	
 	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
 		<property name="jobDetail" ref="rollbackMoveJobDetail" />
 		<property name="repeatCount" value="0"/>
@@ -361,9 +375,6 @@
 		<property name="triggers">
 			<list>
 				<ref bean="embargoCronTrigger" />
-				<ref bean="catchUpActivateCronTrigger" />
-				<ref bean="catchUpDeactivateCronTrigger" />
-				<ref bean="cleanupFinishedEnhancementsCronTrigger" />
 				<ref bean="moveRollbackTrigger" />
 			</list>
 		</property>
@@ -380,10 +391,7 @@
 			<map>
 				<entry key="cdr-services:name=messageJMXService" value-ref="messageJMXService" />
 				<entry key="cdr-services:name=solrJMXService" value-ref="solrJMXService" />
-				<entry key="cdr-services:name=enhancementConductor" value-ref="enhancementConductor" />
-				<entry key="cdr-services:name=solrUpdateConductor" value-ref="solrUpdateConductor" />
 				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
-				<entry key="cdr-services:name=catchUpService" value-ref="catchUpService" />
 				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
 				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
 				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
