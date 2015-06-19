@@ -28,8 +28,8 @@ define('ReindexResultAction', [ 'jquery', 'AjaxCallbackAction'], function($, Aja
 
 	ReindexResultAction.prototype.complete = function() {
 		if (this.context.target.metadata)
-			this.alertHandler.alertHandler("success", "Reindexing of " + this.context.target.metadata.title + " is underway, view status monitor");
-		else this.alertHandler.alertHandler("success", "Reindexing is underway, view status monitor");
+			this.alertHandler.alertHandler("success", "Reindexing of " + this.context.target.metadata.title + " is underway");
+		else this.alertHandler.alertHandler("success", "Reindexing is underway");
 		
 		this.context.actionHandler.addEvent({
 			action : 'RefreshResult',
