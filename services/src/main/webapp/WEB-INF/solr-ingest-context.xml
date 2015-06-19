@@ -142,6 +142,8 @@
 				<ref bean="setDescriptiveMetadataFilter" />
 				<ref bean="setContentStatusFilter" />
 				<ref bean="setRelationsFilter" />
+				<ref bean="setPathFilter" />
+				<ref bean="setCollectionSupplementalInformationFilter" />
 			</list>
 		</property>
 	</bean>
