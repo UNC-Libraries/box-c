@@ -64,6 +64,7 @@ public class IndexDocumentBean {
 	protected List<String> contentStatus;
 
 	protected List<String> identifier;
+	protected String identifierSort;
 
 	// Descriptive fields
 	protected String title;
@@ -342,6 +343,15 @@ public class IndexDocumentBean {
 	@Field
 	public void setIdentifier(List<String> identifier) {
 		this.identifier = identifier;
+	}
+
+	public String getIdentifierSort() {
+		return identifierSort;
+	}
+
+	@Field
+	public void setIdentifierSort(String identifierSort) {
+		this.identifierSort = identifierSort;
 	}
 
 	public String getTitle() {
