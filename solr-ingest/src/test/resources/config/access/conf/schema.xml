@@ -215,6 +215,9 @@
     <!-- identifiers, prefixed with the identifier type, such as doi|10.1186/1471-2458-11-702 -->
     <field name="identifier" type="string" indexed="true" stored="true" multiValued="true"/>
     
+    <!-- the identifier used for sorting (to be used if titles or labels don't sort as required) -->
+    <field name="identifierSort" type="string_lc" indexed="true" stored="true"/>
+    
     <!-- Descriptive Fields -->
     <field name="title" type="string" indexed="true" stored="true" required="true"/>
     <field name="title_lc" type="string_lc" indexed="true"/>
