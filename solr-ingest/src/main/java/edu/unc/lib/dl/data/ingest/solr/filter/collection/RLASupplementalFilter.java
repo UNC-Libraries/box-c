@@ -32,6 +32,8 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class RLASupplementalFilter extends CollectionSupplementalInformationFilter {
 	private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 	
+	private static final String FILENAME_ID = "rla_filename";
+	
 	private static final String CATALOG_ID = "rla_catalog_number";
 	private static final String CATALOG_FIELD = "rla_catalog_number_d";
 	
@@ -67,7 +69,9 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 		for (Object elementObject : elements) {
 			Element element = (Element) elementObject;
 
-			if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
+			if (FILENAME_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
+				idb.setIdentifierSort(element.getTextTrim());
+			} else if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
 				idb.getDynamicFields().put(CATALOG_FIELD, element.getTextTrim());
 			} else if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID"))) {
 				idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
