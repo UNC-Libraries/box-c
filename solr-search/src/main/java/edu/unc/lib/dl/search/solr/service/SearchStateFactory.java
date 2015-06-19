@@ -164,7 +164,7 @@ public class SearchStateFactory {
 		containerTypes.add(searchSettings.resourceTypeAggregate);
 		searchState.setResourceTypes(containerTypes);
 		
-		searchState.setSortType("collection");
+		searchState.setSortType("title");
 		searchState.setSortNormalOrder(true);
 		
 		return searchState;
@@ -178,7 +178,7 @@ public class SearchStateFactory {
 		searchState.setRowsPerPage(0);
 		searchState.setStartRow(0);
 		
-		searchState.setSortType("collection");
+		searchState.setSortType("title");
 		searchState.setSortNormalOrder(true);
 		
 		return searchState;
