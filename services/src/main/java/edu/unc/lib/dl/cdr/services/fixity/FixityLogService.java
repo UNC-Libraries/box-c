@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services;
+package edu.unc.lib.dl.cdr.services.fixity;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -24,8 +24,6 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
 import edu.unc.lib.dl.cdr.services.processing.ServicesThreadPoolExecutor;
-import edu.unc.lib.dl.services.FixityLogTask;
-import edu.unc.lib.dl.services.FixityLogTaskFactory;
 
 public class FixityLogService implements ServiceConductor {
 	
