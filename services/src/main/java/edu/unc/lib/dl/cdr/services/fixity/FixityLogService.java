@@ -17,42 +17,32 @@ package edu.unc.lib.dl.cdr.services.fixity;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import edu.unc.lib.dl.cdr.services.processing.ServiceConductor;
-import edu.unc.lib.dl.cdr.services.processing.ServicesThreadPoolExecutor;
-
-public class FixityLogService implements ServiceConductor {
+public class FixityLogService {
 	
 	private static final Log LOG = LogFactory.getLog(FixityLogService.class);
-	private static final String identifier = "FixityLogService";
 
-	protected ServicesThreadPoolExecutor<FixityLogTask> executor = null;
+	protected ExecutorService executorService = null;
 	private FixityLogTaskFactory fixityLogTaskFactory = null;
 	private Timer pollingTimer = null;
 	private long pollingIntervalSeconds = 60;
 
 	public void init() {
-		initializeExecutor();
+		this.executorService = Executors.newSingleThreadExecutor();
 		
-		pollingTimer = new Timer();
-		pollingTimer.schedule(new ExecuteTask(), 0, pollingIntervalSeconds * 1000);
-	}
-	
-	private void initializeExecutor() {
-		this.executor = new ServicesThreadPoolExecutor<FixityLogTask>(1, "FixityLog");
+		this.pollingTimer = new Timer();
+		this.pollingTimer.schedule(new ExecuteTask(), 0, pollingIntervalSeconds * 1000);
 	}
 
 	public void destroy() {
-		this.shutdown();
+		this.executorService.shutdown();
 		this.pollingTimer.cancel();
 	}
-
-	
-	// Periodically create and execute a new FixityLogTask instance
 	
 	class ExecuteTask extends TimerTask {
 		public void run() {
@@ -61,16 +51,11 @@ public class FixityLogService implements ServiceConductor {
 	}
 	
 	private void executeFixityLogTask() {
-		if (!this.executor.isPaused()) {
-			LOG.debug("Creating and executing fixity log task");
+		LOG.debug("Creating and executing fixity log task");
 			
-			FixityLogTask task = this.fixityLogTaskFactory.createTask();
-			this.executor.execute(task);
-		}
+		FixityLogTask task = this.fixityLogTaskFactory.createTask();
+		this.executorService.execute(task);
 	}
-	
-	
-	// Accessors
 	
 	public FixityLogTaskFactory getFixityLogTaskFactory() {
 		return fixityLogTaskFactory;
@@ -86,72 +71,6 @@ public class FixityLogService implements ServiceConductor {
 
 	public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
 		this.pollingIntervalSeconds = pollingIntervalSeconds;
-	}
-	
-	
-	// ServiceConductor implementation methods
-
-	@Override
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	@Override
-	public void pause() {
-		this.executor.pause();
-	}
-
-	@Override
-	public void resume() {
-		this.executor.resume();
-	}
-
-	@Override
-	public boolean isPaused() {
-		return this.executor.isPaused();
-	}
-
-	@Override
-	public boolean isEmpty() {
-		return this.executor.getQueue().isEmpty();
-	}
-
-	@Override
-	public boolean isIdle() {
-		return this.executor.isPaused() || this.executor.getAllRunningAndQueued().isEmpty();
-	}
-
-	@Override
-	public void shutdown() {
-		this.executor.shutdownNow();
-	}
-
-	@Override
-	public void shutdownNow() {
-		this.executor.shutdownNow();
-	}
-
-	@Override
-	public void abort() {
-		this.executor.pause();
-		this.executor.shutdownNow();
-		try {
-			this.executor.awaitTermination(5, TimeUnit.MINUTES);
-		} catch (InterruptedException ignored) {
-		}
-		initializeExecutor();
-		this.executor.pause();
-	}
-
-	@Override
-	public void restart() {
-		if (this.executor == null || this.executor.isShutdown() || this.executor.isTerminated())
-			initializeExecutor();
-	}
-
-	@Override
-	public int getActiveThreadCount() {
-		return this.executor.getActiveCount();
 	}
 
 }
