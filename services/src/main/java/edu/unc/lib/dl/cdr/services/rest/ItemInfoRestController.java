@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -31,22 +32,32 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.ServletContextAware;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 @Controller
 @RequestMapping(value = { "/status/item*", "/status/item" })
-public class ItemInfoRestController extends AbstractServiceConductorRestController {
+public class ItemInfoRestController implements ServletContextAware {
+	
 	private static final Logger LOG = LoggerFactory.getLogger(ItemInfoRestController.class);
+	protected ServletContext servletContext = null;
 
 	@Resource
 	private SolrSearchService solrSearchService;
+	
+	@Resource
+	protected TripleStoreQueryService tripleStoreQueryService;
+
+	@Resource(name = "contextUrl")
+	protected String contextUrl = null;
 
 	@RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
 	public @ResponseBody
@@ -97,5 +108,14 @@ public class ItemInfoRestController extends AbstractServiceConductorRestControll
 
 	public void setSolrSearchService(SolrSearchService solrSearchService) {
 		this.solrSearchService = solrSearchService;
+	}
+
+	@Override
+	public void setServletContext(ServletContext servletContext) {
+		this.servletContext = servletContext;
+	}
+
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 }
