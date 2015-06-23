@@ -188,7 +188,7 @@ ACTIONS.each do |action|
       desc "Service script: service #{action} #{service}"
       task service do
         on roles(:web) do
-          sudo :service, service, action
+          sudo fetch(:service_path), service, action
         end
       end
     

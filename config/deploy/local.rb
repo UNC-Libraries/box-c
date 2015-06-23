@@ -1,5 +1,7 @@
 server "default", :roles => [:web]
 
+set :service_path, "/sbin/service"
+
 set :ssh_options, lambda {
 
   # Get the configuration from Vagrant
