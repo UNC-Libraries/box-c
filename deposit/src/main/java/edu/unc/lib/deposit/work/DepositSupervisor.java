@@ -320,10 +320,10 @@ public class DepositSupervisor implements WorkerListener {
 	 */
 	@Override
 	public void onEvent(WorkerEvent event, Worker worker, String queue,
-			Job job, Object runner, Object result, Exception ex) {
+			Job job, Object runner, Object result, Throwable t) {
 		if (WorkerEvent.WORKER_POLL != event)
 			LOG.debug("WorkerEvent {}, {}, {}, {}, {}, {}, {}", new Object[] {
-					event, worker, queue, job, runner, result, ex });
+					event, worker, queue, job, runner, result, t });
 
 		String depositUUID;
 		AbstractDepositJob j;
@@ -331,7 +331,7 @@ public class DepositSupervisor implements WorkerListener {
 		// Job-level status logging
 		switch (event) {
 			case WORKER_ERROR:
-				LOG.error("Worker threw an error: {}", ex);
+				LOG.error("Worker threw an error: {}", t);
 			case WORKER_START:
 			case WORKER_STOP:
 			case WORKER_POLL:
@@ -360,24 +360,24 @@ public class DepositSupervisor implements WorkerListener {
 					jobUUID = j.getJobUUID();
 				}
 
-				if (ex != null && ex instanceof JobInterruptedException) {
+				if (t != null && t instanceof JobInterruptedException) {
 					LOG.debug("Job {} in deposit {} was interrupted", jobUUID, depositUUID);
 					jobStatusFactory.interrupted(jobUUID);
 					return;
 				}
 				
-				if (ex != null && ex instanceof FedoraTimeoutException) {
+				if (t != null && t instanceof FedoraTimeoutException) {
 					LOG.warn("Fedora timed out for job {} in deposit {}, will resume after delay", jobUUID, depositUUID);
 					jobStatusFactory.failed(jobUUID);
 					resumeDeposit(depositUUID, status, getUnavailableDelaySeconds() * 1000);
 					return;
 				}
 				
-				if (ex != null) {
-					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed with exception", ex);
+				if (t != null) {
+					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed with exception", t);
 					
-					if (ex instanceof JobFailedException) {
-						String details = ((JobFailedException) ex).getDetails();
+					if (t instanceof JobFailedException) {
+						String details = ((JobFailedException) t).getDetails();
 						if (details != null) {
 							LOG.error("Details for failed job " + jobUUID + " in deposit " + depositUUID + ": " + details);
 						}
@@ -386,9 +386,9 @@ public class DepositSupervisor implements WorkerListener {
 					LOG.error("Job " + jobUUID + " in deposit " + depositUUID + " failed");
 				}
 				
-				if (ex instanceof JobFailedException) {
-					jobStatusFactory.failed(jobUUID, ex.getLocalizedMessage());
-					depositStatusFactory.fail(depositUUID, ex.getLocalizedMessage());
+				if (t instanceof JobFailedException) {
+					jobStatusFactory.failed(jobUUID, t.getLocalizedMessage());
+					depositStatusFactory.fail(depositUUID, t.getLocalizedMessage());
 				} else {
 					jobStatusFactory.failed(jobUUID);
 					depositStatusFactory.fail(depositUUID);
