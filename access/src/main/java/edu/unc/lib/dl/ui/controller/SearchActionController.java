@@ -15,27 +15,26 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.util.Arrays;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.ui.Model;
-
-import javax.servlet.http.HttpServletRequest;
-
-import java.util.Arrays;
+import edu.unc.lib.dl.ui.model.RecordNavigationState;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -97,6 +96,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 	@RequestMapping("/list")
 	public String list(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.setRootPid(collectionsPid.getPid());
 		searchRequest.setApplyCutoffs(true);
 		model.addAttribute("queryMethod", "list");
 		return search(searchRequest, model, request);
