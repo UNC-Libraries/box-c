@@ -211,7 +211,7 @@
 				<constructor-arg ref="jobFactory" />
 			</bean>
 		</constructor-arg>
-		<constructor-arg name="numWorkers" value="${workers.num:3}" />
+		<constructor-arg name="numWorkers" value="${services.workers.enhancement.num:3}" />
 	</bean>
 	
 	<bean id="solrUpdateWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
@@ -226,7 +226,7 @@
 				<constructor-arg ref="jobFactory" />
 			</bean>
 		</constructor-arg>
-		<constructor-arg name="numWorkers" value="${workers.num:3}" />
+		<constructor-arg name="numWorkers" value="${services.workers.solrUpdate.num:3}" />
 	</bean>
 	
 	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
