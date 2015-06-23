@@ -159,15 +159,15 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 		}
 	}
 	
-	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Exception ex) {
+	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
 		if (event == null || event == WorkerEvent.WORKER_POLL) {
 			return;
 		}
 		
-		LOG.debug("onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, ex={}", new Object[] { event, worker, queue, job, runner, result, ex });
+		LOG.debug("onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}", new Object[] { event, worker, queue, job, runner, result, t });
 	
 		if (event == WorkerEvent.JOB_FAILURE) {
-			LOG.error("Job failed: " + job, ex);
+			LOG.error("Job failed: " + job, t);
 		}
 	}
 
