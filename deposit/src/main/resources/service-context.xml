@@ -62,9 +62,10 @@
 		<constructor-arg value="0" />
 	</bean>
 
-	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl"
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
 		scope="prototype">
 		<constructor-arg ref="jesqueConfig" />
+		<constructor-arg ref="jedisPool" />
 	</bean>
 	
 	<bean id="dataSet" class="com.hp.hpl.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
