@@ -15,71 +15,53 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.ResourceType;
-import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 public class DocumentIndexingPackage {
-	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackage.class);
-
-	private static final String OBJECT_STATE_RELATION = ContentModelHelper.FedoraProperty.state.toString();
+	private DocumentIndexingPackageDataLoader loader;
 
 	private PID pid;
+	private PID parentPid;
 	private DocumentIndexingPackage parentDocument;
 	private boolean attemptedToRetrieveDefaultWebObject;
 	private DocumentIndexingPackage defaultWebObject;
 	private String defaultWebData;
 	private Document foxml;
-	private Element relsExt;
 	private Element mods;
 	private Element mdContents;
-	private Element objectProperties;
 	private Boolean isPublished;
 	private Boolean isDeleted;
 	private IndexDocumentBean document;
 	private String label;
 	private ResourceType resourceType;
-	private Map<String, Element> datastreams;
 	private List<PID> children;
 	private Map<String, List<String>> triples;
 	private ObjectAccessControlsBean aclBean;
 
-	public DocumentIndexingPackage() {
+	public DocumentIndexingPackage(PID pid, DocumentIndexingPackage parentDip,
+			DocumentIndexingPackageDataLoader loader) {
 		document = new IndexDocumentBean();
+		this.pid = pid;
+		document.setId(pid.getPid());
 		this.attemptedToRetrieveDefaultWebObject = false;
-	}
-
-	public DocumentIndexingPackage(String pid) {
-		this(new PID(pid));
-	}
-
-	public DocumentIndexingPackage(PID pid) {
-		this();
-		this.pid = pid;
-		document.setId(this.pid.getPid());
-	}
-
-	public DocumentIndexingPackage(PID pid, Document foxml) {
-		this();
-		this.pid = pid;
-		document.setId(this.pid.getPid());
-		this.foxml = foxml;
+		this.parentDocument = parentDip;
+		if (parentDip != null) {
+			this.parentPid = parentDip.parentPid;
+		}
+		this.loader = loader;
 	}
 
 	public PID getPid() {
@@ -90,16 +72,27 @@ public class DocumentIndexingPackage {
 		this.pid = pid;
 	}
 
-	public DocumentIndexingPackage getParentDocument() {
+	public DocumentIndexingPackage getParentDocument() throws IndexingException {
+		if (parentDocument == null) {
+			parentDocument = loader.loadParentDip(this);
+		}
+		
 		return parentDocument;
+	}
+	
+	public boolean hasParentDocument() {
+		return parentDocument != null;
 	}
 
 	public void setParentDocument(DocumentIndexingPackage parentDocument) {
 		this.parentDocument = parentDocument;
-		// Break the grand parent bond
-		/*
-		 * if (this.parentDocument != null) { this.parentDocument.setParentDocument(null); }
-		 */
+	}
+
+	public PID getParentPid() throws IndexingException {
+		if (parentPid == null) {
+			parentPid = loader.loadParentPid(this);
+		}
+		return parentPid;
 	}
 
 	public boolean isAttemptedToRetrieveDefaultWebObject() {
@@ -110,7 +103,11 @@ public class DocumentIndexingPackage {
 		this.attemptedToRetrieveDefaultWebObject = attemptedToRetrieveDefaultWebObject;
 	}
 
-	public DocumentIndexingPackage getDefaultWebObject() {
+	public DocumentIndexingPackage getDefaultWebObject() throws IndexingException {
+		if (defaultWebObject == null && !attemptedToRetrieveDefaultWebObject) {
+			attemptedToRetrieveDefaultWebObject = true;
+			defaultWebObject = loader.loadDefaultWebObject(this);
+		}
 		return defaultWebObject;
 	}
 
@@ -118,7 +115,11 @@ public class DocumentIndexingPackage {
 		this.defaultWebObject = defaultWebObject;
 	}
 
-	public String getDefaultWebData() {
+	public String getDefaultWebData() throws IndexingException {
+		if (defaultWebData == null) {
+			defaultWebData = loader.loadDefaultWebData(this);
+		}
+		
 		return defaultWebData;
 	}
 
@@ -126,12 +127,19 @@ public class DocumentIndexingPackage {
 		this.defaultWebData = defaultWebData;
 	}
 
-	public Document getFoxml() {
+	public Document getFoxml() throws IndexingException {
+		if (foxml == null) {
+			foxml = loader.loadFOXML(this);
+		}
 		return foxml;
 	}
 
 	public void setFoxml(Document foxml) {
 		this.foxml = foxml;
+	}
+	
+	public boolean hasFoxml() {
+		return foxml != null;
 	}
 
 	public IndexDocumentBean getDocument() {
@@ -142,32 +150,9 @@ public class DocumentIndexingPackage {
 		this.document = document;
 	}
 
-	public Element getRelsExt() {
-		if (relsExt == null && foxml != null) {
-			try {
-				Element rdf = FOXMLJDOMUtil.getDatastreamContent(ContentModelHelper.Datastream.RELS_EXT, foxml);
-				setRelsExt(rdf);
-			} catch (NullPointerException e) {
-				return null;
-			}
-		}
-		return relsExt;
-	}
-
-	public void setRelsExt(Element relsExt) {
-		this.relsExt = relsExt;
-		if ("RDF".equals(relsExt.getName()) && JDOMNamespaceUtil.RDF_NS.equals(relsExt.getNamespace())) {
-			this.relsExt = (Element) relsExt.getChildren().get(0);
-		}
-	}
-
-	public Element getMods() {
-		if (mods == null && foxml != null) {
-			try {
-				setMods(FOXMLJDOMUtil.getDatastreamContent(ContentModelHelper.Datastream.MD_DESCRIPTIVE, foxml));
-			} catch (NullPointerException e) {
-				return null;
-			}
+	public Element getMods() throws IndexingException {
+		if (mods == null) {
+			mods = loader.loadMDDescriptive(this);
 		}
 		return mods;
 	}
@@ -176,14 +161,9 @@ public class DocumentIndexingPackage {
 		this.mods = mods;
 	}
 
-	public Element getMdContents() {
-		if (mdContents == null && foxml != null) {
-			try {
-				setMdContents(FOXMLJDOMUtil.getDatastreamContent(ContentModelHelper.Datastream.MD_CONTENTS, foxml));
-			} catch (NullPointerException e) {
-				log.debug("Unable to extract MD contents for " + this.getPid());
-				return null;
-			}
+	public Element getMdContents() throws IndexingException {
+		if (mdContents == null) {
+			mdContents = loader.loadMDContents(this);
 		}
 		return mdContents;
 	}
@@ -192,7 +172,7 @@ public class DocumentIndexingPackage {
 		this.mdContents = mdContents;
 	}
 
-	public Long getDisplayOrder(String pid) throws NumberFormatException {
+	public Long getDisplayOrder(String pid) throws NumberFormatException, IndexingException {
 		Element mdContents = getMdContents();
 		if (mdContents == null)
 			return null;
@@ -205,48 +185,18 @@ public class DocumentIndexingPackage {
 		return null;
 	}
 
-	public Element getObjectProperties() {
-		if (objectProperties == null && foxml != null) {
-			// /foxml:digitalObject/foxml:objectProperties
-			this.objectProperties = FOXMLJDOMUtil.getObjectProperties(foxml);
-		}
-		return this.objectProperties;
-	}
-
-	public String getLabel() {
+	public String getLabel() throws IndexingException {
 		if (label == null) {
 			Map<String, List<String>> triples = getTriples();
 			if (triples != null)
-				this.label = triples.get(ContentModelHelper.FedoraProperty.label.toString()).get(0);
+				this.label = triples.get(FedoraProperty.label.toString()).get(0);
 		}
 		return label;
 	}
 
-	public List<PID> getChildren() {
-		if (children != null)
-			return children;
-		if (triples != null) {
-			List<String> childrenRelations = triples.get(ContentModelHelper.Relationship.contains.toString());
-			if (childrenRelations == null)
-				this.children = new ArrayList<PID>(0);
-			else {
-				this.children = new ArrayList<PID>(childrenRelations.size());
-				for (String childRelation : childrenRelations)
-					this.children.add(new PID(childRelation));
-			}
-		} else {
-			Element relsExt = getRelsExt();
-			if (relsExt == null)
-				return null;
-			List<?> containsEls = relsExt.getChildren("contains", JDOMNamespaceUtil.CDR_NS);
-			List<PID> children = new ArrayList<PID>(containsEls.size());
-			if (containsEls.size() > 0) {
-				for (Object containsObj : containsEls) {
-					PID child = new PID(((Element) containsObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
-					children.add(child);
-				}
-			}
-			this.children = children;
+	public List<PID> getChildren() throws IndexingException {
+		if (children == null) {
+			children = loader.loadChildren(this);
 		}
 		return children;
 	}
@@ -254,69 +204,23 @@ public class DocumentIndexingPackage {
 	public void setChildren(List<PID> children) {
 		this.children = children;
 	}
-	
-	public Map<String, Element> getDatastreams() {
-		if (datastreams == null && foxml != null) {
-			datastreams = FOXMLJDOMUtil.getMostRecentDatastreamMap(foxml);
+
+	public Map<String, List<String>> getTriples() throws IndexingException {
+		if (triples == null) {
+			triples = loader.loadTriples(this);
 		}
-		return datastreams;
-	}
-
-	private void extractTriples() {
-		Element objectProperties = getObjectProperties();
-		Element relsExt = getRelsExt();
-		Map<String, Element> datastreams = this.getDatastreams();
-
-		Map<String, List<String>> triples = new HashMap<String, List<String>>();
-		if (relsExt != null) {
-			List<?> tripleEls = relsExt.getChildren();
-			for (Object tripleObject : tripleEls) {
-				Element tripleEl = (Element) tripleObject;
-				String predicate = tripleEl.getNamespaceURI() + tripleEl.getName();
-				String value = tripleEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
-				if (value == null)
-					value = tripleEl.getText();
-				List<String> predicateTriples = triples.get(predicate);
-				if (predicateTriples == null) {
-					predicateTriples = new ArrayList<String>();
-					triples.put(predicate, predicateTriples);
-				}
-				predicateTriples.add(value);
-			}
-		}
-
-		if (objectProperties != null) {
-			List<?> tripleEls = objectProperties.getChildren();
-			for (Object tripleObject : tripleEls) {
-				Element tripleEl = (Element) tripleObject;
-				String predicate = tripleEl.getAttributeValue("NAME");
-				String value = tripleEl.getAttributeValue("VALUE");
-				// Fedora prefixes the state value into a URI in the triple store, so add in prefix
-				if (OBJECT_STATE_RELATION.equals(predicate))
-					value = NamespaceConstants.FEDORA_MODEL_URI + value;
-				List<String> predicateTriples = triples.get(predicate);
-				if (predicateTriples == null) {
-					predicateTriples = new ArrayList<String>();
-					triples.put(predicate, predicateTriples);
-				}
-				predicateTriples.add(value);
-			}
-		}
-
-		if (datastreams.size() > 0) {
-			List<String> predicateTriples = new ArrayList<String>();
-			triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(), predicateTriples);
-			for (String datastream : datastreams.keySet()) {
-				predicateTriples.add(pid.getURI() + "/" + datastream);
-			}
-		}
-		this.triples = triples;
-	}
-
-	public Map<String, List<String>> getTriples() {
-		if (triples == null && foxml != null)
-			this.extractTriples();
 		return triples;
+	}
+	
+	public String getFirstTriple(String uri) throws IndexingException {
+		Map<String, List<String>> triples = getTriples();
+		
+		List<String> tripleList = triples.get(uri);
+		
+		if (tripleList == null || tripleList.size() == 0)
+			return null;
+		
+		return tripleList.get(0);
 	}
 
 	public void setTriples(Map<String, List<String>> triples) {
@@ -351,11 +255,22 @@ public class DocumentIndexingPackage {
 		this.isDeleted = isDeleted;
 	}
 
-	public ObjectAccessControlsBean getAclBean() {
+	public ObjectAccessControlsBean getAclBean() throws IndexingException {
+		if (aclBean == null) {
+			aclBean = loader.loadAccessControlBean(this);
+		}
 		return aclBean;
+	}
+	
+	public boolean hasAclBean() {
+		return aclBean != null;
 	}
 
 	public void setAclBean(ObjectAccessControlsBean aclBean) {
 		this.aclBean = aclBean;
+	}
+	
+	public void setDataLoader(DocumentIndexingPackageDataLoader dataLoader) {
+		loader = dataLoader;
 	}
 }

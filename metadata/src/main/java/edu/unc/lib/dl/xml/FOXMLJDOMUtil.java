@@ -327,18 +327,21 @@ public class FOXMLJDOMUtil {
 	 */
 	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Document foxml) {
 		Element dsVersion;
-		// if (datastreams == null) {
 		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
 				JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
+		
+		if (datastreamEl == null) {
+			return null;
+		}
 
 		if (datastream.isVersionable()) {
 			dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
 					JDOMNamespaceUtil.FOXML_NS));
 		} else {
-			dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+			dsVersion = datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
 		}
 
-		return (Element) dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
+		return dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
 	}
 
 	/**
@@ -363,7 +366,7 @@ public class FOXMLJDOMUtil {
 					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
 							JDOMNamespaceUtil.FOXML_NS));
 				} else {
-					dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+					dsVersion = datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
 				}
 				datastreams.put(datastreamName, dsVersion);
 			}
@@ -384,7 +387,7 @@ public class FOXMLJDOMUtil {
 					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
 							JDOMNamespaceUtil.FOXML_NS));
 				} else {
-					dsVersion = (Element) datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
+					dsVersion = datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
 				}
 				return dsVersion;
 			}
@@ -460,7 +463,7 @@ public class FOXMLJDOMUtil {
 	public static Element getRelsExt(Document foxml) {
 		Element relsExt = getDatastreamContent(ContentModelHelper.Datastream.RELS_EXT, foxml);
 		if ("RDF".equals(relsExt.getName()) && JDOMNamespaceUtil.RDF_NS.equals(relsExt.getNamespace())) {
-			return (Element) relsExt.getChildren().get(0);
+			return relsExt.getChildren().get(0);
 		}
 		return relsExt;
 	}

@@ -36,11 +36,6 @@ public class SetDisplayOrderFilter extends AbstractIndexDocumentFilter {
 		IndexDocumentBean idb = dip.getDocument();
 
 		DocumentIndexingPackage parentDIP = dip.getParentDocument();
-		if (parentDIP == null || parentDIP.getFoxml() == null) {
-			parentDIP = this.retrieveParentDIP(dip);
-			if (parentDIP == null)
-				throw new IndexingException("Could not retrieve DIP for parent of " + dip.getPid());
-		}
 
 		try {
 			Long order = parentDIP.getDisplayOrder(dip.getPid().getPid());

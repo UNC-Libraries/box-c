@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.fedora.PID;
@@ -50,11 +51,12 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 	private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
 
 	@Mock
-	protected DocumentIndexingPackageFactory dipFactory;
-	@Mock
 	protected TripleStoreQueryService tsqs;
 	@Mock
 	protected DocumentIndexingPipeline pipeline;
+	@Mock
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
 
 	protected Map<String, List<PID>> children;
 
@@ -70,18 +72,18 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
 
 		children = populateChildren();
+		
+		when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenAnswer(new Answer<List<PID>>() {
 
-		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenAnswer(new Answer<DocumentIndexingPackage>() {
 			@Override
-			public DocumentIndexingPackage answer(InvocationOnMock invocation) throws Throwable {
+			public List<PID> answer(InvocationOnMock invocation) throws Throwable {
 				Object[] args = invocation.getArguments();
-				PID pid = (PID) args[0];
+				PID pid = ((DocumentIndexingPackage) args[0]).getPid();
+				
 				if (pid.getPid().equals("uuid:doesnotexist"))
 					throw new IndexingException("");
-				DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-				dip.setChildren(children.get(pid.getPid()));
-				dip.getDocument().setTitle("Text");
-				return dip;
+				
+				return children.get(pid.getPid());
 			}
 		});
 
@@ -90,9 +92,11 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 		action.setTsqs(tsqs);
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
-		action.setDipFactory(dipFactory);
 		action.setAddDocumentMode(false);
 		action.setCollectionsPid(new PID("uuid:1"));
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		action.setFactory(factory);
 		action.init();
 	}
 

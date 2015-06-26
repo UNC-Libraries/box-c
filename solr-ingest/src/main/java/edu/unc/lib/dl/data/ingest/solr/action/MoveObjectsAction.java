@@ -39,7 +39,7 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	@Override
 	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
 		// Store the MD_CONTENTS of the parents so new children can be correctly located
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(childSetRequest.getPid());
+		DocumentIndexingPackage dip = factory.createDip(childSetRequest.getPid());
 		// Process the parent to get its inheritable properties
 		this.pipeline.process(dip);
 		return dip;
@@ -48,10 +48,7 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 	@Override
 	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
 			throws IndexingException {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-		dip.setParentDocument(parent);
-		// Get all triples in order to retrieve children
-		dip.setTriples(tsqs.fetchAllTriples(dip.getPid()));
+		DocumentIndexingPackage dip = factory.createDip(pid, parent);
 
 		// For the top level children that were just moved we need to check for display order
 		if (parent.getMdContents() != null) {

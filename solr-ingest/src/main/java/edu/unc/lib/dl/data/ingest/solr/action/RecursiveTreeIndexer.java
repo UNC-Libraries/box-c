@@ -51,7 +51,7 @@ public class RecursiveTreeIndexer {
 		this.addDocumentMode = addDocumentMode;
 	}
 
-	public void index(PID pid, DocumentIndexingPackage parent) {
+	public void index(PID pid, DocumentIndexingPackage parent) throws IndexingException {
 		DocumentIndexingPackage dip = null;
 		try {
 			// Force wait before each document being indexed
@@ -92,7 +92,7 @@ public class RecursiveTreeIndexer {
 		} finally {
 			// Clear parent bond to allow memory cleanup
 			if (dip != null)
-				dip.setParentDocument(null);
+				dip.setParentDocument((DocumentIndexingPackage) null);
 		}
 
 		// Start indexing the children
@@ -100,7 +100,7 @@ public class RecursiveTreeIndexer {
 			this.indexChildren(dip, dip.getChildren());
 	}
 
-	public void indexChildren(DocumentIndexingPackage parent, List<PID> children) {
+	public void indexChildren(DocumentIndexingPackage parent, List<PID> children) throws IndexingException {
 		if (children != null) {
 			for (PID child : children) {
 				this.index(child, parent);

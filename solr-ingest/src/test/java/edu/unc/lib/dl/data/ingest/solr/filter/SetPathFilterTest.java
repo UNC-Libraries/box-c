@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,17 +29,32 @@ import java.util.List;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class SetPathFilterTest extends Assert {
+	
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
 
+	@Before
+	public void setUp() throws Exception {
+		initMocks(this);
+		
+		loader = new DocumentIndexingPackageDataLoader();
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+	}
+	
 	@Test
 	public void fromQueryFileTest() throws Exception {
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
@@ -70,12 +86,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 		filter.filter(dip);
 
 		assertEquals("/uuid:Collections/uuid:collection", idb.getAncestorIds());
@@ -119,12 +135,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 
 		filter.filter(dip);
 
@@ -176,12 +192,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 
 		filter.filter(dip);
 
@@ -230,12 +246,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 		filter.filter(dip);
 
 		assertEquals("/uuid:Collections/uuid:collection", idb.getAncestorIds());
@@ -278,12 +294,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 
 		filter.filter(dip);
 
@@ -335,12 +351,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 		filter.filter(dip);
 
 		assertEquals("/uuid:Collections/uuid:collection/uuid:folder", idb.getAncestorIds());
@@ -376,12 +392,12 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		IndexDocumentBean idb = dip.getDocument();
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 
 		filter.filter(dip);
 
@@ -400,23 +416,23 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 
 		filter.filter(dip);
 	}
 
 	private DocumentIndexingPackage getParentFolderWithCollection() {
-		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
+		DocumentIndexingPackage parentCollection = factory.createDip("info:fedora/uuid:collection");
 		parentCollection.setResourceType(ResourceType.Collection);
 		parentCollection.setLabel("collection");
 		parentCollection.getDocument().setAncestorIds("/uuid:Collections/uuid:collection");
 		parentCollection.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections"));
 
-		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
+		DocumentIndexingPackage parentFolder = factory.createDip("info:fedora/uuid:folder");
 		parentFolder.getDocument().setRollup("uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.setParentDocument(parentCollection);
@@ -432,7 +448,7 @@ public class SetPathFilterTest extends Assert {
 	public void fromParentsAggregateTest() throws Exception {
 		DocumentIndexingPackage parentFolder = getParentFolderWithCollection();
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(
@@ -460,7 +476,7 @@ public class SetPathFilterTest extends Assert {
 	public void fromParentsFileTest() throws Exception {
 		DocumentIndexingPackage parentFolder = getParentFolderWithCollection();
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -487,7 +503,7 @@ public class SetPathFilterTest extends Assert {
 
 	@Test
 	public void fromParentsNoCollectionTest() throws Exception {
-		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
+		DocumentIndexingPackage parentFolder = factory.createDip("info:fedora/uuid:folder");
 		parentFolder.getDocument().setRollup("uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.getDocument().setParentCollection(null);
@@ -495,7 +511,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setAncestorIds("/uuid:Collections/uuid:folder");
 		parentFolder.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections"));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -519,14 +535,14 @@ public class SetPathFilterTest extends Assert {
 
 	@Test
 	public void fromParentsAggregateChildTest() throws Exception {
-		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
+		DocumentIndexingPackage parentCollection = factory.createDip("info:fedora/uuid:collection");
 		parentCollection.getDocument().setRollup("uuid:collection");
 		parentCollection.setResourceType(ResourceType.Collection);
 		parentCollection.setLabel("collection");
 		parentCollection.getDocument().setAncestorIds("/uuid:Collections/uuid:collection");
 		parentCollection.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections"));
 
-		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage parentFolder = factory.createDip("info:fedora/uuid:aggregate");
 		parentFolder.getDocument().setRollup("uuid:aggregate");
 		parentFolder.setResourceType(ResourceType.Aggregate);
 		parentFolder.setParentDocument(parentCollection);
@@ -535,7 +551,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setAncestorIds("/uuid:Collections/uuid:collection/uuid:aggregate");
 		parentFolder.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections", "2,uuid:collection"));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -560,13 +576,13 @@ public class SetPathFilterTest extends Assert {
 
 	@Test(expected = IndexingException.class)
 	public void fromParentsNoAncestorsTest() throws Exception {
-		DocumentIndexingPackage parentFolder = new DocumentIndexingPackage("info:fedora/uuid:folder");
+		DocumentIndexingPackage parentFolder = factory.createDip("info:fedora/uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.setLabel("folder");
 		parentFolder.getDocument().setAncestorIds("");
 		parentFolder.getDocument().setAncestorPath(new ArrayList<String>());
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		dip.setParentDocument(parentFolder);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -579,13 +595,13 @@ public class SetPathFilterTest extends Assert {
 
 	@Test
 	public void fromParentsImmediateChildOfCollections() throws Exception {
-		DocumentIndexingPackage parentCollections = new DocumentIndexingPackage("info:fedora/uuid:Collections");
+		DocumentIndexingPackage parentCollections = factory.createDip("info:fedora/uuid:Collections");
 		parentCollections.setResourceType(ResourceType.Collection);
 		parentCollections.setLabel("Collections");
 		parentCollections.getDocument().setAncestorIds("/uuid:Collections");
 		parentCollections.getDocument().setAncestorPath(new ArrayList<String>());
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 		dip.setParentDocument(parentCollections);
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
@@ -623,11 +639,11 @@ public class SetPathFilterTest extends Assert {
 
 		when(tsqs.queryResourceIndex(anyString())).thenReturn(results);
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:File");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:File");
 
 		SetPathFilter filter = new SetPathFilter();
 		filter.setCollectionsPid(new PID("uuid:Collections"));
-		filter.setTripleStoreQueryService(tsqs);
+		filter.setTsqs(tsqs);
 		filter.filter(dip);
 	}
 }

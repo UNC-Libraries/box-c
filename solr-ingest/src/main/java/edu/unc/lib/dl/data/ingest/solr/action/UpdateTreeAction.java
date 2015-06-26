@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -72,7 +71,7 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 		this.tsqs = tsqs;
 	}
 
-	protected void index(SolrUpdateRequest updateRequest) {
+	protected void index(SolrUpdateRequest updateRequest) throws IndexingException {
 		// Translate the index all flag into the collections pid if neccessary
 		PID startingPid;
 		if (TARGET_ALL.equals(updateRequest.getTargetID()))
@@ -101,13 +100,6 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 		if (results == null || results.size() == 0 || results.get(0).size() == 0)
 			return 0;
 		return Integer.parseInt(results.get(0).get(0));
-	}
-
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
-			throws IndexingException {
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
-		dip.setParentDocument(parent);
-		return dip;
 	}
 
 	public long getUpdateDelay() {

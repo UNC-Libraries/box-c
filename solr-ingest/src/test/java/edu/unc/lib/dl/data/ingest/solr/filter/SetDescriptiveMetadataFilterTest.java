@@ -40,17 +40,28 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 public class SetDescriptiveMetadataFilterTest {
 
 	@Mock
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
+	
+	@Mock
 	private VocabularyHelperManager vocabManager;
 
 	private SetDescriptiveMetadataFilter filter;
+	
+	Map<String, List<String>> triples;
 
 	@Before
 	public void setup() throws Exception {
@@ -58,15 +69,23 @@ public class SetDescriptiveMetadataFilterTest {
 
 		filter = new SetDescriptiveMetadataFilter();
 		setField(filter, "vocabManager", vocabManager);
+		
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		
+		triples = new HashMap<>();
+		triples.put(FedoraProperty.label.toString(), Arrays.asList("Label"));
+		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
 	}
 
 	@Test
 	public void extractMODS() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage dip = factory.createDip("uuid:aggregate");
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(
 				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
-		dip.setFoxml(foxml);
+		Element mods = FOXMLJDOMUtil.getDatastreamContent(Datastream.MD_DESCRIPTIVE, foxml);
+		when(loader.loadMDDescriptive(any(DocumentIndexingPackage.class))).thenReturn(mods);
 
 		Map<String, List<List<String>>> terms = new HashMap<>();
 		terms.put(AFFIL_URI, Arrays.asList(Arrays.asList("Department of Biostatistics")));
@@ -104,10 +123,7 @@ public class SetDescriptiveMetadataFilterTest {
 
 	@Test
 	public void noMODS() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
-		dip.setFoxml(foxml);
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
@@ -120,7 +136,7 @@ public class SetDescriptiveMetadataFilterTest {
 		assertNull(idb.getAbstractText());
 
 		assertEquals(idb.getId(), dip.getPid().getPid());
-		assertEquals("A1100-A800 NS final.jpg", idb.getTitle());
+		assertEquals("Label", idb.getTitle());
 	}
 
 }

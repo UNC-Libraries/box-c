@@ -39,6 +39,7 @@ import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
@@ -56,7 +57,8 @@ public class UpdateChildSetActionTest {
 	@Mock
 	private TripleStoreQueryService tsqs;
 	@Mock
-	private DocumentIndexingPackageFactory dipFactory;
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
 
 	private UpdateChildSetAction action;
 
@@ -72,10 +74,11 @@ public class UpdateChildSetActionTest {
 		action.setTsqs(tsqs);
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
-		action.setDipFactory(dipFactory);
-		action.setParentDipFactory(dipFactory);
 		action.setAddDocumentMode(false);
 		action.setCollectionsPid(new PID("uuid:1"));
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		action.setFactory(factory);
 		action.init();
 	}
 
@@ -88,22 +91,12 @@ public class UpdateChildSetActionTest {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testPerformAction() throws Exception {
-
-		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
-		IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);
-		when(dipRoot.getDocument()).thenReturn(idbRoot);
-		List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"), new PID("c4"));
-		when(dipRoot.getChildren()).thenReturn(children1);
-
-		DocumentIndexingPackage dipC1 = mock(DocumentIndexingPackage.class);
-		DocumentIndexingPackage dipC2 = mock(DocumentIndexingPackage.class);
-		List<PID> children2 = Arrays.asList(new PID("c3"));
-		when(dipC2.getChildren()).thenReturn(children2);
-		DocumentIndexingPackage dipC3 = mock(DocumentIndexingPackage.class);
-
-		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenReturn(dipRoot, dipC1, dipC2, dipC3);
+		List<PID> children = Arrays.asList(new PID("c3"));
+		
+		when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenReturn(children, (List<PID>) null);
 
 		request = new ChildSetRequest("c0", Arrays.asList("c1", "c2"), IndexingActionType.ADD);
 
@@ -112,10 +105,10 @@ public class UpdateChildSetActionTest {
 		// Only the two top level objects specified should have been looked up
 		verify(tsqs, times(2)).queryResourceIndex(anyString());
 		// DIPs for all objects except c4 should have been retrieved
-		verify(dipFactory, times(4)).createDocumentIndexingPackage(any(PID.class));
+		verify(loader, times(3)).loadChildren(any(DocumentIndexingPackage.class));
+		//verify(dipFactory, times(4)).createDocumentIndexingPackage(any(PID.class));
 		// All objects except c0 (the parent) should have been updated
 		verify(driver, times(3)).updateDocument(eq("set"), any(IndexDocumentBean.class));
-		verify(driver, never()).updateDocument(eq("set"), eq(idbRoot));
 
 	}
 
@@ -133,7 +126,7 @@ public class UpdateChildSetActionTest {
 		action.performAction(request);
 
 		verify(tsqs, never()).queryResourceIndex(anyString());
-		verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
+		//verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
 		// No updates should have occurred
 		verify(driver, never()).updateDocument(eq("set"), any(IndexDocumentBean.class));
 

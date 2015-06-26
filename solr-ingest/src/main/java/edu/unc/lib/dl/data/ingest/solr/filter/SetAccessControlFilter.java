@@ -25,7 +25,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -44,23 +43,15 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetAccessControlFilter.class);
 
-	private AccessControlService accessControlService;
-
 	/**
 	 * Requires dip to contain RELS-EXT
 	 */
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		Map<String, List<String>> triples = this.retrieveTriples(dip);
+		Map<String, List<String>> triples = dip.getTriples();
 
 		// Generate access control information
-		ObjectAccessControlsBean aclBean;
-		if (dip.getParentDocument() == null || dip.getParentDocument().getAclBean() == null) {
-			// No parent object, ask fedora for access control
-			aclBean = accessControlService.getObjectAccessControls(dip.getPid());
-		} else {
-			aclBean = new ObjectAccessControlsBean(dip.getParentDocument().getAclBean(), dip.getPid(), triples);
-		}
+		ObjectAccessControlsBean aclBean = dip.getAclBean();
 
 		List<String> status = new ArrayList<String>();
 		setAccessStatus(triples, status);
@@ -189,9 +180,5 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 
 		// Store computed activity state in the dip for future generations to reference
 		dip.setIsDeleted(!aclBean.isActive());
-	}
-
-	public void setAccessControlService(AccessControlService accessControlService) {
-		this.accessControlService = accessControlService;
 	}
 }

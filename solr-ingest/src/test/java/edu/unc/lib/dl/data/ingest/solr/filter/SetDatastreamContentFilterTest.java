@@ -15,9 +15,10 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,20 +26,41 @@ import java.io.FileInputStream;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.data.ingest.solr.indexing.FOXMLDocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 public class SetDatastreamContentFilterTest extends Assert {
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
+	
+	@Mock
+	private ManagementClient managementClient;
+	
+	@Before
+	public void setup() throws Exception {
+		initMocks(this);
+		
+		loader = new DocumentIndexingPackageDataLoader();
+		loader.setManagementClient(managementClient);
+		
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		
+		loader.setFactory(factory);
+	}
+	
 	@Test
 	public void extractDatastreamsImage() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:item",
+		DocumentIndexingPackage dip = setupDip("uuid:item",
 				"src/test/resources/foxml/imageNoMODS.xml");
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
@@ -63,7 +85,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test
 	public void extractDefaultWebDataNoMimetype() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:item",
+		DocumentIndexingPackage dip = setupDip("uuid:item",
 				"src/test/resources/foxml/fileOctetStream.xml");
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
@@ -80,18 +102,13 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test
 	public void extractDatastreamsDefaultWebObject() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:aggregate",
+		DocumentIndexingPackage dip = setupDip("uuid:aggregate",
 				"src/test/resources/foxml/aggregateSplitDepartments.xml");
 
-		SAXBuilder builder = new SAXBuilder();
-		Document dwoFOXML = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
-		DocumentIndexingPackageFactory dipFactory = new FOXMLDocumentIndexingPackageFactory();
-		ManagementClient managementClient = mock(ManagementClient.class);
-		when(managementClient.getObjectXML(any(PID.class))).thenReturn(dwoFOXML);
-		dipFactory.setManagementClient(managementClient);
+		setupDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194",
+				"src/test/resources/foxml/imageNoMODS.xml");
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
-		filter.setDocumentIndexingPackageFactory(dipFactory);
 		filter.filter(dip);
 
 		IndexDocumentBean idb = dip.getDocument();
@@ -124,7 +141,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test
 	public void extractDatastreamsNoDefaultWebData() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:folder",
+		DocumentIndexingPackage dip = setupDip("uuid:folder",
 				"src/test/resources/foxml/folderSmall.xml");
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
@@ -143,7 +160,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test(expected = IndexingException.class)
 	public void extractDatastreamsNoFOXML() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage dip = factory.createDip("uuid:aggregate");
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
 		filter.filter(dip);
@@ -151,21 +168,19 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test(expected = IndexingException.class)
 	public void extractDatastreamsDefaultWebObjectNotFound() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:aggregate",
+		DocumentIndexingPackage dip = setupDip("uuid:aggregate",
 				"src/test/resources/foxml/aggregateSplitDepartments.xml");
 
-		DocumentIndexingPackageFactory dipFactory = new FOXMLDocumentIndexingPackageFactory();
 		ManagementClient managementClient = mock(ManagementClient.class);
-		dipFactory.setManagementClient(managementClient);
+		loader.setManagementClient(managementClient);
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
-		filter.setDocumentIndexingPackageFactory(dipFactory);
 		filter.filter(dip);
 	}
 
 	@Test
 	public void ocetetStreamExtensionDifficulties() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8",
+		DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
 				"src/test/resources/foxml/extensionDifficulty.xml");
 
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
@@ -188,7 +203,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test
 	public void punctuationInExtension() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8",
+		DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
 				"src/test/resources/foxml/punctuationContentFileName.xml");
 		
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
@@ -199,7 +214,7 @@ public class SetDatastreamContentFilterTest extends Assert {
 	
 	@Test
 	public void noExtension() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8",
+		DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
 				"src/test/resources/foxml/noExtension.xml");
 		
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
@@ -214,9 +229,8 @@ public class SetDatastreamContentFilterTest extends Assert {
 
 	@Test
 	public void noDatastreamSize() throws Exception {
-		DocumentIndexingPackage dip = this.getDIP("info:fedora/uuid:c19067ff-77af-4954-8aec-454d213846d8",
+		DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
 				"src/test/resources/foxml/noDatastreamSize.xml");
-
 		SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
 		filter.filter(dip);
 
@@ -227,11 +241,11 @@ public class SetDatastreamContentFilterTest extends Assert {
 		assertEquals("DATA_FILE", dip.getDefaultWebData());
 	}
 
-	private DocumentIndexingPackage getDIP(String pid, String foxmlFilePath) throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
+	private DocumentIndexingPackage setupDip(String pid, String foxmlFilePath) throws Exception {
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(foxmlFilePath)));
-		dip.setFoxml(foxml);
-		return dip;
+		when(managementClient.getObjectXML(eq(new PID(pid)))).thenReturn(foxml);
+		
+		return factory.createDip(pid);
 	}
 }

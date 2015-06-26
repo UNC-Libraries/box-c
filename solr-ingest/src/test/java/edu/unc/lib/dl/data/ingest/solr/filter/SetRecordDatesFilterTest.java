@@ -15,9 +15,13 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,20 +30,34 @@ import java.util.Map;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
-import static org.mockito.Mockito.*;
-
 public class SetRecordDatesFilterTest extends Assert {
+	
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
+	
+	@Before
+	public void setup() throws Exception {
+		loader = new DocumentIndexingPackageDataLoader();
+		
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+	}
 	
 	@Test
 	public void foxmlExtractionTest() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
 		dip.setFoxml(foxml);
@@ -55,29 +73,21 @@ public class SetRecordDatesFilterTest extends Assert {
 		assertEquals(dateAdded, idb.getDateAdded());
 		assertEquals(dateUpdated, idb.getDateUpdated());
 	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+
 	@Test
 	public void queryExtractionTest() throws Exception {
+		
 		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
-		List<Map> bindings = new ArrayList<Map>();
-		Map outer = new HashMap();
-		Map results = new HashMap();
-		outer.put("results", results);
-		results.put("bindings", bindings);
+		Map<String, List<String>> triples = new HashMap<>();
+		triples.put(FedoraProperty.createdDate.toString(), Arrays.asList("2011-10-04T20:31:52.107Z"));
+		triples.put(FedoraProperty.lastModifiedDate.toString(), Arrays.asList("2011-10-05T04:25:07.169Z"));
 		
-		Map rowMap = new HashMap();
-		rowMap.put("modifiedDate", "2011-10-05T04:25:07.169Z");
-		rowMap.put("createdDate", "2011-10-04T20:31:52.107Z");
-		bindings.add(rowMap);
+		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples);
+		loader.setTsqs(tsqs);
 		
-		when(tsqs.sendSPARQL(anyString())).thenReturn(outer);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
 		
 		SetRecordDatesFilter filter = new SetRecordDatesFilter();
-		filter.setTripleStoreQueryService(tsqs);
-		
 		filter.filter(dip);
 		
 		IndexDocumentBean idb = dip.getDocument();

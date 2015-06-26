@@ -15,47 +15,33 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.ManagementClient;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * @author bbpennel
+ * @date Jun 24, 2015
+ */
 public class DocumentIndexingPackageFactory {
-	protected ManagementClient managementClient = null;
-
-	protected AccessClient accessClient = null;
-
-	protected int maxRetries = 2;
-
-	protected long retryDelay = 1000L;
 	
-	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid) throws IndexingException {
-		return this.createDocumentIndexingPackage(pid, null);
+	@Autowired
+	private DocumentIndexingPackageDataLoader dataLoader;
+
+	public DocumentIndexingPackage createDip(String pid) {
+		return new DocumentIndexingPackage(new PID(pid), null, dataLoader);
 	}
 
-	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent) throws IndexingException {
-
-		DocumentIndexingPackage dip = new DocumentIndexingPackage();
-		dip.getDocument().setId(pid.getPid());
-		dip.setPid(pid);
-		dip.setParentDocument(parent);
-
-		return dip;
+	public DocumentIndexingPackage createDip(PID pid) {
+		return new DocumentIndexingPackage(pid, null, dataLoader);
 	}
 
-	public void setManagementClient(ManagementClient managementClient) {
-		this.managementClient = managementClient;
+	public DocumentIndexingPackage createDip(PID pid, DocumentIndexingPackage parentDip) {
+		return new DocumentIndexingPackage(pid, parentDip, dataLoader);
 	}
 
-	public void setAccessClient(AccessClient accessClient) {
-		this.accessClient = accessClient;
+	public void setDataLoader(DocumentIndexingPackageDataLoader dataLoader) {
+		this.dataLoader = dataLoader;
 	}
 
-	public void setMaxRetries(int maxRetries) {
-		this.maxRetries = maxRetries;
-	}
-
-	public void setRetryDelay(long retryDelay) {
-		this.retryDelay = retryDelay;
-	}
 }

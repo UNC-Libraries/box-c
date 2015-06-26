@@ -22,7 +22,6 @@ import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -33,8 +32,6 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class UpdateChildSetAction extends UpdateTreeAction {
 	private static final Logger log = LoggerFactory.getLogger(UpdateChildSetAction.class);
-	
-	protected DocumentIndexingPackageFactory parentDipFactory;
 
 	public UpdateChildSetAction() {
 		this.addDocumentMode = false;
@@ -70,18 +67,6 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 	}
 
 	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
-		return parentDipFactory.createDocumentIndexingPackage(childSetRequest.getPid());
-	}
-
-	@Override
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
-			throws IndexingException {
-		DocumentIndexingPackage dip = dipFactory.createDocumentIndexingPackage(pid);
-		dip.setParentDocument(parent);
-		return dip;
-	}
-	
-	public void setParentDipFactory(DocumentIndexingPackageFactory dipFactory) {
-		this.parentDipFactory = dipFactory;
+		return factory.createDip(childSetRequest.getPid());
 	}
 }

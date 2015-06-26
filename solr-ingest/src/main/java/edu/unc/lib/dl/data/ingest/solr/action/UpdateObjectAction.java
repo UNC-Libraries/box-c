@@ -32,7 +32,7 @@ public class UpdateObjectAction extends AbstractIndexingAction {
 		// Retrieve object metadata from Fedora and add to update document list
 		DocumentIndexingPackage dip = updateRequest.getDocumentIndexingPackage();
 		if (dip == null) {
-			dip = dipFactory.createDocumentIndexingPackage(updateRequest.getPid());
+			dip = factory.createDip(updateRequest.getPid());
 			updateRequest.setDocumentIndexingPackage(dip);
 		}
 
