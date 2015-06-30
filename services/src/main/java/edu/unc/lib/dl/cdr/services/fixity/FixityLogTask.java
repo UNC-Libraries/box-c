@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services;
+package edu.unc.lib.dl.cdr.services.fixity;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
