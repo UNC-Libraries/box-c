@@ -166,10 +166,6 @@
 		<ref bean="solrUpdateEnhancementService"/>
 	</util:list>
 	
-	<bean id="servicesFailedPids" class="edu.unc.lib.dl.cdr.services.model.FailedEnhancementMap" init-method="init">
-		<property name="failureLogPath" value="${services.enhancements.failed.path}"/>
-	</bean>
-	
 	<bean id="ApplyEnhancementServicesJob" class="edu.unc.lib.dl.cdr.services.processing.ApplyEnhancementServicesJob"
 		scope="prototype">
 		<property name="services" ref="servicesList"/>
