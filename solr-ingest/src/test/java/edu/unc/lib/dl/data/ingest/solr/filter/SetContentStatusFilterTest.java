@@ -74,6 +74,7 @@ public class SetContentStatusFilterTest extends Assert {
 				+ Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
 				+ Datastream.RELS_EXT.getName()));
 
+		when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
 		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
@@ -86,6 +87,7 @@ public class SetContentStatusFilterTest extends Assert {
 	@Test
 	public void testNotDescribedQuery() throws Exception {
 
+		when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
 		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();

@@ -98,6 +98,7 @@
 	<util:list id="tagProviders" value-type="edu.unc.lib.dl.search.solr.tags.TagProvider">
 		<bean class="edu.unc.lib.dl.search.solr.tags.AccessRestrictionsTagProvider"/>
 		<bean class="edu.unc.lib.dl.search.solr.tags.DescriptiveTagProvider"/>
+		<bean class="edu.unc.lib.dl.search.solr.tags.DefaultObjectTagProvider"/>
 	</util:list>
 	
 	<bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">

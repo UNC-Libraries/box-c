@@ -38,11 +38,12 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 @Controller
 public class ResultEntryController extends AbstractSearchController {
-	private List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+	private final List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
 			SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.DATE_ADDED.name(),
 			SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
 			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
-			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name());
+			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(),
+			SearchFieldKeys.CONTENT_STATUS.name(), SearchFieldKeys.IS_PART.name(), SearchFieldKeys.ROLLUP_ID.name());
 
 	@RequestMapping(value = "entry/{pid}", method = RequestMethod.GET)
 	public @ResponseBody

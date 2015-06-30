@@ -182,5 +182,14 @@ public interface DigitalObjectManager {
 	public abstract PID createContainer(String name, PID parent, Model extraModel, String user,
 			byte[] mods) throws IngestException;
 
+	/**
+	 * Sets or clears the default web object for the aggregate objects containing the given pids
+	 * 
+	 * @param dwos
+	 * @param user
+	 * @throws UpdateException
+	 */
+	void editDefaultWebObject(List<PID> dwo, boolean clear, String user) throws UpdateException;
+
 
 }

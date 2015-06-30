@@ -78,6 +78,8 @@ public interface BriefObjectMetadata {
 
 	public Datastream getDefaultWebData();
 
+	public Boolean getIsPart();
+
 	public List<String> getContentModel();
 
 	public String getResourceType();

@@ -529,6 +529,33 @@
 	display: none;
 }
 
+.result_entry_context_menu:before {
+	content: attr(data-menutitle);
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	background: linear-gradient(to bottom, #f0f0f0, #fefefe);
+	background-color: #fdfdfd;
+	padding: 3px 1px 1px 5px;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 10px;
+	font-weight: bold;
+}
+.result_entry_context_menu :first-child {
+	margin-top: 21px;
+}
+
+.result_entry_context_menu_checked :before {
+	content: '\2713';
+	position: absolute;
+	left: 3px;
+	font-weight: bold;
+}
+
 /** Ingest to container menu */
 .add_to_container_menu {
 	border-radius: 4px;

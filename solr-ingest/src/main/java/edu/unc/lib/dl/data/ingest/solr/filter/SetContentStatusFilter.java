@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -51,7 +52,8 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
 	}
 
-	private void setContentStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status) {
+	private void setContentStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status)
+			throws IndexingException {
 		List<String> datastreams = triples.get(FedoraProperty.disseminates.toString());
 		if (datastreams != null) {
 			String mdDescriptive = dip.getPid().getURI() + "/" + Datastream.MD_DESCRIPTIVE.getName();
@@ -76,6 +78,15 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 				status.add(FacetConstants.CONTENT_DEFAULT_OBJECT);
 			} else {
 				status.add(FacetConstants.CONTENT_NO_DEFAULT_OBJECT);
+			}
+		} else {
+			// Check to see if this object is the DefaultWebObject for its parent
+			DocumentIndexingPackage parentDip = dip.getParentDocument();
+			String parentsDWO = parentDip.getFirstTriple(CDRProperty.defaultWebObject.toString());
+			if (parentsDWO != null) {
+				if (dip.getPid().equals(new PID(parentsDWO))) {
+					status.add(FacetConstants.CONTENT_IS_DEFAULT_OBJECT);
+				}
 			}
 		}
 	}

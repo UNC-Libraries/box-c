@@ -18,6 +18,7 @@ build-admin:
 		access/src/main/external/static/css/cdr_common.css \
 		access/src/main/external/static/css/admin/jquery-ui.css \
 		access/src/main/external/static/css/admin/jquery.qtip.css \
+		access/src/main/external/static/css/admin/jquery.contextMenu.css \
 		access/src/main/external/static/css/admin/cdradmin.css \
 		access/src/main/external/static/css/admin/search_results.css \
 		access/src/main/external/static/css/admin/admin_forms.css \

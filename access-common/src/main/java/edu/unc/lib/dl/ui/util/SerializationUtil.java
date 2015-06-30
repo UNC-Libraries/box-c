@@ -118,6 +118,9 @@ public class SerializationUtil {
 		if (metadata.getStatus() != null && metadata.getStatus().size() > 0)
 			result.put("status", metadata.getStatus());
 
+		if (metadata.getContentStatus() != null && metadata.getContentStatus().size() > 0)
+			result.put("contentStatus", metadata.getContentStatus());
+
 		if (metadata.getSubject() != null)
 			result.put("subject", metadata.getSubject());
 
@@ -146,6 +149,14 @@ public class SerializationUtil {
 
 		if (metadata.getTags() != null)
 			result.put("tags", metadata.getTags());
+
+		if (metadata.getIsPart() != null) {
+			result.put("isPart", metadata.getIsPart());
+		}
+
+		if (metadata.getRollup() != null) {
+			result.put("rollup", metadata.getRollup());
+		}
 
 		if (metadata.getCountMap() != null && metadata.getCountMap().size() > 0)
 			result.put("counts", metadata.getCountMap());
