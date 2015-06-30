@@ -54,7 +54,7 @@
 	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
 		<property name="maxIdle" value="15"/>
 		<property name="minIdle" value="2"/>
-		<property name="maxActive" value="25"/>
+		<property name="maxTotal" value="25"/>
 	</bean>
 
 	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
