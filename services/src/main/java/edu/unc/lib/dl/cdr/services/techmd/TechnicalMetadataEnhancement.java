@@ -308,16 +308,16 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			}
 			StringBuilder xml = new StringBuilder();
 			StringBuilder err = new StringBuilder();
-			boolean blankReached = false;
+			boolean declareReached = false;
 			for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-				if (line.trim().length() == 0) {
-					blankReached = true;
-					continue;
+				if (!declareReached && line.startsWith("<?xml")) {
+					declareReached = true;
+				}
+				if (declareReached) {
+					xml.append(line).append("\n");
 				} else {
-					if (blankReached) {
+					if (line.trim().length() > 0) {
 						err.append(line).append("\n");
-					} else {
-						xml.append(line).append("\n");
 					}
 				}
 			}
