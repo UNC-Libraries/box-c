@@ -177,12 +177,6 @@
 	<bean id="depositsDirectory" class="java.io.File">
 		<constructor-arg value="${batch.ingest.dir}" />
 	</bean>
-
-	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
-		destroy-method="destroy">
-		<constructor-arg type="String" value="${redis.host:localhost}"/>
-		<constructor-arg type="int" value="${redis.port:6379}"/>
-	</bean>
 	
 	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
 		<property name="jedisPool" ref="jedisPool" />

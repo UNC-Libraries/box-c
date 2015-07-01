@@ -99,19 +99,6 @@
 		<property name="maxUploadSize" value="3000000"/>
 	</bean>
 
-	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
-		destroy-method="destroy">
-		<constructor-arg ref="poolConfig"/>
-		<constructor-arg type="String" value="${redis.host:localhost}" />
-		<constructor-arg type="int" value="${redis.port:6379}" />
-	</bean>
-	
-	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
-		<property name="maxIdle" value="15"/>
-		<property name="minIdle" value="2"/>
-		<property name="maxActive" value="25"/>
-	</bean>
-
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest"/>
 	
 	<mvc:annotation-driven/>	
