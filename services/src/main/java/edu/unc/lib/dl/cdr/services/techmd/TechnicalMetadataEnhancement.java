@@ -173,7 +173,14 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				}
 
 				if ("DATA_FILE".equals(dsid)) {
+					
 					if (fitsMimetype != null) {
+						// Throw away the encoding in the mimetype for now
+						int index = fitsMimetype.indexOf(';');
+						if (index != -1) {
+							fitsMimetype = fitsMimetype.substring(0, index);
+						}
+						
 						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
 								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null, foxml);
 					} else { // application/octet-stream

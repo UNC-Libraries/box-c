@@ -87,4 +87,24 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 		verify(managementClient).addLiteralStatement(any(PID.class), eq(CDRProperty.hasSourceMimeType.toString()),
 				eq("image/jpeg"), anyString());
 	}
+	
+	@Test
+	public void mimetypeEncodingTest() throws Exception {
+		
+		InputStream inStream = this.getClass().getResourceAsStream("fitsMimetypeEncoding.xml");
+		when(service.remoteExecuteWithPhysicalLocation(anyString(), anyString())).thenReturn(inStream);
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(this.getClass().getResourceAsStream("unknownTypeFOXML.xml"));
+		when(message.getFoxml()).thenReturn(foxml);
+		
+		enhance.call();
+		
+		verify(managementClient).addManagedDatastream(any(PID.class), eq(Datastream.MD_TECHNICAL.getName()),
+				anyBoolean(), anyString(), anyListOf(String.class), anyString(), anyBoolean(), anyString(), anyString());
+		
+		// Check that the mimetype has had the encoding trimmed off
+		verify(managementClient).addLiteralStatement(any(PID.class), eq(CDRProperty.hasSourceMimeType.toString()),
+				eq("text/plain"), anyString());
+	}
 }
