@@ -23,6 +23,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 							actions : [
 								{action : 'EditTypeBatch', label : 'Edit Type'},
 								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
+								{action : 'ExportMetadataXMLBatch', label : 'Export XML'}
 							]
 						},
 						{

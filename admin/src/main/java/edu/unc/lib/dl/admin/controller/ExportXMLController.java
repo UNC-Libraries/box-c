@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
-import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,123 +29,272 @@ import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.solr.client.solrj.beans.Field;
 import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.jdom2.output.XMLOutputter;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.FedoraDataService;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 
+/**
+ * Responds to requests to generate an XML document containing metadata for objects in the selected set of objects,
+ * and sends the document to the provided email address.
+ * 
+ * @author sreenug
+ * @author bbpennel
+ * @date Jul 7, 2015
+ */
 @Controller
-@RequestMapping("exportxml")
-public class ExportXMLController extends AbstractSolrSearchController {
-	private static final Logger LOG = LoggerFactory.getLogger(ExportXMLController.class);
-	
+public class ExportXMLController {
+	private static final Logger log = LoggerFactory.getLogger(ExportXMLController.class);
+
+	@Autowired
+	private SearchStateFactory searchStateFactory;
+	@Autowired
+	private SolrQueryLayerService queryLayer;
 	@Autowired
 	private JavaMailSender mailSender;
 	@Resource
 	@Qualifier("forwardedAccessClient")
 	private AccessClient client;
-	
-	
-	@RequestMapping(value = "{pid}", method = RequestMethod.GET)
-	public @ResponseBody 
-	Object export(@PathVariable("pid") final String pid, final HttpServletRequest request) throws IOException, FedoraException {
-		
-		Runnable xmlGenerationRunnable = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					SearchRequest searchRequest = generateSearchRequest(request, searchStateFactory.createSearchState());
-					
-					SearchState searchState = searchRequest.getSearchState();
-					searchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-							SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_IDS.name(),
-							SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
-							SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
-							SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-							SearchFieldKeys.LABEL.name()));
-					searchState.setSortType("export");
-					searchState.setRowsPerPage(searchSettings.maxPerPage);
-					
-					BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
-					SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
-					
-					List<BriefObjectMetadata> objects = resultResponse.getResultList();
-					objects.add(0, container);
-					queryLayer.getChildrenCounts(objects, searchRequest);
-					
-					String xmlString = "<?xml version=\"1.0\" encoding=\"utf-8\"?><bulkMetadata xmlns:mods=\"http://www.loc.gov/mods/v3\" xmlns:acl=\"http://cdr.unc.edu/definitions/acl\">";
-					 			
-					for (BriefObjectMetadata object : objects) {
-						try{
-							byte[] modsBytes = client.getDatastreamDissemination(object.getPid(), "MD_DESCRIPTIVE", null).getStream();
-							Document mods = edu.unc.lib.dl.fedora.ClientUtils.parseXML(modsBytes);
-							xmlString += "<object pid=\""+ object.getPid().getPid() +"\"><update type=\"MODS\">" + new XMLOutputter().outputString(mods).split(">", 2)[1] + "</update></object>";
-							
-						} catch(Exception e) {
-							LOG.error("Failed to generate XMl in thread for ", pid, e);
-						}
-					}
-					xmlString += "</bulkMetadata>";
-					sendEmail(xmlString, "sreenu@live.unc.edu");
-				} catch(Exception e) {
-					LOG.error("Failed to generate XMl in thread for ", pid, e);
-				}
-			}
-		};
+	@Autowired
+	private ManagementClient managementClient;
+	@Autowired
+	private AccessControlService aclService;
 
-		Thread thread = new Thread(xmlGenerationRunnable);
-		thread.start();
+	private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
+
+	private final Charset utf8 = Charset.forName("UTF-8");
+	private final byte[] exportHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+			+ "<bulkMetadata xmlns:mods=\"http://www.loc.gov/mods/v3\" xmlns:acl=\"http://cdr.unc.edu/definitions/acl\">\n")
+				.getBytes(utf8);
+
+	/**
+	 * Exports an XML document containing metadata for all objects specified plus all of their children
+	 * 
+	 * @param exportRequest
+	 * @param request
+	 * @return
+	 * @throws IOException
+	 * @throws FedoraException
+	 */
+	@RequestMapping(value = "exportContainerXML", method = RequestMethod.POST)
+	public @ResponseBody
+	Object exportFolder(@RequestBody XMLExportRequest exportRequest,
+			HttpServletRequest request) throws IOException, FedoraException {
 		
+		List<String> pids = new ArrayList<>();
+		for (String pid : exportRequest.getPids()) {
+			SearchState searchState = searchStateFactory.createSearchState();
+			searchState.setResultFields(resultFields);
+			searchState.setSortType("export");
+			searchState.setRowsPerPage(Integer.MAX_VALUE);
+
+			SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
+
+			BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
+			SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+
+			List<BriefObjectMetadata> objects = resultResponse.getResultList();
+			objects.add(0, container);
+
+			for (BriefObjectMetadata object : objects) {
+				pids.add(object.getPid().getPid());
+			}
+		}
+
+		XMLExportRunnable runnable = new XMLExportRunnable(new XMLExportRequest(pids, exportRequest.getEmail()),
+				GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
+
+		Thread thread = new Thread(runnable);
+		thread.start();
+
 		Map <String, String> response = new HashMap<>();
-		response.put("message", "You will receive an email with XML Data shortly");
+		response.put("message", "Metadata export for " + pids.size()
+				+ " objects has begun, you will receive the data via email soon");
 		return response;
 	}
-	
-	public void sendEmail(String xmlString, String toEmail) {
-		MimeMessage mimeMessage = mailSender.createMimeMessage();
-		try {
-			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
-			
-			helper.setSubject("XML File creation complete");
-			helper.setFrom("no-reply@example.com");
-			helper.setText("Attached the XML");
-			helper.setTo(toEmail);
-			helper.addAttachment("cdr.xml",
-			        new ByteArrayResource(xmlString.getBytes(Charset.forName("UTF-8"))));
-			this.mailSender.send(mimeMessage);
-			LOG.debug("sending email");
-		} catch (MessagingException e) {
-			LOG.error("Cannot send notification email", e);
+
+	/**
+	 * Generates an XML document containing metadata for all objects in the provided list of PIDs.
+	 * 
+	 * @param exportRequest
+	 * @return
+	 * @throws IOException
+	 * @throws FedoraException
+	 */
+	@RequestMapping(value = "exportXML", method = RequestMethod.POST)
+	public @ResponseBody
+	Object exportSet(@RequestBody XMLExportRequest exportRequest) throws IOException, FedoraException {
+
+		XMLExportRunnable runnable = new XMLExportRunnable(
+				exportRequest, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
+
+		Thread thread = new Thread(runnable);
+		thread.start();
+
+		Map <String, String> response = new HashMap<>();
+		response.put("message", "Metadata export for " + exportRequest.getPids().size()
+				+ " has begun, you will receive the data via email soon");
+		return response;
+	}
+
+	public static class XMLExportRequest {
+		private List<String> pids;
+		private String email;
+
+		public XMLExportRequest() {
+		}
+
+		public XMLExportRequest(List<String> pids, String email) {
+			this.pids = pids;
+			this.email = email;
+		}
+
+		public List<String> getPids() {
+			return pids;
+		}
+
+		public void setPids(List<String> pids) {
+			this.pids = pids;
+		}
+
+		public String getEmail() {
+			return email;
+		}
+
+		public void setEmail(String email) {
+			this.email = email;
+		}
+	}
+
+	/**
+	 * Runnable which performs the work of retrieving metadata documents and compiling them into the export document.
+	 * 
+	 * @author bbpennel
+	 * @date Jul 7, 2015
+	 */
+	public class XMLExportRunnable implements Runnable {
+		private final String user;
+		private final AccessGroupSet groups;
+		private final XMLExportRequest request;
+
+		public XMLExportRunnable(XMLExportRequest request, String user, AccessGroupSet groups) {
+			this.user = user;
+			this.groups = groups;
+			this.request = request;
+		}
+
+		@Override
+		public void run() {
+			long startTime = System.currentTimeMillis();
+			String seperator = System.getProperty("line.separator");
+			byte[] seperatorBytes = System.getProperty("line.separator").getBytes();
+
+			try {
+				GroupsThreadStore.storeGroups(groups);
+				GroupsThreadStore.storeUsername(user);
+
+				File mdExportFile = File.createTempFile("md_export", ".xml");
+
+				try (FileOutputStream xfop = new FileOutputStream(mdExportFile)) {
+					xfop.write(exportHeaderBytes);
+
+					Format format = Format.getPrettyFormat();
+					format.setLineSeparator(seperator);
+					XMLOutputter xmlOutput = new XMLOutputter(Format.getPrettyFormat());
+					for (String pidString : request.getPids()) {
+						PID pid = new PID(pidString);
+
+						if (!aclService.hasAccess(pid, groups, Permission.editDescription)) {
+							log.info("User {} does not have permission to export metadata for {}", user, pid);
+							continue;
+						}
+
+						try{
+							Document objectDoc = new Document();
+							Element objectEl = new Element("object");
+							objectEl.setAttribute("pid", pid.getPid());
+							objectDoc.addContent(objectEl);
+
+							DatastreamDocument modsDS = managementClient
+									.getXMLDatastreamIfExists(pid, Datastream.MD_DESCRIPTIVE.getName());
+
+							if (modsDS != null) {
+								Element modsUpdateEl = new Element("update");
+								modsUpdateEl.setAttribute("type", "MODS");
+								modsUpdateEl.setAttribute("lastModified", modsDS.getLastModified());
+								modsUpdateEl.addContent(modsDS.getDocument().detachRootElement());
+								objectEl.addContent(modsUpdateEl);
+							}
+
+							xmlOutput.output(objectEl, xfop);
+
+							xfop.write(seperatorBytes);
+							xfop.flush();
+						} catch(Exception e) {
+							log.error("Failed to export XML for object {}", pid, e);
+						}
+					}
+
+					xfop.write("</bulkMetadata>".getBytes(utf8));
+				}
+
+				sendEmail(mdExportFile, request.getEmail());
+			} catch(Exception e) {
+				log.error("Failed to export metadata for user {}", user, e);
+			} finally {
+				log.info("Finished metadata export for {} objects in {}ms for user {}",
+						new Object[] {request.getPids().size(), System.currentTimeMillis() - startTime, user});
+				GroupsThreadStore.clearStore();
+			}
+		}
+		
+		public void sendEmail(File mdExportFile, String toEmail) {
+			MimeMessage mimeMessage = mailSender.createMimeMessage();
+			try {
+				MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
+
+				helper.setSubject("CDR Metadata Export");
+				helper.setFrom("cdr@listserv.unc.edu");
+				helper.setText("The XML metadata for " + request.getPids().size() + " object(s) requested for export by "
+						+ this.user + " is attached.\n");
+				helper.setTo(toEmail);
+				helper.addAttachment("cdr.xml", mdExportFile);
+				mailSender.send(mimeMessage);
+				log.debug("sending email");
+			} catch (MessagingException e) {
+				log.error("Cannot send notification email", e);
+			}
 		}
 	}
 }

@@ -191,5 +191,4 @@ public interface DigitalObjectManager {
 	 */
 	void editDefaultWebObject(List<PID> dwo, boolean clear, String user) throws UpdateException;
 
-
 }

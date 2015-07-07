@@ -58,6 +58,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AuthorizationException;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -67,7 +68,6 @@ import edu.unc.lib.dl.fedora.ManagementClient.State;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -186,7 +186,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		for (PID subject : subjects) {
 			do {
 				try {
-					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(subject, RELS_EXT.getName());
+					DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(subject, RELS_EXT.getName());
 	
 					if (relsExtResp == null) {
 						throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot change models");
@@ -413,10 +413,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		List<PID> removed = new ArrayList<PID>();
 		removed.add(pid);
 
-		PID parent = null;
 		try {
 			// update container
-			parent = this.removeFromContainer(pid);
+			this.removeFromContainer(pid);
 
 			Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
 					+ " contained object(s).", container);
@@ -789,74 +788,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		return null;
 	}
 
-	private class DatastreamDocument {
-		private final Document document;
-		private final String lastModified;
-
-		public DatastreamDocument(Document document, String lastModified) {
-			super();
-			this.document = document;
-			this.lastModified = lastModified;
-		}
-
-		public Document getDocument() {
-			return document;
-		}
-
-		public String getLastModified() {
-			return lastModified;
-		}
-	}
-
-
-	/**
-	 * Returns response containing the jdom document representing the datastream and the last modified date. If it does
-	 * not exist, then null is returned. If the document cannot be parsed, a ServiceException is thrown.
-	 *
-	 * @param pid
-	 * @param datastreamName
-	 * @return
-	 * @throws FedoraException
-	 */
-	private DatastreamDocument getXMLDatastreamIfExists(PID pid, String datastreamName) throws FedoraException {
-		
-		log.debug("Attempting to get datastream " + datastreamName + " for object " + pid);
-		
-		try {
-			
-			while (true) {
-		
-				edu.unc.lib.dl.fedora.types.Datastream datastream = managementClient.getDatastream(pid, datastreamName);
-			
-				if (datastream == null) {
-					return null;
-				}
-				
-				log.debug("Got datastream, attempting to get dissemination version with create date " + datastream.getCreateDate());
-			
-				try {
-			
-					MIMETypedStream mts = accessClient.getDatastreamDissemination(pid, datastreamName, datastream.getCreateDate());
-				
-					try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
-						Document dsDoc = new SAXBuilder().build(bais);
-						return new DatastreamDocument(dsDoc, datastream.getCreateDate());
-					} catch (JDOMException | IOException e) {
-						throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
-					}
-					
-				} catch (NotFoundException e) {
-					log.debug("No dissemination version for create date " + datastream.getCreateDate() + " found, retrying");
-				}
-				
-			}
-			
-		} catch (NotFoundException e) {
-			return null;
-		}
-
-	}
-
 	@Override
 	public void move(List<PID> moving, PID destination, String user, String message) throws IngestException {
 		availableCheck();
@@ -963,7 +894,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	public void rollbackMove(PID source, List<PID> moving) throws IngestException {
 
 		try {
-			DatastreamDocument sourceRelsExtResp = getXMLDatastreamIfExists(source, RELS_EXT.getName());
+			DatastreamDocument sourceRelsExtResp = managementClient.getXMLDatastreamIfExists(source, RELS_EXT.getName());
 			if (sourceRelsExtResp == null) {
 				log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
 				return;
@@ -1040,7 +971,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private void removeChildren(PID container, Collection<PID> children, boolean replaceWithMarkers)
 			throws FedoraException, IngestException {
 		removeRelsExt: do {
-			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
 			
 			if (relsExtResp == null) {
 				throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");
@@ -1085,7 +1016,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// Update source MD_CONTENTS to remove children if it is present
 		removeMDContents: do {
 			try {
-				DatastreamDocument mdContents = getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
+				DatastreamDocument mdContents = managementClient.getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
 
 				if (mdContents != null) {
 					ContainerContentsHelper.remove(mdContents.getDocument(), children);
@@ -1120,7 +1051,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			IngestException {
 		updateRelsExt: do {
 			try {
-				DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+				DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
 				if (relsExtResp == null) {
 					throw new IngestException("Unable to retrieve RELS-EXT for container " + container
 							+ ", aborting move operation");
@@ -1165,7 +1096,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		updateMDContents: do {
 			try {
 				// Update MD_CONTENTS to add new children if it is present
-				DatastreamDocument mdContentsResp = getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
+				DatastreamDocument mdContentsResp = managementClient.getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
 
 				if (mdContentsResp != null) {
 					Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
@@ -1199,7 +1130,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
-			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(container, RELS_EXT.getName());
+			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
 			
 			if (relsExtResp == null) {
 				throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");

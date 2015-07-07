@@ -147,6 +147,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
 			items["exportCSV"] = {name : 'Export as CSV'};
 		}
+		if ($.inArray('editDescription', metadata.permissions) != -1) {
+			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+				items["exportContainerXML"] = {name : 'Export folder as XML'};
+			}
+		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
 		// Admin actions
@@ -241,8 +246,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 						document.location.href = baseUrl + "export/" + metadata.id;
 						break;
 					
-					case "exportXML" :
-						document.location.href = baseUrl + "exportxml/" + metadata.id;
+					case "exportContainerXML" :
+						self.actionHandler.addEvent({
+							action : 'ExportMetadataXMLBatch',
+							targets : [resultObject],
+							exportContainerMode : true
+						});
 						break;
 					
 					case "copyid" :
