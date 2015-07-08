@@ -776,6 +776,6 @@
 	display: none;
 }
 
-.templating {
-	margin-left: 25%;
+#dialog-form .templating {
+	margin-left: -25%
 }

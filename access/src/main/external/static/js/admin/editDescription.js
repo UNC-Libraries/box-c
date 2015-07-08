@@ -116,8 +116,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				xmlUploadPath : "/admin/describe/" + resultObject.id
 			},
 			templatePath : "/static/js/xmleditor/templates/",
-			//defaultTemplate : "mods_image.xml",
-			cancelTemplate : "mods_image.xml",
+			defaultTemplate : "mods_image.xml",
+			cancelTemplate : "mods.xml",
     		templates : ["mods_audio.xml", "mods_image.xml"],
 			libPath : "../../static/js/xmleditor/lib/",
 			menuEntries: menuEntries,
@@ -187,7 +187,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				terms = terms.sort();
 				editorOptions["elementUpdated"] = function(event) {
 					if (event.action == "render" && this.objectType.localName == "affiliation") {
-						this.textInput.autocomplete({
+						this.getTextInputs().autocomplete({
 							source : terms,
 							minLength : 0
 						});
