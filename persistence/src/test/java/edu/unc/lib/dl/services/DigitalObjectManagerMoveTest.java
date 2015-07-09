@@ -25,7 +25,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
@@ -37,36 +36,33 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
-import org.jdom2.output.XMLOutputter;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.ClientUtils;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
+import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream.Header;
 import edu.unc.lib.dl.fedora.types.Property;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -77,24 +73,18 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
  * @author bbpennel
  * @date Jan 30, 2015
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/service-context.xml" })
 public class DigitalObjectManagerMoveTest {
 
-	@Resource
-	private final DigitalObjectManagerImpl digitalMan = null;
+	private DigitalObjectManagerImpl digitalMan;
 
-	@Resource
-	private final ManagementClient managementClient = null;
-
-	@Resource
-	private final AccessClient accessClient = null;
-
-	@Resource
-	private final TripleStoreQueryService tripleStoreQueryService = null;
-
-	@Resource
-	private AccessControlService aclService;
+	@Mock
+	private ManagementClient managementClient;
+	@Mock
+	private AccessClient accessClient;
+	@Mock
+	private TripleStoreQueryService tripleStoreQueryService;
+	@Mock
+	private FedoraAccessControlService aclService;
 
 	private Header dsHeaders;
 
@@ -105,15 +95,19 @@ public class DigitalObjectManagerMoveTest {
 
 	@Before
 	public void setUp() throws Exception {
-		reset(managementClient);
-		reset(accessClient);
-		reset(tripleStoreQueryService);
-		reset(aclService);
+		initMocks(this);
 
 		dsHeaders = mock(Header.class);
 		when(dsHeaders.getProperty()).thenReturn(Arrays.asList(new Property[0]));
 
+		digitalMan = new DigitalObjectManagerImpl();
 		digitalMan.setAvailable(true, "available");
+		digitalMan.setAccessClient(accessClient);
+		digitalMan.setForwardedManagementClient(null);
+		digitalMan.setManagementClient(managementClient);
+		digitalMan.setAclService(aclService);
+		digitalMan.setTripleStoreQueryService(tripleStoreQueryService);
+		
 
 		destPID = new PID("uuid:destination");
 
@@ -122,16 +116,7 @@ public class DigitalObjectManagerMoveTest {
 
 		when(tripleStoreQueryService.lookupContentModels(destPID)).thenReturn(Arrays.asList(CONTAINER.getURI()));
 
-		InputStream relsExtStream2 = this.getClass().getResourceAsStream("/fedora/containerRELSEXT2.xml");
-		MIMETypedStream mts2 = mock(MIMETypedStream.class);
-		when(mts2.getHeader()).thenReturn(dsHeaders);
-		when(mts2.getStream()).thenReturn(IOUtils.toByteArray(relsExtStream2));
-		when(accessClient.getDatastreamDissemination(eq(destPID), eq(RELS_EXT.getName()), anyString())).thenReturn(
-				mts2);
-		
-		Datastream ds = mock(Datastream.class);
-		when(ds.getCreateDate()).thenReturn(new String());
-		when(managementClient.getDatastream(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(ds);
+		makeMatcherPair("/fedora/containerRELSEXT2.xml", destPID);
 
 		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.addRemoveContents)))
 				.thenReturn(true);
@@ -161,48 +146,43 @@ public class DigitalObjectManagerMoveTest {
 		}
 	}
 
-	private class PairedAnswer implements Answer<MIMETypedStream> {
+	private class PairedAnswer implements Answer<Document> {
 
-		public PairedAnswer(MIMETypedStream startingValue, PairedMatcher matcher) {
+		public PairedAnswer(Document startingValue, PairedMatcher matcher) {
 			this.startingValue = startingValue;
 			this.matcher = matcher;
 		}
 
-		private final MIMETypedStream startingValue;
+		private final Document startingValue;
 		private final PairedMatcher matcher;
 
 		@Override
-		public MIMETypedStream answer(InvocationOnMock invocation) throws Throwable {
+		public Document answer(InvocationOnMock invocation) throws Throwable {
 			if (matcher.lastMatchedDoc == null)
 				return startingValue;
 
-			XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-			String docString = outputter.outputString(matcher.lastMatchedDoc);
-			MIMETypedStream mts = mock(MIMETypedStream.class);
-			when(mts.getHeader()).thenReturn(dsHeaders);
-			when(mts.getStream()).thenReturn(docString.getBytes());
-			return mts;
+			return matcher.lastMatchedDoc.clone();
 		}
 	}
 
-	private void makeMatcherPair(String relsPath, PID targetPID) throws Exception {
-		PairedMatcher sourceRelsExtMatcher = new PairedMatcher();
+	private DatastreamDocument makeMatcherPair(String relsPath, PID targetPID) throws Exception {
 		InputStream relsExtStream = this.getClass().getResourceAsStream(relsPath);
-		MIMETypedStream mts = mock(MIMETypedStream.class);
-		when(mts.getHeader()).thenReturn(dsHeaders);
-		when(mts.getStream()).thenReturn(IOUtils.toByteArray(relsExtStream));
-		PairedAnswer sourceRelsExtAnswer = new PairedAnswer(mts, sourceRelsExtMatcher);
+		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
+		Document doc = ClientUtils.parseXML(IOUtils.toByteArray(relsExtStream));
+		
+		// PairedMatcher allows future calls to get the document to contain the last modified version
+		PairedMatcher sourceRelsExtMatcher = new PairedMatcher();
+		PairedAnswer sourceRelsExtAnswer = new PairedAnswer(doc, sourceRelsExtMatcher);
+		when(dsDoc.getDocument()).thenAnswer(sourceRelsExtAnswer);
+		
+		when(managementClient.getXMLDatastreamIfExists(eq(targetPID), eq(RELS_EXT.getName())))
+			.thenReturn(dsDoc);
 
 		doNothing().when(managementClient)
 				.modifyDatastream(eq(targetPID), eq(RELS_EXT.getName()), anyString(),
 				anyString(), argThat(sourceRelsExtMatcher));
-
-		when(accessClient.getDatastreamDissemination(eq(targetPID), eq(RELS_EXT.getName()), anyString())).thenAnswer(
-				sourceRelsExtAnswer);
 		
-		Datastream ds = mock(Datastream.class);
-		when(ds.getCreateDate()).thenReturn(new String());
-		when(managementClient.getDatastream(eq(targetPID), eq(RELS_EXT.getName()))).thenReturn(ds);
+		return dsDoc;
 	}
 
 	@Test
@@ -216,7 +196,7 @@ public class DigitalObjectManagerMoveTest {
 
 		digitalMan.move(moving, destPID, "user", "");
 
-		verify(accessClient, times(2)).getDatastreamDissemination(eq(source1PID), eq(RELS_EXT.getName()), anyString());
+		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
 
 		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 
@@ -241,7 +221,7 @@ public class DigitalObjectManagerMoveTest {
 		assertEquals("Child tombstones not cleaned up", 0, removed.size());
 
 		// Verify that the destination had the moved children added to it
-		verify(accessClient).getDatastreamDissemination(eq(destPID), eq(RELS_EXT.getName()), anyString());
+		verify(managementClient).getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()));
 		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
 				anyString(), destRelsExtUpdateCaptor.capture());
@@ -255,14 +235,12 @@ public class DigitalObjectManagerMoveTest {
 
 	private void makeDatastream(String contentPath, String datastream, PID pid) throws Exception {
 		InputStream mdContentsStream = this.getClass().getResourceAsStream(contentPath);
-		MIMETypedStream mts = mock(MIMETypedStream.class);
-		when(mts.getHeader()).thenReturn(dsHeaders);
-		when(mts.getStream()).thenReturn(IOUtils.toByteArray(mdContentsStream));
-		when(accessClient.getDatastreamDissemination(eq(pid), eq(datastream), anyString())).thenReturn(mts);
+		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
+		Document doc = ClientUtils.parseXML(IOUtils.toByteArray(mdContentsStream));
+		when(dsDoc.getDocument()).thenReturn(doc);
 
-		Datastream ds = mock(Datastream.class);
-		when(ds.getCreateDate()).thenReturn(new String());
-		when(managementClient.getDatastream(eq(pid), eq(datastream))).thenReturn(ds);
+		when(managementClient.getXMLDatastreamIfExists(eq(pid), eq(datastream)))
+			.thenReturn(dsDoc);
 	}
 
 	@Test
@@ -281,10 +259,8 @@ public class DigitalObjectManagerMoveTest {
 
 		PairedMatcher sourceRelsExtMatcher = new PairedMatcher();
 		InputStream relsExtStream = this.getClass().getResourceAsStream("/fedora/containerRELSEXT1.xml");
-		MIMETypedStream mts = mock(MIMETypedStream.class);
-		when(mts.getHeader()).thenReturn(dsHeaders);
-		when(mts.getStream()).thenReturn(IOUtils.toByteArray(relsExtStream));
-		PairedAnswer sourceRelsExtAnswer = new PairedAnswer(mts, sourceRelsExtMatcher);
+		Document doc = ClientUtils.parseXML(IOUtils.toByteArray(relsExtStream));
+		PairedAnswer sourceRelsExtAnswer = new PairedAnswer(doc, sourceRelsExtMatcher);
 
 		// Throw locking exception on first attempt to rewrite source RELS-EXT
 		doThrow(new OptimisticLockException(""))
@@ -305,8 +281,10 @@ public class DigitalObjectManagerMoveTest {
 				.modifyDatastream(eq(source1PID), eq(MD_CONTENTS.getName()), anyString(), anyString(),
 						any(Document.class));
 
-		when(accessClient.getDatastreamDissemination(eq(source1PID), eq(RELS_EXT.getName()), anyString()))
-				.thenAnswer(sourceRelsExtAnswer);
+		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
+		when(dsDoc.getDocument()).thenAnswer(sourceRelsExtAnswer);
+		when(managementClient.getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName())))
+				.thenReturn(dsDoc);
 
 		Datastream ds = mock(Datastream.class);
 		when(ds.getCreateDate()).thenReturn(new String());
@@ -318,7 +296,7 @@ public class DigitalObjectManagerMoveTest {
 
 		digitalMan.move(moving, destPID, "user", "");
 
-		verify(accessClient, times(3)).getDatastreamDissemination(eq(source1PID), eq(RELS_EXT.getName()), anyString());
+		verify(managementClient, times(3)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
 
 		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 
@@ -369,8 +347,8 @@ public class DigitalObjectManagerMoveTest {
 
 		digitalMan.move(moving, destPID, "user", "");
 
-		verify(accessClient, times(2)).getDatastreamDissemination(eq(source1PID), eq(RELS_EXT.getName()), anyString());
-		verify(accessClient, times(2)).getDatastreamDissemination(eq(source2PID), eq(RELS_EXT.getName()), anyString());
+		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
+		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source2PID), eq(RELS_EXT.getName()));
 
 		ArgumentCaptor<Document> source1RelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient, times(2)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
@@ -403,7 +381,7 @@ public class DigitalObjectManagerMoveTest {
 	@Test
 	public void rollbackNoProblemsTest() throws Exception {
 		oneSourceTest();
-
+		
 		reset(managementClient);
 
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
@@ -423,7 +401,7 @@ public class DigitalObjectManagerMoveTest {
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
 				.thenReturn(null).thenReturn(null);
 		
-		when(managementClient.getDatastream(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(null);
+		when(managementClient.getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(null);
 
 		try {
 			digitalMan.move(moving, destPID, "user", "");
@@ -466,7 +444,7 @@ public class DigitalObjectManagerMoveTest {
 
 	@Test
 	public void rollbackAfterDestinationUpdateTest() throws Exception {
-		makeMatcherPair("/fedora/containerRELSEXT1.xml", source1PID);
+		DatastreamDocument dsDoc = makeMatcherPair("/fedora/containerRELSEXT1.xml", source1PID);
 		makeMatcherPair("/fedora/containerRELSEXT2.xml", destPID);
 
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
@@ -474,10 +452,9 @@ public class DigitalObjectManagerMoveTest {
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
 				.thenReturn(destPID).thenReturn(destPID);
 		
-		Datastream ds = mock(Datastream.class);
-		when(ds.getCreateDate()).thenReturn(new String());
-		when(managementClient.getDatastream(any(PID.class), eq(RELS_EXT.getName())))
-				.thenReturn(ds).thenReturn(ds).thenReturn(null).thenReturn(ds);
+		// Second attempt to get the source RELS-EXT will return null to trigger rollback
+		when (managementClient.getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName())))
+			.thenReturn(dsDoc).thenReturn(null).thenReturn(dsDoc);
 
 		try {
 			digitalMan.move(moving, destPID, "user", "");

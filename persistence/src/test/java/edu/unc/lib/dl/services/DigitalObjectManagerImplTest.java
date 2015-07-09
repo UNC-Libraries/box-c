@@ -59,12 +59,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.ClientUtils;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.update.UpdateException;
@@ -409,15 +410,13 @@ public class DigitalObjectManagerImplTest {
 	public void testChangeResourceType() throws Exception {
 		String relsName = ContentModelHelper.Datastream.RELS_EXT.toString();
 		
-		Datastream relsDS = mock(Datastream.class);
-		when(relsDS.getCreateDate()).thenReturn("2015-06-03");
-		when(managementClient.getDatastream(any(PID.class), eq(relsName))).thenReturn(relsDS);
+		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
+		when(dsDoc.getLastModified()).thenReturn("2015-06-03");
+		when(managementClient.getXMLDatastreamIfExists(any(PID.class), eq(relsName)))
+			.thenReturn(dsDoc);
 		
-		MIMETypedStream datastream = mock(MIMETypedStream.class);
-		byte[] stream = IOUtils.toByteArray(getClass().getResourceAsStream("/datastream/collectionRels.xml"));
-		when(datastream.getStream()).thenReturn(stream);
-		
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq(relsName), anyString())).thenReturn(datastream);
+		when(dsDoc.getDocument()).thenReturn(ClientUtils.parseXML(
+				IOUtils.toByteArray(getClass().getResourceAsStream("/datastream/collectionRels.xml"))));
 		
 		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editResourceType)))
 		.thenReturn(true);
