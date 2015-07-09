@@ -116,7 +116,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				xmlUploadPath : "/admin/describe/" + resultObject.id
 			},
 			templatePath : "/static/js/xmleditor/templates/",
-			defaultTemplate : "mods_image.xml",
+		//	defaultTemplate : "mods_image.xml",
 			cancelTemplate : "mods.xml",
     		templates : ["mods_audio.xml", "mods_image.xml"],
 			libPath : "../../static/js/xmleditor/lib/",
