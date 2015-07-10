@@ -94,9 +94,10 @@ public class ExportXMLController {
 	private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
 
 	private final Charset utf8 = Charset.forName("UTF-8");
-	private final byte[] exportHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-			+ "<bulkMetadata xmlns:mods=\"http://www.loc.gov/mods/v3\" xmlns:acl=\"http://cdr.unc.edu/definitions/acl\">\n")
-				.getBytes(utf8);
+	private final String separator = System.getProperty("line.separator");
+	private final byte[] separatorBytes = System.getProperty("line.separator").getBytes();
+	private final byte[] exportHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + separator
+			+ "<bulkMetadata>" + separator).getBytes(utf8);
 
 	/**
 	 * Exports an XML document containing metadata for all objects specified plus all of their children
@@ -217,26 +218,24 @@ public class ExportXMLController {
 		@Override
 		public void run() {
 			long startTime = System.currentTimeMillis();
-			String seperator = System.getProperty("line.separator");
-			byte[] seperatorBytes = System.getProperty("line.separator").getBytes();
 
 			try {
 				GroupsThreadStore.storeGroups(groups);
 				GroupsThreadStore.storeUsername(user);
 
-				File mdExportFile = File.createTempFile("md_export", ".xml");
+				File mdExportFile = File.createTempFile("xml_export", ".xml");
 
 				try (FileOutputStream xfop = new FileOutputStream(mdExportFile)) {
 					xfop.write(exportHeaderBytes);
 
 					Format format = Format.getPrettyFormat();
-					format.setLineSeparator(seperator);
+					format.setLineSeparator(separator);
 					XMLOutputter xmlOutput = new XMLOutputter(Format.getPrettyFormat());
 					for (String pidString : request.getPids()) {
 						PID pid = new PID(pidString);
 
 						if (!aclService.hasAccess(pid, groups, Permission.editDescription)) {
-							log.info("User {} does not have permission to export metadata for {}", user, pid);
+							log.debug("User {} does not have permission to export metadata for {}", user, pid);
 							continue;
 						}
 
@@ -259,7 +258,7 @@ public class ExportXMLController {
 
 							xmlOutput.output(objectEl, xfop);
 
-							xfop.write(seperatorBytes);
+							xfop.write(separatorBytes);
 							xfop.flush();
 						} catch(Exception e) {
 							log.error("Failed to export XML for object {}", pid, e);
