@@ -149,7 +149,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					
 					// IDENTIFICATION LOGIC
 					// get mimetype out of FITS XML
-					Element trustedIdentity = null;
+					Element identity = null;
 					Element idn = fits.getRootElement().getChild("identification", ns);
 					for (Object child : idn.getChildren("identity", ns)) {
 						Element el = (Element) child;
@@ -157,14 +157,14 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 								|| el.getChildren("tool", ns).size() > 1
 								|| (!"Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname")) && !"application/x-symlink"
 										.equals(el.getAttributeValue("mimetype")))) {
-							trustedIdentity = el;
+							identity = el;
 							break;
 						}
 					}
 
-					if (trustedIdentity != null) {
-						fitsMimetype = trustedIdentity.getAttributeValue("mimetype");
-						format = trustedIdentity.getAttributeValue("format");
+					if (identity != null) {
+						fitsMimetype = identity.getAttributeValue("mimetype");
+						format = identity.getAttributeValue("format");
 					} else {
 						format = "Unknown";
 						LOG.warn("FITS unable to conclusively identify file: {}/{}", pid, dsid);
