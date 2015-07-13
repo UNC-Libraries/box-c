@@ -253,11 +253,16 @@ public class ExportXMLController {
 									.getXMLDatastreamIfExists(pid, Datastream.MD_DESCRIPTIVE.getName());
 
 							if (modsDS != null) {
+								objectEl.addContent(separator);
+								
 								Element modsUpdateEl = new Element("update");
 								modsUpdateEl.setAttribute("type", "MODS");
 								modsUpdateEl.setAttribute("lastModified", modsDS.getLastModified());
+								modsUpdateEl.addContent(separator);
 								modsUpdateEl.addContent(modsDS.getDocument().detachRootElement());
+								modsUpdateEl.addContent(separator);
 								objectEl.addContent(modsUpdateEl);
+								objectEl.addContent(separator);
 							}
 
 							xmlOutput.output(objectEl, xfop);

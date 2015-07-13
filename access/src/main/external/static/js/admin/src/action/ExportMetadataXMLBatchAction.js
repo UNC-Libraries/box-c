@@ -28,14 +28,8 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 		var defaultType;
 		if (this.targets.length == 1) {
 			title = "Export XML metadata for " + this.targets[0].metadata.title.substring(0, 30);
-			if (exportContainerMode) {
-				title += " and all objects contained in it."
-			}
 		} else {
 			title = "Export XML metadata for " + this.targets.length + " objects";
-			if (exportContainerMode) {
-				title += " and all objects contained within them."
-			}
 		}
 		
 		// Retrieve the last email address used by this user
@@ -64,6 +58,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 		
 		this.$form.submit(function(e){
 			var email = $("#xml_recipient_email", self.$form).val();
+			var includeChildren = $("#export_xml_include_children", self.$form).prop("checked");
 			
 			if (!email || !$.trim(email)) {
 				return false;
@@ -76,7 +71,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 			}
 			
 			$.ajax({
-				url : exportContainerMode? "exportContainerXML" : "exportXML",
+				url : includeChildren? "exportContainerXML" : "exportXML",
 				type : "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",

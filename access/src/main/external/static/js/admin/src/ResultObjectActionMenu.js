@@ -137,9 +137,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
-			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-				items["exportXML"] = {name : 'Export as XML'};
-			}
 		}
 		
 		// Export actions
@@ -148,9 +145,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["exportCSV"] = {name : 'Export as CSV'};
 		}
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-				items["exportContainerXML"] = {name : 'Export folder as XML'};
-			}
+			items["exportXML"] = {name : 'Export MODS'};
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
@@ -246,11 +241,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 						document.location.href = baseUrl + "export/" + metadata.id;
 						break;
 					
-					case "exportContainerXML" :
+					case "exportXML" :
 						self.actionHandler.addEvent({
 							action : 'ExportMetadataXMLBatch',
-							targets : [resultObject],
-							exportContainerMode : true
+							targets : [resultObject]
 						});
 						break;
 					

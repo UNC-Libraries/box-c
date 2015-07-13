@@ -2875,9 +2875,6 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
-			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-				items["exportXML"] = {name : 'Export as XML'};
-			}
 		}
 		
 		// Export actions
@@ -2886,9 +2883,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			items["exportCSV"] = {name : 'Export as CSV'};
 		}
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-				items["exportContainerXML"] = {name : 'Export folder as XML'};
-			}
+			items["exportXML"] = {name : 'Export MODS'};
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
@@ -2984,11 +2979,10 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 						document.location.href = baseUrl + "export/" + metadata.id;
 						break;
 					
-					case "exportContainerXML" :
+					case "exportXML" :
 						self.actionHandler.addEvent({
 							action : 'ExportMetadataXMLBatch',
-							targets : [resultObject],
-							exportContainerMode : true
+							targets : [resultObject]
 						});
 						break;
 					
@@ -3834,7 +3828,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 							actions : [
 								{action : 'EditTypeBatch', label : 'Edit Type'},
 								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
-								{action : 'ExportMetadataXMLBatch', label : 'Export XML'}
+								{action : 'ExportMetadataXMLBatch', label : 'Export MODS'}
 							]
 						},
 						{
@@ -4922,14 +4916,8 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		var defaultType;
 		if (this.targets.length == 1) {
 			title = "Export XML metadata for " + this.targets[0].metadata.title.substring(0, 30);
-			if (exportContainerMode) {
-				title += " and all objects contained in it."
-			}
 		} else {
 			title = "Export XML metadata for " + this.targets.length + " objects";
-			if (exportContainerMode) {
-				title += " and all objects contained within them."
-			}
 		}
 		
 		// Retrieve the last email address used by this user
@@ -4958,6 +4946,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		
 		this.$form.submit(function(e){
 			var email = $("#xml_recipient_email", self.$form).val();
+			var includeChildren = $("#export_xml_include_children", self.$form).prop("checked");
 			
 			if (!email || !$.trim(email)) {
 				return false;
@@ -4970,7 +4959,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			}
 			
 			$.ajax({
-				url : exportContainerMode? "exportContainerXML" : "exportXML",
+				url : includeChildren? "exportContainerXML" : "exportXML",
 				type : "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",
