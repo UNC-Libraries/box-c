@@ -15,7 +15,10 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -24,6 +27,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
@@ -93,6 +98,7 @@ public class ExportXMLController {
 
 	private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
 
+	private final int BUFFER_SIZE = 2048;
 	private final Charset utf8 = Charset.forName("UTF-8");
 	private final String separator = System.getProperty("line.separator");
 	private final byte[] separatorBytes = System.getProperty("line.separator").getBytes();
@@ -268,7 +274,7 @@ public class ExportXMLController {
 					xfop.write("</bulkMetadata>".getBytes(utf8));
 				}
 
-				sendEmail(mdExportFile, request.getEmail());
+				sendEmail(zipit(mdExportFile), request.getEmail());
 			} catch(Exception e) {
 				log.error("Failed to export metadata for user {}", user, e);
 			} finally {
@@ -276,6 +282,28 @@ public class ExportXMLController {
 						new Object[] {request.getPids().size(), System.currentTimeMillis() - startTime, user});
 				GroupsThreadStore.clearStore();
 			}
+		}
+		
+		private File zipit(File mdExportFile) throws IOException {
+			File mdExportZip = File.createTempFile("xml_export", ".zip");
+			FileOutputStream dest = new FileOutputStream(mdExportZip);
+			
+			try (ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest))) {
+				FileInputStream fi = new FileInputStream(mdExportFile);
+				try (BufferedInputStream origin = new BufferedInputStream(fi, BUFFER_SIZE)) {
+					byte data[] = new byte[BUFFER_SIZE];
+					
+					ZipEntry entry = new ZipEntry("export.xml");
+					out.putNextEntry(entry);
+	
+					int count;
+					while ((count = origin.read(data, 0, BUFFER_SIZE)) != -1) {
+						out.write(data, 0, count);
+					}
+				}
+			}
+			
+			return mdExportZip;
 		}
 		
 		public void sendEmail(File mdExportFile, String toEmail) {
@@ -288,9 +316,9 @@ public class ExportXMLController {
 				helper.setText("The XML metadata for " + request.getPids().size() + " object(s) requested for export by "
 						+ this.user + " is attached.\n");
 				helper.setTo(toEmail);
-				helper.addAttachment("cdr.xml", mdExportFile);
+				helper.addAttachment("xml_export.zip", mdExportFile);
 				mailSender.send(mimeMessage);
-				log.debug("sending email");
+				log.debug("Sending XML export email to {}", toEmail);
 			} catch (MessagingException e) {
 				log.error("Cannot send notification email", e);
 			}
