@@ -234,9 +234,7 @@ public class ExportXMLController {
 				try (FileOutputStream xfop = new FileOutputStream(mdExportFile)) {
 					xfop.write(exportHeaderBytes);
 
-					Format format = Format.getPrettyFormat();
-					format.setLineSeparator(separator);
-					XMLOutputter xmlOutput = new XMLOutputter(Format.getPrettyFormat());
+					XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
 					for (String pidString : request.getPids()) {
 						PID pid = new PID(pidString);
 
