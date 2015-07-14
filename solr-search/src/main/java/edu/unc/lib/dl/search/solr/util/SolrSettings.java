@@ -104,12 +104,12 @@ public class SolrSettings extends AbstractSettings {
 	}
 
 	private static Pattern escapeReservedWords
-		= Pattern.compile("(\\s|[\\\\+\\-!():\\^\\[\\]\"{}~?|&;/])(AND|OR|NOT)(\\s|[\\\\+\\-!():\\^\\[\\]\"{}~?|&;/])");
+		= Pattern.compile("\\b(?<!\\*)(AND|OR|NOT)\\b(?!\\*)");
 
 	public static String sanitize(String value) {
 		if (value == null)
 			return value;
-		return escapeReservedWords.matcher(escapeQueryChars(value)).replaceAll("$1'$2'$3");
+		return escapeReservedWords.matcher(escapeQueryChars(value)).replaceAll("'$1'");
 	}
 
 	public static String escapeQueryChars(String s) {

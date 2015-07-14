@@ -32,6 +32,7 @@ public class SolrSettingsTest extends Assert {
 		
 		assertEquals("AND*", SolrSettings.sanitize("AND*"));
 		assertEquals("hello\\ 'OR'\\ world", SolrSettings.sanitize("hello OR world"));
+		assertEquals("hello\\ *AND*\\ world", SolrSettings.sanitize("hello *AND* world"));
 	}
 	
 	@Test
