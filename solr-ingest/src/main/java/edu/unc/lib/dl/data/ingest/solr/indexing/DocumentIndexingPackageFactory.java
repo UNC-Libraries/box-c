@@ -15,125 +15,33 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
-import org.jdom2.Document;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.ClientUtils;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
+/**
+ * @author bbpennel
+ * @date Jun 24, 2015
+ */
 public class DocumentIndexingPackageFactory {
-	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackageFactory.class);
+	
+	@Autowired
+	private DocumentIndexingPackageDataLoader dataLoader;
 
-	private ManagementClient managementClient = null;
-
-	private AccessClient accessClient = null;
-
-	private int maxRetries = 2;
-
-	private long retryDelay = 1000L;
-
-	public DocumentIndexingPackage createDocumentIndexingPackage(PID pid) throws IndexingException {
-
-		try {
-			log.debug("Creating DIP from FOXML for {}", pid.getPid());
-
-			Document foxml = null;
-			int tries = maxRetries;
-			do {
-
-				if (tries < maxRetries) {
-					Thread.sleep(retryDelay);
-					log.debug("Retrieving FOXML for DIP, tries remaining: {}", tries);
-				}
-
-				try {
-
-					foxml = managementClient.getObjectXML(pid);
-
-				} catch (ServiceException e) {
-					// If there are retries left, retry on service exception
-					if (tries > 1) {
-						log.warn("Failed to retrieve FOXML for " + pid.getPid() + ", retrying.", e);
-					} else {
-						throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid() + " after " + maxRetries
-								+ " tries.", e);
-					}
-				}
-			} while (foxml == null && --tries > 0);
-
-			if (foxml == null)
-				throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid());
-
-			return new DocumentIndexingPackage(pid, foxml);
-		} catch (FedoraException e) {
-			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid(), e);
-		} catch (InterruptedException e) {
-			throw new IndexingException("Interrupted while waiting to retry FOXML retrieval for " + pid.getPid(), e);
-		}
+	public DocumentIndexingPackage createDip(String pid) {
+		return new DocumentIndexingPackage(new PID(pid), null, dataLoader);
 	}
 
-	public DocumentIndexingPackage createDocumentIndexingPackageWithRelsExt(PID pid) throws IndexingException {
-
-		try {
-			log.debug("Creating DIP with RELS-EXT for {}", pid.getPid());
-
-			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-
-			byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.RELS_EXT.getName(), null).getStream();
-			Document relsExtDocument = ClientUtils.parseXML(stream);
-
-			dip.setRelsExt(relsExtDocument.getRootElement());
-
-			return dip;
-		} catch (Exception e) {
-			throw new IndexingException("Failed to retrieve RELS-EXT for " + pid.getPid(), e);
-		}
+	public DocumentIndexingPackage createDip(PID pid) {
+		return new DocumentIndexingPackage(pid, null, dataLoader);
 	}
 
-	public DocumentIndexingPackage createDocumentIndexingPackageWithMDContents(PID pid) throws IndexingException {
-
-		try {
-			log.debug("Creating DIP with MD-CONTENTS for {}", pid.getPid());
-
-			DocumentIndexingPackage dip = new DocumentIndexingPackage(pid);
-
-			try {
-				byte[] stream = accessClient.getDatastreamDissemination(pid, Datastream.MD_CONTENTS.getName(), null)
-						.getStream();
-				Document dsDocument = ClientUtils.parseXML(stream);
-
-				dip.setMdContents(dsDocument.getRootElement());
-			} catch (NotFoundException notFound) {
-				// Datastream was not found, which is okay
-			}
-
-			return dip;
-		} catch (Exception e) {
-			throw new IndexingException("Failed to retrieve RELS-EXT for " + pid.getPid(), e);
-		}
+	public DocumentIndexingPackage createDip(PID pid, DocumentIndexingPackage parentDip) {
+		return new DocumentIndexingPackage(pid, parentDip, dataLoader);
 	}
 
-	public void setManagementClient(ManagementClient managementClient) {
-		this.managementClient = managementClient;
+	public void setDataLoader(DocumentIndexingPackageDataLoader dataLoader) {
+		this.dataLoader = dataLoader;
 	}
 
-	public void setAccessClient(AccessClient accessClient) {
-		this.accessClient = accessClient;
-	}
-
-	public void setMaxRetries(int maxRetries) {
-		this.maxRetries = maxRetries;
-	}
-
-	public void setRetryDelay(long retryDelay) {
-		this.retryDelay = retryDelay;
-	}
 }

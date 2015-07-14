@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
@@ -37,8 +38,6 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 public abstract class AbstractIndexingAction implements IndexingAction {
 	protected DocumentIndexingPipeline pipeline;
 	@Autowired
-	protected DocumentIndexingPackageFactory dipFactory;
-	@Autowired
 	protected SolrUpdateDriver solrUpdateDriver;
 	@Autowired
 	protected SolrSearchService solrSearchService;
@@ -48,6 +47,8 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 	protected AccessGroupSet accessGroups;
 	@Autowired
 	protected SolrSettings solrSettings;
+	@Autowired
+	protected DocumentIndexingPackageFactory factory;
 	protected boolean addDocumentMode = true;
 
 	public static final String TARGET_ALL = "fullIndex";
@@ -82,10 +83,6 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 		return pipeline;
 	}
 
-	public void setDipFactory(DocumentIndexingPackageFactory dipFactory) {
-		this.dipFactory = dipFactory;
-	}
-
 	public void setSolrUpdateDriver(SolrUpdateDriver solrUpdateDriver) {
 		this.solrUpdateDriver = solrUpdateDriver;
 	}
@@ -114,11 +111,20 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 		this.accessGroups = accessGroups;
 	}
 
+	public void setFactory(DocumentIndexingPackageFactory factory) {
+		this.factory = factory;
+	}
+
 	public boolean isAddDocumentMode() {
 		return addDocumentMode;
 	}
 
 	public void setAddDocumentMode(boolean addDocumentMode) {
 		this.addDocumentMode = addDocumentMode;
+	}
+
+	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
+			throws IndexingException {
+		return factory.createDip(pid, parent);
 	}
 }

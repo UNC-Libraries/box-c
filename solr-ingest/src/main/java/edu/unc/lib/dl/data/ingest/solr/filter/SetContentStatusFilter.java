@@ -25,8 +25,10 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 /**
  * Sets content related status tags
@@ -39,7 +41,7 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		Map<String, List<String>> triples = retrieveTriples(dip);
+		Map<String, List<String>> triples = dip.getTriples();
 
 		List<String> contentStatus = new ArrayList<String>();
 		setContentStatus(dip, triples, contentStatus);
@@ -50,9 +52,9 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 	}
 
 	private void setContentStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status) {
-		List<String> datastreams = triples.get(ContentModelHelper.FedoraProperty.disseminates.toString());
+		List<String> datastreams = triples.get(FedoraProperty.disseminates.toString());
 		if (datastreams != null) {
-			String mdDescriptive = dip.getPid().getURI() + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName();
+			String mdDescriptive = dip.getPid().getURI() + "/" + Datastream.MD_DESCRIPTIVE.getName();
 			boolean described = datastreams.contains(mdDescriptive);
 			if (described)
 				status.add(FacetConstants.CONTENT_DESCRIBED);
@@ -68,9 +70,9 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 		}
 
 		// If its an aggregate, indicate if it has a default web object
-		List<String> contentModels = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());
-		if (contentModels != null && contentModels.contains(ContentModelHelper.Model.AGGREGATE_WORK.toString())) {
-			if (triples.containsKey(ContentModelHelper.CDRProperty.defaultWebObject.toString())) {
+		List<String> contentModels = triples.get(FedoraProperty.hasModel.toString());
+		if (contentModels != null && contentModels.contains(Model.AGGREGATE_WORK.toString())) {
+			if (triples.containsKey(CDRProperty.defaultWebObject.toString())) {
 				status.add(FacetConstants.CONTENT_DEFAULT_OBJECT);
 			} else {
 				status.add(FacetConstants.CONTENT_NO_DEFAULT_OBJECT);

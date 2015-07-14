@@ -31,6 +31,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ResourceType;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for the object being processed. It also sets
@@ -46,6 +47,8 @@ import edu.unc.lib.dl.util.ResourceType;
 public class SetPathFilter extends AbstractIndexDocumentFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
+	private TripleStoreQueryService tsqs;
+	
 	private String ancestorInfoQuery;
 
 	private PID collectionsPid;
@@ -60,14 +63,17 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		DocumentIndexingPackage parentDIP = dip.getParentDocument();
-		if (parentDIP != null && parentDIP.getDocument() != null && parentDIP.getDocument().getAncestorPath() != null) {
-			// Must have parentDocuments and content models for this node
-			buildFromParentDocuments(dip);
-		} else {
-			// If there is no parent information available, then build the hierarchy from scratch.
-			buildFromQuery(dip);
+		if (dip.hasParentDocument()) {
+			DocumentIndexingPackage parentDIP = dip.getParentDocument();
+			if (parentDIP.getDocument() != null && parentDIP.getDocument().getAncestorPath() != null) {
+				// Must have parentDocuments and content models for this node
+				buildFromParentDocuments(dip);
+				return;
+			}
 		}
+		
+		// If there is no parent information available, then build the hierarchy from scratch.
+		buildFromQuery(dip);
 	}
 
 	private void buildFromQuery(DocumentIndexingPackage dip) throws IndexingException {
@@ -194,13 +200,13 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	private void buildFromParentDocuments(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 
-		DocumentIndexingPackage parentDIP = dip.getParentDocument();
+		DocumentIndexingPackage parentDIP= dip.getParentDocument();
 		if (parentDIP.getDocument().getAncestorPath().size() == 0 && !collectionsPid.equals(parentDIP.getPid())) {
 			throw new IndexingException("Parent document " + parentDIP.getPid().getPid()
 					+ " did not contain ancestor information for object " + dip.getPid().getPid());
 		}
 
-		Map<String, List<String>> triples = retrieveTriples(dip);
+		Map<String, List<String>> triples = dip.getTriples();
 
 		// Retrieve and store content models, either from rels-ext or stored
 		List<String> cmResults = triples.get(ContentModelHelper.FedoraProperty.hasModel.toString());
@@ -278,6 +284,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	public void setCollectionsPid(PID collectionsPid) {
 		this.collectionsPid = collectionsPid;
+	}
+
+	public void setTsqs(TripleStoreQueryService tsqs) {
+		this.tsqs = tsqs;
 	}
 
 	private static class PathNode {

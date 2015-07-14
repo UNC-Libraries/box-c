@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
@@ -48,13 +48,12 @@ public class IndexTreeCleanActionTest {
 	@Mock
 	private DocumentIndexingPipeline pipeline;
 	@Mock
-	private DocumentIndexingPackageFactory dipFactory;
-	@Mock
 	private DeleteSolrTreeAction deleteAction;
 	@Mock
 	private SolrUpdateRequest request;
 	@Mock
-	private DocumentIndexingPackage dip;
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
 
 	private IndexTreeCleanAction action;
 
@@ -64,17 +63,17 @@ public class IndexTreeCleanActionTest {
 		initMocks(this);
 
 		when(request.getPid()).thenReturn(new PID("pid"));
-
+		
 		action = new IndexTreeCleanAction();
 		action.setDeleteAction(deleteAction);
 		action.setTsqs(tsqs);
 		action.setPipeline(pipeline);
 		action.setSolrUpdateDriver(driver);
-		action.setDipFactory(dipFactory);
 		action.setCollectionsPid(new PID("uuid:1"));
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		action.setFactory(factory);
 		action.init();
-
-		when(dipFactory.createDocumentIndexingPackage(any(PID.class))).thenReturn(dip);
 	}
 
 	@Test

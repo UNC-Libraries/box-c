@@ -15,20 +15,36 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.io.File;
 import java.io.FileInputStream;
 
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 
 public class DocumentIndexingPipelineTest extends Assert {
+	private DocumentIndexingPackageFactory factory;
+	@Mock
+	private DocumentIndexingPackageDataLoader loader;
+	
+	@Before
+	public void setup() throws Exception {
+		initMocks(this);
+		
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+	}
+	
 	@Test(expected=UnsupportedContentModelException.class)
 	public void depositReceipt() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:test");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:test");
 
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(

@@ -15,16 +15,23 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.io.File;
 import java.io.FileInputStream;
 
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  *
@@ -33,9 +40,24 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  */
 public class SetRelationsFilterTest extends Assert {
 
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
+	@Mock
+	private TripleStoreQueryService tsqs;
+	
+	@Before
+	public void setup() throws Exception {
+		initMocks(this);
+		loader = new DocumentIndexingPackageDataLoader();
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		loader.setFactory(factory);
+		loader.setTsqs(tsqs);
+	}
+	
 	@Test
 	public void aggregateRelations() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(
 				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
@@ -53,7 +75,7 @@ public class SetRelationsFilterTest extends Assert {
 
 	@Test
 	public void itemWithOriginalRelations() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(
 				"src/test/resources/foxml/imageNoMODS.xml")));
@@ -70,7 +92,7 @@ public class SetRelationsFilterTest extends Assert {
 
 	@Test
 	public void embargoedRelation() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(
 				"src/test/resources/foxml/embargoed.xml")));
@@ -87,7 +109,7 @@ public class SetRelationsFilterTest extends Assert {
 
 	@Test
 	public void orderedContainerRelations() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:aggregate");
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File(
 				"src/test/resources/foxml/folderSmall.xml")));

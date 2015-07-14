@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.util.ContentCategory;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -84,67 +83,54 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		List<Datastream> datastreams = new ArrayList<Datastream>();
 		this.extractDatastreams(dip, datastreams, false);
 
-		Element relsExt = dip.getRelsExt();
-
 		// Generate a defaultWebObject datastreams and add them to the list
-		DocumentIndexingPackage dwoDIP = null;
-		try {
-			dwoDIP = this.getDefaultWebObject(relsExt);
-			dip.setAttemptedToRetrieveDefaultWebObject(true);
-			if (dwoDIP != null) {
-				dip.setDefaultWebObject(dwoDIP);
-				this.extractDatastreams(dwoDIP, datastreams, true);
-			}
-		} catch (JDOMException e) {
-			throw new IndexingException("Failed to parse document for default web object of " + dip.getPid().getPid(), e);
+		DocumentIndexingPackage dwoDIP = dip.getDefaultWebObject();
+		if (dwoDIP != null) {
+			this.extractDatastreams(dwoDIP, datastreams, true);
 		}
 
 		// Retrieve the default web data datastreams and use it to determine the content type for this object
-		try {
-			Datastream defaultWebData = this.getDefaultWebData(dip, datastreams);
-			if (defaultWebData != null) {
-				// Store the pid/datastream name of the default web datastream
-				dip.setDefaultWebData(defaultWebData.getDatastreamIdentifier());
+		Datastream defaultWebData = this.getDefaultWebData(dip, datastreams);
+		if (defaultWebData != null) {
+			// Store the pid/datastream name of the default web datastream
+			dip.setDefaultWebData(defaultWebData.getDatastreamIdentifier());
 
-				// If the mimetype listed on the datastream is not very specific (octet-stream), see if FITS provided a
-				// better one and use it instead
-				if (defaultWebData.getMimetype() != null && defaultWebData.getMimetype().endsWith("/octet-stream")) {
-					String sourceDataMimetype = relsExt.getChildText("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS);
+			// If the mimetype listed on the datastream is not very specific (octet-stream), see if FITS provided a
+			// better one and use it instead
+			if (defaultWebData.getMimetype() != null && defaultWebData.getMimetype().endsWith("/octet-stream")) {
+				String hasSourceMimeType = CDRProperty.hasSourceMimeType.getURI().toString();
+				String sourceDataMimetype = dip.getFirstTriple(hasSourceMimeType);
 
-					if (sourceDataMimetype == null && dwoDIP != null) {
-						// Use the default web objects source mimetype
-						sourceDataMimetype = FOXMLJDOMUtil.getRelationValue("hasSourceMimeType", JDOMNamespaceUtil.CDR_NS,
-								FOXMLJDOMUtil.getRelsExt(dwoDIP.getFoxml()));
-					}
-
-					if (sourceDataMimetype != null) {
-						defaultWebData.setMimetype(sourceDataMimetype);
-						// Use the extension if you've got it.  if not, get it
-						if (defaultWebData.getExtension() == null)
-							defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
-					} else if (defaultWebData.getExtension() != null) {
-						String mimetype = this.getMimetypeFromExtension(defaultWebData.getExtension());
-						if (mimetype != null)
-							defaultWebData.setMimetype(mimetype);
-					}
+				if (sourceDataMimetype == null && dwoDIP != null) {
+					// Use the default web objects source mimetype
+					sourceDataMimetype = dwoDIP.getFirstTriple(hasSourceMimeType);
 				}
 
-				// If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
-				if (defaultWebData.getFilesize() == null || defaultWebData.getFilesize() < 0) {
-					String sourceFileSize = relsExt.getChildText(ContentModelHelper.CDRProperty.hasSourceFileSize.name(), JDOMNamespaceUtil.CDR_NS);
-					if (sourceFileSize != null) {
-						defaultWebData.setFilesize(Long.parseLong(sourceFileSize));
-					}
+				if (sourceDataMimetype != null) {
+					defaultWebData.setMimetype(sourceDataMimetype);
+					// Use the extension if you've got it.  if not, get it
+					if (defaultWebData.getExtension() == null)
+						defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
+				} else if (defaultWebData.getExtension() != null) {
+					String mimetype = this.getMimetypeFromExtension(defaultWebData.getExtension());
+					if (mimetype != null)
+						defaultWebData.setMimetype(mimetype);
 				}
-
-				// Add in the content types for the dwd
-				List<String> contentTypes = new ArrayList<String>();
-				this.extractContentType(defaultWebData, contentTypes);
-				dip.getDocument().setContentType(contentTypes);
-				dip.getDocument().setFilesizeSort(defaultWebData.getFilesize());
 			}
-		} catch (JDOMException e) {
-			throw new IndexingException("Failed to extract default web data for " + dip.getPid().getPid(), e);
+
+			// If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
+			if (defaultWebData.getFilesize() == null || defaultWebData.getFilesize() < 0) {
+				String sourceFileSize = dip.getFirstTriple(CDRProperty.hasSourceFileSize.getURI().toString());
+				if (sourceFileSize != null) {
+					defaultWebData.setFilesize(Long.parseLong(sourceFileSize));
+				}
+			}
+
+			// Add in the content types for the dwd
+			List<String> contentTypes = new ArrayList<String>();
+			this.extractContentType(defaultWebData, contentTypes);
+			dip.getDocument().setContentType(contentTypes);
+			dip.getDocument().setFilesizeSort(defaultWebData.getFilesize());
 		}
 
 		long totalSize = 0;
@@ -169,7 +155,8 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 	 * @param includePIDAsOwner
 	 *           If true, then the PID of the provided DIP will be listed as the owner of the datastream
 	 */
-	private void extractDatastreams(DocumentIndexingPackage dip, List<Datastream> datastreams, boolean includePIDAsOwner) {
+	private void extractDatastreams(DocumentIndexingPackage dip, List<Datastream> datastreams, boolean includePIDAsOwner)
+			throws IndexingException {
 		Map<String, Element> datastreamMap = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
 		Iterator<Entry<String, Element>> it = datastreamMap.entrySet().iterator();
 		while (it.hasNext()) {
@@ -201,28 +188,15 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	private DocumentIndexingPackage getDefaultWebObject(Element relsExt) throws IndexingException, JDOMException {
-		String defaultWebObject = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebObject.name(),
-				JDOMNamespaceUtil.CDR_NS, relsExt);
-		if (defaultWebObject == null)
-			return null;
-
-		PID dwoPID = new PID(defaultWebObject);
-		log.debug("Retrieving default web object " + dwoPID.getPid());
-		return dipFactory.createDocumentIndexingPackage(dwoPID);
-	}
-
 	// Used for determining sort file size, contentType. Store it for SetRelations
-	private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws JDOMException {
+	private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws IndexingException {
 		PID owner = null;
-		Element relsExt = dip.getRelsExt();
-		String defaultWebData = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
-				JDOMNamespaceUtil.CDR_NS, relsExt);
+		String defaultWebDataUri = CDRProperty.defaultWebData.getURI().toString();
+		String defaultWebData = dip.getFirstTriple(defaultWebDataUri);
 
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.
 		if (defaultWebData == null && dip.getDefaultWebObject() != null) {
-			defaultWebData = FOXMLJDOMUtil.getRelationValue(ContentModelHelper.CDRProperty.defaultWebData.name(),
-					JDOMNamespaceUtil.CDR_NS, dip.getDefaultWebObject().getRelsExt());
+			defaultWebData = dip.getDefaultWebObject().getFirstTriple(defaultWebDataUri);
 			owner = dip.getDefaultWebObject().getPid();
 		}
 		if (defaultWebData == null)

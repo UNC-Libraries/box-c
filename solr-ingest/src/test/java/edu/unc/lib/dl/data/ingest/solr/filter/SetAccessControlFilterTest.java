@@ -15,105 +15,84 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.io.File;
-import java.io.FileInputStream;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom2.Document;
-import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-
-import static org.mockito.Mockito.*;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
 public class SetAccessControlFilterTest extends Assert {
+	
+	@Mock
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
+	
+	@Mock
+	private ObjectAccessControlsBean aclBean;
+	
+	@Before
+	public void setup() throws Exception {
+		initMocks(this);
+		
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
+		
+		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
+	}
 
 	@Test
 	public void noAdminGroups() throws Exception {
-		List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#patron|unc:app:lib:cdr:patron");
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roleGroupList);
+		when(aclBean.getGroupsByPermission(eq(Permission.viewDescription)))
+				.thenReturn(new HashSet<>(Arrays.asList("patron")));
 		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/fileOctetStream.xml")));
-		dip.setFoxml(foxml);
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
-		
 		filter.filter(dip);
 		
 		assertEquals(1, dip.getDocument().getReadGroup().size());
-		assertTrue(dip.getDocument().getReadGroup().contains("unc:app:lib:cdr:patron"));
+		assertTrue(dip.getDocument().getReadGroup().contains("patron"));
 		
 		assertNull(dip.getDocument().getAdminGroup());
 	}
-	
-	@Test
-	public void invalidRole() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
-		
-		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, embargoes, null, null);
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/fileOctetStream.xml")));
-		dip.setFoxml(foxml);
-		
-		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
-		
-		filter.filter(dip);
-		
-		assertEquals(1, dip.getDocument().getReadGroup().size());
-		assertTrue(dip.getDocument().getReadGroup().contains("public"));
-		
-		assertNull(dip.getDocument().getAdminGroup());
-	}
-	
+
 	@Test
 	public void allowIndexingNo() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
-		roles.put("http://cdr.unc.edu/definitions/acl#inheritPermissions", Arrays.asList("false"));
+		Map<String, List<String>> triples = new HashMap<>();
+		triples.put(CDRProperty.inheritPermissions.toString(), Arrays.asList("false"));
+		triples.put(CDRProperty.allowIndexing.toString(), Arrays.asList("no"));
+		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
 		
-		List<String> embargoes = new ArrayList<String>();
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, embargoes, null, null);
+		when(aclBean.getGroupsByPermission(eq(Permission.viewDescription)))
+				.thenReturn(new HashSet<>(Arrays.asList("curator", "patron")));
+		when(aclBean.getGroupsByPermission(eq(Permission.viewAdminUI)))
+				.thenReturn(new HashSet<>(Arrays.asList("curator")));
 		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/allowIndexingNo.xml")));
-		dip.setFoxml(foxml);
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
 		
 		filter.filter(dip);
 		
@@ -125,23 +104,12 @@ public class SetAccessControlFilterTest extends Assert {
 
 	@Test
 	public void unpublishedFromAclBean() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
-		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, new ArrayList<String>(), Arrays.asList("Unpublished"), null);
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		when(aclBean.isAncestorsPublished()).thenReturn(true);
+		when(aclBean.getIsPublished()).thenReturn(false);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
 		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/fileOctetStream.xml")));
-		dip.setFoxml(foxml);
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		
 		filter.filter(dip);
 
@@ -155,23 +123,15 @@ public class SetAccessControlFilterTest extends Assert {
 	
 	@Test
 	public void unpublishedFromParentAclBean() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
-		
-		ObjectAccessControlsBean parentAclBean = new ObjectAccessControlsBean(new PID("uuid:parent"), roles, null, new ArrayList<String>(), Arrays.asList("Unpublished"), null);
-		DocumentIndexingPackage parentDip = new DocumentIndexingPackage("info:fedora/uuid:parent");
-		parentDip.setAclBean(parentAclBean);
+		when(aclBean.isAncestorsPublished()).thenReturn(false);
+		when(aclBean.getIsPublished()).thenReturn(true);
+		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
+		DocumentIndexingPackage parentDip = factory.createDip("uuid:parent");
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
 		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		dip.setParentDocument(parentDip);
-		
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/fileOctetStream.xml")));
-		dip.setFoxml(foxml);
 		
 		filter.filter(dip);
 
@@ -186,22 +146,17 @@ public class SetAccessControlFilterTest extends Assert {
 	@Test
 	public void publishedFromBothAclBean() throws Exception {
 		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
+		roles.put(UserRole.patron.toString(), Arrays.asList("public"));
+		roles.put(UserRole.curator.toString(), Arrays.asList("curator"));
 		
 		ObjectAccessControlsBean parentAclBean = new ObjectAccessControlsBean(new PID("uuid:parent"), roles, null, new ArrayList<String>(), Arrays.asList("Published"), null);
-		DocumentIndexingPackage parentDip = new DocumentIndexingPackage("info:fedora/uuid:parent");
-		parentDip.setAclBean(parentAclBean);
+		DocumentIndexingPackage parentDip = factory.createDip("uuid:parent");
+		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(parentAclBean);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
 		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		dip.setParentDocument(parentDip);
-		
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/fileOctetStream.xml")));
-		dip.setFoxml(foxml);
 		
 		filter.filter(dip);
 
@@ -217,49 +172,45 @@ public class SetAccessControlFilterTest extends Assert {
 	
 	@Test
 	public void embargoedStatus() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/embargoed.xml")));
-		dip.setFoxml(foxml);
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
+		Map<String, List<String>> triples = new HashMap<>();
+		triples.put(CDRProperty.embargoUntil.toString(), Arrays.asList("2074-02-03T00:00:00"));
+		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
 
-		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
+		DocumentIndexingPackage parentCollection = factory.createDip("uuid:collection");
 		parentCollection.setIsPublished(true);
 		dip.setParentDocument(parentCollection);
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), new HashMap<String, List<String>>(), null, new ArrayList<String>(), null, null);
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
 		filter.filter(dip);
 
 		IndexDocumentBean idb = dip.getDocument();
 
 		assertTrue(dip.getIsPublished());
 		assertTrue(idb.getStatus().contains("Embargoed"));
-		assertFalse(idb.getStatus().contains("Not Discoverable"));
 	}
 	
 	@Test
 	public void rolesAssigned() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/rolesAssigned.xml")));
-		dip.setFoxml(foxml);
+		Map<String,List<String>> triples = new HashMap<>();
+		triples.put(UserRole.patron.toString(), Arrays.asList("public"));
+		triples.put(UserRole.curator.toString(), Arrays.asList("curator"));
+		triples.put(CDRProperty.inheritPermissions.toString(), Arrays.asList("false"));
+		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
+		
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 
-		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
+		DocumentIndexingPackage parentCollection = factory.createDip("uuid:collection");
 		parentCollection.setIsPublished(true);
 		dip.setParentDocument(parentCollection);
 
 		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), new HashMap<String, List<String>>(), null, new ArrayList<String>(), null, null);
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
 		filter.filter(dip);
 
 		IndexDocumentBean idb = dip.getDocument();
@@ -271,24 +222,19 @@ public class SetAccessControlFilterTest extends Assert {
 	
 	@Test
 	public void nonActiveFromAclBean() throws Exception {
-		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-		roles.put("http://cdr.unc.edu/definitions/roles#patron", Arrays.asList("public"));
-		roles.put("http://cdr.unc.edu/definitions/roles#curator", Arrays.asList("curator"));
+		when(aclBean.getGroupsByPermission(eq(Permission.viewDescription)))
+				.thenReturn(new HashSet<>(Arrays.asList("curator", "patron")));
+		when(aclBean.getGroupsByPermission(eq(Permission.viewAdminUI)))
+				.thenReturn(new HashSet<>(Arrays.asList("curator")));
+		when(aclBean.getIsActive()).thenReturn(false);
+		when(aclBean.getIsPublished()).thenReturn(true);
+		when(aclBean.isAncestorsPublished()).thenReturn(true);
 		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, new ArrayList<String>(), null, Arrays.asList("Deleted"));
-		
-		AccessControlService accessControlService = mock(AccessControlService.class);
-		when(accessControlService.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
+		//ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, new ArrayList<String>(), null, Arrays.asList("Deleted"));
+		//when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
 		
 		SetAccessControlFilter filter = new SetAccessControlFilter();
-		filter.setAccessControlService(accessControlService);
-		
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/fileOctetStream.xml")));
-		dip.setFoxml(foxml);
-		
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 
 		IndexDocumentBean idb = dip.getDocument();

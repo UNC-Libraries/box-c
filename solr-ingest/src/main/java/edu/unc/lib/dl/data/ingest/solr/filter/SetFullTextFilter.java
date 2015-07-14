@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +25,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
 /**
  * Retrieves full text data for object being indexed and stores it to the indexing document
@@ -41,15 +40,9 @@ public class SetFullTextFilter extends AbstractIndexDocumentFilter{
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 
-		List<String> result;
-		// Check that this object has a full text DS before retrying to retrieve it
-		if (dip.getTriples() != null) {
-			result = dip.getTriples().get(ContentModelHelper.CDRProperty.fullText.toString());
-		} else {
-			result = tsqs.fetchBySubjectAndPredicate(dip.getPid(), ContentModelHelper.CDRProperty.fullText.toString());
-		}
+		String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
 
-		if (result == null || result.size() == 0 || "false".equals(result.get(0)))
+		if (fullTextDS == null || "false".equals(fullTextDS))
 			return;
 
 		try {

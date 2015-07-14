@@ -19,61 +19,62 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom2.Document;
-import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public class SetContentStatusFilterTest extends Assert {
-
 	@Mock
-	private TripleStoreQueryService tsqs;
+	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageFactory factory;
 
 	private Map<String, List<String>> triples;
 
 	private SetContentStatusFilter filter;
 
 	@Before
-	public void setUp() {
+	public void setUp() throws Exception {
 		initMocks(this);
+		
+		factory = new DocumentIndexingPackageFactory();
+		factory.setDataLoader(loader);
 
 		triples = new HashMap<String, List<String>>();
-		triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(),
-				Arrays.asList("info:fedora/uuid:item/" + ContentModelHelper.Datastream.RELS_EXT.getName()));
+		triples.put(FedoraProperty.disseminates.toString(),
+				Arrays.asList("info:fedora/uuid:item/" + Datastream.RELS_EXT.getName()));
 
-		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples);
+		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
 
 		filter = new SetContentStatusFilter();
-		filter.setTripleStoreQueryService(tsqs);
 	}
 
 	@Test
 	public void testDescribedQuery() throws Exception {
 
-		triples.put(ContentModelHelper.FedoraProperty.hasModel.toString(),
-				Arrays.asList(ContentModelHelper.Model.SIMPLE.toString()));
+		triples.put(FedoraProperty.hasModel.toString(),
+				Arrays.asList(Model.SIMPLE.toString()));
 
-		triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(), Arrays.asList("info:fedora/uuid:item/"
-				+ ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
-				+ ContentModelHelper.Datastream.RELS_EXT.getName()));
+		triples.put(FedoraProperty.disseminates.toString(), Arrays.asList("info:fedora/uuid:item/"
+				+ Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
+				+ Datastream.RELS_EXT.getName()));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
 
@@ -85,7 +86,7 @@ public class SetContentStatusFilterTest extends Assert {
 	@Test
 	public void testNotDescribedQuery() throws Exception {
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
 
@@ -96,10 +97,10 @@ public class SetContentStatusFilterTest extends Assert {
 
 	@Test
 	public void testAggregateNoDWOQuery() throws Exception {
-		triples.put(ContentModelHelper.FedoraProperty.hasModel.toString(),
-				Arrays.asList(ContentModelHelper.Model.AGGREGATE_WORK.toString()));
+		triples.put(FedoraProperty.hasModel.toString(),
+				Arrays.asList(Model.AGGREGATE_WORK.toString()));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
 
@@ -113,13 +114,13 @@ public class SetContentStatusFilterTest extends Assert {
 	@Test
 	public void testAggregateWithDWOQuery() throws Exception {
 
-		triples.put(ContentModelHelper.CDRProperty.defaultWebObject.toString(),
+		triples.put(CDRProperty.defaultWebObject.toString(),
 				Arrays.asList("dwo"));
 
-		triples.put(ContentModelHelper.FedoraProperty.hasModel.toString(),
-				Arrays.asList(ContentModelHelper.Model.AGGREGATE_WORK.toString()));
+		triples.put(FedoraProperty.hasModel.toString(),
+				Arrays.asList(Model.AGGREGATE_WORK.toString()));
 
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
+		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 		filter.filter(dip);
 		IndexDocumentBean idb = dip.getDocument();
 
@@ -129,26 +130,4 @@ public class SetContentStatusFilterTest extends Assert {
 		assertTrue("Aggregate should not have a default web object assigned",
 				idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
 	}
-
-	@Test
-	public void testDescribedFoxml() throws Exception {
-		DocumentIndexingPackage dip = new DocumentIndexingPackage("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(
-				new File("src/test/resources/foxml/aggregateSplitDepartments.xml")));
-		dip.setFoxml(foxml);
-
-		DocumentIndexingPackage parentCollection = new DocumentIndexingPackage("info:fedora/uuid:collection");
-		parentCollection.setIsPublished(true);
-		dip.setParentDocument(parentCollection);
-
-		SetContentStatusFilter filter = new SetContentStatusFilter();
-		filter.filter(dip);
-
-		IndexDocumentBean idb = dip.getDocument();
-
-		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
-		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
-	}
-
 }
