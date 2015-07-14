@@ -766,16 +766,41 @@
 }
 
 /* Default templating */
-.no-close .ui-dialog-titlebar-close {
+.jquery-editor-no-close .ui-dialog-titlebar-close {
   display: none;
 }
 
-.validateTips {
-	margin-bottom: 25px;
-	text-align: center;
-	display: none;
+li.templating {
+	height: auto;
+	border: 1px solid #d3d3d3;
+	padding: 20px 10px 20px 40px;
+	margin-left: 0;
+	margin-bottom: 10px;
+	font-weight: bold;
+	cursor: pointer;
+	text-align: left;	
 }
 
-#dialog-form .templating {
-	margin-left: -25%
+li.templating a {
+	text-decoration: none;
+	font-weight: bold;
+	pointer-events: none;
+}
+
+li.templating a span {
+	font-weight: normal;
+	font-size: 1em;
+}
+
+#ui-id-1 {
+	text-align: center;
+}
+
+.focus {
+	background-color: #eee;
+	border-color: lightslategray;
+}
+
+body + #dialog-form {
+	display: none;
 }

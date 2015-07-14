@@ -115,10 +115,18 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
 				xmlUploadPath : "/admin/describe/" + resultObject.id
 			},
-			templatePath : "/static/js/xmleditor/templates/",
-		//	defaultTemplate : "mods_image.xml",
-			cancelTemplate : "mods.xml",
-    		templates : ["mods_audio.xml", "mods_image.xml"],
+			templateOptions : {
+				templatePath : "/static/js/xmleditor/templates/",
+				templates : [
+						{ filename: 'mods.xml', description: 'Loads default MODS template', icon_class: 'fa fa-file-text-o' },
+						{ filename: 'audio.xml', description: 'Loads template for audio files', icon_class: 'fa fa-file-audio-o' },
+						{ filename: 'image.xml', description: 'Loads template for image files', icon_class: 'fa fa-file-image-o'},
+						{ filename: 'video.xml', description: 'Loads template for image files Loads template for image files Loads template for image files Loads template for image files', icon_class: 'fa fa-file-video-o' }
+
+				],
+				//defaultTemplate: 'audio.xml'	
+				cancelTemplate : "mods.xml",
+			},
 			libPath : "../../static/js/xmleditor/lib/",
 			menuEntries: menuEntries,
 			enforceOccurs: false,

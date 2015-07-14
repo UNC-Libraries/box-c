@@ -23,6 +23,7 @@
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jquery-ui.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jquery-ui.structure.min.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/admin/jquery-ui.theme.min.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css" />
 
 <script>
 	var require = {
