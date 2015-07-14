@@ -3,3 +3,4 @@ language: java
 services:
   - redis-server
 script: mvn test -pl access-common,access,admin,deposit,fcrepo-cdr-fesl,fcrepo-clients,fcrepo-irods-storage,metadata,persistence,security,solr-ingest,solr-search,sword-server
+sudo: false
