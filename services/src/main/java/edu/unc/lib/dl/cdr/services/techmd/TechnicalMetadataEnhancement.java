@@ -147,18 +147,24 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				if (fedoraMimetype == null || fedoraMimetype.trim().length() == 0
 						|| fedoraMimetype.contains("octet-stream")) {
 					
-					// IDENTIFICATION LOGIC
 					// get mimetype out of FITS XML
 					Element identity = null;
 					Element idn = fits.getRootElement().getChild("identification", ns);
-					for (Object child : idn.getChildren("identity", ns)) {
-						Element el = (Element) child;
-						if (idn.getAttributeValue("status") == null
-								|| el.getChildren("tool", ns).size() > 1
-								|| (!"Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname")) && !"application/x-symlink"
-										.equals(el.getAttributeValue("mimetype")))) {
-							identity = el;
-							break;
+					
+					// If there was no conflict, use the first identity
+					if (idn.getAttributeValue("status") == null) {
+						identity = idn.getChild("identity", ns);
+					} else {
+						// otherwise, find the first identity set where multiple tools agreed or Exif was not the sole
+						// tool to determine that the file was a symlink.
+						for (Object child : idn.getChildren("identity", ns)) {
+							Element el = (Element) child;
+							if (el.getChildren("tool", ns).size() > 1
+									|| (!"Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname"))
+											&& !"application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
+								identity = el;
+								break;
+							}
 						}
 					}
 
@@ -168,7 +174,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					} else {
 						format = "Unknown";
 						LOG.warn("FITS unable to conclusively identify file: {}/{}", pid, dsid);
-						LOG.info(new XMLOutputter().outputString(fits));
+						LOG.debug(new XMLOutputter().outputString(fits));
 					}
 				}
 
