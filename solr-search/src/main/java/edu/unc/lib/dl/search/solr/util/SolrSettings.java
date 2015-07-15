@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
 
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
-import org.apache.solr.client.solrj.util.ClientUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,12 +103,28 @@ public class SolrSettings extends AbstractSettings {
 		return server;
 	}
 
-	private static Pattern escapeReservedWords = Pattern.compile("\\b(AND|OR|NOT)\\b");
+	private static Pattern escapeReservedWords
+		= Pattern.compile("\\b(?<!\\*)(AND|OR|NOT)\\b(?!\\*)");
 
 	public static String sanitize(String value) {
 		if (value == null)
 			return value;
-		return escapeReservedWords.matcher(ClientUtils.escapeQueryChars(value)).replaceAll("'$1'");
+		return escapeReservedWords.matcher(escapeQueryChars(value)).replaceAll("'$1'");
+	}
+
+	public static String escapeQueryChars(String s) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			// These characters are part of the query syntax and must be escaped
+			if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':' || c == '^' || c == '['
+					|| c == ']' || c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|'
+					|| c == '&' || c == ';' || c == '/' || Character.isWhitespace(c)) {
+				sb.append('\\');
+			}
+			sb.append(c);
+		}
+		return sb.toString();
 	}
 
 	private static Pattern splitTermFragmentsRegex = Pattern.compile("(\"(([^\"]|\\\")*)\"|([^\" ,]+))");
