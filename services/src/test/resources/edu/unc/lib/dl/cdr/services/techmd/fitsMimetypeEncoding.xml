@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.8.5" timestamp="6/13/15 6:20 AM">
+	<identification status="PARTIAL">
+		<identity format="Unknown Binary" mimetype="text/plain; charset=windows-1252" toolname="FITS" toolversion="0.8.5">
+			<tool toolname="Tika" toolversion="1.3" />
+		</identity>
+	</identification>
+	<fileinfo>
+		<size toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">29918</size>
+		<fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1433531539000</fslastmodified>
+	</fileinfo>
+	<filestatus />
+</fits>

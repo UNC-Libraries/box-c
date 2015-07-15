@@ -112,6 +112,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		status.put(DepositField.uuid.name(), depositPid.getUUID());
 		status.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
 		status.put(DepositField.fileName.name(), deposit.getFilename());
+		status.put(DepositField.fileMimetype.name(), deposit.getMimeType());
 		String email = SwordConfigurationImpl.getUserEmailAddress();
 		status.put(DepositField.depositorName.name(), owner);
 		status.put(DepositField.depositorEmail.name(), email != null ? email : owner+"@email.unc.edu");

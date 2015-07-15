@@ -16,47 +16,95 @@
 
 package edu.unc.lib.dl.cdr.services.techmd;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.InputStream;
+
+import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+
+import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
+import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class TechnicalMetadataEnhancementTest extends Assert {
 
+	@Mock
+	private EnhancementMessage message;
+	@Mock
+	private AbstractIrodsObjectEnhancementService service;
+	@Mock
+	private ManagementClient managementClient;
+	@Mock
+	private TripleStoreQueryService tsqs;
+	
+	private TechnicalMetadataEnhancement enhance;
+
+	@Before
+	public void setup() throws Exception {
+		initMocks(this);
+		
+		when(service.getManagementClient()).thenReturn(managementClient);
+		when(managementClient.getIrodsPath(anyString())).thenReturn("/");
+		when(message.getPid()).thenReturn(new PID("uuid:item"));
+		when(service.isActive()).thenReturn(true);
+		when(service.getTripleStoreQueryService()).thenReturn(tsqs);
+		
+		enhance = new TechnicalMetadataEnhancement(service, message);
+		
+	}
+	
 	@Test
-	public void testFITSResponseParsing(){
-		try {
-			java.io.InputStream inStream = this.getClass().getResourceAsStream("fitsOutputMultipleLineBreaks.xml");
-			java.io.BufferedReader reader = new BufferedReader(new InputStreamReader(inStream));
-
-			StringBuilder xml = new StringBuilder();
-			StringBuilder err = new StringBuilder();
-			boolean blankReached = false;
-			String previousLine = "";
-			for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-				if (line.trim().length() == 0 && previousLine.contains("WARNING:")) {
-					blankReached = true;
-					continue;
-				} else {
-
-					if (blankReached) {
-						err.append(line).append("\n");
-					} else {
-						if (line.indexOf("\n") == -1)
-							xml.append(line).append("\n");
-					}
-				}
-			}
-
-			String xmlstr = xml.toString();
-			new SAXBuilder().build(new StringReader(xmlstr));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			assertFalse(true);
-		}
+	public void leadingLoggingStatementsTest() throws Exception {
+		
+		InputStream inStream = this.getClass().getResourceAsStream("fitsOutputMultipleLineBreaks.xml");
+		when(service.remoteExecuteWithPhysicalLocation(anyString(), anyString())).thenReturn(inStream);
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(this.getClass().getResourceAsStream("imageFOXML.xml"));
+		when(message.getFoxml()).thenReturn(foxml);
+		
+		enhance.call();
+		
+		verify(managementClient).addManagedDatastream(any(PID.class), eq(Datastream.MD_TECHNICAL.getName()),
+				anyBoolean(), anyString(), anyListOf(String.class), anyString(), anyBoolean(), anyString(), anyString());
+		
+		verify(managementClient).addLiteralStatement(any(PID.class), eq(CDRProperty.hasSourceMimeType.toString()),
+				eq("image/jpeg"), anyString());
+	}
+	
+	@Test
+	public void mimetypeEncodingTest() throws Exception {
+		
+		InputStream inStream = this.getClass().getResourceAsStream("fitsMimetypeEncoding.xml");
+		when(service.remoteExecuteWithPhysicalLocation(anyString(), anyString())).thenReturn(inStream);
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(this.getClass().getResourceAsStream("unknownTypeFOXML.xml"));
+		when(message.getFoxml()).thenReturn(foxml);
+		
+		enhance.call();
+		
+		verify(managementClient).addManagedDatastream(any(PID.class), eq(Datastream.MD_TECHNICAL.getName()),
+				anyBoolean(), anyString(), anyListOf(String.class), anyString(), anyBoolean(), anyString(), anyString());
+		
+		// Check that the mimetype has had the encoding trimmed off
+		verify(managementClient).addLiteralStatement(any(PID.class), eq(CDRProperty.hasSourceMimeType.toString()),
+				eq("text/plain"), anyString());
 	}
 }

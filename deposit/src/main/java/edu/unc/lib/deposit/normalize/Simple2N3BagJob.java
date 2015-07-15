@@ -42,6 +42,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
@@ -81,6 +82,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		Map<String, String> depositStatus = getDepositStatus();
 		String filename = depositStatus.get(DepositField.fileName.name());
 		String slug = depositStatus.get(DepositField.depositSlug.name());
+		String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
 		String contentModel = depositStatus.get(hasModel.toString());
 
@@ -88,7 +90,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		Resource primaryResource = model.createResource(primaryPID.getURI());
 
 		if (contentModel == null || SIMPLE.equals(contentModel)) {
-			populateSimple(model, primaryResource, slug, filename);
+			populateSimple(model, primaryResource, slug, filename, mimetype);
 		} else {
 			populateContainer(model, primaryResource, primaryPID, slug, contentModel);
 		}
@@ -106,7 +108,8 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 				PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri());
 	}
 
-	private void populateSimple(Model model, Resource primaryResource, String alabel, String filename) {
+	private void populateSimple(Model model, Resource primaryResource, String alabel, String filename,
+			String mimetype) {
 		File contentFile = new File(this.getDataDirectory(), filename);
 		if (!contentFile.exists()) {
 			failJob("Failed to find upload file for simple deposit: " + filename,
@@ -115,10 +118,12 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 
 		if(alabel == null) alabel = contentFile.getName();
 		model.add(primaryResource, dprop(model, label), alabel);
+		if (mimetype != null) {
+			model.add(primaryResource, dprop(model, DepositRelationship.mimetype), mimetype);
+		}
 
 		// Reference the content file as the data file
 		try {
-
 			model.add(primaryResource, dprop(model, stagingLocation),
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodeUri(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {

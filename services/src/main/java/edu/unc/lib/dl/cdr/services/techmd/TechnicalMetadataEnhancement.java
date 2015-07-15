@@ -77,6 +77,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			return null;
 		}
 
+		String md5checksum = null;
 		Map<String, Document> ds2FitsDoc = new HashMap<String, Document>();
 		try {
 			Document foxml = this.retrieveFoxml();
@@ -101,6 +102,10 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue(
 							"REF");
 					dsAltIds = newestSourceDS.getAttributeValue("ALT_IDS");
+					Element dfDigest = newestSourceDS.getChild("contentDigest", JDOMNamespaceUtil.FOXML_NS);
+					if (dfDigest != null) {
+						md5checksum = dfDigest.getAttributeValue("DIGEST");
+					}
 				} else {
 					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
 							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
@@ -131,45 +136,57 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			for (String dsid : ds2FitsDoc.keySet()) {
 				// get key PREMIS data
 				Document fits = ds2FitsDoc.get(dsid);
-				String md5checksum = fits.getRootElement().getChild("fileinfo", FITS_NS)
-						.getChildText("md5checksum", FITS_NS);
 				String size = fits.getRootElement().getChild("fileinfo", FITS_NS).getChildText("size", FITS_NS);
+				
+				String fedoraMimetype = sourceMimetype.get(dsid);
+				String fitsMimetype = fedoraMimetype;
+				// Format only provided if using FITS mimetype, since otherwise it may not match
+				String format = null;
+				
+				// If fedora mimetype is not meaningful, then override with FITS generated value
+				if (fedoraMimetype == null || fedoraMimetype.trim().length() == 0
+						|| fedoraMimetype.contains("octet-stream")) {
+					
+					// get mimetype out of FITS XML
+					Element identity = null;
+					Element idn = fits.getRootElement().getChild("identification", ns);
+					
+					// If there was no conflict, use the first identity
+					if (idn.getAttributeValue("status") == null) {
+						identity = idn.getChild("identity", ns);
+					} else {
+						// otherwise, find the first identity set where multiple tools agreed or Exif was not the sole
+						// tool to determine that the file was a symlink.
+						for (Object child : idn.getChildren("identity", ns)) {
+							Element el = (Element) child;
+							if (el.getChildren("tool", ns).size() > 1
+									|| (!"Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname"))
+											&& !"application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
+								identity = el;
+								break;
+							}
+						}
+					}
 
-				// IDENTIFICATION LOGIC
-				// get mimetype out of FITS XML
-				Element trustedIdentity = null;
-				Element idn = fits.getRootElement().getChild("identification", ns);
-				for (Object child : idn.getChildren("identity", ns)) {
-					Element el = (Element) child;
-					if (idn.getAttributeValue("status") == null
-							|| el.getChildren("tool", ns).size() > 1
-							|| (!"Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname")) && !"application/x-symlink"
-									.equals(el.getAttributeValue("mimetype")))) {
-						trustedIdentity = el;
-						break;
+					if (identity != null) {
+						fitsMimetype = identity.getAttributeValue("mimetype");
+						format = identity.getAttributeValue("format");
+					} else {
+						format = "Unknown";
+						LOG.warn("FITS unable to conclusively identify file: {}/{}", pid, dsid);
+						LOG.debug(new XMLOutputter().outputString(fits));
 					}
 				}
 
-				String fitsMimetype = null;
-				String format = null;
-				if (trustedIdentity != null) {
-					fitsMimetype = trustedIdentity.getAttributeValue("mimetype");
-					format = trustedIdentity.getAttributeValue("format");
-				} else {
-					format = "Unknown";
-					LOG.warn("FITS unable to conclusively identify file: {}/{}", pid, dsid);
-					LOG.info(new XMLOutputter().outputString(fits));
-				}
-
-				// If fedora has a meaningful mimetype already, then override the fits generate one.
-				String fedoraMimetype = sourceMimetype.get(dsid);
-				if (fedoraMimetype != null && fedoraMimetype.trim().length() > 0
-						&& !fedoraMimetype.contains("octet-stream")) {
-					fitsMimetype = fedoraMimetype;
-				}
-
 				if ("DATA_FILE".equals(dsid)) {
+					
 					if (fitsMimetype != null) {
+						// Throw away the encoding in the mimetype for now
+						int index = fitsMimetype.indexOf(';');
+						if (index != -1) {
+							fitsMimetype = fitsMimetype.substring(0, index);
+						}
+						
 						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
 								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null, foxml);
 					} else { // application/octet-stream
@@ -188,23 +205,30 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					}
 				}
 
+				Element objCharsEl = new Element("objectCharacteristics", PREMIS_V2_NS);
+				if (md5checksum != null) {
+					objCharsEl.addContent(
+							new Element("fixity", PREMIS_V2_NS).addContent(
+									new Element("messageDigestAlgorithm", PREMIS_V2_NS).setText("MD5"))
+									.addContent(new Element("messageDigest", PREMIS_V2_NS).setText(md5checksum)));
+				}
+				if (format != null) {
+					objCharsEl.addContent(
+							new Element("format", PREMIS_V2_NS)
+								.addContent(new Element("formatDesignation", PREMIS_V2_NS)
+								.addContent(new Element("formatName", PREMIS_V2_NS)
+								.setText(format))));
+				}
+
 				p.addContent(new Element("object", PREMIS_V2_NS)
 						.addContent(
 								new Element("objectIdentifier", PREMIS_V2_NS).addContent(
 										new Element("objectIdentifierType", PREMIS_V2_NS).setText("Fedora Datastream PID"))
 										.addContent(new Element("objectIdentifierValue", PREMIS_V2_NS).setText(dsid)))
 						.addContent(
-								new Element("objectCharacteristics", PREMIS_V2_NS)
+								objCharsEl
 										.addContent(new Element("compositionLevel", PREMIS_V2_NS).setText("0"))
-										.addContent(
-												new Element("fixity", PREMIS_V2_NS).addContent(
-														new Element("messageDigestAlgorithm", PREMIS_V2_NS).setText("MD5"))
-														.addContent(new Element("messageDigest", PREMIS_V2_NS).setText(md5checksum)))
 										.addContent(new Element("size", PREMIS_V2_NS).setText(size))
-										.addContent(
-												new Element("format", PREMIS_V2_NS).addContent(new Element("formatDesignation",
-														PREMIS_V2_NS).addContent(new Element("formatName", PREMIS_V2_NS)
-														.setText(format))))
 										.addContent(
 												new Element("objectCharacteristicsExtension", PREMIS_V2_NS).addContent(ds2FitsDoc
 														.get(dsid).detachRootElement())))
@@ -297,16 +321,16 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			}
 			StringBuilder xml = new StringBuilder();
 			StringBuilder err = new StringBuilder();
-			boolean blankReached = false;
+			boolean declareReached = false;
 			for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-				if (line.trim().length() == 0) {
-					blankReached = true;
-					continue;
+				if (!declareReached && line.startsWith("<?xml")) {
+					declareReached = true;
+				}
+				if (declareReached) {
+					xml.append(line).append("\n");
 				} else {
-					if (blankReached) {
+					if (line.trim().length() > 0) {
 						err.append(line).append("\n");
-					} else {
-						xml.append(line).append("\n");
 					}
 				}
 			}
