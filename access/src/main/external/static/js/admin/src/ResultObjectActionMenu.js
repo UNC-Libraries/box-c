@@ -41,6 +41,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 						var def = {
 							label : actionDefinition.label,
 							actionClass : actionClass,
+							joiner : actionDefinition.joiner,
 							action : new actionClass({ target : self.options.resultList }),
 							group : group.groupName? group.groupName : index
 						};
@@ -282,6 +283,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			var validCount = definition.action.countTargets();
 			items[actionName] = {
 				name : definition.label + (validCount? ' ' + validCount : '') 
+					+ (definition.joiner? definition.joiner : "")
 					+ " object" + (validCount == 1? '' : 's'),
 				disabled : validCount == 0
 			};

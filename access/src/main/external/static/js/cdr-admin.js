@@ -2779,6 +2779,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 						var def = {
 							label : actionDefinition.label,
 							actionClass : actionClass,
+							joiner : actionDefinition.joiner,
 							action : new actionClass({ target : self.options.resultList }),
 							group : group.groupName? group.groupName : index
 						};
@@ -3020,6 +3021,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			var validCount = definition.action.countTargets();
 			items[actionName] = {
 				name : definition.label + (validCount? ' ' + validCount : '') 
+					+ (definition.joiner? definition.joiner : "")
 					+ " object" + (validCount == 1? '' : 's'),
 				disabled : validCount == 0
 			};
@@ -3826,9 +3828,9 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			resultActions : [
 						{
 							actions : [
-								{action : 'EditTypeBatch', label : 'Edit Type'},
+								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for '},
 								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
-								{action : 'ExportMetadataXMLBatch', label : 'Export MODS'}
+								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for '}
 							]
 						},
 						{
