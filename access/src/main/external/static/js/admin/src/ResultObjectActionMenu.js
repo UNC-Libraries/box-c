@@ -123,8 +123,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		if ($.inArray('addRemoveContents', metadata.permissions) != -1 && metadata.isPart) {
 			var isDWO = $.inArray('Default Access Object', metadata.contentStatus) != -1;
 			items[isDWO? 'clearDefaultWebObject' : 'setDefaultWebObject'] = {
-				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object', 
-				className : isDWO? 'result_entry_context_menu_checked' : ''
+				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object'
 			};
 		}
 		if ($.inArray('publish', metadata.permissions) != -1)
