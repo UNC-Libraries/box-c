@@ -281,7 +281,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			
 			PID aggregate = this.tripleStoreQueryService.fetchParentByModel(dwo, Model.AGGREGATE_WORK);
 			if (aggregate == null) {
-				throw new UpdateException("Object " + dwo + " is contained by an aggregate object");
+				throw new UpdateException("Object " + dwo + " is not contained by an aggregate object");
 			}
 			
 			// Check that the user has sufficient permissions
