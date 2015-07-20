@@ -43,7 +43,8 @@ public enum IndexingActionType {
 	MOVE("Move", "Partial update which updates the location and access control of an object and all its children"),
 	UPDATE_ACCESS("Update access control", "Partial update which refreshes the access control for an object and all its children"),
 	ADD_SET_TO_PARENT("Add Set To Parent", "Indexes a set of newly added children contained by a shared parent"),
-	UPDATE_TYPE("Update Resource Type", "Update the resource type of a set of objects");
+	UPDATE_TYPE("Update Resource Type", "Update the resource type of a set of objects"),
+	SET_DEFAULT_WEB_OBJECT("Set Default Web Object", "Update a record to change its default web object");
 	
 	private final String label;
 	private final String description;

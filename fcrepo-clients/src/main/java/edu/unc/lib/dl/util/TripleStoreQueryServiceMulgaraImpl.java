@@ -62,6 +62,9 @@ import org.w3c.dom.NodeList;
 
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
+import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -1427,6 +1430,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	 */
 	@Override
 	public PID fetchParentCollection(PID key) {
+		return fetchParentByModel(key, Model.COLLECTION);
+	}
+
+	@Override
+	public PID fetchParentByModel(PID key, Model model) {
 		PID result = null;
 		StringBuffer query = new StringBuffer();
 		query.append("select $p from <%1$s>").append(
@@ -1434,14 +1442,14 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		query.append(" and $p <%4$s> <%5$s>;");
 		String q = String.format(query.toString(),
 				this.getResourceIndexModelUri(),
-				ContentModelHelper.Relationship.contains.getURI(),
+				Relationship.contains.getURI(),
 				key.getURI(),
-				ContentModelHelper.FedoraProperty.hasModel.getURI(),
-				ContentModelHelper.Model.COLLECTION.getURI());
+				FedoraProperty.hasModel.getURI(),
+				model.getURI());
 
 		List<List<String>> response = this.lookupStrings(q);
-		if (!response.isEmpty() && !response.get(0).isEmpty()) {
-			String pid = response.get(0).get(0);
+		if (!response.isEmpty() && !response.get(response.size() - 1).isEmpty()) {
+			String pid = response.get(response.size() - 1).get(0);
 			result = new PID(pid);
 		}
 		return result;

@@ -3,6 +3,12 @@ package edu.unc.lib.dl.cdr.services.processing;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.worker.Worker;
+import net.greghaines.jesque.worker.WorkerEvent;
+import net.greghaines.jesque.worker.WorkerListener;
+import net.greghaines.jesque.worker.WorkerPool;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,11 +21,6 @@ import edu.unc.lib.dl.message.ActionMessage;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.worker.Worker;
-import net.greghaines.jesque.worker.WorkerEvent;
-import net.greghaines.jesque.worker.WorkerListener;
-import net.greghaines.jesque.worker.WorkerPool;
 
 public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 
@@ -80,6 +81,7 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 		jesqueClient.delayedEnqueue(queueName, job, System.currentTimeMillis() + beforeExecuteDelay);
 	}
 	
+	@Override
 	public void add(ActionMessage message) {
 		LOG.debug("Adding " + message.getTargetID() + " " + message.getClass().getName() + ": "
 				+ message.getQualifiedAction());
@@ -133,8 +135,14 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 				IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace
 						+ cdrMessage.getOperation());
 				if (indexingAction != null) {
-					for (String pidString : cdrMessage.getSubjects()) {
-						this.offer(pidString, indexingAction);
+					if (IndexingActionType.SET_DEFAULT_WEB_OBJECT.equals(indexingAction)) {
+						SolrUpdateRequest request = new ChildSetRequest(cdrMessage.getTargetID(), cdrMessage.getSubjects(),
+								IndexingActionType.SET_DEFAULT_WEB_OBJECT);
+						this.offer(request);
+					} else {
+						for (String pidString : cdrMessage.getSubjects()) {
+							this.offer(pidString, indexingAction);
+						}
 					}
 				}
 			} else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)) {
@@ -153,12 +161,14 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 						IndexingActionType.UPDATE_TYPE);
 				this.offer(request);
 			}
+			
 		} else {
 			// For all other message types, do a single record update
 			this.offer(message.getTargetID());
 		}
 	}
 	
+	@Override
 	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
 		if (event == null || event == WorkerEvent.WORKER_POLL) {
 			return;
@@ -177,6 +187,7 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 	 * Returns the identifier string for this conductor
 	 * @return
 	 */
+	@Override
 	public String getIdentifier() {
 		return identifier;
 	}

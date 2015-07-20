@@ -1386,190 +1386,6 @@ body .ui-tooltip {
 	opacity: .3/*{opacityShadow}*/;
 	filter: Alpha(Opacity=30)/*{opacityFilterShadow}*/;
 	border-radius: 8px/*{cornerRadiusShadow}*/;
-}
-
-
-/*!
- * jQuery contextMenu - Plugin for simple contextMenu handling
- *
- * Version: git-master
- *
- * Authors: Rodney Rehm, Addy Osmani (patches for FF)
- * Web: http://medialize.github.com/jQuery-contextMenu/
- *
- * Licensed under
- *   MIT License http://www.opensource.org/licenses/mit-license
- *   GPL v3 http://opensource.org/licenses/GPL-3.0
- *
- */
-
-.context-menu-list {
-	margin: 0;
-	padding: 0;
-	min-width: 165px;
-	max-width: 250px;
-	display: inline-block;
-	position: absolute;
-	list-style-type: none;
-	border: 1px solid #DDD;
-	background: #FFFFFF;
-	-webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-	-moz-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-	-ms-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-	-o-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-	text-align: left;
-}
-
-.context-menu-item {
-	padding: 2px 4px 2px 16px;
-	text-indent: 0;
-	margin: 0;
-	position: relative;
-	-webkit-user-select: none;
-	-moz-user-select: -moz-none;
-	-ms-user-select: none;
-	user-select: none;
-}
-
-.context-menu-separator {
-	padding-bottom: 0;
-	border-bottom: 1px solid #DDD;
-}
-
-.context-menu-item>label>input,.context-menu-item>label>textarea {
-	-webkit-user-select: text;
-	-moz-user-select: text;
-	-ms-user-select: text;
-	user-select: text;
-}
-
-.context-menu-item.hover {
-	cursor: pointer;
-	background-color: #EEEEFF;
-}
-
-.context-menu-item.disabled {
-	color: #999;
-}
-
-.context-menu-input.hover,.context-menu-item.disabled.hover {
-	cursor: default;
-	background-color: #EEE;
-}
-
-.context-menu-submenu:after {
-	content: ">";
-	color: #666;
-	position: absolute;
-	top: 0;
-	right: 3px;
-	z-index: 1;
-}
-
-/* icons
-    #protip:
-    In case you want to use sprites for icons (which I would suggest you do) have a look at
-    http://css-tricks.com/13224-pseudo-spriting/ to get an idea of how to implement 
-    .context-menu-item.icon:before {}
- */
-.context-menu-item.icon {
-	min-height: 18px;
-	background-repeat: no-repeat;
-	background-position: 4px 2px;
-}
-
-.context-menu-item.icon-edit {
-	background-image: url(images/page_white_edit.png);
-}
-
-.context-menu-item.icon-cut {
-	background-image: url(images/cut.png);
-}
-
-.context-menu-item.icon-copy {
-	background-image: url(images/page_white_copy.png);
-}
-
-.context-menu-item.icon-paste {
-	background-image: url(images/page_white_paste.png);
-}
-
-.context-menu-item.icon-delete {
-	background-image: url(images/page_white_delete.png);
-}
-
-.context-menu-item.icon-add {
-	background-image: url(images/page_white_add.png);
-}
-
-.context-menu-item.icon-quit {
-	background-image: url(images/door.png);
-}
-
-/* vertically align inside labels */
-.context-menu-input>label>* {
-	vertical-align: top;
-}
-
-/* position checkboxes and radios as icons */
-.context-menu-input>label>input[type="checkbox"],.context-menu-input>label>input[type="radio"]
-	{
-	margin-left: -17px;
-}
-
-.context-menu-input>label>span {
-	margin-left: 5px;
-}
-
-.context-menu-input>label,.context-menu-input>label>input[type="text"],.context-menu-input>label>textarea,.context-menu-input>label>select
-	{
-	display: block;
-	width: 100%;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	-ms-box-sizing: border-box;
-	-o-box-sizing: border-box;
-	box-sizing: border-box;
-}
-
-.context-menu-input>label>textarea {
-	height: 100px;
-}
-
-.context-menu-item>.context-menu-list {
-	display: none;
-	/* re-positioned by js */
-	right: -5px;
-	top: 5px;
-}
-
-.context-menu-item.hover>.context-menu-list {
-	display: block;
-}
-
-.context-menu-accesskey {
-	text-decoration: underline;
-}
-
-.result_entry_context_menu:before {
-    content: attr(data-menutitle);
-    display: block;
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    background: linear-gradient(to bottom, #f0f0f0, #fefefe);
-	background-color: #fdfdfd;
-    padding: 3px 1px 1px 5px;
-	overflow-x: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-    font-size: 10px;
-    font-weight: bold;
-}
-.result_entry_context_menu :first-child {
-    margin-top: 21px;
 }/*!
  * qTip2 - Pretty powerful tooltips - v2.0.1
  * http://qtip2.com
@@ -2177,6 +1993,167 @@ body .ui-tooltip {
 /* IE6 Modal plugin fix */
 .qtipmodal-ie6fix{
 	position: absolute !important;
+}/*!
+ * jQuery contextMenu - Plugin for simple contextMenu handling
+ *
+ * Version: git-master
+ *
+ * Authors: Rodney Rehm, Addy Osmani (patches for FF)
+ * Web: http://medialize.github.com/jQuery-contextMenu/
+ *
+ * Licensed under
+ *   MIT License http://www.opensource.org/licenses/mit-license
+ *   GPL v3 http://opensource.org/licenses/GPL-3.0
+ *
+ */
+
+.context-menu-list {
+	margin: 0;
+	padding: 0;
+	min-width: 165px;
+	max-width: 250px;
+	display: inline-block;
+	position: absolute;
+	list-style-type: none;
+	border: 1px solid #DDD;
+	background: #FFFFFF;
+	-webkit-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	-moz-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	-ms-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	-o-box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+	text-align: left;
+}
+
+.context-menu-item {
+	padding: 2px 4px 2px 16px;
+	text-indent: 0;
+	margin: 0;
+	position: relative;
+	-webkit-user-select: none;
+	-moz-user-select: -moz-none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+.context-menu-separator {
+	padding-bottom: 0;
+	border-bottom: 1px solid #DDD;
+}
+
+.context-menu-item>label>input,.context-menu-item>label>textarea {
+	-webkit-user-select: text;
+	-moz-user-select: text;
+	-ms-user-select: text;
+	user-select: text;
+}
+
+.context-menu-item.hover {
+	cursor: pointer;
+	background-color: #EEEEFF;
+}
+
+.context-menu-item.disabled {
+	color: #999;
+}
+
+.context-menu-input.hover,.context-menu-item.disabled.hover {
+	cursor: default;
+	background-color: #EEE;
+}
+
+.context-menu-submenu:after {
+	content: ">";
+	color: #666;
+	position: absolute;
+	top: 0;
+	right: 3px;
+	z-index: 1;
+}
+
+/* icons
+    #protip:
+    In case you want to use sprites for icons (which I would suggest you do) have a look at
+    http://css-tricks.com/13224-pseudo-spriting/ to get an idea of how to implement 
+    .context-menu-item.icon:before {}
+ */
+.context-menu-item.icon {
+	min-height: 18px;
+	background-repeat: no-repeat;
+	background-position: 4px 2px;
+}
+
+.context-menu-item.icon-edit {
+	background-image: url(images/page_white_edit.png);
+}
+
+.context-menu-item.icon-cut {
+	background-image: url(images/cut.png);
+}
+
+.context-menu-item.icon-copy {
+	background-image: url(images/page_white_copy.png);
+}
+
+.context-menu-item.icon-paste {
+	background-image: url(images/page_white_paste.png);
+}
+
+.context-menu-item.icon-delete {
+	background-image: url(images/page_white_delete.png);
+}
+
+.context-menu-item.icon-add {
+	background-image: url(images/page_white_add.png);
+}
+
+.context-menu-item.icon-quit {
+	background-image: url(images/door.png);
+}
+
+/* vertically align inside labels */
+.context-menu-input>label>* {
+	vertical-align: top;
+}
+
+/* position checkboxes and radios as icons */
+.context-menu-input>label>input[type="checkbox"],.context-menu-input>label>input[type="radio"]
+	{
+	margin-left: -17px;
+}
+
+.context-menu-input>label>span {
+	margin-left: 5px;
+}
+
+.context-menu-input>label,.context-menu-input>label>input[type="text"],.context-menu-input>label>textarea,.context-menu-input>label>select
+	{
+	display: block;
+	width: 100%;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	box-sizing: border-box;
+}
+
+.context-menu-input>label>textarea {
+	height: 100px;
+}
+
+.context-menu-item>.context-menu-list {
+	display: none;
+	/* re-positioned by js */
+	right: -5px;
+	top: 5px;
+}
+
+.context-menu-item.hover>.context-menu-list {
+	display: block;
+}
+
+.context-menu-accesskey {
+	text-decoration: underline;
 }html {
 	background-color: #ffffff;
 }
@@ -2534,6 +2511,12 @@ h1 {
 	text-align: left;
 }
 
+.confirm_dialog .ui-dialog-titlebar {
+	border: 1px solid #aaa;
+	border-bottom: 1px solid #DFEBF1;
+	border-radius: 6px 6px 0 0;
+}
+
 .confirm_dialog .ui-dialog-content {
 	padding: 0.5em 0.2em 0;
 }
@@ -2553,6 +2536,25 @@ h1 {
 	background : #DDF0FA;
 }
 
+.confirm_dialog .warning {
+	color: #A94442;
+	background-color: #F2DEDE;
+	border-color: #EBCCD1;
+	padding: 10px;
+	border-radius: 6px;
+	max-height: 450px;
+	overflow-y: auto;
+}
+
+.confirm_dialog .warning h2 {
+	color: #8c3938;
+}
+
+.confirm_dialog .warning li {
+	text-indent: 0;
+	list-style-type: initial;
+	margin-left: 20px;
+}
 
 /* Edit panels */
 .ui-dialog .ui-dialog-titlebar {
@@ -3147,6 +3149,33 @@ h1 {
 
 .menu_box > div > ul {
 	display: none;
+}
+
+.result_entry_context_menu:before {
+	content: attr(data-menutitle);
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	background: linear-gradient(to bottom, #f0f0f0, #fefefe);
+	background-color: #fdfdfd;
+	padding: 3px 1px 1px 5px;
+	overflow-x: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 10px;
+	font-weight: bold;
+}
+.result_entry_context_menu :first-child {
+	margin-top: 21px;
+}
+
+.result_entry_context_menu_checked :before {
+	content: '\2713';
+	position: absolute;
+	left: 3px;
+	font-weight: bold;
 }
 
 /** Ingest to container menu */

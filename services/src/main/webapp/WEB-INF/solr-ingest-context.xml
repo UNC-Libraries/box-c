@@ -177,6 +177,17 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="solrSetDWOPipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setDatastreamContentFilter" />
+				<ref bean="setContentStatusFilter" />
+				<ref bean="setRelationsFilter" />
+			</list>
+		</property>
+	</bean>
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
@@ -269,8 +280,16 @@
 	</bean>
 	
 	<bean id="updateTypeAction"
-		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateChildSetAction">
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
 		<property name="pipeline" ref="solrUpdateTypePipeline" />
+		<property name="addDocumentMode" value="false" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+	</bean>
+
+	<bean id="updateDWOAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+		<property name="pipeline" ref="solrSetDWOPipeline" />
+		<property name="addDocumentMode" value="false" />
 		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
 	</bean>
 
@@ -293,6 +312,7 @@
 		<entry key="MOVE" value-ref="moveObjectsAction" />
 		<entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
 		<entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
+		<entry key="SET_DEFAULT_WEB_OBJECT" value-ref="updateDWOAction" />
 	</util:map>
 
 </beans>

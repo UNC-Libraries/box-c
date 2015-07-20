@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public interface TripleStoreQueryService {
 
@@ -164,6 +165,15 @@ public interface TripleStoreQueryService {
 	 * @return the parent collection
 	 */
 	public abstract PID fetchParentCollection(PID key);
+	
+	/**
+	 * Retrieves the nearest container with the specified model containing the given object
+	 * 
+	 * @param key
+	 * @param model
+	 * @return
+	 */
+	public abstract PID fetchParentByModel(PID key, Model model);
 
 	/**
 	 * Fetches the PIDs of all objects that reference this one in RELS-EXT, as in they are the subjects of statements
@@ -426,4 +436,5 @@ public interface TripleStoreQueryService {
 	 * @return
 	 */
 	public Map<String, Map<String, Set<String>>> fetchVocabularyMapping();
+
 }

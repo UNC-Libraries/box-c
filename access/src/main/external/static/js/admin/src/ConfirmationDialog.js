@@ -64,6 +64,9 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 			this.confirmDialog = $("<div class='confirm_dialogue'></div>");
 			
 			this.setPromptText(this.options.promptText);
+			if (this.options.warningText) {
+				this.confirmDialog.append("<div class='warning'>" + this.options.warningText + "</div>");
+			}
 			
 			if (this.options.confirmMatchText) {
 				this.confirmMatchInput = $("<input type='text' />");
@@ -127,6 +130,7 @@ define('ConfirmationDialog', [ 'jquery', 'jquery-ui', 'PID', 'RemoteStateChangeM
 					id : 'cancel',
 					class : 'confirm_dialog_confirm',
 					text : self.options.confirmText,
+					disabled : self.options.disableConfirm,
 					click : function() {
 						if (self.options.confirmFunction) {
 							if (!self.inputMatches())

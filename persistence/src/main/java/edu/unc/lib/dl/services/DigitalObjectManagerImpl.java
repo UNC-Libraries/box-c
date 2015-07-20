@@ -76,9 +76,11 @@ import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
 import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
+import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.ResourceType;
@@ -268,6 +270,92 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		
 		if (this.getOperationsMessageSender() != null) {
 			this.getOperationsMessageSender().sendEditTypeOperation(user, subjects, newType);
+		}
+	}
+	
+	@Override
+	public void editDefaultWebObject(List<PID> dwos, boolean clear, String user) throws UpdateException {
+		
+		Set<PID> modified = new HashSet<>();
+		for (PID dwo : dwos) {
+			
+			PID aggregate = this.tripleStoreQueryService.fetchParentByModel(dwo, Model.AGGREGATE_WORK);
+			if (aggregate == null) {
+				throw new UpdateException("Object " + dwo + " is not contained by an aggregate object");
+			}
+			
+			// Check that the user has sufficient permissions
+			if (!aclService.hasAccess(aggregate, GroupsThreadStore.getGroups(), Permission.addRemoveContents)) {
+				throw new UpdateException("Insufficient permissions to set default web object", new AuthorizationException(
+						"Cannot set default web object, user " + user + " does not have permission to modify "
+						+ aggregate));
+			}
+			
+			do {
+				try {
+					log.debug("Assigning {} as the DWO for {}", dwo, aggregate);
+					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(aggregate, RELS_EXT.getName());
+	
+					if (relsExtResp == null) {
+						throw new UpdateException("Unable to retrieve RELS-EXT for " + aggregate
+								+ ", cannot set default web object");
+					}
+	
+					Document relsExt = relsExtResp.getDocument();
+					
+					Element descriptionEl = relsExt.getDocument().getRootElement()
+							.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+					
+					String predicate = CDRProperty.defaultWebObject.getPredicate();
+					Namespace ns = CDRProperty.defaultWebObject.getNamespace();
+					
+					// Remove existing dwo relations and indicate their pids need updating.
+					List<Element> dwoEls = descriptionEl.getChildren(predicate, ns);
+					if (dwoEls != null) {
+						Iterator<Element> dwoIt = dwoEls.iterator();
+						while (dwoIt.hasNext()) {
+							Element dwoEl = dwoIt.next();
+							String existing = dwoEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
+							modified.add(new PID(existing));
+							log.debug("Removing existing DWO of {} while assigning to {}", existing, aggregate);
+							dwoIt.remove();
+						}
+					}
+					
+					if (!clear) {
+						// Add the new object
+						Element newRelationEl = new Element(predicate, ns);
+						newRelationEl.setAttribute("resource", dwo.getURI().toString(), JDOMNamespaceUtil.RDF_NS);
+						descriptionEl.addContent(newRelationEl);
+						log.debug("Added {} as DWO for {}", dwo, aggregate);
+					}
+	
+					if (log.isDebugEnabled()) {
+						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
+						log.debug("Attempting to update RELS-EXT for {} to set DWO:\n{}", aggregate,
+								outputter.outputString(relsExt));
+					}
+	
+					// Push the changes to the objects relations
+					managementClient
+							.modifyDatastream(aggregate, RELS_EXT.getName(), null, relsExtResp.getLastModified(), relsExt);
+	
+					modified.add(aggregate);
+					modified.add(dwo);
+					break;
+				} catch (OptimisticLockException e) {
+					log.debug("Unable to update RELS-EXT for {}, retrying", aggregate, e);
+				} catch (FedoraException e) {
+					throw new UpdateException("Error while updating relations for " + aggregate, e);
+				}
+				// Repeat rels-ext update if the source changed since the datastream was retrieved
+			} while (true);
+		}
+		
+		// Send message that the action completed
+		if (this.getOperationsMessageSender() != null) {
+			this.getOperationsMessageSender().sendIndexingOperation(user, modified,
+					IndexingActionType.SET_DEFAULT_WEB_OBJECT);
 		}
 	}
 

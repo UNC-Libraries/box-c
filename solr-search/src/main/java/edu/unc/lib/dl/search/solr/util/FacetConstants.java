@@ -22,6 +22,7 @@ public class FacetConstants {
 
 	public static final String CONTENT_DEFAULT_OBJECT = "Default Access Object Assigned";
 	public static final String CONTENT_NO_DEFAULT_OBJECT = "No Default Access Object";
+	public static final String CONTENT_IS_DEFAULT_OBJECT = "Default Access Object";
 
 	public static final String INVALID_VOCAB_TERM = "Invalid Term";
 }

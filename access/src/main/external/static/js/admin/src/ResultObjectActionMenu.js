@@ -120,6 +120,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		
 		// Modification options
 		items["sepedit"] = "";
+		if ($.inArray('addRemoveContents', metadata.permissions) != -1 && metadata.isPart) {
+			var isDWO = $.inArray('Default Access Object', metadata.contentStatus) != -1;
+			items[isDWO? 'clearDefaultWebObject' : 'setDefaultWebObject'] = {
+				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object'
+			};
+		}
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
 		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
@@ -203,6 +209,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;
+						break;
+					case "setDefaultWebObject" : case "clearDefaultWebObject" :
+						self.actionHandler.addEvent({
+							action : 'SetAsDefaultWebObjectBatch',
+							targets : [resultObject],
+							clear : key == "clearDefaultWebObject",
+							confirm : false
+						});
 						break;
 					case "destroy" :
 						self.actionHandler.addEvent({

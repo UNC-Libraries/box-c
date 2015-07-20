@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.util;
+package edu.unc.lib.dl.search.solr.tags;
 
-public enum SearchFieldKeys {
-	ID, ANCESTOR_PATH, ANCESTOR_IDS, READ_GROUP, ROLE_GROUP, ADMIN_GROUP, RESOURCE_TYPE, RESOURCE_TYPE_SORT,
-	DISPLAY_ORDER, CONTENT_TYPE, DATASTREAM, PARENT_COLLECTION, TITLE, TITLE_LC, OTHER_TITLES, ABSTRACT, KEYWORD, SUBJECT, LANGUAGE,
-	CREATOR, NAME, DEPARTMENT, DEPARTMENT_LC, CREATOR_TYPE, DATE_CREATED, DATE_ADDED, DATE_UPDATED, TIMESTAMP, FILESIZE, DEFAULT_INDEX,
-	TITLE_INDEX, CONTRIBUTOR_INDEX, SUBJECT_INDEX, ROLLUP_ID, VERSION, STATUS, CONTENT_MODEL, RELATIONS, CONTENT_STATUS, LABEL,
-	IS_PART;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.Tag;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
+
+/**
+ * @author bbpennel
+ * @date Jun 26, 2015
+ */
+public class DefaultObjectTagProvider implements TagProvider {
+	@Override
+	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
+		if (record.getContentStatus().contains(FacetConstants.CONTENT_IS_DEFAULT_OBJECT)) {
+			Tag tag = new Tag("primary object");
+			record.addTag(tag);
+		}
+	}
 }
