@@ -294,7 +294,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			do {
 				try {
 					log.debug("Assigning {} as the DWO for {}", dwo, aggregate);
-					DatastreamDocument relsExtResp = getXMLDatastreamIfExists(aggregate, RELS_EXT.getName());
+					DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(aggregate, RELS_EXT.getName());
 	
 					if (relsExtResp == null) {
 						throw new UpdateException("Unable to retrieve RELS-EXT for " + aggregate

@@ -21,9 +21,9 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			resultActions : [
 						{
 							actions : [
-								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for '},
+								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'},
 								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
-								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for '}
+								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
 							]
 						},
 						{
