@@ -3828,9 +3828,13 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			resultActions : [
 						{
 							actions : [
+								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
+							]
+						},
+						{
+							actions : [
 								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'},
 								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
-								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
 							]
 						},
 						{
