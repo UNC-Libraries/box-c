@@ -47,7 +47,7 @@ define('SetAsDefaultWebObjectBatchAction', [ 'jquery', 'AbstractBatchAction', "t
 			
 			// Adding warning if there are repeat parents and disabling the action
 			if (multipleParents) {
-				var warningText =  "<h2>Error</h2><p>Selected objects share common parents.  An aggregate object may only be assigned one primary access object at a time.</p><p>The following is a list of selected objects grouped by their shared parent:</p> <ul>";
+				var warningText =  "<h2>Error</h2><p>Some of the selected objects belong to the same aggregate object, but an aggregate object may have only one primary access object.</p><p>These objects cannot be made primary access objects:</p> <ul>";
 				$.each(parentSet, function(key, resultSet) {
 					if (resultSet.length > 1) {
 						var parentTitle = self.resultList.getResultObject(key).metadata.title;

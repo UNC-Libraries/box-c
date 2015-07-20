@@ -2861,8 +2861,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		if ($.inArray('addRemoveContents', metadata.permissions) != -1 && metadata.isPart) {
 			var isDWO = $.inArray('Default Access Object', metadata.contentStatus) != -1;
 			items[isDWO? 'clearDefaultWebObject' : 'setDefaultWebObject'] = {
-				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object', 
-				className : isDWO? 'result_entry_context_menu_checked' : ''
+				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object'
 			};
 		}
 		if ($.inArray('publish', metadata.permissions) != -1)
@@ -5247,7 +5246,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			
 			// Adding warning if there are repeat parents and disabling the action
 			if (multipleParents) {
-				var warningText =  "<h2>Error</h2><p>Selected objects share common parents.  An aggregate object may only be assigned one primary access object at a time.</p><p>The following is a list of selected objects grouped by their shared parent:</p> <ul>";
+				var warningText =  "<h2>Error</h2><p>Some of the selected objects belong to the same aggregate object, but an aggregate object may have only one primary access object.</p><p>These objects cannot be made primary access objects:</p> <ul>";
 				$.each(parentSet, function(key, resultSet) {
 					if (resultSet.length > 1) {
 						var parentTitle = self.resultList.getResultObject(key).metadata.title;
