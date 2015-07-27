@@ -995,6 +995,54 @@ public class ManagementClient extends WebServiceTemplate {
 		thread.start();
 	}
 
+	/**
+	 * Returns response containing the jdom document representing the datastream and the last modified date. If it does
+	 * not exist, then null is returned. If the document cannot be parsed, a ServiceException is thrown.
+	 *
+	 * @param pid
+	 * @param datastreamName
+	 * @return
+	 * @throws FedoraException
+	 */
+	public DatastreamDocument getXMLDatastreamIfExists(PID pid, String datastreamName) throws FedoraException {
+		
+		log.debug("Attempting to get datastream " + datastreamName + " for object " + pid);
+		
+		try {
+			
+			while (true) {
+		
+				edu.unc.lib.dl.fedora.types.Datastream datastream = this.getDatastream(pid, datastreamName);
+			
+				if (datastream == null) {
+					return null;
+				}
+				
+				log.debug("Got datastream, attempting to get dissemination version with create date " + datastream.getCreateDate());
+			
+				try {
+			
+					MIMETypedStream mts = accessClient.getDatastreamDissemination(pid, datastreamName, datastream.getCreateDate());
+				
+					try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
+						Document dsDoc = new SAXBuilder().build(bais);
+						return new DatastreamDocument(dsDoc, datastream.getCreateDate());
+					} catch (JDOMException | IOException e) {
+						throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
+					}
+					
+				} catch (NotFoundException e) {
+					log.debug("No dissemination version for create date " + datastream.getCreateDate() + " found, retrying");
+				}
+				
+			}
+			
+		} catch (NotFoundException e) {
+			return null;
+		}
+
+	}
+
 	// @Override
 	// public Object sendAndReceive(String uriString, WebServiceMessageCallback requestCallback,
 	// WebServiceMessageExtractor responseExtractor) {

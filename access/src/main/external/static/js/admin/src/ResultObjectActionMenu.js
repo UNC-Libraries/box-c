@@ -41,6 +41,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 						var def = {
 							label : actionDefinition.label,
 							actionClass : actionClass,
+							joiner : actionDefinition.joiner,
 							action : new actionClass({ target : self.options.resultList }),
 							group : group.groupName? group.groupName : index
 						};
@@ -139,15 +140,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 		
-		if ($.inArray('editResourceType', metadata.permissions) != -1
-				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-			items["editType"] = {name : 'Edit Type'};
-		}
-		
 		// Export actions
 		items["sepexport"] = "";
 		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
 			items["exportCSV"] = {name : 'Export as CSV'};
+		}
+		if ($.inArray('editDescription', metadata.permissions) != -1) {
+			items["exportXML"] = {name : 'Export MODS'};
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
@@ -242,6 +241,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "exportCSV" :
 						document.location.href = baseUrl + "export/" + metadata.id;
 						break;
+					
+					case "exportXML" :
+						self.actionHandler.addEvent({
+							action : 'ExportMetadataXMLBatch',
+							targets : [resultObject]
+						});
+						break;
+					
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
@@ -276,6 +283,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			var validCount = definition.action.countTargets();
 			items[actionName] = {
 				name : definition.label + (validCount? ' ' + validCount : '') 
+					+ (definition.joiner? definition.joiner : "")
 					+ " object" + (validCount == 1? '' : 's'),
 				disabled : validCount == 0
 			};

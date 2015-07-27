@@ -31,6 +31,11 @@
 	margin-right: 20px;
 }
 
+.edit_form label.form_inline {
+	text-align: left;
+	width: 100%;
+}
+
 .edit_form input, .edit_form textarea, .edit_form select {
 	background-color: #FFFFFF;
 	border: 1px solid #C8D8E0;

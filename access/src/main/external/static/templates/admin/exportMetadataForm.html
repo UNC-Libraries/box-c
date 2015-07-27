@@ -1,0 +1,21 @@
+<form id="export_xml_form" method="post" class="edit_form export_xml_form">
+	<p>
+		Exported metadata will be emailed to the provided email address when it is ready.
+	</p>
+	<div class="form_field">
+		<label>Email Address</label>
+		<input id="xml_recipient_email" type="text" size="40" value="<%= email %>" />
+	</div>
+	
+	<label class="form_inline"><input type="checkbox" id="export_xml_include_children" checked="checked"> Include metadata for all items contained within the selected object(s).</label>
+
+	<div class="update_field">
+		<input type="submit" id="export_xml_submit_button" class="update_button" value="Export" />
+	</div>
+	
+	<div class="errors">
+		<h3>Errors</h3>
+		<div class="error_stack">
+		</div>
+	</div>
+</form>

@@ -2779,6 +2779,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 						var def = {
 							label : actionDefinition.label,
 							actionClass : actionClass,
+							joiner : actionDefinition.joiner,
 							action : new actionClass({ target : self.options.resultList }),
 							group : group.groupName? group.groupName : index
 						};
@@ -2877,15 +2878,13 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 		
-		if ($.inArray('editResourceType', metadata.permissions) != -1
-				&& $.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
-			items["editType"] = {name : 'Edit Type'};
-		}
-		
 		// Export actions
 		items["sepexport"] = "";
 		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
 			items["exportCSV"] = {name : 'Export as CSV'};
+		}
+		if ($.inArray('editDescription', metadata.permissions) != -1) {
+			items["exportXML"] = {name : 'Export MODS'};
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
@@ -2980,6 +2979,14 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 					case "exportCSV" :
 						document.location.href = baseUrl + "export/" + metadata.id;
 						break;
+					
+					case "exportXML" :
+						self.actionHandler.addEvent({
+							action : 'ExportMetadataXMLBatch',
+							targets : [resultObject]
+						});
+						break;
+					
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;
@@ -3014,6 +3021,7 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			var validCount = definition.action.countTargets();
 			items[actionName] = {
 				name : definition.label + (validCount? ' ' + validCount : '') 
+					+ (definition.joiner? definition.joiner : "")
 					+ " object" + (validCount == 1? '' : 's'),
 				disabled : validCount == 0
 			};
@@ -3820,7 +3828,12 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 			resultActions : [
 						{
 							actions : [
-								{action : 'EditTypeBatch', label : 'Edit Type'},
+								{action : 'ExportMetadataXMLBatch', label : 'Export MODS', joiner : ' for'}
+							]
+						},
+						{
+							actions : [
+								{action : 'EditTypeBatch', label : 'Edit Type', joiner : ' for'},
 								{action : 'SetAsDefaultWebObjectBatch', label : 'Set as Primary'}
 							]
 						},
@@ -4879,6 +4892,99 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	}
 	
 	return EditTypeBatchAction;
+});define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templates/admin/exportMetadataForm"], function($, AbstractBatchAction, exportMetadataTemplate) {
+
+	function ExportMetadataXMLBatchAction(context) {
+		this._create(context);
+	};
+	
+	ExportMetadataXMLBatchAction.prototype.constructor = ExportMetadataXMLBatchAction;
+	ExportMetadataXMLBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
+	
+	ExportMetadataXMLBatchAction.prototype.isValidTarget = function(target) {
+		return target.isSelected() && target.isEnabled() && $.inArray("editDescription", target.metadata.permissions) != -1;
+	};
+	
+	ExportMetadataXMLBatchAction.prototype.getTargets = function(targets) {
+		if (this.context.targets) {
+			return this.context.targets;
+		} 
+		return AbstractBatchAction.prototype.getTargets.call(this);
+	};
+	
+	ExportMetadataXMLBatchAction.prototype.execute = function() {
+		var self = this;
+		
+		var exportContainerMode = this.context.exportContainerMode;
+		
+		this.targets = this.getTargets();
+		var title;
+		var defaultType;
+		if (this.targets.length == 1) {
+			title = "Export XML metadata for " + this.targets[0].metadata.title.substring(0, 30);
+		} else {
+			title = "Export XML metadata for " + this.targets.length + " objects";
+		}
+		
+		// Retrieve the last email address used by this user
+		var onyen = this.context.view.resultData.onyen;
+		
+		var emailAddress = localStorage.getItem("send_to_address_" + onyen);
+		if (!emailAddress) {
+			emailAddress = this.context.view.resultData.email;
+			if (!emailAddress && onyen) {
+				// No email, so generate one
+				emailAddress = onyen + "@email.unc.edu";
+			}
+		}
+		
+		var exportMetadataForm = exportMetadataTemplate({email : emailAddress});
+		this.dialog = $("<div class='containingDialog'>" + exportMetadataForm + "</div>");
+		this.dialog.dialog({
+			autoOpen: true,
+			width: 'auto',
+			minWidth: '500',
+			height: 'auto',
+			modal: true,
+			title: title
+		});
+		this.$form = this.dialog.first();
+		
+		this.$form.submit(function(e){
+			var email = $("#xml_recipient_email", self.$form).val();
+			var includeChildren = $("#export_xml_include_children", self.$form).prop("checked");
+			
+			if (!email || !$.trim(email)) {
+				return false;
+			}
+			localStorage.setItem("send_to_address_" + onyen, email);
+
+			var pids = [];
+			for (var index in self.targets) {
+				pids.push(self.targets[index].getPid());
+			}
+			
+			$.ajax({
+				url : includeChildren? "exportContainerXML" : "exportXML",
+				type : "POST",
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				data : JSON.stringify({
+					email : email,
+					pids : pids
+				})
+			}).done(function(response) {
+				self.context.view.$alertHandler.alertHandler("message", response.message);
+				self.dialog.remove();
+			}).fail(function() {
+				self.context.view.$alertHandler.alertHandler("error", "Failed to export " + self.targets.length + " objects");
+			});
+			
+			e.preventDefault();
+		});
+	}
+	
+	return ExportMetadataXMLBatchAction;
 });define('MoveObjectsAction', ['jquery'], function($) {
 	
 	// Context parameters:

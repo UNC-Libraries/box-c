@@ -130,14 +130,14 @@ public class SearchController extends AbstractSearchController {
 	Map<String, Object> searchJSON(@PathVariable("pid") String pid, HttpServletRequest request,
 			HttpServletResponse response) {
 		SearchResultResponse resultResponse = getSearchResults(getSearchRequest(pid, request));
-		return getResults(resultResponse, "search");
+		return getResults(resultResponse, "search", request);
 	}
 
 	@RequestMapping(value = "search", method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody
 	Map<String, Object> searchJSON(HttpServletRequest request, HttpServletResponse response) {
 		SearchResultResponse resultResponse = getSearchResults(getSearchRequest(null, request));
-		return getResults(resultResponse, "search");
+		return getResults(resultResponse, "search", request);
 	}
 
 	@RequestMapping(value = "search", method = RequestMethod.GET)
@@ -170,14 +170,14 @@ public class SearchController extends AbstractSearchController {
 	Map<String, Object> listJSON(@PathVariable("pid") String pid, HttpServletRequest request,
 			HttpServletResponse response) {
 		SearchResultResponse resultResponse = getSearchResults(getListRequest(pid, request));
-		return getResults(resultResponse, "list");
+		return getResults(resultResponse, "list", request);
 	}
 
 	@RequestMapping(value = "list", method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody
 	Map<String, Object> listJSON(HttpServletRequest request, HttpServletResponse response) {
 		SearchResultResponse resultResponse = getSearchResults(getListRequest(collectionsPid.getPid(), request));
-		return getResults(resultResponse, "list");
+		return getResults(resultResponse, "list", request);
 	}
 
 	@RequestMapping(value = "list", method = RequestMethod.GET, produces = "text/html")
@@ -196,7 +196,8 @@ public class SearchController extends AbstractSearchController {
 		return searchRequest;
 	}
 
-	private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod) {
+	private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
+			HttpServletRequest request) {
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
 		List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
 		Map<String, Object> results = new HashMap<>();
@@ -209,6 +210,15 @@ public class SearchController extends AbstractSearchController {
 		results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
 		results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
 		results.put("queryMethod", queryMethod);
+		results.put("onyen", GroupsThreadStore.getUsername());
+
+		String email = request.getHeader("mail");
+		if (email != null) {
+			if (email.endsWith("_UNC")) {
+				email = email.substring(0, email.length() - 4);
+			}
+			results.put("email", email);
+		}
 
 		if (resp.getSelectedContainer() != null) {
 			results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
