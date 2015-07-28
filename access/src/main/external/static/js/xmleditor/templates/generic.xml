@@ -10,15 +10,15 @@
     </mods:role>
   </mods:name>
   <mods:originInfo>
-    <mods:dateIssued/>
+    <mods:dateIssued encoding="iso8601" />
   </mods:originInfo>
   <mods:subject>
-    <mods:topic/>
-    <mods:geographic/>
+    <mods:topic authority="" />
+    <mods:geographic authority="" />
   </mods:subject>
   <mods:note></mods:note>
   <mods:language>
-    <mods:languageTerm type="code"/>
+    <mods:languageTerm authority="iso639-2b" type="code"/>
   </mods:language>
   <mods:typeOfResource>text</mods:typeOfResource>
   <mods:genre/>
