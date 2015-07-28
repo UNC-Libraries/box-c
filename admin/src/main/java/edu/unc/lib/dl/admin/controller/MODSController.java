@@ -144,7 +144,7 @@ public class MODSController extends AbstractSwordController {
 	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET, produces = {"text/xml; charset=UTF-8"})
 	public @ResponseBody
 	String getMods(@PathVariable("pid") String pid) {
-		String mods = null;
+		String mods = "";
 		String dataUrl = swordUrl + "em/" + pid + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE;
 
 		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
@@ -169,10 +169,7 @@ public class MODSController extends AbstractSwordController {
 				if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST || method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
 					// Ensure that the object actually exists
 					PID existingPID = tripleStoreQueryService.verify(new PID(pid));
-					if (existingPID != null) {
-						// MODS doesn't exist, so pass back an empty record.
-						mods = "<mods:mods xmlns:mods=\"http://www.loc.gov/mods/v3\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"></mods:mods>";
-					} else {
+					if (existingPID == null) {
 						throw new Exception("Unable to retrieve MODS.  Object " + pid + " does not exist in the repository.");
 					}
 				} else {
