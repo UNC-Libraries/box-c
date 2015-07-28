@@ -101,6 +101,7 @@ public class DepositEmailHandler {
 		}
 		data.put("ingestedObjects", status.get(DepositField.ingestedObjects.name()));
 		data.put("uuid", status.get(DepositField.uuid.name()));
+		data.put("fileName", status.get(DepositField.fileName.name()));
 		
 		// execute template, address and send
 		String html = htmlTemplate.execute(data);
@@ -111,9 +112,9 @@ public class DepositEmailHandler {
 			String addy = status.get(DepositField.depositorEmail.name());
 			message.addTo(addy);
 			if (error) {
-				message.setSubject("CDR deposit error");
+				message.setSubject("CDR deposit error: " + status.get(DepositField.fileName.name()));
 			} else {
-				message.setSubject("CDR deposit complete");
+				message.setSubject("CDR deposit complete: " + status.get(DepositField.fileName.name()));
 			}
 			message.setFrom(getFromAddress());
 			message.setText(text, html);
