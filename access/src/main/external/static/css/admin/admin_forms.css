@@ -172,3 +172,64 @@
 #edit_label_form label {
 	width: 135px;
 }
+
+/** Edit Description */
+#xml_editor {
+	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
+	font-size: 14px;
+	background-color: #fff;
+}
+
+#xml_editor .xml_node li {
+	text-indent: 0px;
+	margin-left: 0px;
+}
+
+.templating {
+	margin-left: 0;
+	font-size: 15px;
+}
+
+.template-form .ui-dialog-titlebar {
+	margin: 0;
+}
+
+.template-form.ui-dialog {
+	padding: 0;
+}
+
+.template-form .fa {
+	font-size: 37px;
+	float: left;
+	margin-right: 10px;
+	margin-bottom: 5px;
+	vertical-align: top;
+}
+
+.template-form :focus {
+	outline: 0;
+}
+
+.template-form .ui-dialog-buttonpane {
+	margin: 0;
+}
+
+.ui-dialog.template-form .ui-button {
+	margin: 0px;
+	background: transparent linear-gradient(to bottom, rgb(114, 170, 195), rgb(62, 141, 176)) repeat scroll 0% 0%;
+	border: medium none #3E8DB0;
+	color: white;
+	padding: 4px 8px;
+	border-radius: 0;
+	margin-right: 6px;
+	font-size: 14px;
+}
+
+.template-form .ui-button-text-only .ui-button-text {
+	padding: 0;
+}
+
+.template-form .ui-dialog-title {
+	font-size: 18px;
+	margin: 0;
+}

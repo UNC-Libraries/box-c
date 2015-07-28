@@ -34,7 +34,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		var vocabTerms = data.vocabTerms;
 		
 		var containerPath = pathTemplate({
-			objectPath : resultObject.objectPath.entries,
+			objectPath : resultObject.objectPath? resultObject.objectPath.entries : [],
 			queryMethod : 'list',
 			filterParams : "",
 			skipLast : false
@@ -115,6 +115,21 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
 				xmlUploadPath : "/admin/describe/" + resultObject.id
 			},
+			templateOptions : {
+				templatePath: '../../static/js/xmleditor/templates/',
+				templates: [
+					{ filename: 'mods.xml', title: "Blank", description: 'An empty MODS document', icon_class: 'fa fa-file-o' },
+					{ filename: 'generic.xml', title: "Generic Object", description: 'Generic MODS template prepopulated with common fields', icon_class: 'fa fa-file-text-o' }
+				],
+				cancelFunction: function() {
+					var parentId = "";
+					if (resultObject.ancestorPath) {
+						parentId = resultObject.ancestorPath[resultObject.ancestorPath.length - 1];
+						parentId = parentId.substring(parentId.indexOf(',') + 1);
+					}
+					window.location.href = "/admin/list/" + parentId;
+				}
+			},
 			libPath : "../../static/js/xmleditor/lib/",
 			menuEntries: menuEntries,
 			enforceOccurs: false,
@@ -136,7 +151,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				};
 				
 				if (jqXHR.status === 0) {
-					alert('Not connect.\n Verify Network.');
+					alert('Could not connect.\n Verify Network.');
 				} else if (jqXHR.status == 404) {
 					alert('Requested page not found. [404]');
 				} else if (jqXHR.status == 500) {			
