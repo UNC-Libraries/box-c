@@ -6,4 +6,4 @@ script: mvn test -pl access-common,access,admin,deposit,fcrepo-cdr-fesl,fcrepo-c
 sudo: false
 cache:
   directories:
-    - '$HOME/.m2/repository'
+    - "$HOME/.m2/repository"
