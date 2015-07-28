@@ -118,7 +118,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			templateOptions : {
 				templatePath: '../../static/js/xmleditor/templates/',
 				templates: [
-					{ filename: 'mods.xml', title: "Blank", description: 'An empty MODS document', icon_class: 'fa fa-file-text-o' }
+					{ filename: 'mods.xml', title: "Blank", description: 'An empty MODS document', icon_class: 'fa fa-file-o' },
+					{ filename: 'generic.xml', title: "Generic Object", description: 'Generic MODS template prepopulated with common fields', icon_class: 'fa fa-file-text-o' }
 				]
 			},
 			libPath : "../../static/js/xmleditor/lib/",
