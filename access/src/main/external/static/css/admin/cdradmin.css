@@ -383,13 +383,6 @@ h1 {
 	border-bottom: 1px solid #DFEBF1;
 }
 
-/* Description editor */
-#xml_editor {
-	font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;
-	font-size: 14px;
-	background-color: #fff;
-}
-
 /* Invalid vocab */
 .vocab_results table {
 	width: 100%;
