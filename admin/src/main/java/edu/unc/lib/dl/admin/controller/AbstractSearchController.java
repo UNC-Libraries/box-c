@@ -46,6 +46,7 @@ public class AbstractSearchController extends AbstractSolrSearchController {
 			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.VERSION.name(),
 			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.CONTENT_TYPE.name(),
 			SearchFieldKeys.CONTENT_STATUS.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.TIMESTAMP.name(),
+			SearchFieldKeys.ANCESTOR_PATH.name(),
 			SearchFieldKeys.IS_PART.name(), SearchFieldKeys.ROLLUP_ID.name());
 
 	@Override
@@ -59,9 +60,12 @@ public class AbstractSearchController extends AbstractSolrSearchController {
 
 		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+		
+		List<BriefObjectMetadata> objects = resultResponse.getResultList();
+		queryLayer.getChildrenCounts(objects, searchRequest);
 
 		// Add tags
-		for (BriefObjectMetadata record : resultResponse.getResultList()) {
+		for (BriefObjectMetadata record : objects) {
 			for (TagProvider provider : this.tagProviders) {
 				provider.addTags(record, accessGroups);
 			}
