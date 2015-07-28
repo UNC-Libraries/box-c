@@ -93,7 +93,7 @@ $.widget( "xml.xmlEditor", {
 		templateOptions : {
 			templatePath : false,
 			templates : [],
-			cancelTemplate : false
+			cancelFunction : false
 		},
 
 		// Function triggered after uploading XML document, to interpret if the response was successful or not.  If upload failed, an error message should be returned.
@@ -4917,6 +4917,13 @@ XMLTemplates.prototype.createChooseTemplate = function() {
  */
 XMLTemplates.prototype.createDialog = function() {
     var self = this;
+    var buttons = {};
+    if (self.editor.options.templateOptions.cancelFunction) {
+        buttons["Cancel"] = $.proxy(self.editor.options.templateOptions.cancelFunction, self);
+    }
+    buttons["Choose"] = function() {
+        self.processForm();
+    };
 
     this.form.dialog({
         autoOpen: true,
@@ -4924,23 +4931,7 @@ XMLTemplates.prototype.createDialog = function() {
         height: 350,
         width: 500,
         modal: true,
-        buttons: {
-            Choose : function() {
-                self.processForm();
-            },
-            Cancel : function() {
-                $(this).dialog("close");
-
-                var default_template = self.editor.options.templateOptions.cancelTemplate;
-
-                if (default_template) {
-                    self.loadSelectedTemplate(default_template);
-                } else {
-                   history.go(-1);
-                   self.editor.loadSchema(self.editor.options.schema);
-                }
-            }
-        }
+        buttons: buttons
     });
 };
 
@@ -5029,11 +5020,11 @@ XMLTemplates.prototype.focusTemplate = function() {
     // Focus selected template
     this.form.on('keydown click', '.templating', function(e) {
 
-        e.preventDefault();
         var key = e.which;
         var number_of_forms, base_element, current, form_id, next_element;
 
         if (key === 1 || key === 9) {
+            e.preventDefault();
             number_of_forms = $('.templating').length;
 
             // Left click, select the clicked target

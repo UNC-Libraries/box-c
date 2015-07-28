@@ -34,7 +34,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		var vocabTerms = data.vocabTerms;
 		
 		var containerPath = pathTemplate({
-			objectPath : resultObject.objectPath.entries,
+			objectPath : resultObject.objectPath? resultObject.objectPath.entries : [],
 			queryMethod : 'list',
 			filterParams : "",
 			skipLast : false
@@ -120,7 +120,15 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				templates: [
 					{ filename: 'mods.xml', title: "Blank", description: 'An empty MODS document', icon_class: 'fa fa-file-o' },
 					{ filename: 'generic.xml', title: "Generic Object", description: 'Generic MODS template prepopulated with common fields', icon_class: 'fa fa-file-text-o' }
-				]
+				],
+				cancelFunction: function() {
+					var parentId = "";
+					if (resultObject.ancestorPath) {
+						parentId = resultObject.ancestorPath[resultObject.ancestorPath.length - 1];
+						parentId = parentId.substring(parentId.indexOf(',') + 1);
+					}
+					window.location.href = "/admin/list/" + parentId;
+				}
 			},
 			libPath : "../../static/js/xmleditor/lib/",
 			menuEntries: menuEntries,
