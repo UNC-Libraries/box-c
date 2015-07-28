@@ -3515,6 +3515,11 @@ h1 {
 	background-color: #fff;
 }
 
+#xml_editor .xml_node li {
+	text-indent: 0px;
+	margin-left: 0px;
+}
+
 .templating {
 	margin-left: 0;
 	font-size: 15px;
