@@ -5765,10 +5765,12 @@ define('ResubmitPackageForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 	
 	DepositMonitor.prototype.renderJobType = function(typeConfig) {
 		$(".monitor_job." + typeConfig.name).remove();
-		var results = typeConfig.results;
-		for (var index in results) {
-			var selected = this.detailsType && results[index].uuid == this.detailsType.id;
-			var result = results[index];
+		var results = _.sortBy(_.values(typeConfig.results), function(result) { return parseInt(result.submitTime, 10) });
+		var length = results.length;
+		for (var i = 0; i < length; i++) {
+			var selected = this.detailsType && results[i].uuid == this.detailsType.id;
+			var result = results[i];
+			
 			if ("currentJob" in result) {
 				var currentJob = result.currentJob;
 				
