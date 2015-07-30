@@ -14,7 +14,7 @@
 /static.tar.gz
 /puppet.tar.gz
 .idea
-access/src/main/external/static/js/cdr-admin.js
-access/src/main/external/static/css/cdr_admin.css
-access/src/main/external/static/js/cdr-access.js
-access/src/main/external/static/css/cdr_access.css
+static/js/cdr-admin.js
+static/css/cdr_admin.css
+static/js/cdr-access.js
+static/css/cdr_access.css
