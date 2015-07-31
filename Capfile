@@ -32,8 +32,8 @@ SOLRLIB = FileList[
   "oai4solr/oai2-plugin/target/oai2-plugin-4.1.jar"
 ]
 
-file "static.tar.gz" => FileList["access/src/main/external/static/**/*"] do |t|
-  sh "export COPYFILE_DISABLE=1; tar -cvzf #{t.name} -C access/src/main/external/static ."
+file "static.tar.gz" => FileList["static/**/*"] do |t|
+  sh "export COPYFILE_DISABLE=1; tar -cvzf #{t.name} -C static ."
 end
 
 desc "Remove temporary files"
