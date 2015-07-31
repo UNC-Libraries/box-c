@@ -125,7 +125,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		// Reference the content file as the data file
 		try {
 			model.add(primaryResource, dprop(model, stagingLocation),
-					DepositConstants.DATA_DIR + "/" + UriUtils.encodeUri(contentFile.getName(), "UTF-8"));
+					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			log.error("fail to encode filepath {}", contentFile.getName(), e);
 		}
