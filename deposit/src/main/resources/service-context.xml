@@ -291,6 +291,11 @@
 		<property name="stages" ref="stages" />
 	</bean>
 
+	<bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob"
+		scope="prototype">
+		<property name="stages" ref="stages" />
+	</bean>
+
 	<bean id="ValidateRdfGraph" class="edu.unc.lib.deposit.validate.ValidateRdfGraph"
 		scope="prototype">
 	</bean>
