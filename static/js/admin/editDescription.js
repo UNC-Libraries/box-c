@@ -198,7 +198,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 				terms = terms.sort();
 				editorOptions["elementUpdated"] = function(event) {
 					if (event.action == "render" && this.objectType.localName == "affiliation") {
-						this.textInput.autocomplete({
+						this.getTextInputs().autocomplete({
 							source : terms,
 							minLength : 0
 						});
