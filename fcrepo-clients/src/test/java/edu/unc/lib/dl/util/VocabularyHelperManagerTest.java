@@ -17,16 +17,17 @@ package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.indexValidTerms;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.replaceInvalidTerms;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.warnInvalidTerms;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -34,18 +35,23 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
@@ -151,14 +157,26 @@ public class VocabularyHelperManagerTest {
 		helper.setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
 		helper.setPrefix(VOCAB_TYPE);
 
-		when(queryService.fetchBySubjectAndPredicate(any(PID.class), anyString())).thenReturn(
-				Arrays.asList(VOCAB_TYPE + "|term"));
+		Document relsDoc = new Document()
+			.addContent(new Element("RDF", JDOMNamespaceUtil.RDF_NS)
+			.addContent(new Element("Description", JDOMNamespaceUtil.RDF_NS)
+			.addContent(new Element(invalidTerm.getPredicate(), invalidTerm.getNamespace()))
+			.setText(VOCAB_TYPE + "|term")));
+		
+		when(managementClient.getXMLDatastreamIfExists(any(PID.class), eq(RELS_EXT.getName())))
+			.thenReturn(new DatastreamDocument(relsDoc, "2015-07-29"));
 
 		Element doc = mock(Element.class);
 		manager.updateInvalidTermsRelations(new PID(ITEM_PID), doc);
 
-		verify(managementClient, never()).purgeLiteralStatement(any(PID.class), anyString(), anyString(), anyString());
-
-		verify(managementClient).addLiteralStatement(any(PID.class), anyString(), anyString(), anyString());
+		ArgumentCaptor<Document> captor = ArgumentCaptor.forClass(Document.class);
+		verify(managementClient).modifyDatastream(any(PID.class), eq(RELS_EXT.getName()),
+				anyString(), anyString(), captor.capture());
+		
+		Document modified = captor.getValue();
+		List<Element> invTerms = modified.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS)
+			.getChildren(invalidTerm.getPredicate(), invalidTerm.getNamespace());
+		
+		assertEquals("Incorrect number of invalid terms after update", 2, invTerms.size());
 	}
 }

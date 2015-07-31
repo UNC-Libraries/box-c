@@ -102,12 +102,28 @@
 		<entry key="ACL" value="RELS_EXT"/>
 	</util:map>
 	
-	<bean id="uipProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
+	<bean id="fedoraUIPProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="pipeline" ref="uipPipeline"/>
 		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
 		<property name="operationsMessageSender" ref="operationsMessageSender" />
+	</bean>
+	
+	<bean id="bulkMDPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
+		<property name="updateFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.update.MODSUIPFilter">
+					<property name="schematronValidator" ref="schematronValidator" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="cdrUIPProcessor" class="edu.unc.lib.dl.update.CDRMetadataUIPProcessor">
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="pipeline" ref="bulkMDPipeline"/>
 	</bean>
 	
 	<!-- SWORD config -->
@@ -177,7 +193,7 @@
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="uipProcessor" ref="uipProcessor"/>
+		<property name="uipProcessor" ref="fedoraUIPProcessor"/>
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>

@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.dl.util;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.replaceInvalidTerms;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
 
 import java.net.URI;
@@ -37,10 +39,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
@@ -196,57 +202,45 @@ public class VocabularyHelperManager {
 		if (helpers == null)
 			return;
 
-		String invalidTermPred = CDRProperty.invalidTerm.toString();
-		List<String> allExistingTerms = queryService.fetchBySubjectAndPredicate(pid, invalidTermPred);
-
-		// Decompose triple values and group terms by vocabulary prefix
-		Map<String, List<String>> termMap = new HashMap<>();
-		for (String term : allExistingTerms) {
-			String parts[] = term.split("\\|", 2);
-
-			List<String> terms = termMap.get(parts[0]);
-			if (terms == null) {
-				terms = new ArrayList<>();
-				termMap.put(parts[0], terms);
-			}
-
-			terms.add(term);
-		}
+		DatastreamDocument relsDs = managementClient.getXMLDatastreamIfExists(pid, Datastream.RELS_EXT.getName());
+		
+		Element descEl = relsDs.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		
+		// Remove all existing invalid term predicates
+		boolean termsChanged =
+				descEl.removeChildren(invalidTerm.getPredicate(), invalidTerm.getNamespace());
 
 		for (VocabularyHelper helper : helpers) {
-			List<String> existingTerms = termMap.get(helper.getInvalidTermPrefix());
-
 			Set<String> invalidTerms;
 			try {
 				invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
+				
+				if (invalidTerms != null && invalidTerms.size() > 0) {
+					termsChanged = true;
+					
+					for (String term : invalidTerms) {
+						Element invTermEl = new Element(invalidTerm.getPredicate(), invalidTerm.getNamespace());
+						invTermEl.setText(term);
+						descEl.addContent(invTermEl);
+					}
+				}
 			} catch (JDOMException e) {
 				log.error("Failed to extract invalid terms from {}", pid.getPid(), e);
 				continue;
 			}
-
-			if (existingTerms != null && invalidTerms.size() == existingTerms.size()
-					&& invalidTerms.containsAll(existingTerms)) {
-				continue;
-			}
-
-			if (existingTerms != null) {
-				// Remove any terms which are no longer present
-				List<String> removeTerms = new ArrayList<String>(existingTerms);
-				removeTerms.removeAll(invalidTerms);
-
-				for (String term : removeTerms) {
-					managementClient.purgeLiteralStatement(pid, invalidTermPred, term, null);
+		}
+		
+		// If any terms changed, then update RELS-EXT with optimistic locking
+		if (termsChanged) {
+			do {
+				try {
+					managementClient.modifyDatastream(pid, RELS_EXT.getName(), "Setting invalid vocabulary terms",
+							relsDs.getLastModified(), relsDs.getDocument());
+					return;
+				} catch (OptimisticLockException e) {
+					log.debug("Unable to update RELS-EXT for {}, retrying", pid);
 				}
-
-				// Calculate the set of newly invalid terms which need to be added
-				invalidTerms.removeAll(existingTerms);
-			}
-
-			if (invalidTerms.size() > 0) {
-				for (String term : invalidTerms) {
-					managementClient.addLiteralStatement(pid, invalidTermPred, term, null);
-				}
-			}
+			} while (true);
 		}
 	}
 
