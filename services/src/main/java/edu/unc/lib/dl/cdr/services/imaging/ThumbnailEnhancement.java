@@ -116,13 +116,13 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 						FOXMLJDOMUtil.getRelsExt(foxml));
 				{
 					String dsname = ContentModelHelper.Datastream.THUMB_SMALL.getName();
-					boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
+					boolean exists = service.getManagementClient().getDatastream(pid, dsname) != null;
 					createStoreThumb(dsIrodsPath, 64, 64, dsname, exists, thumbRels);
 				}
 
 				{
 					String dsname = ContentModelHelper.Datastream.THUMB_LARGE.getName();
-					boolean exists = FOXMLJDOMUtil.getDatastream(foxml, dsname) != null;
+					boolean exists = service.getManagementClient().getDatastream(pid, dsname) != null;
 					createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
 				}
 			}
