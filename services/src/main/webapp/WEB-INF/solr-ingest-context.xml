@@ -140,6 +140,7 @@
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
 		<property name="filters">
 			<list>
+				<ref bean="setDatastreamContentFilter" />
 				<ref bean="setDescriptiveMetadataFilter" />
 				<ref bean="setContentStatusFilter" />
 				<ref bean="setRelationsFilter" />
