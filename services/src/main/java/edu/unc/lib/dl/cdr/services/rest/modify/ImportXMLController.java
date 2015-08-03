@@ -36,12 +36,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.update.CDRMetadataBulkUIP;
-import edu.unc.lib.dl.update.UIPException;
-import edu.unc.lib.dl.update.UIPProcessor;
-import edu.unc.lib.dl.update.UpdateException;
+import edu.unc.lib.dl.cdr.services.processing.BulkMetadataUpdateConductor;
 
 /**
  * Controller which accepts CDR bulk metadata update packages and begins update operations
@@ -54,7 +50,7 @@ public class ImportXMLController {
 	private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
 	
 	@Autowired
-	private UIPProcessor cdrUIPProcessor;
+	private BulkMetadataUpdateConductor bulkConductor;
 	private Path dataPath;
 	
 	@PostConstruct
@@ -74,48 +70,12 @@ public class ImportXMLController {
 			emailAddress = GroupsThreadStore.getUsername() + "@email.unc.edu";
 		}
 		
-		ImportRunnable runnable = new ImportRunnable(emailAddress, GroupsThreadStore.getUsername(),
+		bulkConductor.add(emailAddress, GroupsThreadStore.getUsername(),
 				GroupsThreadStore.getGroups(), importFile);
-
-		new Thread(runnable).start();
-		
 		
 		result.put("message", "Import of metadata has begun, " + emailAddress
 				+ " will be emailed when the update completes");
 		
 		return result;
-	}
-	
-	private class ImportRunnable implements Runnable {
-		private final String email;
-		private final String username;
-		private final AccessGroupSet groups;
-		private final File importFile;
-
-		@Override
-		public void run() {
-			try {
-				GroupsThreadStore.storeGroups(groups);
-				CDRMetadataBulkUIP bulkUIP = new CDRMetadataBulkUIP(email, username, groups,
-						importFile);
-				
-				cdrUIPProcessor.process(bulkUIP);
-				
-				// Delete the import file if it was successful
-				importFile.delete();
-			} catch (UpdateException | UIPException e) {
-				log.error("Failed to update metadata for {}", username, e);
-			} finally {
-				GroupsThreadStore.clearStore();
-			}
-		}
-
-		public ImportRunnable(String email, String username, AccessGroupSet groups, File importFile) {
-			this.email = email;
-			this.username = username;
-			this.groups = groups;
-			this.importFile = importFile;
-		}
-		
 	}
 }
