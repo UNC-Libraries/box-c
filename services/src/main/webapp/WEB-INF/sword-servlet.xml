@@ -120,7 +120,7 @@
 		</property>
 	</bean>
 	
-	<bean id="cdrUIPProcessor" class="edu.unc.lib.dl.update.CDRMetadataUIPProcessor">
+	<bean id="bulkUIPProcessor" class="edu.unc.lib.dl.update.BulkMetadataUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="pipeline" ref="bulkMDPipeline"/>

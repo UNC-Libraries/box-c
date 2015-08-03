@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.update.CDRMetadataBulkUIP;
+import edu.unc.lib.dl.update.BulkMetadataUIP;
 import edu.unc.lib.dl.update.UIPException;
 import edu.unc.lib.dl.update.UIPProcessor;
 import edu.unc.lib.dl.update.UpdateException;
@@ -53,7 +53,7 @@ public class BulkMetadataUpdateJob implements Runnable {
 	public void run() {
 		try {
 			GroupsThreadStore.storeGroups(groups);
-			CDRMetadataBulkUIP bulkUIP = new CDRMetadataBulkUIP(email, username, groups,
+			BulkMetadataUIP bulkUIP = new BulkMetadataUIP(email, username, groups,
 					importFile);
 			
 			uipProcessor.process(bulkUIP);

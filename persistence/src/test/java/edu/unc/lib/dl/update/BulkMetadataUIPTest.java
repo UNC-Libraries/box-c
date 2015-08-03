@@ -32,17 +32,17 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
  * @author bbpennel
  * @date Jul 14, 2015
  */
-public class CDRMetadataBulkUIPTest {
+public class BulkMetadataUIPTest {
 
 	@Test
 	public void test () throws Exception {
 		File importFile = new File("src/test/resources/md_import.xml");
 		
-		CDRMetadataBulkUIP uip = new CDRMetadataBulkUIP("", "", new AccessGroupSet(),
+		BulkMetadataUIP uip = new BulkMetadataUIP("", "", new AccessGroupSet(),
 				importFile);
 		
 		//String next = uip.getNextUpdate();
-		CDRMetadataImportUIP next = uip.getNextUpdate();
+		BulkMetadataPartUIP next = uip.getNextUpdate();
 		assertNotNull(next);
 		assertEquals("Did not retrieve the correct object update pid",
 				"uuid:76240153-300b-4e90-9c55-94c64f4a24de", next.getPID().getPid());

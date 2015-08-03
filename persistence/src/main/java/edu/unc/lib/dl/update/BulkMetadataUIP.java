@@ -51,8 +51,8 @@ import edu.unc.lib.dl.util.PremisEventLogger;
  * @author bbpennel
  * @date Jul 30, 2015
  */
-public class CDRMetadataBulkUIP extends UIPImpl {
-	private static final Logger log = LoggerFactory.getLogger(CDRMetadataBulkUIP.class);
+public class BulkMetadataUIP extends UIPImpl {
+	private static final Logger log = LoggerFactory.getLogger(BulkMetadataUIP.class);
 
 	private PID currentPid;
 	private final XMLOutputFactory xmlOutput;
@@ -73,7 +73,7 @@ public class CDRMetadataBulkUIP extends UIPImpl {
 		ROOT, IN_BULK, IN_OBJECT, IN_CONTENT;
 	}
 	
-	public CDRMetadataBulkUIP(String emailAddress, String user, AccessGroupSet groups,
+	public BulkMetadataUIP(String emailAddress, String user, AccessGroupSet groups,
 			File importFile) throws UIPException {
 		super(new PID(UUID.randomUUID().toString()), user, UpdateOperation.REPLACE);
 		
@@ -88,7 +88,7 @@ public class CDRMetadataBulkUIP extends UIPImpl {
 		}
 	}
 
-	public CDRMetadataImportUIP getNextUpdate() throws UpdateException {
+	public BulkMetadataPartUIP getNextUpdate() throws UpdateException {
 		QName contentOpening = null;
 		long countOpenings = 0;
 		XMLEventWriter xmlWriter = null;
@@ -179,7 +179,7 @@ public class CDRMetadataBulkUIP extends UIPImpl {
 								xmlWriter = null;
 								Document dsDoc = new SAXBuilder()
 										.build(new ByteArrayInputStream(contentWriter.toString().getBytes()));
-								return new CDRMetadataImportUIP(currentPid, user, UpdateOperation.REPLACE,
+								return new BulkMetadataPartUIP(currentPid, user, UpdateOperation.REPLACE,
 										currentDs, lastModified, dsDoc);
 							} else {
 								// Store all of the content from the incoming document

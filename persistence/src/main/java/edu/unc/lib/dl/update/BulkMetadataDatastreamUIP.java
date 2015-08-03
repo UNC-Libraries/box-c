@@ -23,7 +23,7 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  * @date Jul 13, 2015
  */
-public class CDRMetadataImportUIP extends MetadataUIP {
+public class BulkMetadataPartUIP extends MetadataUIP {
 	private String lastModified;
 	
 	/**
@@ -31,7 +31,7 @@ public class CDRMetadataImportUIP extends MetadataUIP {
 	 * @param user
 	 * @param operation
 	 */
-	public CDRMetadataImportUIP(PID pid, String user, UpdateOperation operation,
+	public BulkMetadataPartUIP(PID pid, String user, UpdateOperation operation,
 			String datastream, String lastModified, Document content) {
 		super(pid, user, operation);
 		this.lastModified = lastModified;

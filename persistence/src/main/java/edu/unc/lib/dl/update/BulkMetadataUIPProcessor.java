@@ -38,9 +38,9 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
  * @author bbpennel
  * @date Jul 21, 2015
  */
-public class CDRMetadataUIPProcessor implements UIPProcessor {
+public class BulkMetadataUIPProcessor implements UIPProcessor {
 	
-	private static Logger log = LoggerFactory.getLogger(CDRMetadataUIPProcessor.class);
+	private static Logger log = LoggerFactory.getLogger(BulkMetadataUIPProcessor.class);
 	
 	private DigitalObjectManager digitalObjectManager;
 	private ManagementClient managementClient;
@@ -48,15 +48,15 @@ public class CDRMetadataUIPProcessor implements UIPProcessor {
 
 	@Override
 	public void process(UpdateInformationPackage uip) throws UpdateException, UIPException {
-		if (!(uip instanceof CDRMetadataBulkUIP)) {
+		if (!(uip instanceof BulkMetadataUIP)) {
 			throw new UIPException("Incorrect UIP class, found " + uip.getClass().getName() + ", expected "
-					+ CDRMetadataBulkUIP.class.getName());
+					+ BulkMetadataUIP.class.getName());
 		}
 		
-		CDRMetadataBulkUIP bulkUIP = (CDRMetadataBulkUIP) uip;
+		BulkMetadataUIP bulkUIP = (BulkMetadataUIP) uip;
 		
 		try {
-			CDRMetadataImportUIP singleUIP;
+			BulkMetadataPartUIP singleUIP;
 			while ((singleUIP = bulkUIP.getNextUpdate()) != null) {
 				
 				for (java.util.Map.Entry<String, Element> entry : singleUIP.getIncomingData().entrySet()) {
