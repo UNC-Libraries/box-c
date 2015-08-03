@@ -16,6 +16,8 @@
 		<p class="error_message"><label>Error:</label> <%= data.errorMessage %></p>
 	<% } %>
 	
+	<p><label>File:</label> <%= data.fileName %></p>
+	
 	<p><label>Submitter:</label> <%= data.depositorName %></p>
 	
 	<p><label>Destination:</label> <a href="/admin/list/<%= data.containerId %>"><%= data.containerId %></a></p>
