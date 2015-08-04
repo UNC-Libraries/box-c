@@ -59,6 +59,7 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraAccessControlService;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
@@ -454,7 +455,7 @@ public class DigitalObjectManagerMoveTest {
 		
 		// Second attempt to get the source RELS-EXT will return null to trigger rollback
 		when (managementClient.getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName())))
-			.thenReturn(dsDoc).thenReturn(null).thenReturn(dsDoc);
+			.thenReturn(dsDoc).thenThrow(new FedoraException("")).thenReturn(dsDoc);
 
 		try {
 			digitalMan.move(moving, destPID, "user", "");

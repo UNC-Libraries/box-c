@@ -110,6 +110,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
+	private static int RELS_EXT_RETRIES = 10;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -896,7 +897,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			
 			DatastreamDocument sourceRelsExtResp = null;
-			for (int tries = 10; tries > 0; tries--) {
+			for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
 				try {
 					sourceRelsExtResp = managementClient.getXMLDatastreamIfExists(source, RELS_EXT.getName());
 					break;
@@ -978,7 +979,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 */
 	private void removeChildren(PID container, Collection<PID> children, boolean replaceWithMarkers)
 			throws FedoraException, IngestException {
-		int tries = 10;
+		int tries = RELS_EXT_RETRIES;
 		removeRelsExt: do {
 			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
 			if (relsExtResp == null) {
@@ -1061,7 +1062,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 */
 	private void addChildren(PID container, List<PID> moving, Collection<PID> reordered) throws FedoraException,
 			IngestException {
-		int tries = 10;
+		int tries = RELS_EXT_RETRIES;
 		updateRelsExt: do {
 			try {
 				DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
@@ -1144,7 +1145,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @throws FedoraException
 	 */
 	private void cleanupRemovedChildren(PID container, List<PID> children) throws IngestException, FedoraException {
-		int tries = 10;
+		int tries = RELS_EXT_RETRIES;
 
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
