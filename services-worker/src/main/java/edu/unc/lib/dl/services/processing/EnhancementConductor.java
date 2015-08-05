@@ -17,28 +17,14 @@ public class EnhancementConductor implements MessageConductor, WorkerListener {
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancementConductor.class);
 	
 	private net.greghaines.jesque.client.Client jesqueClient;
-	private WorkerPool workerPool;
 	private String queueName;
 	
 	public void setJesqueClient(net.greghaines.jesque.client.Client jesqueClient) {
 		this.jesqueClient = jesqueClient;
 	}
-
-	public void setWorkerPool(WorkerPool workerPool) {
-		this.workerPool = workerPool;
-	}
 	
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
-	}
-	
-	public void init() {
-		workerPool.getWorkerEventEmitter().addListener(this);
-		workerPool.run();
-	}
-	
-	public void destroy() {
-		workerPool.end(true);
 	}
 	
 	public void add(ActionMessage actionMessage) {

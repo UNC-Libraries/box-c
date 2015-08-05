@@ -41,7 +41,6 @@
 			<list>
 				<ref bean="propertiesURI"/>
 				<value>classpath:cdr-services.properties</value>
-				<value>classpath:scheduled-events.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="false"/>

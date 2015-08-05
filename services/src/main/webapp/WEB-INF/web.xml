@@ -21,7 +21,6 @@
 		<param-value>
 			/WEB-INF/service-context.xml
 			/WEB-INF/solr-search-context.xml
-			/WEB-INF/solr-ingest-context.xml
 			/WEB-INF/sword-servlet.xml
 			/WEB-INF/rest-servlet.xml
 		</param-value>

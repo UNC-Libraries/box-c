@@ -27,33 +27,14 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateConductor.class);
 	
 	private net.greghaines.jesque.client.Client jesqueClient;
-	private WorkerPool workerPool;
 	private String queueName;
-	private long beforeExecuteDelay = 50;
 	
 	public void setJesqueClient(net.greghaines.jesque.client.Client jesqueClient) {
 		this.jesqueClient = jesqueClient;
 	}
-
-	public void setWorkerPool(WorkerPool workerPool) {
-		this.workerPool = workerPool;
-	}
 	
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
-	}
-
-	public void setBeforeExecuteDelay(long beforeExecuteDelay) {
-		this.beforeExecuteDelay = beforeExecuteDelay;
-	}
-	
-	public void init() {
-		workerPool.getWorkerEventEmitter().addListener(this);
-		workerPool.run();
-	}
-	
-	public void destroy() {
-		workerPool.end(true);
 	}
 	
 	public void offer(String pid, IndexingActionType action) {
@@ -78,7 +59,7 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 		}
 		
 		Job job = new Job(SolrUpdateJob.class.getName(), pid, action, children);
-		jesqueClient.delayedEnqueue(queueName, job, System.currentTimeMillis() + beforeExecuteDelay);
+		jesqueClient.enqueue(queueName, job);
 	}
 	
 	@Override
