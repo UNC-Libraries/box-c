@@ -99,7 +99,7 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 			if (JMSMessageUtil.FedoraActions.PURGE_OBJECT.equals(action)) {
 				this.offer(message.getTargetID(), IndexingActionType.DELETE_SOLR_TREE);
 			} else if (JMSMessageUtil.FedoraActions.INGEST.equals(action)) {
-				this.offer(message.getTargetID(), IndexingActionType.RECURSIVE_ADD);
+				this.offer(message.getTargetID(), IndexingActionType.ADD);
 			} else if (JMSMessageUtil.FedoraActions.MODIFY_OBJECT.equals(action)) {
 				if (!((FedoraEventMessage) message).getArgument("fedora-types:label").equals("null")) {
 					this.offer(message.getTargetID(), IndexingActionType.UPDATE_DESCRIPTION);
