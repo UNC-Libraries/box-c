@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.util.Arrays;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -30,16 +32,17 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.processing.MessageDirector;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 @Controller
 public class IndexingController {
 	private static final Logger log = LoggerFactory.getLogger(IndexingController.class);
-	
+
 	@Autowired
-	private MessageDirector messageDirector;
+	private OperationsMessageSender operationsMessageSender;
 	@Autowired
 	private AccessControlService accessControlService;
 
@@ -53,6 +56,8 @@ public class IndexingController {
 	@RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
 	public void reindex(@PathVariable("id") String id, @RequestParam(value = "inplace", required = false) Boolean inplace,
 			HttpServletResponse response) {
+		PID pid = new PID(id);
+		
 		if (!hasPermission(id)) {
 			response.setStatus(401);
 			return;
@@ -60,10 +65,10 @@ public class IndexingController {
 
 		if (inplace == null || inplace) {
 			log.info("Reindexing " + id + ", inplace reindex mode");
-			messageDirector.direct(new SolrUpdateRequest(id, IndexingActionType.RECURSIVE_REINDEX));
+			operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid), IndexingActionType.RECURSIVE_REINDEX);
 		} else {
 			log.info("Reindexing " + id + ", clean reindex mode");
-			messageDirector.direct(new SolrUpdateRequest(id, IndexingActionType.CLEAN_REINDEX));
+			operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid), IndexingActionType.CLEAN_REINDEX);
 		}
 	}
 	
@@ -76,13 +81,15 @@ public class IndexingController {
 	 */
 	@RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
 	public void reindex(@PathVariable("id") String id, HttpServletResponse response) {
+		PID pid = new PID(id);
+		
 		if (!hasPermission(id)) {
 			response.setStatus(401);
 			return;
 		}
 
 		log.info("Updating " + id);
-		messageDirector.direct(new SolrUpdateRequest(id, IndexingActionType.ADD));
+		operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid), IndexingActionType.ADD);
 	}
 
 	private boolean hasPermission(String id) {
@@ -94,8 +101,8 @@ public class IndexingController {
 		return groups.contains(AccessGroupConstants.ADMIN_GROUP);
 	}
 
-	public void setMessageDirector(MessageDirector messageDirector) {
-		this.messageDirector = messageDirector;
+	public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+		this.operationsMessageSender = operationsMessageSender;
 	}
 
 	public void setAccessControlService(AccessControlService accessControlService) {
