@@ -2,5 +2,5 @@ SELECT ?pid
 FROM <%1$s>
 WHERE {
 	?pid <http://cdr.unc.edu/definitions/acl#embargo-until> ?embargoUntil
-	FILTER (?embargoUntil > "%2$s"^^xsd:dateTime && ?embargoUntil <= "%3$s"^^xsd:dateTime)
+	FILTER (?embargoUntil <= "%2$s"^^xsd:dateTime)
 }
