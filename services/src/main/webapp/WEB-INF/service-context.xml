@@ -340,10 +340,9 @@
 	</bean>
 	
 	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
-		<property name="solrSearchService" ref="queryLayer" />
+		<property name="managementClient" ref="managementClient" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="active" value="true"/>
-		<property name="windowSizeHours" value="${scheduled.embargoUpdate.windowHours}" />
+		<property name="messageSender" ref="operationsMessageSender"/>
 	</bean>
 	
 	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.jmx.SolrJMXService">
@@ -390,7 +389,7 @@
 		</property>
 		<property name="autoStartup">
 			<value>true</value>
-        </property>
+		</property>
 		<property name="configLocation" value="classpath:quartz.properties"/>
 	</bean>
 	

@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.solr;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.embargoUntil;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,51 +25,60 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.cdr.services.Enhancement;
-import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
-import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
-import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.util.PremisEventLogger;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * Service which determines items that have exited their embargo period within the last window period.
+ * Service which clears all expired embargoes and triggers reindexing of impacted objects
  * 
  * @author bbpennel
- * 
  */
-public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
+public class EmbargoUpdateService {
 	private static final Logger LOG = LoggerFactory.getLogger(EmbargoUpdateService.class);
-	public static final String enhancementName = "Embargo Update";
+	
+	private TripleStoreQueryService tripleStoreQueryService;
+	private ManagementClient managementClient;
+	private OperationsMessageSender messageSender;
+	private static final String EMBARGO_USER = "embargo-update-service";
+	
+	private final String staleEmbargoQuery;
 
-	private Integer windowSizeHours;
-
-	public EmbargoUpdateService() {
-		windowSizeHours = 24;
+	public EmbargoUpdateService() throws IOException {
+		staleEmbargoQuery = IOUtils.toString(
+				this.getClass().getResourceAsStream("embargo-update-candidates.sparql"), "UTF-8");
 	}
 
 	public void updateEmbargoes() {
-		List<PID> candidates = this.findCandidateObjects(-1, 0);
-		if (candidates != null) {
-			for (PID candidate : candidates) {
-				getMessageDirector().direct(new SolrUpdateRequest(candidate.getPid(), IndexingActionType.RECURSIVE_ADD));
+		List<PID> candidates = this.findCandidateObjects();
+		LOG.info("Clearing {} expired embargoes", candidates.size());
+		
+		if (candidates != null && candidates.size() > 0) {
+			// Remove expired embargoes
+			for (PID pid : candidates) {
+				removeEmbargo(pid);
 			}
+			
+			// Trigger reindexing of newly unembargoed objects
+			messageSender.sendIndexingOperation(EMBARGO_USER,
+					candidates, IndexingActionType.UPDATE_ACCESS);
 		}
 	}
 
-	@Override
-	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) throws EnhancementException {
-		return null;
-	}
-
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	@Override
-	public List<PID> findCandidateObjects(int maxResults, int offset) {
+	private List<PID> findCandidateObjects() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);
@@ -74,70 +86,57 @@ public class EmbargoUpdateService extends AbstractSolrObjectEnhancementService {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		String windowEnd = formatter.format(calendar.getTime());
 
-		calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY) - windowSizeHours);
-		String windowStart = formatter.format(calendar.getTime());
+		// replace model URI and date tokens
+		String query = String.format(staleEmbargoQuery, tripleStoreQueryService.getResourceIndexModelUri(),
+				windowEnd);
 
-		String query = null;
-		try {
-			// replace model URI and date tokens
-			query = super.readFileAsString("embargo-update-candidates.sparql");
-			query = String.format(query, this.getTripleStoreQueryService().getResourceIndexModelUri(), windowStart,
-					windowEnd);
-
-			List<PID> expiringEmbargoes = new ArrayList<PID>();
-			List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query).get("results"))
-					.get("bindings");
-			for (Map binding : bindings) {
-				expiringEmbargoes.add(new PID((String) ((Map) binding.get("pid")).get("value")));
-			}
-			return expiringEmbargoes;
-		} catch (IOException e) {
-			LOG.error("Failed to retrieve candidates.", e);
+		List<PID> expiringEmbargoes = new ArrayList<>();
+		List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results"))
+				.get("bindings");
+		for (Map binding : bindings) {
+			expiringEmbargoes.add(new PID((String) ((Map) binding.get("pid")).get("value")));
 		}
-
-		return null;
+		
+		return expiringEmbargoes;
+	}
+	
+	private void removeEmbargo(PID pid) {
+		while (true) {
+			try {
+				DatastreamDocument ds = managementClient.getXMLDatastreamIfExists(pid, RELS_EXT.getName());
+				Element descEl = ds.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+				String embargo = descEl.getChildTextTrim(embargoUntil.getPredicate(), embargoUntil.getNamespace());
+				descEl.removeChildren(embargoUntil.getPredicate(), embargoUntil.getNamespace());
+				
+				managementClient.modifyDatastream(pid, RELS_EXT.getName(), "Clearing expired embargo",
+						ds.getLastModified(), ds.getDocument());
+				
+				// Record an event indicating that an embargo expired for this object
+				PremisEventLogger logger = new PremisEventLogger(EMBARGO_USER);
+				Element event = logger.logEvent(PremisEventLogger.Type.MIGRATION,
+						"Embargo expiration", pid);
+				PremisEventLogger.addDetailedOutcome(event, "success",
+						"Expired an embargo which ended " + embargo, null);
+				managementClient.writePremisEventsToFedoraObject(logger, pid);
+				return;
+			} catch (OptimisticLockException e) {
+				LOG.debug("Failed to get optimistic lock on {}, retrying", pid);
+			} catch (FedoraException e) {
+				LOG.error("Failed to clear embargo on {}", pid, e);
+				return;
+			}
+		}
 	}
 
-	@Override
-	public int countCandidateObjects() throws EnhancementException {
-		return 0;
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 
-	@Override
-	public Enhancement<Element> getEnhancement(EnhancementMessage pid) {
-		return null;
+	public void setManagementClient(ManagementClient managementClient) {
+		this.managementClient = managementClient;
 	}
 
-	@Override
-	public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException {
-		return false;
-	}
-
-	@Override
-	public boolean isApplicable(EnhancementMessage pid) {
-		return true;
-	}
-
-	@Override
-	public boolean isStale(PID pid) {
-		return false;
-	}
-
-	public Integer getWindowSizeHours() {
-		return windowSizeHours;
-	}
-
-	public void setWindowSizeHours(Integer windowSizeHours) {
-		this.windowSizeHours = windowSizeHours;
-	}
-
-	@Override
-	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-		return null;
-	}
-
-	@Override
-	public String getName() {
-		return enhancementName;
+	public void setMessageSender(OperationsMessageSender messageSender) {
+		this.messageSender = messageSender;
 	}
 }
