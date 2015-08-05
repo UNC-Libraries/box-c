@@ -38,6 +38,7 @@ import edu.unc.lib.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
+import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -510,6 +511,11 @@ public class DepositSupervisor implements WorkerListener {
 			if (!successfulJobs.contains(ValidateMODS.class.getName())) {
 				return makeJob(ValidateMODS.class, depositUUID);
 			}
+		}
+
+		// Validate file availability
+		if (!successfulJobs.contains(ValidateFileAvailabilityJob.class.getName())) {
+			return makeJob(ValidateFileAvailabilityJob.class, depositUUID);
 		}
 
 		// Virus Scan
