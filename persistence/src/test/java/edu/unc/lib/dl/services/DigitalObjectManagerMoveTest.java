@@ -32,7 +32,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,6 +44,7 @@ import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -68,6 +68,7 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream.Header;
 import edu.unc.lib.dl.fedora.types.Property;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 /**
@@ -381,10 +382,16 @@ public class DigitalObjectManagerMoveTest {
 
 	@Test
 	public void rollbackNoProblemsTest() throws Exception {
-		oneSourceTest();
+		// Create a document for the source which has no removedChildren
+		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
+		Document doc = mock(Document.class);
+		when(dsDoc.getDocument()).thenReturn(doc);
+		when(doc.getRootElement()).thenReturn(
+				new Element("RDF", JDOMNamespaceUtil.RDF_NS)
+				.addContent(new Element("Description", JDOMNamespaceUtil.RDF_NS)));
+		when(managementClient.getXMLDatastreamIfExists(any(PID.class), anyString()))
+				.thenReturn(dsDoc);
 		
-		reset(managementClient);
-
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 		digitalMan.rollbackMove(source1PID, moving);
 

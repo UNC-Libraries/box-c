@@ -111,6 +111,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
 	private static int RELS_EXT_RETRIES = 10;
+	private static long RELS_EXT_RETRY_DELAY = 250L;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -895,20 +896,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	public void rollbackMove(PID source, List<PID> moving) throws IngestException {
 
 		try {
-			
-			DatastreamDocument sourceRelsExtResp = null;
-			for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
-				try {
-					sourceRelsExtResp = managementClient.getXMLDatastreamIfExists(source, RELS_EXT.getName());
-					break;
-				} catch (NotFoundException e) {
-					log.debug("Could not find RELS-EXT during rollback, retrying ", e);
-				}
-			}
-			if (sourceRelsExtResp == null) {
+			DatastreamDocument sourceRelsExtResp;
+			try {
+				sourceRelsExtResp = getRELSEXTWithRetries(source);
+			} catch (IngestException e) {
 				log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
 				return;
 			}
+			
 			Document sourceRelsExt = sourceRelsExtResp.getDocument();
 			Set<PID> removedChildren = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
 
@@ -966,6 +961,23 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		return childContainerMap;
 	}
+	
+	private DatastreamDocument getRELSEXTWithRetries(PID pid) throws IngestException, FedoraException {
+		for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
+			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(pid, RELS_EXT.getName());
+			if (relsExtResp == null) {
+				log.debug("Could not find RELS-EXT for {}, retrying", pid);
+				try {
+					Thread.sleep(RELS_EXT_RETRY_DELAY);
+				} catch (InterruptedException e) {
+					break;
+				}
+			} else {
+				return relsExtResp;
+			}
+		}
+		throw new IngestException("Unable to retrieve RELS-EXT for " + pid);
+	}
 
 	/**
 	 * Remove children from the provided list within the specified container. If replaceWithMarkers is true, then instead
@@ -979,17 +991,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 */
 	private void removeChildren(PID container, Collection<PID> children, boolean replaceWithMarkers)
 			throws FedoraException, IngestException {
-		int tries = RELS_EXT_RETRIES;
+
 		removeRelsExt: do {
-			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
-			if (relsExtResp == null) {
-				if (tries-- == 0) {
-					throw new IngestException("Unable to retrieve RELS-EXT for " + container + ", aborting move operation");
-				}
-				log.debug("Could not find RELS-EXT while removing children from {}, retrying", container);
-				continue;
-			}
-			
+			DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
@@ -1062,19 +1066,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 */
 	private void addChildren(PID container, List<PID> moving, Collection<PID> reordered) throws FedoraException,
 			IngestException {
-		int tries = RELS_EXT_RETRIES;
+
 		updateRelsExt: do {
 			try {
-				DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
-				if (relsExtResp == null) {
-					if (tries-- == 0) {
-						throw new IngestException("Unable to retrieve RELS-EXT for " + container
-								+ ", aborting move operation");
-					}
-					log.debug("Could not find RELS-EXT while adding children to {}, retrying", container);
-					continue;
-				}
-				
+				DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
 				Document relsExt = relsExtResp.getDocument();
 
 				Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
@@ -1145,20 +1140,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @throws FedoraException
 	 */
 	private void cleanupRemovedChildren(PID container, List<PID> children) throws IngestException, FedoraException {
-		int tries = RELS_EXT_RETRIES;
 
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
-			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(container, RELS_EXT.getName());
-			if (relsExtResp == null) {
-				if (tries-- == 0) {
-					throw new IngestException("Unable to retrieve RELS-EXT for " + container
-							+ ", aborting move operation");
-				}
-				log.debug("Could not find RELS-EXT while cleaning up children from {}, retrying", container);
-				continue;
-			}
-			
+			DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
