@@ -60,6 +60,8 @@ public class BulkMetadataUIP extends UIPImpl {
 	private DocumentState state = DocumentState.ROOT;
 	private final String emailAddress;
 	private final AccessGroupSet groups;
+	private final File importFile;
+	private final boolean existingUpdate;
 	
 	private final static String BULK_MD_TAG = "bulkMetadata";
 	private final static String OBJECT_TAG = "object";
@@ -73,12 +75,16 @@ public class BulkMetadataUIP extends UIPImpl {
 		ROOT, IN_BULK, IN_OBJECT, IN_CONTENT;
 	}
 	
-	public BulkMetadataUIP(String emailAddress, String user, AccessGroupSet groups,
+	public BulkMetadataUIP(String pid, String emailAddress, String user, AccessGroupSet groups,
 			File importFile) throws UIPException {
-		super(new PID(UUID.randomUUID().toString()), user, UpdateOperation.REPLACE);
+		super(new PID(pid == null? UUID.randomUUID().toString() : pid), user, UpdateOperation.REPLACE);
+		
+		existingUpdate = pid != null;
 		
 		this.emailAddress = emailAddress;
 		this.groups = groups;
+		this.importFile = importFile;
+		
 		XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
 		xmlOutput = XMLOutputFactory.newInstance();
 		try {
@@ -88,7 +94,11 @@ public class BulkMetadataUIP extends UIPImpl {
 		}
 	}
 
-	public BulkMetadataPartUIP getNextUpdate() throws UpdateException {
+	public BulkMetadataDatastreamUIP getNextUpdate() throws UpdateException {
+		return seekNextUpdate(null, null);
+	}
+	
+	public BulkMetadataDatastreamUIP seekNextUpdate(PID resumePid, String resumeDs) throws UpdateException {
 		QName contentOpening = null;
 		long countOpenings = 0;
 		XMLEventWriter xmlWriter = null;
@@ -96,6 +106,9 @@ public class BulkMetadataUIP extends UIPImpl {
 		
 		String currentDs = null;
 		String lastModified = null;
+		
+		boolean resumeMode = resumePid != null;
+		boolean foundResumptionPoint = false;
 		
 		try {
 			try {
@@ -147,9 +160,14 @@ public class BulkMetadataUIP extends UIPImpl {
 												+ currentPid);
 									}
 									
+									foundResumptionPoint = resumeMode
+											&& currentPid.equals(resumePid) && currentDs.equals(resumeDs);
+									
 									state = DocumentState.IN_CONTENT;
-									contentWriter = new StringWriter();
-									xmlWriter = xmlOutput.createXMLEventWriter(contentWriter);
+									if (!resumeMode) {
+										contentWriter = new StringWriter();
+										xmlWriter = xmlOutput.createXMLEventWriter(contentWriter);
+									}
 								}
 							} else if (e.isEndElement()) {
 								// Closing object tag
@@ -175,15 +193,21 @@ public class BulkMetadataUIP extends UIPImpl {
 							// Finished with opening tags and the update tag is ending, done with content.
 							if (countOpenings == 0 && e.isEndElement() && UPDATE_TAG.equals(e.asEndElement().getName().getLocalPart())) {
 								state = DocumentState.IN_OBJECT;
-								xmlWriter.close();
-								xmlWriter = null;
-								Document dsDoc = new SAXBuilder()
-										.build(new ByteArrayInputStream(contentWriter.toString().getBytes()));
-								return new BulkMetadataPartUIP(currentPid, user, UpdateOperation.REPLACE,
-										currentDs, lastModified, dsDoc);
+								if (!resumeMode) {
+									xmlWriter.close();
+									xmlWriter = null;
+									Document dsDoc = new SAXBuilder()
+											.build(new ByteArrayInputStream(contentWriter.toString().getBytes()));
+									return new BulkMetadataDatastreamUIP(currentPid, user, UpdateOperation.REPLACE,
+											currentDs, lastModified, dsDoc);
+								} else if (foundResumptionPoint) {
+									return null;
+								}
 							} else {
-								// Store all of the content from the incoming document
-								xmlWriter.add(e);
+								if (!resumeMode) {
+									// Store all of the content from the incoming document
+									xmlWriter.add(e);
+								}
 							}
 				
 							break;
@@ -217,5 +241,21 @@ public class BulkMetadataUIP extends UIPImpl {
 	public PremisEventLogger getEventLogger() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public String getEmailAddress() {
+		return emailAddress;
+	}
+
+	public AccessGroupSet getGroups() {
+		return groups;
+	}
+
+	public File getImportFile() {
+		return importFile;
+	}
+
+	public boolean isExistingUpdate() {
+		return existingUpdate;
 	}
 }

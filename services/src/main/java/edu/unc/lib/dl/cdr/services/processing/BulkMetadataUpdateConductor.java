@@ -16,7 +16,10 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.worker.Worker;
@@ -26,6 +29,10 @@ import net.greghaines.jesque.worker.WorkerPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import edu.unc.lib.dl.util.RedisWorkerConstants;
 
 /**
  * @author bbpennel
@@ -37,9 +44,14 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 	private net.greghaines.jesque.client.Client jesqueClient;
 	private WorkerPool workerPool;
 	private String queueName;
-
+	private JedisPool jedisPool;
+	
 	public void add(String email, String username, Collection<String> groups, File importFile) {
-		Job job = new Job(BulkMetadataUpdateJob.class.getName(), email, username, groups,
+		add(null, email, username, groups, importFile);
+	}
+	
+	public void add(String updateId, String email, String username, Collection<String> groups, File importFile) {
+		Job job = new Job(BulkMetadataUpdateJob.class.getName(), updateId, email, username, groups,
 				importFile.getAbsolutePath());
 		jesqueClient.enqueue(queueName, job);
 	}
@@ -57,6 +69,21 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 		}
 	}
 	
+	public void resumeIncompleteUpdates() {
+		Jedis jedis = jedisPool.getResource();
+		Set<String> incompleteUpdates = jedis.keys(RedisWorkerConstants.BULK_UPDATE_PREFIX + "*");
+		
+		for (String incomplete : incompleteUpdates) {
+			Map<String, String> updateValues = jedis.hgetAll(incomplete);
+
+			String updateId = incomplete.split(":", 2)[1];
+			
+			add(updateId, updateValues.get("email"), updateValues.get("user"),
+					Arrays.asList(updateValues.get("groups").split(" ")),
+					new File(updateValues.get("filePath")));
+		}
+	}
+	
 	public void setJesqueClient(net.greghaines.jesque.client.Client jesqueClient) {
 		this.jesqueClient = jesqueClient;
 	}
@@ -69,9 +96,15 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 		this.queueName = queueName;
 	}
 	
+	public void setJedisPool(JedisPool jedisPool) {
+		this.jedisPool = jedisPool;
+	}
+
 	public void init() {
 		workerPool.getWorkerEventEmitter().addListener(this);
 		workerPool.run();
+		
+		resumeIncompleteUpdates();
 	}
 	
 	public void destroy() {

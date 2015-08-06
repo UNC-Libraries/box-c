@@ -124,6 +124,7 @@
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="managementClient" ref="managementClient"/>
 		<property name="pipeline" ref="bulkMDPipeline"/>
+		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 	
 	<!-- SWORD config -->

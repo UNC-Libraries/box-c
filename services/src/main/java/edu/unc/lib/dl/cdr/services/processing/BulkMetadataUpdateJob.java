@@ -36,32 +36,24 @@ public class BulkMetadataUpdateJob implements Runnable {
 	private static final Logger log = LoggerFactory.getLogger(BulkMetadataUpdateJob.class);
 	
 	private UIPProcessor uipProcessor;
-	private final String email;
-	private final String username;
-	private final AccessGroupSet groups;
-	private final File importFile;
-
-	public BulkMetadataUpdateJob(String email, String username, Collection<String> groups, String importPath) {
-		this.email = email;
-		this.username = username;
-		this.groups = new AccessGroupSet();
-		this.groups.addAll(groups);
-		this.importFile = new File(importPath);
+	private final BulkMetadataUIP uip;
+	
+	public BulkMetadataUpdateJob(String updateId, String email, String username, Collection<String> groups,
+			String importPath) throws UIPException {
+		AccessGroupSet groupSet = new AccessGroupSet();
+		groupSet.addAll(groups);
+		
+		uip = new BulkMetadataUIP(updateId, email, username, groupSet, new File(importPath));
 	}
 	
 	@Override
 	public void run() {
 		try {
-			GroupsThreadStore.storeGroups(groups);
-			BulkMetadataUIP bulkUIP = new BulkMetadataUIP(email, username, groups,
-					importFile);
+			GroupsThreadStore.storeGroups(uip.getGroups());
 			
-			uipProcessor.process(bulkUIP);
-			
-			// Delete the import file if it was successful
-			importFile.delete();
+			uipProcessor.process(uip);
 		} catch (UpdateException | UIPException e) {
-			log.error("Failed to update metadata for {}", username, e);
+			log.error("Failed to update metadata for {}", uip.getUser(), e);
 		} finally {
 			GroupsThreadStore.clearStore();
 		}

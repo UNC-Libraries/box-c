@@ -8,6 +8,8 @@ public class RedisWorkerConstants {
 	public static final String INGESTS_UPLOADED_PREFIX = "ingests-uploaded:";
 	public static final String DEPOSIT_TO_JOBS_PREFIX = "deposit-to-jobs:";
 	public static final String JOB_STATUS_PREFIX = "job-status:";
+	public static final String BULK_UPDATE_PREFIX = "bulk-update:";
+	public static final String BULK_RESUME_PREFIX = "bulk-resume:";
 
 	public static enum DepositField {
 		uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
