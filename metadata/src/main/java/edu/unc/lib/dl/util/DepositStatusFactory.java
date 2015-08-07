@@ -2,9 +2,12 @@ package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_METRICS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +19,9 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 public class DepositStatusFactory {
+
+	private static SimpleDateFormat metricsDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
 	JedisPool jedisPool;
 
 	public JedisPool getJedisPool() {
@@ -177,6 +183,29 @@ public class DepositStatusFactory {
 	
 	public void fail(String depositUUID) {
 		fail(depositUUID, null);
+	}
+	
+	public void incrFailed() {
+		Jedis jedis = getJedisPool().getResource();
+		String date = metricsDateFormat.format(new Date());
+		jedis.hincrBy(DEPOSIT_METRICS_PREFIX+date, "failed", 1);
+		getJedisPool().returnResource(jedis);
+	}
+	
+	public void incrFailedJob(String className) {
+		incrFailed();
+
+		Jedis jedis = getJedisPool().getResource();
+		String date = metricsDateFormat.format(new Date());
+		jedis.hincrBy(DEPOSIT_METRICS_PREFIX+date, "failed-job:" + className, 1);
+		getJedisPool().returnResource(jedis);
+	}
+	
+	public void incrFinished() {
+		Jedis jedis = getJedisPool().getResource();
+		String date = metricsDateFormat.format(new Date());
+		jedis.hincrBy(DEPOSIT_METRICS_PREFIX+date, "finished", 1);
+		getJedisPool().returnResource(jedis);
 	}
 
 	/**

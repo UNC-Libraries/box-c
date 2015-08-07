@@ -390,9 +390,11 @@ public class DepositSupervisor implements WorkerListener {
 				if (t instanceof JobFailedException) {
 					jobStatusFactory.failed(jobUUID, t.getLocalizedMessage());
 					depositStatusFactory.fail(depositUUID, t.getLocalizedMessage());
+					depositStatusFactory.incrFailedJob(job.getClassName());
 				} else {
 					jobStatusFactory.failed(jobUUID);
 					depositStatusFactory.fail(depositUUID);
+					depositStatusFactory.incrFailed();
 				}
 				
 				depositEmailHandler.sendDepositResults(depositUUID);
@@ -566,6 +568,7 @@ public class DepositSupervisor implements WorkerListener {
 			c.end();
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
+			depositStatusFactory.incrFinished();
 			
 			depositEmailHandler.sendDepositResults(depositUUID);
 			depositMessageHandler.sendDepositMessage(depositUUID);
