@@ -211,13 +211,6 @@
 			<artifactId>jargon-core</artifactId>
 			<version>${jargon.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>commons-pool</groupId>
-			<artifactId>commons-pool</artifactId>
-			<version>1.5.5</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
 		<!-- 1.x distribution required by spring for the moment -->
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
@@ -229,18 +222,6 @@
 		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-mapper-asl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-core-asl</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-xc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>net.sf.saxon</groupId>
