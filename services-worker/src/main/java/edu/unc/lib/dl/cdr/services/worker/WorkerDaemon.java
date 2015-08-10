@@ -57,18 +57,27 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 		LOG.info("Destroying the services worker daemon");
 	}
 	
+	private static final String onEventLogMessage = "onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}";
+	
 	@Override
 	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
 		if (event == null || event == WorkerEvent.WORKER_POLL) {
 			return;
 		}
 		
-		LOG.info("onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}", new Object[] { event, worker, queue, job, runner, result, t });
-		
 		if (t != null) {
-			LOG.error("Worker error", t);
+			LOG.error("Throwable caused worker event " + event, t);
 		}
 		
+		Object[] params = new Object[] { event, worker, queue, job, runner, result, t };
+		
+		if (event == WorkerEvent.WORKER_ERROR || event == WorkerEvent.JOB_FAILURE) {
+			LOG.error(onEventLogMessage, params);
+		} else if (event == WorkerEvent.WORKER_START || event == WorkerEvent.WORKER_STOP) {
+			LOG.info(onEventLogMessage, params);
+		} else {
+			LOG.debug(onEventLogMessage, params);
+		}
 	}
 
 }

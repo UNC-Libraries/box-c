@@ -57,7 +57,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 	
 	private void applyService(ObjectEnhancementService service) throws EnhancementException {
 		while (true) {
-			LOG.debug("Applying service {} to object {}", service.getClass().getName(), message.getTargetID());
+			LOG.info("Applying service {} to object {}", service.getClass().getName(), message.getTargetID());
 
 			try {
 				service.getEnhancement(message).call();
