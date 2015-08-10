@@ -1,4 +1,4 @@
-package edu.unc.lib.dl.services.worker;
+package edu.unc.lib.dl.cdr.services.worker;
 
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.worker.Worker;
