@@ -17,11 +17,10 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jms="http://www.springframework.org/schema/jms"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
 		http://www.springframework.org/schema/util 
 		http://www.springframework.org/schema/util/spring-util.xsd
 		http://www.springframework.org/schema/context 
@@ -48,16 +47,6 @@
 	<bean id="swordPath" class="java.lang.String">
 		<constructor-arg
 			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
-	</bean>
-
-	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-		<property name="connectionFactory" ref="jmsFactory" />
-		<property name="defaultDestinationName" value="repository.updates" />
-		<property name="pubSubDomain" value="true" />
-	</bean>
-
-	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
-		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
 	
 	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
