@@ -115,6 +115,7 @@
 		<module>oai4solr/oai2-plugin</module>
 		<module>persistence</module>
 		<module>services</module>
+		<module>services-worker</module>
 		<module>solr-ingest</module>
 		<module>solr-search</module>
 		<module>sword-server</module>

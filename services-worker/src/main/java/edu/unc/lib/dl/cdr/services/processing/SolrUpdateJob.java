@@ -37,6 +37,7 @@ public class SolrUpdateJob implements Runnable {
 		try {
 			IndexingAction indexingAction = this.solrIndexingActionMap.get(updateRequest.getUpdateAction());
 			if (indexingAction != null) {
+				LOG.info("Performing action {} on object {}", updateRequest.getUpdateAction(), updateRequest.getTargetID());
 				indexingAction.performAction(updateRequest);
 			}
 		} catch (IndexingException e) {

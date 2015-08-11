@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2008 The University of North Carolina at Chapel Hill
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+	<context:annotation-config />
+	
+	<import resource="solr-ingest-context.xml"/>
+	<import resource="solr-search-context.xml"/>
+	
+	<bean name="propertiesURI" class="java.lang.System" factory-method="getProperty">
+		<constructor-arg index="0" value="server.properties.uri"/>
+		<!-- property name for properties URI location -->
+		<constructor-arg index="1" value="classpath:server.properties"/>
+		<!-- default location for testing -->
+	</bean>
+	
+	<bean name="workerPropertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="worker.properties.uri" />
+		<constructor-arg index="1" value="classpath:worker.properties"/>
+	</bean>
+	
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI"/>
+				<ref bean="workerPropertiesURI"/>
+				<value>classpath:cdr-services.properties</value>
+				<value>classpath:scheduled-events.properties</value>
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false"/>
+	</bean>
+
+	<bean id="tripleStoreQueryService"
+		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
+		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
+		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
+		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/>
+	</bean>
+	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+		init-method="init" destroy-method="destroy">
+		<property name="fedoraContextUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+		<property name="accessClient" ref="accessClient"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+	</bean>
+	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+		init-method="init" destroy-method="destroy">
+		<property name="fedoraContextUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+		<property name="accessClient" ref="accessClient"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="interceptors">
+			<list>
+				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
+			</list>
+		</property>
+	</bean>
+	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
+		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+	</bean>
+	
+	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+			<ref bean="tripleStoreQueryService" />
+		</property>
+		<property name="targetMethod">
+			<value>fetchByRepositoryPath</value>
+		</property>
+		<property name="arguments">
+			<list>
+				<value>/Collections</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init" destroy-method="destroy">
+		<property name="accessClient" ref="accessClient"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
+		<property name="threadGroupPrefix" value="Services"/>
+		<property name="serviceTimeout" value="${services.dataservice.timeout:12000}" />
+	</bean>
+
+	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
+		<constructor-arg value="${irods.host}"/>
+		<constructor-arg value="${irods.port}" type="int"/>
+		<constructor-arg value="${irods.services.username}"/>
+		<constructor-arg value="${irods.services.password}"/>
+		<constructor-arg value="/${irods.zone}/home/${irods.services.username}"/>
+		<constructor-arg value="${irods.zone}"/>
+		<constructor-arg value="${irods.default.resc}"/>
+	</bean> 
+
+	<bean id="fedoraIrodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
+		<constructor-arg value="${fedora.irods.host}"/>
+		<constructor-arg value="${fedora.irods.port}" type="int"/>
+		<constructor-arg value="${fedora.irods.username}"/>
+		<constructor-arg value="${fedora.irods.password}"/>
+		<constructor-arg value="/${fedora.irods.zone}/home/${fedora.irods.username}"/>
+		<constructor-arg value="${fedora.irods.zone}"/>
+		<constructor-arg value="${fedora.irods.default.resc}"/>
+	</bean> 
+	
+	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
+	
+	<!-- a pooling based JMS provider -->
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL"> 
+					<value>tcp://${jms.host}${jms.port}</value>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	
+	<!-- and this is the message listener container-->
+	<bean id="jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory"/>
+		<property name="destinationName" value="fedora.apim.update"/>
+		<property name="pubSubDomain" value="true"/>
+		<property name="messageListener" ref="servicesMessageListener" />
+		<property name="sessionTransacted" value="true"/>
+	</bean>
+	
+	<bean id="cdrJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+		<property name="connectionFactory" ref="jmsFactory"/>
+		<property name="destinationName" value="repository.updates"/>
+		<property name="pubSubDomain" value="true"/>
+		<property name="messageListener" ref="cdrServicesMessageListener" />
+		<property name="sessionTransacted" value="true"/>
+	</bean>  
+	
+	<util:list id="servicesList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.ObjectEnhancementService">
+		<ref bean="technicalMetadataEnhancementService"/>
+		<ref bean="imageEnhancementService"/>
+		<ref bean="thumbnailEnhancementService"/>
+		<ref bean="fullTextEnhancementService"/>
+		<ref bean="solrUpdateEnhancementService"/>
+	</util:list>
+	
+	<bean id="ApplyEnhancementServicesJob" class="edu.unc.lib.dl.cdr.services.processing.ApplyEnhancementServicesJob"
+		scope="prototype">
+		<property name="services" ref="servicesList"/>
+		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
+	</bean>
+	
+	<bean id="SolrUpdateJob" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateJob"
+		scope="prototype">
+		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
+	</bean>
+	
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="${redis.host:localhost}" />
+		<constructor-arg value="${redis.port:6379}" />
+		<constructor-arg value="2000" />
+		<constructor-arg>
+			<null />
+		</constructor-arg>
+		<constructor-arg value="resque" />
+		<constructor-arg value="0" />
+	</bean>
+	
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+		destroy-method="destroy">
+		<constructor-arg ref="poolConfig"/>
+		<constructor-arg type="String" value="${redis.host:localhost}" />
+		<constructor-arg type="int" value="${redis.port:6379}" />
+	</bean>
+	
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="15"/>
+		<property name="minIdle" value="2"/>
+		<property name="maxTotal" value="25"/>
+	</bean>
+
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
+		scope="prototype">
+		<constructor-arg ref="jesqueConfig" />
+		<constructor-arg ref="jedisPool" />
+	</bean>
+
+	<bean id="jobFactory" class="edu.unc.lib.dl.util.SpringJobFactory" />
+	
+	<bean id="workerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>solr-update</value>
+						<value>enhancement</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.num:3}" />
+	</bean>
+	
+	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor">
+		<property name="jesqueClient" ref="jesqueClient"/>
+		<property name="queueName" value="enhancement"/>
+	</bean>
+	
+	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor">
+		<property name="jesqueClient" ref="jesqueClient"/>
+		<property name="queueName" value="solr-update"/>
+	</bean>
+	
+	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
+		<ref bean="enhancementConductor"/>
+		<ref bean="solrUpdateConductor"/>
+	</util:list>
+	
+	<bean id="enhancementMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.EnhancementMessageFilter">
+		<property name="services" ref="servicesList"/>
+	</bean>
+	
+	<bean id="solrUpdateMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateMessageFilter">
+	</bean>
+	
+	<util:list id="messageFilterList" list-class="java.util.ArrayList" 
+		value-type="edu.unc.lib.dl.cdr.services.processing.MessageFilter">
+		<ref bean="enhancementMessageFilter"/>
+		<ref bean="solrUpdateMessageFilter"/>
+	</util:list>
+	
+	<bean id="messageDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
+		<property name="conductorsList" ref="messageConductorList"/>
+		<property name="filters" ref="messageFilterList"/>
+	</bean>
+	
+	<bean id="jmsMessageUtil" class="edu.unc.lib.dl.util.JMSMessageUtil">
+	</bean>
+	
+	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
+		<property name="messageDirector" ref="messageDirector"/>
+		<property name="messageClass">
+			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.CDREventMessage</value>
+		</property>
+	</bean>
+	
+	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
+		<property name="messageDirector" ref="messageDirector"/>
+		<property name="messageClass">
+			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.FedoraEventMessage</value>
+		</property>
+	</bean>
+	
+	<!-- Services -->
+	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"
+			init-method="init">
+		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService"
+			init-method="init">
+		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"
+			init-method="init">
+		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="fullTextEnhancementService" class="edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService"
+			init-method="init">
+		<property name="irodsAccount" ref="irodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"
+			init-method="init">
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="active" value="true"/>
+	</bean>
+	
+	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
+		<property name="managementClient" ref="managementClient" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="messageSender" ref="operationsMessageSender"/>
+	</bean>
+	
+	<!-- Scheduler -->
+	
+	<bean id="embargoJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="embargoUpdateService" />
+		<property name="targetMethod" value="updateEmbargoes" />
+	</bean>
+	
+	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="embargoJobDetail" />
+		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
+	</bean>
+	
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="embargoCronTrigger" />
+			</list>
+		</property>
+		<property name="autoStartup">
+			<value>true</value>
+		</property>
+		<property name="configLocation" value="classpath:quartz.properties"/>
+	</bean>
+
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
+
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
+
+	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
+		init-method="init">
+		<property name="aclEndpointUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/addons/fesl/" />
+		<property name="username" value="${fedora.appUser.username}" />
+		<property name="password" value="${fedora.appUser.password}" />
+	</bean>
+	
+	<!-- Fixity Log Service -->
+	
+	<bean id="fixityLogService" class="edu.unc.lib.dl.cdr.services.fixity.FixityLogService" init-method="init" destroy-method="destroy">
+		<property name="fixityLogTaskFactory" ref="fixityLogTaskFactory"/>
+		<property name="pollingIntervalSeconds" value="${fixity.pollingInterval.seconds}"/>
+	</bean>
+
+	<bean id="fixityLogTaskFactory" class="edu.unc.lib.dl.cdr.services.fixity.FixityLogTaskFactory">
+		<lookup-method name="createTask" bean="fixityLogTask"/>
+	</bean>
+
+	<bean id="fixityLogTask" class="edu.unc.lib.dl.cdr.services.fixity.FixityLogTask" scope="prototype">
+		<property name="irodsAccount" ref="fedoraIrodsAccount"/>
+		<property name="irodsFileSystem" ref="irodsFileSystem"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="resourceNames">
+			<bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToStringArray">
+        		<constructor-arg type="java.lang.String" value="${fixity.resourceNames}"/>
+   			</bean>
+		</property>
+		
+		<property name="staleIntervalSeconds" value="${fixity.staleInterval.seconds}"/>
+		<property name="objectLimit" value="${fixity.objectLimit}"/>
+		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
+	</bean>
+	
+	<util:map id="vocabHelperClassMap">
+		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
+	</util:map>
+	
+	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
+		<property name="helperClasses" ref="vocabHelperClassMap" />
+		<property name="collectionsPID" ref="collectionsPid" />
+	</bean>
+</beans>

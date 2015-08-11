@@ -18,11 +18,9 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:jms="http://www.springframework.org/schema/jms"
 	xmlns:util="http://www.springframework.org/schema/util"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/jms http://www.springframework.org/schema/jms/spring-jms-3.0.xsd
 		http://www.springframework.org/schema/util 
 		http://www.springframework.org/schema/util/spring-util.xsd">
 	
@@ -38,7 +36,6 @@
 			<list>
 				<ref bean="propertiesURI"/>
 				<value>classpath:cdr-services.properties</value>
-				<value>classpath:scheduled-events.properties</value>
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="false"/>
@@ -128,7 +125,7 @@
 	</bean> 
 	
 	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
-	
+  
 	<!-- a pooling based JMS provider -->
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
 		<property name="connectionFactory">
@@ -140,238 +137,24 @@
 		</property>
 	</bean>
 	
-	<!-- and this is the message listener container-->
-	<bean id="jmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-		<property name="connectionFactory" ref="jmsFactory"/>
-		<property name="destinationName" value="fedora.apim.update"/>
-		<property name="pubSubDomain" value="true"/>
-		<property name="messageListener" ref="servicesMessageListener" />
-		<property name="sessionTransacted" value="true"/>
-	</bean>
-	
-	<bean id="cdrJmsContainer" class="org.springframework.jms.listener.DefaultMessageListenerContainer">
-		<property name="connectionFactory" ref="jmsFactory"/>
-		<property name="destinationName" value="repository.updates"/>
-		<property name="pubSubDomain" value="true"/>
-		<property name="messageListener" ref="cdrServicesMessageListener" />
-		<property name="sessionTransacted" value="true"/>
-	</bean>  
-	
-	<util:list id="servicesList" list-class="java.util.ArrayList" 
-		value-type="edu.unc.lib.dl.cdr.services.ObjectEnhancementService">
-		<ref bean="technicalMetadataEnhancementService"/>
-		<ref bean="imageEnhancementService"/>
-		<ref bean="thumbnailEnhancementService"/>
-		<ref bean="fullTextEnhancementService"/>
-		<ref bean="solrUpdateEnhancementService"/>
-	</util:list>
-	
-	<bean id="ApplyEnhancementServicesJob" class="edu.unc.lib.dl.cdr.services.processing.ApplyEnhancementServicesJob"
-		scope="prototype">
-		<property name="services" ref="servicesList"/>
-		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
-	</bean>
-	
-	<bean id="SolrUpdateJob" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateJob"
-		scope="prototype">
-		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
-	</bean>
-	
-	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-		<constructor-arg value="${redis.host:localhost}" />
-		<constructor-arg value="${redis.port:6379}" />
-		<constructor-arg value="2000" />
-		<constructor-arg>
-			<null />
-		</constructor-arg>
-		<constructor-arg value="resque" />
-		<constructor-arg value="0" />
-	</bean>
-	
 	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
 		destroy-method="destroy">
 		<constructor-arg ref="poolConfig"/>
 		<constructor-arg type="String" value="${redis.host:localhost}" />
 		<constructor-arg type="int" value="${redis.port:6379}" />
 	</bean>
-	
+
 	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
 		<property name="maxIdle" value="15"/>
 		<property name="minIdle" value="2"/>
 		<property name="maxTotal" value="25"/>
 	</bean>
 
-	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
-		scope="prototype">
-		<constructor-arg ref="jesqueConfig" />
-		<constructor-arg ref="jedisPool" />
-	</bean>
-
-	<bean id="jobFactory" class="edu.unc.lib.dl.util.SpringJobFactory" />
-	
-	<bean id="enhancementWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
-		<constructor-arg name="workerFactory">
-			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
-				<constructor-arg name="config" ref="jesqueConfig" />
-				<constructor-arg name="queues">
-					<util:list>
-						<value>enhancement</value>
-					</util:list>
-				</constructor-arg>
-				<constructor-arg ref="jobFactory" />
-			</bean>
-		</constructor-arg>
-		<constructor-arg name="numWorkers" value="${services.workers.enhancement.num:3}" />
-	</bean>
-	
-	<bean id="solrUpdateWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
-		<constructor-arg name="workerFactory">
-			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
-				<constructor-arg name="config" ref="jesqueConfig" />
-				<constructor-arg name="queues">
-					<util:list>
-						<value>solr-update</value>
-					</util:list>
-				</constructor-arg>
-				<constructor-arg ref="jobFactory" />
-			</bean>
-		</constructor-arg>
-		<constructor-arg name="numWorkers" value="${services.workers.solrUpdate.num:3}" />
-	</bean>
-	
-	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor"
-		init-method="init" destroy-method="destroy">
-		<property name="jesqueClient" ref="jesqueClient"/>
-		<property name="workerPool" ref="enhancementWorkerPool"/>
-		<property name="queueName" value="enhancement"/>
-	</bean>
-	
-	<bean id="solrUpdateConductor" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateConductor"
-		init-method="init" destroy-method="destroy">
-		<property name="jesqueClient" ref="jesqueClient"/>
-		<property name="workerPool" ref="solrUpdateWorkerPool"/>
-		<property name="queueName" value="solr-update"/>
-		<property name="beforeExecuteDelay" value="${conductor.solr.beforeExecuteDelay}" />
-	</bean>
-	
-	<util:list id="messageConductorList" list-class="java.util.ArrayList" 
-		value-type="edu.unc.lib.dl.cdr.services.processing.MessageConductor">
-		<ref bean="enhancementConductor"/>
-		<ref bean="solrUpdateConductor"/>
-	</util:list>
-	
-	<bean id="enhancementMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.EnhancementMessageFilter">
-		<property name="services" ref="servicesList"/>
-	</bean>
-	
-	<bean id="solrUpdateMessageFilter" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateMessageFilter">
-	</bean>
-	
-	<util:list id="messageFilterList" list-class="java.util.ArrayList" 
-		value-type="edu.unc.lib.dl.cdr.services.processing.MessageFilter">
-		<ref bean="enhancementMessageFilter"/>
-		<ref bean="solrUpdateMessageFilter"/>
-	</util:list>
-	
-	<bean id="messageDirector" class="edu.unc.lib.dl.cdr.services.processing.MessageDirector">
-		<property name="conductorsList" ref="messageConductorList"/>
-		<property name="filters" ref="messageFilterList"/>
-	</bean>
-	
-	<bean id="jmsMessageUtil" class="edu.unc.lib.dl.util.JMSMessageUtil">
-	</bean>
-	
-	<bean id="cdrServicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="messageClass">
-			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.CDREventMessage</value>
-		</property>
-	</bean>
-	
-	<bean id="servicesMessageListener" class="edu.unc.lib.dl.cdr.services.processing.ServicesMessageListener">
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="messageClass">
-			<value type="java.lang.Class">edu.unc.lib.dl.cdr.services.model.FedoraEventMessage</value>
-		</property>
-	</bean>
-	
-	<!-- Services -->
-	<bean id="technicalMetadataEnhancementService" class="edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"
-			init-method="init">
-		<property name="irodsAccount" ref="irodsAccount"/>
-		<property name="irodsFileSystem" ref="irodsFileSystem"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="imageEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService"
-			init-method="init">
-		<property name="irodsAccount" ref="irodsAccount"/>
-		<property name="irodsFileSystem" ref="irodsFileSystem"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="thumbnailEnhancementService" class="edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"
-			init-method="init">
-		<property name="irodsAccount" ref="irodsAccount"/>
-		<property name="irodsFileSystem" ref="irodsFileSystem"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="fullTextEnhancementService" class="edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService"
-			init-method="init">
-		<property name="irodsAccount" ref="irodsAccount"/>
-		<property name="irodsFileSystem" ref="irodsFileSystem"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="solrUpdateEnhancementService" class="edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"
-			init-method="init">
-		<property name="solrSearchService" ref="queryLayer" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="embargoUpdateService" class="edu.unc.lib.dl.cdr.services.solr.EmbargoUpdateService">
-		<property name="managementClient" ref="managementClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="messageSender" ref="operationsMessageSender"/>
-	</bean>
-	
-	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.jmx.SolrJMXService">
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="messageJMXService" class="edu.unc.lib.dl.cdr.services.jmx.MessageJMXService">
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="services" ref="servicesList"/>
-	</bean>
-	
-	<!-- Scheduler -->
-	
-	<bean id="embargoJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-		<property name="targetObject" ref="embargoUpdateService" />
-		<property name="targetMethod" value="updateEmbargoes" />
-	</bean>
-	
 	<bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
 	
 	<bean id="rollbackMoveJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
 		<property name="targetObject" ref="rollbackMoveJob" />
 		<property name="targetMethod" value="rollbackAllFailed" />
-	</bean>
-	
-	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-		<property name="jobDetail" ref="embargoJobDetail" />
-		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
 	</bean>
 	
 	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
@@ -383,7 +166,6 @@
 	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
 		<property name="triggers">
 			<list>
-				<ref bean="embargoCronTrigger" />
 				<ref bean="moveRollbackTrigger" />
 			</list>
 		</property>
@@ -391,24 +173,6 @@
 			<value>true</value>
 		</property>
 		<property name="configLocation" value="classpath:quartz.properties"/>
-	</bean>
-	
-	<!-- JMX -->
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-		lazy-init="false">
-		<property name="beans">
-			<map>
-				<entry key="cdr-services:name=messageJMXService" value-ref="messageJMXService" />
-				<entry key="cdr-services:name=solrJMXService" value-ref="solrJMXService" />
-				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
-				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
-				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
-				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
-				<entry key="cdr-services:name=imageEnhancementService" value-ref="imageEnhancementService" />
-				<entry key="cdr-services:name=tripleStoreQueryService" value-ref="tripleStoreQueryService" />
-			</map>
-		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
 	</bean>
 
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
@@ -429,32 +193,6 @@
 		<property name="password" value="${fedora.appUser.password}" />
 	</bean>
 	
-	<!-- Fixity Log Service -->
-	
-	<bean id="fixityLogService" class="edu.unc.lib.dl.cdr.services.fixity.FixityLogService" init-method="init" destroy-method="destroy">
-		<property name="fixityLogTaskFactory" ref="fixityLogTaskFactory"/>
-		<property name="pollingIntervalSeconds" value="${fixity.pollingInterval.seconds}"/>
-	</bean>
-
-	<bean id="fixityLogTaskFactory" class="edu.unc.lib.dl.cdr.services.fixity.FixityLogTaskFactory">
-		<lookup-method name="createTask" bean="fixityLogTask"/>
-	</bean>
-
-	<bean id="fixityLogTask" class="edu.unc.lib.dl.cdr.services.fixity.FixityLogTask" scope="prototype">
-		<property name="irodsAccount" ref="fedoraIrodsAccount"/>
-		<property name="irodsFileSystem" ref="irodsFileSystem"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="resourceNames">
-			<bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToStringArray">
-        		<constructor-arg type="java.lang.String" value="${fixity.resourceNames}"/>
-   			</bean>
-		</property>
-		
-		<property name="staleIntervalSeconds" value="${fixity.staleInterval.seconds}"/>
-		<property name="objectLimit" value="${fixity.objectLimit}"/>
-		<property name="fixityLogPath" value="${log.dir}/fixity.log"/>
-	</bean>
-	
 	<util:map id="vocabHelperClassMap">
 		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
 	</util:map>
@@ -463,4 +201,5 @@
 		<property name="helperClasses" ref="vocabHelperClassMap" />
 		<property name="collectionsPID" ref="collectionsPid" />
 	</bean>
+  
 </beans>

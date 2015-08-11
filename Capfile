@@ -116,6 +116,16 @@ namespace :update do
       upload! t.prerequisites.first, "/var/deploy/deposit"
     end
   end
+  
+  desc "Update services worker"
+  task "services-worker" => "services-worker/target/services-worker.jar" do |t|
+    on roles(:web) do
+      execute :rm, "-rf", "/var/deploy/services-worker"
+      execute :mkdir, "-p", "/var/deploy/services-worker"
+      
+      upload! t.prerequisites.first, "/var/deploy/services-worker"
+    end
+  end
 
 end
 
@@ -126,6 +136,7 @@ task :update do
   invoke "update:lib"
   invoke "update:solrlib"
   invoke "update:deposit"
+  invoke "update:services-worker"
 end
 
 # Clean out Tomcat directories
@@ -176,7 +187,7 @@ end
 
 # Define individual service tasks (restart:tomcat, ...)
 
-SERVICES = [:deposit, :tomcat]
+SERVICES = [:deposit, :tomcat, "services-worker"]
 ACTIONS = [:start, :stop, :restart, :status]
 
 ACTIONS.each do |action|
@@ -213,6 +224,13 @@ namespace :tail do
   task :deposit do
     on roles(:web) do
       sudo :tail, "-f", "/opt/data/logs/deposit.log"
+    end
+  end
+  
+  desc "Watch services-worker.log"
+  task "services-worker" do
+    on roles(:web) do
+      sudo :tail, "-f", "/opt/data/logs/services-worker.log"
     end
   end
   
