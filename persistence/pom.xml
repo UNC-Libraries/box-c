@@ -190,5 +190,11 @@
 			<artifactId>staging-areas</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>com.samskivert</groupId>
+			<artifactId>jmustache</artifactId>
+			<version>1.9</version>
+			<type>jar</type>
+		</dependency>
 	</dependencies>
 </project>

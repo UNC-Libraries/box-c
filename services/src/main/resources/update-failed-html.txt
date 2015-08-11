@@ -1,0 +1,18 @@
+<html>
+<head>
+  <style>
+    span {
+      color: darkred;
+    }
+  </style>
+</head>
+<body>
+  <p>Update {{fileName}} was not performed due to {{problemCount}} validation problem(s).  Please address the issues and resubmit, or reply to this email for assistance</p>
+  
+  <ul>
+    {{#problems}}
+      <li>{{key}} - <span>{{value}}</li>
+    {{/problems}}
+  </ul>
+</body>
+</html>

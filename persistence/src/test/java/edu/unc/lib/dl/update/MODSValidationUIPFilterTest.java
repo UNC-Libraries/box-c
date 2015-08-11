@@ -59,12 +59,12 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
-public class MODSUIPFilterTest extends Assert {
-	private static Logger log = Logger.getLogger(MODSUIPFilterTest.class);
+public class MODSValidationUIPFilterTest extends Assert {
+	private static Logger log = Logger.getLogger(MODSValidationUIPFilterTest.class);
 
 	@Resource
 	private SchematronValidator schematronValidator;
-	private MODSUIPFilter filter;
+	private MODSValidationUIPFilter filter;
 
 	@Mock
 	private VocabularyHelperManager vocabManager;
@@ -75,7 +75,7 @@ public class MODSUIPFilterTest extends Assert {
 	public void init() {
 		initMocks(this);
 
-		filter = new MODSUIPFilter();
+		filter = new MODSValidationUIPFilter();
 
 		filter.setSchematronValidator(schematronValidator);
 
@@ -253,7 +253,7 @@ public class MODSUIPFilterTest extends Assert {
 
 	@Test
 	public void nullUIP() throws UIPException {
-		MODSUIPFilter filter = new MODSUIPFilter();
+		MODSValidationUIPFilter filter = new MODSValidationUIPFilter();
 		filter.doFilter(null);
 		// Passes if no exception
 	}

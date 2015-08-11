@@ -1,0 +1,61 @@
+<html>
+<head>
+  <style>
+    span {
+      color: darkred;
+    }
+  </style>
+</head>
+<body>
+  {{^issues}}
+    <h3>CDR Metadata update completed </h3>
+  {{/issues}}
+  {{#issues}}
+    <h3>CDR Metadata update completed with issues: {{fileName}}</h3>
+  {{/issues}}
+  <p>The XML metadata update you submitted has completed.  {{updatedCount}} object(s) were updated
+  {{#outdatedCount}}, {{outdatedCount}} were prevented from updating because they were out of date{{/outdatedCount}}
+  {{#skippedCount}}, {{skippedCount}} were skipped due to no update being required{{/skippedCount}}
+  {{#failedCount}}, {{failedCount}} failed to update due to errors{{/failedCount}}</p>
+
+  {{#outdatedCount}}
+    <h4>Out of date updates ({{outdatedCount}})</h4>
+    <p>Not updated due the record in the repository being more recent than the lastModified date in import file, meaning that the repository copy may be more up to date.</p>
+    <ul>
+      {{#outdated}}
+      <li>{{this}}</li>
+      {{/outdated}}
+    </ul>
+  {{/outdatedCount}}
+
+  {{#failedCount}}
+    <h4>Failed to update ({{failedCount}})</h4>
+    <p>Objects which could not be updated due to errors</p>
+    <ul>
+      {{#failed}}
+      <li>{{key}} - <span>{{value}}</span></li>
+      {{/failed}}
+    </ul>
+  {{/failedCount}}
+
+  {{#updatedCount}}
+    <h4>Updated ({{updatedCount}})</h4>
+    <p>Objects which were successfully updated</p>
+    <ul>
+      {{#updated}}
+      <li>{{this}}</li>
+      {{/updated}}
+    </ul>
+  {{/updatedCount}}
+
+  {{#skippedCount}}
+    <h4>Skipped updates ({{skippedCount}})</h4>
+    <p>The submitted document was not modified so no update was performed for the following objects.</p>
+    <ul>
+      {{#skipped}}
+      <li>{{this}}</li>
+      {{/skipped}}
+    </ul>
+  {{/skippedCount}}
+</body>
+</html>

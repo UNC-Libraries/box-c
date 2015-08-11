@@ -18,20 +18,33 @@ package edu.unc.lib.dl.update;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+
+import com.samskivert.mustache.Template;
+
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -49,8 +62,12 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	
 	private DigitalObjectManager digitalObjectManager;
 	private ManagementClient managementClient;
-	private UIPUpdatePipeline pipeline;
+	private UIPUpdatePipeline validationPipeline;
+	private UIPUpdatePipeline transformPipeline;
 	private JedisPool jedisPool;
+	private JavaMailSender mailSender;
+	private Template completeTemplate;
+	private Template failedTemplate;
 
 	@Override
 	public void process(UpdateInformationPackage uip) throws UpdateException, UIPException {
@@ -60,75 +77,136 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 		}
 		
 		BulkMetadataUIP bulkUIP = (BulkMetadataUIP) uip;
-		
-		if (bulkUIP.isExistingUpdate()) {
-			resume(bulkUIP);
-		} else {
-			// Store data related to this update in case it is interrupted
-			storeUpdateInformation(bulkUIP);
-		}
-		
-		// Wait for the repository to become available before proceeding with updates
-		while (!managementClient.isRepositoryAvailable()) {
-			try {
-				Thread.sleep(10000L);
-			} catch (InterruptedException e) {
-				return;
-			}
-		}
+		long start = System.currentTimeMillis();
 		
 		try {
+			if (bulkUIP.isExistingUpdate()) {
+				resume(bulkUIP);
+				log.info("Resuming metadata update {} by {}", bulkUIP.getOriginalFilename(), bulkUIP.getUser());
+			} else {
+				// Store data related to this update in case it is interrupted
+				storeUpdateInformation(bulkUIP);
+				log.info("Starting metadata update {} by {}", bulkUIP.getOriginalFilename(), bulkUIP.getUser());
+			}
+			
+			Map<String, String> failed = new HashMap<>();
+		
 			BulkMetadataDatastreamUIP singleUIP;
+			do {
+				try {
+					singleUIP = bulkUIP.getNextUpdate();
+					if (singleUIP == null) {
+						break;
+					}
+					
+					validationPipeline.processUIP(singleUIP);
+				} catch (XMLStreamException | JDOMException e) {
+					failed.put(bulkUIP.getCurrentPid().getPid(),
+							"Could not parse XML:   " + e.getMessage());
+					break;
+				} catch (UIPException e) {
+					failed.put(bulkUIP.getCurrentPid().getPid(),
+							"Invalid update:  " + e.getMessage());
+				}
+			} while (true);
+			
+			// If there were any validation problems, inform the user and end the update
+			if (failed.size() > 0) {
+				log.info("Metadata update {} by user {} failed due to {} problems",
+						new Object[] { bulkUIP.getOriginalFilename(), bulkUIP.getUser(), failed.size() });
+				sendValidationFailureEmail(bulkUIP, failed);
+				cleanup(bulkUIP);
+				return;
+			}
+			
+			// Wait for the repository to become available before proceeding with updates
+			while (!managementClient.isRepositoryAvailable()) {
+				try {
+					Thread.sleep(10000L);
+				} catch (InterruptedException e) {
+					return;
+				}
+			}
+			
+			// Reset the state of the package so as to start updating from the beginning
+			bulkUIP.reset();
+			
+			List<String> skipped = new ArrayList<>();
+			List<String> updated = new ArrayList<>();
+			List<String> outdated = new ArrayList<>();
+		
 			while ((singleUIP = bulkUIP.getNextUpdate()) != null) {
 				
 				for (java.util.Map.Entry<String, Element> entry : singleUIP.getIncomingData().entrySet()) {
-					pipeline.processUIP(singleUIP);
-					
-					// Check to see if the checksum of the new datastream matches the existing
-					edu.unc.lib.dl.fedora.types.Datastream datastream
-							= managementClient.getDatastream(singleUIP.getPID(), entry.getKey());
-					
-					// New datastream, create it
-					if (datastream == null) {
-						File contentFile = File.createTempFile("content", null);
-						try {
-							XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
-							try (FileOutputStream outStream = new FileOutputStream(contentFile)) {
-								xmlOutput.output(entry.getValue(), outStream);
-							}
-							
-							digitalObjectManager.addOrReplaceDatastream(singleUIP.getPID(),
-									Datastream.getDatastream(entry.getKey()), contentFile, "text/xml",
-									uip.getUser(), uip.getMessage());
-						} finally {
-							contentFile.delete();
-						}
-					} else {
-						Format formatForChecksum = Format.getCompactFormat();
-						formatForChecksum.setOmitDeclaration(false);
-						XMLOutputter checksumOutputter = new XMLOutputter(formatForChecksum);
+					try {
+						transformPipeline.processUIP(singleUIP);
 						
-						String incomingChecksum = DigestUtils.md5Hex(
-								checksumOutputter.outputString(entry.getValue().getDocument()).trim().replaceAll("\r\n", ""));
-						if (!incomingChecksum.equals(datastream.getChecksum())) {
-							XMLOutputter rawOutputter = new XMLOutputter(Format.getRawFormat());
-							// or the checksums don't match, so update
-							managementClient.modifyDatastream(singleUIP.getPID(), entry.getKey(), null,
-									singleUIP.getLastModified(), rawOutputter.outputString(entry.getValue()).getBytes("UTF-8"));
-							log.info("Updated {} for object {} during bulk update",
-									new Object[] { entry.getKey(), singleUIP.getPID().getPid()});
+						// Check to see if the checksum of the new datastream matches the existing
+						edu.unc.lib.dl.fedora.types.Datastream datastream
+								= managementClient.getDatastream(singleUIP.getPID(), entry.getKey());
+						
+						// New datastream, create it
+						if (datastream == null) {
+							File contentFile = File.createTempFile("content", null);
+							try {
+								XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
+								try (FileOutputStream outStream = new FileOutputStream(contentFile)) {
+									xmlOutput.output(entry.getValue(), outStream);
+								}
+								
+								digitalObjectManager.addOrReplaceDatastream(singleUIP.getPID(),
+										Datastream.getDatastream(entry.getKey()), contentFile, "text/xml",
+										uip.getUser(), uip.getMessage());
+								updated.add(singleUIP.getPID().getPid());
+							} finally {
+								contentFile.delete();
+							}
 						} else {
-							log.debug("Skipping update of {} because the content has not changed.");
+							// Updating existing, so check if the update is necessary
+							Format formatForChecksum = Format.getCompactFormat();
+							formatForChecksum.setOmitDeclaration(false);
+							XMLOutputter checksumOutputter = new XMLOutputter(formatForChecksum);
+							
+							String incomingChecksum = DigestUtils.md5Hex(
+									checksumOutputter.outputString(entry.getValue().getDocument())
+									.trim().replaceAll("\r\n", ""));
+							if (!incomingChecksum.equals(datastream.getChecksum())) {
+								XMLOutputter rawOutputter = new XMLOutputter(Format.getRawFormat());
+								// or the checksums don't match, so update
+								try {
+									managementClient.modifyDatastream(singleUIP.getPID(), entry.getKey(), null,
+											singleUIP.getLastModified(),
+											rawOutputter.outputString(entry.getValue()).getBytes("UTF-8"));
+									updated.add(singleUIP.getPID().getPid());
+								} catch (OptimisticLockException e) {
+									// Datastream on the server more recent than submitted copy, reject it
+									outdated.add(singleUIP.getPID().getPid());
+								}
+								log.info("Updated {} for object {} during bulk update",
+										new Object[] { entry.getKey(), singleUIP.getPID().getPid()});
+							} else {
+								log.debug("Skipping update of {} because the content has not changed.");
+								skipped.add(singleUIP.getPID().getPid());
+							}
 						}
+					} catch (UIPException | FedoraException e) {
+						log.error("Failed to perform update to {} as part of bulk update", singleUIP.getPID(), e);
+						failed.put(singleUIP.getPID().getPid(), e.getMessage());
 					}
 
 					// Store information about the last update completed so we can resume if interrupted
 					updateResumptionPoint(bulkUIP.getPID(), singleUIP);
 				}
 			}
+			
+			sendCompletedEmail(bulkUIP, updated, skipped, outdated, failed);
 			// Finalize the update and clean up the trash
 			cleanup(bulkUIP);
-		} catch (FedoraException | IOException e) {
+			
+			log.info("Completed metadata update {} by {} containing {} updates after {}ms", new Object[] {
+					bulkUIP.getOriginalFilename(), bulkUIP.getUser(), bulkUIP.getUpdateCount(),
+					(System.currentTimeMillis() - start) });
+		} catch (XMLStreamException | IOException | JDOMException e) {
 			throw new UpdateException("Failed to perform metadata update for user " + uip.getUser(), e);
 		} finally {
 			bulkUIP.close();
@@ -150,6 +228,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 		values.put("user", uip.getUser());
 		values.put("groups", uip.getGroups().toString());
 		values.put("filePath", uip.getImportFile().getAbsolutePath());
+		values.put("originalFilename", uip.getOriginalFilename());
 		jedis.hmset(RedisWorkerConstants.BULK_UPDATE_PREFIX + uip.getPID().getPid(), values);
 	}
 	
@@ -177,7 +256,12 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 		}
 		
 		// Move the update cursor past the last updated object
-		uip.seekNextUpdate(new PID(resumeValues.get("lastPid")), resumeValues.get("lastDatastream"));
+		try {
+			uip.seekNextUpdate(new PID(resumeValues.get("lastPid")), resumeValues.get("lastDatastream"));
+		} catch (Exception e) {
+			cleanup(uip);
+			throw new UpdateException("Failed to parse update package while resuming", e);
+		}
 	}
 	
 	/**
@@ -192,6 +276,77 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 		jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + pid);
 		
 		uip.getImportFile().delete();
+	}
+
+	public void sendCompletedEmail(BulkMetadataUIP uip, List<String> updated, List<String> skipped,
+			List<String> outdated, Map<String, String> failed) {
+		MimeMessage mimeMsg = mailSender.createMimeMessage();
+		try {
+			MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
+			
+			msg.setFrom("cdr@unc.edu");
+			msg.addTo(uip.getEmailAddress());
+			
+			Map<String, Object> data = new HashMap<>();
+			data.put("fileName", uip.getOriginalFilename());
+	
+			data.put("updatedCount", updated.size());
+			data.put("updated", updated);
+			
+			if (outdated.size() > 0) {
+				data.put("outdatedCount", outdated.size());
+				data.put("outdated", outdated);
+			}
+			
+			if (skipped.size() > 0) {
+				data.put("skippedCount", skipped.size());
+				data.put("skipped", skipped);
+			}
+			
+			if (failed.size() > 0) {
+				data.put("failedCount", failed.size());
+				data.put("failed", failed.entrySet());
+			}
+			
+			if (outdated.size() > 0 || failed.size() > 0) {
+				data.put("issues", true);
+				msg.setSubject("CDR Metadata update completed with issues:" + uip.getOriginalFilename());
+			} else {
+				msg.setSubject("CDR Metadata update completed:" + uip.getOriginalFilename());
+			}
+			
+			String html = completeTemplate.execute(data);
+			msg.setText(html, true);
+			
+			mailSender.send(mimeMsg);
+		} catch (MessagingException e) {
+			log.error("Failed to send email to " + uip.getEmailAddress()
+					+ " for update " + uip.getOriginalFilename(), e);
+		}
+	}
+
+	public void sendValidationFailureEmail(BulkMetadataUIP uip, Map<String, String> problems) {
+		MimeMessage mimeMsg = mailSender.createMimeMessage();
+		try {
+			MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
+			
+			msg.setFrom("cdr@unc.edu");
+			msg.addTo(uip.getEmailAddress());
+			msg.setSubject("CDR Metadata update failed");
+			
+			Map<String, Object> data = new HashMap<>();
+			data.put("fileName", uip.getOriginalFilename());
+			data.put("problems", problems.entrySet());
+			data.put("problemCount", problems.size());
+			
+			String html = failedTemplate.execute(data);
+			msg.setText(html, true);
+			
+			mailSender.send(mimeMsg);
+		} catch (MessagingException e) {
+			log.error("Failed to send email to " + uip.getEmailAddress()
+					+ " for update " + uip.getOriginalFilename(), e);
+		}
 	}
 
 	public DigitalObjectManager getDigitalObjectManager() {
@@ -209,13 +364,21 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
 	}
-	
-	public UIPUpdatePipeline getPipeline() {
-		return pipeline;
+
+	public void setValidationPipeline(UIPUpdatePipeline validationPipeline) {
+		this.validationPipeline = validationPipeline;
 	}
 
-	public void setPipeline(UIPUpdatePipeline pipeline) {
-		this.pipeline = pipeline;
+	public void setTransformPipeline(UIPUpdatePipeline transformPipeline) {
+		this.transformPipeline = transformPipeline;
+	}
+
+	public void setCompleteTemplate(Template completeTemplate) {
+		this.completeTemplate = completeTemplate;
+	}
+
+	public void setFailedTemplate(Template failedTemplate) {
+		this.failedTemplate = failedTemplate;
 	}
 
 	public JedisPool getJedisPool() {
@@ -224,5 +387,9 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 
 	public void setJedisPool(JedisPool jedisPool) {
 		this.jedisPool = jedisPool;
+	}
+
+	public void setMailSender(JavaMailSender mailSender) {
+		this.mailSender = mailSender;
 	}
 }

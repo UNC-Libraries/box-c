@@ -46,13 +46,15 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 	private String queueName;
 	private JedisPool jedisPool;
 	
-	public void add(String email, String username, Collection<String> groups, File importFile) {
-		add(null, email, username, groups, importFile);
+	public void add(String email, String username, Collection<String> groups, File importFile,
+			String originalFilename) {
+		add(null, email, username, groups, importFile, originalFilename);
 	}
 	
-	public void add(String updateId, String email, String username, Collection<String> groups, File importFile) {
+	public void add(String updateId, String email, String username, Collection<String> groups,
+			File importFile, String originalFilename) {
 		Job job = new Job(BulkMetadataUpdateJob.class.getName(), updateId, email, username, groups,
-				importFile.getAbsolutePath());
+				importFile.getAbsolutePath(), originalFilename);
 		jesqueClient.enqueue(queueName, job);
 	}
 	
@@ -80,7 +82,7 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 			
 			add(updateId, updateValues.get("email"), updateValues.get("user"),
 					Arrays.asList(updateValues.get("groups").split(" ")),
-					new File(updateValues.get("filePath")));
+					new File(updateValues.get("filePath")), updateValues.get("originalFilename"));
 		}
 	}
 	

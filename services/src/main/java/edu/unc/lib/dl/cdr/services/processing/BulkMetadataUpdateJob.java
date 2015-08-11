@@ -39,11 +39,11 @@ public class BulkMetadataUpdateJob implements Runnable {
 	private final BulkMetadataUIP uip;
 	
 	public BulkMetadataUpdateJob(String updateId, String email, String username, Collection<String> groups,
-			String importPath) throws UIPException {
+			String importPath, String originalFilename) throws UIPException {
 		AccessGroupSet groupSet = new AccessGroupSet();
 		groupSet.addAll(groups);
 		
-		uip = new BulkMetadataUIP(updateId, email, username, groupSet, new File(importPath));
+		uip = new BulkMetadataUIP(updateId, email, username, groupSet, new File(importPath), originalFilename);
 	}
 	
 	@Override

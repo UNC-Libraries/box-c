@@ -60,6 +60,7 @@ public class ImportXMLController {
 	
 	@RequestMapping(value = "importXML", method = RequestMethod.POST)
 	public @ResponseBody Object importXML(@RequestParam("file") MultipartFile xmlFile, HttpServletRequest request) throws Exception {
+		log.info("User {} has submitted a bulk metadata update package", GroupsThreadStore.getUsername());
 		Map<String, String> result = new HashMap<>();
 		
 		File importFile = File.createTempFile("import", ".xml", dataPath.toFile());
@@ -71,7 +72,7 @@ public class ImportXMLController {
 		}
 		
 		bulkConductor.add(emailAddress, GroupsThreadStore.getUsername(),
-				GroupsThreadStore.getGroups(), importFile);
+				GroupsThreadStore.getGroups(), importFile, xmlFile.getOriginalFilename());
 		
 		result.put("message", "Import of metadata has begun, " + emailAddress
 				+ " will be emailed when the update completes");

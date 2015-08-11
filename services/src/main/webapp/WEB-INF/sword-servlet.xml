@@ -89,9 +89,10 @@
 				<bean class="edu.unc.lib.dl.update.AtomDCToMODSFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
-				<bean class="edu.unc.lib.dl.update.MODSUIPFilter">
+				<bean class="edu.unc.lib.dl.update.MODSValidationUIPFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
+				<bean class="edu.unc.lib.dl.update.MODSVocabularyUIPFilter"/>
 				<bean class="edu.unc.lib.dl.update.RELSEXTUIPFilter"/>
 				<bean class="edu.unc.lib.dl.update.AccessControlUIPFilter"/>
 			</list>
@@ -110,21 +111,58 @@
 		<property name="operationsMessageSender" ref="operationsMessageSender" />
 	</bean>
 	
-	<bean id="bulkMDPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
+	<bean id="bulkMDValidatePipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
 		<property name="updateFilters">
 			<list>
-				<bean class="edu.unc.lib.dl.update.MODSUIPFilter">
+				<bean class="edu.unc.lib.dl.update.MODSValidationUIPFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
 			</list>
 		</property>
 	</bean>
 	
+	<bean id="bulkMDTransformPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
+		<property name="updateFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.update.MODSVocabularyUIPFilter"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
+	
+	<bean id="updateCompleteTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="classpath:update-complete-html.txt" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	<bean id="updateFailedTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="classpath:update-failed-html.txt" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${smtp.host:localhost}" />
+		<property name="port" value="${smtp.port:25}" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	
 	<bean id="bulkUIPProcessor" class="edu.unc.lib.dl.update.BulkMetadataUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="managementClient" ref="managementClient"/>
-		<property name="pipeline" ref="bulkMDPipeline"/>
+		<property name="validationPipeline" ref="bulkMDValidatePipeline"/>
+		<property name="transformPipeline" ref="bulkMDTransformPipeline"/>
 		<property name="jedisPool" ref="jedisPool" />
+		<property name="completeTemplate" ref="updateCompleteTemplate"/>
+		<property name="failedTemplate" ref="updateFailedTemplate"/>
+		<property name="mailSender" ref="mailSender"/>
 	</bean>
 	
 	<!-- SWORD config -->

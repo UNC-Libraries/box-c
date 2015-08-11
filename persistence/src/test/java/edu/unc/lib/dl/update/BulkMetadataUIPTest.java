@@ -38,7 +38,7 @@ public class BulkMetadataUIPTest {
 		File importFile = new File("src/test/resources/md_import.xml");
 		
 		BulkMetadataUIP uip = new BulkMetadataUIP(null, "", "", new AccessGroupSet(),
-				importFile);
+				importFile, "file");
 		
 		BulkMetadataDatastreamUIP next = uip.getNextUpdate();
 		assertNotNull(next);
@@ -61,7 +61,7 @@ public class BulkMetadataUIPTest {
 		File importFile = new File("src/test/resources/md_import.xml");
 		
 		BulkMetadataUIP uip = new BulkMetadataUIP("testid", "", "", new AccessGroupSet(),
-				importFile);
+				importFile, "file");
 		
 		uip.seekNextUpdate(new PID("uuid:76240153-300b-4e90-9c55-94c64f4a24de"), Datastream.MD_DESCRIPTIVE.toString());
 		
