@@ -335,16 +335,6 @@
 		<property name="messageSender" ref="operationsMessageSender"/>
 	</bean>
 	
-	<bean id="solrJMXService" class="edu.unc.lib.dl.cdr.services.jmx.SolrJMXService">
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="active" value="true"/>
-	</bean>
-	
-	<bean id="messageJMXService" class="edu.unc.lib.dl.cdr.services.jmx.MessageJMXService">
-		<property name="messageDirector" ref="messageDirector"/>
-		<property name="services" ref="servicesList"/>
-	</bean>
-	
 	<!-- Scheduler -->
 	
 	<bean id="embargoJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
@@ -367,24 +357,6 @@
 			<value>true</value>
 		</property>
 		<property name="configLocation" value="classpath:quartz.properties"/>
-	</bean>
-	
-	<!-- JMX -->
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-		lazy-init="false">
-		<property name="beans">
-			<map>
-				<entry key="cdr-services:name=messageJMXService" value-ref="messageJMXService" />
-				<entry key="cdr-services:name=solrJMXService" value-ref="solrJMXService" />
-				<entry key="cdr-services:name=fedoraDataService" value-ref="fedoraDataService" />
-				<entry key="cdr-services:name=technicalMetadataEnhancementService" value-ref="technicalMetadataEnhancementService" />
-				<entry key="cdr-services:name=thumbnailEnhancementService" value-ref="thumbnailEnhancementService" />
-				<entry key="cdr-services:name=solrUpdateEnhancementService" value-ref="solrUpdateEnhancementService" />
-				<entry key="cdr-services:name=imageEnhancementService" value-ref="imageEnhancementService" />
-				<entry key="cdr-services:name=tripleStoreQueryService" value-ref="tripleStoreQueryService" />
-			</map>
-		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
 	</bean>
 
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
