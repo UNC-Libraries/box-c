@@ -68,6 +68,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	private JavaMailSender mailSender;
 	private Template completeTemplate;
 	private Template failedTemplate;
+	private String fromAddress;
 
 	@Override
 	public void process(UpdateInformationPackage uip) throws UpdateException, UIPException {
@@ -139,11 +140,11 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 				
 				for (java.util.Map.Entry<String, Element> entry : singleUIP.getIncomingData().entrySet()) {
 					try {
-						transformPipeline.processUIP(singleUIP);
-						
 						// Check to see if the checksum of the new datastream matches the existing
 						edu.unc.lib.dl.fedora.types.Datastream datastream
 								= managementClient.getDatastream(singleUIP.getPID(), entry.getKey());
+						
+						transformPipeline.processUIP(singleUIP);
 						
 						// New datastream, create it
 						if (datastream == null) {
@@ -284,7 +285,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 		try {
 			MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
 			
-			msg.setFrom("cdr@unc.edu");
+			msg.setFrom(fromAddress);
 			msg.addTo(uip.getEmailAddress());
 			
 			Map<String, Object> data = new HashMap<>();
@@ -311,6 +312,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 			if (outdated.size() > 0 || failed.size() > 0) {
 				data.put("issues", true);
 				msg.setSubject("CDR Metadata update completed with issues:" + uip.getOriginalFilename());
+				msg.addTo(fromAddress);
 			} else {
 				msg.setSubject("CDR Metadata update completed:" + uip.getOriginalFilename());
 			}
@@ -330,7 +332,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 		try {
 			MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
 			
-			msg.setFrom("cdr@unc.edu");
+			msg.setFrom(fromAddress);
 			msg.addTo(uip.getEmailAddress());
 			msg.setSubject("CDR Metadata update failed");
 			
@@ -391,5 +393,9 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 
 	public void setMailSender(JavaMailSender mailSender) {
 		this.mailSender = mailSender;
+	}
+
+	public void setFromAddress(String fromAddress) {
+		this.fromAddress = fromAddress;
 	}
 }

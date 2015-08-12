@@ -226,7 +226,6 @@
 					<util:list>
 						<value>solr-update</value>
 						<value>enhancement</value>
-						<value>#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}</value>
 					</util:list>
 				</constructor-arg>
 				<constructor-arg ref="jobFactory" />
@@ -486,13 +485,14 @@
 	
 	<bean id="bulkUIPProcessor" class="edu.unc.lib.dl.update.BulkMetadataUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="managementClient" ref="managementClient"/>
+		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="validationPipeline" ref="bulkMDValidatePipeline"/>
 		<property name="transformPipeline" ref="bulkMDTransformPipeline"/>
 		<property name="jedisPool" ref="jedisPool" />
 		<property name="completeTemplate" ref="updateCompleteTemplate"/>
 		<property name="failedTemplate" ref="updateFailedTemplate"/>
 		<property name="mailSender" ref="mailSender"/>
+		<property name="fromAddress" value="${administrator.email}" />
 	</bean>
 	
 	<bean id="bulkMDWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
@@ -515,7 +515,7 @@
 		<property name="uipProcessor" ref="bulkUIPProcessor"/>
 	</bean>
 	
-	<bean id="bulkMetadataUpdateConductor"
+	<bean id="bulkMetadataUpdateConductor" init-method="init"
 			class="edu.unc.lib.dl.cdr.services.processing.BulkMetadataUpdateConductor">
 		<property name="jesqueClient" ref="jesqueClient"/>
 		<property name="jedisPool" ref="jedisPool"/>

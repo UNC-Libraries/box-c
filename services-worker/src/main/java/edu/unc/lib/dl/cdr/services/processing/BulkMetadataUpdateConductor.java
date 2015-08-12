@@ -81,9 +81,18 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 
 			String updateId = incomplete.split(":", 2)[1];
 			
-			add(updateId, updateValues.get("email"), updateValues.get("user"),
-					Arrays.asList(updateValues.get("groups").split(" ")),
-					new File(updateValues.get("filePath")), updateValues.get("originalFilename"));
+			// If the import file doesn't exist, then can't resume
+			File importFile = new File(updateValues.get("filePath"));
+			if (!importFile.exists()) {
+				log.warn("Failed to resume update {} for user {} because the file no longer existed",
+						updateValues.get("originalFilename"), updateValues.get("user"));
+				jedis.del(incomplete);
+				jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + updateId);
+			} else {
+				add(updateId, updateValues.get("email"), updateValues.get("user"),
+						Arrays.asList(updateValues.get("groups").split(" ")),
+						importFile, updateValues.get("originalFilename"));
+			}
 		}
 	}
 	

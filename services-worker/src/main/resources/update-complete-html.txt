@@ -13,14 +13,13 @@
   {{#issues}}
     <h3>CDR Metadata update completed with issues: {{fileName}}</h3>
   {{/issues}}
-  <p>The XML metadata update you submitted has completed.  {{updatedCount}} object(s) were updated
-  {{#outdatedCount}}, {{outdatedCount}} were prevented from updating because they were out of date{{/outdatedCount}}
-  {{#skippedCount}}, {{skippedCount}} were skipped due to no update being required{{/skippedCount}}
-  {{#failedCount}}, {{failedCount}} failed to update due to errors{{/failedCount}}</p>
+  <p>The XML metadata update you submitted has completed.  {{updatedCount}} object(s) were updated{{#outdatedCount}}, {{outdatedCount}} object(s) updates were out of date{{/outdatedCount}}{{#skippedCount}}, {{skippedCount}} object(s) were skipped because they were not changed{{/skippedCount}}{{#failedCount}}, {{failedCount}} object(s) failed to update due to errors{{/failedCount}}.</p>
+  
+  <p>If you require any assistance with this update, please reply to this email.</p>
 
   {{#outdatedCount}}
-    <h4>Out of date updates ({{outdatedCount}})</h4>
-    <p>Not updated due the record in the repository being more recent than the lastModified date in import file, meaning that the repository copy may be more up to date.</p>
+    <h4>Out of date documents ({{outdatedCount}})</h4>
+    <p>Updates were not applied because the version in the repository has a more recent than the imported document.</p>
     <ul>
       {{#outdated}}
       <li>{{this}}</li>
@@ -30,7 +29,7 @@
 
   {{#failedCount}}
     <h4>Failed to update ({{failedCount}})</h4>
-    <p>Objects which could not be updated due to errors</p>
+    <p>Could not be updated due to errors</p>
     <ul>
       {{#failed}}
       <li>{{key}} - <span>{{value}}</span></li>
@@ -40,7 +39,7 @@
 
   {{#updatedCount}}
     <h4>Updated ({{updatedCount}})</h4>
-    <p>Objects which were successfully updated</p>
+    <p>Successfully updated</p>
     <ul>
       {{#updated}}
       <li>{{this}}</li>
@@ -50,7 +49,7 @@
 
   {{#skippedCount}}
     <h4>Skipped updates ({{skippedCount}})</h4>
-    <p>The submitted document was not modified so no update was performed for the following objects.</p>
+    <p>The following submitted documents were the same as the repository copy, so no update was performed.</p>
     <ul>
       {{#skipped}}
       <li>{{this}}</li>

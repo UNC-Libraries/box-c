@@ -56,12 +56,12 @@ public class ImportXMLController {
 	@Autowired
 	private String bulkMetadataQueueName;
 	@Autowired
-	private String bulkMetadataDataPath;
+	private String dataDir;
 	private Path storagePath;
 	
 	@PostConstruct
 	public void init() throws IOException {
-		storagePath = Paths.get(bulkMetadataDataPath);
+		storagePath = Paths.get(dataDir + "/metadataImport/");
 	}
 	
 	@RequestMapping(value = "importXML", method = RequestMethod.POST)

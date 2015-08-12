@@ -43,8 +43,8 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
 		for (WorkerPool workerPool : workerPools.values()) {
 			workerPool.getWorkerEventEmitter().addListener(this);
-			workerPool.run();
 		}
+		workerPools.values().iterator().next().run();
 	}
 
 	@Override
