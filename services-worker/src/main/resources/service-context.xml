@@ -226,6 +226,7 @@
 					<util:list>
 						<value>solr-update</value>
 						<value>enhancement</value>
+						<value>#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}</value>
 					</util:list>
 				</constructor-arg>
 				<constructor-arg ref="jobFactory" />
@@ -394,8 +395,8 @@
 		<property name="managementClient" ref="managementClient"/>
 		<property name="resourceNames">
 			<bean class="org.springframework.util.StringUtils" factory-method="commaDelimitedListToStringArray">
-        		<constructor-arg type="java.lang.String" value="${fixity.resourceNames}"/>
-   			</bean>
+				<constructor-arg type="java.lang.String" value="${fixity.resourceNames}"/>
+			</bean>
 		</property>
 		
 		<property name="staleIntervalSeconds" value="${fixity.staleInterval.seconds}"/>
@@ -410,5 +411,115 @@
 	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
 		<property name="helperClasses" ref="vocabHelperClassMap" />
 		<property name="collectionsPID" ref="collectionsPid" />
+	</bean>
+	
+	<!-- Bulk metadata update -->
+	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
+		<property name="managementClient" ref="managementClient"/>
+		<property name="forwardedManagementClient" ref="forwardedManagementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="aclService" ref="accessControlService"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="schematronValidator" ref="schematronValidator"/>
+		<property name="available" value="true"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
+	</bean>
+	
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="${smtp.host:localhost}" />
+		<property name="port" value="${smtp.port:25}" />
+		<property name="defaultEncoding" value="UTF-8" />
+	</bean>
+	
+	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
+		init-method="loadSchemas">
+		<property name="schemas">
+			<map>
+				<entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}" 
+					value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch"/>
+				<entry key="object-mods" value="classpath:edu/unc/lib/dl/schematron/object-mods.sch"/>
+				<entry key="vocabularies-mods"
+					value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch"/>
+				<entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}" 
+					value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch"/>
+			</map>
+		</property>
+	</bean>
+	
+	<bean id="bulkMDValidatePipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
+		<property name="updateFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.update.MODSValidationUIPFilter">
+					<property name="schematronValidator" ref="schematronValidator" />
+				</bean>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="bulkMDTransformPipeline" class="edu.unc.lib.dl.update.UIPUpdatePipeline">
+		<property name="updateFilters">
+			<list>
+				<bean class="edu.unc.lib.dl.update.MODSVocabularyUIPFilter"/>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
+	
+	<bean id="updateCompleteTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="classpath:update-complete-html.txt" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	<bean id="updateFailedTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="classpath:update-failed-html.txt" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="bulkUIPProcessor" class="edu.unc.lib.dl.update.BulkMetadataUIPProcessor">
+		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+		<property name="managementClient" ref="managementClient"/>
+		<property name="validationPipeline" ref="bulkMDValidatePipeline"/>
+		<property name="transformPipeline" ref="bulkMDTransformPipeline"/>
+		<property name="jedisPool" ref="jedisPool" />
+		<property name="completeTemplate" ref="updateCompleteTemplate"/>
+		<property name="failedTemplate" ref="updateFailedTemplate"/>
+		<property name="mailSender" ref="mailSender"/>
+	</bean>
+	
+	<bean id="bulkMDWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="2" />
+	</bean>
+	
+	<bean id="bulkMetadataUpdateJob" class="edu.unc.lib.dl.update.BulkMetadataUpdateJob"
+		scope="prototype">
+		<property name="uipProcessor" ref="bulkUIPProcessor"/>
+	</bean>
+	
+	<bean id="bulkMetadataUpdateConductor"
+			class="edu.unc.lib.dl.cdr.services.processing.BulkMetadataUpdateConductor">
+		<property name="jesqueClient" ref="jesqueClient"/>
+		<property name="jedisPool" ref="jedisPool"/>
+		<property name="workerPool" ref="bulkMDWorkerPool"/>
+		<property name="queueName" value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
 	</bean>
 </beans>

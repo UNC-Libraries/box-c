@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import edu.unc.lib.dl.update.BulkMetadataUpdateJob;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
 
 /**

@@ -25,6 +25,8 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
+import net.greghaines.jesque.Job;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.processing.BulkMetadataUpdateConductor;
+import edu.unc.lib.dl.update.BulkMetadataUpdateJob;
 
 /**
  * Controller which accepts CDR bulk metadata update packages and begins update operations
@@ -50,12 +52,16 @@ public class ImportXMLController {
 	private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
 	
 	@Autowired
-	private BulkMetadataUpdateConductor bulkConductor;
-	private Path dataPath;
+	private net.greghaines.jesque.client.Client jesqueClient;
+	@Autowired
+	private String bulkMetadataQueueName;
+	@Autowired
+	private String bulkMetadataDataPath;
+	private Path storagePath;
 	
 	@PostConstruct
 	public void init() throws IOException {
-		dataPath = Paths.get("/opt/data/metadataImport/");
+		storagePath = Paths.get(bulkMetadataDataPath);
 	}
 	
 	@RequestMapping(value = "importXML", method = RequestMethod.POST)
@@ -63,7 +69,7 @@ public class ImportXMLController {
 		log.info("User {} has submitted a bulk metadata update package", GroupsThreadStore.getUsername());
 		Map<String, String> result = new HashMap<>();
 		
-		File importFile = File.createTempFile("import", ".xml", dataPath.toFile());
+		File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
 		FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
 		
 		String emailAddress = request.getHeader("mail");
@@ -71,8 +77,9 @@ public class ImportXMLController {
 			emailAddress = GroupsThreadStore.getUsername() + "@email.unc.edu";
 		}
 		
-		bulkConductor.add(emailAddress, GroupsThreadStore.getUsername(),
-				GroupsThreadStore.getGroups(), importFile, xmlFile.getOriginalFilename());
+		Job job = new Job(BulkMetadataUpdateJob.class.getName(), null, emailAddress, GroupsThreadStore.getUsername(),
+				GroupsThreadStore.getGroups(), importFile.getAbsolutePath(), xmlFile.getOriginalFilename());
+		jesqueClient.enqueue(bulkMetadataQueueName, job);
 		
 		result.put("message", "Import of metadata has begun, " + emailAddress
 				+ " will be emailed when the update completes");

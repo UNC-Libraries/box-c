@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.update;
 
 import java.io.File;
 import java.util.Collection;
@@ -23,10 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.update.BulkMetadataUIP;
-import edu.unc.lib.dl.update.UIPException;
-import edu.unc.lib.dl.update.UIPProcessor;
-import edu.unc.lib.dl.update.UpdateException;
 
 /**
  * @author bbpennel

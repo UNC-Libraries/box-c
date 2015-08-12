@@ -149,6 +149,23 @@
 		<property name="minIdle" value="2"/>
 		<property name="maxTotal" value="25"/>
 	</bean>
+	
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="${redis.host:localhost}" />
+		<constructor-arg value="${redis.port:6379}" />
+		<constructor-arg value="2000" />
+		<constructor-arg>
+			<null />
+		</constructor-arg>
+		<constructor-arg value="resque" />
+		<constructor-arg value="0" />
+	</bean>
+	
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
+		scope="prototype">
+		<constructor-arg ref="jesqueConfig" />
+		<constructor-arg ref="jedisPool" />
+	</bean>
 
 	<bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
 	
@@ -201,5 +218,13 @@
 		<property name="helperClasses" ref="vocabHelperClassMap" />
 		<property name="collectionsPID" ref="collectionsPid" />
 	</bean>
-  
+	
+	<bean id="bulkMetadataQueueName" class="java.lang.String">
+		<constructor-arg value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
+	</bean>
+	
+	<bean id="bulkMetadataDataPath" class="java.lang.String">
+		<constructor-arg value="${services.bulkMetadata.data}"/>
+	</bean>
+
 </beans>
