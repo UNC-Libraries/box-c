@@ -1,11 +1,16 @@
 package edu.unc.lib.deposit.fcrepo3;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +32,8 @@ import org.springframework.ws.client.WebServiceTransportException;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -43,6 +50,8 @@ import edu.unc.lib.dl.fedora.ObjectExistsException;
 import edu.unc.lib.dl.fedora.ObjectIntegrityException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.fedora.types.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositException;
@@ -51,6 +60,7 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 /**
@@ -77,6 +87,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	@Autowired
 	private AccessClient accessClient;
+	
+	@Autowired
+	private TripleStoreQueryService tsqs;
 
 	private int ingestObjectCount;
 
@@ -172,6 +185,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		// Capture the top level pids
 		DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
+		
+		closeModel();
 
 		// TODO capture structure for ordered sequences instead of just bags
 	}
@@ -369,7 +384,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			log.info("Fedora ingest timed out, awaiting ingest confirmation and proceeding with the remainder of the deposit: "
 					+ e.getLocalizedMessage());
 		} catch (ObjectExistsException e) {
-			if (confirmExisting) {
+			if (confirmExisting || isDuplicateOkay(pid, ingestPid)) {
 				ingestsAwaitingConfirmation.remove(ingestPid);
 			} else {
 				throw new DepositException("Object " + pid.getPid() + " already exists in the repository.", e);
@@ -381,6 +396,41 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		}
 		// TODO increment ingestedOctets
 
+	}
+	
+	private boolean isDuplicateOkay(PID pid, String ingestPid) {
+		List<String> deposits = tsqs.fetchBySubjectAndPredicate(pid, Relationship.originalDeposit.toString());
+		if (deposits == null || deposits.size() == 0) {
+			// Original deposit wasn't recorded, so check on the file
+			try {
+				Model model = getReadOnlyModel();
+				Resource objectResc = model.getResource(pid.getURI());
+				Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
+				if (objectResc.hasProperty(stagingLocation)) {
+					String fileLocation = objectResc.getProperty(stagingLocation).getString();
+					fileLocation = new URI(fileLocation).getPath();
+					
+					long incomingSize = Files.size(
+							Paths.get(this.getDepositDirectory().getAbsolutePath(), fileLocation));
+					
+					Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
+					if (incomingSize == ds.getSize()) {
+						// File size and PID match between incoming file and repository file, assume its okay
+						return true;
+					}
+				}
+				
+			} catch (FedoraException | IOException | URISyntaxException e1) {
+				log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
+			} finally {
+				closeModel();
+			}
+		} else if (deposits.contains(this.getDepositPID().getURI())) {
+			// The object already exists and is a part of this deposit, so carry on
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
