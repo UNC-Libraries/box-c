@@ -1,11 +1,16 @@
 package edu.unc.lib.deposit.fcrepo3;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +32,8 @@ import org.springframework.ws.client.WebServiceTransportException;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -43,6 +50,8 @@ import edu.unc.lib.dl.fedora.ObjectExistsException;
 import edu.unc.lib.dl.fedora.ObjectIntegrityException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.fedora.types.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositException;
@@ -51,6 +60,7 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
 /**
@@ -77,6 +87,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	@Autowired
 	private AccessClient accessClient;
+	
+	@Autowired
+	private TripleStoreQueryService tsqs;
 
 	private int ingestObjectCount;
 
@@ -172,6 +185,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		// Capture the top level pids
 		DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
+		
+		closeModel();
 
 		// TODO capture structure for ordered sequences instead of just bags
 	}
@@ -369,7 +384,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			log.info("Fedora ingest timed out, awaiting ingest confirmation and proceeding with the remainder of the deposit: "
 					+ e.getLocalizedMessage());
 		} catch (ObjectExistsException e) {
-			if (confirmExisting) {
+			if (confirmExisting || isDuplicateOkay(pid)) {
 				ingestsAwaitingConfirmation.remove(ingestPid);
 			} else {
 				throw new DepositException("Object " + pid.getPid() + " already exists in the repository.", e);
@@ -381,6 +396,57 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		}
 		// TODO increment ingestedOctets
 
+	}
+	
+	private boolean isDuplicateOkay(PID pid) {
+		// Get the deposit ID for the repository copy of pid
+		List<String> deposits = tsqs.fetchBySubjectAndPredicate(pid, Relationship.originalDeposit.toString());
+		
+		// Ensure that the deposit id as record by fedora matches the current deposit or is not present
+		if (deposits != null && !deposits.contains(this.getDepositPID().getURI())) {
+			return false;
+		}
+		
+		Model model = getReadOnlyModel();
+		try {
+			Resource objectResc = model.getResource(pid.getURI());
+			
+			Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
+			if (!objectResc.hasProperty(stagingLocation)) {
+				// No staging location, so nothing further to check
+				return true;
+			}
+			
+			String fileLocation = objectResc.getProperty(stagingLocation).getString();
+			fileLocation = new URI(fileLocation).getPath();
+			
+			// Confirm that incoming file is the same size as the one in the repository
+			long incomingSize = Files.size(
+					Paths.get(this.getDepositDirectory().getAbsolutePath(), fileLocation));
+			
+			// Get information for copy in the repository
+			Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
+			
+			if (incomingSize != ds.getSize() && !(ds.getSize() == -1 && incomingSize == 0)) {
+				// File sizes didn't match, so this is not the correct file
+				return false;
+			}
+			
+			// If a checksum is available, make sure it matches the one in the repository
+			Property md5sum = dprop(model, DepositRelationship.md5sum);
+			if (objectResc.hasProperty(md5sum)) {
+				String incomingChecksum = objectResc.getProperty(md5sum).getString();
+				return ds.getChecksum().equals(incomingChecksum);
+			}
+			
+			return true;
+		} catch (FedoraException | IOException | URISyntaxException e1) {
+			log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
+		} finally {
+			closeModel();
+		}
+		
+		return false;
 	}
 
 	/**
