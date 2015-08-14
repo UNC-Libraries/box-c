@@ -8,18 +8,15 @@
 </head>
 <body>
   {{^issues}}
-    <h3>CDR Metadata update completed </h3>
+    <h3>CDR metadata update completed successfully</h3>
   {{/issues}}
   {{#issues}}
-    <h3>CDR Metadata update completed with issues: {{fileName}}</h3>
+    <h3>CDR metadata update completed with issues: {{fileName}}</h3>
   {{/issues}}
-  <p>The XML metadata update you submitted has completed.  {{updatedCount}} object(s) were updated{{#outdatedCount}}, {{outdatedCount}} object(s) updates were out of date{{/outdatedCount}}{{#skippedCount}}, {{skippedCount}} object(s) were skipped because they were not changed{{/skippedCount}}{{#failedCount}}, {{failedCount}} object(s) failed to update due to errors{{/failedCount}}.</p>
-  
-  <p>If you require any assistance with this update, please reply to this email.</p>
 
   {{#outdatedCount}}
-    <h4>Out of date documents ({{outdatedCount}})</h4>
-    <p>Updates were not applied because the version in the repository has a more recent than the imported document.</p>
+    <h4>Outdated ({{outdatedCount}})</h4>
+    <p>Metadata for these objects was not updated because the repository has a more recent version.</p>
     <ul>
       {{#outdated}}
       <li>{{this}}</li>
@@ -28,8 +25,7 @@
   {{/outdatedCount}}
 
   {{#failedCount}}
-    <h4>Failed to update ({{failedCount}})</h4>
-    <p>Could not be updated due to errors</p>
+    <h4>Failed ({{failedCount}})</h4>
     <ul>
       {{#failed}}
       <li>{{key}} - <span>{{value}}</span></li>
@@ -38,23 +34,15 @@
   {{/failedCount}}
 
   {{#updatedCount}}
-    <h4>Updated ({{updatedCount}})</h4>
-    <p>Successfully updated</p>
+    <h4>Successful ({{updatedCount}})</h4>
     <ul>
       {{#updated}}
       <li>{{this}}</li>
       {{/updated}}
-    </ul>
-  {{/updatedCount}}
-
-  {{#skippedCount}}
-    <h4>Skipped updates ({{skippedCount}})</h4>
-    <p>The following submitted documents were the same as the repository copy, so no update was performed.</p>
-    <ul>
       {{#skipped}}
       <li>{{this}}</li>
       {{/skipped}}
     </ul>
-  {{/skippedCount}}
+  {{/updatedCount}}
 </body>
 </html>
