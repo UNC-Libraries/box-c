@@ -148,9 +148,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["exportXML"] = {name : 'Export MODS'};
 		}
-		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1 && $.inArray('editDescription', metadata.permissions) != -1) {
-			items["importXML"] = {name : 'Import MODS'};
-		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
 		// Admin actions
@@ -251,10 +248,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 							targets : [resultObject]
 						});
 						break;
-					case "importXML" :
-						self.actionHandler.addEvent({
-							action : 'ImportMetadataXML'
-						});
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;

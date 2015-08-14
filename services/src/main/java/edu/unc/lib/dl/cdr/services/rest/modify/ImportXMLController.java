@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -62,6 +63,8 @@ public class ImportXMLController {
 	@PostConstruct
 	public void init() throws IOException {
 		storagePath = Paths.get(dataDir + "/metadataImport/");
+		// Create the directory if it doesn't already exist
+		Files.createDirectories(storagePath);
 	}
 	
 	@RequestMapping(value = "importXML", method = RequestMethod.POST)

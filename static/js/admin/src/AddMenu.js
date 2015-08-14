@@ -14,7 +14,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		items["addContainer"] = {name : "Add Container"};
 		items["ingestPackage"] = {name : "Add Ingest Package"};
 		items["simpleObject"] = {name : "Add Simple Object"};
-		items["importMetadata"] = {name : "Import Bulk MODS"};
+		items["importMetadata"] = {name : "Import MODS"};
 		return items;
 	};
 	

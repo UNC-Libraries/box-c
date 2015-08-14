@@ -3,7 +3,7 @@ define('ImportMetadataXMLForm', [ 'jquery', 'jquery-ui', 'underscore', 'tpl!../t
 		function($, ui, _, importTemplate, ModalLoadingOverlay, AbstractFileUploadForm) {
 	
 	var defaultOptions = {
-			title : 'Import MODS Descriptions',
+			title : 'Import MODS',
 			createFormTemplate : importTemplate
 	};
 	
