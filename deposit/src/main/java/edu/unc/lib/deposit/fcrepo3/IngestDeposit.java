@@ -384,7 +384,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			log.info("Fedora ingest timed out, awaiting ingest confirmation and proceeding with the remainder of the deposit: "
 					+ e.getLocalizedMessage());
 		} catch (ObjectExistsException e) {
-			if (confirmExisting || isDuplicateOkay(pid, ingestPid)) {
+			if (confirmExisting || isDuplicateOkay(pid)) {
 				ingestsAwaitingConfirmation.remove(ingestPid);
 			} else {
 				throw new DepositException("Object " + pid.getPid() + " already exists in the repository.", e);
@@ -398,7 +398,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	}
 	
-	private boolean isDuplicateOkay(PID pid, String depositId) {
+	private boolean isDuplicateOkay(PID pid) {
 		List<String> deposits = tsqs.fetchBySubjectAndPredicate(pid, Relationship.originalDeposit.toString());
 		
 		// Ensure that either the deposit ID of the file in the repository matches the current deposit
@@ -422,7 +422,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					// Get information for copy in the repository
 					Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
 					
-					if (incomingSize == ds.getSize()) {
+					if (incomingSize == ds.getSize() || (ds.getSize() == -1 && incomingSize == 0)) {
 						
 						// Verify that checksums match if we have access to one
 						Property md5sum = dprop(model, DepositRelationship.md5sum);
