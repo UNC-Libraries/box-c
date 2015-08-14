@@ -398,36 +398,53 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	}
 	
-	private boolean isDuplicateOkay(PID pid, String ingestPid) {
+	private boolean isDuplicateOkay(PID pid, String depositId) {
 		List<String> deposits = tsqs.fetchBySubjectAndPredicate(pid, Relationship.originalDeposit.toString());
-		if (deposits == null || deposits.size() == 0) {
-			// Original deposit wasn't recorded, so check on the file
+		
+		// Ensure that either the deposit ID of the file in the repository matches the current deposit
+		// or that there is no deposit id assigned, such as is the case for small ingests
+		if (deposits == null || deposits.size() == 0 || deposits.contains(this.getDepositPID().getURI())) {
+			
 			try {
+				// For file ingests, check that the content matches if possible
 				Model model = getReadOnlyModel();
 				Resource objectResc = model.getResource(pid.getURI());
+				
 				Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
 				if (objectResc.hasProperty(stagingLocation)) {
 					String fileLocation = objectResc.getProperty(stagingLocation).getString();
 					fileLocation = new URI(fileLocation).getPath();
 					
+					// Confirm that incoming file is the same size as the one in the repository
 					long incomingSize = Files.size(
 							Paths.get(this.getDepositDirectory().getAbsolutePath(), fileLocation));
 					
+					// Get information for copy in the repository
 					Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
+					
 					if (incomingSize == ds.getSize()) {
-						// File size and PID match between incoming file and repository file, assume its okay
+						
+						// Verify that checksums match if we have access to one
+						Property md5sum = dprop(model, DepositRelationship.md5sum);
+						if (objectResc.hasProperty(md5sum)) {
+							String incomingChecksum = objectResc.getProperty(md5sum).getString();
+							if (!ds.getChecksum().equals(incomingChecksum)) {
+								return false;
+							}
+						}
+						
+						// File size and checksum match between incoming file and repository file, assume it's okay
 						return true;
 					}
+				} else {
+					// No file, so nothing further to check
+					return true;
 				}
-				
 			} catch (FedoraException | IOException | URISyntaxException e1) {
 				log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
 			} finally {
 				closeModel();
 			}
-		} else if (deposits.contains(this.getDepositPID().getURI())) {
-			// The object already exists and is a part of this deposit, so carry on
-			return true;
 		}
 		
 		return false;
