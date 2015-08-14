@@ -9,6 +9,11 @@ public class RedisWorkerConstants {
 	public static final String DEPOSIT_TO_JOBS_PREFIX = "deposit-to-jobs:";
 	public static final String JOB_STATUS_PREFIX = "job-status:";
 
+	public static final String DEPOSIT_PREPARE_QUEUE = "PREPARE";
+	public static final String DEPOSIT_DELAYED_QUEUE = "DELAYED_PREPARE";
+	public static final String DEPOSIT_CDRMETS_QUEUE = "CDRMETSCONVERT";
+	public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
+
 	public static enum DepositField {
 		uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
 		fileName, resubmitDirName, resubmitFileName, isResubmit, depositMethod, containerId, payLoadOctets,
