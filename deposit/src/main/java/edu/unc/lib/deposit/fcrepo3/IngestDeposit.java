@@ -399,52 +399,51 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	}
 	
 	private boolean isDuplicateOkay(PID pid) {
+		// Get the deposit ID for the repository copy of pid
 		List<String> deposits = tsqs.fetchBySubjectAndPredicate(pid, Relationship.originalDeposit.toString());
 		
-		// Ensure that either the deposit ID of the file in the repository matches the current deposit
-		// or that there is no deposit id assigned, such as is the case for small ingests
-		if (deposits == null || deposits.size() == 0 || deposits.contains(this.getDepositPID().getURI())) {
+		// Ensure that the deposit id as record by fedora matches the current deposit or is not present
+		if (deposits != null && !deposits.contains(this.getDepositPID().getURI())) {
+			return false;
+		}
+		
+		Model model = getReadOnlyModel();
+		try {
+			Resource objectResc = model.getResource(pid.getURI());
 			
-			try {
-				// For file ingests, check that the content matches if possible
-				Model model = getReadOnlyModel();
-				Resource objectResc = model.getResource(pid.getURI());
-				
-				Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
-				if (objectResc.hasProperty(stagingLocation)) {
-					String fileLocation = objectResc.getProperty(stagingLocation).getString();
-					fileLocation = new URI(fileLocation).getPath();
-					
-					// Confirm that incoming file is the same size as the one in the repository
-					long incomingSize = Files.size(
-							Paths.get(this.getDepositDirectory().getAbsolutePath(), fileLocation));
-					
-					// Get information for copy in the repository
-					Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
-					
-					if (incomingSize == ds.getSize() || (ds.getSize() == -1 && incomingSize == 0)) {
-						
-						// Verify that checksums match if we have access to one
-						Property md5sum = dprop(model, DepositRelationship.md5sum);
-						if (objectResc.hasProperty(md5sum)) {
-							String incomingChecksum = objectResc.getProperty(md5sum).getString();
-							if (!ds.getChecksum().equals(incomingChecksum)) {
-								return false;
-							}
-						}
-						
-						// File size and checksum match between incoming file and repository file, assume it's okay
-						return true;
-					}
-				} else {
-					// No file, so nothing further to check
-					return true;
-				}
-			} catch (FedoraException | IOException | URISyntaxException e1) {
-				log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
-			} finally {
-				closeModel();
+			Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
+			if (!objectResc.hasProperty(stagingLocation)) {
+				// No staging location, so nothing further to check
+				return true;
 			}
+			
+			String fileLocation = objectResc.getProperty(stagingLocation).getString();
+			fileLocation = new URI(fileLocation).getPath();
+			
+			// Confirm that incoming file is the same size as the one in the repository
+			long incomingSize = Files.size(
+					Paths.get(this.getDepositDirectory().getAbsolutePath(), fileLocation));
+			
+			// Get information for copy in the repository
+			Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
+			
+			if (incomingSize != ds.getSize() && !(ds.getSize() == -1 && incomingSize == 0)) {
+				// File sizes didn't match, so this is not the correct file
+				return false;
+			}
+			
+			// If a checksum is available, make sure it matches the one in the repository
+			Property md5sum = dprop(model, DepositRelationship.md5sum);
+			if (objectResc.hasProperty(md5sum)) {
+				String incomingChecksum = objectResc.getProperty(md5sum).getString();
+				return ds.getChecksum().equals(incomingChecksum);
+			}
+			
+			return true;
+		} catch (FedoraException | IOException | URISyntaxException e1) {
+			log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
+		} finally {
+			closeModel();
 		}
 		
 		return false;
