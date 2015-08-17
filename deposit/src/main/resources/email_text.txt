@@ -18,7 +18,7 @@
 {{^error}}CDR deposit complete: {{fileName}}{{/error}}
 {{#error}}CDR deposit error: {{fileName}}{{/error}}
 
-{{^error}}{{ingestedObjects}} item(s) successfully deposited.{{/error}}
+{{^error}}{{#ingestedObjects}}{{ingestedObjects}} item(s) successfully deposited.{{/ingestedObjects}}{{/error}}
 {{#error}}
 There was an error processing your deposit:
 
