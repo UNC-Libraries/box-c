@@ -931,6 +931,20 @@ public class ManagementClient extends WebServiceTemplate {
 		return false;
 	}
 
+	/**
+	 * Blocks until the repository is accessible or the process is interrupted
+	 */
+	public void waitForRepositoryAvailable() {
+		while (!isRepositoryAvailable()) {
+			try {
+				log.info("Waiting for the repository to become available");
+				Thread.sleep(10000L);
+			} catch (InterruptedException e) {
+				return;
+			}
+		}
+	}
+
 	public String writePremisEventsToFedoraObject(PremisEventLogger eventLogger, PID pid) throws FedoraException {
 		Document dom = null;
 		boolean newDatastream = false;

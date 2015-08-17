@@ -86,6 +86,9 @@ public class VocabularyHelperManager {
 	private Boolean initialized = false;
 
 	public synchronized void init() {
+		// Wait for the repository to be up before loading vocabularies
+		managementClient.waitForRepositoryAvailable();
+		
 		log.debug("Initializing vocabulary helpers");
 		initialized = true;
 
