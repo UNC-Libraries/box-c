@@ -36,9 +36,9 @@ import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
+import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
-import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -390,12 +390,12 @@ public class DepositSupervisor implements WorkerListener {
 				if (t instanceof JobFailedException) {
 					jobStatusFactory.failed(jobUUID, t.getLocalizedMessage());
 					depositStatusFactory.fail(depositUUID, t.getLocalizedMessage());
-					depositStatusFactory.incrFailedJob(job.getClassName());
 				} else {
 					jobStatusFactory.failed(jobUUID);
-					depositStatusFactory.fail(depositUUID);
-					depositStatusFactory.incrFailed();
+					String serviceName = job.getClassName().substring(job.getClassName().lastIndexOf('.') + 1);
+					depositStatusFactory.fail(depositUUID, "Failed while performing service " + serviceName);
 				}
+				depositStatusFactory.incrFailedJob(job.getClassName());
 				
 				depositEmailHandler.sendDepositResults(depositUUID);
 				
