@@ -194,7 +194,8 @@ public class DigitalObjectManagerMoveTest {
 
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID);
+		when(tripleStoreQueryService.queryResourceIndex(anyString()))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())));
 
 		digitalMan.move(moving, destPID, "user", "");
 
@@ -294,7 +295,8 @@ public class DigitalObjectManagerMoveTest {
 
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID);
+		when(tripleStoreQueryService.queryResourceIndex(anyString()))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())));
 
 		digitalMan.move(moving, destPID, "user", "");
 
@@ -344,8 +346,9 @@ public class DigitalObjectManagerMoveTest {
 		makeMatcherPair("/fedora/containerRELSEXT1.xml", source1PID);
 		makeMatcherPair("/fedora/containerRELSEXT3.xml", source2PID);
 
-		when(tripleStoreQueryService.fetchContainer(eq(new PID("uuid:child1")))).thenReturn(source1PID);
-		when(tripleStoreQueryService.fetchContainer(eq(new PID("uuid:child32")))).thenReturn(source2PID);
+		when(tripleStoreQueryService.queryResourceIndex(anyString()))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
+				.thenReturn(Arrays.asList(Arrays.asList(source2PID.getPid())));
 
 		digitalMan.move(moving, destPID, "user", "");
 
@@ -409,6 +412,11 @@ public class DigitalObjectManagerMoveTest {
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
 				.thenReturn(null).thenReturn(null);
 		
+		when(tripleStoreQueryService.queryResourceIndex(anyString()))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
+				.thenReturn(null).thenReturn(null);
+		
 		when(managementClient.getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(null);
 
 		try {
@@ -457,8 +465,11 @@ public class DigitalObjectManagerMoveTest {
 
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(source1PID).thenReturn(source1PID)
-				.thenReturn(destPID).thenReturn(destPID);
+		when(tripleStoreQueryService.queryResourceIndex(anyString()))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
+				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPid())))
+				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPid())));
 		
 		// Second attempt to get the source RELS-EXT will return null to trigger rollback
 		when (managementClient.getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName())))
