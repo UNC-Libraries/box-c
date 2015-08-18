@@ -79,6 +79,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
+import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -947,10 +948,20 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// Determine the set of parents for all of the PIDs to be moved
 		Map<PID, List<PID>> childContainerMap = new HashMap<>();
 		for (PID pid : moving) {
-			PID source = this.tripleStoreQueryService.fetchContainer(pid);
-			if (source == null) {
+			// Get all containers which contain the moved object.
+			String query = String.format(
+					"select $pid from <%1$s> where $pid <%2$s> <%3$s>;",
+					tripleStoreQueryService.getResourceIndexModelUri(),
+					Relationship.contains, pid.getURI());
+			List<List<String>> result = tripleStoreQueryService.queryResourceIndex(query);
+			if (result == null) {
 				log.warn("Attempting to move orphaned object {}", pid);
-			} else {
+				continue;
+			}
+			
+			for (List<String> sourceList : result) {
+				PID source = new PID(sourceList.get(0));
+				
 				List<PID> moveFromSource = childContainerMap.get(source);
 				if (moveFromSource == null) {
 					moveFromSource = new ArrayList<>();
@@ -958,6 +969,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 				moveFromSource.add(pid);
 			}
+			
 		}
 		return childContainerMap;
 	}
