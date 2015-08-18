@@ -200,40 +200,9 @@ public class DigitalObjectManagerMoveTest {
 		digitalMan.move(moving, destPID, "user", "");
 
 		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
-
-		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
-
-		verify(managementClient, times(2)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyString(), sourceRelsExtUpdateCaptor.capture());
-
-		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
-		// Check the state of the source after removal but before cleanup
-		Document sourceRelsExt = sourceRelsAnswers.get(0);
-		Set<PID> children = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), contains);
-		assertEquals("Incorrect number of children in source container after move", 10, children.size());
-
-		Set<PID> removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
-		assertEquals("Moved child gravestones not correctly set in source container", 2, removed.size());
-
-		// Check that tombstones were cleaned up by the end of the operation
-		Document cleanRelsExt = sourceRelsAnswers.get(1);
-		children = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), contains);
-		assertEquals("Incorrect number of children in source container after cleanup", 10, children.size());
-
-		removed = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), removedChild);
-		assertEquals("Child tombstones not cleaned up", 0, removed.size());
-
-		// Verify that the destination had the moved children added to it
-		verify(managementClient).getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()));
-		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
-		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyString(), destRelsExtUpdateCaptor.capture());
-		assertFalse("Moved children were still present in source", children.containsAll(moving));
-
-		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
-		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
-		assertEquals("Incorrect number of children in destination container after moved", 9, children.size());
-		assertTrue("Moved children were not present in destination", children.containsAll(moving));
+		
+		verifySourceMoved(source1PID, moving, 10);
+		verifyDestinationMoved(moving, 9);
 	}
 
 	private void makeDatastream(String contentPath, String datastream, PID pid) throws Exception {
@@ -354,33 +323,10 @@ public class DigitalObjectManagerMoveTest {
 
 		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
 		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source2PID), eq(RELS_EXT.getName()));
-
-		ArgumentCaptor<Document> source1RelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
-		verify(managementClient, times(2)).modifyDatastream(eq(source1PID), eq(RELS_EXT.getName()), anyString(),
-				anyString(), source1RelsExtUpdateCaptor.capture());
-
-		// Check that the first source was updated
-		Document clean1RelsExt = source1RelsExtUpdateCaptor.getValue();
-		Set<PID> children = JDOMQueryUtil.getRelationSet(clean1RelsExt.getRootElement(), contains);
-		assertEquals("Incorrect number of children in source 1 after cleanup", 11, children.size());
-
-		// Check that the second source was updated
-		ArgumentCaptor<Document> source2RelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
-		verify(managementClient, times(2)).modifyDatastream(eq(source2PID), eq(RELS_EXT.getName()), anyString(),
-				anyString(), source2RelsExtUpdateCaptor.capture());
-		Document clean2RelsExt = source2RelsExtUpdateCaptor.getValue();
-		children = JDOMQueryUtil.getRelationSet(clean2RelsExt.getRootElement(), contains);
-		assertEquals("Incorrect number of children in source 2 after cleanup", 1, children.size());
-
-		// Check that items from both source 1 and 2 ended up in the destination.
-		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
-		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
-				anyString(), destRelsExtUpdateCaptor.capture());
-
-		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
-		children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
-		assertEquals("Incorrect number of children in destination container after moved", 9, children.size());
-		assertTrue("Moved children were not present in destination", children.containsAll(moving));
+		
+		verifySourceMoved(source1PID, Arrays.asList(new PID("uuid:child1")), 11);
+		verifySourceMoved(source2PID, Arrays.asList(new PID("uuid:child32")), 1);
+		verifyDestinationMoved(moving, 9);
 	}
 
 	@Test
@@ -519,5 +465,66 @@ public class DigitalObjectManagerMoveTest {
 		Document destRBRelsExt = destRelsAnswers.get(1);
 		children = JDOMQueryUtil.getRelationSet(destRBRelsExt.getRootElement(), contains);
 		assertEquals("Incorrect number of children in destination container after rollback", 7, children.size());
+	}
+	
+	@Test
+	public void multipleContainersTest() throws Exception {
+
+		makeMatcherPair("/fedora/containerRELSEXT1.xml", source1PID);
+		makeMatcherPair("/fedora/containerRELSEXT1.xml", source2PID);
+
+		List<PID> moving = Arrays.asList(new PID("uuid:child1"));
+
+		when(tripleStoreQueryService.queryResourceIndex(anyString()))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid()),
+						Arrays.asList(source2PID.getPid())));
+
+		digitalMan.move(moving, destPID, "user", "");
+
+		verifySourceMoved(source1PID, moving, 11);
+		verifySourceMoved(source2PID, moving, 11);
+		verifyDestinationMoved(moving, 8);
+	}
+	
+	private void verifySourceMoved(PID sourcePID, List<PID> moving, int sourceContainsCount)
+			throws Exception {
+		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
+
+		verify(managementClient, times(2)).modifyDatastream(eq(sourcePID), eq(RELS_EXT.getName()), anyString(),
+				anyString(), sourceRelsExtUpdateCaptor.capture());
+
+		List<Document> sourceRelsAnswers = sourceRelsExtUpdateCaptor.getAllValues();
+		// Check the state of the source after removal but before cleanup
+		Document sourceRelsExt = sourceRelsAnswers.get(0);
+		Set<PID> children = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after move", sourceContainsCount, children.size());
+
+		Set<PID> removed = JDOMQueryUtil.getRelationSet(sourceRelsExt.getRootElement(), removedChild);
+		assertEquals("Moved child gravestones not correctly set in source container", moving.size(), removed.size());
+
+		// Check that tombstones were cleaned up by the end of the operation
+		Document cleanRelsExt = sourceRelsAnswers.get(1);
+		children = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in source container after cleanup", sourceContainsCount, children.size());
+
+		removed = JDOMQueryUtil.getRelationSet(cleanRelsExt.getRootElement(), removedChild);
+		assertEquals("Child tombstones not cleaned up", 0, removed.size());
+
+		assertFalse("Moved children were still present in source", children.containsAll(moving));
+	}
+	
+	private void verifyDestinationMoved(List<PID> moving, int destinationCount)
+			throws Exception {
+		// Verify that the destination had the moved children added to it
+		verify(managementClient).getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()));
+		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
+		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
+				anyString(), destRelsExtUpdateCaptor.capture());
+		
+
+		Document destRelsExt = destRelsExtUpdateCaptor.getValue();
+		Set<PID> children = JDOMQueryUtil.getRelationSet(destRelsExt.getRootElement(), contains);
+		assertEquals("Incorrect number of children in destination container after moved", destinationCount, children.size());
+		assertTrue("Moved children were not present in destination", children.containsAll(moving));
 	}
 }
