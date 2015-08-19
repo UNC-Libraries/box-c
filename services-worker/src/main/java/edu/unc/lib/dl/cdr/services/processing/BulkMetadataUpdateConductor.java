@@ -22,9 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.greghaines.jesque.Job;
-import net.greghaines.jesque.worker.Worker;
-import net.greghaines.jesque.worker.WorkerEvent;
-import net.greghaines.jesque.worker.WorkerListener;
 import net.greghaines.jesque.worker.WorkerPool;
 
 import org.slf4j.Logger;
@@ -39,7 +36,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants;
  * @author bbpennel
  * @date Jul 31, 2015
  */
-public class BulkMetadataUpdateConductor implements WorkerListener {
+public class BulkMetadataUpdateConductor {
 	private static final Logger log = LoggerFactory.getLogger(BulkMetadataUpdateConductor.class);
 	
 	private net.greghaines.jesque.client.Client jesqueClient;
@@ -57,19 +54,6 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 		Job job = new Job(BulkMetadataUpdateJob.class.getName(), updateId, email, username, groups,
 				importFile.getAbsolutePath(), originalFilename);
 		jesqueClient.enqueue(queueName, job);
-	}
-	
-	@Override
-	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
-		if (event == null || event == WorkerEvent.WORKER_POLL) {
-			return;
-		}
-		
-		log.debug("onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}", new Object[] { event, worker, queue, job, runner, result, t });
-	
-		if (event == WorkerEvent.JOB_FAILURE) {
-			log.error("Job failed: " + job, t);
-		}
 	}
 	
 	public void resumeIncompleteUpdates() {
@@ -113,9 +97,6 @@ public class BulkMetadataUpdateConductor implements WorkerListener {
 	}
 
 	public void init() {
-		workerPool.getWorkerEventEmitter().addListener(this);
-		workerPool.run();
-		
 		resumeIncompleteUpdates();
 	}
 	
