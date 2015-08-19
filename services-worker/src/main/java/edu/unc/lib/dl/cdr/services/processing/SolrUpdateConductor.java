@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.greghaines.jesque.Job;
-import net.greghaines.jesque.worker.Worker;
-import net.greghaines.jesque.worker.WorkerEvent;
-import net.greghaines.jesque.worker.WorkerListener;
-import net.greghaines.jesque.worker.WorkerPool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +18,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
-public class SolrUpdateConductor implements MessageConductor, WorkerListener {
+public class SolrUpdateConductor implements MessageConductor {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateConductor.class);
 	
@@ -146,19 +142,6 @@ public class SolrUpdateConductor implements MessageConductor, WorkerListener {
 		} else {
 			// For all other message types, do a single record update
 			this.offer(message.getTargetID());
-		}
-	}
-	
-	@Override
-	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
-		if (event == null || event == WorkerEvent.WORKER_POLL) {
-			return;
-		}
-		
-		LOG.debug("onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}", new Object[] { event, worker, queue, job, runner, result, t });
-	
-		if (event == WorkerEvent.JOB_FAILURE) {
-			LOG.error("Job failed: " + job, t);
 		}
 	}
 
