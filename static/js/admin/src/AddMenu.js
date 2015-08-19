@@ -1,5 +1,5 @@
-define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateSimpleObjectForm', 'qtip'],
-		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateSimpleObjectForm) {
+define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateSimpleObjectForm', 'ImportMetadataXMLForm', 'qtip'],
+		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateSimpleObjectForm, ImportMetadataXMLForm) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
@@ -14,6 +14,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		items["addContainer"] = {name : "Add Container"};
 		items["ingestPackage"] = {name : "Add Ingest Package"};
 		items["simpleObject"] = {name : "Add Simple Object"};
+		items["importMetadata"] = {name : "Import MODS"};
 		return items;
 	};
 	
@@ -27,15 +28,6 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		var items = self.getMenuItems();
 		if ($.isEmptyObject(items))
 			return;
-		var createContainerForm = new CreateContainerForm({
-			alertHandler : this.options.alertHandler
-		});
-		var ingestPackageForm = new IngestPackageForm({
-			alertHandler : this.options.alertHandler
-		});
-		var simpleObjectForm = new CreateSimpleObjectForm({
-			alertHandler : this.options.alertHandler
-		});
 		
 		this.menu = $.contextMenu({
 			selector: this.options.selector,
@@ -53,13 +45,24 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			callback : function(key, options) {
 				switch (key) {
 					case "addContainer" :
-						createContainerForm.open(self.container.id);
+						new CreateContainerForm({
+							alertHandler : self.options.alertHandler
+						}).open(self.container.id);
 						break;
 					case "ingestPackage" :
-						ingestPackageForm.open(self.container.id);
+						new IngestPackageForm({
+							alertHandler : self.options.alertHandler
+						}).open(self.container.id);
 						break;
 					case "simpleObject" :
-						simpleObjectForm.open(self.container.id);
+						new CreateSimpleObjectForm({
+							alertHandler : self.options.alertHandler
+						}).open(self.container.id);
+						break;
+					case "importMetadata" :
+						new ImportMetadataXMLForm({
+							alertHandler : self.options.alertHandler
+						}).open();
 						break;
 				}
 			},

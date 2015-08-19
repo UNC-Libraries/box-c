@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.update;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -37,10 +36,7 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,19 +51,16 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
-public class MODSUIPFilterTest extends Assert {
-	private static Logger log = Logger.getLogger(MODSUIPFilterTest.class);
+public class MODSValidationUIPFilterTest extends Assert {
+	private static Logger log = Logger.getLogger(MODSValidationUIPFilterTest.class);
 
 	@Resource
 	private SchematronValidator schematronValidator;
-	private MODSUIPFilter filter;
+	private MODSValidationUIPFilter filter;
 
-	@Mock
-	private VocabularyHelperManager vocabManager;
 	@Mock
 	private TripleStoreQueryService queryService;
 
@@ -75,11 +68,10 @@ public class MODSUIPFilterTest extends Assert {
 	public void init() {
 		initMocks(this);
 
-		filter = new MODSUIPFilter();
+		filter = new MODSValidationUIPFilter();
 
 		filter.setSchematronValidator(schematronValidator);
 
-		setField(filter, "vocabManager", vocabManager);
 		filter.setQueryService(queryService);
 	}
 
@@ -253,7 +245,7 @@ public class MODSUIPFilterTest extends Assert {
 
 	@Test
 	public void nullUIP() throws UIPException {
-		MODSUIPFilter filter = new MODSUIPFilter();
+		MODSValidationUIPFilter filter = new MODSValidationUIPFilter();
 		filter.doFilter(null);
 		// Passes if no exception
 	}

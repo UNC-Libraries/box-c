@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.cdr.services.worker;
 
+import java.util.Map;
+
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.worker.Worker;
 import net.greghaines.jesque.worker.WorkerEvent;
@@ -38,17 +40,21 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 			appContext.refresh();
 		}
 		
-		WorkerPool workerPool = appContext.getBean(WorkerPool.class);
-		workerPool.getWorkerEventEmitter().addListener(this);
-		workerPool.run();
+		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
+		for (WorkerPool workerPool : workerPools.values()) {
+			workerPool.getWorkerEventEmitter().addListener(this);
+			workerPool.run();
+		}
 	}
 
 	@Override
 	public void stop() throws Exception {
 		LOG.info("Stopping the services worker daemon");
 		
-		WorkerPool workerPool = appContext.getBean(WorkerPool.class);
-		workerPool.end(true);
+		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
+		for (WorkerPool workerPool : workerPools.values()) {
+			workerPool.end(true);
+		}
 		appContext.stop();
 	}
 

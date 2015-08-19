@@ -248,7 +248,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 							targets : [resultObject]
 						});
 						break;
-					
 					case "copyid" :
 						window.prompt("Copy PID to clipboard", metadata.id);
 						break;

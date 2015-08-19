@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.transform.JDOMSource;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -36,8 +35,6 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
-import edu.unc.lib.dl.xml.DepartmentOntologyUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -46,21 +43,18 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class MODSUIPFilter extends MetadataUIPFilter {
-	private static Logger log = Logger.getLogger(MODSUIPFilter.class);
+public class MODSValidationUIPFilter extends MetadataUIPFilter {
+	private static Logger log = Logger.getLogger(MODSValidationUIPFilter.class);
 
 	private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
 	private SchematronValidator schematronValidator;
 	private final Validator modsValidator;
 
-	@Autowired
-	private VocabularyHelperManager vocabManager;
-
 	@Resource
 	private TripleStoreQueryService queryService;
 
 
-	public MODSUIPFilter() {
+	public MODSValidationUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
 		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-5.xsd"));
@@ -104,6 +98,8 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 				// Doing add for update since the schema does not allow a way to indicate a tag should replace another
 				newModified = performAdd(metadataUIP, datastreamName);
 				break;
+			case DELETE:
+				break;
 		}
 
 		if (newModified != null) {
@@ -116,6 +112,18 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 	}
 
 	protected void validate(UpdateInformationPackage uip, Element mods) throws UIPException {
+		try {
+			modsValidator.validate(new JDOMSource(mods));
+		} catch (SAXException e) {
+			Throwable cause = e;
+			while (cause.getCause() != null) {
+				cause = cause.getCause();
+			}
+			throw new UIPException("MODS failed to validate to schema:" + cause.getMessage(), e);
+		} catch (Exception e) {
+			throw new RuntimeException("Unexpected exception while attempting to validate MODS", e);
+		}
+		
 		Document svrl = schematronValidator.validate(new JDOMSource(mods), "vocabularies-mods");
 		String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
 		Element event = uip.getEventLogger().logEvent(Type.VALIDATION, message, uip.getPID(), "MD_DESCRIPTIVE");
@@ -135,23 +143,10 @@ public class MODSUIPFilter extends MetadataUIPFilter {
 			}
 			throw new UIPException("The supplied MODS metadata did not meet requirements.\n  " + validationOutput.toString());
 		}
-		try {
-			modsValidator.validate(new JDOMSource(mods));
-
-			vocabManager.updateInvalidTermsRelations(uip.getPID(), mods);
-		} catch (SAXException e) {
-			throw new UIPException("MODS failed to validate to schema:" + e.getMessage(), e);
-		} catch (Exception e) {
-			throw new RuntimeException("Unexpected exception while attempting to validate MODS", e);
-		}
 	}
 
 	public void setSchematronValidator(SchematronValidator schematronValidator) {
 		this.schematronValidator = schematronValidator;
-	}
-
-	public void setDeptUtil(DepartmentOntologyUtil deptUtil) {
-		// this.deptUtil = deptUtil;
 	}
 
 	public void setQueryService(TripleStoreQueryService queryService) {

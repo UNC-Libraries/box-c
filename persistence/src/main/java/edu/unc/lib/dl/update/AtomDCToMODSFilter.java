@@ -24,7 +24,7 @@ import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
-public class AtomDCToMODSFilter extends MODSUIPFilter {
+public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
 	private static Logger log = Logger.getLogger(AtomDCToMODSFilter.class);
 	private final String datastreamName = AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM;
 	

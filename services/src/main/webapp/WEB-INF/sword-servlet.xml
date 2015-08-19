@@ -89,9 +89,10 @@
 				<bean class="edu.unc.lib.dl.update.AtomDCToMODSFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
-				<bean class="edu.unc.lib.dl.update.MODSUIPFilter">
+				<bean class="edu.unc.lib.dl.update.MODSValidationUIPFilter">
 					<property name="schematronValidator" ref="schematronValidator" />
 				</bean>
+				<bean class="edu.unc.lib.dl.update.MODSVocabularyUIPFilter"/>
 				<bean class="edu.unc.lib.dl.update.RELSEXTUIPFilter"/>
 				<bean class="edu.unc.lib.dl.update.AccessControlUIPFilter"/>
 			</list>
@@ -102,7 +103,7 @@
 		<entry key="ACL" value="RELS_EXT"/>
 	</util:map>
 	
-	<bean id="uipProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
+	<bean id="fedoraUIPProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="accessClient" ref="accessClient"/>
 		<property name="pipeline" ref="uipPipeline"/>
@@ -177,7 +178,7 @@
 	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
 		init-method="init">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="uipProcessor" ref="uipProcessor"/>
+		<property name="uipProcessor" ref="fedoraUIPProcessor"/>
 		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
