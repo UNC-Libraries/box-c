@@ -1,18 +1,18 @@
 <html>
 <head>
   <style>
-    span {
-      color: darkred;
-    }
+    dd { margin: 0; }
+    dd + dt { margin-top: 8px; }
   </style>
 </head>
 <body>
-  <p>Update {{fileName}} was not performed due to {{problemCount}} validation problem(s).  Please address the issues and resubmit, or reply to this email for assistance</p>
+  <h3>CDR metadata update failed validation: {{fileName}}</h3>
   
-  <ul>
+  <dl>
     {{#problems}}
-      <li>{{key}} - <span>{{value}}</li>
+      <dt>{{key}}</dt>
+      <dd>{{value}}</dd>
     {{/problems}}
-  </ul>
+  </dl>
 </body>
 </html>

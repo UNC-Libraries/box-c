@@ -1,9 +1,8 @@
 <html>
 <head>
   <style>
-    span {
-      color: darkred;
-    }
+    dd { margin: 0; }
+    dd + dt { margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -26,11 +25,12 @@
 
   {{#failedCount}}
     <h4>Failed ({{failedCount}})</h4>
-    <ul>
+    <dl>
       {{#failed}}
-      <li>{{key}} - <span>{{value}}</span></li>
+        <dt>{{key}}</dt>
+        <dd>{{value}}</dd>
       {{/failed}}
-    </ul>
+    </dl>
   {{/failedCount}}
 
   {{#updatedCount}}
