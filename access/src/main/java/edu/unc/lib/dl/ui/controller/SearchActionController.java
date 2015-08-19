@@ -111,6 +111,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		SearchState searchState = searchRequest.getSearchState();
 		searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
 		searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
+		searchState.getFacetsToRetrieve().remove(SearchFieldKeys.PARENT_COLLECTION.name());
 		
 		SearchResultResponse result = doSearch(searchRequest, model, request);
 		result.setSelectedContainer(null);
