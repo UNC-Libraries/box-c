@@ -1,7 +1,6 @@
 package edu.unc.lib.deposit.work;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,19 +17,17 @@ import javax.annotation.PreDestroy;
 
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
+import net.greghaines.jesque.meta.QueueInfo;
+import net.greghaines.jesque.meta.dao.QueueInfoDAO;
 import net.greghaines.jesque.worker.Worker;
 import net.greghaines.jesque.worker.WorkerEvent;
 import net.greghaines.jesque.worker.WorkerListener;
 import net.greghaines.jesque.worker.WorkerPool;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.PrepareResubmitJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
@@ -81,7 +78,7 @@ public class DepositSupervisor implements WorkerListener {
 	private WorkerPool cdrMetsDepositWorkerPool;
 	
 	@Autowired
-	private JedisPool jedisPool;
+	private QueueInfoDAO queueDAO;
 	
 	@Autowired
 	private DepositEmailHandler depositEmailHandler;
@@ -243,40 +240,24 @@ public class DepositSupervisor implements WorkerListener {
 	
 	private Map<String, Set<String>> getQueuedDepositsWithJobs() {
 		Map<String, Set<String>> depositMap = new HashMap<>();
-		addQueuedDeposits(
-				RedisWorkerConstants.RESQUE_QUEUE_PREFIX + RedisWorkerConstants.DEPOSIT_PREPARE_QUEUE, depositMap);
-		addQueuedDeposits(
-				RedisWorkerConstants.RESQUE_QUEUE_PREFIX + RedisWorkerConstants.DEPOSIT_DELAYED_QUEUE, depositMap);
-		addQueuedDeposits(
-				RedisWorkerConstants.RESQUE_QUEUE_PREFIX + RedisWorkerConstants.DEPOSIT_CDRMETS_QUEUE, depositMap);
+		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_PREPARE_QUEUE, depositMap);
+		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_DELAYED_QUEUE, depositMap);
+		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_CDRMETS_QUEUE, depositMap);
 		return depositMap;
 	}
 	
 	private void addQueuedDeposits(String queueName, Map<String, Set<String>> depositMap) {
-		Jedis jedis = jedisPool.getResource();
-		Set<String> queue;
-		try {
-			queue = jedis.zrange(queueName, 0, -1);
-		} catch (Exception e) {
-			// Resque seems to sometimes switch the type of the queue
-			LOG.warn("Redis did not return a zset for {}, trying to retrieve as a list", queueName, e);
-			queue = new HashSet<>(jedis.lrange(queueName, 0, -1));
-		}
+		QueueInfo info = queueDAO.getQueueInfo(queueName, 0, 0);
 		
-		ObjectMapper mapper = new ObjectMapper();
-		for (String entry : queue) {
-			try {
-				JsonNode node = mapper.readTree(entry);
-				String depositId = node.get("args").get(1).asText();
-				Set<String> jobs = depositMap.get(depositId);
-				if (jobs == null) {
-					jobs = new HashSet<>();
-					depositMap.put(depositId, jobs);
-				}
-				jobs.add(node.get("class").asText());
-			} catch (IOException e) {
-				LOG.error("Failed to parse deposit job from resque", e);
+		for (Job job : info.getJobs()) {
+			String depositId = (String) job.getArgs()[1];
+			
+			Set<String> jobs = depositMap.get(depositId);
+			if (jobs == null) {
+				jobs = new HashSet<>();
+				depositMap.put(depositId, jobs);
 			}
+			jobs.add(job.getClassName());
 		}
 	}
 

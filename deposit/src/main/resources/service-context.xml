@@ -67,6 +67,11 @@
 		<constructor-arg ref="jedisPool" />
 	</bean>
 	
+	<bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
+		<constructor-arg ref="jesqueConfig" />
+		<constructor-arg ref="jedisPool" />
+	</bean>
+	
 	<bean id="dataSet" class="com.hp.hpl.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
 		<constructor-arg value="${deposits.dir}/jena-tdb-dataset"/>
 	</bean>
