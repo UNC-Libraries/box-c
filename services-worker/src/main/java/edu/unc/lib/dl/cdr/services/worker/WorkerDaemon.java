@@ -54,8 +54,8 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
 		for (WorkerPool workerPool : workerPools.values()) {
 			workerPool.end(true);
-			appContext.stop();
 		}
+		appContext.stop();
 	}
 
 	@Override
