@@ -15,6 +15,7 @@ import com.samskivert.mustache.Template;
 
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 public class DepositEmailHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(DepositEmailHandler.class);
@@ -92,27 +93,25 @@ public class DepositEmailHandler {
 
 		// prepare template data
 		Map<String, Object> data = new HashMap<String, Object>();
+		
 		data.putAll(status);
+		
 		data.put("baseUrl", this.getBaseUrl());
-		boolean error = status.containsKey(DepositField.errorMessage.name());
-		data.put("error", Boolean.valueOf(error));
-		if (error) {
-			data.put("errorMessage", status.get(DepositField.errorMessage.name()));
-		}
-		data.put("ingestedObjects", status.get(DepositField.ingestedObjects.name()));
-		data.put("uuid", status.get(DepositField.uuid.name()));
-		data.put("fileName", status.get(DepositField.fileName.name()));
+		
+		boolean failed = status.get(DepositField.state.name()).equals(DepositState.failed.name());
+		data.put("failed", Boolean.valueOf(failed));
 		
 		// execute template, address and send
 		String html = htmlTemplate.execute(data);
 		String text = textTemplate.execute(data);
+		
 		MimeMessage mimeMessage = mailSender.createMimeMessage();
 		try {
 			MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
 			String addy = status.get(DepositField.depositorEmail.name());
 			message.addTo(addy);
-			if (error) {
-				message.setSubject("CDR deposit error: " + status.get(DepositField.fileName.name()));
+			if (failed) {
+				message.setSubject("CDR deposit failed: " + status.get(DepositField.fileName.name()));
 			} else {
 				message.setSubject("CDR deposit complete: " + status.get(DepositField.fileName.name()));
 			}
