@@ -103,10 +103,6 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>log4j-over-slf4j</artifactId>
 				</exclusion>
-				<exclusion>
-					<groupId>woodstox</groupId>
-					<artifactId>wstx-asl</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -139,11 +135,6 @@
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>staging-areas</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.codehaus.woodstox</groupId>
-			<artifactId>wstx-asl</artifactId>
-			<version>3.0.0</version>
 		</dependency>
 	</dependencies>
 </project>
