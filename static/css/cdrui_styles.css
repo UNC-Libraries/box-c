@@ -804,6 +804,10 @@ p.navigation_bar a {
 	
 }
 
+#facet_field_path_structure .structure.facet .structure_content {
+	max-height: 300px;
+}
+
 .metadata table {
 	clear: both;
 	font-size: 12px;
