@@ -57,7 +57,6 @@
 				<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 				<c:choose>
 					<c:when test="${resultType == 'collectionBrowse'}">
-						
 						<h2>Refine your results</h2>
 						<c:import url="/jsp/util/facetList.jsp">
 							<c:param name="queryMethod">search</c:param>
@@ -66,6 +65,16 @@
 					</c:when>
 					<c:otherwise>
 						<c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
+						<h2>Folders</h2>
+						<div id="facet_field_path_structure" class="hidden">
+							<c:if test="${not empty resultResponse.selectedContainer}"><c:set var="containerPath" value="/${selectedContainer.id}"/></c:if>
+							<c:url var="structureUrl" scope="page" value='structure${containerPath}/path'>
+								<c:param name="view" value="facet"/>
+								<c:param name="queryp" value="list"/>
+								<c:param name="files" value="false"/>
+							</c:url>
+							<a href="<c:out value="${structureUrl}" />"><img src="/static/images/ajax_loader.gif"/></a>
+						</div>
 						<h2>Refine your search</h2>
 						<c:import url="/jsp/util/facetList.jsp">
 							<c:param name="queryMethod">search</c:param>

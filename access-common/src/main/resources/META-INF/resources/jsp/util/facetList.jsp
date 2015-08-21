@@ -78,17 +78,6 @@
 			</c:when>
 		</c:choose>
 		<c:if test="${not empty facetField.values}">
-			<c:if test="${facetField.name == 'ANCESTOR_PATH'}">
-				<div id="facet_field_${searchSettings.searchFieldParams[facetField.name]}_structure" class="hidden">
-					<c:if test="${not empty selectedContainer}"><c:set var="containerPath" value="/${selectedContainer.id}"/></c:if>
-					<c:url var="structureUrl" scope="page" value='structure${containerPath}/path${searchStateParameters}'>
-						<c:param name="view" value="facet"/>
-						<c:param name="queryp" value="list"/>
-						<c:param name="files" value="false"/>
-					</c:url>
-					<a href="<c:out value="${structureUrl}" />"><img src="/static/images/ajax_loader.gif"/></a>
-				</div>
-			</c:if>
 			<ul id="facet_field_<c:out value="${searchSettings.searchFieldParams[facetField.name]}_list" />" class="facets">
 				<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
 					<c:choose>
