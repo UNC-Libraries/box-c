@@ -664,16 +664,18 @@ public class DepositSupervisor implements WorkerListener {
 			jobStatusFactory.clearStale(uuid);
 			depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
 			
+			// since we already checked for queued jobs at startup, only check when resuming from a paused state
 			boolean enqueueNext = true;
 			if (DepositState.paused.name().equals(status.get(DepositField.state.name()))) {
 				Map<String, Set<String>> depositSet = getQueuedDepositsWithJobs();
 				enqueueNext = !depositSet.containsKey(uuid);
-				LOG.info("Resuming from paused state.  {} will enqueue a new job {}", uuid, enqueueNext);
 			}
 
 			if (enqueueNext) {
 				List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
 				queueNextJob(null, uuid, status, successfulJobs, delay);
+			} else {
+				LOG.info("Resuming {} from paused state.  A job is already queued so no new jobs will be enqueued", uuid);
 			}
 
 			depositStatusFactory.setState(uuid, DepositState.queued);
