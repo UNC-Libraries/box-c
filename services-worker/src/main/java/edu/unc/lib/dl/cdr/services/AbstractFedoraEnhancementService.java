@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services;
 
+import static edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions.APPLY_SERVICE;
+import static edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -45,6 +48,7 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	protected List<String> findCandidatesQueries;
 	protected String findStaleCandidatesQuery;
 	protected List<String> isApplicableQueries;
+	protected List<String> applicableObjectQueries;
 
 	private ApplicationContext applicationContext;
 
@@ -180,9 +184,13 @@ public abstract class AbstractFedoraEnhancementService implements ObjectEnhancem
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		// Automatically isApplicable if the message is specifically asking for this service.
 		String action = message.getQualifiedAction();
-		if ((JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(action) || JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(action))
-				&& this.getClass().getName().equals(message.getServiceName()))
-			return true;
+		if (APPLY_SERVICE_STACK.equals(action) ||
+				(APPLY_SERVICE.equals(action) && getClass().getName().equals(message.getServiceName()))) {
+			if (message.isForce()) {
+				// Just need to make sure that the target has data before allowing
+				return askQueries(this.applicableObjectQueries, message);
+			}
+		}
 
 		return askQueries(this.isApplicableQueries, message);
 	}

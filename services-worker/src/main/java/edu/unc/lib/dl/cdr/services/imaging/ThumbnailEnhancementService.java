@@ -72,6 +72,8 @@ public class ThumbnailEnhancementService extends AbstractDatastreamEnhancementSe
 			this.applicableNoDSQueries = Arrays.asList(this.isApplicableQueries.get(0), this.isApplicableQueries.get(2));
 			this.applicableStaleDSQueries = Arrays
 					.asList(this.isApplicableQueries.get(1), this.isApplicableQueries.get(3));
+			this.applicableObjectQueries = Arrays.asList(readFileAsString("is-image.sparql"),
+					readFileAsString("has-image-surrogate.sparql"));
 
 		} catch (IOException e) {
 			LOG.error("Failed to read service query", e);

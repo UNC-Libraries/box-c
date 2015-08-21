@@ -15,20 +15,28 @@
  */
 package edu.unc.lib.dl.cdr.services;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
+
 import java.util.List;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public abstract class AbstractFedoraEnhancement extends Enhancement<Element> {
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractFedoraEnhancement.class);
+	
 	protected AbstractFedoraEnhancementService service;
 	protected EnhancementMessage message;
 	
@@ -45,46 +53,46 @@ public abstract class AbstractFedoraEnhancement extends Enhancement<Element> {
 	}
 	
 	protected void setExclusiveTripleRelation(PID pid, String predicate, Namespace namespace, PID exclusivePID, Document foxml)
-			throws FedoraException {
-		List<String> rel = FOXMLJDOMUtil.getRelationValues(predicate, namespace, FOXMLJDOMUtil.getRelsExt(foxml));
-		String predicateUri = namespace.getURI() + predicate;
-		if (rel != null) {
-			String valueString = exclusivePID.toString();
-			if (rel.contains(valueString)) {
-				rel.remove(valueString);
-			} else {
-				// add missing rel
-				service.getManagementClient().addObjectRelationship(pid, predicateUri, exclusivePID);
-			}
-			// remove any other same predicate triples
-			for (String oldValue : rel) {
-				service.getManagementClient().purgeObjectRelationship(pid, predicateUri, new PID(oldValue));
-			}
-		} else {
-			// add missing rel
-			service.getManagementClient().addObjectRelationship(pid, predicateUri, exclusivePID);
-		}
+			throws FedoraException{
+		setExclusiveTriple(pid, predicate, namespace, exclusivePID.toString(), false, null, foxml);
 	}
 	
-	protected void setExclusiveTripleValue(PID pid, String predicate, Namespace namespace, String newExclusiveValue, String datatype, Document foxml)
+	protected void setExclusiveTripleValue(PID pid, String predicate, Namespace namespace, String newExclusiveValue,
+			String datatype, Document foxml) throws FedoraException {
+		setExclusiveTriple(pid, predicate, namespace, newExclusiveValue, true, datatype, foxml);
+	}
+	
+	protected void setExclusiveTriple(PID pid, String predicate, Namespace namespace, String value,
+			boolean isLiteral, String datatype, Document foxml)
 			throws FedoraException {
-		List<String> rel = FOXMLJDOMUtil.getRelationValues(predicate, namespace, FOXMLJDOMUtil.getRelsExt(foxml));
-		String predicateUri = namespace.getURI() + predicate;
-		if (rel != null) {
-			if (rel.contains(newExclusiveValue)) {
-				rel.remove(newExclusiveValue);
-			} else {
-				// add missing rel
-				service.getManagementClient().addLiteralStatement(pid, predicateUri, newExclusiveValue, datatype);
+		DatastreamDocument dsDoc = service.getManagementClient().getRELSEXTWithRetries(pid);
+		
+		do {
+			try {
+				Document doc = dsDoc.getDocument();
+				Element descEl = doc.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+				
+				descEl.removeChildren(predicate, namespace);
+				
+				Element relEl = new Element(predicate, namespace);
+				if (isLiteral) {
+					if (datatype != null) {
+						relEl.setAttribute("datatype", datatype, JDOMNamespaceUtil.RDF_NS);
+					}
+					relEl.setText(value);
+				} else {
+					relEl.setAttribute("resource", value, JDOMNamespaceUtil.RDF_NS);
+				}
+				
+				descEl.addContent(relEl);
+				
+				service.getManagementClient().modifyDatastream(pid, RELS_EXT.getName(),
+						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
+				return;
+			} catch (OptimisticLockException e) {
+				LOG.debug("Unable to update RELS-EXT for {}, retrying", pid, e);
 			}
-			// remove any other same predicate triples
-			for (String oldValue : rel) {
-				service.getManagementClient().purgeLiteralStatement(pid, predicateUri, oldValue, datatype);
-			}
-		} else {
-			// add missing rel
-			service.getManagementClient().addLiteralStatement(pid, predicateUri, newExclusiveValue, datatype);
-		}
+		} while (true);
 	}
 	
 	protected Document retrieveFoxml() throws FedoraException {

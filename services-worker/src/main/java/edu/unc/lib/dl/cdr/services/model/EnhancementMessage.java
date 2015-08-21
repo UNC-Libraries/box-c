@@ -41,6 +41,7 @@ public class EnhancementMessage implements ActionMessage {
 	protected String activeService = null;
 	protected long timeCreated = System.currentTimeMillis();
 	protected long timeFinished = -1;
+	protected boolean force = false;
 	protected List<String> filteredServices = null;
 	protected List<String> executedServices = null;
 	protected List<String> completedServices = null;
@@ -138,6 +139,7 @@ public class EnhancementMessage implements ActionMessage {
 		return this.targetLabel;
 	}
 	
+	@Override
 	public void setTargetLabel(String targetLabel) {
 		this.targetLabel = targetLabel;
 	}
@@ -205,6 +207,14 @@ public class EnhancementMessage implements ActionMessage {
 
 	public void setQualifiedAction(String qualifiedAction) {
 		this.qualifiedAction = qualifiedAction;
+	}
+
+	public boolean isForce() {
+		return force;
+	}
+
+	public void setForce(boolean force) {
+		this.force = force;
 	}
 
 	@Override

@@ -1,0 +1,7 @@
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+ASK 
+FROM <%1$s>
+WHERE {
+    ?pid cdr-base:sourceData ?srcDS .
+    FILTER ( ?pid = <%2$s> )
+}

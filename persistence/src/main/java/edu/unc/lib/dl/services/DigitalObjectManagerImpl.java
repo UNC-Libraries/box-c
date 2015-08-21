@@ -111,8 +111,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
-	private static int RELS_EXT_RETRIES = 10;
-	private static long RELS_EXT_RETRY_DELAY = 250L;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -899,8 +897,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			DatastreamDocument sourceRelsExtResp;
 			try {
-				sourceRelsExtResp = getRELSEXTWithRetries(source);
-			} catch (IngestException e) {
+				sourceRelsExtResp = managementClient.getRELSEXTWithRetries(source);
+			} catch (NotFoundException e) {
 				log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
 				return;
 			}
@@ -973,23 +971,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		return childContainerMap;
 	}
-	
-	private DatastreamDocument getRELSEXTWithRetries(PID pid) throws IngestException, FedoraException {
-		for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
-			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(pid, RELS_EXT.getName());
-			if (relsExtResp == null) {
-				log.debug("Could not find RELS-EXT for {}, retrying", pid);
-				try {
-					Thread.sleep(RELS_EXT_RETRY_DELAY);
-				} catch (InterruptedException e) {
-					break;
-				}
-			} else {
-				return relsExtResp;
-			}
-		}
-		throw new IngestException("Unable to retrieve RELS-EXT for " + pid);
-	}
 
 	/**
 	 * Remove children from the provided list within the specified container. If replaceWithMarkers is true, then instead
@@ -1005,7 +986,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throws FedoraException, IngestException {
 
 		removeRelsExt: do {
-			DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
+			DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
@@ -1081,7 +1062,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		updateRelsExt: do {
 			try {
-				DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
+				DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
 				Document relsExt = relsExtResp.getDocument();
 
 				Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
@@ -1155,7 +1136,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
-			DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
+			DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
 			Document relsExt = relsExtResp.getDocument();
 
 			try {

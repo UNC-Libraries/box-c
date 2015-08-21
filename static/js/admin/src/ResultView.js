@@ -40,7 +40,13 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 								{action : 'RestoreBatch', label : 'Restore'},
 								{action : 'DeleteBatch', label : 'Delete'}
 							]
-						}
+						},
+						{
+							actions : [
+								{action : 'RunEnhancementsBatch', label : 'Run Enhancements', joiner : ' on'}
+							],
+							hideInTableMenu : true
+						},
 					]
 		},
 		

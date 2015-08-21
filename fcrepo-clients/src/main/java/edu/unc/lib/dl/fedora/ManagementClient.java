@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fedora;
 
 import static edu.unc.lib.dl.util.ContentModelHelper.Administrative_PID.REPOSITORY;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,6 +113,9 @@ public class ManagementClient extends WebServiceTemplate {
 	private TripleStoreQueryService tripleStoreQueryService;
 	private MultiThreadedHttpConnectionManager httpManager;
 	private HttpClient httpClient;
+	
+	private static int RELS_EXT_RETRIES = 10;
+	private static long RELS_EXT_RETRY_DELAY = 250L;
 
 	// ENUMS
 	private enum Action {
@@ -1055,6 +1059,23 @@ public class ManagementClient extends WebServiceTemplate {
 			return null;
 		}
 
+	}
+	
+	public DatastreamDocument getRELSEXTWithRetries(PID pid) throws FedoraException {
+		for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
+			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(pid, RELS_EXT.getName());
+			if (relsExtResp == null) {
+				log.debug("Could not find RELS-EXT for {}, retrying", pid);
+				try {
+					Thread.sleep(RELS_EXT_RETRY_DELAY);
+				} catch (InterruptedException e) {
+					break;
+				}
+			} else {
+				return relsExtResp;
+			}
+		}
+		throw new NotFoundException("Unable to retrieve RELS-EXT for " + pid);
 	}
 
 	// @Override

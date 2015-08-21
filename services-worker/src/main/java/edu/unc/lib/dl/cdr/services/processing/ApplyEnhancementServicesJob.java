@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.util.JMSMessageUtil.servicesMessageNamespace;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions;
 
 public class ApplyEnhancementServicesJob implements Runnable {
 
@@ -16,7 +19,14 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 	private List<ObjectEnhancementService> services;
 	private long recoverableDelay = 0;
-	private EnhancementMessage message;
+	private final EnhancementMessage message;
+	
+	public ApplyEnhancementServicesJob(String pidString, boolean force) {
+		this.message = new EnhancementMessage(pidString, servicesMessageNamespace,
+				ServicesActions.APPLY_SERVICE_STACK.getName());
+		this.message.setCompletedServices(new ArrayList<String>());
+		this.message.setForce(force);
+	}
 	
 	public ApplyEnhancementServicesJob(String messagePid, String messageNamespace, String messageAction, String messageServiceName, List<String> filteredServices) {
 		this.message = new EnhancementMessage(messagePid, messageNamespace, messageAction, messageServiceName);
@@ -35,7 +45,8 @@ public class ApplyEnhancementServicesJob implements Runnable {
 	@Override
 	public void run() {
 		for (ObjectEnhancementService service : services) {
-			if (!message.getFilteredServices().contains(service.getClass().getName())) {
+			if (message.getFilteredServices() != null
+					&& !message.getFilteredServices().contains(service.getClass().getName())) {
 				continue;
 			}
 			
