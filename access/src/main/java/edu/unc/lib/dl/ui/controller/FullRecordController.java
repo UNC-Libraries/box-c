@@ -18,6 +18,7 @@ package edu.unc.lib.dl.ui.controller;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -41,6 +42,7 @@ import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
@@ -129,6 +131,13 @@ public class FullRecordController extends AbstractSolrSearchController {
 				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
 			} catch (RenderViewException e) {
 				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
+			} catch (ServiceException e) {
+				if (e.getCause() instanceof TimeoutException) {
+					LOG.warn("Maximum retrieval time exceeded while retrieving FOXML for full record of {}",
+							idRequest.getId());
+				} else {
+					LOG.error("Failed to retrieve FOXML for object {}" , idRequest.getId(), e);
+				}
 			}
 		}
 
