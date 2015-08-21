@@ -12,6 +12,11 @@ public class RedisWorkerConstants {
 	public static final String BULK_RESUME_PREFIX = "bulk-resume:";
 	public static final String BULK_UPDATE_QUEUE = "bulk-md-update";
 
+	public static final String DEPOSIT_PREPARE_QUEUE = "PREPARE";
+	public static final String DEPOSIT_DELAYED_QUEUE = "DELAYED_PREPARE";
+	public static final String DEPOSIT_CDRMETS_QUEUE = "CDRMETSCONVERT";
+	public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
+
 	public static enum DepositField {
 		uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
 		fileName, resubmitDirName, resubmitFileName, isResubmit, depositMethod, containerId, payLoadOctets,

@@ -3,6 +3,8 @@ package edu.unc.lib.deposit.work;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +17,8 @@ import javax.annotation.PreDestroy;
 
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
+import net.greghaines.jesque.meta.QueueInfo;
+import net.greghaines.jesque.meta.dao.QueueInfoDAO;
 import net.greghaines.jesque.worker.Worker;
 import net.greghaines.jesque.worker.WorkerEvent;
 import net.greghaines.jesque.worker.WorkerListener;
@@ -44,6 +48,7 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
@@ -71,6 +76,9 @@ public class DepositSupervisor implements WorkerListener {
 	
 	@Autowired
 	private WorkerPool cdrMetsDepositWorkerPool;
+	
+	@Autowired
+	private QueueInfoDAO queueDAO;
 	
 	@Autowired
 	private DepositEmailHandler depositEmailHandler;
@@ -137,6 +145,9 @@ public class DepositSupervisor implements WorkerListener {
 	}
 
 	public void start() {
+		// Repopulate the queue
+		requeueAll();
+		
 		LOG.info("Starting deposit checks and worker pool");
 		if (timer != null)
 			return;
@@ -225,15 +236,37 @@ public class DepositSupervisor implements WorkerListener {
 			LOG.info("Starting deposit workers");
 			cdrMetsDepositWorkerPool.run();
 		}
-
-		// Repopulate the queue
-		requeueAll();
+	}
+	
+	private Map<String, Set<String>> getQueuedDepositsWithJobs() {
+		Map<String, Set<String>> depositMap = new HashMap<>();
+		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_PREPARE_QUEUE, depositMap);
+		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_DELAYED_QUEUE, depositMap);
+		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_CDRMETS_QUEUE, depositMap);
+		return depositMap;
+	}
+	
+	private void addQueuedDeposits(String queueName, Map<String, Set<String>> depositMap) {
+		QueueInfo info = queueDAO.getQueueInfo(queueName, 0, 0);
+		
+		for (Job job : info.getJobs()) {
+			String depositId = (String) job.getArgs()[1];
+			
+			Set<String> jobs = depositMap.get(depositId);
+			if (jobs == null) {
+				jobs = new HashSet<>();
+				depositMap.put(depositId, jobs);
+			}
+			jobs.add(job.getClassName());
+		}
 	}
 
 	/**
 	 * Add jobs previously running or queued back to the queue
 	 */
 	private void requeueAll() {
+		
+		Map<String, Set<String>> depositSet = getQueuedDepositsWithJobs();
 		Set<Map<String, String>> depositStatuses = depositStatusFactory.getAll();
 
 		LOG.info("Repopulating the deposit queue, {} items in backlog", depositStatuses.size());
@@ -246,7 +279,16 @@ public class DepositSupervisor implements WorkerListener {
 				// Job may have been locked to a particular supervisor depend on when it was interrupted
 				depositStatusFactory.removeSupervisorLock(uuid);
 				// Inform supervisor to resume this deposit from where it left off
-				depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+				if (depositSet.containsKey(uuid)) {
+					// If the job is queued but the job it is waiting on is a cleanup, then it is finished
+					if (depositSet.get(uuid).contains(CleanupDepositJob.class.getName())) {
+						depositStatusFactory.setState(uuid, DepositState.finished);
+					} else {
+						LOG.debug("Skipping resumption of deposit {} because it already is in the queue", uuid);
+					}
+				} else {
+					depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+				}
 			}
 		}
 
@@ -257,7 +299,21 @@ public class DepositSupervisor implements WorkerListener {
 
 				depositStatusFactory.removeSupervisorLock(uuid);
 				// Re-register as a new deposit
-				depositStatusFactory.setActionRequest(uuid, DepositAction.register);
+				if (depositSet.containsKey(uuid)) {
+					if (depositSet.get(uuid).contains(CleanupDepositJob.class.getName())) {
+						depositStatusFactory.setState(uuid, DepositState.finished);
+					} else {
+						LOG.debug("Skipping resumption of queued deposit {} because it already is in the queue", uuid);
+					}
+				} else {
+					List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
+					if (successfulJobs != null && successfulJobs.size() > 0) {
+						// Queued but had already performed some jobs, so this is a resumption rather than new deposit
+						depositStatusFactory.setActionRequest(uuid, DepositAction.resume);
+					} else {
+						depositStatusFactory.setActionRequest(uuid, DepositAction.register);
+					}
+				}
 			}
 		}
 	}
@@ -607,9 +663,20 @@ public class DepositSupervisor implements WorkerListener {
 			// Clear out the previous failed job if there was one
 			jobStatusFactory.clearStale(uuid);
 			depositStatusFactory.deleteField(uuid, DepositField.errorMessage);
+			
+			// since we already checked for queued jobs at startup, only check when resuming from a paused state
+			boolean enqueueNext = true;
+			if (DepositState.paused.name().equals(status.get(DepositField.state.name()))) {
+				Map<String, Set<String>> depositSet = getQueuedDepositsWithJobs();
+				enqueueNext = !depositSet.containsKey(uuid);
+			}
 
-			List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
-			queueNextJob(null, uuid, status, successfulJobs, delay);
+			if (enqueueNext) {
+				List<String> successfulJobs = jobStatusFactory.getSuccessfulJobNames(uuid);
+				queueNextJob(null, uuid, status, successfulJobs, delay);
+			} else {
+				LOG.info("Resuming {} from paused state.  A job is already queued so no new jobs will be enqueued", uuid);
+			}
 
 			depositStatusFactory.setState(uuid, DepositState.queued);
 		} catch (DepositFailedException e) {
