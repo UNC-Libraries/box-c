@@ -150,15 +150,14 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		}
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
-		if ($.inArray('editAccessControl', metadata.permissions) != -1) {
-			items["runEnhancements"] = {name : 'Run enhancements'};
-		}
-		
 		// Admin actions
-		if ($.inArray('purgeForever', metadata.permissions) != -1) {
+		if ($.inArray('editAccessControl', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
-			items["reindex"] = {name : 'Reindex'};
-			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
+			items["runEnhancements"] = {name : 'Run enhancements'};
+			if ($.inArray('purgeForever', metadata.permissions) != -1) {
+				items["reindex"] = {name : 'Reindex'};
+				items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
+			}
 		}
 		
 		// Trash actions
