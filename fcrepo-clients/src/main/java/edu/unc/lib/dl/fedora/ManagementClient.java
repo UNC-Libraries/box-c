@@ -261,7 +261,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public boolean addLiteralStatement(PID pid, String relationship, String literal, String datatype)
 			throws FedoraException {
 		AddRelationship req = new AddRelationship();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getURI());
 		req.setDatatype(datatype);
 		req.setIsLiteral(true);
 		req.setRelationship(relationship);
