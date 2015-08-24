@@ -31,7 +31,8 @@ public class FedoraFaultMessageResolver {
 					|| r.contains("No datastream could be returned")
 					|| (r.contains("could not obtain IRODS File System") && r.contains("java.io.FileNotFoundException"))) {
 				throw new NotFoundException(e);
-			} else if (r.contains("ObjectExistsException") || r.contains("already exists in the registry; the object can't be re-created")) {
+			} else if (r.contains("ObjectExistsException") || r.contains("already exists in the registry; the object can't be re-created")
+						|| r.contains("A datastream already exists with ID")) {
 				throw new ObjectExistsException(e);
 			} else if (r.contains("LowlevelStorageException")) {
 				throw new FileSystemException(e);
