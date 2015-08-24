@@ -286,7 +286,14 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 			MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
 			
 			msg.setFrom(fromAddress);
-			msg.addTo(uip.getEmailAddress());
+			String toEmail = uip.getEmailAddress();
+			log.error("Sending email to '{}'", toEmail);
+			if (toEmail == null || toEmail.trim().length() == 0) {
+				// No email provided, send to admins instead
+				msg.addTo(fromAddress);
+			} else {
+				msg.addTo(toEmail);
+			}
 			
 			Map<String, Object> data = new HashMap<>();
 			data.put("fileName", uip.getOriginalFilename());
@@ -333,7 +340,14 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 			MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
 			
 			msg.setFrom(fromAddress);
-			msg.addTo(uip.getEmailAddress());
+			String toEmail = uip.getEmailAddress();
+			if (toEmail == null || toEmail.trim().length() == 0) {
+				// No email provided, send to admins instead
+				msg.addTo(fromAddress);
+			} else {
+				msg.addTo(toEmail);
+			}
+			
 			msg.setSubject("CDR Metadata update failed");
 			
 			Map<String, Object> data = new HashMap<>();
