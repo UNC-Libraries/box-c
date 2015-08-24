@@ -297,18 +297,20 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 			
 			Map<String, Object> data = new HashMap<>();
 			data.put("fileName", uip.getOriginalFilename());
-	
-			data.put("updatedCount", updated.size());
+			
 			data.put("updated", updated);
+			
+			int updatedCount = updated.size();
+			if (skipped.size() > 0) {
+				data.put("skippedCount", skipped.size());
+				data.put("skipped", skipped);
+				updatedCount += skipped.size();
+			}
+			data.put("updatedCount", updatedCount);
 			
 			if (outdated.size() > 0) {
 				data.put("outdatedCount", outdated.size());
 				data.put("outdated", outdated);
-			}
-			
-			if (skipped.size() > 0) {
-				data.put("skippedCount", skipped.size());
-				data.put("skipped", skipped);
 			}
 			
 			if (failed.size() > 0) {
