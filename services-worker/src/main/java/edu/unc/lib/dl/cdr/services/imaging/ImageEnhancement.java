@@ -37,6 +37,7 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -88,19 +89,20 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 							.makeIrodsURIFromPath(convertResultPath);
 					LOG.debug("attempting to ingest conversion result: " + convertResultPath);
 
-					if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.IMAGE_JP2000.getName()) == null) {
-						// Add the datastream for the new derived jp2
-						LOG.debug("Adding managed datastream for JP2");
-						String message = "Adding derived JP2000 image datastream.";
-						service.getManagementClient().addManagedDatastream(pid,
-								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
-								new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
-					} else {
+					boolean exists = service.getManagementClient()
+							.getDatastream(pid, Datastream.IMAGE_JP2000.getName()) != null;
+					if (exists) {
 						LOG.debug("Replacing managed datastream for JP2");
 						String message = "Replacing derived JP2000 image datastream.";
 						service.getManagementClient().modifyDatastreamByReference(pid,
-								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+								Datastream.IMAGE_JP2000.getName(), false, message,
 								new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
+					} else {
+						LOG.debug("Adding managed datastream for JP2");
+						String message = "Adding derived JP2000 image datastream.";
+						service.getManagementClient().addManagedDatastream(pid,
+								Datastream.IMAGE_JP2000.getName(), false, message,
+								new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
 					}
 
 					// Add DATA_JP2, cdr-base:derivedJP2 relation triple
