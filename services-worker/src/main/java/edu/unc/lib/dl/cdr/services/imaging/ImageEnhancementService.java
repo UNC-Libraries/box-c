@@ -60,6 +60,7 @@ public class ImageEnhancementService extends AbstractDatastreamEnhancementServic
 
 			this.findStaleCandidatesQuery = this.readFileAsString("image-stale-candidates.sparql");
 			this.lastAppliedQuery = this.readFileAsString("image-last-applied.sparql");
+			this.applicableObjectQueries = Arrays.asList(readFileAsString("is-image.sparql"));
 		} catch (IOException e) {
 			LOG.error("Failed to read service query", e);
 		}

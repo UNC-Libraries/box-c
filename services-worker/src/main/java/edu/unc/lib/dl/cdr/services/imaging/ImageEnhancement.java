@@ -37,6 +37,10 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -79,7 +83,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 
 				LOG.debug("Image DS location: {}", dsLocation);
 				if (dsLocation != null) {
-					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+					dsIrodsPath = client.getIrodsPath(dsLocation);
 					// Ask irods to make the jp2 object
 					LOG.debug("Convert to JP2");
 					String convertResultPath = runConvertJP2(dsIrodsPath);
@@ -92,14 +96,14 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 						// Add the datastream for the new derived jp2
 						LOG.debug("Adding managed datastream for JP2");
 						String message = "Adding derived JP2000 image datastream.";
-						service.getManagementClient().addManagedDatastream(pid,
-								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+						client.addManagedDatastream(pid,
+								Datastream.IMAGE_JP2000.getName(), false, message,
 								new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
 					} else {
 						LOG.debug("Replacing managed datastream for JP2");
 						String message = "Replacing derived JP2000 image datastream.";
-						service.getManagementClient().modifyDatastreamByReference(pid,
-								ContentModelHelper.Datastream.IMAGE_JP2000.getName(), false, message,
+						client.modifyDatastreamByReference(pid,
+								Datastream.IMAGE_JP2000.getName(), false, message,
 								new ArrayList<String>(), "Derived JP2000 image", "image/jp2", null, null, convertResultURI);
 					}
 
@@ -110,8 +114,8 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 
 					List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
 					if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
-						service.getManagementClient().addObjectRelationship(pid,
-								ContentModelHelper.CDRProperty.derivedJP2.toString(), newDSPID);
+						client.addObjectRelationship(pid,
+								CDRProperty.derivedJP2.toString(), newDSPID);
 					}
 
 					// add object model
@@ -119,9 +123,9 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 					if (models == null
 							|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
 						LOG.debug("Adding JP2DerivedImage content model relationship");
-						service.getManagementClient().addObjectRelationship(pid,
-								ContentModelHelper.FedoraProperty.hasModel.toString(),
-								ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID());
+						client.addObjectRelationship(pid,
+								FedoraProperty.hasModel.toString(),
+								Model.JP2DERIVEDIMAGE.getPID());
 					}
 
 					// Clean up the temporary irods file

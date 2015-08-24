@@ -5,7 +5,6 @@ ASK
 FROM <%1$s>
 WHERE {
     ?pid cdr-base:sourceData ?srcDS .
-    OPTIONAL { ?pid cdr-base:techData ?techDS . 
-      ?techDS fedora-view:lastModifiedDate ?techModified . } 
+    OPTIONAL { ?pid cdr-base:techData ?techDS . }
     FILTER ( ?pid = <%2$s> && !bound(?techDS)) 
 }

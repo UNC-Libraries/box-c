@@ -47,6 +47,7 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -112,7 +113,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				}
 
 				// get logical iRODS path for datastream version
-				dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+				dsIrodsPath = client.getIrodsPath(dsLocation);
 
 				// call fits via irods rule for the locations
 				Document fits = null;
@@ -187,19 +188,16 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 							fitsMimetype = fitsMimetype.substring(0, index);
 						}
 						
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
-								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null, foxml);
+						client.setExclusiveTripleValue(pid, CDRProperty.hasSourceMimeType.getPredicate(),
+								CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null);
 					} else { // application/octet-stream
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceMimeType.getPredicate(),
-								ContentModelHelper.CDRProperty.hasSourceMimeType.getNamespace(), "application/octet-stream",
-								null, foxml);
+						client.setExclusiveTripleValue(pid, CDRProperty.hasSourceMimeType.getPredicate(),
+								CDRProperty.hasSourceMimeType.getNamespace(), "application/octet-stream", null);
 					}
 
 					try {
-						Long.parseLong(size);
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.hasSourceFileSize.getPredicate(),
-								ContentModelHelper.CDRProperty.hasSourceFileSize.getNamespace(), size,
-								"http://www.w3.org/2001/XMLSchema#long", foxml);
+						client.setExclusiveTripleValue(pid, CDRProperty.hasSourceFileSize.getPredicate(),
+								CDRProperty.hasSourceFileSize.getNamespace(), size, "http://www.w3.org/2001/XMLSchema#long");
 					} catch (NumberFormatException e) {
 						LOG.error("FITS produced a non-integer value for size: " + size);
 					}
@@ -236,19 +234,19 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			}
 
 			// upload tech MD PREMIS XML
-			String premisTechURL = service.getManagementClient().upload(premisTech);
+			String premisTechURL = client.upload(premisTech);
 
 			// Add or replace the MD_TECHNICAL datastream for the object
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
 				LOG.debug("Adding FITS output to MD_TECHNICAL");
 				String message = "Adding technical metadata derived by FITS";
-				service.getManagementClient().addManagedDatastream(pid,
+				client.addManagedDatastream(pid,
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", false, "text/xml", premisTechURL);
 			} else {
 				LOG.debug("Replacing MD_TECHNICAL with new FITS output");
 				String message = "Replacing technical metadata derived by FITS";
-				service.getManagementClient().modifyDatastreamByReference(pid,
+				client.modifyDatastreamByReference(pid,
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", "text/xml", null, null, premisTechURL);
 			}
@@ -259,8 +257,8 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 
 			List<String> techrel = rels.get(ContentModelHelper.CDRProperty.techData.toString());
 			if (techrel == null || !techrel.contains(newDSPID.getURI())) {
-				service.getManagementClient().addObjectRelationship(pid,
-						ContentModelHelper.CDRProperty.techData.toString(), newDSPID);
+				client.setExclusiveTripleRelation(pid, CDRProperty.techData.getPredicate(),
+						CDRProperty.techData.getNamespace(), newDSPID);
 			}
 
 			LOG.debug("Finished MD_TECHNICAL updating for {}", pid.getPid());

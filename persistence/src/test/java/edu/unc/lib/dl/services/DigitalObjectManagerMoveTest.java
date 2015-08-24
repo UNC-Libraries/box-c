@@ -177,7 +177,7 @@ public class DigitalObjectManagerMoveTest {
 		PairedAnswer sourceRelsExtAnswer = new PairedAnswer(doc, sourceRelsExtMatcher);
 		when(dsDoc.getDocument()).thenAnswer(sourceRelsExtAnswer);
 		
-		when(managementClient.getXMLDatastreamIfExists(eq(targetPID), eq(RELS_EXT.getName())))
+		when(managementClient.getRELSEXTWithRetries(eq(targetPID)))
 			.thenReturn(dsDoc);
 
 		doNothing().when(managementClient)
@@ -199,7 +199,7 @@ public class DigitalObjectManagerMoveTest {
 
 		digitalMan.move(moving, destPID, "user", "");
 
-		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
+		verify(managementClient, times(2)).getRELSEXTWithRetries(eq(source1PID));
 		
 		verifySourceMoved(source1PID, moving, 10);
 		verifyDestinationMoved(moving, 9);
@@ -255,7 +255,7 @@ public class DigitalObjectManagerMoveTest {
 
 		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
 		when(dsDoc.getDocument()).thenAnswer(sourceRelsExtAnswer);
-		when(managementClient.getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName())))
+		when(managementClient.getRELSEXTWithRetries(eq(source1PID)))
 				.thenReturn(dsDoc);
 
 		Datastream ds = mock(Datastream.class);
@@ -269,7 +269,7 @@ public class DigitalObjectManagerMoveTest {
 
 		digitalMan.move(moving, destPID, "user", "");
 
-		verify(managementClient, times(3)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
+		verify(managementClient, times(3)).getRELSEXTWithRetries(eq(source1PID));
 
 		ArgumentCaptor<Document> sourceRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 
@@ -321,8 +321,8 @@ public class DigitalObjectManagerMoveTest {
 
 		digitalMan.move(moving, destPID, "user", "");
 
-		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName()));
-		verify(managementClient, times(2)).getXMLDatastreamIfExists(eq(source2PID), eq(RELS_EXT.getName()));
+		verify(managementClient, times(2)).getRELSEXTWithRetries(eq(source1PID));
+		verify(managementClient, times(2)).getRELSEXTWithRetries(eq(source2PID));
 		
 		verifySourceMoved(source1PID, Arrays.asList(new PID("uuid:child1")), 11);
 		verifySourceMoved(source2PID, Arrays.asList(new PID("uuid:child32")), 1);
@@ -338,7 +338,7 @@ public class DigitalObjectManagerMoveTest {
 		when(doc.getRootElement()).thenReturn(
 				new Element("RDF", JDOMNamespaceUtil.RDF_NS)
 				.addContent(new Element("Description", JDOMNamespaceUtil.RDF_NS)));
-		when(managementClient.getXMLDatastreamIfExists(any(PID.class), anyString()))
+		when(managementClient.getRELSEXTWithRetries(any(PID.class)))
 				.thenReturn(dsDoc);
 		
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
@@ -363,7 +363,7 @@ public class DigitalObjectManagerMoveTest {
 				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
 				.thenReturn(null).thenReturn(null);
 		
-		when(managementClient.getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()))).thenReturn(null);
+		when(managementClient.getRELSEXTWithRetries(eq(destPID))).thenReturn(null);
 
 		try {
 			digitalMan.move(moving, destPID, "user", "");
@@ -418,7 +418,7 @@ public class DigitalObjectManagerMoveTest {
 				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPid())));
 		
 		// Second attempt to get the source RELS-EXT will return null to trigger rollback
-		when (managementClient.getXMLDatastreamIfExists(eq(source1PID), eq(RELS_EXT.getName())))
+		when (managementClient.getRELSEXTWithRetries(eq(source1PID)))
 			.thenReturn(dsDoc).thenThrow(new FedoraException("")).thenReturn(dsDoc);
 
 		try {
@@ -516,7 +516,7 @@ public class DigitalObjectManagerMoveTest {
 	private void verifyDestinationMoved(List<PID> moving, int destinationCount)
 			throws Exception {
 		// Verify that the destination had the moved children added to it
-		verify(managementClient).getXMLDatastreamIfExists(eq(destPID), eq(RELS_EXT.getName()));
+		verify(managementClient).getRELSEXTWithRetries(eq(destPID));
 		ArgumentCaptor<Document> destRelsExtUpdateCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient).modifyDatastream(eq(destPID), eq(RELS_EXT.getName()), anyString(),
 				anyString(), destRelsExtUpdateCaptor.capture());

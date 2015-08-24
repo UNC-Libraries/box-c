@@ -1,0 +1,13 @@
+PREFIX cdr-base: <http://cdr.unc.edu/definitions/1.0/base-model.xml#> 
+#surrogate has image source data, pid has no thumb ds
+ASK 
+FROM <%1$s>
+WHERE {
+    ?pid cdr-base:hasSurrogate ?srg .
+    ?srg cdr-base:sourceData ?srcDS .
+    ?srg cdr-base:hasSourceMimeType ?srcMime .
+    FILTER (
+      ?pid = <%2$s>
+      && regex( str(?srcMime), 'image/')
+    )
+}

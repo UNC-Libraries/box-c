@@ -151,10 +151,13 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
 		// Admin actions
-		if ($.inArray('purgeForever', metadata.permissions) != -1) {
+		if ($.inArray('editAccessControl', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
-			items["reindex"] = {name : 'Reindex'};
-			items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
+			items["runEnhancements"] = {name : 'Run enhancements'};
+			if ($.inArray('purgeForever', metadata.permissions) != -1) {
+				items["reindex"] = {name : 'Reindex'};
+				items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
+			}
 		}
 		
 		// Trash actions
@@ -245,6 +248,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "exportXML" :
 						self.actionHandler.addEvent({
 							action : 'ExportMetadataXMLBatch',
+							targets : [resultObject]
+						});
+						break;
+					case "runEnhancements" :
+						self.actionHandler.addEvent({
+							action : 'RunEnhancementsBatch',
 							targets : [resultObject]
 						});
 						break;

@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fedora;
 
 import static edu.unc.lib.dl.util.ContentModelHelper.Administrative_PID.REPOSITORY;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,6 +49,7 @@ import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -112,6 +114,9 @@ public class ManagementClient extends WebServiceTemplate {
 	private TripleStoreQueryService tripleStoreQueryService;
 	private MultiThreadedHttpConnectionManager httpManager;
 	private HttpClient httpClient;
+	
+	private static int RELS_EXT_RETRIES = 10;
+	private static long RELS_EXT_RETRY_DELAY = 250L;
 
 	// ENUMS
 	private enum Action {
@@ -1055,6 +1060,67 @@ public class ManagementClient extends WebServiceTemplate {
 			return null;
 		}
 
+	}
+	
+	public DatastreamDocument getRELSEXTWithRetries(PID pid) throws FedoraException {
+		for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
+			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(pid, RELS_EXT.getName());
+			if (relsExtResp == null) {
+				log.debug("Could not find RELS-EXT for {}, retrying", pid);
+				try {
+					Thread.sleep(RELS_EXT_RETRY_DELAY);
+				} catch (InterruptedException e) {
+					break;
+				}
+			} else {
+				return relsExtResp;
+			}
+		}
+		throw new NotFoundException("Unable to retrieve RELS-EXT for " + pid);
+	}
+	
+	public void setExclusiveTripleRelation(PID pid, String predicate, Namespace namespace, PID exclusivePID)
+			throws FedoraException{
+		setExclusiveTriple(pid, predicate, namespace, exclusivePID.toString(), false, null);
+	}
+	
+	public void setExclusiveTripleValue(PID pid, String predicate, Namespace namespace, String newExclusiveValue,
+			String datatype) throws FedoraException {
+		setExclusiveTriple(pid, predicate, namespace, newExclusiveValue, true, datatype);
+	}
+	
+	private void setExclusiveTriple(PID pid, String predicate, Namespace namespace, String value,
+			boolean isLiteral, String datatype)
+			throws FedoraException {
+		
+		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+		
+		do {
+			try {
+				Document doc = dsDoc.getDocument();
+				Element descEl = doc.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+				
+				descEl.removeChildren(predicate, namespace);
+				
+				Element relEl = new Element(predicate, namespace);
+				if (isLiteral) {
+					if (datatype != null) {
+						relEl.setAttribute("datatype", datatype, JDOMNamespaceUtil.RDF_NS);
+					}
+					relEl.setText(value);
+				} else {
+					relEl.setAttribute("resource", value, JDOMNamespaceUtil.RDF_NS);
+				}
+				
+				descEl.addContent(relEl);
+				
+				modifyDatastream(pid, RELS_EXT.getName(),
+						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
+				return;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", pid, e);
+			}
+		} while (true);
 	}
 
 	// @Override

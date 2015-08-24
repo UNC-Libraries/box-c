@@ -11,6 +11,7 @@ public class RedisWorkerConstants {
 	public static final String BULK_UPDATE_PREFIX = "bulk-update:";
 	public static final String BULK_RESUME_PREFIX = "bulk-resume:";
 	public static final String BULK_UPDATE_QUEUE = "bulk-md-update";
+	public static final String RUN_ENHANCEMENT_TREE_QUEUE = "enhance-tree";
 
 	public static final String DEPOSIT_PREPARE_QUEUE = "PREPARE";
 	public static final String DEPOSIT_DELAYED_QUEUE = "DELAYED_PREPARE";

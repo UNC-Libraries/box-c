@@ -26,7 +26,7 @@ import edu.unc.lib.dl.cdr.services.AbstractDatastreamEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 
 /**
  * This service will enhance repository objects by extracting technical metadata from source data. It will store
@@ -62,6 +62,7 @@ public class TechnicalMetadataEnhancementService extends AbstractDatastreamEnhan
 			
 			this.findStaleCandidatesQuery = this.readFileAsString("techmd-stale-candidates.sparql");
 			this.lastAppliedQuery = this.readFileAsString("techmd-last-applied.sparql");
+			this.applicableObjectQueries = Arrays.asList(this.readFileAsString("techmd-has-sourcedata.sparql"));
 		} catch (IOException e) {
 			LOG.error("Failed to read service query", e);
 		}
@@ -72,12 +73,12 @@ public class TechnicalMetadataEnhancementService extends AbstractDatastreamEnhan
 		String action = message.getQualifiedAction();
 		// Shortcuts based on the particular message received
 		// If the message indicates the target was just ingested, then we only need to check if the DS exists
-		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
+		if (FedoraActions.INGEST.equals(action))
 			return this.askQuery(this.applicableNoDSQuery, message);
 		// If a datastream was modified then check to see if the DS is stale
-		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
-				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
-				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
+		if (FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
+				|| FedoraActions.ADD_DATASTREAM.equals(action)
+				|| FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
 			return this.askQuery(this.applicableStaleDSQuery, message);
 
 		return super.isApplicable(message);

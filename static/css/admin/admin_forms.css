@@ -233,3 +233,28 @@
 	font-size: 18px;
 	margin: 0;
 }
+
+/** Run enhancements */
+#run_enhancements_form.edit_form {
+	text-align: left;
+}
+
+#run_enhancements_form p {
+	font-size: 13px;
+}
+
+#run_enhancements_form span {
+	white-space: nowrap;
+	margin-top: 1em;
+}
+
+#run_enhancements_form label {
+	width: auto;
+	font-weight: bold;
+	color: #555;
+}
+
+#run_enhancements_form #run_enhancements_force {
+	margin-left: 0;
+	margin-right: 0.5em;
+}

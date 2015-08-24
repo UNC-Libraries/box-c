@@ -51,6 +51,7 @@ public class FullTextEnhancementService extends AbstractDatastreamEnhancementSer
 					this.readFileAsString("fulltext-applicable-stale-ds.sparql"));
 			this.applicableNoDSQuery = this.isApplicableQueries.get(0);
 			this.applicableStaleDSQuery = this.isApplicableQueries.get(1);
+			this.applicableObjectQueries = Arrays.asList(readFileAsString("has-text.sparql"));
 			
 			this.findStaleCandidatesQuery = this.readFileAsString("fulltext-stale-candidates.sparql");
 			this.lastAppliedQuery = this.readFileAsString("fulltext-last-applied.sparql");
