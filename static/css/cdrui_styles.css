@@ -713,12 +713,20 @@ p.navigation_bar a {
 	margin: 5px 5px 20px 0;
 }
 
+.actionlink.right {
+	margin: 5px 0 20px 5px;
+}
+
 .searchitem .actionlink {
 	margin: 0 0 5px 0;
 }
 
 .collinfo .actionlink {
 	margin: 0px 5px 6px 0;
+}
+
+.collinfo .actionlink.right {
+	margin: 0px 0 6px 5px;
 }
 
 .actionlink a {
