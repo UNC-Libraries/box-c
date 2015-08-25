@@ -33,47 +33,23 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPl
 		$videoPlayer = $(".video_player"),
 		$structureView = $(".structure.aggregate");
 	
-	function toggleViewer($viewer, widgetName, $toggleLink, hashValue, showLabel) {
-		var showOnLoad = window.location.hash.replace("#", "") == hashValue;
+	function loadViewer($viewer, widgetName) {
 		$viewer[widgetName].call($viewer, {
-			show : showOnLoad,
+			show : true,
 			url : $viewer.attr("data-url")
-		});
-		if (showOnLoad)
-			$toggleLink.html("Hide");
-		$toggleLink.click(function(event){
-			if ($viewer[widgetName].call($viewer, 'isVisible')) {
-				$viewer[widgetName].call($viewer, "hide");
-				$(this).html(showLabel);
-				window.location.hash = '';
-			} else {
-				try {
-					$viewer[widgetName].call($viewer, "show");
-					$(this).html("Hide");
-					window.location.hash = '#' + hashValue;
-				} catch (e) {
-					console.log(e);
-				}
-				
-			}
-			return false;
 		});
 	}
 	
-	if ($jp2Window.length > 0)
-		toggleViewer($jp2Window, 'jp2Viewer', $(".jp2_viewer_link"), 'showJP2', 'View');
+	if ($jp2Window.length > 0) {
+		loadViewer($jp2Window, 'jp2Viewer', $(".jp2_viewer_link"));
+	}
 	
-	if ($videoPlayer.length > 0)
-		toggleViewer($videoPlayer, 'videoPlayer', $(".video_player_link"), 'showVideo', 'View');
+	if ($videoPlayer.length > 0) {
+		loadViewer($videoPlayer, 'videoPlayer', $(".video_player_link"));
+	}
 	
-	if ($audioPlayer.length > 0)
-		toggleViewer($audioPlayer, 'audioPlayer', $(".audio_player_link"), 'showAudio', 'Listen');
-	
-	if ($(".inline_viewer_link").length > 0) {
-		$(".full_record_top .thumbnail").bind("click", function() {
-			$(".inline_viewer_link").trigger("click");
-			return false;
-		});
+	if ($audioPlayer.length > 0) {
+		loadViewer($audioPlayer, 'audioPlayer', $(".audio_player_link"));
 	}
 	
 	if ($structureView.length > 0) {

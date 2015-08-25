@@ -30,6 +30,19 @@
 		</c:import>
 		
 		<div class="collinfo">
+			<c:choose>
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
+					<div class="actionlink right download">
+						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
+					</div>
+				</c:when>
+				<c:when test="${not empty embargoDate}">
+					<div class="actionlink right">
+						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
+					</div>
+				</c:when>
+			</c:choose>
+			
 			<div class="collinfo_metadata">
 				<h2><c:out value="${briefObject.title}" /></h2>
 				<c:if test="${not empty briefObject.creator}">
@@ -50,24 +63,9 @@
 					<c:if test="${not empty embargoDate}"><li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
 				</ul>
 			</div>
-			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
-					<div class="actionlink left download">
-						<a href="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
-					</div>
-				</c:when>
-				<c:when test="${not empty embargoDate}">
-					<div class="actionlink left">
-						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
-					</div>
-				</c:when>
-			</c:choose>
 			
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
-					<div class="actionlink left">
-						<a class="inline_viewer_link jp2_viewer_link">View</a>
-					</div>
 					<div class="clear_space"></div>
 					<div id="jp2_viewer" class="jp2_imageviewer_window djatokalayers_window" data-url='${briefObject.id}'></div>
 				</c:when>
@@ -79,17 +77,11 @@
 							</div>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
-							<div class="actionlink left">
-								<a class="inline_viewer_link audio_player_link">Listen</a>
-							</div>
 							<div class="clear_space"></div>
 							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}">
 							</audio>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
-							<div class="actionlink left">
-								<a class="inline_viewer_link video_player_link">View</a>
-							</div>
 							<div class="clear_space"></div>
 							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
 							<div class="video_player inline_viewer">
