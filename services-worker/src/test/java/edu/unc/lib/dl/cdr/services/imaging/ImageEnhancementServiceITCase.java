@@ -51,6 +51,7 @@ import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -89,7 +90,7 @@ public class ImageEnhancementServiceITCase {
 	@Resource
 	private ImageEnhancementService imageEnhancementService = null;
 
-	private Set<PID> samples = new HashSet<PID>();
+	private final Set<PID> samples = new HashSet<PID>();
 
 
 	/**
@@ -117,11 +118,11 @@ public class ImageEnhancementServiceITCase {
 					Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
 			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
 			this.getManagementClient().addObjectRelationship(pid,
-					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
-			this.getManagementClient().addLiteralStatement(pid,
-					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
+					CDRProperty.sourceData.getPredicate(), CDRProperty.sourceData.getNamespace(), dataFilePID);
+			this.getManagementClient().addLiteralStatement(pid, CDRProperty.hasSourceMimeType.getPredicate(),
+					CDRProperty.hasSourceMimeType.getNamespace(), mimetype, null);
 		}
-		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
@@ -212,8 +213,8 @@ public class ImageEnhancementServiceITCase {
 
 		LOG.debug("Adding JP2 relationship again for kicks");
 		PID newDSPID = new PID(pidTIFF.getPid().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-		this.getManagementClient().addObjectRelationship(pidTIFF.getPid(),
-				"http://cdr.unc.edu/definitions/1.0/base-model.xml#derivedJP2", newDSPID);
+		this.getManagementClient().addObjectRelationship(pidTIFF.getPid(), CDRProperty.derivedJP2.getPredicate(),
+				CDRProperty.derivedJP2.getNamespace(), newDSPID);
 	}
 
 	public TripleStoreQueryService getTripleStoreQueryService() {

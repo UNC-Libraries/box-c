@@ -316,7 +316,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		while (true) {
 			try {
-				client.addObjectRelationship(destinationPID, Relationship.contains.getURI().toString(), new PID(pid));
+				client.addObjectRelationship(destinationPID, Relationship.contains.name(),
+						Relationship.contains.getNamespace(), new PID(pid));
 				return;
 			} catch (FedoraTimeoutException e) {
 				throw e;

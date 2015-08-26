@@ -59,7 +59,6 @@
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 		<property name="accessClient" ref="accessClient"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 	</bean>
 	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init" destroy-method="destroy">
@@ -68,7 +67,6 @@
 		<property name="username" value="${fedora.appUser.username}" />
 		<property name="password" value="${fedora.appUser.password}" />
 		<property name="accessClient" ref="accessClient"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="interceptors">
 			<list>
 				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />

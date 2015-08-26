@@ -239,7 +239,7 @@ public class IngestDepositTest {
 		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		verify(client, times(job.getTopLevelPids().size()))
-				.addObjectRelationship(any(PID.class), anyString(), any(PID.class));
+				.addObjectRelationship(any(PID.class), anyString(), any(Namespace.class), any(PID.class));
 
 		verify(client, times(job.getIngestObjectCount() + 1))
 				.ingestRaw(any(byte[].class), any(Format.class), anyString());
@@ -275,7 +275,7 @@ public class IngestDepositTest {
 		jobThread.join();
 
 		// Only the one successful top level pid added because of ordering
-		verify(client).addObjectRelationship(any(PID.class), anyString(), any(PID.class));
+		verify(client).addObjectRelationship(any(PID.class), anyString(), any(Namespace.class), any(PID.class));
 
 		// Failing on third ingestRaw
 		verify(client, times(3)).ingestRaw(any(byte[].class), any(Format.class), anyString());
@@ -358,7 +358,7 @@ public class IngestDepositTest {
 		verify(jobStatusFactory, times(job.getIngestObjectCount())).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
-				any(PID.class));
+				any(Namespace.class), any(PID.class));
 
 		verify(client, times(job.getIngestObjectCount())).ingestRaw(any(byte[].class), any(Format.class), anyString());
 
@@ -399,7 +399,7 @@ public class IngestDepositTest {
 		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
-				any(PID.class));
+				any(Namespace.class), any(PID.class));
 
 		verify(client, times(job.getIngestObjectCount() + 1))
 				.ingestRaw(any(byte[].class), any(Format.class), anyString());
@@ -439,7 +439,7 @@ public class IngestDepositTest {
 		verify(jobStatusFactory, times(job.getIngestObjectCount() + 2)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
 		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
-				any(PID.class));
+				any(Namespace.class), any(PID.class));
 
 	}
 

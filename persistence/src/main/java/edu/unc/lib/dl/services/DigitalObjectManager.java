@@ -22,28 +22,11 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.update.UpdateException;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.ResourceType;
 
 public interface DigitalObjectManager {
-
-	/**
-	 * Adds a relationship between two repository objects.
-	 *
-	 * @param subject
-	 *           the subject PID
-	 * @param rel
-	 *           the relationship (enum)
-	 * @param object
-	 *           the object PID
-	 * @throws NotFoundException
-	 *            if either object is not found
-	 * @throws IngestException
-	 */
-	public void addRelationship(PID subject, ContentModelHelper.Relationship rel, PID object) throws NotFoundException,
-			IngestException;
 	
 	/**
 	 * Changes the content models of the subject to the content models necessary to change to the new resource type
@@ -73,22 +56,6 @@ public interface DigitalObjectManager {
 	 *           the PIDs of the objects to inactive
 	 */
 	// public abstract void inactivate(PID id, Agent user, String message) throws IngestException;
-
-	/**
-	 * Removes a relationship between two repository objects
-	 *
-	 * @param subject
-	 *           the subject PID
-	 * @param rel
-	 *           the relationship enum
-	 * @param object
-	 *           the object PID
-	 * @throws NotFoundException
-	 *            if either objects or their relationship are not found
-	 * @throws IngestException
-	 */
-	public void purgeRelationship(PID subject, ContentModelHelper.Relationship rel, PID object)
-			throws NotFoundException, IngestException;
 
 	/**
 	 * Updates the specified source datastream on an object with appropriate additions to preservation logs. Note that

@@ -41,6 +41,7 @@ import javax.annotation.Resource;
 import org.apache.commons.io.IOUtils;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
+import org.jdom2.Namespace;
 import org.jdom2.filter.Filters;
 import org.jdom2.xpath.XPathExpression;
 import org.jdom2.xpath.XPathFactory;
@@ -175,26 +176,6 @@ public class DigitalObjectManagerImplTest {
 
 	/**
 	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#addRelationship(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.util.ContentModelHelper.Relationship, edu.unc.lib.dl.fedora.PID)}
-	 * .
-	 */
-	@Test
-	public void testAddRelationship() {
-		try {
-			when(forwardedManagementClient.addObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
-					.thenReturn(
-					Boolean.TRUE);
-			this.getDigitalObjectManagerImpl().addRelationship(new PID("cdr:test1"),
-					ContentModelHelper.Relationship.contains, new PID("cdr:test2"));
-			verify(forwardedManagementClient, times(1)).addObjectRelationship(any(PID.class),
-					eq(ContentModelHelper.Relationship.contains.getURI().toString()), any(PID.class));
-		} catch (Exception e) {
-			fail("Got unexpected exception: " + e.getMessage());
-		}
-	}
-
-	/**
-	 * Test method for
 	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
 	 * .
 	 */
@@ -211,8 +192,8 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
-				.thenReturn(true);
+		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
+				any(Namespace.class), any(PID.class))).thenReturn(true);
 
 		ArrayList<URI> cms = new ArrayList<URI>();
 		cms.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -269,8 +250,8 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
-				.thenReturn(true);
+		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
+				any(Namespace.class), any(PID.class))).thenReturn(true);
 
 		ArrayList<URI> cms = new ArrayList<URI>();
 		cms.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -322,8 +303,8 @@ public class DigitalObjectManagerImplTest {
 		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
 		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class), any(PID.class)))
-				.thenReturn(true);
+		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
+				any(Namespace.class), any(PID.class))).thenReturn(true);
 
 		ArrayList<URI> cms = new ArrayList<URI>();
 		cms.add(ContentModelHelper.Model.CONTAINER.getURI());
@@ -368,20 +349,6 @@ public class DigitalObjectManagerImplTest {
 
 	/**
 	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#purgeRelationship(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.util.ContentModelHelper.Relationship, edu.unc.lib.dl.fedora.PID)}
-	 * .
-	 */
-	@Test
-	public void testPurgeRelationship() throws Exception {
-		PID test = new PID("test:object");
-		PID test2 = new PID("test:object2");
-		this.getDigitalObjectManagerImpl().purgeRelationship(test, ContentModelHelper.Relationship.member, test2);
-		verify(forwardedManagementClient, times(1)).purgeObjectRelationship(eq(test),
-				eq(ContentModelHelper.Relationship.member.getURI().toString()), eq(test2));
-	}
-
-	/**
-	 * Test method for
 	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#updateSourceData(edu.unc.lib.dl.fedora.PID, java.lang.String, java.io.File, java.lang.String, java.lang.String, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
 	 * .
 	 */
@@ -397,8 +364,7 @@ public class DigitalObjectManagerImplTest {
 	public void testAvailabilityException() throws Exception {
 		this.getDigitalObjectManagerImpl().setAvailable(false,
 				"The repository manager is unavailable for a test of the availability check.");
-		this.getDigitalObjectManagerImpl().addRelationship(new PID("foo"), ContentModelHelper.Relationship.member,
-				new PID("bar"));
+		this.getDigitalObjectManagerImpl().delete(new PID("foo"), "Delete", "user");
 	}
 	
 	@Test(expected = UpdateException.class)

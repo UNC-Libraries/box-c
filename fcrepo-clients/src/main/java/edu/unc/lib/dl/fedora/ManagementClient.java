@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fedora;
 
 import static edu.unc.lib.dl.util.ContentModelHelper.Administrative_PID.REPOSITORY;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_EVENTS;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,6 +49,7 @@ import org.apache.commons.io.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -70,8 +72,6 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.AuthorizationException.AuthorizationErrorType;
 import edu.unc.lib.dl.fedora.types.AddDatastream;
 import edu.unc.lib.dl.fedora.types.AddDatastreamResponse;
-import edu.unc.lib.dl.fedora.types.AddRelationship;
-import edu.unc.lib.dl.fedora.types.AddRelationshipResponse;
 import edu.unc.lib.dl.fedora.types.ArrayOfString;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.fedora.types.Export;
@@ -96,22 +96,22 @@ import edu.unc.lib.dl.fedora.types.PurgeDatastream;
 import edu.unc.lib.dl.fedora.types.PurgeDatastreamResponse;
 import edu.unc.lib.dl.fedora.types.PurgeObject;
 import edu.unc.lib.dl.fedora.types.PurgeObjectResponse;
-import edu.unc.lib.dl.fedora.types.PurgeRelationship;
-import edu.unc.lib.dl.fedora.types.PurgeRelationshipResponse;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
 import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.RDFXMLUtil;
 
 public class ManagementClient extends WebServiceTemplate {
 	private AccessClient accessClient = null;
-	private TripleStoreQueryService tripleStoreQueryService;
 	private MultiThreadedHttpConnectionManager httpManager;
 	private HttpClient httpClient;
+	
+	private static int RELS_EXT_RETRIES = 10;
+	private static long RELS_EXT_RETRY_DELAY = 250L;
 
 	// ENUMS
 	private enum Action {
@@ -258,16 +258,28 @@ public class ManagementClient extends WebServiceTemplate {
 		return id;
 	}
 
-	public boolean addLiteralStatement(PID pid, String relationship, String literal, String datatype)
+	public void addLiteralStatement(PID pid, String pred, Namespace ns, String literal, String datatype)
 			throws FedoraException {
-		AddRelationship req = new AddRelationship();
-		req.setPid(pid.getURI());
-		req.setDatatype(datatype);
-		req.setIsLiteral(true);
-		req.setRelationship(relationship);
-		req.setObject(literal);
-		AddRelationshipResponse resp = (AddRelationshipResponse) this.callService(req, Action.addRelationship);
-		return resp.isAdded();
+		addTriple(pid, pred, ns, true, literal, datatype);
+	}
+	
+	public void addTriple(PID pid, String pred, Namespace ns, boolean isLiteral, String value, String datatype)
+			throws FedoraException {
+		
+		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+		
+		do {
+			try {
+				Document doc = dsDoc.getDocument();
+				RDFXMLUtil.addTriple(doc.getRootElement(), pid, pred, ns, isLiteral, value, datatype);
+				
+				modifyDatastream(pid, RELS_EXT.getName(),
+						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
+				return;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", pid, e);
+			}
+		} while (true);
 	}
 
 	/**
@@ -299,14 +311,9 @@ public class ManagementClient extends WebServiceTemplate {
 		return resp.getModifiedDate();
 	}
 
-	public boolean addObjectRelationship(PID pid, String relationship, PID pid2) throws FedoraException {
-		AddRelationship req = new AddRelationship();
-		req.setPid(pid.getURI());
-		req.setIsLiteral(false);
-		req.setRelationship(relationship);
-		req.setObject(pid2.getURI());
-		AddRelationshipResponse resp = (AddRelationshipResponse) this.callService(req, Action.addRelationship);
-		return resp.isAdded();
+	public boolean addObjectRelationship(PID pid, String predicate, Namespace ns, PID pid2) throws FedoraException {
+		addTriple(pid, predicate, ns, false, pid2.getURI(), null);
+		return true;
 	}
 
 	public Datastream getDatastream(PID pid, String dsID) throws FedoraException {
@@ -325,22 +332,6 @@ public class ManagementClient extends WebServiceTemplate {
 		req.setAsOfDateTime(asOfDateTime);
 		GetDatastreamResponse resp = (GetDatastreamResponse) this.callService(req, Action.getDatastream);
 		return resp.getDatastream();
-	}
-
-	public boolean addResourceStatement(PID pid, String relationship, String uri) throws FedoraException {
-		try {
-			AddRelationship req = new AddRelationship();
-			req.setPid(pid.getURI());
-			// req.setDatatype();
-			req.setIsLiteral(false);
-			req.setRelationship(relationship);
-			req.setObject(uri);
-			AddRelationshipResponse resp = (AddRelationshipResponse) this.callService(req, Action.addRelationship);
-			return resp.isAdded();
-		} catch (SoapFaultClientException e) {
-			log.debug("Soap exception", e);
-			throw new NotFoundException(e);
-		}
 	}
 
 	private Object callService(Object request, Action action) throws FedoraException {
@@ -671,38 +662,9 @@ public class ManagementClient extends WebServiceTemplate {
 		return resp.getPurgedVersionDate();
 	}
 
-	public boolean setExclusiveLiteral(PID pid, String relationship, String literal, String datatype)
+	public boolean purgeLiteralStatement(PID pid, String predicate, Namespace ns, String literal, String datatype)
 			throws FedoraException {
-		List<String> rel = tripleStoreQueryService.fetchAllTriples(pid).get(relationship);
-
-		if (rel != null) {
-			if (rel.contains(literal)) {
-				rel.remove(literal);
-			} else {
-				// add missing rel
-				this.addLiteralStatement(pid, relationship, literal, datatype);
-			}
-			// remove any other same predicate triples
-			for (String oldValue : rel) {
-				this.purgeLiteralStatement(pid, relationship, oldValue, datatype);
-			}
-			return true;
-		} else {
-			// add missing rel
-			return this.addLiteralStatement(pid, relationship, literal, datatype);
-		}
-	}
-
-	public boolean purgeLiteralStatement(PID pid, String relationship, String literal, String datatype)
-			throws FedoraException {
-		PurgeRelationship req = new PurgeRelationship();
-		req.setPid(pid.getURI());
-		req.setDatatype(datatype);
-		req.setIsLiteral(true);
-		req.setRelationship(relationship);
-		req.setObject(literal);
-		PurgeRelationshipResponse resp = (PurgeRelationshipResponse) this.callService(req, Action.purgeRelationship);
-		return resp.isPurged();
+		return purgeTriple(pid, predicate, ns, true, literal, datatype);
 	}
 
 	public String purgeObject(PID pid, String message, boolean force) throws FedoraException {
@@ -714,14 +676,29 @@ public class ManagementClient extends WebServiceTemplate {
 		return resp.getPurgedDate();
 	}
 
-	public boolean purgeObjectRelationship(PID pid, String relationship, PID pid2) throws FedoraException {
-		PurgeRelationship req = new PurgeRelationship();
-		req.setPid(pid.getURI());
-		req.setIsLiteral(false);
-		req.setRelationship(relationship);
-		req.setObject(pid2.getURI());
-		PurgeRelationshipResponse resp = (PurgeRelationshipResponse) this.callService(req, Action.purgeRelationship);
-		return resp.isPurged();
+	public boolean purgeObjectRelationship(PID pid, String predicate, Namespace ns, PID pid2) throws FedoraException {
+		return purgeTriple(pid, predicate, ns, false, pid2.getURI(), null);
+	}
+	
+	public boolean purgeTriple(PID pid, String predicate, Namespace ns, boolean isLiteral, String value,
+			String datatype) throws FedoraException {
+		
+		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+		
+		do {
+			try {
+				Document doc = dsDoc.getDocument();
+				boolean removed = RDFXMLUtil.removeTriple(doc.getRootElement(), predicate, ns, isLiteral, value, datatype);
+				
+				if (removed) {
+					modifyDatastream(pid, RELS_EXT.getName(),
+							"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
+				}
+				return removed;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", pid, e);
+			}
+		} while (true);
 	}
 
 	public void setFedoraContextUrl(String fedoraContextUrl) {
@@ -1056,6 +1033,53 @@ public class ManagementClient extends WebServiceTemplate {
 		}
 
 	}
+	
+	public DatastreamDocument getRELSEXTWithRetries(PID pid) throws FedoraException {
+		for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
+			DatastreamDocument relsExtResp = getXMLDatastreamIfExists(pid, RELS_EXT.getName());
+			if (relsExtResp == null) {
+				log.debug("Could not find RELS-EXT for {}, retrying", pid);
+				try {
+					Thread.sleep(RELS_EXT_RETRY_DELAY);
+				} catch (InterruptedException e) {
+					break;
+				}
+			} else {
+				return relsExtResp;
+			}
+		}
+		throw new NotFoundException("Unable to retrieve RELS-EXT for " + pid);
+	}
+	
+	public void setExclusiveTripleRelation(PID pid, String predicate, Namespace namespace, PID exclusivePID)
+			throws FedoraException{
+		setExclusiveTriple(pid, predicate, namespace, exclusivePID.toString(), false, null);
+	}
+	
+	public void setExclusiveLiteral(PID pid, String predicate, Namespace namespace, String newExclusiveValue,
+			String datatype) throws FedoraException {
+		setExclusiveTriple(pid, predicate, namespace, newExclusiveValue, true, datatype);
+	}
+	
+	private void setExclusiveTriple(PID pid, String predicate, Namespace namespace, String value,
+			boolean isLiteral, String datatype)
+			throws FedoraException {
+		
+		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+		
+		do {
+			try {
+				Document doc = dsDoc.getDocument();
+				RDFXMLUtil.setExclusiveTriple(doc.getRootElement(), pid, predicate, namespace, isLiteral, value, datatype);
+				
+				modifyDatastream(pid, RELS_EXT.getName(),
+						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
+				return;
+			} catch (OptimisticLockException e) {
+				log.debug("Unable to update RELS-EXT for {}, retrying", pid, e);
+			}
+		} while (true);
+	}
 
 	// @Override
 	// public Object sendAndReceive(String uriString, WebServiceMessageCallback requestCallback,
@@ -1097,9 +1121,5 @@ public class ManagementClient extends WebServiceTemplate {
 	 */
 	public AccessClient getAccessClient() {
 		return accessClient;
-	}
-
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 }

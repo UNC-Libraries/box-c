@@ -84,8 +84,8 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 		verify(managementClient).addManagedDatastream(any(PID.class), eq(Datastream.MD_TECHNICAL.getName()),
 				anyBoolean(), anyString(), anyListOf(String.class), anyString(), anyBoolean(), anyString(), anyString());
 		
-		verify(managementClient).addLiteralStatement(any(PID.class), eq(CDRProperty.hasSourceMimeType.toString()),
-				eq("image/jpeg"), anyString());
+		verify(managementClient).setExclusiveLiteral(any(PID.class), eq(CDRProperty.hasSourceMimeType.getPredicate()),
+				eq(CDRProperty.hasSourceMimeType.getNamespace()), eq("image/jpeg"), anyString());
 	}
 	
 	@Test
@@ -104,7 +104,7 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 				anyBoolean(), anyString(), anyListOf(String.class), anyString(), anyBoolean(), anyString(), anyString());
 		
 		// Check that the mimetype has had the encoding trimmed off
-		verify(managementClient).addLiteralStatement(any(PID.class), eq(CDRProperty.hasSourceMimeType.toString()),
-				eq("text/plain"), anyString());
+		verify(managementClient).setExclusiveLiteral(any(PID.class), eq(CDRProperty.hasSourceMimeType.getPredicate()),
+				eq(CDRProperty.hasSourceMimeType.getNamespace()), eq("text/plain"), anyString());
 	}
 }

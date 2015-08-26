@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -93,7 +94,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			if (surrogatePid.equals(message.getPid())) {
 				surrogateFoxml = foxml;
 			} else {
-				surrogateFoxml = service.getManagementClient().getObjectXML(surrogatePid);
+				surrogateFoxml = client.getObjectXML(surrogatePid);
 			}
 
 			Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
@@ -108,7 +109,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
 			LOG.debug("Source DS location: {}", dsLocation);
 			if (dsLocation != null) {
-				dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+				dsIrodsPath = client.getIrodsPath(dsLocation);
 				LOG.debug("Making 2 Thumbnails..");
 
 				List<String> thumbRels = FOXMLJDOMUtil.getRelationValues(
@@ -116,13 +117,13 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 						FOXMLJDOMUtil.getRelsExt(foxml));
 				{
 					String dsname = ContentModelHelper.Datastream.THUMB_SMALL.getName();
-					boolean exists = service.getManagementClient().getDatastream(pid, dsname) != null;
+					boolean exists = client.getDatastream(pid, dsname) != null;
 					createStoreThumb(dsIrodsPath, 64, 64, dsname, exists, thumbRels);
 				}
 
 				{
 					String dsname = ContentModelHelper.Datastream.THUMB_LARGE.getName();
-					boolean exists = service.getManagementClient().getDatastream(pid, dsname) != null;
+					boolean exists = client.getDatastream(pid, dsname) != null;
 					createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
 				}
 			}
@@ -149,17 +150,17 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 		String resultURI = ((AbstractIrodsObjectEnhancementService) service).makeIrodsURIFromPath(resultPath);
 		if (!exists) {
 			String message = "adding thumbnail";
-			service.getManagementClient().addManagedDatastream(pid, dsname, false, message,
+			client.addManagedDatastream(pid, dsname, false, message,
 					Collections.<String> emptyList(), "Thumbnail Image", false, "image/png", resultURI);
 		} else {
 			String message = "updating thumbnail";
-			service.getManagementClient().modifyDatastreamByReference(pid, dsname, false, message,
+			client.modifyDatastreamByReference(pid, dsname, false, message,
 					new ArrayList<String>(), "Thumbnail Image", "image/png", null, null, resultURI);
 		}
 		PID newDSPID = new PID(pid.getPid() + "/" + dsname);
 		if (thumbRels == null || !thumbRels.contains(newDSPID.getURI())) {
-			service.getManagementClient().addObjectRelationship(pid, ContentModelHelper.CDRProperty.thumb.toString(),
-					newDSPID);
+			client.setExclusiveTripleRelation(pid, CDRProperty.thumb.getPredicate(),
+					CDRProperty.thumb.getNamespace(), newDSPID);
 		}
 		((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(resultPath);
 	}

@@ -43,7 +43,7 @@ import edu.unc.lib.dl.update.UIPException;
 import edu.unc.lib.dl.update.UIPProcessor;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.update.UpdateOperation;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 public class ContainerManagerImpl extends AbstractFedoraManager implements ContainerManager {
@@ -221,8 +221,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		if (deposit.isInProgress() != Boolean.parseBoolean(state)) {
 			try {
 				log.debug("Updating active state of in-progress item");
-				managementClient.addLiteralStatement(targetPID, ContentModelHelper.FedoraProperty.Active.toString(),
-						"Active", null);
+				managementClient.addLiteralStatement(targetPID, FedoraProperty.Active.getFragment(),
+						FedoraProperty.Active.getNamespace(), "Active", null);
 				receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress()) ? "" : "not")
 						+ " in-progress");
 			} catch (FedoraException e) {

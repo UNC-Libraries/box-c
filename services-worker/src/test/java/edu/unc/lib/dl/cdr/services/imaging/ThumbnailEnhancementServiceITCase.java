@@ -49,6 +49,7 @@ import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -87,7 +88,7 @@ public class ThumbnailEnhancementServiceITCase {
 	@Resource
 	private ThumbnailEnhancementService thumbnailEnhancementService = null;
 
-	private Set<PID> samples = new HashSet<PID>();
+	private final Set<PID> samples = new HashSet<PID>();
 
 	/**
 	 * @throws java.lang.Exception
@@ -113,12 +114,13 @@ public class ThumbnailEnhancementServiceITCase {
 			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Thumbnail Test",
 					Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
 			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
-			this.getManagementClient().addObjectRelationship(pid,
-					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
+			this.getManagementClient().addObjectRelationship(pid, CDRProperty.sourceData.getPredicate(),
+					CDRProperty.sourceData.getNamespace(), dataFilePID);
 			this.getManagementClient().addLiteralStatement(pid,
-					ContentModelHelper.CDRProperty.hasSourceMimeType.getURI().toString(), mimetype, null);
+					CDRProperty.hasSourceMimeType.getPredicate(),
+					CDRProperty.hasSourceMimeType.getNamespace(), mimetype, null);
 		}
-		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;
@@ -150,7 +152,8 @@ public class ThumbnailEnhancementServiceITCase {
 
 		// FIXME setup collection with surrogate
 		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
-		this.managementClient.addObjectRelationship(pidCollYes.getPid(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTIFF.getPid());
+		this.managementClient.addObjectRelationship(pidCollYes.getPid(), CDRProperty.hasSurrogate.getPredicate(),
+				CDRProperty.hasSurrogate.getNamespace(), pidTIFF.getPid());
 
 		List<PID> results = this.getThumbnailEnhancementService().findCandidateObjects(50, 0);
 		for (PID p : results) {
@@ -172,7 +175,8 @@ public class ThumbnailEnhancementServiceITCase {
 
 		// setup collection with surrogate
 		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
-		this.managementClient.addObjectRelationship(pidCollYes.getPid(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTIFF.getPid());
+		this.managementClient.addObjectRelationship(pidCollYes.getPid(), CDRProperty.hasSurrogate.getPredicate(),
+				CDRProperty.hasSurrogate.getNamespace(), pidTIFF.getPid());
 
 		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
 		// return false for a PID w/o sourcedata
@@ -214,7 +218,8 @@ public class ThumbnailEnhancementServiceITCase {
 		// ingest collection and tiff surrogate
 		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
 		EnhancementMessage pidTiff = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		this.managementClient.addObjectRelationship(pidCollYes.getPid(), ContentModelHelper.CDRProperty.hasSurrogate.getURI().toString(), pidTiff.getPid());
+		this.managementClient.addObjectRelationship(pidCollYes.getPid(), CDRProperty.hasSurrogate.getPredicate(),
+				CDRProperty.hasSurrogate.getNamespace(), pidTiff.getPid());
 
 
 		Enhancement<Element> en = this.getThumbnailEnhancementService().getEnhancement(pidCollYes);
