@@ -136,14 +136,14 @@ public class SolrQueryLayerService extends SolrSearchService {
 		
 		if (has_pid) {
 			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
-					searchRequest.isApplyCutoffs());
+					false);
 		}
 		
 		SearchResultResponse results = getSearchResults(searchRequest);
 
 		if (has_pid) {
 			results.setSelectedContainer(selectedContainer);
-		}	
+		}
 		
 		if (results.getFacetFields() != null && results.getFacetFields().size() > 0) {
 			FacetFieldObject deptField = results.getFacetFields().get(0);
