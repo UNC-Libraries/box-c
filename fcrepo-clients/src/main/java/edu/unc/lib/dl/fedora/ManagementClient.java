@@ -266,9 +266,9 @@ public class ManagementClient extends WebServiceTemplate {
 	public void addTriple(PID pid, String pred, Namespace ns, boolean isLiteral, String value, String datatype)
 			throws FedoraException {
 		
-		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
-		
 		do {
+			DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+			
 			try {
 				Document doc = dsDoc.getDocument();
 				RDFXMLUtil.addTriple(doc.getRootElement(), pred, ns, isLiteral, value, datatype);
@@ -683,9 +683,9 @@ public class ManagementClient extends WebServiceTemplate {
 	public boolean purgeTriple(PID pid, String predicate, Namespace ns, boolean isLiteral, String value,
 			String datatype) throws FedoraException {
 		
-		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
-		
 		do {
+			DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+			
 			try {
 				Document doc = dsDoc.getDocument();
 				boolean removed = RDFXMLUtil.removeTriple(doc.getRootElement(), predicate, ns, isLiteral, value, datatype);
@@ -1065,9 +1065,9 @@ public class ManagementClient extends WebServiceTemplate {
 			boolean isLiteral, String datatype)
 			throws FedoraException {
 		
-		DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
-		
 		do {
+			DatastreamDocument dsDoc = getRELSEXTWithRetries(pid);
+			
 			try {
 				Document doc = dsDoc.getDocument();
 				RDFXMLUtil.setExclusiveTriple(doc.getRootElement(), predicate, namespace, isLiteral, value, datatype);
