@@ -69,25 +69,25 @@ public class RDFXMLUtil {
 		return removed;
 	}
 	
-	public static void setExclusiveRelation(Element root, PID subject, String predicate, Namespace ns, PID object) {
-		setExclusiveTriple(root, subject, predicate, ns, false, object.getURI(), null);
+	public static void setExclusiveRelation(Element root, String predicate, Namespace ns, PID object) {
+		setExclusiveTriple(root, predicate, ns, false, object.getURI(), null);
 	}
 	
-	public static void setExclusiveLiteral(Element root, PID subject, String predicate, Namespace ns,
+	public static void setExclusiveLiteral(Element root, String predicate, Namespace ns,
 			String value, String datatype) {
-		setExclusiveTriple(root, subject, predicate, ns, true, value, datatype);
+		setExclusiveTriple(root, predicate, ns, true, value, datatype);
 	}
 
-	public static void setExclusiveTriple(Element root, PID pid, String predicate, Namespace ns, boolean isLiteral,
+	public static void setExclusiveTriple(Element root, String predicate, Namespace ns, boolean isLiteral,
 			String value, String datatype) {
 		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 		
 		descEl.removeChildren(predicate, ns);
 		
-		addTriple(root, pid, predicate, ns, isLiteral, value, datatype);
+		addTriple(root, predicate, ns, isLiteral, value, datatype);
 	}
 	
-	public static void addTriple(Element root, PID pid, String predicate, Namespace ns, boolean isLiteral,
+	public static void addTriple(Element root, String predicate, Namespace ns, boolean isLiteral,
 			String value, String datatype) {
 		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
 		

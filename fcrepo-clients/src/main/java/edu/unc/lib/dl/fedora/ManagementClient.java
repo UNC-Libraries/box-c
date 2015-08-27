@@ -271,7 +271,7 @@ public class ManagementClient extends WebServiceTemplate {
 		do {
 			try {
 				Document doc = dsDoc.getDocument();
-				RDFXMLUtil.addTriple(doc.getRootElement(), pid, pred, ns, isLiteral, value, datatype);
+				RDFXMLUtil.addTriple(doc.getRootElement(), pred, ns, isLiteral, value, datatype);
 				
 				modifyDatastream(pid, RELS_EXT.getName(),
 						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
@@ -1070,7 +1070,7 @@ public class ManagementClient extends WebServiceTemplate {
 		do {
 			try {
 				Document doc = dsDoc.getDocument();
-				RDFXMLUtil.setExclusiveTriple(doc.getRootElement(), pid, predicate, namespace, isLiteral, value, datatype);
+				RDFXMLUtil.setExclusiveTriple(doc.getRootElement(), predicate, namespace, isLiteral, value, datatype);
 				
 				modifyDatastream(pid, RELS_EXT.getName(),
 						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
