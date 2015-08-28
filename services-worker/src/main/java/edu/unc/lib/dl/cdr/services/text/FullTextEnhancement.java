@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -83,15 +84,14 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 				String dsIrodsPath = null;
 
 				if (dsLocation != null) {
-					dsIrodsPath = service.getManagementClient().getIrodsPath(dsLocation);
+					dsIrodsPath = client.getIrodsPath(dsLocation);
 
 					String text = this.extractText(dsIrodsPath);
 					
 					// Instead of adding an empty full text DS, add flag to indicate this object has nothing to extract some e
 					if (text == null || text.trim().length() == 0) {
-						setExclusiveTripleValue(pid, ContentModelHelper.CDRProperty.fullText.getPredicate(),
-								ContentModelHelper.CDRProperty.fullText.getNamespace(),
-								"false", null, foxml);
+						client.setExclusiveLiteral(pid, CDRProperty.fullText.getPredicate(),
+								CDRProperty.fullText.getNamespace(), "false", null);
 						continue;
 					}
 
@@ -102,20 +102,20 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 							.getDatastream(pid, MD_FULL_TEXT.getName()) != null;
 					if (exists) {
 						String message = "Replacing full text metadata extracted by Apache Tika";
-						service.getManagementClient().modifyDatastreamByReference(pid,
+						client.modifyDatastreamByReference(pid,
 								MD_FULL_TEXT.getName(), false, message, new ArrayList<String>(),
 								MD_FULL_TEXT.getLabel(), "text/plain", null, null, textURL);
 					} else {
 						String message = "Adding full text metadata extracted by Apache Tika";
-						service.getManagementClient().addManagedDatastream(pid,
+						client.addManagedDatastream(pid,
 								MD_FULL_TEXT.getName(), false, message, new ArrayList<String>(),
 								MD_FULL_TEXT.getLabel(), false, "text/plain", textURL);
 					}
 
 					// Add full text relation
-					PID textPID = new PID(pid.getPid() + "/" + MD_FULL_TEXT.getName());
-					setExclusiveTripleRelation(pid, ContentModelHelper.CDRProperty.fullText.getPredicate(),
-							ContentModelHelper.CDRProperty.fullText.getNamespace(), textPID, foxml);
+					PID textPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_FULL_TEXT.getName());
+					client.setExclusiveTripleRelation(pid, CDRProperty.fullText.getPredicate(),
+							CDRProperty.fullText.getNamespace(), textPID);
 				}
 			}
 		} catch (FileSystemException e) {

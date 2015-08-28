@@ -111,8 +111,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	private TripleStoreQueryService tripleStoreQueryService = null;
 	private SchematronValidator schematronValidator = null;
 	private PID collectionsPid = null;
-	private static int RELS_EXT_RETRIES = 10;
-	private static long RELS_EXT_RETRY_DELAY = 250L;
 
 	public synchronized void setAvailable(boolean available, String message) {
 		this.available = available;
@@ -153,21 +151,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			sb.append(p.getPid()).append("\n");
 		}
 		log.error(sb.toString());
-	}
-
-	@Override
-	public void addRelationship(PID subject, ContentModelHelper.Relationship rel, PID object) throws NotFoundException,
-			IngestException {
-		try {
-			availableCheck();
-			this.getManagementClient().addObjectRelationship(subject, rel.getURI().toString(), object);
-		} catch (FedoraException e) {
-			if (e instanceof NotFoundException) {
-				throw (NotFoundException) e;
-			} else {
-				throw new Error("Unexpected Fedora fault when adding relationship.", e);
-			}
-		}
 	}
 	
 	@Override
@@ -499,21 +482,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// throw a runtime exception?
 	}
 
-	@Override
-	public void purgeRelationship(PID subject, ContentModelHelper.Relationship rel, PID object)
-			throws NotFoundException, IngestException {
-		try {
-			availableCheck();
-			this.getManagementClient().purgeObjectRelationship(subject, rel.getURI().toString(), object);
-		} catch (FedoraException e) {
-			if (e instanceof NotFoundException) {
-				throw (NotFoundException) e;
-			} else {
-				throw new Error("Unexpected Fedora fault when purging relationship.", e);
-			}
-		}
-	}
-
 	/**
 	 * Just removes object from container, does not log this event. MUST finish operation or dump rollback info and
 	 * rethrow exception.
@@ -536,7 +504,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			// remove ir:contains statement to RELS-EXT
 			relsextDone = this.getManagementClient().purgeObjectRelationship(parent,
-					ContentModelHelper.Relationship.contains.getURI().toString(), pid);
+					Relationship.contains.name(), Relationship.contains.getNamespace(), pid);
 			if (relsextDone == false) {
 				log.error("failed to purge relationship: " + parent + " contains " + pid);
 			}
@@ -899,8 +867,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			DatastreamDocument sourceRelsExtResp;
 			try {
-				sourceRelsExtResp = getRELSEXTWithRetries(source);
-			} catch (IngestException e) {
+				sourceRelsExtResp = managementClient.getRELSEXTWithRetries(source);
+			} catch (NotFoundException e) {
 				log.error("Failed to get source RELS-EXT while attempting to roll back move operating from {}", source);
 				return;
 			}
@@ -973,23 +941,6 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 		return childContainerMap;
 	}
-	
-	private DatastreamDocument getRELSEXTWithRetries(PID pid) throws IngestException, FedoraException {
-		for (int tries = RELS_EXT_RETRIES; tries > 0; tries--) {
-			DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(pid, RELS_EXT.getName());
-			if (relsExtResp == null) {
-				log.debug("Could not find RELS-EXT for {}, retrying", pid);
-				try {
-					Thread.sleep(RELS_EXT_RETRY_DELAY);
-				} catch (InterruptedException e) {
-					break;
-				}
-			} else {
-				return relsExtResp;
-			}
-		}
-		throw new IngestException("Unable to retrieve RELS-EXT for " + pid);
-	}
 
 	/**
 	 * Remove children from the provided list within the specified container. If replaceWithMarkers is true, then instead
@@ -1005,7 +956,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			throws FedoraException, IngestException {
 
 		removeRelsExt: do {
-			DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
+			DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
@@ -1081,7 +1032,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		updateRelsExt: do {
 			try {
-				DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
+				DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
 				Document relsExt = relsExtResp.getDocument();
 
 				Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
@@ -1155,7 +1106,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 		updateRelsExt: do {
 			// Get the current time before accessing RELS-EXT for use in optimistic locking
-			DatastreamDocument relsExtResp = getRELSEXTWithRetries(container);
+			DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
 			Document relsExt = relsExtResp.getDocument();
 
 			try {
@@ -1291,7 +1242,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		try {
 			// Container update
 			this.getManagementClient().addObjectRelationship(parent,
-					ContentModelHelper.Relationship.contains.getURI().toString(), containerPid);
+					Relationship.contains.name(), Relationship.contains.getNamespace(), containerPid);
 			try {
 				MIMETypedStream mts = this.accessClient.getDatastreamDissemination(parent, Datastream.MD_CONTENTS.getName(), null);
 				List<PID> reordered = new ArrayList<PID>();

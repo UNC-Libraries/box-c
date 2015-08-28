@@ -56,7 +56,7 @@ import edu.unc.lib.dl.fedora.ManagementClient.Context;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.Datastream;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -95,7 +95,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 	@Resource
 	private TechnicalMetadataEnhancementService technicalMetadataEnhancementService = null;
 
-	private Set<PID> samples = new HashSet<PID>();
+	private final Set<PID> samples = new HashSet<PID>();
 
 	/**
 	 * @throws java.lang.Exception
@@ -124,10 +124,10 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Thumbnail Test",
 					altIDs, dataFilename, true, mimetype, uploadURI);
 			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
-			this.getManagementClient().addObjectRelationship(pid,
-					ContentModelHelper.CDRProperty.sourceData.getURI().toString(), dataFilePID);
+			this.getManagementClient().addObjectRelationship(pid, CDRProperty.sourceData.getPredicate(),
+					CDRProperty.sourceData.getNamespace(), dataFilePID);
 		}
-		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace, 
+		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
 				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
 		samples.add(pid);
 		return result;

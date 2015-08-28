@@ -39,7 +39,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
 @Controller
 public class PublishRestController {
@@ -73,8 +73,8 @@ public class PublishRestController {
 
 		try {
 			// Update relation
-			managementClient.setExclusiveLiteral(pid, ContentModelHelper.CDRProperty.isPublished.toString(),
-					(publish) ? "yes" : "no", null);
+			managementClient.setExclusiveLiteral(pid, CDRProperty.isPublished.getPredicate(),
+					CDRProperty.isPublished.getNamespace(), (publish) ? "yes" : "no", null);
 			result.put("timestamp", System.currentTimeMillis());
 			// Send message to trigger solr update
 			String messageId = messageSender.sendPublishOperation(username, Arrays.asList(pid), true);
