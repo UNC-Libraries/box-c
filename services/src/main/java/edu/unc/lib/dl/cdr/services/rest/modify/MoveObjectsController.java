@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,6 +55,9 @@ public class MoveObjectsController {
 	
 	private final Map<String, MoveRequest> moveRequests;
 	
+	@Autowired
+	private ExecutorService moveExecutor;
+	
 	public MoveObjectsController() {
 		moveRequests = new HashMap<>();
 	}
@@ -72,10 +76,10 @@ public class MoveObjectsController {
 		
 		moveRequest.setUser(GroupsThreadStore.getUsername());
 
-		Thread moveThread = new Thread(new MoveRunnable(moveRequest, GroupsThreadStore.getGroups()));
-		log.info("User {} is starting move operation of {} objects to destination {}",
+		MoveRunnable runnable = new MoveRunnable(moveRequest, GroupsThreadStore.getGroups());
+		log.info("User {} is queuing move operation of {} objects to destination {}",
 				new Object[] { GroupsThreadStore.getUsername(), moveRequest.moved.size(), moveRequest.getDestination()});
-		moveThread.start();
+		moveExecutor.submit(runnable);
 
 		response.setStatus(200);
 		
@@ -212,6 +216,9 @@ public class MoveObjectsController {
 		@Override
 		public void run() {
 			try {
+				log.info("Move of {} objects to {} for user {} has begun", new Object[] {
+						request.getMoved().size(), request.getDestination(), request.getUser() });
+				
 				moveRequests.put(request.getId(), request);
 				
 				GroupsThreadStore.storeGroups(groups);

@@ -225,4 +225,8 @@
 		<constructor-arg value="${data.dir}"/>
 	</bean>
 
+	<bean id="moveExecutor" class="java.util.concurrent.Executors"
+			factory-method="newFixedThreadPool" destroy-method="shutdownNow">
+			<constructor-arg value="${services.move.workers:1}"/>
+	</bean>
 </beans>
