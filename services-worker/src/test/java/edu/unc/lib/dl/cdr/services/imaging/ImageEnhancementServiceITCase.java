@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -145,26 +144,6 @@ public class ImageEnhancementServiceITCase {
 	}
 
 	@Test
-	public void testFindCandidateObjects() throws Exception {
-		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
-		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
-		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
-
-		List<PID> results = this.getImageEnhancementService().findCandidateObjects(50, 0);
-		for (PID p : results) {
-			LOG.debug("found candidate: " + p);
-		}
-		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPid()));
-		assertFalse("CollYes must not be a candidate", results.contains(pidCollYes.getPid()));
-		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPid()));
-		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPid()));
-		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPid()));
-	}
-
-	@Test
 	public void testIsApplicable() throws Exception {
 		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
 		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
@@ -200,8 +179,6 @@ public class ImageEnhancementServiceITCase {
 		}
 		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
 				.getImageEnhancementService().isApplicable(pidTIFF));
-		assertFalse("The PID " + pidTIFF + " must not be a candidate after service has run.", this
-				.getImageEnhancementService().findCandidateObjects(50, 0).contains(pidTIFF.getPid()));
 
 		// now update source
 		File dataFile = new File("src/test/resources", "sample.tiff");

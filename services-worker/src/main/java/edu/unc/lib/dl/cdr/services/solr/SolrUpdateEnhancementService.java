@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.jdom2.Element;
 import org.slf4j.Logger;
@@ -28,9 +29,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
-import edu.unc.lib.dl.cdr.services.model.EnhancementApplication;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
@@ -50,31 +49,11 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	
 	public void init() {
 		try {
-			this.isApplicableQuery = this.readFileAsString("solr-update-applicable.sparql");
+			isApplicableQuery = IOUtils.toString(this.getClass()
+					.getResourceAsStream("solr-update-applicable.sparql"), "UTF-8");
 		} catch (IOException e) {
 			LOG.error("Failed to read service query", e);
 		}
-	}
-	
-	@Override
-	public List<PID> findStaleCandidateObjects(int maxResults, String priorToDate) {
-		// All simple objects are candidates for loading into solr since we likely
-		// don't
-		// want to have to run double queries for every pid.
-		return null;
-	}
-
-	@Override
-	public List<PID> findCandidateObjects(int maxResults, int offset) {
-		// All simple objects are candidates for loading into solr since we likely
-		// don't
-		// want to have to run double queries for every pid.
-		return null;
-	}
-
-	@Override
-	public int countCandidateObjects() throws EnhancementException {
-		return 0;
 	}
 
 	@Override
@@ -133,29 +112,8 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	}
 
 	@Override
-	public boolean isStale(PID pid) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
 	public boolean isActive() {
 		return active;
-	}
-
-	@Override
-	public EnhancementApplication getLastApplied(PID pid) throws EnhancementException {
-		EnhancementApplication lastApplied = null;
-		try {
-			Date timestamp = (Date) this.solrSearchService.getField(pid.getPid(), "TIMESTAMP");
-			lastApplied = new EnhancementApplication();
-			lastApplied.setLastApplied(timestamp);
-			lastApplied.setPid(pid);
-			lastApplied.setEnhancementClass(this.getClass());
-		} catch (SolrServerException e) {
-			throw new EnhancementException(e);
-		}
-		return lastApplied;
 	}
 
 	@Override
