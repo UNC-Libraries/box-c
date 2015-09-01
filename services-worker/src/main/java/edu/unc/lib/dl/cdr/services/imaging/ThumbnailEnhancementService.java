@@ -15,20 +15,21 @@
  */
 package edu.unc.lib.dl.cdr.services.imaging;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import org.jdom2.Element;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.cdr.services.AbstractDatastreamEnhancementService;
 import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.cdr.services.model.FedoraEventMessage;
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 
 /**
@@ -39,59 +40,60 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
  * 
  */
 public class ThumbnailEnhancementService extends AbstractDatastreamEnhancementService {
-	private static final Logger LOG = LoggerFactory.getLogger(ThumbnailEnhancementService.class);
 	public static final String enhancementName = "Thumbnail Generation";
-
-	private List<String> applicableNoDSQueries;
-	private List<String> applicableStaleDSQueries;
 
 	public ThumbnailEnhancementService() {
 		super();
 	}
 
 	public void init() {
-		try {
-			this.findStaleCandidatesQuery = this.readFileAsString("thumbnail-stale-candidates.sparql");
-			this.lastAppliedQuery = this.readFileAsString("thumbnail-last-applied.sparql");
-			this.findCandidatesQueries = Arrays.asList(this.readFileAsString("thumbnail-candidates-no-ds.sparql"),
-					this.readFileAsString("thumbnail-candidates-stale-ds.sparql"),
-					this.readFileAsString("thumbnail-candidates-no-surrogate-ds.sparql"),
-					this.readFileAsString("thumbnail-candidates-stale-surrogate-ds.sparql"));
-			for (int i = 0; i < this.findCandidatesQueries.size(); i++) {
-				this.findCandidatesQueries.set(
-						i,
-						String.format(this.findCandidatesQueries.get(i),
-								this.tripleStoreQueryService.getResourceIndexModelUri()));
-			}
-
-			this.isApplicableQueries = Arrays.asList(readFileAsString("thumbnail-applicable-no-ds.sparql"),
-					readFileAsString("thumbnail-applicable-stale-ds.sparql"),
-					readFileAsString("thumbnail-applicable-no-surrogate-ds.sparql"),
-					readFileAsString("thumbnail-applicable-stale-surrogate-ds.sparql"));
-
-			this.applicableNoDSQueries = Arrays.asList(this.isApplicableQueries.get(0), this.isApplicableQueries.get(2));
-			this.applicableStaleDSQueries = Arrays
-					.asList(this.isApplicableQueries.get(1), this.isApplicableQueries.get(3));
-
-		} catch (IOException e) {
-			LOG.error("Failed to read service query", e);
-		}
+		mimetypePattern = Pattern.compile("^image/.*");
+		derivativeDatastream = Datastream.THUMB_LARGE.getName();
 	}
-
+	
 	@Override
-	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
-		String action = message.getQualifiedAction();
-		// Shortcuts based on the particular message received
-		// If the message indicates the target was just ingested, then we only need to check if the thumb DS exists
-		if (JMSMessageUtil.FedoraActions.INGEST.equals(action))
-			return this.askQueries(this.applicableNoDSQueries, message);
-		// If a datastream was modified then check to see if the thumbs are stale
-		if (JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_REFERENCE.equals(action)
-				|| JMSMessageUtil.FedoraActions.ADD_DATASTREAM.equals(action)
-				|| JMSMessageUtil.FedoraActions.MODIFY_DATASTREAM_BY_VALUE.equals(action))
-			return this.askQueries(this.applicableStaleDSQueries, message);
-
-		return super.isApplicable(message);
+	protected boolean isDatastreamApplicable(PID pid) throws FedoraException {
+		edu.unc.lib.dl.fedora.types.Datastream dataDoc
+				= managementClient.getDatastream(pid, Datastream.DATA_FILE.getName());
+		
+		// Don't process if there is no original data
+		if (dataDoc == null) {
+			return false;
+		}
+		
+		// Filter out objects with non-applicable mimetypes
+		if (mimetypePattern != null && !mimetypePattern.matcher(dataDoc.getMIMEType()).matches()){
+			return false;
+		}
+		
+		edu.unc.lib.dl.fedora.types.Datastream derivDoc
+				= managementClient.getDatastream(pid, derivativeDatastream);
+		
+		// No derivative present
+		if (derivDoc == null) {
+			return true;
+		}
+		
+		// Derivative is older than the original data, need to reperform the enhancement
+		if (dataDoc.getCreateDate().compareTo(derivDoc.getCreateDate()) > 0) {
+			return true;
+		}
+		
+		// If there are any objects using this object as a surrogate, check to see if their derivatives are out of date
+		List<PID> surrogateHolders = tripleStoreQueryService
+				.fetchByPredicateAndLiteral(CDRProperty.hasSurrogate.toString(), pid);
+		if (surrogateHolders != null) {
+			for (PID surrogateHolder : surrogateHolders) {
+				edu.unc.lib.dl.fedora.types.Datastream surrDoc
+						= managementClient.getDatastream(surrogateHolder, derivativeDatastream);
+				
+				if (derivDoc == null || dataDoc.getCreateDate().compareTo(derivDoc.getCreateDate()) > 0) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
 	}
 
 	@Override

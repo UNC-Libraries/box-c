@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -143,30 +142,6 @@ public class ThumbnailEnhancementServiceITCase {
 	}
 
 	@Test
-	public void testFindCandidateObjects() throws Exception {
-		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
-		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
-
-		// FIXME setup collection with surrogate
-		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", null, null);
-		this.managementClient.addObjectRelationship(pidCollYes.getPid(), CDRProperty.hasSurrogate.getPredicate(),
-				CDRProperty.hasSurrogate.getNamespace(), pidTIFF.getPid());
-
-		List<PID> results = this.getThumbnailEnhancementService().findCandidateObjects(50, 0);
-		for (PID p : results) {
-			LOG.debug("found candidate: " + p);
-		}
-		assertTrue("TIFF must be a candidate", results.contains(pidTIFF.getPid()));
-		assertTrue("CollYes must be a candidate", results.contains(pidCollYes.getPid()));
-		assertFalse("CollNo must not be a candidate", results.contains(pidCollNo.getPid()));
-		assertFalse("DOC must not be a candidate", results.contains(pidDOC.getPid()));
-		assertFalse("PDF must not be a candidate", results.contains(pidPDF.getPid()));
-	}
-
-	@Test
 	public void testIsApplicable() throws Exception {
 		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
 		//EnhancementMessage pidPDF2 = ingestSample("thumbnail-PDF2.xml", "sample.pdf", "application/pdf");
@@ -208,8 +183,6 @@ public class ThumbnailEnhancementServiceITCase {
 		}
 		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
 				.getThumbnailEnhancementService().isApplicable(pidTIFF));
-		assertFalse("The PID " + pidTIFF + " must not be a candidate after service has run.", this
-				.getThumbnailEnhancementService().findCandidateObjects(50, 0).contains(pidTIFF.getPid()));
 
 	}
 
@@ -230,8 +203,6 @@ public class ThumbnailEnhancementServiceITCase {
 		}
 		assertFalse("The PID " + pidCollYes + " must not be applicable after service has run.", this
 				.getThumbnailEnhancementService().isApplicable(pidCollYes));
-		assertFalse("The PID " + pidCollYes + " must not be a candidate after service has run.", this
-				.getThumbnailEnhancementService().findCandidateObjects(50, 0).contains(pidCollYes.getPid()));
 
 		Datastream ds = this.managementClient.getDatastream(pidCollYes.getPid(), ContentModelHelper.Datastream.THUMB_SMALL.getName());
 		assertNotNull("There must be a small thumbnail on collection after service is run..", ds);
