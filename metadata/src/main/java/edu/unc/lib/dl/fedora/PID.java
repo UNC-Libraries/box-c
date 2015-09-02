@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.fedora;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PID implements Serializable {
     /**
@@ -83,5 +85,14 @@ public class PID implements Serializable {
     public String toString() {
 	return this.pid;
     }
+    
+	public static List<PID> toPIDList(List<String> pidStrings) {
+		List<PID> pids = new ArrayList<>(pidStrings.size());
+		for (String pidString : pidStrings) {
+			pids.add(new PID(pidString));
+		}
+		return pids;
+	}
 
 }
+

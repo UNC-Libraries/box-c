@@ -179,6 +179,13 @@
 		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
 	</bean>
 	
+	<bean id="runEnhancementTreeJob" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsTreeJob"
+			scope="prototype">
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="jesqueClient" ref="jesqueClient"/>
+		<property name="runEnhancementTreeQueue" value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).RUN_ENHANCEMENT_TREE_QUEUE}"/>
+	</bean>
+	
 	<bean id="SolrUpdateJob" class="edu.unc.lib.dl.cdr.services.processing.SolrUpdateJob"
 		scope="prototype">
 		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
@@ -244,6 +251,21 @@
 			</bean>
 		</constructor-arg>
 		<constructor-arg name="numWorkers" value="${workers.solrUpdate.num:3}" />
+	</bean>
+	
+	<bean id="importWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>#{T(edu.unc.lib.dl.util.RedisWorkerConstants).RUN_ENHANCEMENT_TREE_QUEUE}</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.import.num:1}" />
 	</bean>
 	
 	<bean id="enhancementConductor" class="edu.unc.lib.dl.cdr.services.processing.EnhancementConductor">

@@ -15,6 +15,8 @@ public class RedisWorkerConstants {
 	public static final String DEPOSIT_PREPARE_QUEUE = "PREPARE";
 	public static final String DEPOSIT_DELAYED_QUEUE = "DELAYED_PREPARE";
 	public static final String DEPOSIT_CDRMETS_QUEUE = "CDRMETSCONVERT";
+	public static final String RUN_ENHANCEMENT_TREE_QUEUE = "enhance-tree";
+	
 	public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
 
 	public static enum DepositField {
