@@ -228,7 +228,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 			Map<String, String> values = new HashMap<>();
 			values.put("email", uip.getEmailAddress());
 			values.put("user", uip.getUser());
-			values.put("groups", uip.getGroups().toString());
+			values.put("groups", uip.getGroups().joinAccessGroups(" ", null, false));
 			values.put("filePath", uip.getImportFile().getAbsolutePath());
 			values.put("originalFilename", uip.getOriginalFilename());
 			jedis.hmset(RedisWorkerConstants.BULK_UPDATE_PREFIX + uip.getPID().getPid(), values);
