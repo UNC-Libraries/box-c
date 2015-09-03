@@ -39,8 +39,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -117,15 +115,6 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 					if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
 						client.setExclusiveTripleRelation(pid, CDRProperty.derivedJP2.getPredicate(),
 								CDRProperty.derivedJP2.getNamespace(), newDSPID);
-					}
-
-					// add object model
-					List<String> models = rels.get(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
-					if (models == null
-							|| !models.contains(ContentModelHelper.Model.JP2DERIVEDIMAGE.getPID().getURI().toString())) {
-						LOG.debug("Adding JP2DerivedImage content model relationship");
-						client.setExclusiveTripleRelation(pid, FedoraProperty.hasModel.getFragment(),
-								FedoraProperty.hasModel.getNamespace(), Model.JP2DERIVEDIMAGE.getPID());
 					}
 
 					// Clean up the temporary irods file

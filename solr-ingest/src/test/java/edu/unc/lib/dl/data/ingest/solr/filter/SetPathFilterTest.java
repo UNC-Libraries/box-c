@@ -78,8 +78,6 @@ public class SetPathFilterTest extends Assert {
 				.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:Simple"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
-				"info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
@@ -101,7 +99,7 @@ public class SetPathFilterTest extends Assert {
 		assertEquals(2, idb.getAncestorPath().size());
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection"));
 		assertFalse(idb.getAncestorPath().contains("3,uuid:File"));
-		assertEquals(4, idb.getContentModel().size());
+		assertEquals(3, idb.getContentModel().size());
 		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
@@ -184,8 +182,6 @@ public class SetPathFilterTest extends Assert {
 		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:Simple"));
 		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File",
-				"info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("info:fedora/uuid:aggregate", "info:fedora/uuid:File",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
@@ -238,8 +234,6 @@ public class SetPathFilterTest extends Assert {
 				.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:Simple"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
-				"info:fedora/cdr-model:JP2DerivedImage"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/fedora-system:FedoraObject-3.0"));
@@ -262,7 +256,7 @@ public class SetPathFilterTest extends Assert {
 		assertTrue(idb.getAncestorPath().contains("1,uuid:Collections"));
 		assertTrue(idb.getAncestorPath().contains("2,uuid:collection"));
 		assertFalse(idb.getAncestorPath().contains("3,uuid:File"));
-		assertEquals(4, idb.getContentModel().size());
+		assertEquals(3, idb.getContentModel().size());
 		assertEquals(3, idb.getResourceTypeSort().intValue());
 	}
 
@@ -336,8 +330,6 @@ public class SetPathFilterTest extends Assert {
 				"info:fedora/cdr-model:Collection"));
 		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File",
-				"info:fedora/cdr-model:JP2DerivedImage"));
 		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("info:fedora/uuid:folder", "info:fedora/uuid:File",
@@ -630,8 +622,6 @@ public class SetPathFilterTest extends Assert {
 		results.add(Arrays.asList("", "info:fedora/uuid:collection", "info:fedora/cdr-model:Collection"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:Simple"));
-		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
-				"info:fedora/cdr-model:JP2DerivedImage"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
 				"info:fedora/cdr-model:PreservedObject"));
 		results.add(Arrays.asList("info:fedora/uuid:collection", "info:fedora/uuid:File",
