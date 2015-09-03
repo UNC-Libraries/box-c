@@ -74,7 +74,7 @@ public class BulkMetadataUpdateConductor {
 				jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + updateId);
 			} else {
 				add(updateId, updateValues.get("email"), updateValues.get("user"),
-						Arrays.asList(updateValues.get("groups").split(" ")),
+						Arrays.asList(updateValues.get("groups").replaceAll("\\\\+:", ":").split(" ")),
 						importFile, updateValues.get("originalFilename"));
 			}
 		}
