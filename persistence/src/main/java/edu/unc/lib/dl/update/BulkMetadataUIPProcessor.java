@@ -215,22 +215,24 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	}
 	
 	private void updateResumptionPoint(PID uipPID, BulkMetadataDatastreamUIP singleUIP) {
-		Jedis jedis = jedisPool.getResource();
-		Map<String, String> values = new HashMap<>();
-		values.put("lastPid", singleUIP.getPID().getPid());
-		values.put("lastDatastream", singleUIP.getDatastream());
-		jedis.hmset(RedisWorkerConstants.BULK_RESUME_PREFIX + uipPID.getPid(), values);
+		try (Jedis jedis = jedisPool.getResource()) {
+			Map<String, String> values = new HashMap<>();
+			values.put("lastPid", singleUIP.getPID().getPid());
+			values.put("lastDatastream", singleUIP.getDatastream());
+			jedis.hmset(RedisWorkerConstants.BULK_RESUME_PREFIX + uipPID.getPid(), values);
+		}
 	}
 	
 	private void storeUpdateInformation(BulkMetadataUIP uip) {
-		Jedis jedis = jedisPool.getResource();
-		Map<String, String> values = new HashMap<>();
-		values.put("email", uip.getEmailAddress());
-		values.put("user", uip.getUser());
-		values.put("groups", uip.getGroups().toString());
-		values.put("filePath", uip.getImportFile().getAbsolutePath());
-		values.put("originalFilename", uip.getOriginalFilename());
-		jedis.hmset(RedisWorkerConstants.BULK_UPDATE_PREFIX + uip.getPID().getPid(), values);
+		try (Jedis jedis = jedisPool.getResource()) {
+			Map<String, String> values = new HashMap<>();
+			values.put("email", uip.getEmailAddress());
+			values.put("user", uip.getUser());
+			values.put("groups", uip.getGroups().toString());
+			values.put("filePath", uip.getImportFile().getAbsolutePath());
+			values.put("originalFilename", uip.getOriginalFilename());
+			jedis.hmset(RedisWorkerConstants.BULK_UPDATE_PREFIX + uip.getPID().getPid(), values);
+		}
 	}
 	
 	/**
@@ -242,26 +244,27 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	 * @throws UpdateException
 	 */
 	private void resume(BulkMetadataUIP uip) throws UpdateException {
-		Jedis jedis = jedisPool.getResource();
-		Map<String, String> resumeValues = jedis.hgetAll(RedisWorkerConstants.BULK_RESUME_PREFIX + uip.getPID().getPid());
-		if (resumeValues == null) {
-			// No resumption info, so store update info just in case
-			storeUpdateInformation(uip);
-			return;
+		try (Jedis jedis = jedisPool.getResource()) {
+			Map<String, String> resumeValues = jedis.hgetAll(RedisWorkerConstants.BULK_RESUME_PREFIX + uip.getPID().getPid());
+			if (resumeValues == null) {
+				// No resumption info, so store update info just in case
+				storeUpdateInformation(uip);
+				return;
+			}
+			
+			// If the update file doesn't exist anymore, clear this update out so it doesn't stick around forever
+			if (!uip.getImportFile().exists()) {
+				cleanup(uip);
+				throw new UpdateException("Unable to resume update " + uip.getPID() + ", could not find update file");
+			}
+			
+			// Move the update cursor past the last updated object
+			try {
+				uip.seekNextUpdate(new PID(resumeValues.get("lastPid")), resumeValues.get("lastDatastream"));
+			} catch (Exception e) {
+				cleanup(uip);
+				throw new UpdateException("Failed to parse update package while resuming", e);
 		}
-		
-		// If the update file doesn't exist anymore, clear this update out so it doesn't stick around forever
-		if (!uip.getImportFile().exists()) {
-			cleanup(uip);
-			throw new UpdateException("Unable to resume update " + uip.getPID() + ", could not find update file");
-		}
-		
-		// Move the update cursor past the last updated object
-		try {
-			uip.seekNextUpdate(new PID(resumeValues.get("lastPid")), resumeValues.get("lastDatastream"));
-		} catch (Exception e) {
-			cleanup(uip);
-			throw new UpdateException("Failed to parse update package while resuming", e);
 		}
 	}
 	
@@ -272,9 +275,10 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	private void cleanup(BulkMetadataUIP uip) {
 		String pid = uip.getPID().getPid();
 		
-		Jedis jedis = jedisPool.getResource();
-		jedis.del(RedisWorkerConstants.BULK_UPDATE_PREFIX + pid);
-		jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + pid);
+		try (Jedis jedis = jedisPool.getResource()) {
+			jedis.del(RedisWorkerConstants.BULK_UPDATE_PREFIX + pid);
+			jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + pid);
+		}
 		
 		uip.getImportFile().delete();
 	}

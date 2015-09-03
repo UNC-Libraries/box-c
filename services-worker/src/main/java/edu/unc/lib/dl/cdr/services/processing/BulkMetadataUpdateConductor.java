@@ -57,25 +57,26 @@ public class BulkMetadataUpdateConductor {
 	}
 	
 	public void resumeIncompleteUpdates() {
-		Jedis jedis = jedisPool.getResource();
-		Set<String> incompleteUpdates = jedis.keys(RedisWorkerConstants.BULK_UPDATE_PREFIX + "*");
-		
-		for (String incomplete : incompleteUpdates) {
-			Map<String, String> updateValues = jedis.hgetAll(incomplete);
-
-			String updateId = incomplete.split(":", 2)[1];
+		try (Jedis jedis = jedisPool.getResource()) {
+			Set<String> incompleteUpdates = jedis.keys(RedisWorkerConstants.BULK_UPDATE_PREFIX + "*");
 			
-			// If the import file doesn't exist, then can't resume
-			File importFile = new File(updateValues.get("filePath"));
-			if (!importFile.exists()) {
-				log.warn("Failed to resume update {} for user {} because the file no longer existed",
-						updateValues.get("originalFilename"), updateValues.get("user"));
-				jedis.del(incomplete);
-				jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + updateId);
-			} else {
-				add(updateId, updateValues.get("email"), updateValues.get("user"),
-						Arrays.asList(updateValues.get("groups").split(" ")),
-						importFile, updateValues.get("originalFilename"));
+			for (String incomplete : incompleteUpdates) {
+				Map<String, String> updateValues = jedis.hgetAll(incomplete);
+	
+				String updateId = incomplete.split(":", 2)[1];
+				
+				// If the import file doesn't exist, then can't resume
+				File importFile = new File(updateValues.get("filePath"));
+				if (!importFile.exists()) {
+					log.warn("Failed to resume update {} for user {} because the file no longer existed",
+							updateValues.get("originalFilename"), updateValues.get("user"));
+					jedis.del(incomplete);
+					jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + updateId);
+				} else {
+					add(updateId, updateValues.get("email"), updateValues.get("user"),
+							Arrays.asList(updateValues.get("groups").split(" ")),
+							importFile, updateValues.get("originalFilename"));
+				}
 			}
 		}
 	}
