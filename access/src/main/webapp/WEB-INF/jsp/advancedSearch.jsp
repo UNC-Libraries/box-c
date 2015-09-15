@@ -67,7 +67,7 @@
 				
 				<p class="clear"><br /></p>
 				<p class="clear bold">
-					<label>Date Added</label> from <input name="${searchSettings.searchFieldParams['DATE_ADDED']}Start" class="advsearch_date" type="text" />
+					<label>Date Deposited</label> from <input name="${searchSettings.searchFieldParams['DATE_ADDED']}Start" class="advsearch_date" type="text" />
 						 to <input name="${searchSettings.searchFieldParams['DATE_ADDED']}End" class="advsearch_date" type="text" />
 						<a class="date_field_tooltip" title="Enter dates in YYYY-MM-DD format.  Month and day may be omitted.  Leave the right hand date empty to search for items with dates starting at the left hand date, and vice versa.">?</a>
 				</p>
