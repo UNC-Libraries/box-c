@@ -72,13 +72,8 @@ public class RunEnhancementsController {
 		Job job = new Job(RunEnhancementsTreeJob.class.getName(), data.getPids(), data.isForce());
 		jesqueClient.enqueue(runEnhancementQueueName, job);
 		
-		if (data.isForce()) {
-			result.put("message", "Forced enhancement of " + data.getPids().size()
-					+ " object(s) and their children has begun");
-		} else {
-			result.put("message", "Enhancement of " + data.getPids().size()
-					+ " object(s) and their children has begun");
-		}
+		result.put("message", "Enhancement of " + data.getPids().size()
+				+ " object(s) and their children has begun");
 		
 		result.put("success", true);
 		return result;
