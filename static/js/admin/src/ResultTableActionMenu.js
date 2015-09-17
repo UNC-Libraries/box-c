@@ -52,6 +52,9 @@ define('ResultTableActionMenu', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'Ac
 			
 			for (var index in self.options.groups) {
 				var group = self.options.groups[index];
+				if (group.hideInTableMenu) {
+					continue;
+				}
 			
 				var groupSpan = $("<span/>").addClass("container_action_group").hide().appendTo(self.element);
 				self.actionGroups.push(groupSpan);

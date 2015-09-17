@@ -59,6 +59,14 @@ public abstract class AbstractDatastreamEnhancementService extends AbstractIrods
 		return ContentModelHelper.Datastream.DATA_FILE.equals(datastream);
 	}
 	
+	/**
+	 * Applicability check which verifies that the data file is of an appropriate type and is either not present or newer
+	 * than the derivative to be generated
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
 	protected boolean isDatastreamApplicable(PID pid) throws FedoraException {
 		edu.unc.lib.dl.fedora.types.Datastream dataDoc
 				= managementClient.getDatastream(pid, Datastream.DATA_FILE.getName());
@@ -85,6 +93,31 @@ public abstract class AbstractDatastreamEnhancementService extends AbstractIrods
 		// Dates are in iso8601/UTC format, so lexographic string comparison is sufficient
 		return dataDoc.getCreateDate().compareTo(derivDoc.getCreateDate()) > 0;
 	}
+
+	/**
+	 * Applicability check which only verifies that the data file exists and is of a mimetype appropriate for this
+	 * service.
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	protected boolean isApplicableType(PID pid) throws FedoraException {
+		edu.unc.lib.dl.fedora.types.Datastream dataDoc
+				= managementClient.getDatastream(pid, Datastream.DATA_FILE.getName());
+
+		// Don't process if there is no original data
+		if (dataDoc == null) {
+			return false;
+		}
+		
+		// Filter out objects with non-applicable mimetypes
+		if (mimetypePattern != null && !mimetypePattern.matcher(dataDoc.getMIMEType()).matches()){
+			return false;
+		}
+		
+		return true;
+	}
 	
 	@Override
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
@@ -102,6 +135,12 @@ public abstract class AbstractDatastreamEnhancementService extends AbstractIrods
 		}
 		
 		try {
+			// For a forced message, only check if the datastream is of an applicable type
+			if (message.isForce()) {
+				return isApplicableType(message.getPid());
+			}
+			
+			// For other messages, determine whether the derivative exists or is stale
 			return isDatastreamApplicable(message.getPid());
 		} catch (FedoraException e) {
 			throw new EnhancementException("Failed to check if enhancement was applicable for " + message.getPid(), e);

@@ -30,7 +30,7 @@ import edu.unc.lib.dl.cdr.services.Enhancement;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions;
 
 /**
  * Service which determines when to update individual items in Solr.
@@ -63,10 +63,11 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 
 	@Override
 	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction()))
+		if (ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction())) {
 			return this.getClass().getName().equals(message.getServiceName());
-		// Returns true if at least one other service passed prefilter
-		// It is okay for ingest messages to pass here since if they are still orphaned they are not indexed.
+		}
+		
+		// Returns true if at least one other service passed prefiltering
 		return message.getFilteredServices() != null && message.getFilteredServices().size() > 0;
 	}
 
@@ -75,6 +76,11 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 	public boolean isApplicable(EnhancementMessage message) throws EnhancementException {
 		// Get lastModified from Fedora
 		LOG.debug("isApplicable called with " + message);
+		
+		// At least one other service must have completed
+		if (message.getCompletedServices() == null || message.getCompletedServices().size() == 0) {
+			return false;
+		}
 
 		// Get dateUpdated from Solr
 		try {
