@@ -106,6 +106,7 @@
 	<bean id="fedoraUIPProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
 		<property name="digitalObjectManager" ref="digitalObjectManager"/>
 		<property name="accessClient" ref="accessClient"/>
+		<property name="aclService" ref="accessControlService"/>
 		<property name="pipeline" ref="uipPipeline"/>
 		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
 		<property name="operationsMessageSender" ref="operationsMessageSender" />
