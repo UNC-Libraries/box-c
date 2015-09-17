@@ -286,16 +286,21 @@ public class ContainerContentsHelper {
 			}
 		}
 
-		log.debug("HERE order after merge:");
-		for (int i = 0; i < order.size(); i++) {
-			log.debug(i + " => " + order.get(i));
+		if (log.isDebugEnabled()) {
+			log.debug("HERE order after merge:");
+			for (int i = 0; i < order.size(); i++) {
+				log.debug(i + " => " + order.get(i));
+			}
 		}
 
-		for (int i = 0; i < originalOrder.length; i++) {
-			PID orig = originalOrder[i];
-			if (orig != null) {
-				if (!orig.equals(order.get(i))) {
-					reorderedPids.add(orig);
+		// Record changes to order if desired
+		if (reorderedPids != null) {
+			for (int i = 0; i < originalOrder.length; i++) {
+				PID orig = originalOrder[i];
+				if (orig != null) {
+					if (!orig.equals(order.get(i))) {
+						reorderedPids.add(orig);
+					}
 				}
 			}
 		}

@@ -18,6 +18,7 @@ package edu.unc.lib.dl.services;
 import java.io.File;
 import java.util.List;
 
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
@@ -124,6 +125,17 @@ public interface DigitalObjectManager {
 	 */
 	public abstract void move(List<PID> moving, PID destination, String user, String message)
 			throws IngestException;
+	
+	/**
+	 * Adds children objects to the specified container.
+	 * 
+	 * @param container
+	 * @param children
+	 * @throws FedoraException
+	 * @throws IngestException
+	 */
+	public void addChildrenToContainer(PID container, List<PID> children)
+			throws FedoraException, IngestException;
 
 	/**
 	 * Attempts to rollback a failed move operation by returning part way moved objects to their original source

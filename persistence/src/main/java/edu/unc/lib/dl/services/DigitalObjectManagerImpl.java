@@ -27,6 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,7 +75,6 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.Checksum;
 import edu.unc.lib.dl.util.ContainerContentsHelper;
-import edu.unc.lib.dl.util.ContainerPlacement;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -1022,12 +1022,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * Add a list of children to a container, updating MD_CONTENTS as well if present
 	 *
 	 * @param container
-	 * @param moving
+	 * @param children
 	 * @param reordered
 	 * @throws FedoraException
 	 * @throws IngestException
 	 */
-	private void addChildren(PID container, List<PID> moving, Collection<PID> reordered) throws FedoraException,
+	public void addChildren(PID container, List<PID> children, Collection<PID> reordered) throws FedoraException,
 			IngestException {
 
 		updateRelsExt: do {
@@ -1044,14 +1044,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					existingChildren.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
 				}
 
-				// Add moved children (which are not duplicates) to container
-				for (PID newChild : moving) {
+				// Add children (which are not duplicates) to container
+				for (PID newChild : children) {
 					if (!existingChildren.contains(newChild)) {
 						Element newChildEl = new Element(contains.name(), contains.getNamespace());
 						newChildEl.setAttribute("resource", newChild.getURI(), JDOMNamespaceUtil.RDF_NS);
 						descriptionEl.addContent(newChildEl);
 					} else {
-						log.warn("Container {} already contained moved child {}", container, newChild);
+						log.warn("Container {} already contained child {}", container, newChild);
 					}
 				}
 
@@ -1061,7 +1061,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 
 				// Push changes out to the container container
-				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Adding moved children",
+				managementClient.modifyDatastream(container, RELS_EXT.getName(), "Adding children",
 						relsExtResp.getLastModified(), relsExt);
 				break updateRelsExt;
 			} catch (OptimisticLockException e) {
@@ -1076,7 +1076,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
 				if (mdContentsResp != null) {
 					Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
-							mdContentsResp.getDocument(), container, moving, reordered);
+							mdContentsResp.getDocument(), container, children, reordered);
 
 					if (log.isDebugEnabled()) {
 						XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
@@ -1084,8 +1084,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 								outputter.outputString(mdContents));
 					}
 
-					managementClient.modifyDatastream(container, MD_CONTENTS.getName(), "Adding " + moving.size()
-							+ " moved children", mdContentsResp.getLastModified(), mdContents);
+					managementClient.modifyDatastream(container, MD_CONTENTS.getName(), "Adding " + children.size()
+							+ " children", mdContentsResp.getLastModified(), mdContents);
 				}
 				break updateMDContents;
 			} catch (OptimisticLockException e) {
@@ -1138,6 +1138,16 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// Repeat rels-ext update if the source changed since the datastream was retrieved
 		} while (true);
 	}
+	
+	@Override
+	public void addChildrenToContainer(PID container, List<PID> children)
+			throws FedoraException, IngestException {
+		AccessGroupSet groups = GroupsThreadStore.getGroups();
+		if (groups != null && !aclService.hasAccess(container, groups, Permission.addRemoveContents)) {
+			throw new AuthorizationException("Insufficient permissions to add children to " + container);
+		}
+		addChildren(container, children, null);
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -1160,6 +1170,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	@Override
 	public PID createContainer(String name, PID parent, Model extraModel,
 			String user, byte[] mods) throws IngestException {
+		
 		PID containerPid = new PID("uuid:"+UUID.randomUUID());
 		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPid());
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, name);
@@ -1240,30 +1251,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		}
 
 		try {
-			// Container update
-			this.getManagementClient().addObjectRelationship(parent,
-					Relationship.contains.name(), Relationship.contains.getNamespace(), containerPid);
-			try {
-				MIMETypedStream mts = this.accessClient.getDatastreamDissemination(parent, Datastream.MD_CONTENTS.getName(), null);
-				List<PID> reordered = new ArrayList<PID>();
-				try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
-					Document oldContents = new SAXBuilder().build(bais);
-					ContainerPlacement cp = new ContainerPlacement();
-					cp.label = name;
-					cp.parentPID = parent;
-					cp.pid = containerPid;
-					Collection<ContainerPlacement> placements = Collections.singleton(cp);
-					Document newContents = ContainerContentsHelper.addChildContentAIPInCustomOrder(oldContents, parent, placements, reordered);
-					this.getManagementClient().modifyInlineXMLDatastream(parent, Datastream.MD_CONTENTS.getName(), false,
-							"adding child resource to container", new ArrayList<String>(), Datastream.MD_CONTENTS.getLabel(), newContents);
-				} catch (JDOMException e) {
-					throw new IngestException("MD_CONTENTS is bad", e);
-				} catch (IOException e) {
-					throw new IngestException(e.getMessage(), e);
-				}
-			} catch(NotFoundException e) {
-				// no MD_CONTENTS to update, skip it
-			}
+			// Add the container to its parent
+			addChildrenToContainer(parent, Arrays.asList(containerPid));
+			// Ingest the container
 			forwardedManagementClient.ingest(foxml, Format.FOXML_1_1, "Container created via Admin UI");
 		} catch (FedoraException e) {
 			throw new IngestException("Failed to ingest container object", e);
