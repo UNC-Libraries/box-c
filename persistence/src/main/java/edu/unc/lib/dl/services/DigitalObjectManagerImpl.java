@@ -1027,7 +1027,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 	 * @throws FedoraException
 	 * @throws IngestException
 	 */
-	public void addChildren(PID container, List<PID> children, Collection<PID> reordered) throws FedoraException,
+	private void addChildren(PID container, List<PID> children, Collection<PID> reordered) throws FedoraException,
 			IngestException {
 
 		updateRelsExt: do {
