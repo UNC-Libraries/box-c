@@ -31,6 +31,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -48,8 +51,10 @@ public class ChangeObjectStateController {
 	private static final Logger log = LoggerFactory.getLogger(ChangeObjectStateController.class);
 	
 	@Autowired(required = true)
-	@Qualifier("forwardedManagementClient")
+	@Qualifier("managementClient")
 	private ManagementClient managementClient;
+	@Autowired
+	private AccessControlService aclService;
 	
 	@RequestMapping(value = "edit/restore/{id}", method = RequestMethod.POST)
 	public @ResponseBody
@@ -69,9 +74,12 @@ public class ChangeObjectStateController {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("pid", id);
 		result.put("action", (markAsDeleted) ? "delete" : "restore");
-		
 
 		try {
+			if (!aclService.hasAccess(pid, GroupsThreadStore.getGroups(), Permission.moveToTrash)){
+				throw new AuthorizationException("Insufficient privileges to delete/restore object " + id);
+			}
+			
 			State newState = markAsDeleted? State.DELETED : State.ACTIVE;
 			log.debug("Changing the state of object {} to {}", id, newState);
 			managementClient.modifyObject(pid, null, null, newState, null);

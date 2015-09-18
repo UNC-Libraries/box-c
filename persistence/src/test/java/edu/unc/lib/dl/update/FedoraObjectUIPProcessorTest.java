@@ -38,6 +38,9 @@ import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.PID;
@@ -97,6 +100,10 @@ public class FedoraObjectUIPProcessorTest extends Assert {
 	@Test
 	public void testNormalOperations() throws Exception {
 		FedoraObjectUIPProcessor processor = new FedoraObjectUIPProcessor();
+		AccessControlService aclService = mock(AccessControlService.class);
+		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editAccessControl)))
+			.thenReturn(true);
+		processor.setAclService(aclService);
 		
 		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
 		Abdera abdera = new Abdera();

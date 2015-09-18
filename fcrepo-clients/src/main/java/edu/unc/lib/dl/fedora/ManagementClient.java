@@ -623,6 +623,11 @@ public class ManagementClient extends WebServiceTemplate {
 		try {
 			int response = httpClient.executeMethod(method);
 			
+			if (response == 403) {
+				throw new AuthorizationException("Failed to update datastream " + dsid + " on object "
+							+ pid + " due to insufficient permissions");
+			}
+			
 			if (response == 409) {
 				throw new OptimisticLockException("Datastream " + dsid + " on object " + pid
 						+ " has been modified more recently than the specified last modified date");

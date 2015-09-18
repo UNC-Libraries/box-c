@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -50,28 +55,34 @@ public class PublishRestController {
 	private ManagementClient managementClient;
 	@Autowired(required = true)
 	private OperationsMessageSender messageSender;
+	@Autowired
+	private AccessControlService aclService;
 
 	@RequestMapping(value = "edit/publish/{id}", method = RequestMethod.POST)
-	public @ResponseBody
-	Map<String, ? extends Object> publishObject(@PathVariable("id") String id, HttpServletRequest request) {
+	public @ResponseBody ResponseEntity<Object>
+	 publishObject(@PathVariable("id") String id, HttpServletRequest request) {
 		PID pid = new PID(id);
 		return this.publishObject(pid, true, request.getRemoteUser());
 	}
 
 	@RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.POST)
 	public @ResponseBody
-	Map<String, ? extends Object> unpublishObject(@PathVariable("id") String id, HttpServletRequest request) {
+	ResponseEntity<Object> unpublishObject(@PathVariable("id") String id, HttpServletRequest request) {
 		PID pid = new PID(id);
 		return this.publishObject(pid, false, request.getRemoteUser());
 	}
 
-	private Map<String, ? extends Object> publishObject(PID pid, boolean publish, String username) {
+	private ResponseEntity<Object> publishObject(PID pid, boolean publish, String username) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("pid", pid.getPid());
 		result.put("action", (publish) ? "publish" : "unpublish");
 		log.debug("Publishing object " + pid);
 
 		try {
+			if (!aclService.hasAccess(pid, GroupsThreadStore.getGroups(), Permission.publish)) {
+				throw new AuthorizationException("Insufficient permissions to change publication status of " + pid);
+			}
+			
 			// Update relation
 			managementClient.setExclusiveLiteral(pid, CDRProperty.isPublished.getPredicate(),
 					CDRProperty.isPublished.getNamespace(), (publish) ? "yes" : "no", null);
@@ -81,12 +92,14 @@ public class PublishRestController {
 			result.put("messageId", messageId);
 		} catch (AuthorizationException e) {
 			result.put("error", "Insufficient privileges to publish object " + pid.getPid());
+			return new ResponseEntity<Object>(result, HttpStatus.FORBIDDEN);
 		} catch (FedoraException e) {
 			log.error("Failed to update relation on " + pid, e);
 			result.put("error", e.toString());
+			return new ResponseEntity<Object>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return result;
+		return new ResponseEntity<Object>(result, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "edit/publish", method = RequestMethod.POST)

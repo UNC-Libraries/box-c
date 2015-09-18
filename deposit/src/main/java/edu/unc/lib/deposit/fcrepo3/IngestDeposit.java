@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,6 +52,8 @@ import edu.unc.lib.dl.fedora.ObjectIntegrityException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.Datastream;
+import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -84,6 +87,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	@Autowired
 	private ManagementClient client;
+	
+	@Autowired
+	private DigitalObjectManager digitalObjectManager;
 
 	@Autowired
 	private AccessClient accessClient;
@@ -316,12 +322,11 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		while (true) {
 			try {
-				client.addObjectRelationship(destinationPID, Relationship.contains.name(),
-						Relationship.contains.getNamespace(), new PID(pid));
+				digitalObjectManager.addChildrenToContainer(destinationPID, Arrays.asList(new PID(pid)));
 				return;
 			} catch (FedoraTimeoutException e) {
 				throw e;
-			} catch (FedoraException e) {
+			} catch (FedoraException | IngestException e) {
 				throw new DepositException("Failed to add object " + pid + " to destination " + destinationPID.getPid(), e);
 			} catch (ServiceException e) {
 				waitIfConnectionLostOrRethrow(e);

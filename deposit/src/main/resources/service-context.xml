@@ -159,6 +159,35 @@
 			</list>
 		</property>
 	</bean>
+	
+	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
+		init-method="init">
+		<property name="aclEndpointUrl"
+			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}/addons/fesl/" />
+		<property name="username" value="${fedora.forwarded.username}" />
+		<property name="password" value="${fedora.forwarded.password}" />
+	</bean>
+	
+	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
+		<property name="managementClient">
+			<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+				init-method="init" destroy-method="destroy">
+				<property name="fedoraContextUrl"
+					value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
+				<property name="username" value="${fedora.admin.username}" />
+				<property name="password" value="${fedora.admin.password}" />
+				<property name="accessClient" ref="accessClient"/>
+			</bean>
+		</property>
+		<property name="forwardedManagementClient" ref="forwardedManagementClient"/>
+		<property name="accessClient" ref="accessClient"/>
+		<property name="operationsMessageSender" ref="operationsMessageSender"/>
+		<property name="aclService" ref="accessControlService"/>
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
+		<property name="schematronValidator" ref="schematronValidator"/>
+		<property name="available" value="true"/>
+		<property name="collectionsPid" ref="collectionsPid"/>
+	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">

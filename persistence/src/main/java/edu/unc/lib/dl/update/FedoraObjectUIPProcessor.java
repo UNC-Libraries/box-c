@@ -24,6 +24,9 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -37,6 +40,7 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 	private UIPUpdatePipeline pipeline;
 	private AccessClient accessClient;
 	private OperationsMessageSender operationsMessageSender;
+	private AccessControlService aclService;
 
 	private Map<String, Datastream> virtualDatastreamMap;
 
@@ -53,6 +57,11 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 				+ uip.getPID().getPid());
 
 		FedoraObjectUIP fuip = (FedoraObjectUIP) uip;
+		
+		if (fuip.getIncomingData().containsKey("ACL")
+				&& !aclService.hasAccess(uip.getPID(), GroupsThreadStore.getGroups(), Permission.editAccessControl)) {
+			throw new UpdateException("Insufficient privileges to update access controls for " + uip.getPID());
+		}
 
 		fuip.storeOriginalDatastreams(accessClient);
 
@@ -146,5 +155,9 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 
 	public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
 		this.operationsMessageSender = operationsMessageSender;
+	}
+
+	public void setAclService(AccessControlService aclService) {
+		this.aclService = aclService;
 	}
 }

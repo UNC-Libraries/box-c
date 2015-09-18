@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -65,6 +66,7 @@ import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.ObjectProfile;
+import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
@@ -92,6 +94,8 @@ public class IngestDepositTest {
 	private ManagementClient client;
 	@Mock
 	private AccessClient accessClient;
+	@Mock
+	private DigitalObjectManager digitalObjectManager;
 
 	private Map<String, String> depositStatus;
 
@@ -147,6 +151,7 @@ public class IngestDepositTest {
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "client", client);
 		setField(job, "accessClient", accessClient);
+		setField(job, "digitalObjectManager", digitalObjectManager);
 
 		depositStatus.put(DepositField.containerId.name(), "uuid:destination");
 		depositStatus.put(DepositField.excludeDepositRecord.name(), "false");
@@ -238,8 +243,8 @@ public class IngestDepositTest {
 		// Clicks should have been registered
 		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
-		verify(client, times(job.getTopLevelPids().size()))
-				.addObjectRelationship(any(PID.class), anyString(), any(Namespace.class), any(PID.class));
+		verify(digitalObjectManager, times(job.getTopLevelPids().size()))
+				.addChildrenToContainer(any(PID.class), anyListOf(PID.class));
 
 		verify(client, times(job.getIngestObjectCount() + 1))
 				.ingestRaw(any(byte[].class), any(Format.class), anyString());
@@ -275,7 +280,7 @@ public class IngestDepositTest {
 		jobThread.join();
 
 		// Only the one successful top level pid added because of ordering
-		verify(client).addObjectRelationship(any(PID.class), anyString(), any(Namespace.class), any(PID.class));
+		verify(digitalObjectManager).addChildrenToContainer(any(PID.class), anyListOf(PID.class));
 
 		// Failing on third ingestRaw
 		verify(client, times(3)).ingestRaw(any(byte[].class), any(Format.class), anyString());
@@ -357,8 +362,8 @@ public class IngestDepositTest {
 		// Clicks should have been registered
 		verify(jobStatusFactory, times(job.getIngestObjectCount())).incrCompletion(eq(job.getJobUUID()), eq(1));
 
-		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
-				any(Namespace.class), any(PID.class));
+		verify(digitalObjectManager, times(job.getTopLevelPids().size()))
+			.addChildrenToContainer(any(PID.class), anyListOf(PID.class));
 
 		verify(client, times(job.getIngestObjectCount())).ingestRaw(any(byte[].class), any(Format.class), anyString());
 
@@ -398,8 +403,8 @@ public class IngestDepositTest {
 		// Clicks should have been registered
 		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
 
-		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
-				any(Namespace.class), any(PID.class));
+		verify(digitalObjectManager, times(job.getTopLevelPids().size()))
+				.addChildrenToContainer(any(PID.class), anyListOf(PID.class));
 
 		verify(client, times(job.getIngestObjectCount() + 1))
 				.ingestRaw(any(byte[].class), any(Format.class), anyString());
@@ -437,9 +442,9 @@ public class IngestDepositTest {
 
 		// Click for newly run ingests and the one unregistered previously completed ingest
 		verify(jobStatusFactory, times(job.getIngestObjectCount() + 2)).incrCompletion(eq(job.getJobUUID()), eq(1));
-
-		verify(client, times(job.getTopLevelPids().size())).addObjectRelationship(any(PID.class), anyString(),
-				any(Namespace.class), any(PID.class));
+		
+		verify(digitalObjectManager, times(job.getTopLevelPids().size()))
+				.addChildrenToContainer(any(PID.class), anyListOf(PID.class));
 
 	}
 
