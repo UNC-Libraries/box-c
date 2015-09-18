@@ -69,17 +69,34 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		Bag top = model.createBag(getDepositPID().getURI().toString());
 		// add aggregate work bag
 		Element aggregateEl = helper.mets.getRootElement().getChild("structMap", METS_NS).getChild("div", METS_NS);
-		Bag aggregate = model.createBag(METSHelper.getPIDURI(aggregateEl));
-		top.add(aggregate);
+		
+		Resource rootResource = null;
+		
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
-		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
-		model.add(aggregate, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
-		List<Element> topchildren = aggregateEl.getChildren(
-				"div", METS_NS);
-		for (Element childEl : topchildren) {
-			Resource child = model.createResource(METSHelper.getPIDURI(childEl));
-			aggregate.add(child);
+		
+		// Only make an aggregate if there are multiple files
+		if (aggregateEl.getChildren().size() > 1) {
+			Bag rootObject = model.createBag(METSHelper.getPIDURI(aggregateEl));
+			top.add(rootObject);
+			
+			model.add(rootObject, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
+			model.add(rootObject, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
+			List<Element> topchildren = aggregateEl.getChildren(
+					"div", METS_NS);
+			for (Element childEl : topchildren) {
+				Resource child = model.createResource(METSHelper.getPIDURI(childEl));
+				rootObject.add(child);
+			}
+			
+			rootResource = rootObject;
+		} else {
+			Element childEl = aggregateEl.getChild("div", METS_NS);
+			rootResource = model.createResource(METSHelper.getPIDURI(childEl));
+			model.add(rootResource, hasModel, model.createResource(ContentModelHelper.Model.SIMPLE.getURI().toString()));
+			top.add(rootResource);
+			// model.add(rootObject, )
 		}
+		
 		helper.addFileAssociations(model, true);
 
 		// extract EPDCX from mets
@@ -90,7 +107,7 @@ public class DSPACEMETS2N3BagJob extends AbstractMETS2N3BagJob {
 			epdcx2modsTransformer.transform(new JDOMSource(epdcxEl), mods);
 			final File modsFolder = getDescriptionDir();
 			modsFolder.mkdir();
-			File modsFile = new File(modsFolder, new PID(aggregate.getURI()).getUUID()+".xml");
+			File modsFile = new File(modsFolder, new PID(rootResource.getURI()).getUUID()+".xml");
 			fos = new FileOutputStream(modsFile);
 			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
 		} catch(NullPointerException ignored) {
