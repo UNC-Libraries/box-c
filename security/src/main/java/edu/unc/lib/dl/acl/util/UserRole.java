@@ -41,6 +41,8 @@ public enum UserRole {
 	ingester("ingester", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
 			Permission.addRemoveContents, Permission.editDescription, Permission.viewDescription,
 			Permission.viewDerivative, Permission.viewOriginal}),
+	metadataEditor("metadata-editor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
+			Permission.editDescription, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
 	processor("processor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
 			Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash,
 			Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),

@@ -1180,24 +1180,23 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		Set<String[]> result = new HashSet<String[]>();
 		StringBuffer query = new StringBuffer();
 		query.append("select $group $role from <%1$s>")
-				.append(" where <%2$s> $role $group").append(" and (")
-				.append("       $role <mulgara:is> <%3$s>")
-				.append("       or $role <mulgara:is> <%4$s>")
-				.append("       or $role <mulgara:is> <%5$s>")
-				.append("       or $role <mulgara:is> <%6$s>")
-				.append("       or $role <mulgara:is> <%7$s>")
-				.append("       or $role <mulgara:is> <%8$s>")
-				.append("       or $role <mulgara:is> <%9$s>")
-				.append(" );");
-		String q = String.format(query.toString(),
-				this.getResourceIndexModelUri(), pid.getURI(),
-				UserRole.patron.getURI(),
-				UserRole.observer.getURI(),
-				UserRole.ingester.getURI(),
-				UserRole.processor.getURI(),
-				UserRole.curator.getURI(),
-				UserRole.metadataPatron.getURI(),
-				UserRole.accessCopiesPatron.getURI());
+				.append(" where <%2$s> $role $group").append(" and (");
+		
+		Object[] params = new Object[UserRole.values().length + 2];
+		int i = 2;
+		params[0] = this.getResourceIndexModelUri();
+		params[1] = pid.getURI();
+		for (UserRole role : UserRole.values()) {
+			params[i++] = role.getURI();
+			if (i > 3) {
+				query.append(" or ");
+			}
+			query.append(" $role <mulgara:is> <%" + i + "$s>");
+		}
+		query.append(" );");
+		
+		String q = String.format(query.toString(), params);
+		
 		List<List<String>> response = this.lookupStrings(q);
 		if (!response.isEmpty()) {
 			for (List<String> solution : response) {
