@@ -91,7 +91,7 @@ public class ExportXMLController {
 	@Resource
 	@Qualifier("forwardedAccessClient")
 	private AccessClient client;
-	@Autowired
+	@Resource(name="forwardedManagementClient")
 	private ManagementClient managementClient;
 	@Autowired
 	private AccessControlService aclService;

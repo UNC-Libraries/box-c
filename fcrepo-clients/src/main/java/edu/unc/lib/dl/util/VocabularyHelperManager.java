@@ -444,4 +444,12 @@ public class VocabularyHelperManager {
 	public void setCollectionsPID(PID collectionsPID) {
 		this.collectionsPID = collectionsPID;
 	}
+
+	public void setManagementClient(ManagementClient managementClient) {
+		this.managementClient = managementClient;
+	}
+
+	public void setAccessClient(AccessClient accessClient) {
+		this.accessClient = accessClient;
+	}
 }

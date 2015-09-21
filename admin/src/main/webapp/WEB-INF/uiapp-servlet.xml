@@ -154,6 +154,8 @@
 	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
 		<property name="helperClasses" ref="vocabHelperClassMap" />
 		<property name="collectionsPID" ref="collectionsPid" />
+		<property name="managementClient" ref="managementClient" />
+		<property name="accessClient" ref="accessClient" />
 	</bean>
 	
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
