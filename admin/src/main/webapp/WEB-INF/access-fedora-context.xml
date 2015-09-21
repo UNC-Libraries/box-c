@@ -34,6 +34,16 @@
 			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
 		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#" />
 	</bean>
+	
+	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
+		init-method="init" destroy-method="destroy">
+		<property name="fedoraContextUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="username" value="${fedora.admin.username}" />
+		<property name="password" value="${fedora.admin.password}" />
+		<property name="accessClient" ref="accessClient"></property>
+	</bean>
+	
 	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
@@ -47,6 +57,7 @@
 		</property>
 		<property name="accessClient" ref="forwardedAccessClient"></property>
 	</bean>
+	
 	<bean id="forwardedAccessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">
 		<property name="fedoraContextUrl"
@@ -59,6 +70,7 @@
 			</list>
 		</property>
 	</bean>
+	
 	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol:https}://${fedora.host:localhost}${fedora.port:443}/${fedora.context:fedora}" />

@@ -3,8 +3,9 @@ package edu.unc.lib.dl.admin.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.jdom2.Element;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +20,8 @@ import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
 @Controller
-public class EditLabelController {	
-	@Autowired
+public class EditLabelController {
+	@Resource(name="managementClient")
 	private ManagementClient client;
 	
 	@RequestMapping(value = "editlabel/{pid}", method = RequestMethod.POST)
