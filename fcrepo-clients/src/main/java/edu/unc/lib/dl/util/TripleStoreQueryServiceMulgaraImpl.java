@@ -60,7 +60,6 @@ import org.jdom2.output.XMLOutputter;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.NodeList;
 
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
@@ -1165,45 +1164,6 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 			p.setPath(sb.toString());
 			p.setLabel(list.get(2));
 			result.add(p);
-		}
-		return result;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see edu.unc.lib.dl.util.TripleStoreQueryService#lookupPermissions
-	 * (edu.unc.lib.dl.fedora.PID)
-	 */
-	@Override
-	public Set<String[]> lookupGroupRoles(PID pid) {
-		Set<String[]> result = new HashSet<String[]>();
-		StringBuffer query = new StringBuffer();
-		query.append("select $group $role from <%1$s>")
-				.append(" where <%2$s> $role $group").append(" and (");
-		
-		Object[] params = new Object[UserRole.values().length + 2];
-		int i = 2;
-		params[0] = this.getResourceIndexModelUri();
-		params[1] = pid.getURI();
-		for (UserRole role : UserRole.values()) {
-			params[i++] = role.getURI();
-			if (i > 3) {
-				query.append(" or ");
-			}
-			query.append(" $role <mulgara:is> <%" + i + "$s>");
-		}
-		query.append(" );");
-		
-		String q = String.format(query.toString(), params);
-		
-		List<List<String>> response = this.lookupStrings(q);
-		if (!response.isEmpty()) {
-			for (List<String> solution : response) {
-				String group = solution.get(0);
-				String role = solution.get(1);
-				result.add(new String[] { group, role });
-			}
 		}
 		return result;
 	}

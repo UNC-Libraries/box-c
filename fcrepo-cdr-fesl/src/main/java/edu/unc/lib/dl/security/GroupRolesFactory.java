@@ -18,6 +18,7 @@ package edu.unc.lib.dl.security;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,6 +26,7 @@ import org.fcrepo.server.errors.ObjectNotFoundException;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap.Builder;
 
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -95,22 +97,20 @@ public class GroupRolesFactory {
 	}
 
 	private void updateCache(String pid) throws ObjectNotFoundException {
-		Set<String[]> groupRoles = getTripleStoreQueryService().lookupGroupRoles(new PID(pid));
-		if (groupRoles.isEmpty()) {
-			pids2Roles2Groups.put(pid, new HashMap<String, Set<String>>());
-		} else {
-			Map<String, Set<String>> roles2Groups = new HashMap<String, Set<String>>();
-			for (String[] grouprole : groupRoles) {
-				Set<String> groups = null;
-				if (!roles2Groups.containsKey(grouprole[1])) {
-					groups = new HashSet<String>(1);
-					roles2Groups.put(grouprole[1], groups);
-				} else {
-					groups = roles2Groups.get(grouprole[1]);
+		Map<String, List<String>> triples = getTripleStoreQueryService().fetchAllTriples(new PID(pid));
+		
+		// Filter triples down to just group roles
+		Map<String, Set<String>> roles2Groups = new HashMap<String, Set<String>>();
+		if (triples != null) {
+			for (UserRole role : UserRole.values()) {
+				String roleUri = role.toString();
+				
+				if (triples.containsKey(roleUri)) {
+					roles2Groups.put(roleUri, new HashSet<String>(triples.get(roleUri)));
 				}
-				groups.add(grouprole[0]);
 			}
-			pids2Roles2Groups.put(pid, roles2Groups);
 		}
+		// Cache the roles to groups mapping for this object
+		pids2Roles2Groups.put(pid, roles2Groups);
 	}
 }
