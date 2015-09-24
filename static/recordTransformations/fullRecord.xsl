@@ -35,7 +35,7 @@
 	</xsl:template>
 	
 	<xsl:template match="/">
-		<div class="metadata">
+		<view>
 			<xsl:choose>
 				<xsl:when test="boolean(/view-inputs/*[local-name() = 'digitalObject']/*[local-name() = 'datastream' and @ID='MD_DESCRIPTIVE']/*[local-name() = 'datastreamVersion'][last()]/*[local-name() = 'xmlContent']/*[local-name() = 'mods'])">
 					<xsl:variable name="mostRecentDate">
@@ -56,6 +56,6 @@
 					<xsl:apply-templates select="/view-inputs/*[local-name() = 'digitalObject']/*[local-name() = 'datastream' and @ID='DC']/*[local-name() = 'datastreamVersion' and @CREATED = $mostRecentDate]/*[local-name() = 'xmlContent']/*[local-name() = 'dc']"/>
 				</xsl:when>
 			</xsl:choose>
-		</div>
+		</view>
 	</xsl:template>
 </xsl:stylesheet>

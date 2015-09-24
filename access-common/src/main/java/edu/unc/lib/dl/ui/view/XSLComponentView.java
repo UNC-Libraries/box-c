@@ -34,7 +34,7 @@ import org.jdom2.transform.JDOMSource;
 public class XSLComponentView {
 	private Transformer transformer;
 	private String source;
-	private List<Namespace> namespaces;
+	private final List<Namespace> namespaces;
 
 	public XSLComponentView(String source) throws Exception {
 		this.source = source;
@@ -84,13 +84,17 @@ public class XSLComponentView {
 		}
 
 		Element rootElement = result.getDocument().getRootElement();
+		if (rootElement.getChildren().size() == 0) {
+			return null;
+		}
+		
 		if (namespaces != null) {
 			for (Namespace namespace : namespaces) {
 				rootElement.removeNamespaceDeclaration(namespace);
 			}
 		}
 		XMLOutputter out = new XMLOutputter();
-		return out.outputString(rootElement);
+		return out.outputString(rootElement.getChildren().get(0));
 	}
 
 	public String getSource() {
