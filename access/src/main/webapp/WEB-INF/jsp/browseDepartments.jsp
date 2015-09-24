@@ -21,26 +21,10 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>  
 
 <div class="content-wrap">
-<div class="contentarea">
-	<h2>Browse Departments <c:if test="${not empty container}">in Collection <c:out value=" ${container.title}"/></c:if></h2>
-</div>
-<div class="onecol light">
-	<ul class="lightest twocol shadowtop browse_departments">
-		<c:set var="halfwayPoint" value="${fn:length(departmentFacets.values) / 2}"/>
-		<c:set var="halfwayPoint" value="${halfwayPoint + (1-(halfwayPoint % 1)) % 1 }"/>
-		<c:forEach items="${departmentFacets.values}" var="departmentFacet" varStatus="status">
-			<c:if test="${not empty departmentFacet.displayValue}">
-				<c:if test="${status.count == halfwayPoint + 1}">
-					<c:out value="</ul><ul class='light twocol light browse_departments'>" escapeXml="false" />
-				</c:if>
-				<li>
-					<c:url var="resultsUrl" scope="page" value="search/${container.id}">
-						<c:param name="dept" value='${departmentFacet.searchValue}'/>		
-					</c:url>
-					<a href="<c:out value='${resultsUrl}' />"><c:out value="${departmentFacet.displayValue}"/></a> (<c:out value="${departmentFacet.count}"/>)
-				</li>
-			</c:if>
-		</c:forEach>
-	</ul>
-</div>
+	<div class="contentarea">
+		<h2>Browse Departments <c:if test="${not empty container}">in Collection <c:out value=" ${container.title}"/></c:if></h2>
+	</div>
+	<div class="onecol light">
+		<c:import url="searchResults/departmentList.jsp" />
+	</div>
 </div>
