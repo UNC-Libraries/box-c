@@ -72,9 +72,6 @@
 			<div class="clear"></div>
 			<p class="full_record_browse">
 				<c:url var="collectionResultsUrl" scope="page" value='browse/dept/${briefObject.id}'></c:url>
-				<c:if test="${not empty facetFields.get('DEPARTMENT').getValues()}">
-					<a href="<c:out value='${collectionResultsUrl}' />">Browse by department</a> or
-				</c:if>			
 				<a href="list/<c:out value='${briefObject.id}' />">
 					Browse all&nbsp;(<c:out value="${childCount}"/> items)
 				</a>
@@ -82,27 +79,56 @@
 		</div>
 	</div>
 </div>
-<div class="lightest">
-	<div class="fourcol lightest shadowtop">
-		<div id="facetList" class="contentarea">
-			<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
-			<h2>Contents</h2>
-			<c:import url="/jsp/util/facetList.jsp">
-			</c:import>
-		</div>
-	</div>
-	<div class="threecol white shadowtop">
-		<div class="contentarea">
-			<c:import url="fullRecord/metadataBody.jsp" />
-			
-			<div id="hierarchical_view_full_record">
-				<h2>Folder Browse View (or <a href="<c:out value="${structureUrl}" />">switch to structure browse</a>)</h2>
-				<div class="structure" data-pid="${briefObject.id}">
+<div id="collection_tabs" class="tabbed_content">
+	<nav class="tab_headers">
+		<ul>
+			<c:if test="${containerSettings.getViews().contains('METADATA')}">
+				<li data-tabid="METADATA">Overview</li>
+			</c:if>
+			<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
+				<li data-tabid="STRUCTURE">Structure</li>
+			</c:if>
+			<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
+				<li data-tabid="DEPARTMENTS">Departments</li>
+			</c:if>
+		</ul>
+	</nav>
+		<c:if test="${containerSettings.getViews().contains('METADATA')}">
+			<div data-tabid="METADATA">
+				<div class="fourcol">
+					<div id="facetList" class="contentarea">
+						<c:if test="${hasFacetFields}">
+							<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+							<h2>Contents</h2>
+							<c:import url="/jsp/util/facetList.jsp">
+							</c:import>
+						</c:if>
+					</div>
+				</div>
+				<div class="threecol white">
+					<div class="contentarea">
+						<c:import url="fullRecord/metadataBody.jsp" />
+						<c:import url="fullRecord/exports.jsp" />
+					</div>
 				</div>
 			</div>
-			<br/>
-			<c:import url="fullRecord/exports.jsp" />
-		</div>
+		</c:if>
+		<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
+			<div data-tabid="STRUCTURE">
+				<div class="onecol">
+					<div id="hierarchical_view_full_record" class="contentarea">
+						<h2>Folder Browse View</h2>
+						<div class="structure" data-pid="${briefObject.id}"></div>
+					</div>
+				</div>
+			</div>
+		</c:if>
+		<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
+			<div data-tabid="DEPARTMENTS">
+				<div class="onecol">
+					<c:import url="searchResults/departmentList.jsp" />
+				</div>
+			</div>
+		</c:if>
 	</div>
-	
 </div>

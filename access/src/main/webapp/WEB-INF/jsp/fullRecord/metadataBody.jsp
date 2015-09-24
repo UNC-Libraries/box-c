@@ -23,7 +23,7 @@
 	<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
 </c:if>
 <div class="metadata">
-	<table>		
+	<table>
 		<c:set var="searchStateUrl" scope="request" value=""/>
 		<c:set var="objectPath" scope="request" value="${briefObject.objectPath}"/>
 		<tr>
@@ -49,5 +49,9 @@
 		</c:if>
 	</table>
 </div>
-${fullObjectView}
+<c:if test="${not empty fullObjectView}">
+	<div class="metadata">
+		${fullObjectView}
+	</div>
+</c:if>
 

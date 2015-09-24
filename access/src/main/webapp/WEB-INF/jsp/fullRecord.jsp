@@ -34,6 +34,15 @@
 		<c:import url="fullRecord/listAccessRecord.jsp" />
 	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
+		<script>
+			var require = {
+				config: {
+					'containerRecord' : {
+						'containerSettings' : ${cdr:objectToJSON(containerSettings)}
+					}
+				}
+			};
+		</script>
 		<c:import url="fullRecord/collectionRecord.jsp" />
 		<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/containerRecord"></script>
 	</c:when>

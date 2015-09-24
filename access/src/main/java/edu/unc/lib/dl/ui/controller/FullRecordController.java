@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -43,7 +44,10 @@ import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.model.CollectionSettings;
+import edu.unc.lib.dl.model.CollectionSettings.ContainerView;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
@@ -108,9 +112,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 		// Retrieve the objects description from Fedora
 		String fullObjectView = null;
 		boolean containsContent = false;
+		
+		Document foxmlView = null;
 		if (!listAccess) {
 			try {
-				Document foxmlView;
 				int retries = MAX_FOXML_TRIES;
 				do {
 					foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
@@ -142,7 +147,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		}
 
 		// Get additional information depending on the type of object since the user has access
-		if (fullObjectView != null) {
+		if (!listAccess) {
 			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
 			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
 
@@ -164,6 +169,16 @@ public class FullRecordController extends AbstractSolrSearchController {
 						accessGroups, facetsToRetrieve);
 
 				briefObject.getCountMap().put("child", resultResponse.getResultCount());
+				
+				boolean hasFacets = false;
+				for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
+					if (facetField.getValues().size() > 0) {
+						hasFacets = true;
+						break;
+					}
+				}
+				
+				model.addAttribute("hasFacetFields", hasFacets);
 				model.addAttribute("facetFields", resultResponse.getFacetFields());
 			}
 
@@ -175,6 +190,11 @@ public class FullRecordController extends AbstractSolrSearchController {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
 			model.addAttribute("neighborList", neighbors);
+		}
+		
+		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
+				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
+			applyContainerSettings(pid, foxmlView, model);
 		}
 
 		// Store search state information to the users session to enable page to page navigation
@@ -193,6 +213,35 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 		model.addAttribute("pageSubtitle", briefObject.getTitle());
 		return "fullRecord";
+	}
+	
+	// The default collection tab views which are retrieved if no settings are found
+	private static List<String> defaultViews =
+			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name(), ContainerView.DEPARTMENTS.name());
+	
+	private void applyContainerSettings(String pid, Document foxml, Model model) {
+		CollectionSettings settings = new CollectionSettings(foxml.getRootElement().getChildren().get(0));
+		
+		if (settings.getViews().size() == 0) {
+			settings.setViews(defaultViews);
+		}
+		
+		if (settings.getViews().contains(ContainerView.METADATA.name())) {
+			
+		}
+		
+		// Populate department list
+		if (settings.getViews().contains(ContainerView.DEPARTMENTS.name())) {
+			SearchResultResponse result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
+			model.addAttribute("departmentFacets", result.getFacetFields().get(0));
+		}
+		
+		// Populate file list
+		if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
+			
+		}
+
+		model.addAttribute("containerSettings", settings);
 	}
 
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)

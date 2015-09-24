@@ -17,7 +17,10 @@ package edu.unc.lib.dl.xml;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.RDF_NS;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -102,5 +105,25 @@ public class RDFXMLUtil {
 		}
 		
 		descEl.addContent(relEl);
+	}
+	
+	public static List<String> getLiteralValues(Element root, String predicate, Namespace ns) {
+		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		
+		List<Element> tripleEls = descEl.getChildren(predicate, ns);
+		if (tripleEls.size() == 0) {
+			return Collections.emptyList();
+		}
+		List<String> values = new ArrayList<>(tripleEls.size());
+		for (Element tripleEl : tripleEls) {
+			values.add(tripleEl.getText());
+		}
+		return values;
+	}
+	
+	public static String getLiteralValue(Element root, String predicate, Namespace ns) {
+		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+		
+		return descEl.getChildText(predicate, ns);
 	}
 }
