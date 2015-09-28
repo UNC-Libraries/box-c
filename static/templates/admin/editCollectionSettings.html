@@ -1,0 +1,21 @@
+<form method="POST" class="collection_settings">
+	<h2>Title</h2>
+	<p class="collection_name"><%= settings.title %></p>
+	
+	<h2>Full record views</h2>
+	<ul id="full_record_views_select" class="selectable_multi no_text_select">
+		<% _.each(settings.viewInfo, function(viewInfo, viewKey) { %>
+			<li data-viewid="<%= viewKey %>">
+				<input type="checkbox" />
+				<%= viewInfo.displayName %><span class="help" title="<%= viewInfo.description %>">(?)</span>
+			</li>
+		<% }); %>
+	</ul>
+	<div class="selectable_multi_actions">
+		<input id="set_default_view" type="button" value="Set as default" />
+	</div>
+	
+	<div class="update_field">
+		<input type="submit" value="Update" />
+	</div>
+</form>

@@ -21,6 +21,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
+<%@ page import="edu.unc.lib.dl.model.ContainerSettings.ContainerView" %>
 
 <c:choose>
 	<c:when test="${not empty briefObject.countMap}">
@@ -82,53 +83,46 @@
 <div id="collection_tabs" class="tabbed_content">
 	<nav class="tab_headers">
 		<ul>
-			<c:if test="${containerSettings.getViews().contains('METADATA')}">
-				<li data-tabid="METADATA">Overview</li>
-			</c:if>
-			<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
-				<li data-tabid="STRUCTURE">Structure</li>
-			</c:if>
-			<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
-				<li data-tabid="DEPARTMENTS">Departments</li>
-			</c:if>
+			<c:forEach items="${containerSettings.getViews()}" var="viewName">
+				<li data-tabid="${viewName}">${containerSettings.getViewDisplayName(viewName)}</li>
+			</c:forEach>
 		</ul>
 	</nav>
-		<c:if test="${containerSettings.getViews().contains('METADATA')}">
-			<div data-tabid="METADATA">
-				<div class="fourcol">
-					<div id="facetList" class="contentarea">
-						<c:if test="${hasFacetFields}">
-							<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
-							<h2>Contents</h2>
-							<c:import url="/jsp/util/facetList.jsp">
-							</c:import>
-						</c:if>
-					</div>
-				</div>
-				<div class="threecol white">
-					<div class="contentarea">
-						<c:import url="fullRecord/metadataBody.jsp" />
-						<c:import url="fullRecord/exports.jsp" />
-					</div>
+	<c:if test="${containerSettings.getViews().contains('METADATA')}">
+		<div data-tabid="METADATA">
+			<div class="fourcol">
+				<div id="facetList" class="contentarea">
+					<c:if test="${hasFacetFields}">
+						<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+						<h2>Contents</h2>
+						<c:import url="/jsp/util/facetList.jsp">
+						</c:import>
+					</c:if>
 				</div>
 			</div>
-		</c:if>
-		<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
-			<div data-tabid="STRUCTURE">
-				<div class="onecol">
-					<div id="hierarchical_view_full_record" class="contentarea">
-						<h2>Folder Browse View</h2>
-						<div class="structure" data-pid="${briefObject.id}"></div>
-					</div>
+			<div class="threecol white">
+				<div class="contentarea">
+					<c:import url="fullRecord/metadataBody.jsp" />
+					<c:import url="fullRecord/exports.jsp" />
 				</div>
 			</div>
-		</c:if>
-		<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
-			<div data-tabid="DEPARTMENTS">
-				<div class="onecol">
-					<c:import url="searchResults/departmentList.jsp" />
+		</div>
+	</c:if>
+	<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
+		<div data-tabid="STRUCTURE">
+			<div class="onecol">
+				<div id="hierarchical_view_full_record" class="contentarea">
+					<h2>Folder Browse View</h2>
+					<div class="structure" data-pid="${briefObject.id}"></div>
 				</div>
 			</div>
-		</c:if>
-	</div>
+		</div>
+	</c:if>
+	<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
+		<div data-tabid="DEPARTMENTS">
+			<div class="onecol">
+				<c:import url="searchResults/departmentList.jsp" />
+			</div>
+		</div>
+	</c:if>
 </div>

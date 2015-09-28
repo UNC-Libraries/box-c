@@ -44,8 +44,8 @@ import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.model.CollectionSettings;
-import edu.unc.lib.dl.model.CollectionSettings.ContainerView;
+import edu.unc.lib.dl.model.ContainerSettings;
+import edu.unc.lib.dl.model.ContainerSettings.ContainerView;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -220,7 +220,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name(), ContainerView.DEPARTMENTS.name());
 	
 	private void applyContainerSettings(String pid, Document foxml, Model model) {
-		CollectionSettings settings = new CollectionSettings(foxml.getRootElement().getChildren().get(0));
+		ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
 		
 		if (settings.getViews().size() == 0) {
 			settings.setViews(defaultViews);
