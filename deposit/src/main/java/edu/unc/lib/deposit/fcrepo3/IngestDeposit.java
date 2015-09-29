@@ -380,6 +380,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 				try {
 					log.debug("Ingesting foxml for {}", ingestPid);
 					client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
+					
+					// Record FOXML throughput metrics
+					getDepositStatusFactory().incrFileThroughput(foxml.length());
 					return;
 				} catch (ServiceException e) {
 					waitIfConnectionLostOrRethrow(e);
@@ -491,6 +494,10 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 							newref = client.upload(file);
 	
 							cLocation.setAttribute("REF", newref);
+							
+							// Record throughput metrics
+							getDepositStatusFactory().incrFileThroughput(file.length());
+							
 							break repeatUpload;
 						} catch (FedoraTimeoutException e) {
 							log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);

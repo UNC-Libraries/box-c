@@ -1,8 +1,8 @@
 package edu.unc.lib.dl.util;
 
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_METRICS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_METRICS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
 
@@ -160,12 +160,6 @@ public class DepositStatusFactory {
 		getJedisPool().returnResource(jedis);
 	}
 
-	public void incrIngestedOctets(String depositUUID, int amount) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hincrBy(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.ingestedOctets.name(), amount);
-		getJedisPool().returnResource(jedis);
-	}
-
 	public void incrIngestedObjects(String depositUUID, int amount) {
 		Jedis jedis = getJedisPool().getResource();
 		jedis.hincrBy(DEPOSIT_STATUS_PREFIX+depositUUID, DepositField.ingestedObjects.name(), amount);
@@ -206,6 +200,14 @@ public class DepositStatusFactory {
 		String date = metricsDateFormat.format(new Date());
 		jedis.hincrBy(DEPOSIT_METRICS_PREFIX+date, "finished", 1);
 		getJedisPool().returnResource(jedis);
+	}
+	
+	public void incrFileThroughput(long bytes) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-files", 1);
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-bytes", bytes);
+		}
 	}
 
 	/**
