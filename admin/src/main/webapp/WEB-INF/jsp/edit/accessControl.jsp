@@ -119,6 +119,7 @@
 					<option value="access-copies-patron">Access Copies Patron</option>
 					<option value="patron">Patron</option>
 					<option value="observer">Observer</option>
+					<option value="metadata-editor">Metadata Editor</option>
 					<option value="ingester">Ingester</option>
 					<option value="processor">Processor</option>
 					<option value="curator">Curator</option>

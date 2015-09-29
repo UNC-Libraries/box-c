@@ -270,15 +270,6 @@ public interface TripleStoreQueryService {
 	public abstract Map<String, List<String>> lookupSinglePermission(PID pid, String permission);
 
 	/**
-	 * Returns the set of all permission property-subject pairs on this object.
-	 *
-	 * @param pid
-	 *           the pid for the object of interest
-	 * @return a map keyed by permission property with values including the set of subjects with that permission.
-	 */
-	public abstract Set<String[]> lookupGroupRoles(PID pid);
-
-	/**
 	 * Returns all the embargoes still active by pid.
 	 *
 	 * @return a map keyed by PID with values of embargo date.
