@@ -35,6 +35,7 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.model.RecordNavigationState;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
@@ -102,6 +103,22 @@ public class SearchActionController extends AbstractSolrSearchController {
 		return search(searchRequest, model, request);
 	}
 	
+	@RequestMapping("/listContents/{pid}")
+	public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+		SearchRequest searchRequest = generateSearchRequest(request);
+		searchRequest.getSearchState().setResourceTypes(
+				Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+		searchRequest.setRootPid(pid);
+		searchRequest.setApplyCutoffs(false);
+		model.addAttribute("queryMethod", "listContents");
+		return search(searchRequest, model, request);
+	}
+	
+	@RequestMapping("/listContents")
+	public String listContents(Model model, HttpServletRequest request) {
+		return listContents(collectionsPid.getPid(), model, request);
+	}
+	
 	@RequestMapping("/collections")
 	public String browseCollections(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
@@ -120,7 +137,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		model.addAttribute("menuId", "browse");
 		model.addAttribute("resultType", "collectionBrowse");
 		model.addAttribute("pageSubtitle", "Browse Collections");
-		return "searchResults";
+		return "collectionBrowse";
 	}
 	
 	protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {

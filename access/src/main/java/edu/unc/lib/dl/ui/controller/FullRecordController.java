@@ -48,9 +48,12 @@ import edu.unc.lib.dl.model.ContainerSettings;
 import edu.unc.lib.dl.model.ContainerSettings.ContainerView;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
@@ -58,6 +61,7 @@ import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -76,6 +80,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 	private FedoraDataService fedoraDataService;
 	@Autowired
 	private ObjectPathFactory pathFactory;
+	@Autowired
+	SearchStateFactory stateFactory;
 
 	private static final int MAX_FOXML_TRIES = 2;
 
@@ -217,7 +223,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 	
 	// The default collection tab views which are retrieved if no settings are found
 	private static List<String> defaultViews =
-			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name(), ContainerView.DEPARTMENTS.name());
+			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name());
 	
 	private void applyContainerSettings(String pid, Document foxml, Model model) {
 		ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
@@ -226,8 +232,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 			settings.setViews(defaultViews);
 		}
 		
-		if (settings.getViews().contains(ContainerView.METADATA.name())) {
-			
+		if (settings.getDefaultView() == null) {
+			settings.setDefaultView(ContainerView.METADATA.name());
 		}
 		
 		// Populate department list
@@ -238,7 +244,17 @@ public class FullRecordController extends AbstractSolrSearchController {
 		
 		// Populate file list
 		if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
+			SearchState searchState = stateFactory.createSearchState();
+			searchState.setResourceTypes(
+					Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+			SearchRequest listContentsRequest = new SearchRequest();
+			listContentsRequest.setSearchState(searchState);
+			listContentsRequest.setRetrieveFacets(false);
+			listContentsRequest.setApplyCutoffs(false);
+			listContentsRequest.setRootPid(pid);
 			
+			SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
+			model.addAttribute("contentListResponse", contentListResponse);
 		}
 
 		model.addAttribute("containerSettings", settings);

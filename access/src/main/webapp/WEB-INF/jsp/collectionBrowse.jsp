@@ -22,32 +22,14 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
 <div class="content-wrap">
-<div class="contentarea">
-	<h2>${pageSubtitle}</h2>
-	<div class="results_header_hierarchy_path">
-		<c:if test="${not empty resultResponse.selectedContainer}">
-			<c:set var="objectPath" scope="request" value="${resultResponse.selectedContainer.objectPath}"/>
-			<c:import url="/jsp/util/pathTrail.jsp">
-				<c:param name="linkLast">true</c:param>
-				<c:param name="queryPath">list</c:param>
-				<c:param name="ignoreSearchState">true</c:param>
-			</c:import>
-		</c:if>
-	</div>
-</div>
 <c:set var="searchState" value="${resultResponse.searchState}"/>
 <c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 <c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
 <c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>
-<c:import url="searchResults/resultsPage.jsp"/>
-<script>
-	var require = {
-		config: {
-			'searchResults' : {
-				'filterParams' : '${cdr:urlEncode(searchQueryUrl)}'
-			},
-		}
-	};
-</script>
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/searchResults"></script>
+<c:import url="searchResults/resultsPage.jsp">
+	<c:param name="showBreadCrumbs">false</c:param>
+	<c:param name="showSearchBox">false</c:param>
+	<c:param name="showFolderFacet">false</c:param>
+	<c:param name="entryTemplate">searchResults/browseResultEntry.jsp</c:param>
+</c:import>
 </div>

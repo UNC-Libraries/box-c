@@ -898,6 +898,14 @@ p.navigation_bar a {
 	color: #777;
 }
 
+.tabbed_content .gray {
+	background-color: #fff;
+}
+
+.tabbed_content .no_searchbox {
+	border: none;
+}
+
 .user_form p {
 	width: 62em;
 }

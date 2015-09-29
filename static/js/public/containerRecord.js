@@ -48,6 +48,10 @@ define('containerRecord', ['module', 'jquery', 'StructureView', 'jquery-ui'], fu
 			tabid = tabHeader.data("tabid");
 		} else {
 			tabHeader = $(".tab_headers li[data-tabid = '" + tabid + "']", tabs);
+			if (tabHeader.length == 0) {
+				tabHeader = $(".tab_headers li:first", tabs);
+				tabid = tabHeader.data("tabid");
+			}
 		}
 		tabHeader.addClass("selected").siblings().removeClass("selected");
 		collectionTabs.children("div[data-tabid != '" + tabid + "']").hide();
@@ -60,4 +64,8 @@ define('containerRecord', ['module', 'jquery', 'StructureView', 'jquery-ui'], fu
 		selectTab(collectionTabs, tabid);
 	});
 	selectTab(collectionTabs, containerSettings.defaultView);
+	
+	$("#sort_select").change(function(){
+		$("#result_sort_form").submit();
+	});
 });

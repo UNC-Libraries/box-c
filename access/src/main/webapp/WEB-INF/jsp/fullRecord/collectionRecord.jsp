@@ -110,7 +110,17 @@
 	</c:if>
 	<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
 		<div data-tabid="STRUCTURE">
-			<div class="onecol">
+			<div class="fourcol">
+				<div id="facetList" class="contentarea">
+					<c:if test="${hasFacetFields}">
+						<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+						<h2>Contents</h2>
+						<c:import url="/jsp/util/facetList.jsp">
+						</c:import>
+					</c:if>
+				</div>
+			</div>
+			<div class="threecol white">
 				<div id="hierarchical_view_full_record" class="contentarea">
 					<h2>Folder Browse View</h2>
 					<div class="structure" data-pid="${briefObject.id}"></div>
@@ -121,7 +131,25 @@
 	<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
 		<div data-tabid="DEPARTMENTS">
 			<div class="onecol">
+				<c:set var="container" scope="request" value="${briefObject}"/>
 				<c:import url="searchResults/departmentList.jsp" />
+			</div>
+		</div>
+	</c:if>
+	<c:if test="${containerSettings.getViews().contains('LIST_CONTENTS')}">
+		<div data-tabid="LIST_CONTENTS">
+			<div class="onecol">
+				<c:set var="resultResponse" scope="request" value="${contentListResponse}" />
+				<c:set var="searchState" scope="request" value="${contentListResponse.searchState}"/>
+				<c:set var="resultCount" scope="request" value="${contentListResponse.resultCount}"/>
+				<c:set var="queryMethod" scope="request" value="listContents"/>
+				<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+				<c:import url="searchResults/resultsPage.jsp">
+					<c:param name="showBreadCrumbs">false</c:param>
+					<c:param name="showSearchBox">false</c:param>
+					<c:param name="showFolderFacet">false</c:param>
+					<c:param name="showSelectedContainer">false</c:param>
+				</c:import>
 			</div>
 		</div>
 	</c:if>

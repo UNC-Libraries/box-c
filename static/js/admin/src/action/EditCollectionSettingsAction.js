@@ -47,28 +47,31 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 				}
 			});
 			
-			$("#set_default_view").click(function(e){
-				$(".highlighted", self.$form).addClass("default").siblings("li").removeClass("default");
+			$("#set_default_view", self.$form).click(function(e){
+				var highlighted = $(".highlighted", self.$form);
+				if (highlighted.hasClass("selected")) {
+					highlighted.addClass("default").siblings("li").removeClass("default");
+				}
 			});
 			
 			// Select the already selected values
 			if (collectionSettings.defaultView) {
-				$("#full_record_views_select li[data-viewid='" + collectionSettings.defaultView + "']").addClass("default");
+				$("#full_record_views_select li[data-viewid='" + collectionSettings.defaultView + "']", self.$form).addClass("default");
 			}
 			
 			if (collectionSettings.views) {
 				for (var i = 0; i < collectionSettings.views.length; i++) {
-					$("#full_record_views_select li[data-viewid='" + collectionSettings.views[i] + "']").find("input").click();
+					$("#full_record_views_select li[data-viewid='" + collectionSettings.views[i] + "']", self.$form).find("input").click();
 				}
 			}
 			
 			self.$form.submit(function(e){
-				var selectedViews = $("#full_record_views_select .selected");
+				var selectedViews = $("#full_record_views_select .selected", self.$form);
 				var views = [];
 				for (var i = 0; i < selectedViews.length; i++) {
 					views.push(selectedViews.eq(i).data("viewid"));
 				}
-				var defaultView = $("#full_record_views_select .default").data("viewid");
+				var defaultView = $("#full_record_views_select .default", self.$form).data("viewid");
 		
 				$.ajax({
 					url : "editCollection/" + self.context.target.pid,
