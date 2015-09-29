@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +59,7 @@ import edu.unc.lib.dl.xml.RDFXMLUtil;
 public class EditCollectionSettingsController {
 	private static final Logger log = LoggerFactory.getLogger(EditCollectionSettingsController.class);
 
-	@Autowired
+	@Resource(name="forwardedManagementClient")
 	private ManagementClient client;
 	@Autowired
 	private TripleStoreQueryService tripleStoreQueryService;
