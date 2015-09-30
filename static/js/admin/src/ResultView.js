@@ -87,7 +87,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			this.moveMonitor = new MoveActionMonitor(this.$alertHandler);
 			
 			// Register event to update the window when results have rendered
-			document.addEventListener("cdrResultsRendered", $.proxy(this.postRender, this), false);
+			$(document).on("cdrResultsRendered", $.proxy(this.postRender, this));
 			
 			// Setup the result table component
 			self.resultTableView = new ResultTableView($(".result_area > div", self.element), {
