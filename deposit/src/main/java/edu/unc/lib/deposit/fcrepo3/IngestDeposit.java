@@ -53,6 +53,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
@@ -96,6 +97,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	
 	@Autowired
 	private TripleStoreQueryService tsqs;
+	
+	@Autowired
+	private ActivityMetricsClient metricsClient;
 
 	private int ingestObjectCount;
 
@@ -382,7 +386,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
 					
 					// Record FOXML throughput metrics
-					getDepositStatusFactory().incrFileThroughput(foxml.length());
+					metricsClient.incrDepositFileThroughput(foxml.length());
 					return;
 				} catch (ServiceException e) {
 					waitIfConnectionLostOrRethrow(e);
@@ -496,7 +500,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 							cLocation.setAttribute("REF", newref);
 							
 							// Record throughput metrics
-							getDepositStatusFactory().incrFileThroughput(file.length());
+							metricsClient.incrDepositFileThroughput(file.length());
 							
 							break repeatUpload;
 						} catch (FedoraTimeoutException e) {

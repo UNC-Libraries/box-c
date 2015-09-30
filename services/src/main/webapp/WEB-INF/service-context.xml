@@ -230,7 +230,7 @@
 			<constructor-arg value="${services.move.workers:1}"/>
 	</bean>
 	
-	<bean id="operationMetricsClient" class="edu.unc.lib.dl.cdr.services.reporting.OperationMetricsClient">
-			<property name="jedisPool" ref="jedisPool" />
+	<bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 </beans>

@@ -118,6 +118,10 @@
 	<bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
+	
+	<bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
 
 	<bean id="depositEmailHandler" class="edu.unc.lib.deposit.work.DepositEmailHandler" >
 		<property name="depositStatusFactory" ref="depositStatusFactory" />

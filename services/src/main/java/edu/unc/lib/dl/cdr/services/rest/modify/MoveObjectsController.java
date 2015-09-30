@@ -37,9 +37,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.reporting.OperationMetricsClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -60,7 +60,7 @@ public class MoveObjectsController {
 	private ExecutorService moveExecutor;
 	
 	@Autowired
-	private OperationMetricsClient operationMetrics;
+	private ActivityMetricsClient operationMetrics;
 	
 	public MoveObjectsController() {
 		moveRequests = new HashMap<>();

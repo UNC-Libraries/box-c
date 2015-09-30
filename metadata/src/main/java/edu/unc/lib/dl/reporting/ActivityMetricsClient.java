@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.reporting;
+package edu.unc.lib.dl.reporting;
 
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_METRICS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.OPERATION_METRICS_PREFIX;
 
 import java.text.SimpleDateFormat;
@@ -27,7 +28,7 @@ import redis.clients.jedis.JedisPool;
  * @author bbpennel
  * @date Sep 30, 2015
  */
-public class OperationMetricsClient {
+public class ActivityMetricsClient {
 
 	private static SimpleDateFormat metricsDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 	
@@ -59,6 +60,37 @@ public class OperationMetricsClient {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			String date = metricsDateFormat.format(new Date());
 			jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "failed-enh:" + className, 1);
+		}
+	}
+	
+	public void incrFailedDeposit() {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "failed", 1);
+		}
+	}
+	
+	public void incrFailedDepositJob(String className) {
+		incrFailedDeposit();
+
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "failed-job:" + className, 1);
+		}
+	}
+	
+	public void incrFinishedDeposit() {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "finished", 1);
+		}
+	}
+	
+	public void incrDepositFileThroughput(long bytes) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-files", 1);
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-bytes", bytes);
 		}
 	}
 }
