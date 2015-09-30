@@ -229,4 +229,8 @@
 			factory-method="newFixedThreadPool" destroy-method="shutdownNow">
 			<constructor-arg value="${services.move.workers:1}"/>
 	</bean>
+	
+	<bean id="operationMetricsClient" class="edu.unc.lib.dl.cdr.services.reporting.OperationMetricsClient">
+			<property name="jedisPool" ref="jedisPool" />
+	</bean>
 </beans>
