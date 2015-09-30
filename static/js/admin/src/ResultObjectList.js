@@ -36,12 +36,12 @@ define('ResultObjectList', ['jquery', 'ResultObject' ], function($, ResultObject
 							if (self.options.parent)
 								self.options.parent.append(self.resultObjects[metadata.id].element);
 							
-							document.dispatchEvent(new CustomEvent("cdrResultsRendered"));
+							$(document).trigger("cdrResultsRendered");
 						}
 						//console.timeEnd("Second batch");
 					}, 100);
 				} else {
-					document.dispatchEvent(new CustomEvent("cdrResultsRendered"));
+					$(document).trigger("cdrResultsRendered");
 				}
 				//console.timeEnd("Initialize entries");
 			});
