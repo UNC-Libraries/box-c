@@ -87,7 +87,7 @@ public class DepositBinConfiguration {
 	 *
 	 * @return the maximum size allowable for files from this bin, in bytes
 	 */
-	public Long getMaxBytesPerFilee() {
+	public Long getMaxBytesPerFile() {
 		return maxBytesPerFile;
 	}
 
