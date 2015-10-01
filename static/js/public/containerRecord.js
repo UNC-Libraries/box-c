@@ -59,9 +59,10 @@ define('containerRecord', ['module', 'jquery', 'StructureView', 'jquery-ui'], fu
 	}
 	
 	var collectionTabs = $("#collection_tabs");
-	collectionTabs.on("click", ".tab_headers li", function(e) {
-		var tabid = $(this).data("tabid");
+	collectionTabs.on("click", ".tab_headers li, .tab_headers li a", function(e) {
+		var tabid = $(this).closest("li").data("tabid");
 		selectTab(collectionTabs, tabid);
+		e.preventDefault();
 	});
 	selectTab(collectionTabs, containerSettings.defaultView);
 	

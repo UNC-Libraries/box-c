@@ -80,27 +80,26 @@
 		</div>
 	</div>
 </div>
-<div id="collection_tabs" class="tabbed_content">
+<div id="collection_tabs" class="tabbed_content contentarea">
 	<nav class="tab_headers">
 		<ul>
 			<c:forEach items="${containerSettings.getViews()}" var="viewName">
-				<li data-tabid="${viewName}">${containerSettings.getViewDisplayName(viewName)}</li>
+				<li data-tabid="${viewName}"><a href="/record/${briefObject.id}#tab_${viewName}">${containerSettings.getViewDisplayName(viewName)}</a></li>
 			</c:forEach>
 		</ul>
 	</nav>
 	<c:if test="${containerSettings.getViews().contains('METADATA')}">
-		<div data-tabid="METADATA">
-			<div class="fourcol">
-				<div id="facetList" class="contentarea">
-					<c:if test="${hasFacetFields}">
+		<div data-tabid="METADATA" id="tab_METADATA">
+			<c:if test="${hasFacetFields}">
+				<div class="fourcol">
+					<div id="facetList" class="contentarea">
 						<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
 						<h2>Contents</h2>
-						<c:import url="/jsp/util/facetList.jsp">
-						</c:import>
-					</c:if>
+						<c:import url="/jsp/util/facetList.jsp" />
+					</div>
 				</div>
-			</div>
-			<div class="threecol white">
+			</c:if>
+			<div class="${hasFacetFields? "threecol" : "onecol"} white">
 				<div class="contentarea">
 					<c:import url="fullRecord/metadataBody.jsp" />
 					<c:import url="fullRecord/exports.jsp" />
@@ -109,18 +108,18 @@
 		</div>
 	</c:if>
 	<c:if test="${containerSettings.getViews().contains('STRUCTURE')}">
-		<div data-tabid="STRUCTURE">
-			<div class="fourcol">
-				<div id="facetList" class="contentarea">
-					<c:if test="${hasFacetFields}">
+		<div data-tabid="STRUCTURE" id="tab_STRUCTURE">
+			<c:if test="${hasFacetFields}">
+				<div class="fourcol">
+					<div id="facetList" class="contentarea">
 						<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
 						<h2>Contents</h2>
 						<c:import url="/jsp/util/facetList.jsp">
 						</c:import>
-					</c:if>
+					</div>
 				</div>
-			</div>
-			<div class="threecol white">
+			</c:if>
+			<div class="${hasFacetFields? "threecol" : "onecol"} white">
 				<div id="hierarchical_view_full_record" class="contentarea">
 					<h2>Folder Browse View</h2>
 					<div class="structure" data-pid="${briefObject.id}"></div>
@@ -129,7 +128,7 @@
 		</div>
 	</c:if>
 	<c:if test="${containerSettings.getViews().contains('DEPARTMENTS')}">
-		<div data-tabid="DEPARTMENTS">
+		<div data-tabid="DEPARTMENTS" id="tab_DEPARTMENTS">
 			<div class="onecol">
 				<c:set var="container" scope="request" value="${briefObject}"/>
 				<c:import url="searchResults/departmentList.jsp" />
@@ -137,20 +136,36 @@
 		</div>
 	</c:if>
 	<c:if test="${containerSettings.getViews().contains('LIST_CONTENTS')}">
-		<div data-tabid="LIST_CONTENTS">
-			<div class="onecol">
-				<c:set var="resultResponse" scope="request" value="${contentListResponse}" />
-				<c:set var="searchState" scope="request" value="${contentListResponse.searchState}"/>
-				<c:set var="resultCount" scope="request" value="${contentListResponse.resultCount}"/>
-				<c:set var="queryMethod" scope="request" value="listContents"/>
-				<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
-				<c:import url="searchResults/resultsPage.jsp">
-					<c:param name="showBreadCrumbs">false</c:param>
-					<c:param name="showSearchBox">false</c:param>
-					<c:param name="showFolderFacet">false</c:param>
-					<c:param name="showSelectedContainer">false</c:param>
-				</c:import>
-			</div>
+		<div data-tabid="LIST_CONTENTS" id="tab_LIST_CONTENTS">
+			<c:set var="resultCount" scope="request" value="${contentListResponse.resultCount}"/>
+			<c:choose>
+				<c:when test="${resultCount > 0}">
+					<c:set var="selectedContainer" scope="request" value="${briefObject}"/>
+					<c:set var="resultResponse" scope="request" value="${contentListResponse}" />
+					<c:set var="searchState" scope="request" value="${contentListResponse.searchState}"/>
+					<c:set var="queryMethod" scope="request" value="listContents"/>
+					<c:if test="${hasFacetFields}">
+						<div class="fourcol">
+							<div id="facetList" class="contentarea">
+								<h2>Contents</h2>
+								<c:import url="/jsp/util/facetList.jsp">
+								</c:import>
+							</div>
+						</div>
+					</c:if>
+					<div class="${hasFacetFields? "threecol" : "onecol"}">
+						<div class="contentarea">
+							<c:import url="searchResults/resultsList.jsp">
+								<c:param name="showSelectedContainer">false</c:param>
+							</c:import>
+						</div>
+					</div>
+				</c:when>
+				<c:otherwise>
+					<div class="onecol contentarea">This collection contains no contents at this time.</div>
+				</c:otherwise>
+			</c:choose>
+			
 		</div>
 	</c:if>
 </div>

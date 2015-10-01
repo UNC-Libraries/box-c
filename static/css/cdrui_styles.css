@@ -77,12 +77,12 @@ div#username_wrap {
 	margin-bottom: 2px;
 }
 
-#full_record.container_record {
-	margin-left: 92px;
-}
-
 #full_record.container_record .collinfo {
 	width: 668px !important;
+}
+
+#full_record .thumbnail {
+	margin-right: 25px;
 }
 
 /** Thumbnail styles **/
@@ -317,7 +317,7 @@ div#username_wrap {
 	text-align: left;
 }
 
-.even {
+.browseitem:nth-child(odd) {
 	background-color: #f7f7f7;
 }
 
@@ -851,12 +851,19 @@ p.navigation_bar a {
 
 /** Full record tabs */
 
+.tabbed_content .threecol {
+	width: 680px;
+}
+
+.tabbed_content > div {
+	clear: both;
+}
+
 .tabbed_content .tab_headers {
 	border-bottom: 1px solid #e5e5e5;
 }
 
 .tabbed_content .tab_headers ul {
-	margin-left: 10px;
 	margin-bottom: -1px;
 	font-size: 0;
 }
@@ -867,8 +874,11 @@ p.navigation_bar a {
 	margin: 0;
 	padding: 10px 18px;
 	text-indent: 0px;
-	color: #085174;
 	cursor: pointer;
+}
+
+.tab_headers li a {
+	color: #888;
 }
 
 .tab_headers .selected {
@@ -879,7 +889,15 @@ p.navigation_bar a {
 	border-width: 1px 1px 0px;
 	border-color: #e5e5e5;
 	border-style: solid;
-	text-shadow: 1px 0 0 black;
+}
+
+.tab_headers .selected a {
+	color: #085174;
+	cursor: default;
+}
+
+.tab_headers .selected a:hover {
+	text-decoration: none;
 }
 
 .tabbed_content .browse_departments.lightest {

@@ -81,46 +81,7 @@
 			<div class="contentarea">
 				<c:choose>
 					<c:when test="${resultCount > 0}">
-						<div class="bottomline paddedline">
-							<c:import var="navigationBar" url="searchResults/navigationBar.jsp">
-								<c:param name="queryMethod">${queryMethod}</c:param>
-							</c:import>
-							${navigationBar}
-							<c:import url="searchResults/sortForm.jsp">
-								<c:param name="queryMethod">${queryMethod}</c:param>
-								<c:param name="currentSort">${searchState.sortType}</c:param>
-								<c:param name="currentSortOrder">${searchState.sortNormalOrder}</c:param>
-							</c:import>
-						</div>
-
-						<c:if test="${not empty selectedContainer && (empty param.showSelectedContainer || param.showSelectedContainer)}">
-							<c:set var="metadata" value="${selectedContainer}" scope="request"/>
-							<c:import url="searchResults/selectedContainerEntry.jsp">
-							</c:import>
-							
-							<c:set var="collectionName"><c:out value='${metadata.parentCollectionName}' /></c:set>
-							<c:if test="${empty collectionName && metadata.resourceType == 'Collection'}">
-								<c:set var="collectionName"><c:out value='${metadata.title}' /></c:set>
-							</c:if>
-							<c:if test="${empty collectionName}">
-								<c:set var="collectionName" value="(no collection)" />
-							</c:if>
-							<c:set var="gaCommands" scope="request">${gaCommands} ga('send', 'event', '${collectionName}', 'list', '<c:out value="${metadata.title}|${metadata.pid}" />');</c:set>
-						</c:if>
-						<c:forEach items="${resultResponse.resultList}" var="metadataEntry" varStatus="status">
-							<c:set var="metadata" scope="request" value="${metadataEntry}"/>
-							<c:choose>
-								<c:when test="${empty param.entryTemplate}">
-									<c:import url="searchResults/searchResultEntry.jsp"/>
-								</c:when>
-								<c:otherwise>
-									<c:import url="${param.entryTemplate}" />
-								</c:otherwise>
-							</c:choose>
-						</c:forEach>
-						<div class="topline">
-							${navigationBar}
-						</div>	
+						<c:import url="searchResults/resultsList.jsp" />
 					</c:when>
 					<c:otherwise>
 						<c:import url="error/noResults.jsp"/>

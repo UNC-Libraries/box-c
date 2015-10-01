@@ -22,6 +22,9 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
 <div class="content-wrap">
+<div class="contentarea">
+	<h2>${pageSubtitle}</h2>
+</div>
 <c:set var="searchState" value="${resultResponse.searchState}"/>
 <c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 <c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
