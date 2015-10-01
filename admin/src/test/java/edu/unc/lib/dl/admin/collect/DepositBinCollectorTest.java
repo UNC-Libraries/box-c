@@ -173,7 +173,7 @@ public class DepositBinCollectorTest {
 	public void listFilesExcludeFileSizeTest() throws Exception {
 		addBinFiles();
 
-		when(config.getMaxBytesPerFilee()).thenReturn(1024L);
+		when(config.getMaxBytesPerFile()).thenReturn(1024L);
 		when(config.hasFileFilters()).thenReturn(true);
 
 		ListFilesResult files = manager.listFiles("etd");

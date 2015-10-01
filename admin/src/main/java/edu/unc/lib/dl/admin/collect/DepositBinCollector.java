@@ -273,8 +273,8 @@ public class DepositBinCollector {
 
 		// Check that the file is not too big
 		answer = answer
-				&& (config.getMaxBytesPerFilee() == null || config.getMaxBytesPerFilee() == 0 || file.length() <= config
-						.getMaxBytesPerFilee());
+				&& (config.getMaxBytesPerFile() == null || config.getMaxBytesPerFile() == 0 || file.length() <= config
+						.getMaxBytesPerFile());
 
 		if (answer)
 			return true;
