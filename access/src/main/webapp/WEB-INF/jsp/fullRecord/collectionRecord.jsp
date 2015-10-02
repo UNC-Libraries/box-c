@@ -40,6 +40,9 @@
 		<c:import url="common/thumbnail.jsp">
 			<c:param name="size" value="large" />
 		</c:import>
+		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
+			<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
+		</c:if>
 		
 		<div class="collinfo">
 			<h2><c:out value="${briefObject.title}" /></h2>
@@ -80,7 +83,7 @@
 		</div>
 	</div>
 </div>
-<div id="collection_tabs" class="tabbed_content contentarea">
+<div id="collection_tabs" class="tabbed_content">
 	<nav class="tab_headers">
 		<ul>
 			<c:forEach items="${containerSettings.getViews()}" var="viewName">

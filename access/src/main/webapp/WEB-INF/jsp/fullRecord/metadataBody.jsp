@@ -19,9 +19,7 @@
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
-<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
-	<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
-</c:if>
+
 <div class="metadata">
 	<table>
 		<c:set var="searchStateUrl" scope="request" value=""/>

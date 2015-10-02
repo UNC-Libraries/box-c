@@ -29,6 +29,10 @@
 			<c:param name="size" value="large" />
 		</c:import>
 		
+		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
+			<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
+		</c:if>
+		
 		<div class="collinfo">
 			<div class="collinfo_metadata">
 				<h2><c:out value="${briefObject.title}" /></h2>

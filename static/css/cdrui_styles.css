@@ -77,10 +77,6 @@ div#username_wrap {
 	margin-bottom: 2px;
 }
 
-#full_record.container_record .collinfo {
-	width: 668px !important;
-}
-
 #full_record .thumbnail {
 	margin-right: 25px;
 }
@@ -248,7 +244,7 @@ div#username_wrap {
 }
 
 .collinfo {
-	width: 760px;
+	width: 668px;
 	float: left;
 	margin-bottom: 13px;
 }
@@ -850,6 +846,14 @@ p.navigation_bar a {
 }
 
 /** Full record tabs */
+
+.tabbed_content {
+	margin: 0 20px;
+}
+
+.tabbed_content .onecol {
+	width: 920px;
+}
 
 .tabbed_content .threecol {
 	width: 680px;
