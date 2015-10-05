@@ -301,4 +301,12 @@ public class DepartmentOntologyUtilTest {
 		assertEquals("Department of Nutrition", result.get(0).get(1));
 
 	}
+	
+	@Test
+	public void getDepartmentAmpersandSubstitution() {
+
+		List<List<String>> result = job.getAuthoritativeForm("College of Arts & Sciences");
+
+		assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
+	}
 }

@@ -101,7 +101,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	@Override
 	public List<List<String>> getAuthoritativeForm(String affiliation) {
 
-		String cleanAffil = cleanLabel(affiliation).replaceAll("&amp;", "and").replace("&", "");
+		String cleanAffil = cleanLabel(affiliation);
 
 		// First, check to see if the department matches verbatim.
 		DepartmentConcept dept = departments.get(cleanAffil);
@@ -309,6 +309,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 			return null;
 
 		String affilPart = affiliation;
+		affilPart = affilPart.replaceAll("&amp;", "and").replaceAll(" & ", " and ").replace("&", "");
 
 		int index = affilPart.indexOf(UNC_NAME);
 		if (index > 0) {
