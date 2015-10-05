@@ -3,19 +3,29 @@
 	<p class="collection_name"><%= settings.title %></p>
 	
 	<h2>Full record views</h2>
-	<ul id="full_record_views_select" class="selectable_multi no_text_select">
-		<% _.each(settings.viewInfo, function(viewInfo, viewKey) { %>
-			<li data-viewid="<%= viewKey %>">
-				<input type="checkbox" />
-				<%= viewInfo.displayName %><span class="help" title="<%= viewInfo.description %>">(?)</span>
-			</li>
-		<% }); %>
-	</ul>
-	<div class="selectable_multi_actions">
-		<input id="set_default_view" type="button" value="Set as default" />
+	<div class="indent_content">
+		<p>Select tabs to display for this collection.</p>
+		<ul id="full_record_views_select" class="selectable_multi no_text_select">
+			<% _.each(settings.viewInfo, function(viewInfo, viewKey) { %>
+				<li data-viewid="<%= viewKey %>">
+					<input type="checkbox" />
+					<%= viewInfo.displayName %><span class="help" title="<%= viewInfo.description %>">(?)</span>
+				</li>
+			<% }); %>
+		</ul>
+		<div class="selectable_multi_actions">
+			<div class="nowrap">
+				<label>Default tab</label>
+				<select id="full_record_default_view">
+					<% _.each(settings.viewInfo, function(viewInfo, viewKey) { %>
+						<option value="<%= viewKey %>"><%= viewInfo.displayName %></option>
+					<% }); %>
+				</select>
+			</div>
+		</div>
 	</div>
 	
 	<div class="update_field">
-		<input type="submit" value="Update" />
+		<input value="Update" class="update_button" type="submit">
 	</div>
 </form>

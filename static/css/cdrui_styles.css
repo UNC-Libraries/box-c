@@ -855,6 +855,10 @@ p.navigation_bar a {
 	width: 920px;
 }
 
+.tabbed_content .twocol {
+	width: 420px;
+}
+
 .tabbed_content .threecol {
 	width: 680px;
 }

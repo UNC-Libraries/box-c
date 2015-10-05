@@ -11,8 +11,8 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 		this.dialog = $("<div class='containingDialog'>Loading...</div>");
 		this.dialog.dialog({
 			autoOpen: true,
-			width: '600',
-			height: '700',
+			width: '560',
+			height: 'auto',
 			modal: true,
 			title: "Collection Settings"
 		});
@@ -25,45 +25,62 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			
 			self.dialog.html(editSettingsForm);
 			self.$form = self.dialog.first();
+			var defaultViewSelect = $("#full_record_default_view", self.$form);
 			
+			function selectEntry(checkbox) {
+				var listEntry = checkbox.parent();
+				if (checkbox.is(":checked")) {
+					listEntry.addClass("selected");
+					var defaultEntry = defaultViewSelect.children("option[value='" + listEntry.data("viewid") + "']");
+					defaultEntry.prop("disabled", false);
+					if (defaultViewSelect.children("option:enabled").length == 1) {
+						defaultEntry.prop("selected", true);
+					}
+				} else {
+					listEntry.removeClass("selected");
+					var defaultEntry = defaultViewSelect.children("option[value='" + listEntry.data("viewid") + "']");
+					defaultEntry.prop("disabled", true);
+					if (defaultEntry.prop("selected")) {
+						defaultViewSelect.children("option:enabled:not(:selected)").first().prop("selected", true);
+					}
+				}
+			}
+			
+			function toggleChecked(checkbox, checked) {
+				if (checked === undefined) {
+					checked = !checkbox.prop("checked");
+				}
+				selectEntry(checkbox.prop("checked", checked));
+			}
+			
+			// Event to select entire entry when checkbox checked
 			self.$form.on("change", ".selectable_multi input[type='checkbox']", function(e){
 				var $this = $(this);
-				if ($this.is(":checked")) {
-					$this.parent().addClass("selected");
-				} else {
-					$this.parent().removeClass("selected default");
-				}
+				selectEntry($this);
 			});
 			
+			// Event to select entry when row clicked
 			self.$form.on("click", ".selectable_multi li", function(e){
-				$(this).addClass("highlighted").siblings("li").removeClass("highlighted");
-			}).on("dblclick", ".selectable_multi li", function(e){
-				$(this).find("input").trigger('click');
+				toggleChecked($(this).find("input"));
 			});
 			
+			// Select starting defaultView
+			if (collectionSettings.defaultView) {
+				defaultViewSelect.children("option[value='" + collectionSettings.defaultView + "']").prop("selected", true);
+			}
+			
+			// Mark starting selected views
+			$.each(collectionSettings.viewInfo, function(viewKey) {
+				var checkbox = $("#full_record_views_select li[data-viewid='" + viewKey + "']", self.$form).find("input");
+				toggleChecked(checkbox, $.inArray(viewKey, collectionSettings.views) != -1);
+			});
+			
+			// Enable help text
 			$(".help", self.$form).qtip({
 				style : {
 					classes : "qtip-admin qtip-rounded qtip-light"
 				}
 			});
-			
-			$("#set_default_view", self.$form).click(function(e){
-				var highlighted = $(".highlighted", self.$form);
-				if (highlighted.hasClass("selected")) {
-					highlighted.addClass("default").siblings("li").removeClass("default");
-				}
-			});
-			
-			// Select the already selected values
-			if (collectionSettings.defaultView) {
-				$("#full_record_views_select li[data-viewid='" + collectionSettings.defaultView + "']", self.$form).addClass("default");
-			}
-			
-			if (collectionSettings.views) {
-				for (var i = 0; i < collectionSettings.views.length; i++) {
-					$("#full_record_views_select li[data-viewid='" + collectionSettings.views[i] + "']", self.$form).find("input").click();
-				}
-			}
 			
 			self.$form.submit(function(e){
 				var selectedViews = $("#full_record_views_select .selected", self.$form);
@@ -71,7 +88,7 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 				for (var i = 0; i < selectedViews.length; i++) {
 					views.push(selectedViews.eq(i).data("viewid"));
 				}
-				var defaultView = $("#full_record_views_select .default", self.$form).data("viewid");
+				var defaultView = $("#full_record_default_view", self.$form).val();
 		
 				$.ajax({
 					url : "editCollection/" + self.context.target.pid,
