@@ -54,6 +54,10 @@
     <skos:hiddenLabel>Public Health</skos:hiddenLabel>
     <skos:prefLabel>Gillings School of Global Public Health</skos:prefLabel>
   </skos:Concept>
+  <skos:Concept rdf:about="Kenan-Flagler Business School">
+    <skos:altLabel>School of Business</skos:altLabel>
+    <skos:altLabel>Business Administration</skos:altLabel>
+  </skos:Concept>
   <skos:Concept rdf:about="Department of Nutrition">
     <skos:hiddenLabel>Nutrition</skos:hiddenLabel>
     <skos:broader rdf:resource="Gillings School of Global Public Health"/>

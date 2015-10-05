@@ -299,7 +299,9 @@ public class DepartmentOntologyUtilTest {
 		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
 		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
 		assertEquals("Department of Nutrition", result.get(0).get(1));
-
+		
+		result = job.getAuthoritativeForm("Business School, Kenan-Flagler");
+		assertEquals("Kenan-Flagler Business School", result.get(0).get(0));
 	}
 	
 	@Test

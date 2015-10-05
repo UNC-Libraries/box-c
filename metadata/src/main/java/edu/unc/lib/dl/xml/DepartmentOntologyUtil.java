@@ -70,18 +70,21 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	private XPathExpression<Element> namePath;
 
 	private String vocabularyURI;
+	
+	private static final String locationTermPattern
+			= "dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for|university";
 
 	public DepartmentOntologyUtil() {
 		addressPattern = Pattern.compile("([^,]+,)+\\s*[a-zA-Z ]*\\d+[a-zA-Z]*\\s*[^\\n]*");
 		addressTrailingPattern = Pattern.compile("([^,]+,){2,}\\s*([a-zA-Z]+ ?){1,2}\\s*");
 		addressSplit = Pattern.compile(
-						"(,? *(and *)?(?=dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for|university)(?= of)?)",
+						"(,? *(and *)?(?=" + locationTermPattern + ")(?= of)?)",
 				Pattern.CASE_INSENSITIVE);
 		trimLeading = Pattern.compile("^([.?;:*&^%$#@!\\-]|the |at |and |\\s)+");
 		trimTrailing = Pattern.compile("([.?;:*&^%$#@!\\-]|the |at |\\s)+$");
 		deptSplitPlural = Pattern
-				.compile("(and the |and (the )?(dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for)( of)?|and )");
-		trimSuffix = Pattern.compile("\\s*(department|doctoral|masters)( of| for| in)?$");
+				.compile("(and the |and (the )?(" + locationTermPattern + ")( of)?|and )");
+		trimSuffix = Pattern.compile("\\s*(" + locationTermPattern + ")( of| for| in)?$");
 		trimUNC = Pattern.compile("\\b(unc|carolina)\\s+");
 		splitSimple = Pattern.compile("(\\s*[:()]\\s*)+");
 
@@ -125,8 +128,6 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 				return getAddressDepartment(cleanAffil.split("\\s*,\\s*"));
 
 			case simple:
-				cleanAffil = cleanAffil.replace(",", "");
-
 				// Clean it up and start
 				String[] affilParts = splitSimple.split(cleanAffil);
 				for (int i = affilParts.length - 1; i >= 0; i--) {
@@ -335,10 +336,24 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 		}
 
 		// Handle inverted departments and slash/and mixups
-		affilPart = trimSuffix.matcher(affilPart).replaceAll("").replaceAll("\\s*/\\s*", " and ");
+		affilPart = trimSuffix.matcher(affilPart).replaceAll("").replaceAll("\\s*/\\s*", " and ").trim();
+		if (affilPart.endsWith(",")) {
+			affilPart = affilPart.substring(0, affilPart.length() - 1);
+		}
 		dept = departments.get(affilPart);
 		if (dept != null) {
 			return buildHierarchy(dept);
+		}
+		
+		// Try to uninvert the name
+		int commaIndex = affilPart.indexOf(',');
+		if (commaIndex != -1) {
+			String uninverted = affilPart.substring(commaIndex + 1).trim() + ' '
+					+ affilPart.substring(0, commaIndex).trim();
+			dept = departments.get(uninverted);
+			if (dept != null) {
+				return buildHierarchy(dept);
+			}
 		}
 
 		// Check if there are multiple departments in this affiliation
