@@ -79,6 +79,15 @@ public class EditCollectionSettingsController {
 		
 		ContainerSettings settings = new ContainerSettings(triples);
 		settings.setTitle(data.getTitle());
+		
+		// Provide default values if they have not been specified before
+		if (settings.getDefaultView() == null) {
+			settings.setDefaultView(ContainerView.METADATA.name());
+		}
+		if (settings.getViews() == null || settings.getViews().size() == 0) {
+			settings.setViews(Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name()));
+		}
+		
 		return settings;
 	}
 	
