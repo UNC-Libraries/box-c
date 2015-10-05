@@ -137,7 +137,7 @@ public class AncestorFactory {
 		if(root != null) {
 			child2Parent.put(root, rootBond);
 		} else {
-			LOG.warn("Cannot find root pid");
+			LOG.debug("Cannot find root pid");
 		}
 	}
 }
