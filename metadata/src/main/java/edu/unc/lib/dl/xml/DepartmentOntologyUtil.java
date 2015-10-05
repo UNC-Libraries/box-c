@@ -81,7 +81,7 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 		trimTrailing = Pattern.compile("([.?;:*&^%$#@!\\-]|the |at |\\s)+$");
 		deptSplitPlural = Pattern
 				.compile("(and the |and (the )?(dep(t\\.?|artment(s)?)|school|division|section(s)?|program in|center for)( of)?|and )");
-		trimSuffix = Pattern.compile("\\s*(department|doctoral|masters)$");
+		trimSuffix = Pattern.compile("\\s*(department|doctoral|masters)( of| for| in)?$");
 		trimUNC = Pattern.compile("\\b(unc|carolina)\\s+");
 		splitSimple = Pattern.compile("(\\s*[:()]\\s*)+");
 
