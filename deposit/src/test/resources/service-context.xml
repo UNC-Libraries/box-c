@@ -384,6 +384,9 @@
 		scope="prototype">
 		<property name="stagesConfiguration" value="${fedora.stagesConfiguration}"/>
 		<property name="statusKeysExpireSeconds" value="${status.keys.expire.seconds:3600}"/>
-	</bean>	
+	</bean>
 	
+	<bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
 </beans>
