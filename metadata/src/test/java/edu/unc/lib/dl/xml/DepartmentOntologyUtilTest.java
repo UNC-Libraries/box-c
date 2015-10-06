@@ -290,4 +290,25 @@ public class DepartmentOntologyUtilTest {
 
 		assertEquals("Did not detect invalid affiliation", 1, invalids.size());
 	}
+	
+	@Test
+	public void getDepartmentInvertedLongTest() {
+
+		List<List<String>> result = job.getAuthoritativeForm("Nutrition, Department of");
+
+		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+		assertEquals("Department of Nutrition", result.get(0).get(1));
+		
+		result = job.getAuthoritativeForm("Business School, Kenan-Flagler");
+		assertEquals("Kenan-Flagler Business School", result.get(0).get(0));
+	}
+	
+	@Test
+	public void getDepartmentAmpersandSubstitution() {
+
+		List<List<String>> result = job.getAuthoritativeForm("College of Arts & Sciences");
+
+		assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
+	}
 }
