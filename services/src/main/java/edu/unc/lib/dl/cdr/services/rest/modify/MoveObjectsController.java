@@ -39,6 +39,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
@@ -57,6 +58,9 @@ public class MoveObjectsController {
 	
 	@Autowired
 	private ExecutorService moveExecutor;
+	
+	@Autowired
+	private ActivityMetricsClient operationMetrics;
 	
 	public MoveObjectsController() {
 		moveRequests = new HashMap<>();
@@ -226,6 +230,7 @@ public class MoveObjectsController {
 				digitalObjectManager.move(request.getMovedPids(), new PID(request.getDestination()),
 						request.getUser(), "Moved through API");
 				
+				operationMetrics.incrMoves();
 				log.info("Finished move operation of {} objects to destination {} for user {}", new Object[] {
 						request.getMoved().size(), request.getDestination(), GroupsThreadStore.getUsername() });
 			} catch (IngestException e) {

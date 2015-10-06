@@ -66,6 +66,7 @@ import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.ObjectProfile;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -109,6 +110,8 @@ public class IngestDepositTest {
 	private Element messageSummary;
 	@Mock
 	Collection<String> ingestsAwaitingConfirmation;
+	@Mock
+	private ActivityMetricsClient metricsClient;
 
 	private IngestDeposit job;
 
@@ -152,6 +155,7 @@ public class IngestDepositTest {
 		setField(job, "client", client);
 		setField(job, "accessClient", accessClient);
 		setField(job, "digitalObjectManager", digitalObjectManager);
+		setField(job, "metricsClient", metricsClient);
 
 		depositStatus.put(DepositField.containerId.name(), "uuid:destination");
 		depositStatus.put(DepositField.excludeDepositRecord.name(), "false");

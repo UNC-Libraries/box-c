@@ -177,6 +177,7 @@
 		scope="prototype">
 		<property name="services" ref="servicesList"/>
 		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
+		<property name="metricsClient" ref="activityMetricsClient" />
 	</bean>
 	
 	<bean id="runEnhancementTreeJob" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsTreeJob"
@@ -555,5 +556,9 @@
 		<property name="jedisPool" ref="jedisPool"/>
 		<property name="workerPool" ref="bulkMDWorkerPool"/>
 		<property name="queueName" value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
+	</bean>
+	
+	<bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 </beans>

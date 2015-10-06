@@ -44,6 +44,7 @@ import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -70,6 +71,9 @@ public class DepositSupervisor implements WorkerListener {
 
 	@Autowired
 	private JobStatusFactory jobStatusFactory;
+	
+	@Autowired
+	private ActivityMetricsClient metricsClient;
 
 	@Autowired
 	private WorkerPool depositWorkerPool;
@@ -451,7 +455,7 @@ public class DepositSupervisor implements WorkerListener {
 					String serviceName = job.getClassName().substring(job.getClassName().lastIndexOf('.') + 1);
 					depositStatusFactory.fail(depositUUID, "Failed while performing service " + serviceName);
 				}
-				depositStatusFactory.incrFailedJob(job.getClassName());
+				metricsClient.incrFailedDepositJob(job.getClassName());
 				
 				depositEmailHandler.sendDepositResults(depositUUID);
 				
@@ -624,7 +628,7 @@ public class DepositSupervisor implements WorkerListener {
 			c.end();
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
-			depositStatusFactory.incrFinished();
+			metricsClient.incrFinishedDeposit();
 			
 			depositEmailHandler.sendDepositResults(depositUUID);
 			depositMessageHandler.sendDepositMessage(depositUUID);

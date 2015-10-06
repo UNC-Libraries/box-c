@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions;
 
 public class ApplyEnhancementServicesJob implements Runnable {
@@ -20,6 +21,8 @@ public class ApplyEnhancementServicesJob implements Runnable {
 	private List<ObjectEnhancementService> services;
 	private long recoverableDelay = 0;
 	private final EnhancementMessage message;
+	private ActivityMetricsClient metricsClient;
+	
 	
 	public ApplyEnhancementServicesJob(String pidString, boolean force) {
 		this.message = new EnhancementMessage(pidString, servicesMessageNamespace,
@@ -42,6 +45,10 @@ public class ApplyEnhancementServicesJob implements Runnable {
 		this.recoverableDelay = recoverableDelay;
 	}
 	
+	public void setMetricsClient(ActivityMetricsClient operationMetricsClient) {
+		this.metricsClient = operationMetricsClient;
+	}
+
 	@Override
 	public void run() {
 		for (ObjectEnhancementService service : services) {
@@ -60,8 +67,13 @@ public class ApplyEnhancementServicesJob implements Runnable {
 			
 			try {
 				applyService(service);
+				metricsClient.incrFinishedEnhancement(service.getClass().getName());
 			} catch (EnhancementException e) {
 				LOG.error("Error applying service " + service.getClass().getName() + " to object " + message.getTargetID(), e);
+				metricsClient.incrFailedEnhancement(service.getClass().getName());
+			} catch (Throwable t) {
+				metricsClient.incrFailedEnhancement(service.getClass().getName());
+				throw t;
 			}
 		}
 	}
