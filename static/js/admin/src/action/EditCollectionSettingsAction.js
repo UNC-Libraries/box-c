@@ -56,7 +56,7 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			// Event to select entire entry when checkbox checked
 			self.$form.on("change", ".selectable_multi input[type='checkbox']", function(e){
 				var $this = $(this);
-				selectEntry($this);
+				toggleChecked($this);
 			});
 			
 			// Event to select entry when row clicked
