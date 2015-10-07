@@ -24,6 +24,9 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			var editSettingsForm = editSettingsTemplate({settings : collectionSettings});
 			
 			self.dialog.html(editSettingsForm);
+			// Recenter the dialog
+			self.dialog.dialog("option", "position", "center");
+			
 			self.$form = self.dialog.first();
 			var defaultViewSelect = $("#full_record_default_view", self.$form);
 			

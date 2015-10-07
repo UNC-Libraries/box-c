@@ -313,7 +313,7 @@ div#username_wrap {
 	text-align: left;
 }
 
-.browseitem:nth-child(odd) {
+.browseitem:nth-child(odd), .searchitem:nth-child(even), .selected_container {
 	background-color: #f7f7f7;
 }
 
@@ -861,6 +861,18 @@ p.navigation_bar a {
 
 .tabbed_content .threecol {
 	width: 680px;
+}
+
+.tabbed_content .fourcol {
+	width: 230px;
+}
+
+.tabbed_content .navigation_sort_form {
+	width: 190px;
+}
+
+.tabbed_content .iteminfo {
+	width: 390px;
 }
 
 .tabbed_content > div {

@@ -17,11 +17,11 @@
 }
 
 .edit_form h3 {
-	font-size: 85%;
 	font-weight: bold;
 	color: #555;
 	text-align: left;
 	padding-top: 5px;
+	margin-bottom: 0px;
 }
 
 .edit_form label {
@@ -36,7 +36,7 @@
 	width: 100%;
 }
 
-.edit_form input, .edit_form textarea, .edit_form select {
+.edit_form input, .edit_form textarea {
 	background-color: #FFFFFF;
 	border: 1px solid #C8D8E0;
 	color: #666666;
@@ -237,17 +237,15 @@
 
 .collection_settings {
 	text-align: left;
-	margin-top: 10px;
-}
-
-.collection_settings .update_field {
-	font-size: 120%;
-	font-weight: bold;
+	margin-top: 5px;
 }
 
 .collection_name {
-	margin-left: 10px;
-	font-size: 15px;
+	font-size: 14px;
+}
+
+.edit_form.collection_settings label {
+	width: auto;
 }
 
 .select_area {
@@ -263,6 +261,8 @@
 
 .selectable_multi {
 	border: 1px solid #ccc;
+	border-radius: 3px;
+	overflow: hidden;
 	width: 50%;
 	display: inline-block;
 }
@@ -274,11 +274,7 @@
 	padding: 5px 8px;
 	margin: 0;
 	text-indent: 0;
-	color: #888;
-}
-
-.selectable_multi li + li {
-	border-top: 1px solid #ddd;
+	color: #333;
 }
 
 .selectable_multi li span {
@@ -288,16 +284,23 @@
 
 .selectable_multi .selected {
 	text-decoration: none;
-	background-color: #F4F4FD;
-	color: #000;
+	background-color: rgb(244, 244, 253);
+	color: #1A0E00;
+}
+
+.selectable_multi li:hover {
+	background-color: #fafafa;
+}
+
+.selectable_multi .selected:hover {
+	background-color: #f8f8ff;
 }
 	
 .selectable_multi_actions {
 	width: 40%;
 	display: inline-block;
 	vertical-align: top;
-	margin-left: 6px;
-	font-size: 14px;
+	margin-left: 16px;
 }
 
 .selectable_multi_actions label {
