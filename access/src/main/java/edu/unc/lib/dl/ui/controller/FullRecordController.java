@@ -24,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +62,10 @@ import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ResourceType;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -129,7 +133,14 @@ public class FullRecordController extends AbstractSolrSearchController {
 				} while (--retries > 0 && !containsContent);
 
 				if (containsContent) {
-					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
+					Element foxml = foxmlView.getRootElement().getChild("digitalObject", JDOMNamespaceUtil.FOXML_NS);
+					Element mods = FOXMLJDOMUtil.getMostRecentDatastream(Datastream.MD_DESCRIPTIVE, foxml);
+					
+					if (mods != null) {
+						mods = mods.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS)
+								.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
+						fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", mods);
+					}
 				} else {
 					throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
 				}
@@ -200,7 +211,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		
 		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
-			applyContainerSettings(pid, foxmlView, model);
+			applyContainerSettings(pid, foxmlView, model, fullObjectView != null);
 		}
 
 		// Store search state information to the users session to enable page to page navigation
@@ -223,17 +234,26 @@ public class FullRecordController extends AbstractSolrSearchController {
 	
 	// The default collection tab views which are retrieved if no settings are found
 	private static List<String> defaultViews =
-			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name());
+			Arrays.asList(ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
 	
-	private void applyContainerSettings(String pid, Document foxml, Model model) {
+	private static List<String> defaultViewsDescriptive =
+			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name(),
+					ContainerView.EXPORTS.name());
+	
+	private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
 		ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
 		
 		if (settings.getViews().size() == 0) {
-			settings.setViews(defaultViews);
+			// Only include the metadata tab by default if there is a descriptive record
+			if (hasDescription) {
+				settings.setViews(defaultViewsDescriptive);
+			} else {
+				settings.setViews(defaultViews);
+			}
 		}
 		
 		if (settings.getDefaultView() == null) {
-			settings.setDefaultView(ContainerView.METADATA.name());
+			settings.setDefaultView(ContainerView.STRUCTURE.name());
 		}
 		
 		// Populate department list

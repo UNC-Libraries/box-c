@@ -1050,6 +1050,11 @@
 				<xsl:call-template name="modsRelatedItems"/>
 			</table>
 		</xsl:if>
-		
 	</xsl:template>	
+	
+	<xsl:template match="/">
+		<view>
+			<xsl:apply-templates select="/*[local-name() = 'mods']"/>
+		</view>
+	</xsl:template>
 </xsl:stylesheet>

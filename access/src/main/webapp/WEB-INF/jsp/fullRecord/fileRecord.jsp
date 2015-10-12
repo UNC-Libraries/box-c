@@ -122,7 +122,7 @@
 		<div class="metadata">
 			${fullObjectView}
 		</div>
-		<c:import url="fullRecord/exports.jsp" />
 	</div>
+	<c:import url="fullRecord/exports.jsp" />
 </div>
 <c:import url="fullRecord/neighborList.jsp" />

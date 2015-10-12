@@ -380,7 +380,11 @@ public class FOXMLJDOMUtil {
 	}
 	
 	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Document foxml) {
-		List<?> datastreamList = foxml.getRootElement().getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
+		return getMostRecentDatastream(datastream, foxml.getRootElement());
+	}
+	
+	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Element foxml) {
+		List<?> datastreamList = foxml.getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
 		
 		for (Object datastreamObject : datastreamList) {
 			Element datastreamEl = (Element) datastreamObject;
