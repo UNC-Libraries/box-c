@@ -66,6 +66,10 @@ public class EditCollectionSettingsController {
 	@Autowired
 	private SolrQueryLayerService solrQueryService;
 	
+	private final String defaultDefaultTab = ContainerView.METADATA.name();
+	private final List<String> defaultTabList = Arrays.asList(ContainerView.METADATA.name(),
+			ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
+	
 	@RequestMapping(value = "editCollection/{pid}", method = RequestMethod.GET)
 	public @ResponseBody ContainerSettings getSettings(@PathVariable("pid") String pidString) {
 		Map<String, List<String>> triples = tripleStoreQueryService.fetchAllTriples(new PID(pidString));
@@ -82,10 +86,10 @@ public class EditCollectionSettingsController {
 		
 		// Provide default values if they have not been specified before
 		if (settings.getDefaultView() == null) {
-			settings.setDefaultView(ContainerView.METADATA.name());
+			settings.setDefaultView(defaultDefaultTab);
 		}
 		if (settings.getViews() == null || settings.getViews().size() == 0) {
-			settings.setViews(Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name()));
+			settings.setViews(defaultTabList);
 		}
 		
 		return settings;

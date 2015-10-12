@@ -36,13 +36,23 @@
 		<div class="collinfo">
 			<div class="collinfo_metadata">
 				<h2><c:out value="${briefObject.title}" /></h2>
+				<ul class="pipe_list smaller">
 				<c:if test="${not empty briefObject.creator}">
-					<p class="smaller"><span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
+					<li>
+						<span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
 						<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
 							<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
 						</c:forEach>
-					</p>
+					</li>
 				</c:if>
+				<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
+					<li>
+						<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
+						<span class="bold">Collection:</span> 
+						<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
+					</li>
+				</c:if>
+			</ul>
 				<ul class="pipe_list smaller">
 					<c:if test="${defaultWebData != null}">
 						<li><span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
@@ -109,7 +119,9 @@
 				</p>
 			</div>
 		</c:if>
-		<c:import url="fullRecord/metadataBody.jsp" />
+		<div class="metadata">
+			${fullObjectView}
+		</div>
 		<c:import url="fullRecord/exports.jsp" />
 	</div>
 </div>

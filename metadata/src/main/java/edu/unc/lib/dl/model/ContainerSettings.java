@@ -95,10 +95,11 @@ public class ContainerSettings {
 	}
 
 	public static enum ContainerView {
-		METADATA("Overview", "An overview of the contents of the collection and descriptive metadata"),
+		METADATA("Description", "An overview of the contents of the collection and descriptive metadata"),
 		STRUCTURE("Structure", "A tree view of the hierachical structure of the collection"),
 		DEPARTMENTS("Departments", "A list of the departments associated with objects in this collection"),
-		LIST_CONTENTS("List Contents", "A result view of files within this collection with hierarchy flattened");
+		LIST_CONTENTS("List Contents", "A result view of files within this collection with hierarchy flattened"),
+		EXPORTS("Exports", "Export options for data associated with this collection.");
 		
 		String displayName;
 		String description;

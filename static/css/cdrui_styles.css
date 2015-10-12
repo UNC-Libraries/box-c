@@ -250,7 +250,7 @@ div#username_wrap {
 }
 
 .collinfo_metadata {
-	min-height: 90px;
+	min-height: 100px;
 }
 
 .fileinfo {
@@ -295,7 +295,7 @@ div#username_wrap {
 	width: 46%;
 	padding-right: 4%;
 	float: left;
-	margin-bottom: 20px;
+	margin-top: 20px;
 }
 
 .breadcrumbs,.searchwithin {
@@ -590,6 +590,16 @@ ul.fpfeed_list li {
 	color: #0A5274;
 }
 
+#full_record_trail {
+	width: 80%;
+	text-indent: -2em;
+	margin-left: 2em;
+}
+
+.pipe_list {
+	clear: both;
+}
+
 .pipe_list li {
 	border-right: 1px solid #ECECEC;
 	display: block;
@@ -809,10 +819,11 @@ p.navigation_bar a {
 	font-size: 12px;
 	line-height: 17px;
 	width: 100%;
-	border-top: 1px solid #c8d8e0;
-	border-left: 1px solid #c8d8e0;
-	border-right: 1px solid #c8d8e0;
-	margin-bottom: 20px;
+	border: 1px solid #f5f5f5;
+}
+
+.metadata table + table, .metadata + div {
+	margin-top: 20px;
 }
 
 .metadata table a {
@@ -824,19 +835,28 @@ p.navigation_bar a {
 }
 
 .metadata table th,.metadata table td {
-	padding: 7px 10px;
-	border-bottom: 1px solid #c8d8e0;
+	padding: 7px 10px 7px 10px;
 	vertical-align: top;
 }
 
 .metadata table td {
 	padding: 7px 20px;
-	background-color: #f6fbfd;
 }
 
 .metadata table th {
 	width: 107px;
-	background-color: #ebf5fa;
+	color: #667;
+	background-color: #fafafa;
+}
+
+.metadata table table {
+	border-width: 0;
+}
+
+.metadata table table th, .metadata table table td {
+	border-width: 0;
+	background-color: transparent;
+	padding: 0 0 7px 0;
 }
 
 .metadata table p span {
@@ -860,11 +880,20 @@ p.navigation_bar a {
 }
 
 .tabbed_content .threecol {
-	width: 680px;
+	width: 700px;
 }
 
 .tabbed_content .fourcol {
-	width: 230px;
+	width: 220px;
+}
+
+.tabbed_content .fourcol .contentarea {
+	margin-right: 0;
+	padding-right: 10px;
+}
+
+.tabbed_content .threecol > .contentarea {
+	margin-left: 0;
 }
 
 .tabbed_content .navigation_sort_form {
