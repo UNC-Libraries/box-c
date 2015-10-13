@@ -17,6 +17,7 @@ package edu.unc.lib.dl.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +88,7 @@ public class ContainerSettings {
 	}
 	
 	public Map<String, Map<String, String>> getViewInfo() {
-		Map<String, Map<String, String>> result = new HashMap<>();
+		Map<String, Map<String, String>> result = new LinkedHashMap<>();
 		
 		for (ContainerView view : ContainerView.values()) {
 			Map<String, String> entry = new HashMap<>();
