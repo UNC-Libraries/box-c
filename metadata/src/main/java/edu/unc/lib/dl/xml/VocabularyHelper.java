@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 
 /**
  * @author bbpennel
@@ -73,6 +74,10 @@ public interface VocabularyHelper {
 	 */
 	public Collection<String> getVocabularyTerms();
 
+	public void setSelectorNamespaces(Namespace[] namespaces);
+	
+	public String getSelector();
+	
 	public void setSelector(String selector);
 
 	/**

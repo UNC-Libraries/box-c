@@ -34,6 +34,7 @@ import java.util.Set;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,6 +91,10 @@ public class VocabularyHelperManager {
 	private AccessClient accessClient;
 
 	private Boolean initialized = false;
+	
+	private final Namespace[] defaultSelectorNamespaces = new Namespace[] {
+			JDOMNamespaceUtil.MODS_V3_NS
+	};
 
 	public synchronized void init() {
 		// Wait for the repository to be up before loading vocabularies
@@ -151,7 +156,8 @@ public class VocabularyHelperManager {
 						(VocabularyHelper) helperClassMap.get(vocabType).getConstructor().newInstance();
 
 				helperObject.setVocabularyURI(vocabURI);
-				helperObject.setSelector(info.get("vocabularySelector"));
+				helperObject.setSelector(info.get("vocabSelector"));
+				helperObject.setSelectorNamespaces(defaultSelectorNamespaces);
 
 				vocabHelperMap.put(vocabURI, helperObject);
 			} catch (Exception e) {

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
@@ -94,6 +95,15 @@ public class TestVocabularyHelper implements VocabularyHelper {
 
 	@Override
 	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
+		return null;
+	}
+
+	@Override
+	public void setSelectorNamespaces(Namespace[] namespaces) {
+	}
+
+	@Override
+	public String getSelector() {
 		return null;
 	}
 }

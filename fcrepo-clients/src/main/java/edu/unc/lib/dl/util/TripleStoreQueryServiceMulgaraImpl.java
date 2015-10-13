@@ -1533,13 +1533,15 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		Map<String, Map<String, String>> result = new HashMap<>();
 
 		StringBuilder query = new StringBuilder();
-		query.append("select $vocabPID $vocabURI $vocabType from <%1$s>").append(
-				" where $vocabPID <%2$s> <%3$s> and $vocabPID <%4$s> $vocabURI and $vocabPID <%5$s> $vocabType;");
+		query.append("select $vocabPID $vocabURI $vocabType $vocabSelector from <%1$s>")
+				.append(" where $vocabPID <%2$s> <%3$s> and $vocabPID <%4$s> $vocabURI")
+				.append(" and $vocabPID <%5$s> $vocabType and $vocabPID <%6$s> $vocabSelector;");
 
 		String q = String.format(query.toString(), this.getResourceIndexModelUri(),
 				ContentModelHelper.FedoraProperty.hasModel.getURI(), ContentModelHelper.Model.VOCABULARY,
 				ContentModelHelper.CDRProperty.vocabularyUri.getURI(),
-				ContentModelHelper.CDRProperty.vocabularyType.getURI());
+				ContentModelHelper.CDRProperty.vocabularyType.getURI(),
+				ContentModelHelper.CDRProperty.vocabularySelector.getURI());
 
 		List<List<String>> response = this.lookupStrings(q);
 
@@ -1548,6 +1550,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 				Map<String, String> values = new HashMap<>();
 				values.put("vocabURI", row.get(1));
 				values.put("vocabType", row.get(2));
+				values.put("vocabSelector", row.get(3));
 
 				result.put(row.get(0), values);
 			}

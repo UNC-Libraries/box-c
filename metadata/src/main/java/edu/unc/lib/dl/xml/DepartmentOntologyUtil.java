@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
 import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaderSAX2Factory;
@@ -743,6 +744,15 @@ public class DepartmentOntologyUtil implements VocabularyHelper {
 	@Override
 	public void setVocabularyURI(String vocabularyURI) {
 		this.vocabularyURI = vocabularyURI;
+	}
+
+	@Override
+	public void setSelectorNamespaces(Namespace[] namespaces) {
+	}
+
+	@Override
+	public String getSelector() {
+		return "//mods:name/mods:affiliation";
 	}
 
 }
