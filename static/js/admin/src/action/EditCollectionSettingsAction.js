@@ -1,5 +1,5 @@
-define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChangeMonitor', 'AlertHandler', 'tpl!../templates/admin/editCollectionSettings'], 
-	function($, _, RemoteStateChangeMonitor, alertHandler, editSettingsTemplate) {
+define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChangeMonitor', 'AlertHandler', 'ModalLoadingOverlay', 'tpl!../templates/admin/editCollectionSettings'], 
+	function($, _, RemoteStateChangeMonitor, alertHandler, ModalLoadingOverlay, editSettingsTemplate) {
 			
 	function EditCollectionSettingsAction(context) {
 		this.context = context;
@@ -92,6 +92,14 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 					views.push(selectedViews.eq(i).data("viewid"));
 				}
 				var defaultView = $("#full_record_default_view", self.$form).val();
+				
+				var overlay = new ModalLoadingOverlay(self.$form, {
+					autoOpen : false,
+					type : 'icon',
+					text : 'updating...',
+					dialog : self.dialog
+				});
+				overlay.open();
 		
 				$.ajax({
 					url : "editCollection/" + self.context.target.pid,
@@ -105,8 +113,10 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 				}).done(function(reponse) {
 					self.context.view.$alertHandler.alertHandler("message", "Updated collection settings.");
 					self.dialog.remove();
+					overlay.remove();
 				}).fail(function() {
 					self.context.view.$alertHandler.alertHandler("error", "Failed to update collection settings");
+					overlay.remove();
 				});
 		
 				e.preventDefault();
