@@ -29,15 +29,6 @@
 </c:if>
 
 <c:choose>
-	<c:when test="${param.resultNumber % 2 == 0 }">
-		<c:set var="resultEntryClass" value="even" scope="page"/>
-	</c:when>
-	<c:otherwise>
-		<c:set var="resultEntryClass" value="" scope="page"/>
-	</c:otherwise>
-</c:choose>
-
-<c:choose>
 	<c:when test="${not empty metadata.countMap}">
 		<c:set var="childCount" value="${metadata.countMap.child}"/>
 	</c:when>
@@ -48,7 +39,7 @@
 
 <c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
 
-<div id="entry${metadata.id}" class="browseitem ${resultEntryClass}${' '}${isDeleted}${' '}${isProtected}">
+<div id="entry${metadata.id}" class="browseitem ${isDeleted}${' '}${isProtected}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
 		<c:url var="fullRecordUrl" scope="page" value="record/${metadata.id}">

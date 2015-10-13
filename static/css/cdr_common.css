@@ -144,6 +144,10 @@ body.full_screen {
 	clear: both;
 }
 
+.nowrap {
+	white-space: nowrap;
+}
+
 /** Typography */
 
 a {
@@ -184,6 +188,10 @@ li {
 
 .bold {
 	font-weight: bold;
+}
+
+.indent_content {
+	margin-left: 10px;
 }
 
 /** Header menu */

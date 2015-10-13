@@ -19,6 +19,7 @@ build-admin:
 		static/css/admin/jquery-ui.css \
 		static/css/admin/jquery.qtip.css \
 		static/css/admin/jquery.contextMenu.css \
+		static/css/font-awesome.min.css \
 		static/css/admin/cdradmin.css \
 		static/css/admin/search_results.css \
 		static/css/admin/admin_forms.css \

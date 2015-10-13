@@ -1,0 +1,31 @@
+<form method="POST" class="collection_settings edit_form">
+	<h3>Title</h3>
+	<p class="collection_name indent_content"><%= settings.title %></p>
+	
+	<h3>Full record tabs</h3>
+	<div class="indent_content">
+		<p>Select tabs to display for this collection.</p>
+		<ul id="full_record_views_select" class="selectable_multi no_text_select">
+			<% _.each(settings.viewInfo, function(viewInfo, viewKey) { %>
+				<li data-viewid="<%= viewKey %>">
+					<input type="checkbox" />
+					<%= viewInfo.displayName %><span class="help" title="<%= viewInfo.description %>">(?)</span>
+				</li>
+			<% }); %>
+		</ul>
+		<div class="selectable_multi_actions">
+			<div class="nowrap">
+				<label>Default tab</label>
+				<select id="full_record_default_view">
+					<% _.each(settings.viewInfo, function(viewInfo, viewKey) { %>
+						<option value="<%= viewKey %>"><%= viewInfo.displayName %></option>
+					<% }); %>
+				</select>
+			</div>
+		</div>
+	</div>
+	
+	<div class="update_field">
+		<input value="Update" class="update_button" type="submit">
+	</div>
+</form>

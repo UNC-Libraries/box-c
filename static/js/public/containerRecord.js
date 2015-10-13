@@ -17,7 +17,7 @@ require.config({
 		}
 	}
 });
-define('containerRecord', ['module', 'jquery', 'StructureView'], function(module, $) {
+define('containerRecord', ['module', 'jquery', 'StructureView', 'jquery-ui'], function(module, $) {
 	var $structureView = $(".structure");
 	
 	if ($structureView.length > 0) {
@@ -38,4 +38,35 @@ define('containerRecord', ['module', 'jquery', 'StructureView'], function(module
 			}
 		});
 	}
+	
+	var containerSettings = module.config().containerSettings;
+	
+	function selectTab(tabs, tabid) {
+		var tabHeader;
+		if (!tabid) {
+			tabHeader = $(".tab_headers li:first", tabs);
+			tabid = tabHeader.data("tabid");
+		} else {
+			tabHeader = $(".tab_headers li[data-tabid = '" + tabid + "']", tabs);
+			if (tabHeader.length == 0) {
+				tabHeader = $(".tab_headers li:first", tabs);
+				tabid = tabHeader.data("tabid");
+			}
+		}
+		tabHeader.addClass("selected").siblings().removeClass("selected");
+		collectionTabs.children("div[data-tabid != '" + tabid + "']").hide();
+		collectionTabs.children("div[data-tabid = '" + tabid + "']").show();
+	}
+	
+	var collectionTabs = $("#collection_tabs");
+	collectionTabs.on("click", ".tab_headers li, .tab_headers li a", function(e) {
+		var tabid = $(this).closest("li").data("tabid");
+		selectTab(collectionTabs, tabid);
+		e.preventDefault();
+	});
+	selectTab(collectionTabs, containerSettings.defaultView);
+	
+	$("#sort_select").change(function(){
+		$("#result_sort_form").submit();
+	});
 });

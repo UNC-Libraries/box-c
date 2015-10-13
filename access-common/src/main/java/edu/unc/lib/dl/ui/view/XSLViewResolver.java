@@ -21,6 +21,7 @@ import java.util.Map;
 import javax.xml.transform.TransformerException;
 
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +60,7 @@ public class XSLViewResolver {
 		}
 	}
 	
-	public String renderView(String key, Document doc, Map<String,Object> parameters) throws RenderViewException {
+	public String renderView(String key, Element doc, Map<String,Object> parameters) throws RenderViewException {
 		if (key == null || !views.containsKey(key))
 			throw new RenderViewException("The view " + key + " was requested but is not bound");
 		try {
@@ -69,13 +70,11 @@ public class XSLViewResolver {
 		}
 	}
 	
+	public String renderView(String key, Element doc) throws RenderViewException {
+		return renderView(key, doc, null);
+	}
+	
 	public String renderView(String key, Document doc) throws RenderViewException {
-		if (key == null || !views.containsKey(key))
-			throw new RenderViewException("The view " + key + " was requested but is not bound");
-		try {
-			return views.get(key).renderView(doc);
-		} catch (TransformerException e) {
-			throw new RenderViewException("Failed to transform the document to the specified view " + key, e);
-		}
+		return renderView(key, doc.getRootElement(), null);
 	}
 }

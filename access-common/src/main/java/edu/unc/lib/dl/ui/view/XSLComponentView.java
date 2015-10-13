@@ -24,7 +24,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.output.XMLOutputter;
@@ -34,7 +33,7 @@ import org.jdom2.transform.JDOMSource;
 public class XSLComponentView {
 	private Transformer transformer;
 	private String source;
-	private List<Namespace> namespaces;
+	private final List<Namespace> namespaces;
 
 	public XSLComponentView(String source) throws Exception {
 		this.source = source;
@@ -53,7 +52,7 @@ public class XSLComponentView {
 		transformer = TransformerFactory.newInstance().newTemplates(new StreamSource(source)).newTransformer();
 	}
 
-	public String renderView(Document doc) throws TransformerException {
+	public String renderView(Element doc) throws TransformerException {
 		return renderView(doc, null);
 	}
 
@@ -65,7 +64,7 @@ public class XSLComponentView {
 	 * @return
 	 * @throws TransformerException
 	 */
-	public String renderView(Document doc, Map<String, Object> parameters) throws TransformerException {
+	public String renderView(Element doc, Map<String, Object> parameters) throws TransformerException {
 		JDOMResult result = new JDOMResult();
 
 		// Since we are reusing the same transformer, have to make sure it is thread safe when transforming
@@ -84,13 +83,17 @@ public class XSLComponentView {
 		}
 
 		Element rootElement = result.getDocument().getRootElement();
+		if (rootElement.getChildren().size() == 0) {
+			return null;
+		}
+		
 		if (namespaces != null) {
 			for (Namespace namespace : namespaces) {
 				rootElement.removeNamespaceDeclaration(namespace);
 			}
 		}
 		XMLOutputter out = new XMLOutputter();
-		return out.outputString(rootElement);
+		return out.outputString(rootElement.getChildren());
 	}
 
 	public String getSource() {

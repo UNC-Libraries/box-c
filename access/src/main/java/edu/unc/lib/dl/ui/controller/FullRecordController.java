@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeoutException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +45,16 @@ import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.model.ContainerSettings;
+import edu.unc.lib.dl.model.ContainerSettings.ContainerView;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
+import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
@@ -54,6 +62,10 @@ import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ResourceType;
+import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -72,6 +84,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 	private FedoraDataService fedoraDataService;
 	@Autowired
 	private ObjectPathFactory pathFactory;
+	@Autowired
+	SearchStateFactory stateFactory;
 
 	private static final int MAX_FOXML_TRIES = 2;
 
@@ -108,9 +122,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 		// Retrieve the objects description from Fedora
 		String fullObjectView = null;
 		boolean containsContent = false;
+		
+		Document foxmlView = null;
 		if (!listAccess) {
 			try {
-				Document foxmlView;
 				int retries = MAX_FOXML_TRIES;
 				do {
 					foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
@@ -118,7 +133,14 @@ public class FullRecordController extends AbstractSolrSearchController {
 				} while (--retries > 0 && !containsContent);
 
 				if (containsContent) {
-					fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", foxmlView);
+					Element foxml = foxmlView.getRootElement().getChild("digitalObject", JDOMNamespaceUtil.FOXML_NS);
+					Element mods = FOXMLJDOMUtil.getMostRecentDatastream(Datastream.MD_DESCRIPTIVE, foxml);
+					
+					if (mods != null) {
+						mods = mods.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS)
+								.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
+						fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", mods);
+					}
 				} else {
 					throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
 				}
@@ -142,7 +164,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 		}
 
 		// Get additional information depending on the type of object since the user has access
-		if (fullObjectView != null) {
+		if (!listAccess) {
 			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
 			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
 
@@ -164,6 +186,16 @@ public class FullRecordController extends AbstractSolrSearchController {
 						accessGroups, facetsToRetrieve);
 
 				briefObject.getCountMap().put("child", resultResponse.getResultCount());
+				
+				boolean hasFacets = false;
+				for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
+					if (facetField.getValues().size() > 0) {
+						hasFacets = true;
+						break;
+					}
+				}
+				
+				model.addAttribute("hasFacetFields", hasFacets);
 				model.addAttribute("facetFields", resultResponse.getFacetFields());
 			}
 
@@ -175,6 +207,11 @@ public class FullRecordController extends AbstractSolrSearchController {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
 			model.addAttribute("neighborList", neighbors);
+		}
+		
+		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
+				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
+			applyContainerSettings(pid, foxmlView, model, fullObjectView != null);
 		}
 
 		// Store search state information to the users session to enable page to page navigation
@@ -193,6 +230,54 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 		model.addAttribute("pageSubtitle", briefObject.getTitle());
 		return "fullRecord";
+	}
+	
+	// The default collection tab views which are retrieved if no settings are found
+	private static List<String> defaultViews =
+			Arrays.asList(ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
+	
+	private static List<String> defaultViewsDescriptive =
+			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name(),
+					ContainerView.EXPORTS.name());
+	
+	private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
+		ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
+		
+		if (settings.getViews().size() == 0) {
+			// Only include the metadata tab by default if there is a descriptive record
+			if (hasDescription) {
+				settings.setViews(defaultViewsDescriptive);
+			} else {
+				settings.setViews(defaultViews);
+			}
+		}
+		
+		if (settings.getDefaultView() == null) {
+			settings.setDefaultView(ContainerView.STRUCTURE.name());
+		}
+		
+		// Populate department list
+		if (settings.getViews().contains(ContainerView.DEPARTMENTS.name())) {
+			SearchResultResponse result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
+			model.addAttribute("departmentFacets", result.getFacetFields().get(0));
+		}
+		
+		// Populate file list
+		if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
+			SearchState searchState = stateFactory.createSearchState();
+			searchState.setResourceTypes(
+					Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+			SearchRequest listContentsRequest = new SearchRequest();
+			listContentsRequest.setSearchState(searchState);
+			listContentsRequest.setRetrieveFacets(false);
+			listContentsRequest.setApplyCutoffs(false);
+			listContentsRequest.setRootPid(pid);
+			
+			SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
+			model.addAttribute("contentListResponse", contentListResponse);
+		}
+
+		model.addAttribute("containerSettings", settings);
 	}
 
 	@ResponseStatus(value = HttpStatus.FORBIDDEN)

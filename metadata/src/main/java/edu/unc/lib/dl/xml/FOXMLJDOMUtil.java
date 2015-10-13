@@ -317,6 +317,10 @@ public class FOXMLJDOMUtil {
 		return;
 	}
 	
+	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Document foxml) {
+		return getDatastreamContent(datastream, foxml.getRootElement());
+	}
+	
 	/**
 	 * Returns the content of an internal datastream from the given foxml. If the datastream is versionable, then the
 	 * most recent version of the datastream is returned.
@@ -325,9 +329,9 @@ public class FOXMLJDOMUtil {
 	 * @param foxml
 	 * @return
 	 */
-	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Document foxml) {
+	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Element foxml) {
 		Element dsVersion;
-		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml.getRootElement(), "datastream",
+		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml, "datastream",
 				JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
 		
 		if (datastreamEl == null) {
@@ -376,7 +380,11 @@ public class FOXMLJDOMUtil {
 	}
 	
 	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Document foxml) {
-		List<?> datastreamList = foxml.getRootElement().getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
+		return getMostRecentDatastream(datastream, foxml.getRootElement());
+	}
+	
+	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Element foxml) {
+		List<?> datastreamList = foxml.getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
 		
 		for (Object datastreamObject : datastreamList) {
 			Element datastreamEl = (Element) datastreamObject;

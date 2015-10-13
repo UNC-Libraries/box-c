@@ -136,6 +136,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["editLabel"] = {name : 'Edit Label'};
 		}
 		
+		if ($.inArray('editAccessControl', metadata.permissions) != -1
+				&& $.inArray('info:fedora/cdr-model:Collection', metadata.model) != -1) {
+			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
+		}
+		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}
@@ -211,6 +216,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						document.location.href = baseUrl + "describe/" + metadata.id;
+						break;
+					case "editCollectionSettings" :
+						self.actionHandler.addEvent({
+							action : 'EditCollectionSettings',
+							target : resultObject
+						});
 						break;
 					case "setDefaultWebObject" : case "clearDefaultWebObject" :
 						self.actionHandler.addEvent({

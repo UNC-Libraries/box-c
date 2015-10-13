@@ -17,11 +17,11 @@
 }
 
 .edit_form h3 {
-	font-size: 85%;
 	font-weight: bold;
 	color: #555;
 	text-align: left;
 	padding-top: 5px;
+	margin-bottom: 0px;
 }
 
 .edit_form label {
@@ -36,7 +36,7 @@
 	width: 100%;
 }
 
-.edit_form input, .edit_form textarea, .edit_form select {
+.edit_form input, .edit_form textarea {
 	background-color: #FFFFFF;
 	border: 1px solid #C8D8E0;
 	color: #666666;
@@ -47,7 +47,7 @@
 	border-width: 0;
 }
 
-.edit_form .update_button {
+.update_field .update_button {
 	background-color: #165D7F;
 	color: #fff;
 	padding: 4px 8px;
@@ -232,6 +232,97 @@
 .template-form .ui-dialog-title {
 	font-size: 18px;
 	margin: 0;
+}
+
+
+.collection_settings {
+	text-align: left;
+	margin-top: 5px;
+}
+
+.collection_name {
+	font-size: 14px;
+}
+
+.edit_form.collection_settings label {
+	width: auto;
+}
+
+.select_area {
+	margin-left: 10px
+}
+
+.selectable_multi .custom::after {
+	content : "custom";
+	font-size: 80%;
+	margin-left: 10px;
+	color: #080;
+}
+
+.selectable_multi {
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	overflow: hidden;
+	width: 50%;
+	display: inline-block;
+}
+
+.selectable_multi li {
+	font-size: 14px;
+	text-decoration: line-through;
+	text-decoration: none;
+	padding: 5px 8px;
+	margin: 0;
+	text-indent: 0;
+	color: #333;
+}
+
+.selectable_multi li span {
+	margin-left: 8px;
+	font-size: 80%;
+}
+
+.selectable_multi .selected {
+	text-decoration: none;
+	background-color: rgb(244, 244, 253);
+	color: #1A0E00;
+}
+
+.selectable_multi li:hover {
+	background-color: #fafafa;
+}
+
+.selectable_multi .selected:hover {
+	background-color: #f8f8ff;
+}
+	
+.selectable_multi_actions {
+	width: 40%;
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 16px;
+}
+
+.selectable_multi_actions label {
+	margin-right: 8px;
+}
+
+.selectable_multi_actions input {
+	background-color: #72AAC3;
+	color: #FFF;
+	padding: 4px 8px;
+	border: medium none #3E8DB0;
+	margin: 0px 0px 6px 0px;
+	border-radius: 4px;
+}
+
+.no_text_select {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 /** Run enhancements */

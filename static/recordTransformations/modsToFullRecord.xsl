@@ -941,7 +941,7 @@
 		<xsl:variable name="genre" select="*[local-name() = 'genre']"/>
 		<xsl:variable name="identifier" select="*[local-name() = 'identifier']"/>
 		<xsl:variable name="classification" select="*[local-name() = 'classification']"/>
-		<xsl:variable name="abstract" select="*[local-name() = 'abstract']"/>
+		<xsl:variable name="abstract" select="*[local-name() = 'abstract' and @type='Content advice']"/>
 		<xsl:variable name="targetAudience" select="*[local-name() = 'targetAudience']"/>
 		
 		<xsl:if test="boolean($language) or boolean($typeOfResource) or boolean($genre) or boolean($identifier) or boolean($classification) or boolean($targetAudience) or boolean ($abstract)">
@@ -1050,6 +1050,11 @@
 				<xsl:call-template name="modsRelatedItems"/>
 			</table>
 		</xsl:if>
-		
 	</xsl:template>	
+	
+	<xsl:template match="/">
+		<view>
+			<xsl:apply-templates select="/*[local-name() = 'mods']"/>
+		</view>
+	</xsl:template>
 </xsl:stylesheet>

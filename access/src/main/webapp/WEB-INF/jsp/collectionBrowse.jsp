@@ -18,13 +18,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>  
+<%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %> 
 
 <div class="content-wrap">
-	<div class="contentarea">
-		<h2>Browse Departments <c:if test="${not empty container}">in Collection <c:out value=" ${container.title}"/></c:if></h2>
-	</div>
-	<div class="onecol light">
-		<c:import url="searchResults/departmentList.jsp" />
-	</div>
+<div class="contentarea">
+	<h2>${pageSubtitle}</h2>
+</div>
+<c:set var="searchState" value="${resultResponse.searchState}"/>
+<c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
+<c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
+<c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>
+<c:import url="searchResults/resultsPage.jsp">
+	<c:param name="showBreadCrumbs">false</c:param>
+	<c:param name="showSearchBox">false</c:param>
+	<c:param name="showFolderFacet">false</c:param>
+	<c:param name="entryTemplate">searchResults/browseResultEntry.jsp</c:param>
+</c:import>
 </div>

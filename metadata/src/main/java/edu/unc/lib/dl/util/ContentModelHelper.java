@@ -60,7 +60,8 @@ public class ContentModelHelper {
 				isActive("isActive", JDOMNamespaceUtil.CDR_ACL_NS), sourceMetadata("sourceMetadata"), hasSourceMetadataProfile(
 				"hasSourceMetadataProfile"), invalidTerm("invalidTerm"), dateCreated("dateCreated"),
 				indexValidTerms("indexValidTerms"), warnInvalidTerms("warnInvalidTerms"), replaceInvalidTerms("replaceInvalidTerms"),
-				vocabularyType("vocabularyType"), vocabularyUri("vocabularyUri"), vocabularySelector("vocabularySelector");
+				vocabularyType("vocabularyType"), vocabularyUri("vocabularyUri"), vocabularySelector("vocabularySelector"),
+				collectionDefaultView("collectionDefaultView"), collectionShowView("collectionShowView");
 
 		private URI uri;
 		private String predicate;

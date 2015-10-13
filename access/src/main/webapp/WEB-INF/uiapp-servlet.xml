@@ -184,7 +184,7 @@
 		<!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
 		<property name="views">
 			<map>
-				<entry key="external.xslView.fullRecord.url" value="${external.base.file.url}recordTransformations/fullRecord.xsl"/>
+				<entry key="external.xslView.fullRecord.url" value="${external.base.file.url}recordTransformations/modsToFullRecord.xsl"/>
 			</map>
 		</property>
 	</bean>
