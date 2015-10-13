@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,15 +39,15 @@ public class ContainerSettings {
 	
 	public ContainerSettings(Element foxml) {
 		Element relsEl = FOXMLJDOMUtil.getDatastreamContent(Datastream.RELS_EXT, foxml);
-		views = RDFXMLUtil.getLiteralValues(relsEl, CDRProperty.collectionShowView.getPredicate(),
-				CDRProperty.collectionShowView.getNamespace());
+		setViews(RDFXMLUtil.getLiteralValues(relsEl, CDRProperty.collectionShowView.getPredicate(),
+				CDRProperty.collectionShowView.getNamespace()));
 		
 		defaultView = RDFXMLUtil.getLiteralValue(relsEl, CDRProperty.collectionDefaultView.getPredicate(),
 				CDRProperty.collectionDefaultView.getNamespace());
 	}
 	
 	public ContainerSettings(Map<String, List<String>> triples) {
-		views = triples.get(CDRProperty.collectionShowView.toString());
+		setViews(triples.get(CDRProperty.collectionShowView.toString()));
 		List<String> defaultViewValues = triples.get(CDRProperty.collectionDefaultView.toString());
 		defaultView = defaultViewValues != null? defaultViewValues.get(0) : null;
 	}
@@ -72,7 +73,12 @@ public class ContainerSettings {
 	}
 
 	public void setViews(List<String> views) {
-		this.views = views;
+		this.views = new ArrayList<>(views.size());
+		for (ContainerView view : ContainerView.values()) {
+			if (views.contains(view.name())) {
+				this.views.add(view.name());
+			}
+		}
 	}
 	
 	public String getViewDisplayName(String view) {
@@ -95,10 +101,11 @@ public class ContainerSettings {
 	}
 
 	public static enum ContainerView {
-		METADATA("Description", "An overview of the contents of the collection and descriptive metadata"),
+		// Order of these values determines the order in which tabs appear, so rearrange with care
 		STRUCTURE("Structure", "A tree view of the hierachical structure of the collection"),
-		DEPARTMENTS("Departments", "A list of the departments associated with objects in this collection"),
 		LIST_CONTENTS("List Contents", "A result view of files within this collection with hierarchy flattened"),
+		DEPARTMENTS("Departments", "A list of the departments associated with objects in this collection"),
+		METADATA("Description", "An overview of the contents of the collection and descriptive metadata"),
 		EXPORTS("Exports", "Export options for data associated with this collection.");
 		
 		String displayName;
