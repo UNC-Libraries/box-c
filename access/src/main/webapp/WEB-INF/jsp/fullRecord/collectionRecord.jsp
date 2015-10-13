@@ -101,8 +101,8 @@
 			</c:forEach>
 		</ul>
 	</nav>
-	<c:if test="${containerSettings.getViews().contains('METADATA')}">
-		<div data-tabid="METADATA" id="tab_METADATA">
+	<c:if test="${containerSettings.getViews().contains('DESCRIPTION')}">
+		<div data-tabid="DESCRIPTION" id="tab_DESCRIPTION">
 			<c:if test="${hasFacetFields}">
 				<div class="fourcol">
 					<div id="facetList" class="contentarea">

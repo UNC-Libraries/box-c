@@ -237,7 +237,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			Arrays.asList(ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
 	
 	private static List<String> defaultViewsDescriptive =
-			Arrays.asList(ContainerView.METADATA.name(), ContainerView.STRUCTURE.name(),
+			Arrays.asList(ContainerView.DESCRIPTION.name(), ContainerView.STRUCTURE.name(),
 					ContainerView.EXPORTS.name());
 	
 	private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
