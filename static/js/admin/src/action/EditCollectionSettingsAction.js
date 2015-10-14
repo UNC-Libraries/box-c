@@ -8,7 +8,7 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 	EditCollectionSettingsAction.prototype.execute = function() {
 		var self = this;
 		
-		this.dialog = $("<div class='containingDialog'>Loading...</div>");
+		this.dialog = $("<div class='containingDialog'></div>");
 		this.dialog.dialog({
 			autoOpen: true,
 			width: '560',
@@ -16,6 +16,13 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			modal: true,
 			title: "Collection Settings"
 		});
+		
+		var loadingOverlay = new ModalLoadingOverlay(this.dialog, {
+			autoOpen : false,
+			type : 'icon',
+			dialog : self.dialog
+		});
+		loadingOverlay.open();
 		
 		$.ajax({
 			url : "editCollection/" + this.context.target.pid,
@@ -26,6 +33,9 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			self.dialog.html(editSettingsForm);
 			// Recenter the dialog
 			self.dialog.dialog("option", "position", "center");
+			
+			// Clear out the initial loading overlay
+			loadingOverlay.remove();
 			
 			self.$form = self.dialog.first();
 			var defaultViewSelect = $("#full_record_default_view", self.$form);
@@ -50,6 +60,9 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			}
 			
 			function toggleChecked(checkbox, checked) {
+				if (checkbox.prop("disabled")) {
+					return;
+				}
 				if (checked === undefined) {
 					checked = !checkbox.prop("checked");
 				}
@@ -73,9 +86,13 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 			}
 			
 			// Mark starting selected views
-			$.each(collectionSettings.viewInfo, function(viewKey) {
+			$.each(collectionSettings.viewInfo, function(viewKey, viewInfo) {
 				var checkbox = $("#full_record_views_select li[data-viewid='" + viewKey + "']", self.$form).find("input");
-				toggleChecked(checkbox, $.inArray(viewKey, collectionSettings.views) != -1);
+				var checked = viewInfo.required || $.inArray(viewKey, collectionSettings.views) != -1;
+				toggleChecked(checkbox, checked);
+				if (viewInfo.required) {
+					checkbox.prop("disabled", true).parent("li").first().addClass("disabled");
+				}
 			});
 			
 			// Enable help text
@@ -96,7 +113,6 @@ define('EditCollectionSettingsAction', ['jquery', 'underscore', 'RemoteStateChan
 				var overlay = new ModalLoadingOverlay(self.$form, {
 					autoOpen : false,
 					type : 'icon',
-					text : 'updating...',
 					dialog : self.dialog
 				});
 				overlay.open();

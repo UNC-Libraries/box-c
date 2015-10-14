@@ -275,6 +275,7 @@
 	margin: 0;
 	text-indent: 0;
 	color: #333;
+	cursor: pointer;
 }
 
 .selectable_multi li span {
@@ -294,6 +295,11 @@
 
 .selectable_multi .selected:hover {
 	background-color: #f8f8ff;
+}
+
+.selectable_multi .disabled {
+	color: #888;
+	cursor: default;
 }
 	
 .selectable_multi_actions {
