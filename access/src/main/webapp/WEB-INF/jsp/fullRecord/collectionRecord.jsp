@@ -38,6 +38,7 @@
 	<div class="contentarea">
 		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
 		<c:import url="common/thumbnail.jsp">
+			<c:param name="target" value="record" />
 			<c:param name="size" value="large" />
 		</c:import>
 		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
