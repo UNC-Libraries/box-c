@@ -45,6 +45,9 @@
 		<c:when test="${param.target == 'list'}">
 			<c:out value="list/${thumbnailObject.id}" />
 		</c:when>
+		<c:otherwise>
+			<c:out value="record/${thumbnailObject.id}" />
+		</c:otherwise>
 	</c:choose>
 </c:set>
 
