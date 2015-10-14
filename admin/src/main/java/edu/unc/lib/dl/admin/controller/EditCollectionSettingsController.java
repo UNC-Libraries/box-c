@@ -66,7 +66,7 @@ public class EditCollectionSettingsController {
 	@Autowired
 	private SolrQueryLayerService solrQueryService;
 	
-	private final String defaultDefaultTab = ContainerView.DESCRIPTION.name();
+	private final String defaultDefaultTab = ContainerView.STRUCTURE.name();
 	private final List<String> defaultTabList = Arrays.asList(ContainerView.DESCRIPTION.name(),
 			ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
 	

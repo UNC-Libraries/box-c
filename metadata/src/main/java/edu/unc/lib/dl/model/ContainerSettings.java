@@ -74,6 +74,11 @@ public class ContainerSettings {
 	}
 
 	public void setViews(List<String> views) {
+		if (views == null) {
+			this.views = null;
+			return;
+		}
+		
 		this.views = new ArrayList<>(views.size());
 		for (ContainerView view : ContainerView.values()) {
 			if (views.contains(view.name())) {
@@ -87,13 +92,14 @@ public class ContainerSettings {
 		return viewEnum == null? null : viewEnum.getDisplayName();
 	}
 	
-	public Map<String, Map<String, String>> getViewInfo() {
-		Map<String, Map<String, String>> result = new LinkedHashMap<>();
+	public Map<String, Map<String, Object>> getViewInfo() {
+		Map<String, Map<String, Object>> result = new LinkedHashMap<>();
 		
 		for (ContainerView view : ContainerView.values()) {
-			Map<String, String> entry = new HashMap<>();
+			Map<String, Object> entry = new HashMap<>();
 			entry.put("displayName", view.getDisplayName());
 			entry.put("description", view.getDescription());
+			entry.put("required", new Boolean(view.isRequired()));
 			
 			result.put(view.name(), entry);
 		}
@@ -107,14 +113,22 @@ public class ContainerSettings {
 		LIST_CONTENTS("List Contents", "A result view of files within this collection with hierarchy flattened"),
 		DEPARTMENTS("Departments", "A list of the departments associated with objects in this collection"),
 		DESCRIPTION("Description", "An overview of the contents of the collection and descriptive metadata"),
-		EXPORTS("Metadata", "Export options for data associated with this collection.");
+		EXPORTS("Metadata", "Export options for data associated with this collection.", true);
 		
 		String displayName;
 		String description;
+		boolean required;
 		
 		private ContainerView(String displayName, String description) {
 			this.displayName = displayName;
 			this.description = description;
+			this.required = false;
+		}
+		
+		private ContainerView(String displayName, String description, boolean required) {
+			this.displayName = displayName;
+			this.description = description;
+			this.required = required;
 		}
 
 		public String getDisplayName() {
@@ -123,6 +137,10 @@ public class ContainerSettings {
 
 		public String getDescription() {
 			return description;
+		}
+		
+		public boolean isRequired() {
+			return required;
 		}
 	}
 }
