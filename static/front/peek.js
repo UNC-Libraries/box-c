@@ -502,7 +502,7 @@ $(function() {
   var source = "<div class=\"item\"> \
     <a href=\"https://cdr.lib.unc.edu/record/<%= data.pid %>\"> \
       <div class=\"image\"> \
-        <img src=\"/static/peek/thumbnails/<%= data.path %>\"> \
+        <img src=\"/shared/peek/thumbnails/<%= data.path %>\"> \
       </div> \
       <div class=\"description\"> \
         <div class=\"title\"><%= data.title %></div> \
@@ -516,7 +516,7 @@ $(function() {
 
   var peek = new Peek("#peek", template, 195);
 
-  $.getJSON("/static/peek/peek.json", function(items) {
+  $.getJSON("/shared/peek/peek.json", function(items) {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
