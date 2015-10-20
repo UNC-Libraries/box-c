@@ -42,9 +42,9 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
-public class SourcePath2N3BagJobTest extends AbstractNormalizationJobTest {
+public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
-	private SourcePath2N3BagJob job;
+	private BagIt2N3BagJob job;
 
 	private Map<String, String> status;
 
@@ -56,7 +56,7 @@ public class SourcePath2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Dataset dataset = TDBFactory.createDataset();
 
-		job = new SourcePath2N3BagJob();
+		job = new BagIt2N3BagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		setField(job, "dataset", dataset);
