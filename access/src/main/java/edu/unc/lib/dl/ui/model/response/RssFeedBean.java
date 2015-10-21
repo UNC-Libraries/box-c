@@ -76,6 +76,7 @@ public class RssFeedBean {
 		private String link;
 		private String pubDate;
 		private String guid;
+		private String encoded;
 		private EnclosureObject enclosure;
 		
 		public RssItem(){
@@ -111,6 +112,14 @@ public class RssFeedBean {
 		}
 		public void setGuid(String guid) {
 			this.guid = guid;
+		}
+		
+		public String getEncoded() {
+			return encoded;
+		}
+		
+		public void setEncoded(String encoded) {
+			this.encoded = encoded;
 		}
 		
 		public EnclosureObject getEnclosure() {
