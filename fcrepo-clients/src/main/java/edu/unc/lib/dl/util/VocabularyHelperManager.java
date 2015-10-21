@@ -175,6 +175,9 @@ public class VocabularyHelperManager {
 			pidToHelpers.put(pid, helpers);
 			log.debug("Storing pidtohelper {}", pid);
 			for (String vocabUri : entry.getValue().keySet()) {
+				if (!vocabHelperMap.containsKey(vocabUri)) {
+					continue;
+				}
 				helpers.add(vocabHelperMap.get(vocabUri));
 
 				List<String> linkedPIDs = vocabURIToPID.get(vocabUri);
