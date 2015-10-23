@@ -135,6 +135,7 @@
 		<div class="case-study">
 			<h2><i>Case Study:</i> ${ wpRssItem.title }</h2>
 			${ wpRssItem.encoded }
+		</div>
 	</div>
 
 </div>
