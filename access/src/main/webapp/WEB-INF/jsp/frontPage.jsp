@@ -131,46 +131,10 @@
 
 	<hr>
 
-	<div id="front-case-study" class="row">
-	<!-- 	<div class="half">
-			<div class="figure">
-				<a href="https://cdr.lib.unc.edu/record/uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
-					<img src="/static/front/rla-deer.jpg">
-					<span class="caption">
-						<b>Ceramic Animal Effigy (Deer?)</b>
-						Warren Wilson Site (1995)
-					</span>
-				</a>
-			</div>
-	
-			<div class="figure">
-				<a href="https://cdr.lib.unc.edu/record/uuid:9ffd4af0-4f9d-4eae-a84a-0812997303dc">
-					<img src="/static/front/rla-site.jpg">
-					<span class="caption">
-						<b>General View of Site</b>
-						Mecklenburg County, Virginia (1962)
-					</span>
-				</a>
-			</div>
-		</div>
-		
-		<div class="half case-study"> -->
-			
+	<div id="front-case-study" class="row">		
 		<div class="case-study">
 			<h2><i>Case Study:</i> ${ wpRssItem.title }</h2>
 			${ wpRssItem.encoded }
-		</div>
-			<!--
-			<h2><i>Case Study:</i> CDR and RLA staff work to preserve and provide access to digital research collections</h2>
-
-			<p>Founded in 1939, the <a href="http://rla.unc.edu">Research Laboratories of Archaeology</a> (RLA) was the first center for the study of North Carolina archaeology. Serving the interests of students, scholars, and the general public, it is currently one of the leading institutes for archaeological teaching and research in the South. Located within the University of North Carolina at Chapel Hill’s College of Arts and Sciences, it provides support for faculty and students working not only in North Carolina, but also throughout the Americas and overseas.</p>
-
-			<p>With one of the nation’s finest collections of archaeological materials from the South, the RLA curates more than seven million artifacts along with more than 60,000 photographic negatives, photographs, and slides. Over the past 70 years, virtually all of the major discoveries in the understanding of North Carolina's ancient past can be attributed to the RLA or to researchers trained there.</p>
-
-			<p>The Carolina Digital Repository is working with RLA staff to to preserve their large collection of photographs, slides, and publications, and to provide access to those collections online.</p>
-
-	  	</div>-->
-
 	</div>
 
 </div>
