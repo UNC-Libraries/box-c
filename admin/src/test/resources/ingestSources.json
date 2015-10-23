@@ -1,0 +1,18 @@
+[
+    {
+        "id": "testsource",
+        "name": "Test Source",
+        "patterns" : {
+            "src/test/resources/ingestSources" : ["*"]
+        },
+        "containers": ["uuid:test"]
+    },
+    {
+        "id": "nestedsource",
+        "name": "Nested Source",
+        "patterns" : {
+            "src/test/resources/ingestSources/" : ["*", "*/*"]
+        },
+        "containers": ["uuid:nested"]
+    }
+]

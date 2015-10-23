@@ -112,6 +112,12 @@
 			<artifactId>jackson-xc</artifactId>
 			<version>1.9.2</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>gov.loc</groupId>
+			<artifactId>bagit</artifactId>
+			<version>4.9.0</version>
+		</dependency>
 
 		<!-- XML -->
 		<dependency>
