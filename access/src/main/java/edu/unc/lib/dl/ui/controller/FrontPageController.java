@@ -24,6 +24,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.ui.model.response.RssFeedBean;
+import edu.unc.lib.dl.ui.service.RssParserService;
+import edu.unc.lib.dl.ui.util.ExternalContentSettings;
+
 /**
  * Controller which populates the dynamic components making up the front page of
  * the public UI
@@ -37,13 +41,23 @@ public class FrontPageController extends AbstractSolrSearchController {
 	@RequestMapping(method = RequestMethod.GET)
 	public String handleRequest(Model model, HttpServletRequest request){
 		LOG.debug("In front page controller");
-		
+
 		// Retrieve collection stats
 		model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount());
 		model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount());
 		model.addAttribute("formatCounts", this.queryLayer.getFormatCounts());
 		
 		model.addAttribute("menuId", "home");
+		
+		try {
+			RssFeedBean wpRssFeed = RssParserService.getRssFeed(ExternalContentSettings.getUrl("wpRss"), Integer.parseInt(ExternalContentSettings.get("external.wpRss.maxLinks")));
+		//	RssFeedBean.RssItem htmlAll = wpRssFeed.getItems().get(0);
+		//	String htmlText = htmlAll.getEncoded();
+			
+			model.addAttribute("wpRssItem", wpRssFeed.getItems().get(0));
+		} catch (Exception e) {
+			LOG.error("Error retreiving the CDR WordPress Collection Highlights feed: ", e);
+		}
 		
 		return "frontPage";
 	}

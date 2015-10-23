@@ -132,7 +132,7 @@
 	<hr>
 
 	<div id="front-case-study" class="row">
-		<div class="half">
+	<!-- 	<div class="half">
 			<div class="figure">
 				<a href="https://cdr.lib.unc.edu/record/uuid:c394b981-3c10-4faf-a9b2-c506f795840b">
 					<img src="/static/front/rla-deer.jpg">
@@ -154,7 +154,13 @@
 			</div>
 		</div>
 		
-		<div class="half">
+		<div class="half case-study"> -->
+			
+		<div class="case-study">
+			<h2><i>Case Study:</i> ${ wpRssItem.title }</h2>
+			${ wpRssItem.encoded }
+		</div>
+			<!--
 			<h2><i>Case Study:</i> CDR and RLA staff work to preserve and provide access to digital research collections</h2>
 
 			<p>Founded in 1939, the <a href="http://rla.unc.edu">Research Laboratories of Archaeology</a> (RLA) was the first center for the study of North Carolina archaeology. Serving the interests of students, scholars, and the general public, it is currently one of the leading institutes for archaeological teaching and research in the South. Located within the University of North Carolina at Chapel Hill’s College of Arts and Sciences, it provides support for faculty and students working not only in North Carolina, but also throughout the Americas and overseas.</p>
@@ -163,8 +169,7 @@
 
 			<p>The Carolina Digital Repository is working with RLA staff to to preserve their large collection of photographs, slides, and publications, and to provide access to those collections online.</p>
 
-			<p class="button"><a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">Browse the RLA Collection</a></p>
-		</div>
+	  	</div>-->
 
 	</div>
 

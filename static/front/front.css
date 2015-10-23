@@ -185,42 +185,73 @@
 
 /* case study */
 
-#front-case-study .figure {
-  display: block;
-  position: relative;
-  width: 430px;
-  margin: 10px 0 0 0;
-  padding: 0;
+.case-study {
+	float: left;
 }
 
-#front-case-study .figure img {
-  width: 430px;
-  display: block;
+#front-case-study h2 {
+	float: right;
+	width: 50%;
+	display: block;
+	clear: left;
+	margin-top: -5px;
 }
 
-#front-case-study .caption {
-  display: block;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 410px;
-  padding: 10px;
-  margin: 0;
-  background: #fff;
-  background: rgba(255, 255, 255, 0.7);
-  color: #000;
-  font-size: 14px;
+.wp-caption {
+    background: #f9f9f9 none repeat scroll 0 0;
+    border: 1px solid #f0f0f0;
+    max-width: 96%;
+    padding: 13px 10px 10px;
+    text-align: center;
+    display: block;
+    float:left;
+    clear: left;
+    margin-bottom: 10px;
 }
 
-#front-case-study .caption b {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 16px;
-}
-
-#front-case-study .figure:hover .caption {
+.wp-caption:hover .wp-caption-text:hover  {
   background: #fff;
   background: rgba(255, 255, 255, 0.8);
+}
+
+#front-case-study .button {
+	margin-top: 20px;
+}
+
+#front-case-study .wp-caption-text {
+    background: rgba(255, 255, 255, 0.7);
+    color: #000;
+    float: none;
+    font-size: 14px;
+    margin-top: -55px;
+    padding: 5px 20px;
+    position: relative;
+    text-align: center;
+    width: 395px;
+}
+
+.wp-caption-text b {
+	display: block;
+	font-size: 16px;
+	margin-bottom: 5px;
+}
+
+.wp-caption img {
+    border: 0 none;
+    height: auto;
+    margin: 0;
+    max-width: 98.5%;
+    padding: 0;
+    width: auto;
+  
+}
+
+#full_text {
+	clear: right;
+    display: block;
+    float: right;
+    width: 50%;
+    margin-top: -225px;
 }
 
 #front-case-study h2 i {
@@ -229,7 +260,7 @@
   text-transform: uppercase;
   font-size: 85%;
   font-style: normal;
-}
+} 
 
 /* collections */
 
