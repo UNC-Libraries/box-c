@@ -1,1 +1,2 @@
 fa5c89f3c88b81bfd5e821b0316569af  data/test/lorem.txt
+fa5c89f3c88b81bfd5e821b0316569af  data/test/ipsum.txt

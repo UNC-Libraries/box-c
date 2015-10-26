@@ -1,7 +1,12 @@
 package edu.unc.lib.deposit.normalize;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
+
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -9,10 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.BagFactory;
@@ -46,38 +54,82 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 		
 		Collection<BagFile> payload = bag.getPayload();
 		
-		for (BagFile file : payload) {
+		for (BagFile bagFile : payload) {
 			
-			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(file.getFilepath());
+			List<String> path = Arrays.asList(bagFile.getFilepath().split("/"));
+			List<String> folderPath = path.subList(1, path.size() - 1);
+			com.hp.hpl.jena.rdf.model.Bag folder = getFolder(top, folderPath);
 			
-			Resource fileResource = getFileResource(top, sourcePath, file.getFilepath());
+			Resource file = getFile(model, bag, bagFile);
 			
-			// TODO: add checksum, size, label
+			folder.add(file);
 			
 		}
 		
 	}
 	
-	private Resource getFileResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
+	private com.hp.hpl.jena.rdf.model.Bag getFolder(com.hp.hpl.jena.rdf.model.Bag top, List<String> path) {
 		
-		Resource folderResource = getFolderResource(top, basepath, filepath);
+		Model model = top.getModel();
 		
-		UUID uuid = UUID.randomUUID();
-		PID pid = new PID("uuid:" + uuid.toString());
-		
-		Resource fileResource = top.getModel().createResource(pid.getURI());
-		
-		// TODO: add to folder resource
-		
-		return fileResource;
+		if (path.size() == 0) {
+			
+			return top;
+			
+		} else {
+
+			String name = path.get(0);
+			
+			com.hp.hpl.jena.rdf.model.Bag folder = null;
+			
+			NodeIterator iterator = top.iterator();
+			
+			while (iterator.hasNext()) {
+				Resource child = (Resource) iterator.next();
+				
+				if (child.getProperty(dprop(model, DepositRelationship.label)).getString().equals(name)) {
+					folder = model.getBag(child);
+					break;
+				}
+			}
+
+			iterator.close();
+			
+			if (folder == null) {
+				UUID uuid = UUID.randomUUID();
+				PID pid = new PID("uuid:" + uuid.toString());
+				folder = model.createBag(pid.getURI());
+				
+				model.add(folder, dprop(model, DepositRelationship.label), name);
+				model.add(folder, fprop(model, FedoraProperty.hasModel), edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER.toString());
+				
+				top.add(folder);
+			}
+			
+			return getFolder(folder, path.subList(1, path.size()));
+			
+		}
 		
 	}
 	
-	private Resource getFolderResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
+	private Resource getFile(Model model, Bag bag, BagFile bagFile) {
 		
-		// find or create a folder resource for the filepath
+		UUID uuid = UUID.randomUUID();
+		PID pid = new PID("uuid:" + uuid.toString());
+		Resource file = model.createResource(pid.getURI());
+
+		model.add(file, fprop(model, FedoraProperty.hasModel), edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE.toString());
 		
-		return null;
+		List<String> path = Arrays.asList(bagFile.getFilepath().split("/"));
+		model.add(file, dprop(model, DepositRelationship.label), path.get(path.size() - 1));
+		
+		Map<Manifest.Algorithm, String> checksums = bag.getChecksums(bagFile.getFilepath());
+		
+		if (checksums.containsKey(Manifest.Algorithm.MD5)) {
+			model.add(file, dprop(model, DepositRelationship.md5sum), checksums.get(Manifest.Algorithm.MD5));
+		}
+		
+		return file;
 		
 	}
 	
