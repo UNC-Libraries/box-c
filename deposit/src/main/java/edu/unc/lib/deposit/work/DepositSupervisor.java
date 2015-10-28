@@ -32,9 +32,8 @@ import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.PrepareResubmitJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
-import edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob;
+import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
-import edu.unc.lib.deposit.normalize.DSPACEMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
@@ -535,7 +534,7 @@ public class DepositSupervisor implements WorkerListener {
 				conversion = makeJob(CDRMETS2N3BagJob.class, depositUUID);
 			} else if (packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
 					|| packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())) {
-				conversion = makeJob(DSPACEMETS2N3BagJob.class, depositUUID);
+				conversion = makeJob(BioMedToN3BagJob.class, depositUUID);
 			} else if (packagingType.equals(PackagingType.PROQUEST_ETD.getUri())) {
 				conversion = makeJob(Proquest2N3BagJob.class, depositUUID);
 			} else if (packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
@@ -551,17 +550,10 @@ public class DepositSupervisor implements WorkerListener {
 			}
 		}
 
-		boolean isBiomedDeposit = "BioMed Central".equals(status.get(DepositField.intSenderDescription.name()));
-		// BioMedCentral metadata may be extracted (if applicable)
-		if (isBiomedDeposit) {
-			if (!successfulJobs
-					.contains(BioMedCentralExtrasJob.class.getName())) {
-				return makeJob(BioMedCentralExtrasJob.class, depositUUID);
-			}
-		}
-
 		// Perform vocabulary enforcement for package types that retain the original metadata
-		if ((isBiomedDeposit || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
+		if ((packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
+				|| packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())
+				|| packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
 				&& !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
 			return makeJob(VocabularyEnforcementJob.class, depositUUID);
 		}

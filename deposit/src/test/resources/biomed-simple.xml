@@ -1,58 +1,136 @@
-<!DOCTYPE art SYSTEM 'http://www.biomedcentral.com/xml/article.dtd'>
-<art><ui>1122</ui><ji>1111</ji><fm>
-<dochead>Research article</dochead>
-<bibl>
-<title>
-<p>Overly long supplemental titles</p>
-</title>
-<aug>
-<au ca="yes" id="A1"><snm>Wik</snm><mi>I</mi><fnm>Pedia</fnm><insr iid="I1"/><email>wikipedia@wikipedia.org</email></au>
-</aug>
-<insg>
-<ins id="I1"><p>Wikipedia</p></ins>
-<ins id="I2"><p>Another Place</p></ins>
-</insg>
-<source>BMC Public Health</source>
-<issn>1221</issn>
-<pubdate>2011</pubdate>
-<volume>11</volume>
-<issue>1</issue>
-<fpage>1</fpage>
-<lpage>16</lpage>
-<url>http://en.wikipedia.org/wiki/Lorem_ipsum</url>
-<xrefbib><pubidlist><pubid idtype="doi">doi-1234</pubid><pubid idtype="pmpid">pmpid-1234</pubid></pubidlist></xrefbib>
-</bibl>
-</fm>
-<bdy>
-<sec>
-  Body goes here
-</sec>
-<suppl id="S1">
-<title>
-<p>Long.</p>
-</title>
-<text>
-<p>
-In publishing and graphic design, lorem ipsum is a filler text commonly used to demonstrate the graphic elements of a document or visual presentation. Replacing meaningful content that could be distracting with placeholder text may allow viewers to focus on graphic aspects such as font, typography, and page layout.</p>
-</text>
-<file name="long.txt">
-   <p>Click here for file</p>
-</file>
-</suppl>
-<suppl id="S1">
-<title>
-<p>Short.</p>
-</title>
-<text>
-<p>
-Short</p>
-</text>
-<file name="short.txt">
-   <p>Click here for file</p>
-</file>
-</suppl>
-</bdy><bm>
-<ack>
-</ack>
-<refgrp></refgrp>
-</bm></art>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Publisher
+  PUBLIC "-//Springer-Verlag//DTD A++ V2.4//EN" "http://devel.springer.de/A++/V2.4/DTD/A++V2.4.dtd">
+<Publisher>
+   <PublisherInfo>
+      <PublisherName>BioMed Central</PublisherName>
+      <PublisherLocation>London</PublisherLocation>
+      <PublisherImprintName>BioMed Central</PublisherImprintName>
+   </PublisherInfo>
+   <Journal OutputMedium="Online">
+      <JournalInfo JournalProductType="ArchiveJournal" NumberingStyle="Unnumbered">
+         <JournalID>1</JournalID>
+         <JournalElectronicISSN>12345</JournalElectronicISSN>
+         <JournalTitle>International Journal of Behavioral Nutrition and Physical Activity</JournalTitle>
+         <JournalAbbreviatedTitle>Int J Behav Nutr Phys Act</JournalAbbreviatedTitle>
+         <JournalSubjectGroup>
+            <JournalSubject Code="SCC" Type="Primary">Chemistry</JournalSubject>
+            <SubjectCollection Code="SC5">Chemistry and Materials Science</SubjectCollection>
+         </JournalSubjectGroup>
+      </JournalInfo>
+      <Volume OutputMedium="Online">
+         <VolumeInfo TocLevels="0" VolumeType="Regular">
+            <VolumeIDStart>11</VolumeIDStart>
+            <VolumeIDEnd>11</VolumeIDEnd>
+            <VolumeIssueCount>1</VolumeIssueCount>
+         </VolumeInfo>
+         <Issue IssueType="Regular" OutputMedium="Online">
+            <IssueInfo IssueType="Regular" TocLevels="0">
+               <IssueIDStart>1</IssueIDStart>
+               <IssueIDEnd>1</IssueIDEnd>
+               <IssueArticleCount>0</IssueArticleCount>
+               <IssueHistory>
+                  <CoverDate>
+                     <Year>2015</Year>
+                     <Month>12</Month>
+                  </CoverDate>
+                  <PricelistYear>2015</PricelistYear>
+               </IssueHistory>
+               <IssueCopyright>
+                  <CopyrightHolderName>The Author(s)</CopyrightHolderName>
+                  <CopyrightYear>2015</CopyrightYear>
+               </IssueCopyright>
+            </IssueInfo>
+            <Article ID="1234" OutputMedium="Online">
+               <ArticleInfo ArticleType="OriginalPaper" ContainsESM="No" Language="En"
+                            NumberingStyle="Unnumbered"
+                            TocLevels="0">
+                  <ArticleID>1</ArticleID>
+                  <ArticleDOI>doi-1234</ArticleDOI>
+                  <ArticleCitationID>2</ArticleCitationID>
+                  <ArticleSequenceNumber>2</ArticleSequenceNumber>
+                  <ArticleTitle Language="En" OutputMedium="All">Overly long supplemental titles</ArticleTitle>
+                  <ArticleCategory>Research</ArticleCategory>
+                  <ArticleFirstPage>1</ArticleFirstPage>
+                  <ArticleLastPage>16</ArticleLastPage>
+                  <ArticleHistory>
+                     <RegistrationDate>
+                        <Year>2011</Year>
+                        <Month>1</Month>
+                        <Day>1</Day>
+                     </RegistrationDate>
+                     <Received>
+                        <Year>2011</Year>
+                        <Month>1</Month>
+                        <Day>2</Day>
+                     </Received>
+                     <Accepted>
+                        <Year>2011</Year>
+                        <Month>1</Month>
+                        <Day>3</Day>
+                     </Accepted>
+                     <OnlineDate>
+                        <Year>2011</Year>
+                        <Month>1</Month>
+                        <Day>4</Day>
+                     </OnlineDate>
+                  </ArticleHistory>
+                  <ArticleFundingInformation>
+                     <Fund>
+                        <FunderName FundRefID="http://dx.doi.org/10.13039/100000867">Robert Wood Johnson Foundation (US)</FunderName>
+                     </Fund>
+                  </ArticleFundingInformation>
+                  <ArticleCopyright>
+                     <CopyrightHolderName>People</CopyrightHolderName>
+                     <CopyrightYear>2011</CopyrightYear>
+                     <License SubType="CC BY + CC0" Type="OpenAccess" Version="4.0">
+                        <SimplePara>
+                           <Emphasis Type="Bold">Open Access</Emphasis>This article is distributed under the terms of the Creative Commons Attribution 4.0 International License (<ExternalRef>
+                              <RefSource>http://creativecommons.org/licenses/by/4.0/</RefSource>
+                              <RefTarget Address="http://creativecommons.org/licenses/by/4.0/" TargetType="URL"/>
+                           </ExternalRef>), which permits unrestricted use, distribution, and reproduction in any medium, provided you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons license, and indicate if changes were made. The Creative Commons Public Domain Dedication waiver (<ExternalRef>
+                              <RefSource>http://creativecommons.org/publicdomain/zero/1.0/</RefSource>
+                              <RefTarget Address="http://creativecommons.org/publicdomain/zero/1.0/" TargetType="URL"/>
+                           </ExternalRef>) applies to the data made available in this article, unless otherwise stated.</SimplePara>
+                     </License>
+                  </ArticleCopyright>
+                  <ArticleGrants Type="OpenChoice">
+                     <MetadataGrant Grant="OpenAccess"/>
+                     <AbstractGrant Grant="OpenAccess"/>
+                     <BodyPDFGrant Grant="OpenAccess"/>
+                     <BodyHTMLGrant Grant="OpenAccess"/>
+                     <BibliographyGrant Grant="OpenAccess"/>
+                     <ESMGrant Grant="OpenAccess"/>
+                  </ArticleGrants>
+               </ArticleInfo>
+               <ArticleHeader>
+                  <AuthorGroup>
+                     <Author AffiliationIDS="Aff1" CorrespondingAffiliationID="Aff1" ID="Au1">
+                        <AuthorName DisplayOrder="Western">
+                           <GivenName>Wik</GivenName>
+                           <GivenName>I.</GivenName>
+                           <FamilyName>Pedia</FamilyName>
+                        </AuthorName>
+                        <Contact>
+                           <Email>wikipedia@wikipedia.org</Email>
+                        </Contact>
+                     </Author>
+                     <Affiliation ID="Aff1">
+                        <OrgDivision>Department of Nutrition</OrgDivision>
+                        <OrgName>UNC</OrgName>
+                        <OrgAddress>
+                           <Country>USA</Country>
+                        </OrgAddress>
+                     </Affiliation>
+                  </AuthorGroup>
+                  <KeywordGroup Language="En" OutputMedium="All">
+                     <Heading>Keywords</Heading>
+                     <Keyword>Test Care</Keyword>
+                  </KeywordGroup>
+               </ArticleHeader>
+               <NoBody/>
+            </Article>
+         </Issue>
+      </Volume>
+   </Journal>
+</Publisher>

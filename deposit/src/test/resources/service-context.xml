@@ -250,7 +250,7 @@
 		<property name="metsSipSchema" ref="metsSipSchema" />
 	</bean>
 
-	<bean id="DSPACEMETS2N3BagJob" class="edu.unc.lib.deposit.normalize.DSPACEMETS2N3BagJob"
+	<bean id="BioMedToN3BagJob" class="edu.unc.lib.deposit.normalize.BioMedToN3BagJob"
 		scope="prototype">
 		<property name="schematronValidator" ref="schematronValidator" />
 		<property name="metsSipSchema" ref="metsSipSchema" />
@@ -263,10 +263,6 @@
 	<bean id="Proquest2N3BagJob" class="edu.unc.lib.deposit.normalize.Proquest2N3BagJob"
 		scope="prototype">
 		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
-	</bean>
-
-	<bean id="BioMedCentralExtrasJob" class="edu.unc.lib.deposit.normalize.BioMedCentralExtrasJob"
-		scope="prototype">
 	</bean>
 	
 	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"

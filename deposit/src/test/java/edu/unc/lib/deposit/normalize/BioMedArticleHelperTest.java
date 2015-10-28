@@ -22,12 +22,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.xpath.XPath;
+import org.jdom2.input.sax.XMLReaders;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,32 +48,13 @@ public class BioMedArticleHelperTest {
 	}
 
 	@Test
-	public void longSupplTitleTest() throws Exception {
-
-		Document articleDoc = getArticleDocument("src/test/resources/biomed-simple.xml");
-
-		Map<String, String> supplLabels = helper.getFilesLC2SupplementLabels(articleDoc);
-
-		assertNotNull(supplLabels);
-		assertEquals("Incorrect number of supplemental labels", 2, supplLabels.size());
-
-		assertEquals("Supplemental title should have been truncated to max length",
-				BioMedArticleHelper.MAX_SUPPL_TITLE_LENGTH, supplLabels.get("long.txt").length());
-
-		assertEquals("Short title should be unchanged", 5, supplLabels.get("short.txt").length());
-	}
-
-	@Test
 	public void extractModsTest() throws Exception {
 		Document articleDoc = getArticleDocument("src/test/resources/biomed-simple.xml");
 
 		Document mods = helper.extractMODS(articleDoc, null);
 
-		List<?> titles = xpath("mods:mods/mods:titleInfo/mods:title", mods);
+		List<Element> titles = xpath("mods:mods/mods:titleInfo/mods:title", mods);
 		assertEquals("Titles not extracted via helper", 0, titles.size());
-
-		assertEquals("Pubmed id was not assigned correctly", "pmpid-1234",
-				element("mods:mods/mods:identifier[@type='pmpid']", mods).getText());
 
 		assertEquals("doi was not assigned correctly", "doi-1234",
 				element("mods:mods/mods:identifier[@type='doi']", mods).getText());
@@ -82,8 +65,10 @@ public class BioMedArticleHelperTest {
 
 		Element authorName = element("mods:mods/mods:name", mods);
 		assertNotNull("No author name was extracted", authorName);
-		assertEquals("Wik, Pedia I", authorName.getChild("namePart", MODS_V3_NS).getText());
-		assertEquals("Wikipedia", authorName.getChild("affiliation", MODS_V3_NS).getText());
+		List<Element> nameParts = authorName.getChildren("namePart", MODS_V3_NS);
+		assertEquals("Wik I.", nameParts.get(1).getText());
+		assertEquals("Pedia", nameParts.get(0).getText());
+		assertEquals("Department of Nutrition, UNC", authorName.getChild("affiliation", MODS_V3_NS).getText());
 	}
 
 	@Test
@@ -112,30 +97,33 @@ public class BioMedArticleHelperTest {
 				element("mods:mods/mods:titleInfo/mods:title", mods).getText());
 
 		// Check that the author in the original document has not made it through
-		List<?> authors = xpath("mods:mods/mods:name", mods);
+		List<Element> authors = xpath("mods:mods/mods:name", mods);
 		assertEquals("Only one author should have been retained", 1, authors.size());
 
-		Element authorName = (Element) authors.get(0);
-		assertEquals("Wik, Pedia I", authorName.getChild("namePart", MODS_V3_NS).getText());
-		assertEquals("Wikipedia", authorName.getChild("affiliation", MODS_V3_NS).getText());
+		Element authorName = authors.get(0);
+		List<Element> nameParts = authorName.getChildren("namePart", MODS_V3_NS);
+		assertEquals("Wik I.", nameParts.get(1).getText());
+		assertEquals("Pedia", nameParts.get(0).getText());
+		assertEquals("Department of Nutrition, UNC", authorName.getChild("affiliation", MODS_V3_NS).getText());
 	}
 
 	private Document getArticleDocument(String path) throws Exception {
 		File articleFile = new File(path);
 
-		SAXBuilder sb = new SAXBuilder(false);
+		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
+		sb.setFeature("http://xml.org/sax/features/validation", false);
 		sb.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
 		sb.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 		return sb.build(articleFile);
 	}
 
 	private Element element(String xpathString, Object xmlObject) throws Exception {
-		return (Element) xpath(xpathString, xmlObject).get(0);
+		return xpath(xpathString, xmlObject).get(0);
 	}
 
-	private List<?> xpath(String xpath, Object xmlObject) throws Exception {
-		XPath namePath = XPath.newInstance(xpath);
-		namePath.addNamespace("mods", MODS_V3_NS.getURI());
-		return namePath.selectNodes(xmlObject);
+	private List<Element> xpath(String xpath, Object xmlObject) throws Exception {
+		XPathFactory xFactory = XPathFactory.instance();
+		XPathExpression<Element> namePath = xFactory.compile(xpath, Filters.element(), null, MODS_V3_NS);
+		return namePath.evaluate(xmlObject);
 	}
 }

@@ -7,36 +7,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
-import org.jdom2.xpath.XPath;
+import org.jdom2.filter.Filters;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 
 public class BioMedArticleHelper {
 
 	public static int MAX_SUPPL_TITLE_LENGTH = 250;
 
-	private XPath supplementXPath;
-	private XPath supplementFileNameXPath;
-	private XPath supplementTitleXPath;
-	private XPath identifierXPath;
-	private XPath affiliationXPath;
-	private XPath authorXPath;
-	private XPath bibRootXPath;
+	private final XPathExpression<Element> articleXPath;
 
 	public BioMedArticleHelper() {
-		try {
-			supplementXPath = XPath.newInstance("//suppl");
-			supplementFileNameXPath = XPath.newInstance("file/@name");
-			supplementTitleXPath = XPath.newInstance("text/p");
-			identifierXPath = XPath.newInstance("xrefbib/pubidlist/pubid");
-			affiliationXPath = XPath.newInstance("insg/ins");
-			authorXPath = XPath.newInstance("aug/au");
-			bibRootXPath = XPath.newInstance("/art/fm/bibl");
-		} catch (JDOMException e) {
-			throw new Error("Error initializing", e);
-		}
+		XPathFactory xFactory = XPathFactory.instance();
+		articleXPath = xFactory.compile("/Publisher/Journal/Volume/Issue/Article", Filters.element());
 	}
 
 	public Document extractMODS(Document articleDocument, Document existingMods) throws JDOMException {
@@ -51,9 +37,9 @@ public class BioMedArticleHelper {
 		} else {
 			// Given an existing MODS document, start from it and strip out existing names
 			result = existingMods;
-			List<?> preexistingModsNames = result.getRootElement().getChildren("name", MODS_V3_NS);
+			List<Element> preexistingModsNames = result.getRootElement().getChildren("name", MODS_V3_NS);
 			if (preexistingModsNames != null) {
-				Iterator<?> it = preexistingModsNames.iterator();
+				Iterator<Element> it = preexistingModsNames.iterator();
 				while (it.hasNext()) {
 					it.next();
 					it.remove();
@@ -62,178 +48,175 @@ public class BioMedArticleHelper {
 			modsContent = result.getRootElement();
 		}
 
-		Element bibRoot = (Element)this.bibRootXPath.selectSingleNode(articleDocument);
+		Element articleRoot = articleXPath.evaluateFirst(articleDocument);
 
-		//Add identifiers
-		@SuppressWarnings("unchecked")
-		List<Element> elements = (List<Element>) this.identifierXPath.selectNodes(bibRoot);
-		if (elements != null){
-			for (Element identifier: elements){
-				String idType = identifier.getAttributeValue("idtype");
-				if (idType != null) {
-					Element modsIdentifier = new Element("identifier", MODS_V3_NS);
-					modsIdentifier.setAttribute("type", idType);
-					if (idType.equals("pmpid")){
-						modsIdentifier.setAttribute("displayLabel", "PMID");
-					}
-					modsIdentifier.setText(identifier.getTextTrim());
-					modsContent.addContent(modsIdentifier);
-				}
-			}
-		}
+		// Add author information
+		addAuthorsAndAffiliations(articleRoot, modsContent);
 
-		this.addAuthorsAndAffiliations(bibRoot, modsContent);
-
-		// Add in the containing journal
-		String source = bibRoot.getChildText("source");
-		if (source != null){
-			Element sourceElement = new Element("relatedItem", MODS_V3_NS);
-			Element titleInfoElement = new Element("titleInfo", MODS_V3_NS);
-			Element titleElement = new Element("title", MODS_V3_NS);
-			sourceElement.addContent(titleInfoElement);
-			titleInfoElement.addContent(titleElement);
-			sourceElement.setAttribute("type", "otherFormat");
-			sourceElement.setAttribute("displayLabel", "Source");
-			titleElement.setText(source);
-			modsContent.addContent(sourceElement);
-
-			//Extract the rest of the bibliographic fields
-			String issn = bibRoot.getChildText("issn");
-			if (issn != null){
-				Element element = new Element("identifier", MODS_V3_NS);
-				element.setText(issn);
-				element.setAttribute("type", "issn");
-				sourceElement.addContent(element);
-			}
-
-			String pubdate = bibRoot.getChildText("pubdate");
-			if (pubdate != null){
-				Element element = new Element("originInfo", MODS_V3_NS);
-				Element dateIssued = new Element("dateIssued", MODS_V3_NS);
-				dateIssued.setText(pubdate);
-				element.setContent(dateIssued);
-				sourceElement.addContent(element);
-			}
-
-			String volume = bibRoot.getChildText("volume");
-			String issue = bibRoot.getChildText("issue");
-			if (volume != null || issue != null){
-				Element element = new Element("part", MODS_V3_NS);
-				addDetailElement("volume", volume, "vol.", element);
-				addDetailElement("issue", issue, "issue", element);
-				sourceElement.addContent(element);
-			}
-
-			String fpage = bibRoot.getChildText("fpage");
-			String lpage = bibRoot.getChildText("lpage");
-			if (fpage != null || lpage != null){
-				Element extentPart = new Element("part", MODS_V3_NS);
-				Element element = new Element("extent", MODS_V3_NS);
-				element.setAttribute("unit", "page");
-				if (fpage != null){
-					Element pageElement = new Element("start", MODS_V3_NS);
-					pageElement.setText(fpage);
-					element.addContent(pageElement);
-				}
-				if (lpage != null){
-					Element pageElement = new Element("end", MODS_V3_NS);
-					pageElement.setText(lpage);
-					element.addContent(pageElement);
-				}
-				extentPart.addContent(element);
-				sourceElement.addContent(extentPart);
-			}
-
-		}
+		// Add journal bibliographic info
+		addBibliographicInfo(articleDocument, modsContent);
+		
 		return result;
 	}
 
-	public Map<String, String> getFilesLC2SupplementLabels(Document articleDocument) throws JDOMException {
-		Map<String, String> result = new HashMap<String, String>();
-		//Set titles for supplements
-		@SuppressWarnings("unchecked")
-		List<Element> elements = (List<Element>) this.supplementXPath.selectNodes(articleDocument);
-		if (elements != null){
-			for (Element supplement: elements){
-				String supplementFileName = ((Attribute)this.supplementFileNameXPath.selectSingleNode(supplement)).getValue();
-				Element supplementTitleElement = (Element)this.supplementTitleXPath.selectSingleNode(supplement);
-				String supplementTitle = null;
-				if (supplementTitleElement != null && supplementTitleElement.getValue() != null) {
-					supplementTitle = supplementTitleElement.getValue().trim();
-					//If the title is too long for the label field, then limit to just the main title
-					if (supplementTitle.length() >= MAX_SUPPL_TITLE_LENGTH){
-						String shortenedTitle = supplementTitleElement.getChildTextTrim("b");
-						if (shortenedTitle != null) {
-							supplementTitle = shortenedTitle;
-						}
-						//If still too long, then truncate.
-						if (supplementTitle.length() >= MAX_SUPPL_TITLE_LENGTH){
-							supplementTitle = supplementTitle.substring(0, MAX_SUPPL_TITLE_LENGTH);
-						}
-					}
-				}
-
-				if (supplementTitle == null || supplementTitle.trim().length() == 0)
-					supplementTitle = supplementFileName;
-				result.put(supplementFileName.toLowerCase(), supplementTitle);
-			}
-		}
-		return result;
-	}
-
-	@SuppressWarnings("unchecked")
-	private void addAuthorsAndAffiliations(Element bibRoot, Element modsContent) throws JDOMException{
+	private void addAuthorsAndAffiliations(Element article, Element modsContent) {
+		Element articleHeader = article.getChild("ArticleHeader");
+		Element authorGroup = articleHeader.getChild("AuthorGroup");
+		
 		//Extract affiliations
-		List<Element> elements = (List<Element>) this.affiliationXPath.selectNodes(bibRoot);
+		List<Element> elements = authorGroup.getChildren("Affiliation");
 		Map<String,String> affiliationMap = new HashMap<String,String>();
 		if (elements != null){
 			for (Element element: elements){
-				String affiliation = element.getChildTextTrim("p");
-				affiliationMap.put(element.getAttributeValue("id"), affiliation);
+				String affId = element.getAttributeValue("ID");
+				String affiliation = element.getChildTextTrim("OrgDivision");
+				String orgName = element.getChildTextTrim("OrgName");
+				if (affiliation == null) {
+					affiliation = orgName;
+				} else if (orgName != null) {
+					affiliation += ", " + orgName;
+				}
+				affiliationMap.put(affId, affiliation);
 			}
 		}
 
 		//Extract author names, then create name attributes with affiliations
-		elements = (List<Element>) this.authorXPath.selectNodes(bibRoot);
+		elements = authorGroup.getChildren("Author");
 		if (elements != null){
 			for (Element element: elements){
-				String surname = element.getChildText("snm");
-				String givenName = element.getChildText("fnm");
-				String middle = element.getChildText("mi");
-				String affiliationID = null;
-				List<?> affiliationRefList = element.getChildren("insr");
-
 				Element nameElement = new Element("name", MODS_V3_NS);
-				Element namePartElement = new Element("namePart", MODS_V3_NS);
-
-				StringBuilder nameBuilder = new StringBuilder();
-				if (surname != null){
-					nameBuilder.append(surname);
-					if (givenName != null || middle != null)
-						nameBuilder.append(", ");
+				
+				Element authorName = element.getChild("AuthorName");
+				
+				// Add the name parts
+				String surname = authorName.getChildText("FamilyName");
+				if (surname != null) {
+					Element namePartElement = new Element("namePart", MODS_V3_NS);
+					namePartElement.setAttribute("type", "family");
+					namePartElement.setText(surname);
+					nameElement.addContent(namePartElement);
 				}
-				if (givenName != null)
-					nameBuilder.append(givenName);
-				if (middle != null)
-					nameBuilder.append(' ').append(middle);
-				namePartElement.setText(nameBuilder.toString());
-
-				nameElement.addContent(namePartElement);
-
-				//Add in the list of affiliations for each affil reference
-				for (Object affiliationObject: affiliationRefList){
-					Element affiliationRef = (Element)affiliationObject;
-					affiliationID = affiliationRef.getAttributeValue("iid");
-					if (affiliationID != null){
-						String affiliation = affiliationMap.get(affiliationID);
-						Element affiliationElement = new Element("affiliation", MODS_V3_NS);
-						affiliationElement.setText(affiliation);
-						nameElement.addContent(affiliationElement);
+				
+				StringBuilder givenName = new StringBuilder();
+				List<Element> givenNames = authorName.getChildren("GivenName");
+				if (givenNames != null) {
+					for (Element name : givenNames) {
+						if (givenName.length() > 0) {
+							givenName.append(' ');
+						}
+						givenName.append(name.getTextNormalize());
+					}
+					
+					Element namePartElement = new Element("namePart", MODS_V3_NS);
+					namePartElement.setAttribute("type", "given");
+					namePartElement.setText(givenName.toString());
+					nameElement.addContent(namePartElement);
+				}
+				
+				// Lookup the authors affiliation by id and assign
+				String affiliationId = element.getAttributeValue("AffiliationIDS");
+				if (affiliationId != null) {
+					String[] ids = affiliationId.split(" ");
+					for (String id : ids) {
+						String affiliation = affiliationMap.get(id);
+						
+						if (affiliation != null){
+							Element affiliationElement = new Element("affiliation", MODS_V3_NS);
+							affiliationElement.setText(affiliation);
+							nameElement.addContent(affiliationElement);
+						}
 					}
 				}
 
 				modsContent.addContent(nameElement);
 			}
+		}
+	}
+	
+	private void addBibliographicInfo(Document articleDoc, Element modsContent) {
+		Element journalEl = articleDoc.getRootElement().getChild("Journal");
+		
+		Element sourceElement = new Element("relatedItem", MODS_V3_NS);
+		sourceElement.setAttribute("type", "otherFormat");
+		sourceElement.setAttribute("displayLabel", "Source");
+		modsContent.addContent(sourceElement);
+		
+		Element journalInfo = journalEl.getChild("JournalInfo");
+		
+		String jTitle = journalInfo.getChildTextNormalize("JournalTitle");
+		Element titleInfoElement = new Element("titleInfo", MODS_V3_NS);
+		Element titleElement = new Element("title", MODS_V3_NS);
+		sourceElement.addContent(titleInfoElement);
+		titleInfoElement.addContent(titleElement);
+		titleElement.setText(jTitle);
+		
+		String issn = journalInfo.getChildTextNormalize("JournalElectronicISSN");
+		if (issn != null){
+			Element element = new Element("identifier", MODS_V3_NS);
+			element.setText(issn);
+			element.setAttribute("type", "issn");
+			sourceElement.addContent(element);
+		}
+		
+		// Add journal issue and volume info
+		Element volumeEl = journalEl.getChild("Volume");
+		String volume = volumeEl.getChild("VolumeInfo").getChildText("VolumeIDStart");
+		
+		Element issue = volumeEl.getChild("Issue");
+		Element issueInfo = issue.getChild("IssueInfo");
+		
+		if (volume != null || issueInfo != null){
+			Element element = new Element("part", MODS_V3_NS);
+			addDetailElement("volume", volume, "vol.", element);
+			addDetailElement("issue", issueInfo.getChildText("IssueIDStart"), "issue", element);
+			sourceElement.addContent(element);
+			
+			String pubYear = issueInfo.getChild("IssueHistory").getChild("CoverDate").getChildText("Year");
+			Element pubEl = new Element("originInfo", MODS_V3_NS);
+			Element dateIssued = new Element("dateIssued", MODS_V3_NS);
+			dateIssued.setText(pubYear);
+			pubEl.setContent(dateIssued);
+			sourceElement.addContent(pubEl);
+		}
+		
+		Element articleInfo = issue.getChild("Article").getChild("ArticleInfo");
+		
+		// Add article identifiers
+		String doi = articleInfo.getChildTextNormalize("ArticleDOI");
+		if (doi != null) {
+			Element doiEl = new Element("identifier", MODS_V3_NS);
+			doiEl.setAttribute("type", "doi");
+			doiEl.setText(doi);
+			modsContent.addContent(doiEl);
+		}
+		
+		String biomedId = articleInfo.getAttributeValue("ID");
+		if (biomedId != null) {
+			Element idEl = new Element("identifier", MODS_V3_NS);
+			idEl.setAttribute("type", "BMID");
+			idEl.setText(biomedId.trim());
+			modsContent.addContent(idEl);
+		}
+
+		// Add first/last page references to journal info
+		String fpage = articleInfo.getChildTextNormalize("ArticleFirstPage");
+		String lpage = articleInfo.getChildTextNormalize("ArticleLastPage");
+		if (fpage != null || lpage != null){
+			Element extentPart = new Element("part", MODS_V3_NS);
+			Element element = new Element("extent", MODS_V3_NS);
+			element.setAttribute("unit", "page");
+			if (fpage != null){
+				Element pageElement = new Element("start", MODS_V3_NS);
+				pageElement.setText(fpage);
+				element.addContent(pageElement);
+			}
+			if (lpage != null){
+				Element pageElement = new Element("end", MODS_V3_NS);
+				pageElement.setText(lpage);
+				element.addContent(pageElement);
+			}
+			extentPart.addContent(element);
+			sourceElement.addContent(extentPart);
 		}
 	}
 
