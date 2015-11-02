@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -78,6 +79,8 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 
 	private static final String fLocatHrefPath =
 			"/m:mets/m:fileSec/m:fileGrp/m:file[@ID = '%s']/m:FLocat/@xlink:href";
+	private static final Pattern mainArticlePattern = Pattern.compile(".*\\_Article\\_.*\\.[pP][dD][fF]");
+	
 	private Transformer epdcx2modsTransformer = null;
 	
 	public BioMedToN3BagJob(String uuid, String depositUUID) {
@@ -119,7 +122,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		top.add(rootResource);
 		
 		if (topChildren.size() > 1) {
-			setDefaultWebObject(model, model.getBag(rootResource), metadataFileName);
+			setDefaultWebObject(model, model.getBag(rootResource));
 		}
 
 		extractEPDCX(helper.mets, rootResource);
@@ -273,27 +276,24 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		}
 	}
 	
-	private void setDefaultWebObject(Model model, Bag rootObject, String metadataFileName) {
-		if (metadataFileName == null) {
-			return;
-		}
+	private void setDefaultWebObject(Model model, Bag rootObject) {
 		
 		Property fileLocation = model.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
-		
-		String mainFilePrefix = metadataFileName.substring(0, metadataFileName.indexOf("."));
 		
 		// Find the main article file
 		for (NodeIterator children = rootObject.iterator(); children.hasNext();) {
 			Resource child = children.nextNode().asResource();
 			String location = child.getProperty(fileLocation).getString();
 			// filename will be the article ID, but not XML
-			if (!location.startsWith(mainFilePrefix))
+			if (!mainArticlePattern.matcher(location).matches()) {
 				continue;
+			}
 
 			log.debug("Found primary Biomed content document {}", location);
 			// If this is a main object, then designate it as a default web object for its parent container
 			Property defaultObject = model.getProperty(CDRProperty.defaultWebObject.getURI().toString());
 			model.add(rootObject, defaultObject, child);
+			return;
 		}
 	}
 }
