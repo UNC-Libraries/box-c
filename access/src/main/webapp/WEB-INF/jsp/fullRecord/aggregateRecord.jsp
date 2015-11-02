@@ -86,6 +86,8 @@
 			
 			</div>
 			
+			<div class="clear">
+			
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
@@ -137,6 +139,7 @@
 					</c:choose>
 				</c:when>
 			</c:choose>
+			</div>
 		</div>
 	</div>
 </div>

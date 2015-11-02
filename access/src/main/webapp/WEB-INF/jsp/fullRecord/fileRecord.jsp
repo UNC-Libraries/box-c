@@ -37,22 +37,22 @@
 			<div class="collinfo_metadata">
 				<h2><c:out value="${briefObject.title}" /></h2>
 				<ul class="pipe_list smaller">
-				<c:if test="${not empty briefObject.creator}">
-					<li>
-						<span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
-						<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
-							<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
-						</c:forEach>
-					</li>
-				</c:if>
-				<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
-					<li>
-						<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
-						<span class="bold">Collection:</span> 
-						<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
-					</li>
-				</c:if>
-			</ul>
+					<c:if test="${not empty briefObject.creator}">
+						<li>
+							<span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
+							<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
+								<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
+							</c:forEach>
+						</li>
+					</c:if>
+					<c:if test="${not empty briefObject.parentCollection && briefObject.ancestorPathFacet.highestTier > 0}">
+						<li>
+							<c:url var="parentUrl" scope="page" value="record/${briefObject.parentCollection}" />
+							<span class="bold">Collection:</span> 
+							<a href="<c:out value='${parentUrl}' />"><c:out value="${briefObject.parentCollectionName}"/></a>
+						</li>
+					</c:if>
+				</ul>
 				<ul class="pipe_list smaller">
 					<c:if test="${defaultWebData != null}">
 						<li><span class="bold">File Type:</span> <c:out value="${briefObject.contentTypeFacet[0].displayValue}" /></li>
@@ -64,6 +64,7 @@
 					<c:if test="${not empty embargoDate}"><li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
 				</ul>
 			</div>
+			<div class="clear">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
@@ -107,6 +108,7 @@
 					</c:choose>
 				</c:when>
 			</c:choose>
+			</div>
 		</div>
 	</div>
 </div>
