@@ -104,7 +104,9 @@ public class ObjectPathFactory {
 			String pid = node.getSearchKey();
 			PathCacheData pathData = getPathData(pid);
 
-			entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
+			if (pathData != null) {
+				entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
+			}
 		}
 
 		if (bom.getTitle() != null) {
@@ -142,6 +144,10 @@ public class ObjectPathFactory {
 		// Cache wasn't available, retrieve fresh data from solr
 		try {
 			Map<String, Object> fields = search.getFields(pid, pathFields);
+			if (fields == null) {
+				log.warn("Unable to retrieve solr record for object {}, it may not be present or indexed", pid);
+				return null;
+			}
 
 			PathCacheData pathData = new PathCacheData((String) fields.get(titleFieldName),
 					isContainer((String) fields.get(typeFieldName)));
