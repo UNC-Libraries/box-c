@@ -31,7 +31,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 	
 	$.getJSON("describeInfo/" + pid, function(data) {
 		var resultObject = data.resultObject;
-		var vocabTerms = data.vocabTerms;
+		var vocabularyConfigs = data.vocabularyConfigs;
 		
 		var containerPath = pathTemplate({
 			objectPath : resultObject.objectPath? resultObject.objectPath.entries : [],
@@ -192,19 +192,8 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 			}
 		};
 		
-		if (vocabTerms) {
-			var terms = vocabTerms["http://cdr.unc.edu/vocabulary/Affiliation"];
-			if (terms) {
-				terms = terms.sort();
-				editorOptions["elementUpdated"] = function(event) {
-					if (event.action == "render" && this.objectType.localName == "affiliation") {
-						this.getTextInputs().autocomplete({
-							source : terms,
-							minLength : 0
-						});
-					}
-				}
-			}
+		if (vocabularyConfigs) {
+			editorOptions.vocabularyConfigs = vocabularyConfigs;
 		}
 	
 		$("#xml_editor").xmlEditor(editorOptions);

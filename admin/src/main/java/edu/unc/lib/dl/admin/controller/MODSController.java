@@ -16,13 +16,13 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -52,6 +52,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 @Controller
@@ -66,12 +67,20 @@ public class MODSController extends AbstractSwordController {
 	private String swordPassword;
 	@Autowired
 	private TripleStoreQueryService tripleStoreQueryService;
+	
+	private Map<String, String> namespaces;
 
 	@Autowired
 	private VocabularyHelperManager vocabularies;
 
 	protected @Resource(name = "tagProviders")
 	List<TagProvider> tagProviders;
+	
+	@PostConstruct
+	public void init() {
+		namespaces = new HashMap<>();
+		namespaces.put(JDOMNamespaceUtil.MODS_V3_NS.getPrefix(), JDOMNamespaceUtil.MODS_V3_NS.getURI());
+	}
 
 	/**
 	 * Forwards user to the MODS editor page with the
@@ -119,16 +128,29 @@ public class MODSController extends AbstractSwordController {
 		}
 
 		results.put("resultObject", resultObject);
-
-		Map<String, Collection<String>> terms = new HashMap<>();
+		
+		// Structure vocabulary info into a map usable by the editor
+		Map<String, Object> vocabConfigs = new HashMap<>();
+		// xpath selectors for each vocabulary
+		Map<String, String> selectors = new HashMap<>();
+		// map of vocabulary names to their term values
+		Map<String, Object> perVocabConfigs = new HashMap<>();
 		Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(pid));
 		if (helpers != null) {
 			for (VocabularyHelper helper : helpers) {
-				terms.put(helper.getVocabularyURI(), helper.getVocabularyTerms());
+				Map<String, Object> vocabConfig = new HashMap<>();
+				vocabConfig.put("values", helper.getVocabularyTerms());
+				perVocabConfigs.put(helper.getVocabularyURI(), vocabConfig);
+				if (helper.getSelector() != null) {
+					selectors.put(helper.getSelector(), helper.getVocabularyURI());
+				}
 			}
 		}
+		vocabConfigs.put("xpathSelectors", selectors);
+		vocabConfigs.put("vocabularies", perVocabConfigs);
+		vocabConfigs.put("xpathNamespaces", namespaces);
 
-		results.put("vocabTerms", terms);
+		results.put("vocabularyConfigs", vocabConfigs);
 
 		return results;
 	}
