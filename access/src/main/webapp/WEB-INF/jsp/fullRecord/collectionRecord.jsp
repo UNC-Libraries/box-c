@@ -164,6 +164,7 @@
 							<div id="facetList" class="contentarea">
 								<h2>Contents</h2>
 								<c:import url="/jsp/util/facetList.jsp">
+									<c:param name="queryMethod">listContents</c:param>
 								</c:import>
 							</div>
 						</div>
