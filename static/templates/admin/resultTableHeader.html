@@ -21,7 +21,8 @@
 				</h2>
 			</span>
 			<%
-			if (container && _.indexOf(container.permissions, "addRemoveContents") != -1 && !containerDeleted) {
+			if (container && !containerDeleted && (_.indexOf(container.permissions, "addRemoveContents") != -1
+					|| _.indexOf(container.permissions, "editDescription") != -1)) {
 				%><span id="add_menu" class="container_action">+ Add</span><%
 			}
 			%>

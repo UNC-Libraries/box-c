@@ -9,12 +9,16 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	
 	AddMenu.prototype.getMenuItems = function() {
 		var items = {};
-		if ($.inArray('addRemoveContents', this.options.container.permissions) == -1)
-			return items;
-		items["addContainer"] = {name : "Add Container"};
-		items["ingestPackage"] = {name : "Add Ingest Package"};
-		items["simpleObject"] = {name : "Add Simple Object"};
-		items["importMetadata"] = {name : "Import MODS"};
+		if ($.inArray('addRemoveContents', this.options.container.permissions) != -1) {
+			items["addContainer"] = {name : "Add Container"};
+			items["ingestPackage"] = {name : "Add Ingest Package"};
+			items["simpleObject"] = {name : "Add Simple Object"};
+			
+		}
+		if ($.inArray('editDescription', this.options.container.permissions) != -1) {
+			items["importMetadata"] = {name : "Import MODS"};
+		}
+		
 		return items;
 	};
 	
