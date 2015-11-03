@@ -35,7 +35,7 @@
 		</c:if>
 	</div>
 </div>
-<c:set var="searchState" value="${resultResponse.searchState}"/>
+<c:set var="searchState" scope="request" value="${resultResponse.searchState}"/>
 <c:set var="facetFields" scope="request" value="${resultResponse.facetFields}"/>
 <c:set var="selectedContainer" scope="request" value="${resultResponse.selectedContainer}"/>
 <c:set var="resultCount" scope="request" value="${resultResponse.resultCount}"/>

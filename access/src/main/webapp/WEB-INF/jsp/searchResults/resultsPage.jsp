@@ -23,7 +23,6 @@
 
 <div class="gray">
 	<div class="fourcol">
-		<c:set var="searchState" scope="request" value="${searchState}"/>
 		<c:if test="${empty param.showBreadCrumbs || param.showBreadCrumbs}">
 			<div class="fourcol light shadowtop breadcrumbs">
 				<div class="contentarea">
