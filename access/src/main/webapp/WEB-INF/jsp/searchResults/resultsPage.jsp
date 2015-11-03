@@ -23,7 +23,6 @@
 
 <div class="gray">
 	<div class="fourcol">
-		<c:set var="searchState" scope="request" value="${searchState}"/>
 		<c:if test="${empty param.showBreadCrumbs || param.showBreadCrumbs}">
 			<div class="fourcol light shadowtop breadcrumbs">
 				<div class="contentarea">
@@ -52,7 +51,7 @@
 				</c:if>
 				<h2>Refine your search</h2>
 				<c:import url="/jsp/util/facetList.jsp">
-					<c:param name="queryMethod">search</c:param>
+					<c:param name="queryMethod"><c:choose><c:when test="${queryMethod == 'list'}">search</c:when><c:otherwise>${queryMethod}</c:otherwise></c:choose></c:param>
 					<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
 				</c:import>
 			</div>
