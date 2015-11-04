@@ -121,6 +121,7 @@ image/x-xbitmap=xbm
 image/x-xpixmap=xpm
 image/x-xwindowdump=xwd
 message/rfc822=mhtml
+text/csv=csv
 text/css=css
 text/html=html
 text/iuls=uls

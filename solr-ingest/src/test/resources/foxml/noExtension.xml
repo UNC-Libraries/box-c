@@ -7,7 +7,7 @@
 		<foxml:property NAME="info:fedora/fedora-system:def/model#state"
 			VALUE="Active" />
 		<foxml:property NAME="info:fedora/fedora-system:def/model#label"
-			VALUE="tiny.xlsx" />
+			VALUE="tiny" />
 		<foxml:property NAME="info:fedora/fedora-system:def/model#ownerId"
 			VALUE="" />
 		<foxml:property NAME="info:fedora/fedora-system:def/model#createdDate"
