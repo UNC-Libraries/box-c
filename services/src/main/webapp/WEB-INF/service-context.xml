@@ -210,6 +210,7 @@
 	
 	<util:map id="vocabHelperClassMap">
 		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
+		<entry key="JSONVocabulary" value="edu.unc.lib.dl.util.JSONVocabularyHelper"/>
 	</util:map>
 	
 	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
