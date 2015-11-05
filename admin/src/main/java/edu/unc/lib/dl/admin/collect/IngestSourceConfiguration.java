@@ -15,10 +15,7 @@
  */
 package edu.unc.lib.dl.admin.collect;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Configuration for a ingest source
@@ -30,7 +27,8 @@ public class IngestSourceConfiguration {
 
 	private String id;
 	private String name;
-	private Map<String, List<String>> patterns;
+	private String base;
+	private List<String> patterns;
 	private List<String> containers;
 
 	public String getId() {
@@ -49,21 +47,23 @@ public class IngestSourceConfiguration {
 		this.name = name;
 	}
 
-	public Map<String, List<String>> getPatterns() {
+	public List<String> getPatterns() {
 		return patterns;
 	}
 
-	public void setPatterns(Map<String, List<String>> patterns) {
-		// Make sure all paths end with /'s otherwise glob patterns won't match
-		Iterator<Entry<String, List<String>>> patternIt = patterns.entrySet().iterator();
-		while (patternIt.hasNext()) {
-			Entry<String, List<String>> patternEntry = patternIt.next();
-			if (!patternEntry.getKey().endsWith("/")) {
-				patternIt.remove();
-				patterns.put(patternEntry.getKey() + "/", patternEntry.getValue());
-			}
-		}
+	public void setPatterns(List<String> patterns) {
 		this.patterns = patterns;
+	}
+
+	public String getBase() {
+		return base;
+	}
+
+	public void setBase(String base) {
+		if (!base.endsWith("/")) {
+			base += "/";
+		}
+		this.base = base;
 	}
 
 	public List<String> getContainers() {

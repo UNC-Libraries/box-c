@@ -104,36 +104,34 @@ public class IngestSourceManager {
 
 		final List<Map<String, Object>> candidates = new ArrayList<>();
 		for (final IngestSourceConfiguration source : applicableSources) {
-			for (Map.Entry<String, List<String>> patternEntry : source.getPatterns().entrySet()) {
-				final String base = patternEntry.getKey();
-				
-				// Gathering candidates per pattern within a particular base directory
-				for (String pattern : patternEntry.getValue()) {
-					final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + base + pattern);
-					try {
-						Files.walkFileTree(Paths.get(base), new SimpleFileVisitor<Path>() {
-							@Override
-							public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-								if (matcher.matches(dir)) {
-									log.debug("Matched dir {} for source {}", dir, source.getId());
-									addCandidate(candidates, dir, source, base);
-									return FileVisitResult.SKIP_SUBTREE;
-								}
-								return FileVisitResult.CONTINUE;
+			final String base = source.getBase();
+			
+			// Gathering candidates per pattern within a particular base directory
+			for (String pattern : source.getPatterns()) {
+				final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + base + pattern);
+				try {
+					Files.walkFileTree(Paths.get(base), new SimpleFileVisitor<Path>() {
+						@Override
+						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+							if (matcher.matches(dir)) {
+								log.debug("Matched dir {} for source {}", dir, source.getId());
+								addCandidate(candidates, dir, source, base);
+								return FileVisitResult.SKIP_SUBTREE;
 							}
-							
-							@Override
-							public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-								if (matcher.matches(file)) {
-									log.debug("Matched file {} for source {}", file, source.getId());
-									addCandidate(candidates, file, source, base);
-								}
-								return FileVisitResult.CONTINUE;
+							return FileVisitResult.CONTINUE;
+						}
+						
+						@Override
+						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+							if (matcher.matches(file)) {
+								log.debug("Matched file {} for source {}", file, source.getId());
+								addCandidate(candidates, file, source, base);
 							}
-						});
-					} catch (IOException e) {
-						log.error("Failed to gather candidate files for source {}", source.getId(), e);
-					}
+							return FileVisitResult.CONTINUE;
+						}
+					});
+				} catch (IOException e) {
+					log.error("Failed to gather candidate files for source {}", source.getId(), e);
 				}
 			}
 		}
