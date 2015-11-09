@@ -114,12 +114,19 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
+		// Turn the bag itself into the top level folder for this deposit
+		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(new PID("uuid:" + UUID.randomUUID()).getURI());
+		model.add(bagFolder, labelProp, sourceFile.getName());
+		model.add(bagFolder, hasModelProp, model.createResource(CONTAINER.getURI().toString()));
+		top.add(bagFolder);
+		
+		// Add all of the payload objects into the bag folder
 		for (BagFile file : payload) {
 			String filePath = file.getFilepath();
 			
 			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
 			
-			Resource fileResource = getFileResource(top, sourcePath, filePath);
+			Resource fileResource = getFileResource(bagFolder, sourcePath, filePath);
 			
 			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);

@@ -89,7 +89,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		
 		assertEquals(depositBag.size(), 1);
 		
-		Resource folder = (Resource) depositBag.iterator().next();
+		Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
+		assertEquals("Bag folder label was not set", bagFolder.getProperty(dprop(model, label)).getString(), "valid-bag");
+		assertEquals("Content model was not set", CONTAINER.toString(),
+				bagFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		
+		Resource folder = (Resource) bagFolder.iterator().next();
 		
 		assertEquals("Folder label was not set", folder.getProperty(dprop(model, label)).getString(), "test");
 		assertEquals("Content model was not set", CONTAINER.toString(),
