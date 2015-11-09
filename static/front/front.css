@@ -184,17 +184,33 @@
 }
 
 /* case study */
-
-.case-study {
-	float: left;
+#images_all {
+	width: 50%;
+	clear: left;
+    float: left;
 }
 
-#front-case-study h2 {
+#front-case-study h2, #front #full_text {
 	float: right;
 	width: 50%;
 	display: block;
-	clear: left;
-	margin-top: -5px;
+	margin-top: 0;
+}
+
+#front-case-study h2 i {
+  font-weight: 500;
+  color: #777;
+  text-transform: uppercase;
+  font-size: 85%;
+  font-style: normal;
+}
+
+#full_text {
+	margin-top: 25px;
+}
+
+#full_text p {
+	width: 100%;
 }
 
 .wp-caption {
@@ -203,10 +219,6 @@
     max-width: 96%;
     padding: 13px 10px 10px;
     text-align: center;
-    display: block;
-    float:left;
-    clear: left;
-    margin-bottom: 10px;
 }
 
 .wp-caption:hover .wp-caption-text:hover  {
@@ -220,8 +232,6 @@
 
 #front-case-study .wp-caption-text {
     background: rgba(255, 255, 255, 0.7);
-    color: #000;
-    float: none;
     font-size: 14px;
     margin-top: -55px;
     padding: 5px 20px;
@@ -235,32 +245,6 @@
 	font-size: 16px;
 	margin-bottom: 5px;
 }
-
-.wp-caption img {
-    border: 0 none;
-    height: auto;
-    margin: 0;
-    max-width: 98.5%;
-    padding: 0;
-    width: auto;
-  
-}
-
-#full_text {
-	clear: right;
-    display: block;
-    float: right;
-    width: 50%;
-    margin-top: -225px;
-}
-
-#front-case-study h2 i {
-  font-weight: 500;
-  color: #777;
-  text-transform: uppercase;
-  font-size: 85%;
-  font-style: normal;
-} 
 
 /* collections */
 
