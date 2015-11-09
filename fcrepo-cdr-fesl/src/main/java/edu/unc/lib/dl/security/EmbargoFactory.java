@@ -34,14 +34,14 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * 
  */
 public class EmbargoFactory {
-	private Map<PID, String> pid2Date;
+	private final Map<PID, String> pid2Date;
 	private boolean cacheValid = false;
 
 	private TripleStoreQueryService tripleStoreQueryService = null;
 
 	public EmbargoFactory() {
 		Builder<PID, String> mapBuilder = new Builder<PID, String>();
-		mapBuilder.maximumWeightedCapacity(256);
+		mapBuilder.maximumWeightedCapacity(10240);
 		this.pid2Date = mapBuilder.build();
 	}
 
