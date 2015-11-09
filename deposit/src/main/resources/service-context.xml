@@ -307,6 +307,11 @@
 	<bean id="UnpackDepositJob" class="edu.unc.lib.deposit.normalize.UnpackDepositJob"
 		scope="prototype">
 	</bean>
+	
+	<bean id="BagIt2N3BagJob" class="edu.unc.lib.deposit.normalize.BagIt2N3BagJob"
+		scope="prototype">
+		<property name="stages" ref="stages" />
+	</bean>
 
 	<bean id="CDRMETS2N3BagJob" class="edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob"
 		scope="prototype">
