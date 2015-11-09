@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
@@ -83,7 +84,7 @@ public class IngestSourceManagerTest {
 		assertEquals(1, candidates.size());
 		Map<String, Object> candidate = candidates.get(0);
 		assertEquals("testsource", candidate.get("sourceId"));
-		assertEquals("bag", candidate.get("type"));
+		assertEquals(PackagingType.BAGIT.toString(), candidate.get("packagingType"));
 		assertEquals("0.96", candidate.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidate.get("size")) > 0);
 		assertEquals("File count should only include files in the data dir", 4, candidate.get("files"));
@@ -98,7 +99,7 @@ public class IngestSourceManagerTest {
 		Map<String, Object> candidate = candidates.get(0);
 		assertEquals("nestedsource", candidate.get("sourceId"));
 		assertEquals("smallbag", candidate.get("patternMatched"));
-		assertEquals("bag", candidate.get("type"));
+		assertEquals(PackagingType.BAGIT.toString(), candidate.get("packagingType"));
 		assertEquals("0.96", candidate.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidate.get("size")) > 0);
 		assertEquals("File count should only include files in the data dir", 4, candidate.get("files"));
@@ -106,9 +107,9 @@ public class IngestSourceManagerTest {
 		candidate = candidates.get(1);
 		assertEquals("nestedsource", candidate.get("sourceId"));
 		assertEquals("coll_folder/smallbag.zip", candidate.get("patternMatched"));
-		assertEquals("bag", candidate.get("type"));
+		assertEquals(PackagingType.BAGIT.toString(), candidate.get("packagingType"));
 		assertEquals("0.96", candidate.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidate.get("size")) > 0);
-		assertEquals("Zip file counts all files", 7, candidate.get("files"));
+		assertEquals("Count should only include payload", 3, candidate.get("files"));
 	}
 }

@@ -20,18 +20,19 @@ import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.URI;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,21 +40,25 @@ import org.junit.Test;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.staging.Stages;
 
 public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	private BagIt2N3BagJob job;
 
 	private Map<String, String> status;
+	
+	private Stages stages;
 
 	@Before
 	public void setup() throws Exception {
+		stages = mock(Stages.class);
+		
 		status = new HashMap<String, String>();
 
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
@@ -63,6 +68,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		job = new BagIt2N3BagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
+		job.setStages(stages);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -71,12 +77,14 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 	}
 
 	@Test
-	public void testConversion() {
+	public void testConversion() throws Exception {
 		status.put(DepositField.sourcePath.name(), "src/test/resources/paths/valid-bag");
+		
+		when(stages.getStagedURI(any(URI.class))).thenReturn(new URI("tag:/path/data/test/lorem.txt"));
 
 		job.run();
 
-		Model model = job.getWritableModel();
+		Model model = job.getReadOnlyModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		
 		assertEquals(depositBag.size(), 1);
@@ -84,25 +92,23 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		Resource folder = (Resource) depositBag.iterator().next();
 		
 		assertEquals("Folder label was not set", folder.getProperty(dprop(model, label)).getString(), "test");
-		assertEquals("Content model was not set", folder.getProperty(fprop(model, hasModel)).getString(), CONTAINER.toString());
+		assertEquals("Content model was not set", CONTAINER.toString(),
+				folder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		
 		Bag childrenBag = model.getBag(folder.getURI());
 		
-		assertEquals(childrenBag.size(), 2);
-	
-		Set<String> labels = new HashSet<>();
-		NodeIterator iterator = childrenBag.iterator();
-		
-		while (iterator.hasNext()) {
-			Resource child = (Resource) iterator.next();
-			
-			labels.add(child.getProperty(dprop(model, label)).getString());
-			assertEquals("Content model was not set", child.getProperty(fprop(model, hasModel)).getString(), SIMPLE.toString());
-			assertEquals("Checksum was not set", child.getProperty(dprop(model, md5sum)).getString(), "fa5c89f3c88b81bfd5e821b0316569af");
-		}
+		assertEquals(childrenBag.size(), 1);
 
-		assertTrue("Should have seen the label lorem.txt", labels.contains("lorem.txt"));
-		assertTrue("Should have seen the label ipsum.txt", labels.contains("ipsum.txt"));
+		Resource file = (Resource) childrenBag.iterator().next();
+		
+		assertEquals("File label was not set", "lorem.txt",
+				file.getProperty(dprop(model, label)).getString());
+		assertEquals("Content model was not set", SIMPLE.toString(),
+				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
+				file.getProperty(dprop(model, md5sum)).getString());
+		assertEquals("File location not set", "tag:/path/data/test/lorem.txt",
+				file.getProperty(dprop(model, stagingLocation)).getString());
 	}
 
 	@Test(expected = JobFailedException.class)

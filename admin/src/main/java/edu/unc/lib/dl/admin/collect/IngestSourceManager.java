@@ -27,11 +27,11 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.ZipFile;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -41,7 +41,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
+import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
 
 /**
@@ -163,20 +167,42 @@ public class IngestSourceManager {
 		candidate.put("sourceId", source.getId());
 		candidate.put("base", base);
 		candidate.put("patternMatched", Paths.get(base).relativize(filePath).toString());
-		candidate.put("type", "bag");
+		
 		candidate.put("version", version);
-		if (file.isDirectory()) {
+
+		if (version != null) {
+			// Add payload stats for bags
+			addBagInfo(candidate, filePath);
+		}/* else if (file.isDirectory()) {
+			// Add culmulative stats for vanilla directories
 			addDirectoryStats(candidate, filePath, true);
 		} else {
+			// Add stats for a non-bag zip file
 			if (file.getName().endsWith(".zip")) {
 				try (ZipFile zip = new ZipFile(file)) {
 					candidate.put("files", zip.size());
 				}
 			}
 			candidate.put("size", file.length());
-		}
+		}*/
 		
 		candidates.add(candidate);
+	}
+	
+	private void addBagInfo(Map<String, Object> fileInfo, Path filePath) {
+		BagFactory bagFactory = new BagFactory();
+		Bag bagFile = bagFactory.createBag(filePath.toFile());
+		
+		fileInfo.put("files", bagFile.getPayload().size());
+		long size = 0;
+		Iterator<BagFile> bagIt = bagFile.getPayload().iterator();
+		while (bagIt.hasNext()) {
+			size += bagIt.next().getSize();
+		}
+		
+		fileInfo.put("size", size);
+		
+		fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
 	}
 
 	/**
@@ -192,7 +218,7 @@ public class IngestSourceManager {
 		final AtomicLong size = new AtomicLong(0);
 		final AtomicInteger count = new AtomicInteger(0);
 		
-		final PathMatcher bagDataMatcher = FileSystems.getDefault().getPathMatcher("glob:" + filePath + "/data/**");
+		final PathMatcher bagDataMatcher = FileSystems.getDefault().getPathMatcher("glob:" + filePath + "/**");
 
 		Files.walkFileTree(filePath, new SimpleFileVisitor<Path>() {
 			@Override
@@ -213,6 +239,54 @@ public class IngestSourceManager {
 		
 		fileInfo.put("size", size.get());
 		fileInfo.put("files", count.get());
+	}
+	
+	/**
+	 * Returns true if the given path is from valid for the given source and present.
+	 * 
+	 * @param pathString
+	 * @param sourceId
+	 * @return
+	 */
+	public boolean isPathValid(String pathString, String sourceId) {
+		IngestSourceConfiguration source = getSourceConfiguration(sourceId);
+		if (source == null) {
+			return false;
+		}
+		
+		Path path = Paths.get(source.getBase(), pathString);
+		if (!isPathValidForSource(path, source)) {
+			return false;
+		}
+		
+		return path.toFile().exists();
+	}
+	
+	/**
+	 * Returns true if the given path matches any of the patterns specified for the given source
+	 * 
+	 * @param path
+	 * @param source
+	 * @return
+	 */
+	private boolean isPathValidForSource(Path path, IngestSourceConfiguration source) {
+		for (String pattern : source.getPatterns()) {
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + source.getBase() + pattern);
+			if (matcher.matches(path)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public IngestSourceConfiguration getSourceConfiguration(String id) {
+		for (IngestSourceConfiguration source : configs) {
+			if (source.getId().equals(id)) {
+				return source;
+			}
+		}
+		return null;
 	}
 
 	public void setConfigs(List<IngestSourceConfiguration> configs) {
