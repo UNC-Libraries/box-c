@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.util.ContentCategory;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -94,6 +95,12 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		if (defaultWebData != null) {
 			// Store the pid/datastream name of the default web datastream
 			dip.setDefaultWebData(defaultWebData.getDatastreamIdentifier());
+			
+			// Attempt to get the file extension out of the label field if the DWD didn't specify one
+			if (defaultWebData.getExtension() == null) {
+				defaultWebData.setExtension(getExtension(
+						dip.getFirstTriple(FedoraProperty.label.toString()), defaultWebData.getMimetype()));
+			}
 
 			// If the mimetype listed on the datastream is not very specific (octet-stream), see if FITS provided a
 			// better one and use it instead
