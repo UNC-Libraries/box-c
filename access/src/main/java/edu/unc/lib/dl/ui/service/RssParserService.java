@@ -17,10 +17,12 @@ package edu.unc.lib.dl.ui.service;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+
 import edu.unc.lib.dl.ui.model.response.RssFeedBean;
 
 /**
@@ -30,6 +32,7 @@ import edu.unc.lib.dl.ui.model.response.RssFeedBean;
  */
 public class RssParserService extends XMLRetrievalService {
 	private static final Logger LOG = LoggerFactory.getLogger(RssParserService.class);
+	private static final Namespace CONTENT = Namespace.getNamespace("content", "http://purl.org/rss/1.0/modules/content/");
 
 	public static RssFeedBean getRssFeed(String url) throws Exception {
 		return getRssFeed(url, -1);
@@ -74,7 +77,7 @@ public class RssParserService extends XMLRetrievalService {
 	}
 
 	private static RssFeedBean getHeader(org.jdom2.Element channelElement) {
-		// Sets the RSS feed heder information to the
+		// Sets the RSS feed header information to the
 		// RssFeedBean object
 		RssFeedBean rssFeed = new RssFeedBean();
 		rssFeed.setTitle(getValueOfChildElement(channelElement, "title"));
@@ -84,12 +87,16 @@ public class RssParserService extends XMLRetrievalService {
 	}
 
 	// Get the child node value
-	private static String getValueOfChildElement(Element parentElement, String tagName) {
+	private static String getValueOfChildElement(Element parentElement, String tagName, Namespace ns) {
 		Element childElement = null;
 		String tagValue = null;
-		childElement = parentElement.getChild(tagName);
+		childElement = parentElement.getChild(tagName, ns);
 		tagValue = (null != childElement) ? childElement.getValue().trim() : null;
 		return (tagValue);
+	}
+	
+	private static String getValueOfChildElement(Element parentElement, String tagName) {
+		return getValueOfChildElement(parentElement, tagName, null);
 	}
 
 	private static RssFeedBean.RssItem.EnclosureObject getEnclosure(Element parentElement) {
@@ -117,12 +124,13 @@ public class RssParserService extends XMLRetrievalService {
 			}
 			for (int i = 0; i < maxResults; i++) {
 				Element anItemElement = itemElements.get(i);
-				anRssItem = new RssFeedBean.RssItem();
+				anRssItem = new RssFeedBean.RssItem(); 
 				anRssItem.setTitle(getValueOfChildElement(anItemElement, "title"));
 				anRssItem.setLink(getValueOfChildElement(anItemElement, "link"));
 				anRssItem.setDescription(getValueOfChildElement(anItemElement, "description"));
 				anRssItem.setPubDate(getValueOfChildElement(anItemElement, "pubDate"));
 				anRssItem.setGuid(getValueOfChildElement(anItemElement, "guid"));
+				anRssItem.setEncoded(getValueOfChildElement(anItemElement, "encoded", CONTENT));
 				anRssItem.setEnclosure(getEnclosure(anItemElement));
 				rssFeed.items.add(anRssItem);
 			}
