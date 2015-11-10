@@ -51,9 +51,6 @@ public class FrontPageController extends AbstractSolrSearchController {
 		
 		try {
 			RssFeedBean wpRssFeed = RssParserService.getRssFeed(ExternalContentSettings.getUrl("wpRss"), Integer.parseInt(ExternalContentSettings.get("external.wpRss.maxLinks")));
-		//	RssFeedBean.RssItem htmlAll = wpRssFeed.getItems().get(0);
-		//	String htmlText = htmlAll.getEncoded();
-			
 			model.addAttribute("wpRssItem", wpRssFeed.getItems().get(0));
 		} catch (Exception e) {
 			LOG.error("Error retreiving the CDR WordPress Collection Highlights feed: ", e);
