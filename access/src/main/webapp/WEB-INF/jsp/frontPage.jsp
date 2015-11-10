@@ -22,6 +22,9 @@
 <jsp:useBean id="externalContent" class="edu.unc.lib.dl.ui.util.ExternalContentSettings" scope="page"/>
 
 <div id="peek">
+	<div id="front-headline">
+		<h1>Preserve, share, and promote your scholarly&nbsp;and&nbsp;creative&nbsp;work.</h1>
+	</div>
 	<div id="peek-enter">
 		<div class="button">
 			<a href="#p">A peek inside the repository</a>
@@ -39,10 +42,6 @@
 <script src="/static/front/peek.js"></script>
 
 <div id="front">
-	
-	<div id="front-headline">
-		<h1>Preserve, share, and promote your scholarly&nbsp;and&nbsp;creative&nbsp;work.</h1>
-	</div>
 
 	<div class="row">
 		<div class="half" id="front-points">
@@ -62,12 +61,16 @@
 			</table>
 		</div>
 		
-		<div class="half" id="front-how">
+		<div class="half" id="open-access">
 			<h2>How to start preserving your work</h2>
-		
-			<p>To get started, just tell us about the work you’d like to preserve. We’ll meet with you to discuss how to transfer it, describe it, and make it available on the web. After you deposit your work, we take care of the rest, ensuring it’s kept safe and accessible for the future.</p>
-		
-			<p class="button"><a href="/contact?refer=frontcontact">Contact us to get started</a></p>
+			
+			<p>UNC scholars: deposit your Open Access work into the CDR in order to provide long-term access and ensure the preservation of your work. <a href="http://blogs.lib.unc.edu/cdr/" target="_blank">Learn more.</a></p>
+			
+			<p class="button"><a href="/forms/open-access-carolina.form">Deposit Open Access Work</a></p>
+			
+			<hr>
+			
+			<p>In other cases, CDR staff will work with you to deposit your materials and associated descriptive information. <a href="http://blogs.lib.unc.edu/cdr/index.php/how-to-contribute-material-to-the-cdr/" target="_blank">Learn how to get started.</a></p>
 		</div>
 	</div>
 

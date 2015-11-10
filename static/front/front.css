@@ -134,14 +134,26 @@
 /* headline */
 
 #front-headline {
-  font-size: 250%;
-  line-height: 1.2;
-  margin-bottom: 15px;
-  text-align: center;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+  top: 50%;
+  margin-top: -70px;
 }
 
 #front-headline h1 {
   display: inherit;
+  background: #000;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  width: 750px;
+  margin: auto;
+  text-align: center;
+  font-size: 300%;
+  line-height: 1.2;
+  padding: 25px 0;
+  font-family: "Avenir Next", helvetica, sans-serif;
+  font-weight: 600;
 }
 
 /* points */
@@ -173,14 +185,32 @@
 
 /* how to */
 
-#front #front-how {
+#front #open-access {
   background: #eee;
   padding: 10px 30px 30px 30px;
   width: 350px;
 }
 
-#front #front-how h2 {
+#front #open-access h2 {
   font-size: 135%;
+}
+
+#front #open-access .button {
+  text-align: left;
+  font-size: 16px;
+  margin-bottom: 25px;
+}
+
+#front #open-access .button a {
+  background: #F36D11;
+}
+
+#front #open-access hr {
+  width: auto;
+  border: none;
+  height: 1px;
+  background: #ccc;
+  margin: 30px auto 15px auto;
 }
 
 /* case study */

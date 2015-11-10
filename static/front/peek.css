@@ -212,3 +212,19 @@ body.peek #header, body.peek #footer, body.peek #front {
 body.peek #peek.active #peek-enter {
   display: none;
 }
+
+body.peek #peek.active #front-headline {
+  display: none;
+}
+
+#peek-enter .button {
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+#peek-enter .button a {
+  margin-right: 10px;
+}
