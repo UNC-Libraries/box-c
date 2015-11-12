@@ -1,0 +1,43 @@
+<form id="ingest_source_metadata" class="file_browse_dialog">
+	<div class="progress">
+		<a class="complete" id="ingest_source_choose" href="#">Choose materials</a>
+		<span class="bold"> &rarr; Assign metadata</span>
+	</div>
+	
+	<%
+	_.each(selectedCandidates, function(candidate, index) { 
+		%>
+		<div class="file_browse_entry">
+			<div class="file_browse_type_icon">
+				<% if (candidate.type == "BagIt") { %>
+					<i class="fa fa-suitcase"></i>
+				<% } else { %>
+					<i class="fa fa-folder"></i>
+				<% } %>
+			</div>
+			
+			<div class="file_browse_entry_data">
+				<h2><%= candidate.patternMatched %></h2>
+				<p><%= candidate.base %><br/>
+					<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
+					- <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
+					- <%= candidate.sizeFormatted %>
+				</p>
+				<div class="file_browse_entry_inputs">
+					<label for="file_label">Label</label>
+					<input type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
+					<hr/>
+					<label for="file_acc_number">Accession Number</label>
+					<input type="text" name="file_acc_number" size="40"/>
+					<label for="file_media_id">Media ID</label>
+					<input type="text" name="file_media_id" size="40"/>
+				</div>
+			</div>
+			
+		</div>
+	<% }); %>
+	
+	<div class="update_field">
+		<input value="Ingest" class="update_button" type="submit">
+	</div>
+</form>

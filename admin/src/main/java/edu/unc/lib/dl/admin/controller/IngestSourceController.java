@@ -61,21 +61,6 @@ public class IngestSourceController {
 	@Autowired
 	private DepositStatusFactory depositStatusFactory;
 
-
-	@RequestMapping(value = "listSourceCandidates/{pid}", method = RequestMethod.GET, produces = "application/json")
-	public @ResponseBody Object listCandidatesPackages(@PathVariable("pid") String pid, HttpServletResponse resp) {
-		PID destination = new PID(pid);
-
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		// Check that the user has permission to deposit to the destination
-		if (!aclService.hasAccess(destination, groups, Permission.addRemoveContents)) {
-			resp.setStatus(401);
-			return null;
-		}
-
-		return sourceManager.listCandidates(destination);
-	}
-
 	@RequestMapping(value = "listSources/{pid}", method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody Object listIngestSources(@PathVariable("pid") String pid, HttpServletResponse resp) {
 		PID destination = new PID(pid);
@@ -86,8 +71,12 @@ public class IngestSourceController {
 			resp.setStatus(401);
 			return null;
 		}
-
-		return sourceManager.listSources(destination);
+		
+		Map<String, Object> result = new HashMap<>();
+		result.put("sources", sourceManager.listSources(destination));
+		result.put("candidates", sourceManager.listCandidates(destination));
+		
+		return result;
 	}
 
 	@RequestMapping(value = "ingestFromSource/{pid}", method = RequestMethod.POST, produces = "application/json")

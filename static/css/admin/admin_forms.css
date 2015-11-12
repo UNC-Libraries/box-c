@@ -47,7 +47,13 @@
 	border-width: 0;
 }
 
-.update_field .update_button {
+.update_button:disabled {
+	background-image: none;
+	color: #E7E7E7;
+	background-color: rgb(188, 188, 188);
+}
+
+.update_button {
 	background-color: #165D7F;
 	color: #fff;
 	padding: 4px 8px;
@@ -354,4 +360,125 @@
 #run_enhancements_form #run_enhancements_force {
 	margin-left: 0;
 	margin-right: 0.5em;
+}
+
+
+
+.file_browse_dialog {
+	text-align: left;
+}
+
+.file_browse_dialog .progress {
+	margin: 2px 0 12px;
+	font-size: 12px;
+}
+
+.file_browse_dialog .progress .complete {
+	color: #1A698C;
+}
+
+.file_browse_dialog .progress .inactve {
+	color: #999;
+}
+
+.file_browse_dialog #candidate_filter {
+	border-radius: 8px;
+	font-size: 18px;
+	border: 1px solid #aaa;
+	padding: 5px 8px;
+	margin-bottom: 12px;
+}
+
+.file_browse_dialog h2 {
+	
+}
+
+.file_browse_heading {
+	background-color: #e6e6e6;
+	padding: 8px;
+}
+
+.file_browse_heading h2 {
+	color: #000;
+	margin-bottom: 0;
+	font-weight: bold;
+}
+
+.file_browse_heading span {
+	font-size: 12px;
+	color: #666;
+}
+
+.file_browse_entry {
+	padding: 12px 8px;
+	color: #333;
+}
+
+.file_browse_entry.selected {
+	background-color: #4E73E0;
+	color: #fff;
+}
+
+.file_browse_type_icon {
+	float: left;
+	font-size: 44px;
+	margin-right: 10px;
+}
+
+.file_browse_entry + .file_browse_entry {
+	border-top: 1px solid #e6e6e6;
+}
+
+.file_browse_entry.selected + .file_browse_entry.selected {
+	border-top: 1px solid #2F8FC6;
+}
+
+.file_browse_entry_data {
+	padding-top: 5px;
+}
+
+.file_browse_entry_data h2 {
+	font-size: 14px;
+	font-weight: bold;
+	margin-bottom: 0;
+	color: #333;
+}
+
+.selected .file_browse_entry_data h2 {
+	color: #fff;
+}
+
+.selected .file_browse_entry_data p {
+	color: #eee;
+}
+
+.file_browse_entry_data p {
+	margin-bottom: 0;
+	color: #555;
+}
+
+.file_browse_entry label {
+	display: block;
+	margin: 10px 0 5px;
+	font-weight: bold;
+}
+
+.file_browse_entry hr {
+	background-color: #e6e6e6;
+	height: 1px;
+	border: 0;
+	margin-top: 16px;
+}
+
+#ingest_source_metadata .file_browse_entry_data {
+	padding-top: 0;
+	margin-left: 60px;
+}
+
+#ingest_source_metadata .file_browse_type_icon {
+	font-size: 50px;
+}
+
+#ingest_source_metadata .file_browse_entry_data h2 {
+	font-size: 16px;
 }

@@ -1,0 +1,45 @@
+<form id="ingest_source_candidates" class="file_browse_dialog">
+	<div class="progress">
+		<span class="bold">Choose materials</span>
+		<span class="inactive"> &rarr; Assign metadata</span>
+	</div>
+	
+	<input type="text" placeholder="filter results" id="candidate_filter" size="20" />
+	
+	<%
+	var source = null;
+	
+	_.each(candidates, function(candidate, index) { 
+		if (source == null || candidate.sourceId != source.id) {
+			source = sources[candidate.sourceId];
+			%>
+			<div class="file_browse_heading">
+				<h2><%= source.name %></h2>
+				<span><%= source.base %></span>
+			</div>
+			<%
+		}
+		%>
+		<div class="file_browse_entry" data-index="<%= index %>">
+			<div class="file_browse_type_icon">
+				<% if (candidate.type == "BagIt") { %>
+					<i class="fa fa-suitcase"></i>
+				<% } else { %>
+					<i class="fa fa-folder"></i>
+				<% } %>
+			</div>
+			
+			<div class="file_browse_entry_data">
+				<h2><%= candidate.patternMatched %></h2>
+				<p><%= candidate.type %> <%= candidate.version? candidate.version : "" %>
+					- <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
+					- <%= candidate.sizeFormatted %>
+				</p>
+			</div>
+		</div>
+	<% }); %>
+	
+	<div class="update_field">
+		<input value="Choose" class="update_button" type="submit">
+	</div>
+</form>
