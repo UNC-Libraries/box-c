@@ -88,8 +88,8 @@
 			
 			<p>
 				Material from <a href="browse/dept/"><c:out value="${departmentsCount}"/> UNC-Chapel Hill departments</a>,
-				from <a href="search?dept=anthropology">Anthropology</a>
-				to <a href="search?dept=toxicology">Toxicology</a>.
+				from <a href="search?dept=department+of+anthropology">Anthropology</a>
+				to <a href="search?dept=curriculum+in+toxicology">Toxicology</a>.
 			</p>
 		</div>
 
