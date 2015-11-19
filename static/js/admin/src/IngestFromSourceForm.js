@@ -158,17 +158,46 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			self.loadCandidateList();
 		});
 		
-		this.dialog.find("form").submit(function(e) {
+		this.$form = this.dialog.find("form");
+		this.$form.submit(function(e) {
 			e.preventDefault();
 			
+			var fileInfo = [];
 			// Generate a map of properties to pass to controller to get this deposit started
-			self.dialog.find(".file_browse_entry").each(function() {
-				
+			self.dialog.find(".file_browse_entry").each(function(index) {
+				var $this = $(this);
+				var candidate = selectedCandidates[index];
+				var info = {
+					sourceId : candidate.sourceId,
+					packagePath : candidate.patternMatched,
+					packagingType : candidate.packagingType,
+					label : $this.find("input[name='file_label']").val()
+				};
+				fileInfo.push(info);
 			});
 			
-			// Make request to server
+			var loadingOverlay = new ModalLoadingOverlay(self.dialog, {
+				autoOpen : false,
+				type : 'icon',
+				dialog : self.dialog
+			});
+			loadingOverlay.open();
 			
-			// Close the dialog
+			// Make request to server
+			$.ajax({
+				url : "ingestFromSource/" + self.pid,
+				type : "POST",
+				contentType: "application/json",
+				data : JSON.stringify(fileInfo)
+			}).success(function() {
+				self.options.alertHandler.alertHandler("message", "The selected packages have been submitted for deposit");
+				loadingOverlay.remove();
+				self.dialog.remove();
+			}).error(function(jqXHR, textMessage) {
+				loadingOverlay.remove();
+				self.options.alertHandler.alertHandler("message", "An error occurred while attempting to submit your deposit");
+				self.setError(textMessage);
+			});
 		});
 	};
 	

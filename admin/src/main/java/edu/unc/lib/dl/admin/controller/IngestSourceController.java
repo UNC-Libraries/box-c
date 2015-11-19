@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +81,7 @@ public class IngestSourceController {
 	}
 
 	@RequestMapping(value = "ingestFromSource/{pid}", method = RequestMethod.POST, produces = "application/json")
-	public void ingestFromSource(@PathVariable("pid") String pid,
+	public @ResponseBody Object ingestFromSource(@PathVariable("pid") String pid,
 			@RequestBody List<IngestPackageDetails> packages, HttpServletResponse resp) {
 		
 		log.error("Request to ingest from source to {}", pid);
@@ -91,14 +92,21 @@ public class IngestSourceController {
 			log.debug("Access denied to user {} while attempting to from ingest source deposit to {}",
 					GroupsThreadStore.getUsername(), pid);
 			resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return;
+			return "Insufficient permissions to deposit to the selected destination";
 		}
 		
+		// Validate the packages requested for deposit
 		for (IngestPackageDetails packageDetails : packages) {
+			if (StringUtils.isBlank(packageDetails.getPackagePath())
+					|| StringUtils.isBlank(packageDetails.getPackagingType())) {
+				resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				return "Package selected for deposit was missing either a path or packaging type";
+			}
+			
 			// Verify that the package path is from within the allowed locations for the specified ingest source
 			if (!sourceManager.isPathValid(packageDetails.getPackagePath(), packageDetails.getSourceId())) {
 				resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				return;
+				return "Invalid source path specified: " + packageDetails.getPackagePath();
 			}
 		}
 		
@@ -108,7 +116,13 @@ public class IngestSourceController {
 			
 			PID depositPID = new PID("uuid:" + UUID.randomUUID().toString());
 			
-			Map<String, String> deposit = new HashMap<String,String>();
+			// Generate a filename if one was not provided
+			String filename = packageDetails.getLabel();
+			if (StringUtils.isBlank(filename)) {
+				filename = packageDetails.getPackagePath().substring(packageDetails.getPackagePath().lastIndexOf('/') + 1);
+			}
+			
+			Map<String, String> deposit = new HashMap<>();
 			deposit.put(DepositField.sourcePath.name(), source.getBase() + packageDetails.getPackagePath());
 			deposit.put(DepositField.fileName.name(), packageDetails.getLabel());
 			deposit.put(DepositField.packagingType.name(), packageDetails.getPackagingType());
@@ -126,7 +140,7 @@ public class IngestSourceController {
 		}
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
-		return;
+		return null;
 	}
 
 	public static class IngestPackageDetails {
