@@ -106,7 +106,7 @@ public class IngestSourceManagerTest {
 		
 		candidate = candidates.get(1);
 		assertEquals("nestedsource", candidate.get("sourceId"));
-		assertEquals("coll_folder/smallbag.zip", candidate.get("patternMatched"));
+		assertEquals("coll_folder/smallerbag", candidate.get("patternMatched"));
 		assertEquals(PackagingType.BAGIT.toString(), candidate.get("packagingType"));
 		assertEquals("0.96", candidate.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidate.get("size")) > 0);

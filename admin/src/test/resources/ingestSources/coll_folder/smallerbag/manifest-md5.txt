@@ -1,0 +1,3 @@
+e1b849f9631ffc1829b2e31402373e3c  data/test1.txt
+c454552d52d55d3ef56408742887362b  data/test2.txt
+b3f66ec1535de7702c38e94408fa4a17  data/test3.txt
