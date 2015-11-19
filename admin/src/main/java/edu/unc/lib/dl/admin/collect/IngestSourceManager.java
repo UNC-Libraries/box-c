@@ -156,9 +156,9 @@ public class IngestSourceManager {
 			IngestSourceConfiguration source, String base) throws IOException {
 		
 		File file = filePath.toFile();
-		// Only bags are candidates currently
+		// Only directory bags are candidates currently
 		String version = BagHelper.getVersion(file);
-		if (version == null) {
+		if (version == null || !file.isDirectory()) {
 			return;
 		}
 		
