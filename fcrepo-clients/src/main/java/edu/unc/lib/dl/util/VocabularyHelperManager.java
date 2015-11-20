@@ -156,8 +156,8 @@ public class VocabularyHelperManager {
 						(VocabularyHelper) helperClassMap.get(vocabType).getConstructor().newInstance();
 
 				helperObject.setVocabularyURI(vocabURI);
-				helperObject.setSelector(info.get("vocabSelector"));
 				helperObject.setSelectorNamespaces(defaultSelectorNamespaces);
+				helperObject.setSelector(info.get("vocabSelector"));
 
 				vocabHelperMap.put(vocabURI, helperObject);
 			} catch (Exception e) {
