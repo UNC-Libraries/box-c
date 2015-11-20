@@ -191,7 +191,7 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 				Resource child = nodeIt.nextNode().asResource();
 				
 				String label = child.getProperty(labelProp).getString();
-				if (label.equals(segment) && child.hasProperty(hasModelProp, containerResource)) {
+				if (label.equals(segment)) {
 					// Folder already exists, select it and move on
 					currentNode = model.getBag(child);
 					nodeIt.close();

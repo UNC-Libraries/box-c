@@ -24,8 +24,8 @@
 				<h2><%= candidate.patternMatched %></h2>
 				<p><%= candidate.base %><br/>
 					<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
-					- <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
-					- <%= candidate.sizeFormatted %>
+					&ndash; <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
+					&ndash; <%= candidate.sizeFormatted %>
 				</p>
 				<div class="file_browse_entry_inputs">
 					<label for="file_label">Label</label>

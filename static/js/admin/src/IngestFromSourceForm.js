@@ -94,29 +94,24 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			var $input = $(this);
 			var value = $input.val();
 			
-			// Compute a regular expression for the user's search terms
-			var matchRe = null;
-			if (value && value.trim()) {
-				var pattern = "";
-				var terms = value.trim().split(" ");
-				for (var i = 0; i < terms.length; i++) {
-					var escaped = terms[i].replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-					pattern += ".*" + escaped + ".*";
-				}
-				matchRe = new RegExp(pattern);
-			}
+			var terms = value == null? [] : value.trim().split(" ");
 			
 			// Hide and show results depending on if they match the query
 			self.dialog.find(".file_browse_entry").each(function(index) {
-				// No query terms, show everything
-				if (!matchRe) {
+				// Check if there are any terms that don't match the index
+				var matches = true;
+				for (var i = 0; i < terms.length; i++) {
+					if (candidateIndex[index].indexOf(terms[i]) == -1) {
+						matches = false;
+						break;
+					}
+				}
+				
+				// All terms match, or there were no terms, so show this entry
+				if (matches) {
 					$(this).show();
 				} else {
-					if (candidateIndex[index].match(matchRe)) {
-						$(this).show();
-					} else {
-						$(this).hide();
-					}
+					$(this).hide();
 				}
 				
 				self.updateCandidateSubmitButton();
