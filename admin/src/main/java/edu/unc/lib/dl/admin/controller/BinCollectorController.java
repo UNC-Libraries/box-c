@@ -223,7 +223,7 @@ public class BinCollectorController {
 		Map<String, String> extras = new HashMap<String,String>();
 		extras.put(EXTRA_DEPOSITOR_NAME, GroupsThreadStore.getUsername());
 		extras.put(EXTRA_OWNER_NAME, GroupsThreadStore.getUsername());
-		extras.put(EXTRA_DEPOSITOR_EMAIL, GroupsThreadStore.getUsername() + "@email.unc.edu");
+		extras.put(EXTRA_DEPOSITOR_EMAIL, GroupsThreadStore.getEmail());
 		extras.put(EXTRA_PERMISSION_GROUPS, GroupsThreadStore.getGroupString());
 
 		Map<String, Object> response = new HashMap<String, Object>();

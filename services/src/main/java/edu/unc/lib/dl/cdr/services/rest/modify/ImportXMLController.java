@@ -75,10 +75,7 @@ public class ImportXMLController {
 		File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
 		FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
 		
-		String emailAddress = request.getHeader("mail");
-		if (emailAddress == null) {
-			emailAddress = GroupsThreadStore.getUsername() + "@email.unc.edu";
-		}
+		String emailAddress = GroupsThreadStore.getEmail();
 		
 		Job job = new Job(BulkMetadataUpdateJob.class.getName(), null, emailAddress, GroupsThreadStore.getUsername(),
 				GroupsThreadStore.getGroups(), importFile.getAbsolutePath(), xmlFile.getOriginalFilename());
