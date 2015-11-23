@@ -15,8 +15,8 @@
     limitations under the License.
 
 }}
-{{^failed}}CDR deposit complete: {{fileName}}{{/failed}}
-{{#failed}}CDR deposit failed: {{fileName}}{{/failed}}
+{{^failed}}CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}{{/failed}}
+{{#failed}}CDR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}{{/failed}}
 
 {{^failed}}{{#ingestedObjects}}{{ingestedObjects}} item(s) successfully deposited.{{/ingestedObjects}}{{/failed}}
 {{#failed}}
