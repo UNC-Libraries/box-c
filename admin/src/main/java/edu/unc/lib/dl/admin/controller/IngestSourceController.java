@@ -133,7 +133,7 @@ public class IngestSourceController {
 			deposit.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
 			deposit.put(DepositField.depositorName.name(), GroupsThreadStore.getUsername());
 			deposit.put(DepositField.permissionGroups.name(), GroupsThreadStore.getGroupString());
-			deposit.put(DepositField.depositorEmail.name(), GroupsThreadStore.getUsername() + "@email.unc.edu");
+			deposit.put(DepositField.depositorEmail.name(), GroupsThreadStore.getEmail());
 			
 			deposit.put(DepositField.containerId.name(), pid);
 			deposit.put(DepositField.state.name(), DepositState.unregistered.name());
