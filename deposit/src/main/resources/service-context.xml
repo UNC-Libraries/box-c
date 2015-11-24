@@ -125,11 +125,13 @@
 
 	<bean id="depositEmailHandler" class="edu.unc.lib.deposit.work.DepositEmailHandler" >
 		<property name="depositStatusFactory" ref="depositStatusFactory" />
-		<property name="baseUrl" value="${baseUrl:https://www.example.com}" />
+		<property name="baseUrl" value="${baseUrl}" />
 		<property name="mailSender" ref="mailSender" />
-		<property name="fromAddress" value="${from.email:no-reply@example.com}" />
-		<property name="htmlTemplate" ref="htmlTemplate" />
-		<property name="textTemplate" ref="textTemplate" />
+		<property name="administratorEmail" value="${administrator.email}" />
+		<property name="completedHtmlTemplate" ref="completedHtmlTemplate" />
+		<property name="completedTextTemplate" ref="completedTextTemplate" />
+		<property name="failedHtmlTemplate" ref="failedHtmlTemplate" />
+		<property name="failedTextTemplate" ref="failedTextTemplate" />
 	</bean>
 	
 	<bean id="depositMessageHandler" class="edu.unc.lib.deposit.work.DepositMessageHandler" >
@@ -440,19 +442,38 @@
 	
 	<bean id="mustacheCompiler" class="com.samskivert.mustache.Mustache" factory-method="compiler"/>
 
-	<bean id="htmlTemplate" factory-bean="mustacheCompiler"
+	<bean id="completedHtmlTemplate" factory-bean="mustacheCompiler"
 		factory-method="compile">
 		<constructor-arg>
 			<bean class="java.io.InputStreamReader">
-				<constructor-arg type="java.io.InputStream" value="classpath:email_html.txt" />
+				<constructor-arg type="java.io.InputStream" value="classpath:completed_html.txt" />
 			</bean>
 		</constructor-arg>
 	</bean>
-	<bean id="textTemplate" factory-bean="mustacheCompiler"
+	
+	<bean id="completedTextTemplate" factory-bean="mustacheCompiler"
 		factory-method="compile">
 		<constructor-arg>
 			<bean class="java.io.InputStreamReader">
-				<constructor-arg type="java.io.InputStream" value="${deposit.email.template:classpath:email_text.txt}" />
+				<constructor-arg type="java.io.InputStream" value="${classpath:completed_text.txt}" />
+			</bean>
+		</constructor-arg>
+	</bean>
+
+	<bean id="failedHtmlTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="classpath:failed_html.txt" />
+			</bean>
+		</constructor-arg>
+	</bean>
+	
+	<bean id="failedTextTemplate" factory-bean="mustacheCompiler"
+		factory-method="compile">
+		<constructor-arg>
+			<bean class="java.io.InputStreamReader">
+				<constructor-arg type="java.io.InputStream" value="${classpath:failed_text.txt}" />
 			</bean>
 		</constructor-arg>
 	</bean>

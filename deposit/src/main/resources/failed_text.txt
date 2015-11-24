@@ -15,16 +15,13 @@
     limitations under the License.
 
 }}
-{{^failed}}CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}{{/failed}}
-{{#failed}}CDR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}{{/failed}}
 
-{{^failed}}{{#ingestedObjects}}{{ingestedObjects}} item(s) successfully deposited.{{/ingestedObjects}}{{/failed}}
-{{#failed}}
+CDR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}
+
 There was an error processing your deposit.
 {{#errorMessage}}
   {{errorMessage}}
 {{/errorMessage}}
-{{/failed}}
 
 For details, see the status monitor:
 
