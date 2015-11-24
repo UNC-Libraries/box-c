@@ -25,11 +25,13 @@ import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,6 +46,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.Stages;
 
@@ -79,6 +82,8 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 	@Test
 	public void testConversion() throws Exception {
 		status.put(DepositField.sourcePath.name(), "src/test/resources/paths/valid-bag");
+		status.put(DepositField.fileName.name(), "Test File");
+		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
 		
 		when(stages.getStagedURI(any(URI.class))).thenReturn(new URI("tag:/path/data/test/lorem.txt"));
 
@@ -90,7 +95,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertEquals(depositBag.size(), 1);
 		
 		Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-		assertEquals("Bag folder label was not set", bagFolder.getProperty(dprop(model, label)).getString(), "valid-bag");
+		assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(dprop(model, label)).getString());
 		assertEquals("Content model was not set", CONTAINER.toString(),
 				bagFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		
@@ -114,6 +119,9 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 				file.getProperty(dprop(model, md5sum)).getString());
 		assertEquals("File location not set", "tag:/path/data/test/lorem.txt",
 				file.getProperty(dprop(model, stagingLocation)).getString());
+		
+		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
+		assertTrue(modsFile.exists());
 	}
 
 	@Test(expected = JobFailedException.class)

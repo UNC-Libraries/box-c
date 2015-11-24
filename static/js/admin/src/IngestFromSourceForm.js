@@ -166,7 +166,9 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 					sourceId : candidate.sourceId,
 					packagePath : candidate.patternMatched,
 					packagingType : candidate.packagingType,
-					label : $this.find("input[name='file_label']").val()
+					label : $this.find("input[name='file_label']").val(),
+					accessionNumber : $this.find("input[name='file_acc_number']").val(),
+					mediaId : $this.find("input[name='file_media_id']").val()
 				};
 				fileInfo.push(info);
 			});

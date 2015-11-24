@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,7 +86,7 @@ public class IngestSourceController {
 	public @ResponseBody Object ingestFromSource(@PathVariable("pid") String pid,
 			@RequestBody List<IngestPackageDetails> packages, HttpServletResponse resp) {
 		
-		log.error("Request to ingest from source to {}", pid);
+		log.info("Request to ingest from source to {}", pid);
 		PID destPid = new PID(pid);
 
 		// Check that user has permission to deposit to the selected destination
@@ -110,6 +112,7 @@ public class IngestSourceController {
 			}
 		}
 		
+		ObjectMapper mapper = new ObjectMapper();
 		// Build deposit entries and add to queue
 		for (IngestPackageDetails packageDetails : packages) {
 			IngestSourceConfiguration source = sourceManager.getSourceConfiguration(packageDetails.getSourceId());
@@ -124,7 +127,7 @@ public class IngestSourceController {
 			
 			Map<String, String> deposit = new HashMap<>();
 			deposit.put(DepositField.sourcePath.name(), source.getBase() + packageDetails.getPackagePath());
-			deposit.put(DepositField.fileName.name(), packageDetails.getLabel());
+			deposit.put(DepositField.fileName.name(), filename);
 			deposit.put(DepositField.packagingType.name(), packageDetails.getPackagingType());
 			deposit.put(DepositField.uuid.name(), depositPID.getUUID());
 			deposit.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
@@ -135,6 +138,19 @@ public class IngestSourceController {
 			deposit.put(DepositField.containerId.name(), pid);
 			deposit.put(DepositField.state.name(), DepositState.unregistered.name());
 			deposit.put(DepositField.actionRequest.name(), DepositAction.register.name());
+			
+			Map<String, String> extras = new HashMap<>();
+			if (!StringUtils.isBlank(packageDetails.getAccessionNumber())) {
+				extras.put("accessionNumber", packageDetails.getAccessionNumber());
+			}
+			if (!StringUtils.isBlank(packageDetails.getMediaId())) {
+				extras.put("mediaId", packageDetails.getMediaId());
+			}
+			try {
+				deposit.put(DepositField.extras.name(), mapper.writeValueAsString(extras));
+			} catch (IOException e) {
+				log.error("Failed to serialize extra data for deposit {}", depositPID, e);
+			}
 			
 			this.depositStatusFactory.save(depositPID.getUUID(), deposit);
 		}
@@ -149,6 +165,8 @@ public class IngestSourceController {
 		private String packagePath;
 		private String label;
 		private String packagingType;
+		private String accessionNumber;
+		private String mediaId;
 		
 		public IngestPackageDetails() {
 		}
@@ -183,6 +201,22 @@ public class IngestSourceController {
 
 		public void setPackagingType(String packagingType) {
 			this.packagingType = packagingType;
+		}
+
+		public String getAccessionNumber() {
+			return accessionNumber;
+		}
+
+		public void setAccessionNumber(String accessionNumber) {
+			this.accessionNumber = accessionNumber;
+		}
+
+		public String getMediaId() {
+			return mediaId;
+		}
+
+		public void setMediaId(String mediaId) {
+			this.mediaId = mediaId;
 		}
 	}
 }

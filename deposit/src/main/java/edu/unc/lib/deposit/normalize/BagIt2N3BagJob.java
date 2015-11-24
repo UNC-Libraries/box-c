@@ -22,6 +22,8 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,6 +31,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Model;
@@ -41,6 +50,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
 import gov.loc.repository.bagit.Bag;
@@ -59,6 +69,7 @@ import gov.loc.repository.bagit.utilities.SimpleResult;
  * @date Nov 9, 2015
  */
 public class BagIt2N3BagJob extends AbstractDepositJob {
+	private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
 	
 	@Autowired
 	private Stages stages;
@@ -115,10 +126,13 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
 		// Turn the bag itself into the top level folder for this deposit
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(new PID("uuid:" + UUID.randomUUID()).getURI());
-		model.add(bagFolder, labelProp, sourceFile.getName());
+		PID containerPID = new PID("uuid:" + UUID.randomUUID());
+		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
+		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
 		model.add(bagFolder, hasModelProp, model.createResource(CONTAINER.getURI().toString()));
 		top.add(bagFolder);
+		
+		addDescription(containerPID, status);
 		
 		// Add all of the payload objects into the bag folder
 		for (BagFile file : payload) {
@@ -213,6 +227,59 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 		}
 		
 		return currentNode;
+	}
+	
+	/**
+	 * Adds additional metadata fields for the root bag container if they are provided
+	 * 
+	 * @param containerPID
+	 * @param status
+	 */
+	private void addDescription(PID containerPID, Map<String, String> status) {
+		Document doc = new Document();
+		Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
+		doc.addContent(mods);
+		
+		if (status.containsKey(DepositField.extras.name())) {
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				JsonNode node = mapper.readTree(status.get(DepositField.extras.name()));
+				
+				JsonNode accessionNode = node.get("accessionNumber");
+				if (accessionNode != null) {
+					Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+					identifier.setText(accessionNode.asText());
+					identifier.setAttribute("type", "local");
+					identifier.setAttribute("displayLabel", "Accession Number");
+					mods.addContent(identifier);
+				}
+				
+				JsonNode mediaNode = node.get("mediaId");
+				if (mediaNode != null) {
+					Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+					identifier.setText(mediaNode.asText());
+					identifier.setAttribute("type", "local");
+					identifier.setAttribute("displayLabel", "Media Id");
+					mods.addContent(identifier);
+				}
+			} catch (IOException e) {
+				failJob(e, "Failed to parse extras data for {}", getDepositPID());
+				log.error("Failed to parse extras data for {}", this.getDepositPID(), e);
+			}
+		}
+		
+		// Persist the MODS file to disk if there were any fields added
+		if (mods.getChildren().size() > 0) {
+			final File modsFolder = getDescriptionDir();
+			modsFolder.mkdirs();
+			File modsFile = new File(modsFolder, containerPID.getUUID() + ".xml");
+			try (FileOutputStream fos = new FileOutputStream(modsFile)) {
+				new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
+			} catch (IOException e) {
+				failJob(e, "Unable to write descriptive metadata for bag deposit {}", getDepositPID());
+			}
+			
+		}
 	}
 
 	public void setStages(Stages stages) {
