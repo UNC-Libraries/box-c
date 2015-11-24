@@ -211,14 +211,7 @@ public class SearchController extends AbstractSearchController {
 		results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
 		results.put("queryMethod", queryMethod);
 		results.put("onyen", GroupsThreadStore.getUsername());
-
-		String email = request.getHeader("mail");
-		if (email != null) {
-			if (email.endsWith("_UNC")) {
-				email = email.substring(0, email.length() - 4);
-			}
-			results.put("email", email);
-		}
+		results.put("email", GroupsThreadStore.getEmail());
 
 		if (resp.getSelectedContainer() != null) {
 			results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));

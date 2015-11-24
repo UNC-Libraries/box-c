@@ -18,18 +18,18 @@
 <html>
 <head>
   <title>
-    {{^failed}}CDR deposit complete: {{fileName}}{{/failed}}
-    {{#failed}}CDR deposit failed: {{fileName}}{{/failed}}
+    {{^failed}}CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}{{/failed}}
+    {{#failed}}CDR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}{{/failed}}
   </title>
 </head>
 <body>
   <img style="float: right;" alt="UNC Libraries logo" src="{{baseUrl}}/static/images/email_logo.png"/>
   {{^failed}}
-  <h3>CDR deposit complete: {{fileName}}</h3>
+  <h3>CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}</h3>
   {{#ingestedObjects}}<p>{{ingestedObjects}} item(s) successfully deposited.</p>{{/ingestedObjects}}
   {{/failed}}
   {{#failed}}
-  <h3>CDR deposit failed: {{fileName}}</h3>
+  <h3>CDR deposit failed{{#fileName}}: {{fileName}}{{/fileName}}</h3>
   <p>There was an error processing your deposit.</p>
   {{#errorMessage}}
     <div style="background: yellow">{{errorMessage}}</div>

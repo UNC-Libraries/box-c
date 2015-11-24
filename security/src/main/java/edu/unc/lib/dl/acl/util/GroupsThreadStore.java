@@ -26,6 +26,7 @@ public class GroupsThreadStore {
 	private static ThreadLocal<AccessGroupSet> groups = new ThreadLocal<AccessGroupSet>(); // initial value is null
 	private static ThreadLocal<String> username = new ThreadLocal<String>();
 	private static ThreadLocal<String> groupString = new ThreadLocal<String>();
+	private static ThreadLocal<String> email = new ThreadLocal<String>();
 	
 	/**
 	 * Adds groups for forwarding with subsequent invocation of fedora clients by the current thread.
@@ -64,6 +65,14 @@ public class GroupsThreadStore {
 		return GroupsThreadStore.username.get();
 	}
 	
+	public static void storeEmail(String email) {
+		GroupsThreadStore.email.set(email);
+	}
+	
+	public static String getEmail() {
+		return GroupsThreadStore.email.get();
+	}
+	
 	/**
 	 * Clears the CDR groups associated with the current thread.
 	 */
@@ -75,5 +84,6 @@ public class GroupsThreadStore {
 		GroupsThreadStore.groups.remove();
 		GroupsThreadStore.username.remove();
 		GroupsThreadStore.groupString.remove();
+		GroupsThreadStore.email.remove();
 	}
 }

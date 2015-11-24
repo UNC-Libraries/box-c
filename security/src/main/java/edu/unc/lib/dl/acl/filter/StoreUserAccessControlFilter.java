@@ -15,22 +15,22 @@
  */
 package edu.unc.lib.dl.acl.filter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.context.ServletContextAware;
-
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.httpclient.HttpClientUtil;
+import java.io.IOException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 /**
  * Filter which retrieves the users shibboleth and grouper session information in order to construct their profile as
@@ -69,6 +69,14 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 				userName = userName.trim();
 			GroupsThreadStore.storeUsername(userName);
 			
+			String email = request.getHeader("mail");
+			if (email != null) {
+				if (email.endsWith("_UNC")) {
+					email = email.substring(0, email.length() - 4);
+				}
+				GroupsThreadStore.storeEmail(email);
+			}
+			
 			AccessGroupSet accessGroups = getUserGroups(request);
 			request.setAttribute("accessGroupSet", accessGroups);
 			GroupsThreadStore.storeGroups(accessGroups);
@@ -88,7 +96,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 	}
 	
 	protected AccessGroupSet getForwardedGroups(HttpServletRequest request) {
-		String forwardedGroups = (String) request.getHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER);
+		String forwardedGroups = request.getHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER);
 		if (log.isDebugEnabled())
 			log.debug("Forwarding user " + request.getRemoteUser() + " logged in with forwarded groups " + forwardedGroups);
 		if (forwardedGroups == null)
@@ -101,7 +109,7 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
 	}
 	
 	protected AccessGroupSet getGrouperGroups(HttpServletRequest request) {
-		String shibGroups = (String) request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
+		String shibGroups = request.getHeader(HttpClientUtil.SHIBBOLETH_GROUPS_HEADER);
 		AccessGroupSet accessGroups = null;
 		String userName = request.getRemoteUser();
 		if (log.isDebugEnabled())

@@ -47,7 +47,6 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 	private String generatorVersion = null;
 	private String depositorNamespace = null;
 	private String adminDepositor = null;
-	private static ThreadLocal<String> userEmailAddress = new ThreadLocal<String>();
 
 	public SwordConfigurationImpl() {
 	}
@@ -183,18 +182,6 @@ public class SwordConfigurationImpl implements SwordConfiguration {
 
 	public void setAdminDepositor(String adminDepositor) {
 		this.adminDepositor = adminDepositor;
-	}
-	
-	public static void storeUserEmailAddress(String emailAddress) {
-		SwordConfigurationImpl.userEmailAddress.set(emailAddress);
-	}
-	
-	public static String getUserEmailAddress() {
-		return SwordConfigurationImpl.userEmailAddress.get();
-	}
-	
-	public static void clearUserEmailAddress() {
-		SwordConfigurationImpl.userEmailAddress.remove();
 	}
 
 	@Override

@@ -208,6 +208,10 @@ public class BinCollectorController {
 
 		DepositBinConfiguration config = binCollector.getConfiguration(binKey);
 
+		if (fileList == null || fileList.length == 0) {
+			return null;
+		}
+		
 		if (config == null) {
 			log.debug("Invalid bin key provided {}", binKey);
 			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -223,7 +227,7 @@ public class BinCollectorController {
 		Map<String, String> extras = new HashMap<String,String>();
 		extras.put(EXTRA_DEPOSITOR_NAME, GroupsThreadStore.getUsername());
 		extras.put(EXTRA_OWNER_NAME, GroupsThreadStore.getUsername());
-		extras.put(EXTRA_DEPOSITOR_EMAIL, GroupsThreadStore.getUsername() + "@email.unc.edu");
+		extras.put(EXTRA_DEPOSITOR_EMAIL, GroupsThreadStore.getEmail());
 		extras.put(EXTRA_PERMISSION_GROUPS, GroupsThreadStore.getGroupString());
 
 		Map<String, Object> response = new HashMap<String, Object>();
@@ -231,7 +235,7 @@ public class BinCollectorController {
 		response.put("name", config.getName());
 
 		try {
-			List<String> files = (fileList != null && fileList.length > 0) ? files = Arrays.asList(fileList) : null;
+			List<String> files = Arrays.asList(fileList);
 			binCollector.collect(files, binKey, extras);
 			response.put("success", true);
 		} catch (IOException e) {
