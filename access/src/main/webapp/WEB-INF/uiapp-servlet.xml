@@ -80,7 +80,6 @@
 	</bean>
 	
 	<bean class="edu.unc.lib.dl.ui.validator.RequestAccessFormValidator"/>
-	<bean class="edu.unc.lib.dl.ui.validator.ContactFormValidator"/>
 	
 	<bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">
 		<property name="privateKey" value="${recaptcha.private.key}" />
@@ -117,20 +116,6 @@
 		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
 		<property name="htmlTemplatePath" value="requestAccessUserResponseHtml.ftl"/>
 		<property name="textTemplatePath" value="requestAccessUserResponseText.ftl"/>
-		<property name="mailSender" ref="mailSender"/>
-	</bean>
-	
-	<bean id="contactEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
-	<property name="emailRecipients">
-			<list>
-				<value>${contact.email}</value>
-			</list>
-		</property>
-		<property name="fromAddress" value="${repository.reply.email}"/>
-		<property name="fromName" value="CDR Feedback Form"/>
-		<property name="defaultSubjectLine" value="CDR Feedback"/>
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
-		<property name="htmlTemplatePath" value="contactFormHtml.ftl"/>
 		<property name="mailSender" ref="mailSender"/>
 	</bean>
 	
