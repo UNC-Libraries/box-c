@@ -33,6 +33,7 @@
 <c:set var="gaCommands" value="" scope="request" />
 <div id="pagewrap">
 	<div id="pagewrap_inside">
+		<c:import url="common/surveyBanner.jsp" />
 		<c:import url="common/header.jsp" />
 		<div id="content">
 			<c:choose>
