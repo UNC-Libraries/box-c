@@ -272,6 +272,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 			listContentsRequest.setRetrieveFacets(false);
 			listContentsRequest.setApplyCutoffs(false);
 			listContentsRequest.setRootPid(pid);
+			listContentsRequest.getSearchState().setRollup(true);
 			
 			SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
 			model.addAttribute("contentListResponse", contentListResponse);
