@@ -61,11 +61,6 @@
 	</bean>
 
 	<!-- Beans -->
-
-	<bean id="staticBaseUrl" class="java.lang.String">
-		<constructor-arg
-			value="${external.base.url}" />
-	</bean>
 	
 	<bean id="gaTrackingID" class="java.lang.String">
 		<constructor-arg
