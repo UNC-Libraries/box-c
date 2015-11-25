@@ -27,21 +27,11 @@
   <div class="threecol fluid-cap-left">
 		<div class="contentarea">
 			<p>
-				<a href="${pageContext.request.contextPath}/">Home</a>&nbsp;|&nbsp;
-				<a href="collections">Browse Collections</a>&nbsp;|&nbsp;
-				<a href="external?page=about.about">About</a>&nbsp;|&nbsp;
-				<c:url var="contactUrl" scope="page" value="contact">
-					<c:choose>
-						<c:when test="${param.page == 'contact'}">
-							<c:param name="refer" value="${param.refer}"/>
-						</c:when>
-						<c:otherwise>
-							<c:param name="refer" value="${currentAbsoluteUrl}"/>
-						</c:otherwise>
-					</c:choose>
-				</c:url>
-				<a href="<c:out value='${contactUrl}'/>">Contact Us</a>&nbsp;|&nbsp;
-				<a href="http://www.lib.unc.edu">Library Home</a>&nbsp;|&nbsp;
+				<a href="${pageContext.request.contextPath}/">Home</a> |
+				<a href="collections">Browse Collections</a |
+				<a href="http://blogs.lib.unc.edu/cdr/">About</a> |
+				<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact Us</a> |
+				<a href="http://www.lib.unc.edu">Library Home</a> |
 				<a href="http://www.lib.unc.edu/aoffice/policies/privacy_policy.html">Privacy Policy</a>
 			</p>
 		</div>
