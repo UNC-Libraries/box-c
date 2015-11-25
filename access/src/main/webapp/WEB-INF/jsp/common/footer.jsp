@@ -27,12 +27,12 @@
   <div class="threecol fluid-cap-left">
 		<div class="contentarea">
 			<p>
-				<a href="${pageContext.request.contextPath}/">Home</a>&nbsp;|&nbsp;
-				<a href="collections">Browse Collections</a>&nbsp;|&nbsp;
-				<a href="http://blogs.lib.unc.edu/cdr/">About</a>&nbsp;|&nbsp;
-				<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact Us</a>&nbsp;|&nbsp;
-				<a href="http://www.lib.unc.edu">Library Home</a>&nbsp;|&nbsp;
-				<a href="http://library.unc.edu/privacy-policy/">Privacy Policy</a>
+				<a href="${pageContext.request.contextPath}/">Home</a> |
+				<a href="collections">Browse Collections</a |
+				<a href="http://blogs.lib.unc.edu/cdr/">About</a> |
+				<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact Us</a> |
+				<a href="http://www.lib.unc.edu">Library Home</a> |
+				<a href="http://www.lib.unc.edu/aoffice/policies/privacy_policy.html">Privacy Policy</a>
 			</p>
 		</div>
             </div>
