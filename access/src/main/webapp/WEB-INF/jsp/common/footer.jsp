@@ -32,7 +32,7 @@
 				<a href="http://blogs.lib.unc.edu/cdr/">About</a>&nbsp;|&nbsp;
 				<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact Us</a>&nbsp;|&nbsp;
 				<a href="http://www.lib.unc.edu">Library Home</a>&nbsp;|&nbsp;
-				<a href="http://www.lib.unc.edu/aoffice/policies/privacy_policy.html">Privacy Policy</a>
+				<a href="http://library.unc.edu/privacy-policy/">Privacy Policy</a>
 			</p>
 		</div>
             </div>
