@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -36,6 +38,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
  * Manager responsible for performing ingest of new objects or packages
@@ -47,6 +50,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 	private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
 
 	private Map<PackagingType, DepositHandler> packageHandlers;
+	private List<String> priorityDepositors;
 
 	@Override
 	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
@@ -72,7 +76,10 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 		PackagingType type = PackagingType.getPackagingType(deposit.getPackaging());
 		try {
 			DepositHandler depositHandler = packageHandlers.get(type);
-			return depositHandler.doDeposit(containerPID, deposit, type, config, depositor, owner);
+			// Check to see if the depositor is in the list to receive higher priority
+			Priority priority = priorityDepositors.contains(depositor)? Priority.high : Priority.normal;
+			
+			return depositHandler.doDeposit(containerPID, deposit, type, priority, config, depositor, owner);
 		} catch (JDOMException e) {
 			log.warn("Failed to deposit", e);
 			throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
@@ -93,5 +100,9 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 	public void setPackageHandlers(Map<PackagingType, DepositHandler> packageHandlers) {
 		this.packageHandlers = packageHandlers;
+	}
+	
+	public void setPriorityDepositors(String depositors) {
+		priorityDepositors = Arrays.asList(depositors.split(","));
 	}
 }

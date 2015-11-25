@@ -69,8 +69,8 @@ public class AtomPubEntryDepositHandlerTest {
 		d.setEntry(doc.getRoot());
 		PID dest = new PID("uuid:destination");
 		
-		atomPubEntryDepositHandler.doDeposit(dest, d, PackagingType.ATOM, swordConfiguration,
-				"test-depositor", "test-owner");
+		atomPubEntryDepositHandler.doDeposit(dest, d, PackagingType.ATOM, null,
+				swordConfiguration, "test-depositor", "test-owner");
 				
 		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}

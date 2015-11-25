@@ -42,6 +42,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 public abstract class AbstractDepositHandler implements DepositHandler {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDepositHandler.class);
@@ -101,7 +102,8 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 	}
 	
 	protected void registerDeposit(PID depositPid, PID destination, Deposit deposit,
-			PackagingType type, String depositor, String owner, Map<String, String> extras) throws SwordError {
+			PackagingType type, Priority priority, String depositor, String owner, Map<String, String> extras)
+					throws SwordError {
 		Map<String, String> chkstatus = this.depositStatusFactory.get(depositPid.getUUID());
 		if(chkstatus != null && !chkstatus.isEmpty()) throw new SwordError(UriRegistry.ERROR_BAD_REQUEST, 400, "Duplicate request, repository already has deposit "+depositPid);
 		
@@ -120,6 +122,9 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		status.put(DepositField.packagingType.name(), type.getUri());
 		status.put(DepositField.depositMd5.name(), deposit.getMd5());
 		status.put(DepositField.depositSlug.name(), deposit.getSlug());
+		if (priority != null) {
+			status.put(DepositField.priority.name(), priority.name());
+		}
 		String permGroups = null;
 		if (this.getOverridePermissionGroups() != null) {
 			permGroups = StringUtils.join(this.getOverridePermissionGroups(), ';');

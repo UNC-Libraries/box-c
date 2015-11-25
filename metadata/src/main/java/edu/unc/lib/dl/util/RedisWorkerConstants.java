@@ -13,9 +13,6 @@ public class RedisWorkerConstants {
 	public static final String BULK_UPDATE_QUEUE = "bulk-md-update";
 	public static final String OPERATION_METRICS_PREFIX = "operation-metrics:";
 
-	public static final String DEPOSIT_PREPARE_QUEUE = "PREPARE";
-	public static final String DEPOSIT_DELAYED_QUEUE = "DELAYED_PREPARE";
-	public static final String DEPOSIT_CDRMETS_QUEUE = "CDRMETSCONVERT";
 	public static final String RUN_ENHANCEMENT_TREE_QUEUE = "enhance-tree";
 	
 	public static final String RESQUE_QUEUE_PREFIX = "resque:queue:";
@@ -26,7 +23,7 @@ public class RedisWorkerConstants {
 		createTime, startTime, endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime,
 		depositorEmail, packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug,
 		errorMessage, stackTrace, excludeDepositRecord, stagingFolderURI, publishObjects, manifestURI,
-		fileMimetype;
+		fileMimetype, priority;
 	}
 
 	public static enum JobField {
@@ -39,6 +36,10 @@ public class RedisWorkerConstants {
 
 	public static enum DepositState {
 		unregistered, queued, running, paused, finished, cancelled, failed;
+	}
+	
+	public static enum Priority {
+		normal, high
 	}
 
 	/**

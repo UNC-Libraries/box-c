@@ -34,6 +34,7 @@ import org.swordapp.server.UriRegistry;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
  * Default handler when packaging type is null.
@@ -48,8 +49,8 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 
 	@Override
 	public DepositReceipt doDeposit(PID destination, Deposit deposit,
-			PackagingType type, SwordConfiguration config, String depositor,
-			String owner) throws SwordError {
+			PackagingType type, Priority priority, SwordConfiguration config,
+			String depositor, String owner) throws SwordError {
 		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to "
 				+ destination.getPid());
 
@@ -100,7 +101,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 		}
 		
 		registerDeposit(depositPID, destination, deposit,
-				type, depositor, owner, Collections.<String, String> emptyMap());
+				type, priority, depositor, owner, Collections.<String, String> emptyMap());
 		return buildReceipt(depositPID, config);
 	}
 }

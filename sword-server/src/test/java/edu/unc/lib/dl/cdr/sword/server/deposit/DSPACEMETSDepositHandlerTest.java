@@ -65,8 +65,8 @@ public class DSPACEMETSDepositHandlerTest {
 		d.setEntry(entry);
 		
 		PID dest = new PID("uuid:destination");
-		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, swordConfiguration,
-				"test-depositor", "test-owner");
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, null,
+				swordConfiguration, "test-depositor", "test-owner");
 
 		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}

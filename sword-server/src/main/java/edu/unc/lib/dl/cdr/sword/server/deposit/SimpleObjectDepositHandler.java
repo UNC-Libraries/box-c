@@ -30,6 +30,7 @@ import org.swordapp.server.SwordConfiguration;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 	private static Logger log = Logger
@@ -37,8 +38,8 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 
 	@Override
 	public DepositReceipt doDeposit(PID destination, Deposit deposit,
-			PackagingType type, SwordConfiguration config, String depositor,
-			String owner) throws Exception {
+			PackagingType type, Priority priority, SwordConfiguration config,
+			String depositor, String owner) throws Exception {
 		log.debug("Preparing to perform a Simple Object deposit to "
 				+ destination.getPid());
 
@@ -65,7 +66,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 		options.put(DepositField.excludeDepositRecord.name(), "true");
 
 		registerDeposit(depositPID, destination, deposit,
-				type, depositor, owner, options);
+				type, Priority.high, depositor, owner, options);
 		return buildReceipt(depositPID, config);
 	}
 }
