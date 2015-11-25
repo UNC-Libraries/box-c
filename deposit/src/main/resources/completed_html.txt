@@ -29,7 +29,10 @@
   
   {{#ingestedObjects}}<p>{{ingestedObjects}} item(s) successfully deposited.</p>{{/ingestedObjects}}
   
-  {{#isOpen}}<p>Your materials are now <a href="{{baseUrl}}/record/{{objectPid}}">available on the CDR</a>.</p>{{/isOpen}}
+  {{#isOpen}}
+  <p>Your materials are now available in the CDR:</p>
+  <p><a href="{{baseUrl}}/record/{{objectPid}}">{{baseUrl}}/record/{{objectPid}}</a></p>
+  {{/isOpen}}
   
   {{#isEmbargoed}}<p>Your materials are embargoed until {{embargoUntil}}.</p>{{/isEmbargoed}}
   

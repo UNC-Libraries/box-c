@@ -21,7 +21,9 @@ CDR deposit complete{{#fileName}}: {{fileName}}{{/fileName}}
 {{#ingestedObjects}}{{ingestedObjects}} item(s) successfully deposited.
 
 {{/ingestedObjects}}
-{{#isOpen}}Your materials are now available on the CDR: {{baseUrl}}/record/{{objectPid}}
+{{#isOpen}}Your materials are now available in the CDR:
+
+{{baseUrl}}/record/{{objectPid}}
 
 {{/isOpen}}
 {{#isEmbargoed}}Your materials are embargoed until {{embargoUntil}}.
