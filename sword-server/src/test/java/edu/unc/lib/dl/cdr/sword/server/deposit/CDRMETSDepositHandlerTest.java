@@ -69,8 +69,8 @@ public class CDRMETSDepositHandlerTest {
 		reset(depositStatusFactory);
 		
 		PID dest = new PID("uuid:destination");
-		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, swordConfiguration,
-				"test-depositor", "test-owner");
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, null,
+				swordConfiguration, "test-depositor", "test-owner");
 
 		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}
@@ -93,8 +93,8 @@ public class CDRMETSDepositHandlerTest {
 		reset(depositStatusFactory);
 		
 		PID dest = new PID("uuid:destination");
-		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, swordConfiguration,
-				"test-depositor", "test-owner");
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, null,
+				swordConfiguration, "test-depositor", "test-owner");
 
 		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}
@@ -117,8 +117,8 @@ public class CDRMETSDepositHandlerTest {
 		reset(depositStatusFactory);
 		
 		PID dest = new PID("uuid:destination");
-		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, swordConfiguration,
-				"test-depositor", "test-owner");
+		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_CDR, null,
+				swordConfiguration, "test-depositor", "test-owner");
 
 		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
 	}

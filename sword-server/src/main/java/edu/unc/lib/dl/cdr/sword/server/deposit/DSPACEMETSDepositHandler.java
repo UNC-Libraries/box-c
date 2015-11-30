@@ -34,13 +34,14 @@ import edu.unc.lib.dl.util.ErrorURIRegistry;
 import edu.unc.lib.dl.util.MetsHeaderScanner;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 	private static Logger log = Logger.getLogger(DSPACEMETSDepositHandler.class);
 
 	@Override
-	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			String depositor, String owner) throws SwordError {
+	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
+			SwordConfiguration config, String depositor, String owner) throws SwordError {
 		if (log.isDebugEnabled()) {
 			log.debug("Preparing to perform a DSPACE METS deposit to " + destination.getPid());
 			log.debug("Working with temporary file: "+ deposit.getFile().getAbsolutePath());
@@ -76,7 +77,7 @@ public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 		status.put(DepositField.intSenderDescription.name(), StringUtils.join(scanner.getNames(), ','));
 		
 		registerDeposit(depositPID, destination, deposit,
-				type, depositor, owner, status);
+				type, priority, depositor, owner, status);
 		return buildReceipt(depositPID, config);
 	}
 }

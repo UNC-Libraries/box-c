@@ -21,6 +21,7 @@ import org.swordapp.server.SwordConfiguration;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
  * Interface for deposit handlers
@@ -37,6 +38,8 @@ public interface DepositHandler {
 	 * @param deposit
 	 * @param type
 	 *           packaging type of the deposit
+	 * @param priority
+	 *           priority level for the submitted deposit
 	 * @param config
 	 * @param depositor
 	 *           username of the depositor
@@ -45,6 +48,6 @@ public interface DepositHandler {
 	 * @return
 	 * @throws Exception
 	 */
-	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, SwordConfiguration config,
-			String depositor, String owner) throws Exception;
+	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
+			SwordConfiguration config, String depositor, String owner) throws Exception;
 }

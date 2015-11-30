@@ -48,10 +48,10 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.RedisWorkerConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
  * Coordinates work on deposits via Redis and Resque. Responsible for putting
@@ -75,10 +75,7 @@ public class DepositSupervisor implements WorkerListener {
 	private ActivityMetricsClient metricsClient;
 
 	@Autowired
-	private WorkerPool depositWorkerPool;
-	
-	@Autowired
-	private WorkerPool cdrMetsDepositWorkerPool;
+	private List<WorkerPool> depositWorkerPools;
 	
 	@Autowired
 	private QueueInfoDAO queueDAO;
@@ -137,14 +134,15 @@ public class DepositSupervisor implements WorkerListener {
 	}
 
 	private static enum Queue {
-		PREPARE, DELAYED_PREPARE, CDRMETSCONVERT;
+		PREPARE, DELAYED_PREPARE, CDRMETSCONVERT, PREPARE_HIGH_PRIORITY;
 	}
 
 	@PostConstruct
 	public void init() {
 		LOG.info("Initializing DepositSupervisor timer and starting Jesque worker pool");
-		depositWorkerPool.getWorkerEventEmitter().addListener(this);
-		cdrMetsDepositWorkerPool.getWorkerEventEmitter().addListener(this);
+		for (WorkerPool pool : depositWorkerPools) {
+			pool.getWorkerEventEmitter().addListener(this);
+		}
 	}
 
 	public void start() {
@@ -173,7 +171,7 @@ public class DepositSupervisor implements WorkerListener {
 							
 							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
 								try {
-									queueNewDeposit(uuid);
+									queueNewDeposit(uuid, fields);
 								} finally {
 									depositStatusFactory.removeSupervisorLock(uuid);
 								}
@@ -220,32 +218,24 @@ public class DepositSupervisor implements WorkerListener {
 
 		}, 1000, 1000);
 
-		if (depositWorkerPool.isShutdown()) {
-			throw new Error("Cannot start deposit workers, already shutdown.");
-		} else if (depositWorkerPool.isPaused()) {
-			LOG.info("Unpausing deposit workers");
-			this.depositWorkerPool.togglePause(false);
-		} else {
-			LOG.info("Starting deposit workers");
-			depositWorkerPool.run();
-		}
-		
-		if (cdrMetsDepositWorkerPool.isShutdown()) {
-			throw new Error("Cannot start deposit workers, already shutdown.");
-		} else if (cdrMetsDepositWorkerPool.isPaused()) {
-			LOG.info("Unpausing deposit workers");
-			this.cdrMetsDepositWorkerPool.togglePause(false);
-		} else {
-			LOG.info("Starting deposit workers");
-			cdrMetsDepositWorkerPool.run();
+		for (WorkerPool pool : depositWorkerPools) {
+			if (pool.isShutdown()) {
+				throw new Error("Cannot start deposit workers, already shutdown.");
+			} else if (pool.isPaused()) {
+				LOG.info("Unpausing deposit workers");
+				pool.togglePause(false);
+			} else {
+				LOG.info("Starting deposit workers");
+				pool.run();
+			}
 		}
 	}
 	
 	private Map<String, Set<String>> getQueuedDepositsWithJobs() {
 		Map<String, Set<String>> depositMap = new HashMap<>();
-		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_PREPARE_QUEUE, depositMap);
-		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_DELAYED_QUEUE, depositMap);
-		addQueuedDeposits(RedisWorkerConstants.DEPOSIT_CDRMETS_QUEUE, depositMap);
+		for (Queue queue: Queue.values()) {
+			addQueuedDeposits(queue.name(), depositMap);
+		}
 		return depositMap;
 	}
 	
@@ -323,13 +313,16 @@ public class DepositSupervisor implements WorkerListener {
 
 	public void stop() {
 		LOG.info("Stopping the Deposit Supervisor");
-		depositWorkerPool.togglePause(true); // take no new jobs
 		if (timer != null) { // stop registering new deposits
 			this.timer.cancel();
 			this.timer.purge();
 			this.timer = null;
 		}
-		depositWorkerPool.end(false); // cancel running jobs without interrupting
+		
+		for (WorkerPool pool : depositWorkerPools) {
+			pool.togglePause(true); // take no new jobs
+			pool.end(false); // cancel running jobs without interrupting
+		}
 		LOG.info("Stopped the Deposit Supervisor");
 	}
 
@@ -607,35 +600,46 @@ public class DepositSupervisor implements WorkerListener {
 		Job nextJob = getNextJob(job, depositUUID, status, successfulJobs);
 		if (nextJob != null) {
 			LOG.info("Queuing next job {} for deposit {}", nextJob.getClassName(), depositUUID);
-			Client c = makeJesqueClient();
-			if (delay > 0)
-				c.delayedEnqueue(Queue.DELAYED_PREPARE.name(), nextJob, System.currentTimeMillis() + delay);
-			else {
-				if(CDRMETS2N3BagJob.class.getName().equals(nextJob.getClassName())) {
-					c.enqueue(Queue.CDRMETSCONVERT.name(), nextJob);
-				} else {
-					c.enqueue(Queue.PREPARE.name(), nextJob);
-				}
-			}
-			c.end();
+			
+			enqueueJob(nextJob, status, delay);
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
 			metricsClient.incrFinishedDeposit();
 			
 			depositEmailHandler.sendDepositResults(depositUUID);
 			depositMessageHandler.sendDepositMessage(depositUUID);
-
-			Client c = makeJesqueClient();
+			
 			// schedule cleanup job after the configured delay
-			long schedule = System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds();
 			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
 			LOG.info("Queuing {} for deposit {}",
 					cleanJob.getClassName(), depositUUID);
-			c.delayedEnqueue(Queue.DELAYED_PREPARE.name(), cleanJob, schedule);
+			enqueueJob(cleanJob, status, System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds());
+		}
+	}
+	
+	private void enqueueJob(Job job, Map<String, String> fields, long delay) {
+		Client c = makeJesqueClient();
+		try {
+			if (delay > 0)
+				c.delayedEnqueue(Queue.DELAYED_PREPARE.name(), job, System.currentTimeMillis() + delay);
+			else {
+				if (CDRMETS2N3BagJob.class.getName().equals(job.getClassName())) {
+					c.enqueue(Queue.CDRMETSCONVERT.name(), job);
+				} else {
+					String priority = fields.get(DepositField.priority.name());
+					if (Priority.high.name().equals(priority)) {
+						c.enqueue(Queue.PREPARE_HIGH_PRIORITY.name(), job);
+					} else {
+						c.enqueue(Queue.PREPARE.name(), job);
+					}
+				}
+			}
+		} finally {
+			c.end();
 		}
 	}
 
-	private void queueNewDeposit(String uuid) {
+	private void queueNewDeposit(String uuid, Map<String, String> fields) {
 		LOG.info("Queuing first job for deposit {}", uuid);
 
 		Job job = makeJob(PackageIntegrityCheckJob.class, uuid);
@@ -643,9 +647,7 @@ public class DepositSupervisor implements WorkerListener {
 		depositStatusFactory.setState(uuid, DepositState.queued);
 		depositStatusFactory.clearActionRequest(uuid);
 
-		Client c = makeJesqueClient();
-		c.enqueue(Queue.PREPARE.name(), job);
-		c.end();
+		enqueueJob(job, fields, 0);
 	}
 
 	private void resumeDeposit(String uuid, Map<String, String> status) {
