@@ -8,19 +8,21 @@
 		<div class="error_stack"></div>
 	</div>
 	
+	<div class="file_browse_list">
+	<table>
 	<%
 	_.each(selectedCandidates, function(candidate, index) { 
 		%>
-		<div class="file_browse_entry">
-			<div class="file_browse_type_icon">
+		<tr class="file_browse_entry">
+			<td class="file_browse_type_icon">
 				<% if (candidate.type == "BagIt") { %>
 					<i class="fa fa-suitcase"></i>
 				<% } else { %>
 					<i class="fa fa-folder"></i>
 				<% } %>
-			</div>
+			</td>
 			
-			<div class="file_browse_entry_data">
+			<td class="file_browse_entry_data">
 				<h2><%= candidate.patternMatched %></h2>
 				<p><%= candidate.base %><br/>
 					<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
@@ -28,18 +30,19 @@
 					&ndash; <%= candidate.sizeFormatted %>
 				</p>
 				<div class="file_browse_entry_inputs">
-					<label for="file_label">Label</label>
+					<label for="file_label">Label <span class="required">*</span></label>
 					<input type="text" name="file_label" size="40" value="<%= candidate.filename %>" />
-					<hr/>
 					<label for="file_acc_number">Accession Number</label>
 					<input type="text" name="file_acc_number" size="40"/>
 					<label for="file_media_id">Media ID</label>
 					<input type="text" name="file_media_id" size="40"/>
 				</div>
-			</div>
+			</td>
 			
-		</div>
+		</tr>
 	<% }); %>
+	</table>
+	</div>
 	
 	<div class="update_field">
 		<input value="Ingest" class="update_button" type="submit">

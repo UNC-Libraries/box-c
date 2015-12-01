@@ -4,8 +4,10 @@
 		<span class="inactive"> &rarr; Assign metadata</span>
 	</div>
 	
-	<input type="text" placeholder="filter results" id="candidate_filter" size="20" />
+	<input type="text" placeholder="Filter results" id="candidate_filter" size="20" />
 	
+	<div class="file_browse_list">
+	<table>
 	<%
 	var source = null;
 	
@@ -13,31 +15,40 @@
 		if (source == null || candidate.sourceId != source.id) {
 			source = sources[candidate.sourceId];
 			%>
-			<div class="file_browse_heading">
-				<h2><%= source.name %></h2>
-				<span><%= source.base %></span>
-			</div>
+			<tr class="file_browse_heading">
+				<th colspan="3">
+					<h2><%= source.name %></h2>
+					<span><%= source.base %></span>
+				</th>
+				<th class="select_all_col">
+					<input type="button" value="Select All" data-sourceId="<%= source %>" data-action="select" />
+				</th>
+			</tr>
 			<%
 		}
 		%>
-		<div class="file_browse_entry" data-index="<%= index %>">
-			<div class="file_browse_type_icon">
+		<tr class="file_browse_entry" data-index="<%= index %>">
+			<td class="file_browse_checkbox">
+				<input type="checkbox" />
+			</td>
+			<td class="file_browse_type_icon">
 				<% if (candidate.type == "BagIt") { %>
 					<i class="fa fa-suitcase"></i>
 				<% } else { %>
 					<i class="fa fa-folder"></i>
 				<% } %>
-			</div>
-			
-			<div class="file_browse_entry_data">
+			</td>
+			<td class="file_browse_entry_data" colspan="2">
 				<h2><%= candidate.patternMatched %></h2>
 				<p><%= candidate.type %> <%= candidate.version? candidate.version : "" %>
 					&ndash; <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
 					&ndash; <%= candidate.sizeFormatted %>
 				</p>
-			</div>
-		</div>
+			</td>
+		</tr>
 	<% }); %>
+	</table>
+	</div>
 	
 	<div class="update_field">
 		<input value="Choose" class="update_button" type="submit">
