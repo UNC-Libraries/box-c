@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.ZipFile;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -158,7 +159,7 @@ public class IngestSourceManager {
 		File file = filePath.toFile();
 		// Only directory bags are candidates currently
 		String version = BagHelper.getVersion(file);
-		if (version == null || !file.isDirectory()) {
+		if (!file.isDirectory()) {
 			return;
 		}
 		
@@ -173,7 +174,7 @@ public class IngestSourceManager {
 		if (version != null) {
 			// Add payload stats for bags
 			addBagInfo(candidate, filePath);
-		}/* else if (file.isDirectory()) {
+		} else if (file.isDirectory()) {
 			// Add culmulative stats for vanilla directories
 			addDirectoryStats(candidate, filePath, true);
 		} else {
@@ -184,7 +185,7 @@ public class IngestSourceManager {
 				}
 			}
 			candidate.put("size", file.length());
-		}*/
+		}
 		
 		candidates.add(candidate);
 	}
