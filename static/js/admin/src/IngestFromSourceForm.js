@@ -21,16 +21,15 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			width: 560,
 			height: 500,
 			modal: true,
-			title: "Add from file server",
-			resizable: false
+			title: "Ingest from file server"
 		});
 		
 		this.pid = pid;
 		
-		this.loadCandidateList();
+		this.loadCandidateList(pid);
 	};
 	
-	IngestFromSourceForm.prototype.loadCandidateList = function(selectedCandidates) {
+	IngestFromSourceForm.prototype.loadCandidateList = function() {
 		var self = this;
 		
 		var loadingOverlay = new ModalLoadingOverlay(this.dialog, {
@@ -46,25 +45,12 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		}).done(function(data){
 			loadingOverlay.remove();
 			
-			self.renderCandidateList(data.sources, data.candidates, selectedCandidates);
+			self.renderCandidateList(data.sources, data.candidates);
 		});
 	};
 	
-	IngestFromSourceForm.prototype.renderCandidateList = function(sources, candidates, selected) {
+	IngestFromSourceForm.prototype.renderCandidateList = function(sources, candidates) {
 		var self = this;
-		
-		if (candidates.length == 0) {
-			this.dialog.html("<p>No candidates were found for ingest to this container</p>");
-			return;
-		}
-		
-		// Sort the candidates by source and path
-		var candidates = candidates.sort(function (a, b) {
-			if ((a.sourceId + a.patternMatched) < (b.sourceId + b.patternMatched)) {
-				return -1;
-			}
-			return 1;
-		});
 		
 		// Generate index of strings to search per candidate and reformat candidate fields for display
 		var candidateIndex = [];
@@ -73,7 +59,10 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			candidateIndex.push(candidate.base + candidate.patternMatched);
 			if (candidate.packagingType == "http://purl.org/net/sword/package/BagIt") {
 				candidate.type = "BagIt";
+			} else {
+				candidate.type = "Directory";
 			}
+			
 			candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.size);
 			var lastSlash = candidate.patternMatched.lastIndexOf("/");
 			candidate.filename = lastSlash == -1? candidate.patternMatched : candidate.patternMatched.substring(lastSlash + 1);
@@ -88,60 +77,23 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		var candidatesForm = candidatesTemplate({sources : sourceMap, candidates : candidates});
 		
 		this.dialog.html(candidatesForm);
-		var form = this.dialog.find("form");
-		
-		// If a list of selected items was provided from the user going back on the metadata page, then select them.
-		if (selected) {
-			for (var i = 0; i < candidates.length; i++) {
-				var candidate = candidates[i];
-				
-				for (var j = 0; j < selected.length; j++) {
-					if (selected[j].sourceId == candidate.sourceId && selected[j].patternMatched == candidate.patternMatched) {
-						var entry = $(".file_browse_entry", form).eq(i);
-						entry.addClass("selected").find("input").prop("checked", true);
-						break;
-					}
-				}
-			}
-		}
 		
 		this.updateCandidateSubmitButton();
 		
 		// Bind selection events for result entries
-		form.on("click", ".file_browse_entry", function(e){
+		this.dialog.on("click", "#ingest_source_candidates .file_browse_entry", function(e){
 			var $this = $(this);
-			e.stopPropagation();
-			if ($this.hasClass("selected")) {
-				$this.removeClass("selected");
-				$("input", $this).prop("checked", false);
+			if (e.metaKey || e.ctrlKey) {
+				$this.toggleClass("selected");
 			} else {
-				$this.addClass("selected");
-				$("input", $this).prop("checked", true);
+				$this.addClass("selected").siblings().removeClass("selected");
 			}
 			
 			self.updateCandidateSubmitButton();
 		});
 		
-		// Bind select all within a source button functionality
-		form.on("click", ".select_all_col input", function(e) {
-			var $this = $(this);
-			var sourceId = $this.data("sourceId");
-			var select = $this.data("action") == "select";
-			$this.data("action", select? "deselect" : "select");
-			$this.attr("value", select? "Deselect All" : "Select All");
-			$this.parents(".file_browse_heading").first().nextUntil(".file_browse_heading", ".file_browse_entry").each(function() {
-				if (select) {
-					$(this).addClass("selected");
-				} else {
-					$(this).removeClass("selected");
-				}
-				$("input", $(this)).prop("checked", select);
-			});
-			self.updateCandidateSubmitButton();
-		});
-		
 		// Filter box functionality
-		form.find("#candidate_filter").keyup(function() {
+		this.dialog.find("#candidate_filter").keyup(function() {
 			var $input = $(this);
 			var value = $input.val();
 			
@@ -169,7 +121,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			});
 		});
 		
-		form.submit(function(e) {
+		this.dialog.find("form").submit(function(e) {
 			e.preventDefault();
 			
 			// Determine which files were selected and match the current filter, to avoid hidden files getting chosen
@@ -201,7 +153,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		
 		this.dialog.find("#ingest_source_choose").click(function(e) {
 			e.preventDefault();
-			self.loadCandidateList(selectedCandidates);
+			self.loadCandidateList();
 		});
 		
 		this.$form = this.dialog.find("form");
@@ -214,29 +166,17 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			self.dialog.find(".file_browse_entry").each(function(index) {
 				var $this = $(this);
 				var candidate = selectedCandidates[index];
-				
-				var label = $this.find("input[name='file_label']").val();
-				if (!label.trim()) {
-					missingFields = true;
-					return false;
-				}
-				
+				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'directory';
 				var info = {
 					sourceId : candidate.sourceId,
 					packagePath : candidate.patternMatched,
-					packagingType : candidate.packagingType,
+					packagingType : packagingType,
 					label : $this.find("input[name='file_label']").val(),
 					accessionNumber : $this.find("input[name='file_acc_number']").val(),
 					mediaId : $this.find("input[name='file_media_id']").val()
 				};
 				fileInfo.push(info);
 			});
-			
-			if (missingFields) {
-				self.$form.find(".error_stack").text("A label must be provided for each deposit");
-				self.$form.find(".errors").removeClass("hidden");
-				return false;
-			}
 			
 			var loadingOverlay = new ModalLoadingOverlay(self.dialog, {
 				autoOpen : false,
