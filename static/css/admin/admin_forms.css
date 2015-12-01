@@ -405,7 +405,7 @@
 .file_browse_list {
 	overflow-y: auto;
 	overflow-x: hidden;
-	height: 345px;
+	height: 340px;
 }
 
 .file_browse_list table {
@@ -449,7 +449,8 @@
 }
 
 .file_browse_checkbox {
-	width: 28px;
+	width: 30px;
+	text-align: center;
 }
 
 .file_browse_type_icon {
@@ -468,7 +469,7 @@
 }
 
 .file_browse_entry.selected + .file_browse_entry.selected {
-	border-top: 1px solid #F4F4FD;
+	border-top: 1px solid #DDD;
 }
 
 .file_browse_entry > input {
