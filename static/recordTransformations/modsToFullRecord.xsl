@@ -897,7 +897,7 @@
 						
 						<xsl:call-template name="modsGroupedFieldWithType">
 							<xsl:with-param name="defaultLabel">Note</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'note']"/>
+							<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
 						</xsl:call-template>
 						
 						<xsl:call-template name="modsGroupedFieldWithType">
@@ -1010,7 +1010,7 @@
 			</table>
 		</xsl:if>
 		
-		<xsl:variable name="note" select="*[local-name() = 'note']"/>
+		<xsl:variable name="note" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
 		<xsl:variable name="accessCondition" select="*[local-name() = 'accessCondition' and not(child::*)]"/>
 		<xsl:variable name="rightsHolder" select="*[local-name() = 'accessCondition']/*[local-name() = 'rights.holder']/*[local-name() = 'name']"/>
 		<xsl:if test="boolean($note) or boolean($accessCondition) or boolean($rightsHolder)">
