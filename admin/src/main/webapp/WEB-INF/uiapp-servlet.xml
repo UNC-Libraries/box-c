@@ -136,6 +136,12 @@
 		<property name="configPath" value="${repo.dir}/collector.json" />
 	</bean>
 	
+	<bean id="ingestSourceManager" class="edu.unc.lib.dl.admin.collect.IngestSourceManager"
+			init-method="init">
+		<property name="configPath" value="${repo.dir}/ingestSources.json" />
+		<property name="tripleService" ref="tripleStoreQueryService" />
+	</bean>
+	
 	<!-- JMX -->
 	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
 		lazy-init="false">

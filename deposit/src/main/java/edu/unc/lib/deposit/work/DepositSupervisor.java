@@ -32,6 +32,7 @@ import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.PrepareResubmitJob;
 import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
+import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
@@ -532,6 +533,8 @@ public class DepositSupervisor implements WorkerListener {
 				conversion = makeJob(Proquest2N3BagJob.class, depositUUID);
 			} else if (packagingType.equals(PackagingType.SIMPLE_OBJECT.getUri())) {
 				conversion = makeJob(Simple2N3BagJob.class, depositUUID);
+			} else if (packagingType.equals(PackagingType.BAGIT.getUri())) {
+				conversion = makeJob(BagIt2N3BagJob.class, depositUUID);
 			}
 			if (conversion == null) {
 				String msg = MessageFormat
