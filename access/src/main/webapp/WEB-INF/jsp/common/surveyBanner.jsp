@@ -47,7 +47,7 @@
 
 <div id="survey-banner" style="display: none;">
 	Help us improve the CDR. <a href="https://unc.az1.qualtrics.com/SE/?SID=SV_8HrpGlGgdAdieWx">Take a short survey</a>.
-	<div class="hide"><a href="#">Hide</a></div>
+	<div class="hide"><a href="javascript:void(0)">Hide</a></div>
 </div>
 
 <script>
