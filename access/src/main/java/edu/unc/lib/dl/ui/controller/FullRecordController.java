@@ -241,6 +241,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 					ContainerView.EXPORTS.name());
 	
 	private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
+		if (foxml == null) {
+			return;
+		}
+		
 		ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
 		
 		if (settings.getViews().size() == 0) {
