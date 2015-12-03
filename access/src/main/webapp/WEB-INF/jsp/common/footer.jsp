@@ -30,7 +30,7 @@
 				<a href="${pageContext.request.contextPath}/">Home</a> |
 				<a href="collections">Browse Collections</a> |
 				<a href="http://blogs.lib.unc.edu/cdr/">About</a> |
-				<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact Us</a> |
+				<a href="${contactUrl}">Contact Us</a> |
 				<a href="http://www.lib.unc.edu">Library Home</a> |
 				<a href="http://www.lib.unc.edu/aoffice/policies/privacy_policy.html">Privacy Policy</a>
 			</p>

@@ -58,7 +58,7 @@
 			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a>
 			<c:choose>
 				<c:when test="${hasListAccessOnly}">
-					<span class="searchitem_container_count">(<c:if test="${not empty loginUrl}"><a href="${loginUrl}">log in</a> or </c:if><a href="/requestAccess/${metadata.pid.pid}">request access</a>)</span>
+					<span class="searchitem_container_count">(<c:if test="${not empty loginUrl}"><a href="${loginUrl}">log in</a> or </c:if><a href="${contactUrl}&requestpid=${metadata.pid.pid}">request access</a>)</span>
 				</c:when>
 				<c:otherwise> 
 					<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>

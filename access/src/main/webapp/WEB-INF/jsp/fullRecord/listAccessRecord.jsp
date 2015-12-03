@@ -83,7 +83,7 @@
 			<c:choose>
 				<c:when test="${not empty embargoDate}">
 					<div class="actionlink left">
-						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
+						<a href="${contactUrl}&requestpid=${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
 					</div>
 				</c:when>
 				<c:otherwise>
@@ -96,7 +96,7 @@
 				</div>
 			</c:if>
 					<div class="actionlink left">
-						<a href="/requestAccess/${briefObject.pid.pid}">Request Access</a>
+						<a href="${contactUrl}&requestpid=${briefObject.pid.pid}">Request Access</a>
 					</div>
 				</c:otherwise>
 			</c:choose>
@@ -121,7 +121,7 @@
 				</c:url>
 				<a href="<c:out value='${loginUrl}' />">log in</a> or
 			</c:if>
-			<a href="/requestAccess/${briefObject.pid.pid}">request access</a>.
+			<a href="${contactUrl}&requestpid=${briefObject.pid.pid}">request access</a>.
 		</p>
 	</div>
 </div>

@@ -96,7 +96,7 @@
 				</c:when>
 				<c:when test="${not empty embargoDate && not empty dataFileUrl}">
 					<div class="actionlink left">
-						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
+						<a href="${contactUrl}&requestpid=${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
 					</div>
 				</c:when>
 			</c:choose>

@@ -95,30 +95,6 @@
 		<property name="defaultEncoding" value="UTF-8" />
 	</bean>
 	
-	<bean id="requestAccessEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
-		<property name="fromAddress" value="${repository.from.email}"/>
-		<property name="fromName" value="CDR Request Form"/>
-		<property name="defaultSubjectLine" value="Access request received"/>
-		<property name="emailRecipients">
-			<list>
-				<value>${contact.email}</value>
-			</list>
-		</property>
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
-		<property name="htmlTemplatePath" value="requestAccessHtml.ftl"/>
-		<property name="mailSender" ref="mailSender"/>
-	</bean>
-	
-	<bean id="requestAccessUserResponseEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
-		<property name="fromAddress" value="${repository.reply.email}"/>
-		<property name="fromName" value="Carolina Digital Repository"/>
-		<property name="defaultSubjectLine" value="Your access request has been received"/>
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
-		<property name="htmlTemplatePath" value="requestAccessUserResponseHtml.ftl"/>
-		<property name="textTemplatePath" value="requestAccessUserResponseText.ftl"/>
-		<property name="mailSender" ref="mailSender"/>
-	</bean>
-	
 	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
 		<property name="templateLoader">
 			<bean class="freemarker.cache.ClassTemplateLoader">
