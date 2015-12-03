@@ -51,7 +51,10 @@
 				</c:if>
 				<h2>Refine your search</h2>
 				<c:import url="/jsp/util/facetList.jsp">
-					<c:param name="queryMethod"><c:choose><c:when test="${queryMethod == 'list'}">search</c:when><c:otherwise>${queryMethod}</c:otherwise></c:choose></c:param>
+					<c:param name="queryMethod"><c:choose>
+						<c:when test="${not empty facetQueryMethod}">${facetQueryMethod}</c:when>
+						<c:otherwise>${queryMethod}</c:otherwise>
+						</c:choose></c:param>
 					<c:param name="searchStateParameters">${searchQueryUrl}</c:param>
 				</c:import>
 			</div>
