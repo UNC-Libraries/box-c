@@ -91,6 +91,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		searchRequest.setRootPid(pid);
 		searchRequest.setApplyCutoffs(true);
 		model.addAttribute("queryMethod", "list");
+		model.addAttribute("facetQueryMethod", "search");
 		return search(searchRequest, model, request);
 	}
 	
@@ -100,6 +101,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		searchRequest.setRootPid(collectionsPid.getPid());
 		searchRequest.setApplyCutoffs(true);
 		model.addAttribute("queryMethod", "list");
+		model.addAttribute("facetQueryMethod", "search");
 		return search(searchRequest, model, request);
 	}
 	
@@ -135,6 +137,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		result.setSelectedContainer(null);
 		
 		model.addAttribute("queryMethod", "collections");
+		model.addAttribute("facetQueryMethod", "search");
 		model.addAttribute("menuId", "browse");
 		model.addAttribute("resultType", "collectionBrowse");
 		model.addAttribute("pageSubtitle", "Browse Collections");
