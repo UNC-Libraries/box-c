@@ -249,7 +249,8 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 				if (accessionNode != null) {
 					Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
 					identifier.setText(accessionNode.asText());
-					identifier.setAttribute("type", "accession identifier");
+					identifier.setAttribute("type", "local");
+					identifier.setAttribute("displayLabel", "Accession Identifier");
 					mods.addContent(identifier);
 				}
 				
@@ -257,7 +258,8 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 				if (mediaNode != null) {
 					Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
 					identifier.setText(mediaNode.asText());
-					identifier.setAttribute("type", "source identifier");
+					identifier.setAttribute("type", "local");
+					identifier.setAttribute("displayLabel", "Source Identifier");
 					mods.addContent(identifier);
 				}
 			} catch (IOException e) {
