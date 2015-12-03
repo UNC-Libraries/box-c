@@ -723,7 +723,7 @@ p.navigation_bar a {
 	margin: 0 0 5px 0;
 }
 
-.collinfo .actionlink {
+.collinfo .actionlink, .collinfo .noaction {
 	margin: 0px 5px 6px 0;
 }
 
@@ -769,12 +769,11 @@ p.navigation_bar a {
 }
 
 .noaction {
-	float: right;
 	margin: 5px 0 0 0;
 	font-size: 12px;
 	border: 1px solid #ccc;
 	background-color: #ececec;
-	padding: 8px 10px;
+	padding: 5px 10px;
 	display: block;
 	color: #999999;
 }

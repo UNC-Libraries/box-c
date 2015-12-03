@@ -223,8 +223,7 @@
 							<div class="containerinfo">
 								<ul>
 									<li>
-										<a href="${contactUrl}&requestpid=${metadata.pid.pid}" 
-												title="Contact us to request access to this item">Available after<br/><fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/></a>
+										Available after<br/><fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
 									</li>
 								</ul>
 							</div>
