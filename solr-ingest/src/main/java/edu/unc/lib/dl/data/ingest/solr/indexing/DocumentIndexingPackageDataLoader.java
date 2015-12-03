@@ -92,7 +92,7 @@ public class DocumentIndexingPackageDataLoader {
 						return foxml;
 					}
 
-				} catch (ServiceException e) {
+				} catch (ServiceException | NotFoundException e) {
 					// If there are retries left, retry on service exception
 					if (tries > 1) {
 						log.warn("Failed to retrieve FOXML for " + pid.getPid() + ", retrying.", e);
