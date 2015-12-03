@@ -170,8 +170,6 @@ public class DepositEmailHandler {
 	}
 	
 	private void sendCompleted(String depositUUID) {
-		LOG.info("Sending deposit completed email for {}", depositUUID);
-		
 		Map<String, String> status = this.getDepositStatusFactory().get(depositUUID);
 
 		String depositorEmail = status.get(DepositField.depositorEmail.name());
@@ -179,6 +177,8 @@ public class DepositEmailHandler {
 		if (depositorEmail == null) {
 			return;
 		}
+
+		LOG.info("Sending deposit completed email for {}", depositUUID);
 		
 		// If there is a "main object" in this deposit (it has exactly one top-level object), try linking to that.
 		// If there isn't, use the container. With this scheme, there is the possibility that we could have multiple
