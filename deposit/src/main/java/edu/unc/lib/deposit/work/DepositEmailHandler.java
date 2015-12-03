@@ -201,7 +201,7 @@ public class DepositEmailHandler {
 		data.put("objectPid", objectPid);
 		
 		if (embargoUntil != null) {
-			data.put("emgargoUntil", embargoDateFormat.format(embargoUntil));
+			data.put("embargoUntil", embargoDateFormat.format(embargoUntil));
 			data.put("isEmbargoed", new Boolean(true));
 		} else if (hasPatronRoleForPublicGroup) {
 			data.put("isOpen", new Boolean(true));
