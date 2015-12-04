@@ -61,7 +61,7 @@
 		<property name="accessControlService" ref="accessControlService" />
 		<property name="factory" ref="dipFactory" />
 		<property name="retryDelay" value="10000" />
-		<property name="maxRetries" value="3" />
+		<property name="maxRetries" value="6" />
 	</bean>
 
 	<!-- Ingest filters -->
