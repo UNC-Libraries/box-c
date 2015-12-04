@@ -177,13 +177,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- Email -->
-		<dependency>
-			<groupId>javax.activation</groupId>
-			<artifactId>activation</artifactId>
-			<version>1.1</version>
-		</dependency>
-
 		<!-- CDR -->
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
