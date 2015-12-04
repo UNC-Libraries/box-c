@@ -180,7 +180,7 @@
 							<li><a href="<c:out value='${loginUrl}' />">Log in</a> or</li>
 						</c:if>
 						<li>
-							<a href="/requestAccess/${metadata.pid.pid}" 
+							<a href="${contactUrl}&requestpid=${metadata.pid.pid}" 
 								title="Contact us to request access to this item">Request Access</a>
 						</li>
 						<li>${metadata.resourceType}</li>
@@ -223,8 +223,7 @@
 							<div class="containerinfo">
 								<ul>
 									<li>
-										<a href="/requestAccess/${metadata.pid.pid}" 
-												title="Contact us to request access to this item">Available after<br/><fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/></a>
+										Available after<br/><fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
 									</li>
 								</ul>
 							</div>

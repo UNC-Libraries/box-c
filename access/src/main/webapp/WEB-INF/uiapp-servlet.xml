@@ -73,62 +73,6 @@
 		<prop key="external.base.url">${external.base.url}</prop>
 	</util:properties>
 	
-	<!-- Request form -->
-	<bean id="messageSource"
-		class="org.springframework.context.support.ResourceBundleMessageSource">
-		<property name="basename" value="formValidationMessages" />
-	</bean>
-	
-	<bean class="edu.unc.lib.dl.ui.validator.RequestAccessFormValidator"/>
-	
-	<bean id="reCaptcha" class="net.tanesha.recaptcha.ReCaptchaImpl">
-		<property name="privateKey" value="${recaptcha.private.key}" />
-		<property name="publicKey" value="${recaptcha.public.key}" />
-		<property name="includeNoscript" value="false" />
-		<property name="recaptchaServer" value="#{T(net.tanesha.recaptcha.ReCaptchaImpl).HTTPS_SERVER}" />
-		
-	</bean>
-	
-	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
-		<property name="host" value="${smtp.host}" />
-		<property name="port" value="${smtp.port}" />
-		<property name="defaultEncoding" value="UTF-8" />
-	</bean>
-	
-	<bean id="requestAccessEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
-		<property name="fromAddress" value="${repository.from.email}"/>
-		<property name="fromName" value="CDR Request Form"/>
-		<property name="defaultSubjectLine" value="Access request received"/>
-		<property name="emailRecipients">
-			<list>
-				<value>${contact.email}</value>
-			</list>
-		</property>
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
-		<property name="htmlTemplatePath" value="requestAccessHtml.ftl"/>
-		<property name="mailSender" ref="mailSender"/>
-	</bean>
-	
-	<bean id="requestAccessUserResponseEmailService" class="edu.unc.lib.dl.ui.service.ContactEmailService">
-		<property name="fromAddress" value="${repository.reply.email}"/>
-		<property name="fromName" value="Carolina Digital Repository"/>
-		<property name="defaultSubjectLine" value="Your access request has been received"/>
-		<property name="freemarkerConfiguration" ref="freemarkerConfiguration" />
-		<property name="htmlTemplatePath" value="requestAccessUserResponseHtml.ftl"/>
-		<property name="textTemplatePath" value="requestAccessUserResponseText.ftl"/>
-		<property name="mailSender" ref="mailSender"/>
-	</bean>
-	
-	<bean id="freemarkerConfiguration" class="freemarker.template.Configuration">
-		<property name="templateLoader">
-			<bean class="freemarker.cache.ClassTemplateLoader">
-				<constructor-arg index="0" type="java.lang.Class"
-					value="edu.unc.lib.dl.ui.service.ContactEmailService" />
-				<constructor-arg index="1" value="" />
-			</bean>
-		</property>
-	</bean>
-	
 	<bean name="headerMenuSettings" class="edu.unc.lib.dl.ui.util.HeaderMenuSettings" init-method="init">
 		<property name="propertiesUrl" value="${external.base.file.url}/mappings/headerMenu.properties"/>
 	</bean>

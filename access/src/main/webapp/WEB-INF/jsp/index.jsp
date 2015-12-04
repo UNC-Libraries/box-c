@@ -28,11 +28,17 @@
 		<c:set var="currentUrl" value="${requestScope['javax.servlet.forward.request_uri']}" />
 	</c:otherwise>
 </c:choose>
+
 <c:if test="${not empty pageContext.request.queryString}">
 	<c:set var="currentUrl" value="${currentUrl}?${pageContext.request.queryString}"/>
 </c:if>
 <c:set var="currentRelativeUrl" scope="request" value="${currentUrl}"/>
 <c:set var="currentAbsoluteUrl" scope="request" value="${pageContext.request.scheme}://${pageContext.request.serverName}${currentRelativeUrl}"/>
+
+<c:url var="contactUrl" scope="request" value="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">
+	<c:param name="refer" value="${currentAbsoluteUrl}"/>
+</c:url>
+
 <c:choose>
 	<c:when test="${template =='ajax'}">
 		<c:import url="/jsp/template/ajaxTemplate.jsp" />

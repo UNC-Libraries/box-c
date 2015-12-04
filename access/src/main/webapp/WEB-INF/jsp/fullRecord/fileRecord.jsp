@@ -70,8 +70,8 @@
 					</div>
 				</c:when>
 				<c:when test="${not empty embargoDate}">
-					<div class="actionlink left">
-						<a href="/requestAccess/${briefObject.pid.pid}">Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/> </a>
+					<div class="noaction left">
+						Available after <fmt:formatDate value="${embargoDate}" pattern="d MMMM, yyyy"/>
 					</div>
 				</c:when>
 			</c:choose>
