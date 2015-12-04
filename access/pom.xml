@@ -184,14 +184,6 @@
 			<version>1.1</version>
 		</dependency>
 
-		<!-- View -->
-		<dependency>
-			<groupId>com.google.code.maven-play-plugin.net.tanesha.recaptcha4j</groupId>
-			<artifactId>recaptcha4j</artifactId>
-			<version>0.0.8</version>
-		</dependency>
-
-
 		<!-- CDR -->
 		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
