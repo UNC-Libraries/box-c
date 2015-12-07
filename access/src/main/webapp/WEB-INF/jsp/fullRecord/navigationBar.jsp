@@ -29,39 +29,6 @@
 					<c:param name="queryPath">list</c:param>
 				</c:import>
 			</div>
-			<c:set var="recordNavigationState" value="${sessionScope.recordNavigationState}" />
-			
-			<p class="right">
-				<c:catch var="previousException">
-					<c:set var="previousId" value="${recordNavigationState.previousRecordId}"/>
-				</c:catch>
-				<c:choose>
-					<c:when test="${previousException!=null}">
-						<a href="recordNavigation?${searchSettings.searchStateParams['ACTIONS']}=${searchSettings.actions['PREVIOUS_PAGE']}&${searchSettings.searchStateParams['ID']}=${briefObject.id}">&lt; Previous</a>
-					</c:when>
-					<c:when test="${empty previousId}">
-						&lt; Previous
-					</c:when>
-					<c:otherwise>
-						<a href="record/${previousId}">&lt; Previous</a>
-					</c:otherwise>
-				</c:choose>
-				&nbsp;
-				<c:catch var="nextException">
-					<c:set var="nextId" value="${recordNavigationState.nextRecordId}"/>
-				</c:catch>
-				<c:choose>
-					<c:when test="${nextException!=null}">
-						<a href="recordNavigation?${searchSettings.searchStateParams['ACTIONS']}=${searchSettings.actions['NEXT_PAGE']}&${searchSettings.searchStateParams['ID']}=${briefObject.id}">Next &gt;</a>
-					</c:when>
-					<c:when test="${empty nextId}">
-						Next &gt;
-					</c:when>
-					<c:otherwise>
-						<a href="record/${nextId}">Next &gt;</a>
-					</c:otherwise>
-				</c:choose>
-			</p>
 		</div>
 	</div>
 </div>
