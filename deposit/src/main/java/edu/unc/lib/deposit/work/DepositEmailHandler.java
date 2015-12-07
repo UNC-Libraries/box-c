@@ -230,23 +230,29 @@ public class DepositEmailHandler {
 	}
 	
 	private String getMainObjectPidForDeposit(String depositUUID) {
-		PID depositPID = new PID("uuid:" + depositUUID);
-		
-		String uri = depositPID.getURI();
-		this.dataset.begin(ReadWrite.READ);
-		Model model = this.dataset.getNamedModel(uri).begin();
-
-		String depositPid = depositPID.getURI();
-		Bag depositBag = model.getBag(depositPid);
-		
-		List<String> topLevelPids = new ArrayList<String>();
-		DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
-		
-		// There is a "main object" if the deposit has exactly one top-level object.
-		if (topLevelPids.size() == 1) {
-			return new PID(topLevelPids.get(0)).toString();
-		} else {
-			return null;
+		try {
+			PID depositPID = new PID("uuid:" + depositUUID);
+			
+			String uri = depositPID.getURI();
+			this.dataset.begin(ReadWrite.READ);
+			Model model = this.dataset.getNamedModel(uri).begin();
+	
+			String depositPid = depositPID.getURI();
+			Bag depositBag = model.getBag(depositPid);
+			
+			List<String> topLevelPids = new ArrayList<String>();
+			DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
+			
+			// There is a "main object" if the deposit has exactly one top-level object.
+			if (topLevelPids.size() == 1) {
+				return new PID(topLevelPids.get(0)).toString();
+			} else {
+				return null;
+			}
+		} finally {
+			if (this.dataset.isInTransaction()) {
+				this.dataset.end();
+			}
 		}
 	}
 
