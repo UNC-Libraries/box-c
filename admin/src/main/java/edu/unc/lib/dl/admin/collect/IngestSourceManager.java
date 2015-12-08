@@ -175,7 +175,9 @@ public class IngestSourceManager {
 			// Add payload stats for bags
 			addBagInfo(candidate, filePath);
 		} else if (file.isDirectory()) {
-			// Add culmulative stats for vanilla directories
+			candidate.put("packagingType", PackagingType.DIRECTORY.getUri());
+			
+			// Add cumulative stats for vanilla directories
 			addDirectoryStats(candidate, filePath, true);
 		} else {
 			// Add stats for a non-bag zip file
