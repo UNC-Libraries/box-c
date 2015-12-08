@@ -166,7 +166,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			self.dialog.find(".file_browse_entry").each(function(index) {
 				var $this = $(this);
 				var candidate = selectedCandidates[index];
-				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'directory';
+				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'http://cdr.unc.edu/DirectoryIngest';
 				var info = {
 					sourceId : candidate.sourceId,
 					packagePath : candidate.patternMatched,

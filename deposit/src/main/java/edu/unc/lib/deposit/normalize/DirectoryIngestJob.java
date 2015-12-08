@@ -1,18 +1,3 @@
-/**
- * Copyright 2008 The University of North Carolina at Chapel Hill
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
@@ -42,72 +27,31 @@ import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.StagingException;
-import gov.loc.repository.bagit.Bag;
-import gov.loc.repository.bagit.Bag.Format;
-import gov.loc.repository.bagit.BagFactory;
-import gov.loc.repository.bagit.BagFile;
-import gov.loc.repository.bagit.BagHelper;
-import gov.loc.repository.bagit.Manifest;
-import gov.loc.repository.bagit.utilities.SimpleResult;
 
-/**
- * Transforms bagit bags stored in a staging location into n3 for deposit
- * 
- * @author bbpennel
- * @author daines
- * @date Nov 9, 2015
- */
-public class BagIt2N3BagJob extends AbstractDepositJob {
+
+public class DirectoryIngestJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
 	
-	public BagIt2N3BagJob() {
+	public DirectoryIngestJob() {
 		super();
 	}
 
-	public BagIt2N3BagJob(String uuid, String depositUUID) {
+	public DirectoryIngestJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
 
 	@Override
 	public void runJob() {
-		
 		Model model = getWritableModel();
 		com.hp.hpl.jena.rdf.model.Bag top = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
-		String sourcePath = status.get(DepositField.sourcePath.name());
-		
-		if (BagHelper.getVersion(new File(sourcePath)) == null) {
-			failJob("Can't find BagIt bag", "A BagIt bag could not be found at the source path.");
-		}
-		
-		BagFactory bagFactory = new BagFactory();
-		
+		String sourcePath = status.get(DepositField.sourcePath.name());	
 		File sourceFile = new File(sourcePath);
-		Bag bag = bagFactory.createBag(sourceFile);
-		
-		if (bag.getFormat() != Format.FILESYSTEM) {
-			failJob("Unsupported BagIt bag format", "Only filesystem bags are supported.");
-		}
-		
-		// Verify that the bag has all the required parts
-		SimpleResult completeResult = bag.verifyComplete();
-		if (!bag.verifyComplete().isSuccess()) {
-			// Bag did not validate, generate error report and throw exception
-			StringBuilder msg = new StringBuilder();
-			for (String error : completeResult.getErrorMessages()) {
-				msg.append(error).append("\n");
-			}
-			
-			failJob("Unable to normalize bag " + sourcePath + ", it was not complete according to bagit specifications",
-					msg.toString());
-		}
-		
-		Collection<BagFile> payload = bag.getPayload();
+		File[] listOfFiles = sourceFile.listFiles();
 		
 		Property labelProp = dprop(model, DepositRelationship.label);
 		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
-		Property md5sumProp = dprop(model, md5sum);
 		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
@@ -121,20 +65,14 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 		addDescription(containerPID, status);
 		
 		// Add all of the payload objects into the bag folder
-		for (BagFile file : payload) {
-			String filePath = file.getFilepath();
-			
-			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
+		for (File file : listOfFiles) {
+			String filePath = file.getName();
 			
 			Resource fileResource = getFileResource(bagFolder, sourcePath, filePath);
 			
-			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
 			model.add(fileResource, labelProp, filename);
 			model.add(fileResource, hasModelProp, simpleResource);
-			if (checksums.containsKey(Manifest.Algorithm.MD5)) {
-				model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.MD5));
-			}
 			
 			// Find staged path for the file
 			Path storedPath = Paths.get(sourceFile.getAbsolutePath(), filePath);
@@ -149,7 +87,5 @@ public class BagIt2N3BagJob extends AbstractDepositJob {
 			}
 			
 		}
-		
 	}
-	
 }
