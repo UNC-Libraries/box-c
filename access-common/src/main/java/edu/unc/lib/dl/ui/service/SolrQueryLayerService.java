@@ -77,6 +77,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 	protected SearchStateFactory searchStateFactory;
 	protected PID collectionsPid;
 	protected ObjectPathFactory pathFactory;
+	
+	private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
 
 	/**
 	 * Returns a list of the most recently added items in the collection
@@ -338,152 +340,63 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
-
-		// If this item has no display order, get arbitrary items surrounding it.
-
-		Long pivotOrder = metadata.getDisplayOrder();
-
-		if (pivotOrder == null) {
-
-			LOG.debug("No display order, just querying for " + windowSize + " siblings");
-
-			StringBuilder query = new StringBuilder();
-
-			List<BriefObjectMetadataBean> list = null;
-
-			query.append("*:*");
-			query.append(accessRestrictionClause);
-			solrQuery.setQuery(query.toString());
-
-			solrQuery.setStart(0);
-			solrQuery.setRows(windowSize);
-
-			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-
+		
+		solrQuery.setQuery("*:*" + accessRestrictionClause);
+		
+		addSort(solrQuery, "default", true);
+		solrQuery.setRows(NEIGHBOR_SEEK_PAGE_SIZE);
+		solrQuery.setFields("id");
+		
+		long total = -1;
+		int start = 0;
+		pageLoop: do {
 			try {
+				solrQuery.setStart(start);
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				list = queryResponse.getBeans(BriefObjectMetadataBean.class);
+				total = queryResponse.getResults().getNumFound();
+				for (SolrDocument doc : queryResponse.getResults()) {
+					if (metadata.getId().equals(doc.getFieldValue("id"))) {
+						break pageLoop;
+					}
+					start++;
+				}
 			} catch (SolrServerException e) {
 				LOG.error("Error retrieving Neighboring items: " + e);
 				return null;
 			}
-
-			return list;
-
-			// Otherwise, query for items surrounding this item.
-
-		} else {
-
-			LOG.debug("Display order is " + pivotOrder);
-
-			// Find the right and left lists
-
-			StringBuilder query;
-
-			List<BriefObjectMetadataBean> leftList = null;
-			List<BriefObjectMetadataBean> rightList = null;
-
-			solrQuery.setStart(0);
-			solrQuery.setRows(windowSize - 1);
-
-			// Right list
-
-			query = new StringBuilder();
-
-			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[")
-					.append(pivotOrder + 1).append(" TO *]");
-			query.append(accessRestrictionClause);
-			solrQuery.setQuery(query.toString());
-
-			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
-
-			try {
-				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				rightList = queryResponse.getBeans(BriefObjectMetadataBean.class);
-			} catch (SolrServerException e) {
-				LOG.error("Error retrieving Neighboring items: " + e);
-				return null;
-			}
-
-			LOG.debug("Got " + rightList.size() + " items for right list");
-
-			// Left list
-
-			// (Note that display order stuff is reversed.)
-
-			query = new StringBuilder();
-
-			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ")
-					.append(pivotOrder - 1).append("]");
-			query.append(accessRestrictionClause);
-			solrQuery.setQuery(query.toString());
-
-			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-
-			try {
-				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				leftList = queryResponse.getBeans(BriefObjectMetadataBean.class);
-			} catch (SolrServerException e) {
-				LOG.error("Error retrieving Neighboring items: " + e);
-				return null;
-			}
-
-			LOG.debug("Got " + leftList.size() + " items for left list");
-
-			// Trim the lists
-
-			int halfWindow = windowSize / 2;
-
-			// If we have enough in both lists, trim both to be
-			// halfWindow long.
-
-			if (leftList.size() >= halfWindow && rightList.size() >= halfWindow) {
-
-				LOG.debug("Trimming both lists");
-
-				leftList.subList(halfWindow, leftList.size()).clear();
-				rightList.subList(halfWindow, rightList.size()).clear();
-
-				// If we don't have enough in the left list and we have extra in the right list,
-				// try to pick up the slack by trimming fewer items from the right list.
-
-			} else if (leftList.size() < halfWindow && rightList.size() > halfWindow) {
-
-				LOG.debug("Picking up slack from right list");
-
-				// How much extra do we need from the right list?
-
-				int extra = halfWindow - leftList.size();
-
-				// Only "take" the extra (ie, clear less of the right list) if we have it available.
-
-				if (halfWindow + extra < rightList.size())
-					rightList.subList(halfWindow + extra, rightList.size()).clear();
-
-			} else if (rightList.size() < halfWindow && leftList.size() > halfWindow) {
-
-				LOG.debug("Picking up slack from left list");
-
-				int extra = halfWindow - rightList.size();
-
-				if (halfWindow + extra < leftList.size())
-					leftList.subList(halfWindow + extra, leftList.size()).clear();
-
-			}
-
-			// (Otherwise, we do no trimming, since both lists are smaller or the same size
-			// as the window.)
-
-			// Assemble the result.
-
-			Collections.reverse(leftList);
-			leftList.add(metadata);
-			leftList.addAll(rightList);
-
-			return leftList;
-
+		} while (start < total);
+		
+		// Wasn't found, no neighbors shall be forthcoming
+		if (start >= total) {
+			return null;
 		}
-
+		
+		long left = start - (windowSize / 2);
+		long right = start + (windowSize / 2);
+		
+		if (left < 0) {
+			right -= left;
+			left = 0;
+		}
+		
+		if (right >= total) {
+			left -= (right - total) + 1;
+			if (left < 0) {
+				left = 0;
+			}
+		}
+		
+		solrQuery.setFields(new String[0]);
+		solrQuery.setRows(windowSize);
+		solrQuery.setStart((int) left);
+		
+		try {
+			QueryResponse queryResponse = this.executeQuery(solrQuery);
+			return queryResponse.getBeans(BriefObjectMetadataBean.class);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Neighboring items: " + e);
+			return null;
+		}
 	}
 
 	/**
