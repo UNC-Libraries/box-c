@@ -273,6 +273,12 @@
 		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
 	</bean>
 	
+	<bean id="stages" class="org.mockito.Mockito"
+		factory-method="mock">
+		<constructor-arg index="0"
+			value="edu.unc.lib.staging.Stages" />
+	</bean>
+	
 	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
 		scope="prototype">
 	</bean>
