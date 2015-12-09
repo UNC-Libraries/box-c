@@ -29,14 +29,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.deposit.work.AbstractFileServerToBagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -57,9 +54,7 @@ import gov.loc.repository.bagit.utilities.SimpleResult;
  * @author daines
  * @date Nov 9, 2015
  */
-public class BagIt2N3BagJob extends AbstractDepositJob {
-	private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
-	
+public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 	public BagIt2N3BagJob() {
 		super();
 	}
