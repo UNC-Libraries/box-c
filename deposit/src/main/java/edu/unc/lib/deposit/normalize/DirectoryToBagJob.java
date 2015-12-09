@@ -24,12 +24,12 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.StagingException;
 
 
-public class DirectoryIngestJob extends AbstractFileServerToBagJob {
-	public DirectoryIngestJob() {
+public class DirectoryToBagJob extends AbstractFileServerToBagJob {
+	public DirectoryToBagJob() {
 		super();
 	}
 
-	public DirectoryIngestJob(String uuid, String depositUUID) {
+	public DirectoryToBagJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
 
