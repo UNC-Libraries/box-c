@@ -288,10 +288,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	/**
-	 * Retrieves a list of the nearest windowSize neighbors within the nearest parent collection or folder around the
-	 * item metadata, based on the order field of the item. The first windowSize - 1 neighbors are retrieved to each side
-	 * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible. If no
-	 * order field is available, a list of arbitrary windowSize neighbors is returned.
+	 * Retrieves a list of the closest windowSize neighbors within the parent container of the specified object,
+	 * using the default sort order. The first windowSize / 2 - 1 neighbors are retrieved to each side
+	 * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible.
 	 *
 	 * @param metadata
 	 *           Record which the window pivots around.
@@ -305,35 +304,31 @@ public class SolrQueryLayerService extends SolrSearchService {
 			AccessGroupSet accessGroups) {
 
 		// Get the common access restriction clause (starts with "AND ...")
-
 		StringBuilder accessRestrictionClause = new StringBuilder();
 
 		try {
 			addAccessRestrictions(accessRestrictionClause, accessGroups);
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
-			LOG.error(e.getMessage());
+			LOG.error("Attempted to get neighboring items without creditentials", e);
 			return null;
 		}
 
-		// Prepare the common query object, including a filter for resource type and the
-		// facet which selects only the item's siblings.
-
+		// Restrict query to files/aggregates and objects within the same parent
 		SolrQuery solrQuery = new SolrQuery();
+		solrQuery.setQuery("*:*" + accessRestrictionClause);
 
 		solrQuery.setFacet(true);
 		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File "
 				+ solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
 
 		CutoffFacet ancestorPath = null;
-
 		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)
 				|| metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
 			ancestorPath = metadata.getAncestorPathFacet();
 		} else {
 			ancestorPath = metadata.getPath();
 		}
-
 		if (ancestorPath != null) {
 			// We want only objects at the same level of the hierarchy
 			ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
@@ -341,9 +336,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
 		
-		solrQuery.setQuery("*:*" + accessRestrictionClause);
-		
+		// Sort neighbors using the default sort
 		addSort(solrQuery, "default", true);
+		
+		
+		// Query for ids in this container in groups of NEIGHBOR_SEEK_PAGE_SIZE until we find the offset of the object
 		solrQuery.setRows(NEIGHBOR_SEEK_PAGE_SIZE);
 		solrQuery.setFields("id");
 		
@@ -371,6 +368,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return null;
 		}
 		
+		// Calculate the starting index for the window, so that object is as close to the middle as possible
 		long left = start - (windowSize / 2);
 		long right = start + (windowSize / 2);
 		
@@ -386,6 +384,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 			}
 		}
 		
+		// Query for the windowSize of objects
 		solrQuery.setFields(new String[0]);
 		solrQuery.setRows(windowSize);
 		solrQuery.setStart((int) left);
