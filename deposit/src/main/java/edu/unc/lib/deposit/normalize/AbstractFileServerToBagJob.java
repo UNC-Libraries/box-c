@@ -1,4 +1,19 @@
-package edu.unc.lib.deposit.work;
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
@@ -31,9 +46,15 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.staging.Stages;
 
+/**
+ * Abstract deposit normalization job which processes walks file system paths to interpret them into n3 and MODS for
+ * deposit
+ * 
+ * @author lfarrell
+ */
 public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory
-			.getLogger(AbstractDepositJob.class);
+			.getLogger(AbstractFileServerToBagJob.class);
 	
 	@Autowired
 	public Stages stages;
@@ -42,9 +63,10 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	}
 	
 	public AbstractFileServerToBagJob(String uuid, String depositUUID) {
-        super(uuid, depositUUID);
-    }
+		super(uuid, depositUUID);
+	}
 
+	@Override
 	public abstract void runJob();
 	
 	/**

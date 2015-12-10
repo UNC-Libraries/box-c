@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
@@ -16,14 +31,17 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.deposit.work.AbstractFileServerToBagJob;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.StagingException;
 
-
+/**
+ * Normalizes a simple directory submission into n3 for deposit
+ * 
+ * @author lfarrell
+ */
 public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 	public DirectoryToBagJob() {
 		super();
@@ -39,7 +57,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		com.hp.hpl.jena.rdf.model.Bag top = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
-		String sourcePath = status.get(DepositField.sourcePath.name());	
+		String sourcePath = status.get(DepositField.sourcePath.name());
 		File sourceFile = new File(sourcePath);
 		File[] listOfFiles = sourceFile.listFiles();
 		
