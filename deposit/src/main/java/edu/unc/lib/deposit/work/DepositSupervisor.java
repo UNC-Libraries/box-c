@@ -35,6 +35,7 @@ import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
+import edu.unc.lib.deposit.normalize.DirectoryToBagJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
@@ -535,7 +536,10 @@ public class DepositSupervisor implements WorkerListener {
 				conversion = makeJob(Simple2N3BagJob.class, depositUUID);
 			} else if (packagingType.equals(PackagingType.BAGIT.getUri())) {
 				conversion = makeJob(BagIt2N3BagJob.class, depositUUID);
-			}
+			} else if (packagingType.equals(PackagingType.DIRECTORY.getUri())) {
+				conversion = makeJob(DirectoryToBagJob.class, depositUUID);
+ 			}
+			
 			if (conversion == null) {
 				String msg = MessageFormat
 						.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {}",

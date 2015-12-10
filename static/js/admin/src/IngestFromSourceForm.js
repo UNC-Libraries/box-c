@@ -73,7 +73,10 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 			candidateIndex.push(candidate.base + candidate.patternMatched);
 			if (candidate.packagingType == "http://purl.org/net/sword/package/BagIt") {
 				candidate.type = "BagIt";
+			} else {
+				candidate.type = "Directory";
 			}
+			
 			candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.size);
 			var lastSlash = candidate.patternMatched.lastIndexOf("/");
 			candidate.filename = lastSlash == -1? candidate.patternMatched : candidate.patternMatched.substring(lastSlash + 1);
@@ -221,10 +224,12 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 					return false;
 				}
 				
+				var packagingType = (candidate.packagingType !== undefined) ? candidate.packagingType : 'http://cdr.unc.edu/DirectoryIngest';
+				
 				var info = {
 					sourceId : candidate.sourceId,
 					packagePath : candidate.patternMatched,
-					packagingType : candidate.packagingType,
+					packagingType : packagingType,
 					label : $this.find("input[name='file_label']").val(),
 					accessionNumber : $this.find("input[name='file_acc_number']").val(),
 					mediaId : $this.find("input[name='file_media_id']").val()
