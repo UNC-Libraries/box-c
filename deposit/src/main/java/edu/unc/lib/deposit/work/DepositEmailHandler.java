@@ -125,10 +125,17 @@ public class DepositEmailHandler {
 	}
 
 	public void sendDepositResults(String depositUUID) {
-		if (this.getDepositStatusFactory().getState(depositUUID).equals(DepositState.failed.name())) {
+		DepositState state = this.getDepositStatusFactory().getState(depositUUID); 
+		
+		switch (state) {
+		case failed:
 			sendFailed(depositUUID);
-		} else {
+			break;
+		case finished:
 			sendCompleted(depositUUID);
+			break;
+		default:
+			LOG.error("Don't know how to send deposit results email for state {}, for deposit {}", state, depositUUID);
 		}
 	}
 	
