@@ -34,7 +34,6 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**
@@ -71,13 +70,6 @@ public class SearchActionController extends AbstractSolrSearchController {
 	
 	private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
 		SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
-		// Setup parameters for full record navigation
-		RecordNavigationState recordNavigationState = new RecordNavigationState();
-		recordNavigationState.setSearchState(resultResponse.getSearchState());
-		recordNavigationState.setSearchStateUrl((String) request.getAttribute("searchStateUrl"));
-		recordNavigationState.setRecordIdList(resultResponse.getIdList());
-		recordNavigationState.setTotalResults(resultResponse.getResultCount());
-		request.getSession().setAttribute("recordNavigationState", recordNavigationState);
 		
 		model.addAttribute("resultType", "searchResults");
 		model.addAttribute("pageSubtitle", "Search Results");

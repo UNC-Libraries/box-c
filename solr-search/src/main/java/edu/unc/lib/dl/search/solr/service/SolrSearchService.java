@@ -475,16 +475,7 @@ public class SolrSearchService {
 		}
 
 		// Add sort parameters
-		List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(searchState.getSortType());
-		if (sortFields != null) {
-			for (int i = 0; i < sortFields.size(); i++) {
-				SearchSettings.SortField sortField = sortFields.get(i);
-				SolrQuery.ORDER sortOrder = SolrQuery.ORDER.valueOf(sortField.getSortOrder());
-				if (!searchState.getSortNormalOrder())
-					sortOrder = sortOrder.reverse();
-				solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
-			}
-		}
+		addSort(solrQuery, searchState.getSortType(), searchState.getSortNormalOrder());
 
 		// Set requested resource types
 		String resourceTypeFilter = this.getResourceTypeFilter(searchState.getResourceTypes());
@@ -563,6 +554,19 @@ public class SolrSearchService {
 			solrQuery.setRows(searchState.getRowsPerPage());
 
 		return solrQuery;
+	}
+	
+	protected void addSort(SolrQuery solrQuery, String sortType, boolean normalOrder) {
+		List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(sortType);
+		if (sortFields != null) {
+			for (int i = 0; i < sortFields.size(); i++) {
+				SearchSettings.SortField sortField = sortFields.get(i);
+				SolrQuery.ORDER sortOrder = SolrQuery.ORDER.valueOf(sortField.getSortOrder());
+				if (!normalOrder)
+					sortOrder = sortOrder.reverse();
+				solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+			}
+		}
 	}
 
 	/**

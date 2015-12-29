@@ -77,6 +77,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 	protected SearchStateFactory searchStateFactory;
 	protected PID collectionsPid;
 	protected ObjectPathFactory pathFactory;
+	
+	private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
 
 	/**
 	 * Returns a list of the most recently added items in the collection
@@ -286,10 +288,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 	}
 
 	/**
-	 * Retrieves a list of the nearest windowSize neighbors within the nearest parent collection or folder around the
-	 * item metadata, based on the order field of the item. The first windowSize - 1 neighbors are retrieved to each side
-	 * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible. If no
-	 * order field is available, a list of arbitrary windowSize neighbors is returned.
+	 * Retrieves a list of the closest windowSize neighbors within the parent container of the specified object,
+	 * using the default sort order. The first windowSize / 2 - 1 neighbors are retrieved to each side
+	 * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible.
 	 *
 	 * @param metadata
 	 *           Record which the window pivots around.
@@ -303,187 +304,98 @@ public class SolrQueryLayerService extends SolrSearchService {
 			AccessGroupSet accessGroups) {
 
 		// Get the common access restriction clause (starts with "AND ...")
-
 		StringBuilder accessRestrictionClause = new StringBuilder();
 
 		try {
 			addAccessRestrictions(accessRestrictionClause, accessGroups);
 		} catch (AccessRestrictionException e) {
 			// If the user doesn't have any access groups, they don't have access to anything, return null.
-			LOG.error(e.getMessage());
+			LOG.error("Attempted to get neighboring items without creditentials", e);
 			return null;
 		}
 
-		// Prepare the common query object, including a filter for resource type and the
-		// facet which selects only the item's siblings.
-
+		// Restrict query to files/aggregates and objects within the same parent
 		SolrQuery solrQuery = new SolrQuery();
+		solrQuery.setQuery("*:*" + accessRestrictionClause);
 
 		solrQuery.setFacet(true);
 		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File "
 				+ solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
 
 		CutoffFacet ancestorPath = null;
-
 		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)
 				|| metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
 			ancestorPath = metadata.getAncestorPathFacet();
 		} else {
 			ancestorPath = metadata.getPath();
 		}
-
 		if (ancestorPath != null) {
 			// We want only objects at the same level of the hierarchy
 			ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
 
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
-
-		// If this item has no display order, get arbitrary items surrounding it.
-
-		Long pivotOrder = metadata.getDisplayOrder();
-
-		if (pivotOrder == null) {
-
-			LOG.debug("No display order, just querying for " + windowSize + " siblings");
-
-			StringBuilder query = new StringBuilder();
-
-			List<BriefObjectMetadataBean> list = null;
-
-			query.append("*:*");
-			query.append(accessRestrictionClause);
-			solrQuery.setQuery(query.toString());
-
-			solrQuery.setStart(0);
-			solrQuery.setRows(windowSize);
-
-			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-
+		
+		// Sort neighbors using the default sort
+		addSort(solrQuery, "default", true);
+		
+		
+		// Query for ids in this container in groups of NEIGHBOR_SEEK_PAGE_SIZE until we find the offset of the object
+		solrQuery.setRows(NEIGHBOR_SEEK_PAGE_SIZE);
+		solrQuery.setFields("id");
+		
+		long total = -1;
+		int start = 0;
+		pageLoop: do {
 			try {
+				solrQuery.setStart(start);
 				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				list = queryResponse.getBeans(BriefObjectMetadataBean.class);
+				total = queryResponse.getResults().getNumFound();
+				for (SolrDocument doc : queryResponse.getResults()) {
+					if (metadata.getId().equals(doc.getFieldValue("id"))) {
+						break pageLoop;
+					}
+					start++;
+				}
 			} catch (SolrServerException e) {
 				LOG.error("Error retrieving Neighboring items: " + e);
 				return null;
 			}
-
-			return list;
-
-			// Otherwise, query for items surrounding this item.
-
-		} else {
-
-			LOG.debug("Display order is " + pivotOrder);
-
-			// Find the right and left lists
-
-			StringBuilder query;
-
-			List<BriefObjectMetadataBean> leftList = null;
-			List<BriefObjectMetadataBean> rightList = null;
-
-			solrQuery.setStart(0);
-			solrQuery.setRows(windowSize - 1);
-
-			// Right list
-
-			query = new StringBuilder();
-
-			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[")
-					.append(pivotOrder + 1).append(" TO *]");
-			query.append(accessRestrictionClause);
-			solrQuery.setQuery(query.toString());
-
-			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.asc);
-
-			try {
-				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				rightList = queryResponse.getBeans(BriefObjectMetadataBean.class);
-			} catch (SolrServerException e) {
-				LOG.error("Error retrieving Neighboring items: " + e);
-				return null;
-			}
-
-			LOG.debug("Got " + rightList.size() + " items for right list");
-
-			// Left list
-
-			// (Note that display order stuff is reversed.)
-
-			query = new StringBuilder();
-
-			query.append(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name())).append(":[* TO ")
-					.append(pivotOrder - 1).append("]");
-			query.append(accessRestrictionClause);
-			solrQuery.setQuery(query.toString());
-
-			solrQuery.setSort(solrSettings.getFieldName(SearchFieldKeys.DISPLAY_ORDER.name()), SolrQuery.ORDER.desc);
-
-			try {
-				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				leftList = queryResponse.getBeans(BriefObjectMetadataBean.class);
-			} catch (SolrServerException e) {
-				LOG.error("Error retrieving Neighboring items: " + e);
-				return null;
-			}
-
-			LOG.debug("Got " + leftList.size() + " items for left list");
-
-			// Trim the lists
-
-			int halfWindow = windowSize / 2;
-
-			// If we have enough in both lists, trim both to be
-			// halfWindow long.
-
-			if (leftList.size() >= halfWindow && rightList.size() >= halfWindow) {
-
-				LOG.debug("Trimming both lists");
-
-				leftList.subList(halfWindow, leftList.size()).clear();
-				rightList.subList(halfWindow, rightList.size()).clear();
-
-				// If we don't have enough in the left list and we have extra in the right list,
-				// try to pick up the slack by trimming fewer items from the right list.
-
-			} else if (leftList.size() < halfWindow && rightList.size() > halfWindow) {
-
-				LOG.debug("Picking up slack from right list");
-
-				// How much extra do we need from the right list?
-
-				int extra = halfWindow - leftList.size();
-
-				// Only "take" the extra (ie, clear less of the right list) if we have it available.
-
-				if (halfWindow + extra < rightList.size())
-					rightList.subList(halfWindow + extra, rightList.size()).clear();
-
-			} else if (rightList.size() < halfWindow && leftList.size() > halfWindow) {
-
-				LOG.debug("Picking up slack from left list");
-
-				int extra = halfWindow - rightList.size();
-
-				if (halfWindow + extra < leftList.size())
-					leftList.subList(halfWindow + extra, leftList.size()).clear();
-
-			}
-
-			// (Otherwise, we do no trimming, since both lists are smaller or the same size
-			// as the window.)
-
-			// Assemble the result.
-
-			Collections.reverse(leftList);
-			leftList.add(metadata);
-			leftList.addAll(rightList);
-
-			return leftList;
-
+		} while (start < total);
+		
+		// Wasn't found, no neighbors shall be forthcoming
+		if (start >= total) {
+			return null;
 		}
-
+		
+		// Calculate the starting index for the window, so that object is as close to the middle as possible
+		long left = start - (windowSize / 2);
+		long right = start + (windowSize / 2);
+		
+		if (left < 0) {
+			right -= left;
+			left = 0;
+		}
+		
+		if (right >= total) {
+			left -= (right - total) + 1;
+			if (left < 0) {
+				left = 0;
+			}
+		}
+		
+		// Query for the windowSize of objects
+		solrQuery.setFields(new String[0]);
+		solrQuery.setRows(windowSize);
+		solrQuery.setStart((int) left);
+		
+		try {
+			QueryResponse queryResponse = this.executeQuery(solrQuery);
+			return queryResponse.getBeans(BriefObjectMetadataBean.class);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Neighboring items: " + e);
+			return null;
+		}
 	}
 
 	/**

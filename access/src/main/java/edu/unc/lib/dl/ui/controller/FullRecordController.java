@@ -58,7 +58,6 @@ import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
-import edu.unc.lib.dl.ui.model.RecordNavigationState;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -212,18 +211,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
 				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
 			applyContainerSettings(pid, foxmlView, model, fullObjectView != null);
-		}
-
-		// Store search state information to the users session to enable page to page navigation
-		RecordNavigationState recordNavigationState = (RecordNavigationState) request.getSession().getAttribute(
-				"recordNavigationState");
-		if (recordNavigationState != null) {
-			int index = recordNavigationState.indexOf(pid);
-			if (index > -1) {
-				recordNavigationState.setCurrentRecordId(pid);
-				recordNavigationState.setCurrentRecordIndex(index);
-				request.getSession().setAttribute("recordNavigationState", recordNavigationState);
-			}
 		}
 
 		model.addAttribute("listAccess", listAccess);
