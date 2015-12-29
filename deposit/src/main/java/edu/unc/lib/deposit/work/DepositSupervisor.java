@@ -620,7 +620,7 @@ public class DepositSupervisor implements WorkerListener {
 			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
 			LOG.info("Queuing {} for deposit {}",
 					cleanJob.getClassName(), depositUUID);
-			enqueueJob(cleanJob, status, System.currentTimeMillis() + 1000 * this.getCleanupDelaySeconds());
+			enqueueJob(cleanJob, status, 1000 * this.getCleanupDelaySeconds());
 		}
 	}
 	
