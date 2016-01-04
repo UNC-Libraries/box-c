@@ -84,10 +84,6 @@
 			</xsl:otherwise>
 		</xsl:choose>
 		
-		<xsl:variable name="nameType" select="@type"/>
-		<xsl:if test="boolean($nameType)">
-			<xsl:text> (</xsl:text><xsl:value-of select="$nameType"/><xsl:text>)</xsl:text>
-		</xsl:if>
 		<br/><xsl:value-of select="$newline"/>
 		
 		<xsl:variable name="affiliation" select="*[local-name() = 'affiliation']"/>
