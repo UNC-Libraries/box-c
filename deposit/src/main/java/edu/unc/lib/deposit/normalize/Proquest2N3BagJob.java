@@ -364,7 +364,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 			if ("2".equals(embargoCode))
 				embargoEnd = embargoEnd.plusYears(1);
-			else if ("3".equals(embargoCode))
+			else if ("3".equals(embargoCode) || "4".equals(embargoCode))
 				embargoEnd = embargoEnd.plusYears(2);
 			else
 				embargoEnd = null;
