@@ -93,16 +93,6 @@
 							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}">
 							</audio>
 						</c:when>
-						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
-							<div class="clear_space"></div>
-							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
-							<div class="video_player inline_viewer">
-								<video>
-									<source type="video/mp4" src="${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}"></source>
-								</video>
-							</div>
-							<div class="clear"></div>
-						</c:when>
 					</c:choose>
 				</c:when>
 			</c:choose>

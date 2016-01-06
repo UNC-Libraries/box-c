@@ -11,10 +11,8 @@ require.config({
 		'StructureEntry' : 'cdr-access',
 		'StructureView' : 'cdr-access',
 		'JP2Viewer' : 'cdr-access',
-		'VideoPlayer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
 		'openLayers' : '/static/plugins/OpenLayers/OpenLayers',
-		'flowPlayer' : '/static/plugins/flowplayer/flowplayer.min',
 		'audiojs' : '/static/plugins/audiojs/audio'
 	},
 	shim: {
@@ -27,10 +25,9 @@ require.config({
 		}
 	}
 });
-define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPlayer', 'AudioPlayer', 'thumbnails'], function(module, $) {
+define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'AudioPlayer', 'thumbnails'], function(module, $) {
 	var $jp2Window = $(".jp2_imageviewer_window"),
 		$audioPlayer = $(".audio_player"),
-		$videoPlayer = $(".video_player"),
 		$structureView = $(".structure.aggregate");
 	
 	function loadViewer($viewer, widgetName) {
@@ -42,10 +39,6 @@ define('fullRecord', ['module', 'jquery', 'JP2Viewer', 'StructureView', 'VideoPl
 	
 	if ($jp2Window.length > 0) {
 		loadViewer($jp2Window, 'jp2Viewer', $(".jp2_viewer_link"));
-	}
-	
-	if ($videoPlayer.length > 0) {
-		loadViewer($videoPlayer, 'videoPlayer', $(".video_player_link"));
 	}
 	
 	if ($audioPlayer.length > 0) {
