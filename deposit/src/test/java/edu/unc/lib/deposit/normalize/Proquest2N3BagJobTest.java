@@ -273,6 +273,28 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 	}
 
 	@Test
+	public void testLongEmbargoed() {
+		// Forever 2014, as far as this test is concerned
+		DateTime newTime = new DateTime(2014, 5, 5, 0, 0, 0, 0);
+		DateTimeUtils.setCurrentMillisFixed(newTime.getMillis());
+
+		copyTestPackage("src/test/resources/proquest-embargo-code4.zip", job);
+
+		job.run();
+
+		Model model = job.getWritableModel();
+		Bag depositBag = model.getBag(job.getDepositPID().getURI());
+		Resource primaryResource = (Resource) depositBag.iterator().next();
+
+		Property embargoUntilP = cdrprop(model, embargoUntil);
+		String embargoValue = primaryResource.getProperty(embargoUntilP).getString();
+		assertEquals("Embargo value did not match the expected valued", "2016-05-05T00:00:00", embargoValue);
+
+		// Restore the system clock
+		DateTimeUtils.setCurrentMillisSystem();
+	}
+
+	@Test
 	public void testMultiplePackages() throws Exception {
 		copyTestPackage("src/test/resources/proquest-noattach.zip", job);
 		copyTestPackage("src/test/resources/proquest-attach.zip", job);
