@@ -176,9 +176,6 @@ public class IngestSourceManager {
 			addBagInfo(candidate, filePath);
 		} else if (file.isDirectory()) {
 			candidate.put("packagingType", PackagingType.DIRECTORY.getUri());
-			
-			// Add cumulative stats for vanilla directories
-			addDirectoryStats(candidate, filePath, true);
 		} else {
 			// Add stats for a non-bag zip file
 			if (file.getName().endsWith(".zip")) {
@@ -206,42 +203,6 @@ public class IngestSourceManager {
 		fileInfo.put("size", size);
 		
 		fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
-	}
-
-	/**
-	 * Add aggregate file statistics about a directory to a candidates information.  If an object is a
-	 * bag folder, then only the files within its data directory will be added.
-	 * 
-	 * @param fileInfo
-	 * @param filePath
-	 * @param isBag
-	 * @throws IOException
-	 */
-	private void addDirectoryStats(Map<String, Object> fileInfo, Path filePath, final boolean isBag) throws IOException {
-		final AtomicLong size = new AtomicLong(0);
-		final AtomicInteger count = new AtomicInteger(0);
-		
-		final PathMatcher bagDataMatcher = FileSystems.getDefault().getPathMatcher("glob:" + filePath + "/**");
-
-		Files.walkFileTree(filePath, new SimpleFileVisitor<Path>() {
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				size.addAndGet(attrs.size());
-				if (isBag && bagDataMatcher.matches(file)) {
-					count.incrementAndGet();
-				}
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-				// Skip folders that can't be traversed
-				return FileVisitResult.CONTINUE;
-			}
-		});
-		
-		fileInfo.put("size", size.get());
-		fileInfo.put("files", count.get());
 	}
 	
 	/**
