@@ -26,8 +26,12 @@
 				<h2><%= candidate.patternMatched %></h2>
 				<p><%= candidate.base %><br/>
 					<%= candidate.type %> <%= candidate.version? candidate.version : "" %>
-					&ndash; <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
-					&ndash; <%= candidate.sizeFormatted %>
+					<% if ("files" in candidate) { %>
+						&ndash; <%= candidate.files %> item<%= candidate.files == 1? "" : "s" %>
+					<% } %>
+					<% if ("sizeFormatted" in candidate) { %>
+						&ndash; <%= candidate.sizeFormatted %>
+					<% } %>
 				</p>
 				<div class="file_browse_entry_inputs">
 					<label for="file_label">Label <span class="required">*</span></label>

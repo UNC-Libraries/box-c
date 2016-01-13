@@ -77,7 +77,10 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				candidate.type = "Directory";
 			}
 			
-			candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.size);
+			if ("size" in candidate) {
+				candidate.sizeFormatted = StringUtilities.readableFileSize(candidate.size);
+			}
+			
 			var lastSlash = candidate.patternMatched.lastIndexOf("/");
 			candidate.filename = lastSlash == -1? candidate.patternMatched : candidate.patternMatched.substring(lastSlash + 1);
 		}

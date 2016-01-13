@@ -86,8 +86,6 @@ public class IngestSourceManagerTest {
 		Map<String, Object> candidateOne = candidates.get(0);
 		assertEquals("testsource", candidateOne.get("sourceId"));
 		assertEquals(PackagingType.DIRECTORY.toString(), candidateOne.get("packagingType"));
-		assertTrue("Failed to generate size of candidate bag", ((Long)candidateOne.get("size")) > 0);
-		assertEquals("File count should only include files in the data dir", 7, candidateOne.get("files"));		
 		
 		Map<String, Object> candidateTwo = candidates.get(1);
 		assertEquals("testsource", candidateTwo.get("sourceId"));
