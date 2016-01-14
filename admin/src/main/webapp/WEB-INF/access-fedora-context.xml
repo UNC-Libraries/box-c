@@ -124,7 +124,7 @@
 	
 	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject">
-			<ref local="tripleStoreQueryService" />
+			<ref bean="tripleStoreQueryService" />
 		</property>
 		<property name="targetMethod">
 			<value>fetchByRepositoryPath</value>
@@ -134,5 +134,11 @@
 				<value>/Collections</value>
 			</list>
 		</property>
+	</bean>
+	
+	<bean id="ingestSourceManager" class="edu.unc.lib.dl.admin.collect.IngestSourceManager"
+			init-method="init">
+		<property name="configPath" value="${repo.dir}/ingestSources.json" />
+		<property name="tripleService" ref="tripleStoreQueryService" />
 	</bean>
 </beans>

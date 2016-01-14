@@ -24,14 +24,16 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.ZipFile;
 
 import org.codehaus.jackson.JsonParseException;
@@ -66,10 +68,53 @@ public class IngestSourceManager {
 	private String configPath;
 
 	public void init() throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper mapper = new ObjectMapper();
-		CollectionType type = mapper.getTypeFactory()
+		final ObjectMapper mapper = new ObjectMapper();
+		final CollectionType type = mapper.getTypeFactory()
 				.constructCollectionType(List.class, IngestSourceConfiguration.class);
-		configs = mapper.readValue(new File(configPath), type);
+		final File configFile = new File(configPath);
+		final Path path = configFile.toPath();
+		configs = mapper.readValue(configFile, type);
+		
+		// Start separate thread for reloading configuration when it changes
+		Thread watchThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				// Monitor config file for changes to allow for reloading without restarts
+				try (final WatchService watchService = FileSystems.getDefault().newWatchService()) {
+					// Register watcher on parent directory of config to detect file modifications
+					path.getParent().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
+					
+					while (true) {
+						final WatchKey wk = watchService.take();
+						for (WatchEvent<?> event : wk.pollEvents()) {
+							final Path changed = (Path) event.context();
+							
+							if (changed.toString().equals(configFile.getName())) {
+								log.warn("Ingest source configuration has changed, reloading: {}", configFile.getAbsolutePath());
+								// Config file changed, reload the mappings
+								synchronized (configs) {
+									configs = mapper.readValue(configFile, type);
+								}
+							}
+						}
+						
+						// reset the key so that we can continue monitor for future events
+						boolean valid = wk.reset();
+						if (!valid) {
+							break;
+						}
+					}
+				} catch (InterruptedException e) {
+					log.info("Interrupted watcher for updates to ingest source configuration");
+				} catch (IOException e) {
+					log.error("Failed to establish watcher for ingest source configuration");
+				}
+			}
+			
+			
+		});
+		watchThread.start();
+		
 	}
 
 	/**
