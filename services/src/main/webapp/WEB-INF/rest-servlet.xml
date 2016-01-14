@@ -18,86 +18,17 @@
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:util="http://www.springframework.org/schema/util" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util 
-		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context 
 		http://www.springframework.org/schema/context/spring-context-3.0.xsd
 		http://www.springframework.org/schema/mvc
 		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
-
-	<bean name="propertiesURI" class="java.lang.System"
-		factory-method="getProperty">
-		<constructor-arg index="0" value="server.properties.uri" />
-		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:server.properties" />
-		<!-- default location for testing -->
-	</bean>
-	<bean id="serverProperties"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<ref bean="propertiesURI" />
-				<value>classpath:cdr-services.properties</value>
-			</list>
-		</property>
-		<property name="ignoreResourceNotFound" value="false" />
-	</bean>
-
-	<bean id="contextUrl" class="java.lang.String">
-		<constructor-arg
-			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
-	</bean>
-	
-	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
-		<property name="queryLayer" ref="queryLayer" />
-		<property name="requireViewAdmin" value="true" />
-		<property name="nonAdminRedirectUrl" value="/error/401.html" />
-	</bean>
-	
-	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
-		<property name="fedoraUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-	</bean>
-	
-	<bean id="gaTrackingID" class="java.lang.String">
-		<constructor-arg
-			value="${google.trackingId}" />
-	</bean>
-	
-	<bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
-		<property name="gaTrackingID" ref="gaTrackingID" />
-	</bean>
-	
-	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
-		<property name="accessClient" ref="accessClient" />
-		<property name="fedoraUtil" ref="fedoraUtil" />
-	</bean>
-	
-	
-
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
-		<property name="arguments">
-			<list>
-				<ref bean="searchSettings"/>
-				<ref bean="solrSettings"/>
-			</list>
-		</property>
-	</bean>
-
-	
-	
-	<bean id="multipartResolver"
-		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
-		<property name="maxUploadSize" value="300000000"/>
-	</bean>
+		
+	<mvc:annotation-driven/>
 
 	<context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest"/>
-	
-	<mvc:annotation-driven/>	
 </beans>
