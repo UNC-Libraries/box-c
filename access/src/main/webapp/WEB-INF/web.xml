@@ -28,7 +28,7 @@
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
-			/WEB-INF/uiapp-servlet.xml
+			/WEB-INF/service-context.xml
 			/WEB-INF/access-fedora-context.xml
 			/WEB-INF/solr-search-context.xml
 		</param-value>
@@ -60,6 +60,10 @@
 	<servlet>
 		<servlet-name>uiapp</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/uiapp-servlet.xml</param-value>
+		</init-param>
 	</servlet>
 	
 	<servlet-mapping>

@@ -234,4 +234,50 @@
 	<bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
+	
+	<!-- Access related beans -->
+	<bean id="contextUrl" class="java.lang.String">
+		<constructor-arg
+			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
+	</bean>
+	
+	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
+		<property name="queryLayer" ref="queryLayer" />
+		<property name="requireViewAdmin" value="true" />
+		<property name="nonAdminRedirectUrl" value="/error/401.html" />
+	</bean>
+	
+	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
+		<property name="fedoraUrl"
+			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+	</bean>
+	
+	<bean id="gaTrackingID" class="java.lang.String">
+		<constructor-arg
+			value="${google.trackingId}" />
+	</bean>
+	
+	<bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
+		<property name="gaTrackingID" ref="gaTrackingID" />
+	</bean>
+	
+	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+		<property name="accessClient" ref="accessClient" />
+		<property name="fedoraUtil" ref="fedoraUtil" />
+	</bean>
+
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
+		<property name="arguments">
+			<list>
+				<ref bean="searchSettings"/>
+				<ref bean="solrSettings"/>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="300000000"/>
+	</bean>
 </beans>
