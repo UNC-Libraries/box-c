@@ -123,19 +123,7 @@
 							<div class="clear_space"></div>
 							<audio class="audio_player inline_viewer" src="${dataFileUrl}">
 							</audio>
-						</c:when>
-						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
-							<div class="actionlink left">
-								<a href="" class="inline_viewer_link video_player_link">View</a>
-							</div>
-							<div class="clear_space"></div>
-							<link rel="stylesheet" type="text/css" href="/static/plugins/flowplayer/skin/minimalist.css">
-							<div class="video_player inline_viewer">
-								<video>
-									<source type="video/mp4" src="${dataFileUrl}"></source>
-								</video>
-							</div>
-						</c:when>
+						</c:when>					
 					</c:choose>
 				</c:when>
 			</c:choose>
