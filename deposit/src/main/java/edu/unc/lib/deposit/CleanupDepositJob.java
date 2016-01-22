@@ -136,6 +136,54 @@ public class CleanupDepositJob extends AbstractDepositJob {
 			}
 		}
 
+		// Cleanup files and directories specifically requested be cleaned up by an earlier job
+		NodeIterator it = m.listObjectsOfProperty(dprop(m, DepositRelationship.cleanupLocation));
+		while (it.hasNext()) {
+			RDFNode n = it.nextNode();
+			String stagingLoc = n.asLiteral().getString();
+			URI stagingUri = URI.create(stagingLoc);
+
+			if(!tagPattern.matches(stagingUri)) continue;
+
+			SharedStagingArea area = stages.findMatchingArea(stagingUri);
+			if (area == null) {
+				LOG.error("Cannot find staging area for URI: " + stagingUri.toString());
+				break;
+			}
+			if (!area.isConnected()) {
+				stages.connect(area.getURI());
+			}
+
+			URI storageUri = null;
+			try {
+				storageUri = area.getStorageURI(stagingUri);
+			} catch (StagingException e) {
+				LOG.error("Could not resolve storage URI: {}", stagingUri.toString(), e);
+			}
+			CleanupPolicy p = area.getIngestCleanupPolicy();
+			switch (p) {
+			case DELETE_INGESTED_FILES:
+			case DELETE_INGESTED_DEPOSIT_FOLDERS:
+			case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
+				File cleanupFile = new File(storageUri);
+				if (cleanupFile.exists()) {
+					if (cleanupFile.isDirectory()) {
+						try {
+							FileUtils.deleteDirectory(cleanupFile);
+						} catch (IOException e) {
+							LOG.error("Cannot delete deposit directory: {}",
+									getDepositDirectory().getAbsolutePath(), e);
+						}
+					} else {
+						cleanupFile.delete();
+					}
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		
 		// delete project staging folder, if exists/applicable
 		String sfuris = getDepositStatus().get(DepositField.stagingFolderURI.name());
 		if (sfuris != null && sfuris.trim().length() > 0) {

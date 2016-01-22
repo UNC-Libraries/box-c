@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.cleanupLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
@@ -85,7 +86,9 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		status.put(DepositField.fileName.name(), "Test File");
 		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
 		
-		when(stages.getStagedURI(any(URI.class))).thenReturn(new URI("tag:/path/data/test/lorem.txt"));
+		when(stages.getStagedURI(any(URI.class)))
+			.thenReturn(new URI("tag:/path/data/valid-bag/lorem.txt"))
+			.thenReturn(new URI("tag:/path/data/valid-bag/"));
 
 		job.run();
 
@@ -117,11 +120,14 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
 				file.getProperty(dprop(model, md5sum)).getString());
-		assertEquals("File location not set", "tag:/path/data/test/lorem.txt",
+		assertEquals("File location not set", "tag:/path/data/valid-bag/lorem.txt",
 				file.getProperty(dprop(model, stagingLocation)).getString());
 		
 		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
 		assertTrue(modsFile.exists());
+		
+		assertEquals("Cleanup location not set", "tag:/path/data/valid-bag/",
+				depositBag.getProperty(dprop(model, cleanupLocation)).getString());
 	}
 
 	@Test(expected = JobFailedException.class)

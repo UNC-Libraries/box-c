@@ -144,6 +144,18 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			
 		}
 		
+		// Register the bag directory for cleanup later
+		Path storedPath = sourceFile.toPath();
+		try {
+			URI stagedURI = stages.getStagedURI(storedPath.toUri());
+			
+			if (stagedURI != null) {
+				model.add(top, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+			}
+		} catch (StagingException e) {
+			failJob(e, "Unable to get staged path for file {}", storedPath);
+		}
+		
 	}
 	
 }
