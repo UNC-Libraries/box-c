@@ -5,7 +5,6 @@ import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 
 import org.apache.commons.io.FileUtils;
@@ -19,7 +18,6 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.CleanupPolicy;
 import edu.unc.lib.staging.SharedStagingArea;
 import edu.unc.lib.staging.Stages;
@@ -118,7 +116,6 @@ public class CleanupDepositJob extends AbstractDepositJob {
 			case DELETE_INGESTED_FILES:
 				deleteFile(storageUri);
 				break;
-			case DELETE_INGESTED_DEPOSIT_FOLDERS:
 			case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
 				File parent = deleteFile(storageUri);
 				if (parent != null) {
@@ -163,7 +160,6 @@ public class CleanupDepositJob extends AbstractDepositJob {
 			CleanupPolicy p = area.getIngestCleanupPolicy();
 			switch (p) {
 			case DELETE_INGESTED_FILES:
-			case DELETE_INGESTED_DEPOSIT_FOLDERS:
 			case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
 				File cleanupFile = new File(storageUri);
 				if (cleanupFile.exists()) {
@@ -181,42 +177,6 @@ public class CleanupDepositJob extends AbstractDepositJob {
 				break;
 			default:
 				break;
-			}
-		}
-		
-		// delete project staging folder, if exists/applicable
-		String sfuris = getDepositStatus().get(DepositField.stagingFolderURI.name());
-		if (sfuris != null && sfuris.trim().length() > 0) {
-			SharedStagingArea area = null;
-			URI sfuri = null;
-			try {
-				sfuri = new URI(sfuris);
-				area = stages.findMatchingArea(sfuri);
-			} catch (URISyntaxException ignore) {
-			}
-			if (area != null) {
-				if (CleanupPolicy.DELETE_INGESTED_DEPOSIT_FOLDERS.equals(area
-						.getIngestCleanupPolicy())) {
-					if (!area.isConnected()) {
-						stages.connect(area.getURI());
-					}
-					if(area.isConnected()) {
-						try {
-							URI depositStagingFolderURI = area.getStorageURI(sfuri);
-							FileUtils.deleteDirectory(new File(depositStagingFolderURI));
-							LOG.debug("deleted {}", new File(depositStagingFolderURI));
-						} catch (StagingException e) {
-							LOG.error("Cannot obtain storage location for deposit staging folder URI: "
-									+ sfuris, e);
-						} catch (IOException e) {
-							LOG.error("Cannot delete deposit staging folder: "
-									+ sfuris, e);
-						}
-					}
-				}
-			} else {
-				LOG.error("Cannot find staging area for deposit staging folder for URI: "
-						+ sfuris);
 			}
 		}
 
