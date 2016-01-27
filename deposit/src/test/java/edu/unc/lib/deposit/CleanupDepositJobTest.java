@@ -37,7 +37,6 @@ import edu.unc.lib.staging.Stages;
 
 public class CleanupDepositJobTest {
 
-	private static final URI CLEAN_DEPOSITS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_deposits_stage/");
 	private static final URI CLEAN_FOLDERS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_folders_stage/");
 	private static final URI CLEAN_FILES_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_files_stage/");
 	private static final URI NOOP_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/noop_stage/");
@@ -95,7 +94,6 @@ public class CleanupDepositJobTest {
 		stages.addRepositoryConfigURL(stagingConfigUri.toString());
 
 		// add mappings
-		stages.setStorageMapping(CLEAN_DEPOSITS_STAGE_URI, cleanDepositsStagingFolder.toURI());
 		stages.setStorageMapping(CLEAN_FOLDERS_STAGE_URI, cleanFoldersStagingFolder.toURI());
 		stages.setStorageMapping(CLEAN_FILES_STAGE_URI, cleanFilesStagingFolder.toURI());
 		stages.setStorageMapping(NOOP_STAGE_URI, noopStagingFolder.toURI());
@@ -137,15 +135,12 @@ public class CleanupDepositJobTest {
 
 	@Test
 	public void testCommonPathStageCleanup() throws InterruptedException {
-		// deposit staging folder is expected to be cleaned
-		String depositStagingFolder = CLEAN_DEPOSITS_STAGE_URI.toString().concat("project/");
-		depositStatus.put(DepositField.stagingFolderURI.name(), depositStagingFolder);
 
 		Thread jobThread = new Thread(job);
 		jobThread.start();
 
 		// Start processing with a timelimit to prevent infinite wait in case of failure
-		jobThread.join(10000L);
+		jobThread.join();
 
 		// noop policy
 		assertTrue(new File(noopStagingFolder, "project/folderA/ingested").exists());
@@ -168,8 +163,8 @@ public class CleanupDepositJobTest {
 		// deposit folder destroyed
 		assertFalse(job.getDepositDirectory().exists());
 
-		// clean deposit policy
-		assertFalse(new File(cleanDepositsStagingFolder, "project").exists());
+		// project folder not cleaned
+		assertTrue(new File(cleanDepositsStagingFolder, "project").exists());
 
 		// keys have been set to expire
 		verify(depositStatusFactory, times(1)).expireKeys(Mockito.anyString(), Mockito.anyInt());
@@ -187,23 +182,6 @@ public class CleanupDepositJobTest {
 		jobThread.join(10000L);
 
 		// clean deposit policy
-		assertTrue(new File(cleanDepositsStagingFolder, "project").exists());
-	}
-
-	@Test
-	public void testCleanupDepositStagingFolderUnderFoldersPolicy() throws InterruptedException {
-		// deposit staging folder is NOT expected to be cleaned
-		String depositStagingFolder = CLEAN_FOLDERS_STAGE_URI.toString().concat("project/");
-		depositStatus.put(DepositField.stagingFolderURI.name(), depositStagingFolder.toString());
-
-		Thread jobThread = new Thread(job);
-		jobThread.start();
-
-		// Start processing with a timelimit to prevent infinite wait in case of failure
-		jobThread.join(10000L);
-
-		// clean deposit policy
-		assertTrue(new File(cleanFoldersStagingFolder, "project").exists());
 		assertTrue(new File(cleanDepositsStagingFolder, "project").exists());
 	}
 

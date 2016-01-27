@@ -11,7 +11,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;
 
 public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
@@ -50,13 +49,6 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		LOG.info("Extractor file associations added");
 		extractor.addAccessControls(model);
 		LOG.info("Extractor access controls added");
-
-		// add staging location to deposit status, if available
-		String loc = extractor.getStagingLocation();
-		if(loc != null) {
-			getDepositStatusFactory().set(getDepositUUID(), DepositField.stagingFolderURI, loc);
-			LOG.info("Staging location saved");
-		}
 
 		final File modsFolder = getDescriptionDir();
 		modsFolder.mkdir();

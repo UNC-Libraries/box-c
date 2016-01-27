@@ -130,6 +130,8 @@ public class CleanupDepositJob extends AbstractDepositJob {
 						}
 					}
 				}
+			default:
+				break;
 			}
 		}
 
