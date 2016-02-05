@@ -433,7 +433,7 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum DepositRelationship {
-		stagingLocation, mimetype, md5sum, size, createTime, label, originalLocation, hasDatastream;
+		stagingLocation, mimetype, md5sum, size, createTime, label, originalLocation, hasDatastream, cleanupLocation;
 
 		DepositRelationship() {
 			try {

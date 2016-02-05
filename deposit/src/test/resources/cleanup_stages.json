@@ -1,7 +1,7 @@
 {
-    "tag:cdr.lib.unc.edu,2013:/clean_deposits_stage/":{
-        "name":"A staging area in which whole deposit folders are deleted",
-        "ingestCleanupPolicy":"DELETE_INGESTED_DEPOSIT_FOLDERS"
+    "tag:cdr.lib.unc.edu,2013:/clean_extras_stage/":{
+        "name":"A staging with extra files to clean up",
+        "ingestCleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS"
     },
     "tag:cdr.lib.unc.edu,2013:/clean_folders_stage/":{
         "name":"A staging area on a shared drive",
