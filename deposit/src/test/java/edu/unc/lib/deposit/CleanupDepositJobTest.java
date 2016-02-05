@@ -40,6 +40,7 @@ public class CleanupDepositJobTest {
 	private static final URI CLEAN_FOLDERS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_folders_stage/");
 	private static final URI CLEAN_FILES_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_files_stage/");
 	private static final URI NOOP_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/noop_stage/");
+	private static final URI CLEAN_EXTRAS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_extras_stage/");
 
 	@Rule
 	public TemporaryFolder tmpDir = new TemporaryFolder();
@@ -48,6 +49,7 @@ public class CleanupDepositJobTest {
 	private File cleanDepositsStagingFolder;
 	private File cleanFoldersStagingFolder;
 	private File cleanFilesStagingFolder;
+	private File cleanExtrasStagingFolder;
 	private File noopStagingFolder;
 
 	private File modifiedStagesConfig;
@@ -81,11 +83,13 @@ public class CleanupDepositJobTest {
 		cleanDepositsStagingFolder = new File(stagesDir, "clean_deposits_stage");
 		cleanFoldersStagingFolder = new File(stagesDir, "clean_folders_stage");
 		cleanFilesStagingFolder = new File(stagesDir, "clean_files_stage");
+		cleanExtrasStagingFolder = new File(stagesDir, "clean_extras_stage");
 		noopStagingFolder = new File(stagesDir, "noop_stage");
 		FileUtils.copyDirectory(templateStageDirectory, cleanDepositsStagingFolder);
 		FileUtils.copyDirectory(templateStageDirectory, cleanFoldersStagingFolder);
 		FileUtils.copyDirectory(templateStageDirectory, cleanFilesStagingFolder);
 		FileUtils.copyDirectory(templateStageDirectory, noopStagingFolder);
+		FileUtils.copyDirectory(templateStageDirectory, cleanExtrasStagingFolder);
 
 		// load stages config
 		modifiedStagesConfig = tmpDir.newFile("stagesConfig.json");
@@ -97,6 +101,7 @@ public class CleanupDepositJobTest {
 		stages.setStorageMapping(CLEAN_FOLDERS_STAGE_URI, cleanFoldersStagingFolder.toURI());
 		stages.setStorageMapping(CLEAN_FILES_STAGE_URI, cleanFilesStagingFolder.toURI());
 		stages.setStorageMapping(NOOP_STAGE_URI, noopStagingFolder.toURI());
+		stages.setStorageMapping(CLEAN_EXTRAS_STAGE_URI, cleanExtrasStagingFolder.toURI());
 
 		// save mappings
 		FileUtils.writeStringToFile(modifiedStagesConfig, stages.getLocalConfig());
@@ -159,6 +164,9 @@ public class CleanupDepositJobTest {
 		assertFalse(new File(cleanFoldersStagingFolder, "project/folderA/ingested").exists());
 		assertTrue(new File(cleanFoldersStagingFolder, "project/folderA/leftover").exists());
 		assertFalse(new File(cleanFoldersStagingFolder, "project/folderB").exists());
+		
+		// clean up extra files
+		assertFalse(new File(cleanExtrasStagingFolder, "project").exists());
 
 		// deposit folder destroyed
 		assertFalse(job.getDepositDirectory().exists());

@@ -71,13 +71,13 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
 		
-		if (BagHelper.getVersion(new File(sourcePath)) == null) {
+		File sourceFile = new File(sourcePath);
+		
+		if (BagHelper.getVersion(sourceFile) == null) {
 			failJob("Can't find BagIt bag", "A BagIt bag could not be found at the source path.");
 		}
 		
 		BagFactory bagFactory = new BagFactory();
-		
-		File sourceFile = new File(sourcePath);
 		Bag bag = bagFactory.createBag(sourceFile);
 		
 		if (bag.getFormat() != Format.FILESYSTEM) {
@@ -144,7 +144,21 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			
 		}
 		
-		// Register the bag directory for cleanup later
+		String sourceAbsPath = sourceFile.getAbsolutePath();
+		// Register the bag extras for cleanup later
+		for (BagFile tag : bag.getTags()) {
+			Path path = Paths.get(sourceAbsPath, tag.getFilepath());
+			try {
+				URI stagedURI = stages.getStagedURI(path.toUri());
+				if (stagedURI != null) {
+					model.add(top, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+				}
+			} catch (StagingException e) {
+				failJob(e, "Unable to get staged path for file {}", path);
+			}
+		}
+		
+		// Register the bag itself for cleanup
 		Path storedPath = sourceFile.toPath();
 		try {
 			URI stagedURI = stages.getStagedURI(storedPath.toUri());

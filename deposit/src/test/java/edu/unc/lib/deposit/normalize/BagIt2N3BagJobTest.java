@@ -34,16 +34,23 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
@@ -86,9 +93,17 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		status.put(DepositField.fileName.name(), "Test File");
 		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
 		
-		when(stages.getStagedURI(any(URI.class)))
-			.thenReturn(new URI("tag:/path/data/valid-bag/lorem.txt"))
-			.thenReturn(new URI("tag:/path/data/valid-bag/"));
+		when(stages.getStagedURI(any(URI.class))).thenAnswer(new Answer<URI>() {
+			public URI answer(InvocationOnMock invocation) throws URISyntaxException {
+				Object[] args = invocation.getArguments();
+				URI uri = (URI) args[0];
+				String path = uri.toString();
+				int index = path.lastIndexOf("/paths");
+				path = path.substring(index + 6);
+				
+				return new URI("tag:" + path);
+			}
+		});
 
 		job.run();
 
@@ -120,14 +135,23 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
 				file.getProperty(dprop(model, md5sum)).getString());
-		assertEquals("File location not set", "tag:/path/data/valid-bag/lorem.txt",
+		assertEquals("File location not set", "tag:/valid-bag/data/test/lorem.txt",
 				file.getProperty(dprop(model, stagingLocation)).getString());
 		
 		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
 		assertTrue(modsFile.exists());
 		
-		assertEquals("Cleanup location not set", "tag:/path/data/valid-bag/",
-				depositBag.getProperty(dprop(model, cleanupLocation)).getString());
+		Set<String> cleanupSet = new HashSet<>();
+		StmtIterator it = depositBag.listProperties(dprop(model, cleanupLocation));
+		while (it.hasNext()) {
+			Statement stmt = it.nextStatement();
+			cleanupSet.add(stmt.getString());
+		}
+		
+		assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
+		assertTrue("Cleanup of bag not set", cleanupSet.contains("tag:/valid-bag/"));
+		assertTrue("Cleanup of manifest not set", cleanupSet.contains("tag:/valid-bag/bagit.txt"));
+		assertTrue("Cleanup of manifest not set", cleanupSet.contains("tag:/valid-bag/manifest-md5.txt"));
 	}
 
 	@Test(expected = JobFailedException.class)
