@@ -245,11 +245,10 @@
 }
 
 #front-case-study .wp-caption {
-  background: #f9f9f9 none repeat scroll 0 0;
-  border: 1px solid #f0f0f0;
   max-width: 96%;
   padding: 13px 10px 10px;
   text-align: center;
+  position: relative;
 }
 
 #front-case-study .wp-caption:hover
@@ -265,9 +264,10 @@
 #front-case-study .wp-caption-text {
   background: rgba(255, 255, 255, 0.7);
   font-size: 14px;
-  margin-top: -55px;
-  padding: 5px 20px;
-  position: relative;
+  padding: 10px 20px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
   text-align: center;
   width: 395px;
 }
