@@ -192,11 +192,11 @@ public class DepositEmailHandler {
 		// top-level objects that are not public, but a container that is public, in which case the email wouldn't
 		// make sense. However, form deposits currently always have a "main object".
 		
-		String objectPid = getMainObjectPidForDeposit(depositUUID).toString();
+		String objectPid = getMainObjectPidForDeposit(depositUUID);
 		
 		if (objectPid == null) {
 			objectPid = status.get(DepositField.containerId.name());
-		}
+		} 
 		
 		ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(new PID(objectPid));
 		Date embargoUntil = accessControls.getLastActiveEmbargoUntilDate();
