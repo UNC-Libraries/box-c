@@ -144,9 +144,10 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				// Format only provided if using FITS mimetype, since otherwise it may not match
 				String format = null;
 				
-				// If fedora mimetype is not meaningful, then override with FITS generated value
+				// If fedora mimetype is not meaningful, then override with FITS generated value. 
+				// For example some pdfs come with the mime-type application/(x-)download from fedora, which is unusable by browsers
 				if (fedoraMimetype == null || fedoraMimetype.trim().length() == 0
-						|| fedoraMimetype.contains("octet-stream")) {
+						|| fedoraMimetype.contains("octet-stream") || fedoraMimetype.contains("download")) {
 					
 					// get mimetype out of FITS XML
 					Element identity = null;

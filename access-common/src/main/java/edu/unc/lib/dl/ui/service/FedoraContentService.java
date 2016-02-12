@@ -176,9 +176,11 @@ public class FedoraContentService {
 					String mimeType;
 					try {
 						mimeType = method.getResponseHeader("content-type").getValue();
-						if (mimeType == null || "application/octet-stream".equals(mimeType)) {
+						if (mimeType == null || "application/octet-stream".equals(mimeType) || "application/download".equals(mimeType) || "application/x-download".equals(mimeType)) {
 							if ("mp3".equals(datastream.getExtension())) {
 								mimeType = "audio/mpeg";
+							} else if ("pdf".equals(datastream.getExtension())) {
+								mimeType = "application/pdf";
 							} else {
 								mimeType = datastream.getMimetype();
 							}
