@@ -30,6 +30,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -39,6 +40,7 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.ui.util.ApplicationPathSettings;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class SerializationUtil {
@@ -50,6 +52,9 @@ public class SerializationUtil {
 	}
 	private static SearchSettings searchSettings;
 	private static SolrSettings solrSettings;
+	
+	@Autowired
+	private static ApplicationPathSettings applicationPathSettings;
 
 	public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
@@ -103,8 +108,10 @@ public class SerializationUtil {
 
 	public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		if (metadata.getId() != null)
+		if (metadata.getId() != null) {
 			result.put("id", metadata.getId());
+			result.put("uri", applicationPathSettings.getApiPath() + metadata.getId());
+		}
 
 		if (metadata.getLabel() != null)
 			result.put("label", metadata.getLabel());

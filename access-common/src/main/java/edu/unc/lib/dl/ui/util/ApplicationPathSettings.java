@@ -25,17 +25,24 @@ public class ApplicationPathSettings {
 	private static final Logger LOG = LoggerFactory.getLogger(ApplicationPathSettings.class);
 	
 	private String djatokaPath;
+	private String apiPath;
 	private String fedoraPath;
 	private URL fedoraURL;
 	private String solrPath;
 	private URL solrURL;
-	private String externalContentPath;
+	private String externalContentPath;	
 	
 	public String getDjatokaPath() {
 		return djatokaPath;
 	}
 	public void setDjatokaPath(String djatokaPath) {
 		this.djatokaPath = djatokaPath;
+	}
+	public String getApiPath() {
+		return apiPath;
+	}
+	public void setApiPath(String apiPath) {
+		this.apiPath = apiPath;
 	}
 	public String getFedoraPath() {
 		return fedoraPath;

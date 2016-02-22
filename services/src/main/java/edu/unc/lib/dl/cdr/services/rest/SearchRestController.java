@@ -72,7 +72,7 @@ public class SearchRestController extends AbstractSolrSearchController {
 			List<String> resultFields = new ArrayList<String>();
 			for (String fieldName: fieldNames) {
 				String fieldKey = searchSettings.searchFieldKey(fieldName);
-				if (fieldKey != null)
+				if (fieldKey.equals("uri") || fieldKey != null)
 					resultFields.add(fieldKey);
 			}
 			return resultFields;
@@ -115,6 +115,7 @@ public class SearchRestController extends AbstractSolrSearchController {
 		response.put("numFound", resultResponse.getResultCount());
 		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(resultResponse.getResultList().size());
 		for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
+			
 			results.add(SerializationUtil.metadataToMap(metadata, GroupsThreadStore.getGroups()));
 		}
 		response.put("results", results);
