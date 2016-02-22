@@ -25,7 +25,7 @@ public class ApplicationPathSettings {
 	private static final Logger LOG = LoggerFactory.getLogger(ApplicationPathSettings.class);
 	
 	private String djatokaPath;
-	private String apiPath;
+	private String apiRecordPath;
 	private String fedoraPath;
 	private URL fedoraURL;
 	private String solrPath;
@@ -38,11 +38,11 @@ public class ApplicationPathSettings {
 	public void setDjatokaPath(String djatokaPath) {
 		this.djatokaPath = djatokaPath;
 	}
-	public String getApiPath() {
-		return apiPath;
+	public String getApiRecordPath() {
+		return apiRecordPath;
 	}
-	public void setApiPath(String apiPath) {
-		this.apiPath = apiPath;
+	public void setApiRecordPath(String apiRecordPath) {
+		this.apiRecordPath = apiRecordPath;
 	}
 	public String getFedoraPath() {
 		return fedoraPath;

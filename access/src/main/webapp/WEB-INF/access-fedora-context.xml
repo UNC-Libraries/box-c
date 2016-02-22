@@ -96,7 +96,7 @@
 		<property name="solrPath"
 			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
 		<property name="djatokaPath" value="${djatoka.base.url}" />
-		<property name="apiPath" value="${repository.apiUrl}" />
+		<property name="apiRecordPath" value="${api.base.recordUrl}" />
 		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
 	

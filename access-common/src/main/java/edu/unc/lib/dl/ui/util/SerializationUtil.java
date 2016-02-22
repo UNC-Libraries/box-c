@@ -110,7 +110,7 @@ public class SerializationUtil {
 		Map<String, Object> result = new HashMap<String, Object>();
 		if (metadata.getId() != null) {
 			result.put("id", metadata.getId());
-			result.put("uri", applicationPathSettings.getApiPath() + metadata.getId());
+			result.put("uri", applicationPathSettings.getApiRecordPath() + metadata.getId());
 		}
 
 		if (metadata.getLabel() != null)
