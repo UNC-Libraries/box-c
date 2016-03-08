@@ -75,8 +75,8 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	 * @param containerPID
 	 * @param status
 	 */
-	public Resource getFileResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
-		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
+	public Resource getFileResource(com.hp.hpl.jena.rdf.model.Bag top, String filepath) {
+		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, filepath);
 
 		UUID uuid = UUID.randomUUID();
 		PID pid = new PID("uuid:" + uuid.toString());
@@ -87,7 +87,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		return fileResource;
 	}
 	
-	public com.hp.hpl.jena.rdf.model.Bag getFolderBag(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
+	public com.hp.hpl.jena.rdf.model.Bag getFolderBag(com.hp.hpl.jena.rdf.model.Bag top, String filepath) {
 		
 		Model model = top.getModel();
 		
