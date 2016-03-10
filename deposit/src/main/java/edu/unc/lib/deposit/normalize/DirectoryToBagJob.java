@@ -17,20 +17,31 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -43,6 +54,8 @@ import edu.unc.lib.staging.StagingException;
  * @author lfarrell
  */
 public class DirectoryToBagJob extends AbstractFileServerToBagJob {
+	private static final Logger log = LoggerFactory.getLogger(IngestDeposit.class);
+	
 	public DirectoryToBagJob() {
 		super();
 	}
@@ -59,13 +72,14 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
 		File sourceFile = new File(sourcePath);
-		File[] listOfFiles = sourceFile.listFiles();
+		Collection<File> listOfFiles = FileUtils.listFiles(sourceFile, null, true);
 		
 		Property labelProp = dprop(model, DepositRelationship.label);
 		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
+		Property md5sumProp = dprop(model, md5sum);
 		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
-		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
-		
+		Resource simpleResource = model.createResource(CONTAINER.getURI().toString());
+
 		// Turn the bag itself into the top level folder for this deposit
 		PID containerPID = new PID("uuid:" + UUID.randomUUID());
 		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
@@ -77,16 +91,30 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		
 		// Add all of the payload objects into the bag folder
 		for (File file : listOfFiles) {
-			String filePath = file.getName();
+			String fullPath = file.toString();
+			String checksum = null;
 			
-			Resource fileResource = getFileResource(bagFolder, sourcePath, filePath);
+			try {
+				checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+			} catch (FileNotFoundException e) {
+				log.debug("Unable to compute checksum for file {}", checksum, e);
+			} catch (IOException e) {
+				log.debug("Unable to compute checksum for file {}", checksum, e);
+			}
 			
-			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
+			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
+			String filePathString = filePath.toString();
+			
+			String filename = filePath.getFileName().toString();
+			Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
+			
+			
 			model.add(fileResource, labelProp, filename);
 			model.add(fileResource, hasModelProp, simpleResource);
+			model.add(fileResource, md5sumProp, checksum);
 			
 			// Find staged path for the file
-			Path storedPath = Paths.get(sourceFile.getAbsolutePath(), filePath);
+			Path storedPath = Paths.get(file.getAbsolutePath());
 			try {
 				URI stagedURI = stages.getStagedURI(storedPath.toUri());
 				
