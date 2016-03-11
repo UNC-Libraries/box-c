@@ -23,6 +23,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -124,7 +125,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		
 		assertEquals("File label was not set", "lorem.txt",
 				file.getProperty(dprop(model, label)).getString());
-		assertEquals("Content model was not set", CONTAINER.toString(),
+		assertEquals("Content model was not set", SIMPLE.toString(),
 				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
 				file.getProperty(dprop(model, md5sum)).getString());

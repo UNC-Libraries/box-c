@@ -34,6 +34,7 @@ import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +79,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
 		Property md5sumProp = dprop(model, md5sum);
 		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
-		Resource simpleResource = model.createResource(CONTAINER.getURI().toString());
+		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 
 		// Turn the bag itself into the top level folder for this deposit
 		PID containerPID = new PID("uuid:" + UUID.randomUUID());
@@ -97,17 +98,16 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			try {
 				checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			} catch (FileNotFoundException e) {
-				log.debug("Unable to compute checksum for file {}", checksum, e);
+				log.debug("Unable to compute checksum {}", checksum, e);
 			} catch (IOException e) {
-				log.debug("Unable to compute checksum for file {}", checksum, e);
+				log.debug("Unable to compute checksum {}", checksum, e);
 			}
 			
 			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
 			String filePathString = filePath.toString();
-			
-			String filename = filePath.getFileName().toString();
 			Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
 			
+			String filename = filePath.getFileName().toString();
 			
 			model.add(fileResource, labelProp, filename);
 			model.add(fileResource, hasModelProp, simpleResource);
