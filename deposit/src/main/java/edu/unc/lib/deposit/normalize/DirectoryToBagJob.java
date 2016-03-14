@@ -55,7 +55,7 @@ import edu.unc.lib.staging.StagingException;
  * @author lfarrell
  */
 public class DirectoryToBagJob extends AbstractFileServerToBagJob {
-	private static final Logger log = LoggerFactory.getLogger(IngestDeposit.class);
+	private static final Logger log = LoggerFactory.getLogger(DirectoryToBagJob.class);
 	
 	public DirectoryToBagJob() {
 		super();
@@ -97,11 +97,10 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			
 			try {
 				checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
-			} catch (FileNotFoundException e) {
-				log.debug("Unable to compute checksum {}", checksum, e);
 			} catch (IOException e) {
-				log.debug("Unable to compute checksum {}", checksum, e);
-			}
+				log.debug("Unable to compute checksum {}", fullPath, e);
+				failJob("Unable to compute checksum", "The requested file was not found.");
+			} 
 			
 			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
 			String filePathString = filePath.toString();
