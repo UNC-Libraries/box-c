@@ -98,8 +98,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			try {
 				checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			} catch (IOException e) {
-				log.debug("Unable to compute checksum {}", fullPath, e);
-				failJob("Unable to compute checksum", "The requested file was not found.");
+				failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
 			} 
 			
 			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
