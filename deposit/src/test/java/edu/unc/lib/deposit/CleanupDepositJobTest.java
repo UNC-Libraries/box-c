@@ -192,5 +192,35 @@ public class CleanupDepositJobTest {
 		// clean deposit policy
 		assertTrue(new File(cleanDepositsStagingFolder, "project").exists());
 	}
+	
+	private volatile Throwable threadEx;
+	/**
+	 * Test that the cleanup job does not fail when the ingest files have been deleted before cleanup occurs
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testCleanupDoesNotExist() throws Throwable {
+		FileUtils.deleteDirectory(cleanFoldersStagingFolder);
+		
+		Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
+			public void uncaughtException(Thread th, Throwable ex) {
+				threadEx = ex;
+			}
+		};
+		
+		Thread jobThread = new Thread(job);
+		jobThread.setUncaughtExceptionHandler(handler);
+		jobThread.start();
+
+		// Start processing with a timelimit to prevent infinite wait in case of failure
+		jobThread.join(10000L);
+
+		if (threadEx != null) {
+			throw threadEx;
+		}
+		// clean deposit policy
+		assertFalse(new File(cleanFoldersStagingFolder, "project").exists());
+	}
 
 }

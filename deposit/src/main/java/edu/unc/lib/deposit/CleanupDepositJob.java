@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -63,8 +64,10 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		try {
 			File cFile = new File(uri.getPath()).getCanonicalFile();
 			parent = cFile.getParentFile();
-			cFile.delete();
+			Files.delete(cFile.toPath());
 			LOG.info("Deleted file: {}", cFile.getAbsoluteFile());
+		} catch (NoSuchFileException e) {
+			LOG.warn("Cannot cleanup file {}, it does not exist", uri);
 		} catch (IOException e) {
 			LOG.error("Cannot delete a staged file: " + uri.toString(), e);
 		}
@@ -132,7 +135,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 				break;
 			case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
 				File parent = deleteFile(storageUri);
-				if (parent != null) {
+				if (parent != null && parent.exists()) {
 					if (parent.list().length == 0) {
 						try {
 							Files.delete(parent.toPath());
@@ -143,6 +146,9 @@ public class CleanupDepositJob extends AbstractDepositJob {
 											+ parent.getAbsolutePath(), e);
 						}
 					}
+				} else {
+					LOG.warn("Unable to cleanup parent directory " + parent.getAbsolutePath() +
+					" because it does not exist");
 				}
 			default:
 				break;
