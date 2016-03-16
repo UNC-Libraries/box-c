@@ -39,6 +39,7 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.ui.util.ApplicationPathSettings;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 public class SerializationUtil {
@@ -48,9 +49,10 @@ public class SerializationUtil {
 	static {
 		jsonMapper.setSerializationInclusion(Inclusion.NON_NULL);
 	}
+	private static ApplicationPathSettings applicationPathSettings;
 	private static SearchSettings searchSettings;
 	private static SolrSettings solrSettings;
-
+	
 	public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("root", structureStep(response.getRootNode(), groups));
@@ -103,8 +105,10 @@ public class SerializationUtil {
 
 	public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		if (metadata.getId() != null)
+		if (metadata.getId() != null) {
 			result.put("id", metadata.getId());
+			result.put("uri", applicationPathSettings.getApiRecordPath() + metadata.getId());
+		}
 
 		if (metadata.getLabel() != null)
 			result.put("label", metadata.getLabel());
@@ -236,7 +240,8 @@ public class SerializationUtil {
 		return "";
 	}
 
-	public static void injectSettings(SearchSettings searchSettings, SolrSettings solrSettings) {
+	public static void injectSettings(ApplicationPathSettings applicationPathSettings, SearchSettings searchSettings, SolrSettings solrSettings) {
+		SerializationUtil.applicationPathSettings = applicationPathSettings;
 		SerializationUtil.searchSettings = searchSettings;
 		SerializationUtil.solrSettings = solrSettings;
 	}

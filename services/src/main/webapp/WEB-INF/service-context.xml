@@ -189,7 +189,6 @@
 		</property>
 		<property name="configLocation" value="classpath:quartz.properties"/>
 	</bean>
-
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
 		<property name="connectionFactory" ref="jmsFactory" />
 		<property name="defaultDestinationName" value="repository.updates" />
@@ -247,6 +246,10 @@
 		<property name="nonAdminRedirectUrl" value="/error/401.html" />
 	</bean>
 	
+	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
+		<property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
+	</bean>
+	
 	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
 		<property name="fedoraUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
@@ -270,6 +273,7 @@
 		<property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
 		<property name="arguments">
 			<list>
+				<ref bean="applicationPathSettings"/>
 				<ref bean="searchSettings"/>
 				<ref bean="solrSettings"/>
 			</list>
