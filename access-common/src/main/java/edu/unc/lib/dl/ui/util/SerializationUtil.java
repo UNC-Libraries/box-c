@@ -30,7 +30,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -50,12 +49,10 @@ public class SerializationUtil {
 	static {
 		jsonMapper.setSerializationInclusion(Inclusion.NON_NULL);
 	}
+	private static ApplicationPathSettings applicationPathSettings;
 	private static SearchSettings searchSettings;
 	private static SolrSettings solrSettings;
 	
-	@Autowired
-	private static ApplicationPathSettings applicationPathSettings;
-
 	public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("root", structureStep(response.getRootNode(), groups));
@@ -243,7 +240,8 @@ public class SerializationUtil {
 		return "";
 	}
 
-	public static void injectSettings(SearchSettings searchSettings, SolrSettings solrSettings) {
+	public static void injectSettings(ApplicationPathSettings applicationPathSettings, SearchSettings searchSettings, SolrSettings solrSettings) {
+		SerializationUtil.applicationPathSettings = applicationPathSettings;
 		SerializationUtil.searchSettings = searchSettings;
 		SerializationUtil.solrSettings = solrSettings;
 	}
