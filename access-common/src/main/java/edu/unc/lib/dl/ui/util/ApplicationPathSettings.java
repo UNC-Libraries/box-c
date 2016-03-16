@@ -30,7 +30,7 @@ public class ApplicationPathSettings {
 	private URL fedoraURL;
 	private String solrPath;
 	private URL solrURL;
-	private String externalContentPath;	
+	private String externalContentPath;
 	
 	public String getDjatokaPath() {
 		return djatokaPath;

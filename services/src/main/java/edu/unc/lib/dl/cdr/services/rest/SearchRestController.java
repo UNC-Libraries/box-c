@@ -114,7 +114,7 @@ public class SearchRestController extends AbstractSolrSearchController {
 		Map<String, Object> response = new HashMap<String, Object>();
 		response.put("numFound", resultResponse.getResultCount());
 		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(resultResponse.getResultList().size());
-		for (BriefObjectMetadata metadata: resultResponse.getResultList()) {		
+		for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
 			results.add(SerializationUtil.metadataToMap(metadata, GroupsThreadStore.getGroups()));
 		}
 		response.put("results", results);
