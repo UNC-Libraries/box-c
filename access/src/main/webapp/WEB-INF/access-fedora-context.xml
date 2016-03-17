@@ -100,6 +100,18 @@
 		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
 	
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod"
+			value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings" />
+		<property name="arguments">
+			<list>
+				<ref bean="applicationPathSettings" />
+				<ref bean="searchSettings" />
+				<ref bean="solrSettings" />
+			</list>
+		</property>
+	</bean>
+	
 	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
