@@ -45,6 +45,7 @@ import org.mockito.stubbing.Answer;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
@@ -111,7 +112,17 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		assertEquals("Content model was not set", CONTAINER.toString(),
 				bagFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		
-		Resource folder = (Resource) bagFolder.iterator().next();
+		NodeIterator iterator = bagFolder.iterator();
+		Resource emptyFolder = (Resource) iterator.next();
+		assertEquals("Folder label was not set", emptyFolder.getProperty(dprop(model, label)).getString(), "empty_test");
+		assertEquals("Content model was not set", CONTAINER.toString(),
+				emptyFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		
+		Bag emptyBag = model.getBag(emptyFolder.getURI());
+		
+		assertEquals(emptyBag.size(), 0);
+		
+		Resource folder = (Resource) iterator.next();
 		
 		assertEquals("Folder label was not set", folder.getProperty(dprop(model, label)).getString(), "test");
 		assertEquals("Content model was not set", CONTAINER.toString(),
