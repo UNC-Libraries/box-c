@@ -202,11 +202,12 @@ public class IngestSourceManager {
 			IngestSourceConfiguration source, String base) throws IOException {
 		
 		File file = filePath.toFile();
-		// Only directory bags are candidates currently
-		String version = BagHelper.getVersion(file);
 		if (!file.isDirectory()) {
 			return;
 		}
+		
+		// Only directory bags are candidates currently
+		String version = BagHelper.getVersion(file);
 		
 		Map<String, Object> candidate = new HashMap<>();
 		
