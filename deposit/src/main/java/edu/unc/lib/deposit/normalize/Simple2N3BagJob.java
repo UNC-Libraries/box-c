@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.size;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
@@ -118,6 +119,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 
 		if(alabel == null) alabel = contentFile.getName();
 		model.add(primaryResource, dprop(model, label), alabel);
+		model.add(primaryResource, dprop(model, size), Long.toString(contentFile.length()));
 		if (mimetype != null) {
 			model.add(primaryResource, dprop(model, DepositRelationship.mimetype), mimetype);
 		}
@@ -127,7 +129,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			model.add(primaryResource, dprop(model, stagingLocation),
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			log.error("fail to encode filepath {}", contentFile.getName(), e);
+			failJob(e, "Failed to add staging location for {} due to encoding issues", contentFile.getName());
 		}
 	}
 
