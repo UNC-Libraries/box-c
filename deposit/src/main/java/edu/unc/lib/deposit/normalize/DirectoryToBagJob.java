@@ -102,45 +102,44 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		
 		// Add all of the payload objects into the bag folder
 		for (File file : fileListings) {
-			String fullPath = file.toString();
 			Boolean isDir = file.isDirectory();
 			String checksum = null;
+
+			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
+			String filePathString = filePath.toString();
+			String filename = filePath.getFileName().toString();
 			
 			if (!isDir) {
+				Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
+				model.add(fileResource, labelProp, filename);
+				
+				String fullPath = file.toString();
+				
 				try {
 					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 				} catch (IOException e) {
 					failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
 				}
-			}
-			
-			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
-			String filePathString = filePath.toString();
-			Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
-			
-			String filename = filePath.getFileName().toString();
-			
-			model.add(fileResource, labelProp, filename);
-			
-			if (!isDir) {
+				
 				model.add(fileResource, hasModelProp, simpleResource);
 				model.add(fileResource, md5sumProp, checksum);
-			} else {
-				model.add(fileResource, hasModelProp, containerResource);
-			}
-			
-			// Find staged path for the file
-			Path storedPath = Paths.get(file.getAbsolutePath());
-			try {
-				URI stagedURI = stages.getStagedURI(storedPath.toUri());
 				
-				if (stagedURI != null) {
-					model.add(fileResource, locationProp, stagedURI.toString());
+				// Find staged path for the file
+				Path storedPath = Paths.get(file.getAbsolutePath());
+				try {
+					URI stagedURI = stages.getStagedURI(storedPath.toUri());
+					
+					if (stagedURI != null) {
+						model.add(fileResource, locationProp, stagedURI.toString());
+					}
+				} catch (StagingException e) {
+					failJob(e, "Unable to get staged path for file {}", storedPath);
 				}
-			} catch (StagingException e) {
-				failJob(e, "Unable to get staged path for file {}", storedPath);
+			} else {
+				com.hp.hpl.jena.rdf.model.Bag folderResource = getFolderResource(bagFolder, sourcePath, filePathString, model);
+				model.add(folderResource, labelProp, filename);
+				model.add(folderResource, hasModelProp, containerResource);
 			}
-			
 		}
 	}
 }

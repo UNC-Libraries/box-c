@@ -143,7 +143,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		assertEquals("File location not set", "tag:/directory-deposit/test/lorem.txt",
 				file.getProperty(dprop(model, stagingLocation)).getString());
 		
-		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
+		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml"); System.out.println(model);
 		assertTrue(modsFile.exists());
 	}
 }
