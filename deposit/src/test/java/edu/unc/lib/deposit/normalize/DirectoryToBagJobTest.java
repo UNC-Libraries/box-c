@@ -36,9 +36,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,8 +66,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 	private Stages stages;
 	
 	private File depositDirectory;
-	
-	private File testFolder;
 
 	@Before
 	public void setup() throws Exception {
@@ -84,10 +79,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		
 		File testFile = new File(testDirectory, "lorem.txt");
 		testFile.createNewFile();
-	
-		
-		testFolder = new File("src/test/resources/cleanupStage");
-		FileUtils.copyDirectory(depositDirectory, testFolder);
 		
 		stages = mock(Stages.class);
 		

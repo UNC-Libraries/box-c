@@ -23,7 +23,6 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -40,11 +39,11 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -70,7 +69,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 	@Override
 	public void runJob() {
 		Model model = getWritableModel();
-		com.hp.hpl.jena.rdf.model.Bag top = model.createBag(getDepositPID().getURI().toString());
+		Bag top = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
@@ -93,7 +92,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
 		// Turn the bag itself into the top level folder for this deposit
 		PID containerPID = new PID("uuid:" + UUID.randomUUID());
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
+		Bag bagFolder = model.createBag(containerPID.getURI());
 		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
 		model.add(bagFolder, hasModelProp, containerResource);
 		top.add(bagFolder);
@@ -110,7 +109,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			String filename = filePath.getFileName().toString();
 			
 			if (!isDir) {
-				Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
+				Resource fileResource = getFileResource(bagFolder, filePathString);
 				model.add(fileResource, labelProp, filename);
 				
 				String fullPath = file.toString();
@@ -136,7 +135,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					failJob(e, "Unable to get staged path for file {}", storedPath);
 				}
 			} else {
-				com.hp.hpl.jena.rdf.model.Bag folderResource = getFolderResource(bagFolder, sourcePath, filePathString, model);
+				Bag folderResource = getFolderBag(bagFolder, filePathString, model);
 				model.add(folderResource, labelProp, filename);
 				model.add(folderResource, hasModelProp, containerResource);
 			}

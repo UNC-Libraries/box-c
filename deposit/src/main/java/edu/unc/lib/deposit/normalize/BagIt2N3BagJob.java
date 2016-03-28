@@ -120,7 +120,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			
 			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
 			
-			Resource fileResource = getFileResource(bagFolder, sourcePath, filePath);
+			Resource fileResource = getFileResource(bagFolder, filePath);
 			
 			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);

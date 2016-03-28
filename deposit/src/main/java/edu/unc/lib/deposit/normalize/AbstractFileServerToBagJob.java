@@ -71,13 +71,15 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	public abstract void runJob();
 	
 	/**
-	 * Adds additional metadata fields for the root bag container if they are provided
+	 * Creates and returns a jena Resource for the given path representing a file,
+	 * adding it to the hierarchy for the deposit  
 	 * 
-	 * @param containerPID
-	 * @param status
+	 * @param top
+	 * @param filepath
+	 * @return
 	 */
-	public Resource getFileResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
-		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
+	protected Resource getFileResource(Bag top, String filepath) {
+		Bag folderBag = getParentBag(top, filepath);
 
 		PID pid = createPID();
 
@@ -87,12 +89,21 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		return fileResource;
 	}
 	
-	public com.hp.hpl.jena.rdf.model.Bag getFolderResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath, Model model) {
-		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
+	/**
+	 * Creates and returns a jena Bag for the given filepath representing a folder, and adds
+	 * it to the hierarchy for the deposit
+	 * 
+	 * @param top
+	 * @param filepath
+	 * @param model
+	 * @return
+	 */
+	protected Bag getFolderBag(Bag top, String filepath, Model model) {
+		Bag folderBag = getParentBag(top, filepath);
 		
 		PID pid = createPID();
 		
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(pid.getURI());
+		Bag bagFolder = model.createBag(pid.getURI());
 		folderBag.add(bagFolder);
 		return bagFolder;
 	}
@@ -104,7 +115,14 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		return pid;
 	}
 	
-	public com.hp.hpl.jena.rdf.model.Bag getFolderBag(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
+	/**
+	 * Returns a jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
+	 * 
+	 * @param top
+	 * @param filepath
+	 * @return
+	 */
+	protected Bag getParentBag(Bag top, String filepath) {
 		
 		Model model = top.getModel();
 		
@@ -120,7 +138,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		Property hasModelProp = model.createProperty(FedoraProperty.hasModel.getURI().toString());
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 		
-		com.hp.hpl.jena.rdf.model.Bag currentNode = top;
+		Bag currentNode = top;
 		
 		segmentLoop: for (int i = 1; i < pathSegments.length - 1; i++) {
 			String segment = pathSegments[i];
@@ -145,7 +163,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			// No existing folder was found, create one
 			PID pid = new PID("uuid:" + UUID.randomUUID().toString());
 			
-			com.hp.hpl.jena.rdf.model.Bag childBag = model.createBag(pid.getURI());
+			Bag childBag = model.createBag(pid.getURI());
 			currentNode.add(childBag);
 			
 			model.add(childBag, labelProp, segment);
