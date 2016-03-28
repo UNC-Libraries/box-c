@@ -112,9 +112,7 @@ public abstract class AbstractDepositJob implements Runnable {
 			}
 			throw e;
 		} finally {
-			if (dataset.isInTransaction()) {
-				dataset.end();
-			}
+			dataset.end();
 		}
 	}
 
