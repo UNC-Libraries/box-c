@@ -28,12 +28,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,56 +75,71 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
 		File sourceFile = new File(sourcePath);
-		Collection<File> listOfFiles = FileUtils.listFiles(sourceFile, null, true);
+		Collection<File> listOfFiles = FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
+		Collection<File> fileListings = new ArrayList<File>();
+		
+		for (File file : listOfFiles) {
+			if (!file.equals(sourceFile)) {
+				fileListings.add(file);
+			}
+		}
 		
 		Property labelProp = dprop(model, DepositRelationship.label);
 		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
 		Property md5sumProp = dprop(model, md5sum);
 		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
+		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 
 		// Turn the bag itself into the top level folder for this deposit
 		PID containerPID = new PID("uuid:" + UUID.randomUUID());
 		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
 		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
-		model.add(bagFolder, hasModelProp, model.createResource(CONTAINER.getURI().toString()));
+		model.add(bagFolder, hasModelProp, containerResource);
 		top.add(bagFolder);
 		
 		addDescription(containerPID, status);
 		
 		// Add all of the payload objects into the bag folder
-		for (File file : listOfFiles) {
-			String fullPath = file.toString();
+		for (File file : fileListings) {
+			Boolean isDir = file.isDirectory();
 			String checksum = null;
-			
-			try {
-				checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
-			} catch (IOException e) {
-				failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
-			} 
-			
+
 			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
 			String filePathString = filePath.toString();
-			Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
-			
 			String filename = filePath.getFileName().toString();
 			
-			model.add(fileResource, labelProp, filename);
-			model.add(fileResource, hasModelProp, simpleResource);
-			model.add(fileResource, md5sumProp, checksum);
-			
-			// Find staged path for the file
-			Path storedPath = Paths.get(file.getAbsolutePath());
-			try {
-				URI stagedURI = stages.getStagedURI(storedPath.toUri());
+			if (!isDir) {
+				Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
+				model.add(fileResource, labelProp, filename);
 				
-				if (stagedURI != null) {
-					model.add(fileResource, locationProp, stagedURI.toString());
+				String fullPath = file.toString();
+				
+				try {
+					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+				} catch (IOException e) {
+					failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
 				}
-			} catch (StagingException e) {
-				failJob(e, "Unable to get staged path for file {}", storedPath);
+				
+				model.add(fileResource, hasModelProp, simpleResource);
+				model.add(fileResource, md5sumProp, checksum);
+				
+				// Find staged path for the file
+				Path storedPath = Paths.get(file.getAbsolutePath());
+				try {
+					URI stagedURI = stages.getStagedURI(storedPath.toUri());
+					
+					if (stagedURI != null) {
+						model.add(fileResource, locationProp, stagedURI.toString());
+					}
+				} catch (StagingException e) {
+					failJob(e, "Unable to get staged path for file {}", storedPath);
+				}
+			} else {
+				com.hp.hpl.jena.rdf.model.Bag folderResource = getFolderResource(bagFolder, sourcePath, filePathString, model);
+				model.add(folderResource, labelProp, filename);
+				model.add(folderResource, hasModelProp, containerResource);
 			}
-			
 		}
 	}
 }

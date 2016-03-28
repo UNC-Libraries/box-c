@@ -36,15 +36,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
@@ -53,15 +58,37 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.Stages;
 
 public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
+	
+	@Rule
+	public final TemporaryFolder tmpDir = new TemporaryFolder();
 
 	private DirectoryToBagJob job;
 
 	private Map<String, String> status;
 	
 	private Stages stages;
+	
+	private File depositDirectory;
+	
+	private File testFolder;
 
 	@Before
 	public void setup() throws Exception {
+		depositDirectory = tmpDir.newFolder("directory-deposit");
+		
+		File emptyDir = new File(depositDirectory, "empty_test");
+		emptyDir.mkdir();
+		
+		File testDirectory = new File(depositDirectory, "test");
+		testDirectory.mkdir();
+		
+		File testFile = new File(testDirectory, "lorem.txt");
+		testFile.createNewFile();
+	
+		
+		testFolder = new File("src/test/resources/cleanupStage");
+		FileUtils.copyDirectory(depositDirectory, testFolder);
+		
 		stages = mock(Stages.class);
 		
 		status = new HashMap<String, String>();
@@ -75,7 +102,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setStages(stages);
 		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
+		setField(job, "depositsDirectory", depositDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 
 		job.init();
@@ -83,7 +110,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
 	@Test
 	public void testConversion() throws Exception {
-		status.put(DepositField.sourcePath.name(), "src/test/resources/paths/directory-deposit");
+		status.put(DepositField.sourcePath.name(), depositDirectory.getAbsolutePath());
 		status.put(DepositField.fileName.name(), "Test File");
 		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
 		
@@ -111,7 +138,17 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		assertEquals("Content model was not set", CONTAINER.toString(),
 				bagFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		
-		Resource folder = (Resource) bagFolder.iterator().next();
+		NodeIterator iterator = bagFolder.iterator();
+		Resource emptyFolder = (Resource) iterator.next();
+		assertEquals("Folder label was not set", emptyFolder.getProperty(dprop(model, label)).getString(), "empty_test");
+		assertEquals("Content model was not set", CONTAINER.toString(),
+				emptyFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		
+		Bag emptyBag = model.getBag(emptyFolder.getURI());
+		
+		assertEquals(emptyBag.size(), 0);
+		
+		Resource folder = (Resource) iterator.next();
 		
 		assertEquals("Folder label was not set", folder.getProperty(dprop(model, label)).getString(), "test");
 		assertEquals("Content model was not set", CONTAINER.toString(),
@@ -127,10 +164,11 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 				file.getProperty(dprop(model, label)).getString());
 		assertEquals("Content model was not set", SIMPLE.toString(),
 				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
-		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
+		assertEquals("Checksum was not set", "d41d8cd98f00b204e9800998ecf8427e",
 				file.getProperty(dprop(model, md5sum)).getString());
-		assertEquals("File location not set", "tag:/directory-deposit/test/lorem.txt",
-				file.getProperty(dprop(model, stagingLocation)).getString());
+		
+		String tagPath = file.getProperty(dprop(model, stagingLocation)).getString();
+		assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
 		
 		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
 		assertTrue(modsFile.exists());

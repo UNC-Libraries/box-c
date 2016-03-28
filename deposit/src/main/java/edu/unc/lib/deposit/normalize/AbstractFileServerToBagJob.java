@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -78,13 +79,29 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	public Resource getFileResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
 		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
 
-		UUID uuid = UUID.randomUUID();
-		PID pid = new PID("uuid:" + uuid.toString());
+		PID pid = createPID();
 
 		Resource fileResource = top.getModel().createResource(pid.getURI());
 		folderBag.add(fileResource);
 
 		return fileResource;
+	}
+	
+	public com.hp.hpl.jena.rdf.model.Bag getFolderResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath, Model model) {
+		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
+		
+		PID pid = createPID();
+		
+		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(pid.getURI());
+		folderBag.add(bagFolder);
+		return bagFolder;
+	}
+	
+	private PID createPID() {
+		UUID uuid = UUID.randomUUID();
+		PID pid = new PID("uuid:" + uuid.toString());
+		
+		return pid;
 	}
 	
 	public com.hp.hpl.jena.rdf.model.Bag getFolderBag(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
