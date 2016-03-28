@@ -50,9 +50,12 @@ public class DepositGraphUtils {
 			iterator = c.getModel().getBag(c).iterator();
 		} else if (c.hasProperty(RDF.type, RDF.Seq)) {
 			iterator = c.getModel().getSeq(c).iterator();
+		} else {
+			return;
 		}
+		
 		List<Resource> containers = new ArrayList<Resource>();
-		if(iterator != null) {
+		try {
 			while (iterator.hasNext()) {
 				Resource n = (Resource) iterator.next();
 				result.add(n);
@@ -61,6 +64,7 @@ public class DepositGraphUtils {
 					containers.add(n);
 				}
 			}
+		} finally {
 			iterator.close();
 		}
 		for (Resource r : containers) {
@@ -88,17 +92,21 @@ public class DepositGraphUtils {
 	public static void walkChildrenDepthFirst(Bag bag, Collection<String> pids,
 			boolean recursive) {
 		NodeIterator childIt = bag.iterator();
-		while (childIt.hasNext()) {
-			Resource childResource = (Resource) childIt.next();
-			
-			if (!pids.contains(childResource.getURI())) {
-				pids.add(childResource.getURI());
+		try {
+			while (childIt.hasNext()) {
+				Resource childResource = (Resource) childIt.next();
+				
+				if (!pids.contains(childResource.getURI())) {
+					pids.add(childResource.getURI());
+				}
+				
+				if (recursive) {
+					Bag childBag = childResource.getModel().getBag(childResource);
+					walkChildrenDepthFirst(childBag, pids, recursive);
+				}
 			}
-			
-			if (recursive) {
-				Bag childBag = childResource.getModel().getBag(childResource);
-				walkChildrenDepthFirst(childBag, pids, recursive);
-			}
+		} finally {
+			childIt.close();
 		}
 	}
 
@@ -111,15 +119,19 @@ public class DepositGraphUtils {
 	 */
 	public static void walkObjectsDepthFirst(Bag bag, Collection<Resource> children) {
 		NodeIterator childIt = bag.iterator();
-		while (childIt.hasNext()) {
-			Resource childResource = (Resource) childIt.next();
-
-			if (!children.contains(childResource)) {
-				children.add(childResource);
+		try {
+			while (childIt.hasNext()) {
+				Resource childResource = (Resource) childIt.next();
+	
+				if (!children.contains(childResource)) {
+					children.add(childResource);
+				}
+	
+				Bag childBag = childResource.getModel().getBag(childResource);
+				walkObjectsDepthFirst(childBag, children);
 			}
-
-			Bag childBag = childResource.getModel().getBag(childResource);
-			walkObjectsDepthFirst(childBag, children);
+		} finally {
+			childIt.close();
 		}
 	}
 }
