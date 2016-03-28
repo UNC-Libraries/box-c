@@ -280,20 +280,25 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		
 		Property fileLocation = model.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
 		
-		// Find the main article file
-		for (NodeIterator children = rootObject.iterator(); children.hasNext();) {
-			Resource child = children.nextNode().asResource();
-			String location = child.getProperty(fileLocation).getString();
-			// filename will be the article ID, but not XML
-			if (!mainArticlePattern.matcher(location).matches()) {
-				continue;
+		NodeIterator children = rootObject.iterator();
+		try {
+			// Find the main article file
+			while(children.hasNext()) {
+				Resource child = children.nextNode().asResource();
+				String location = child.getProperty(fileLocation).getString();
+				// filename will be the article ID, but not XML
+				if (!mainArticlePattern.matcher(location).matches()) {
+					continue;
+				}
+	
+				log.debug("Found primary Biomed content document {}", location);
+				// If this is a main object, then designate it as a default web object for its parent container
+				Property defaultObject = model.getProperty(CDRProperty.defaultWebObject.getURI().toString());
+				model.add(rootObject, defaultObject, child);
+				return;
 			}
-
-			log.debug("Found primary Biomed content document {}", location);
-			// If this is a main object, then designate it as a default web object for its parent container
-			Property defaultObject = model.getProperty(CDRProperty.defaultWebObject.getURI().toString());
-			model.add(rootObject, defaultObject, child);
-			return;
+		} finally {
+			children.close();
 		}
 	}
 }

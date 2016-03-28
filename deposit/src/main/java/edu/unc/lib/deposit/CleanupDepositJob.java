@@ -110,49 +110,53 @@ public class CleanupDepositJob extends AbstractDepositJob {
 	private void deleteStagedFiles(Model m) {
 		Property fileLocation = dprop(m, DepositRelationship.stagingLocation);
 		NodeIterator ni = m.listObjectsOfProperty(fileLocation);
-		while (ni.hasNext()) {
-			RDFNode n = ni.nextNode();
-			URI stagingUri = URI.create(n.asLiteral().getString());
-			
-			SharedStagingArea area = getStorageArea(stagingUri);
-			if (area == null) {
-				continue;
-			}
-			
-			URI storageUri = null;
-			try {
-				storageUri = area.getStorageURI(stagingUri);
-			} catch (StagingException e) {
-				LOG.error("Could not resolve storage URI: {}", stagingUri.toString(), e);
-			}
-			
-			CleanupPolicy p = area.getIngestCleanupPolicy();
-			switch (p) {
-			case DO_NOTHING:
-				break;
-			case DELETE_INGESTED_FILES:
-				deleteFile(storageUri);
-				break;
-			case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
-				File parent = deleteFile(storageUri);
-				if (parent != null && parent.exists()) {
-					if (parent.list().length == 0) {
-						try {
-							Files.delete(parent.toPath());
-							LOG.info("Deleted parent folder: {}", parent.toPath());
-						} catch (IOException e) {
-							LOG.error(
-									"Cannot delete an empty staging directory: "
-											+ parent.getAbsolutePath(), e);
-						}
-					}
-				} else {
-					LOG.warn("Unable to cleanup parent directory " + parent.getAbsolutePath() +
-					" because it does not exist");
+		try {
+			while (ni.hasNext()) {
+				RDFNode n = ni.nextNode();
+				URI stagingUri = URI.create(n.asLiteral().getString());
+				
+				SharedStagingArea area = getStorageArea(stagingUri);
+				if (area == null) {
+					continue;
 				}
-			default:
-				break;
+				
+				URI storageUri = null;
+				try {
+					storageUri = area.getStorageURI(stagingUri);
+				} catch (StagingException e) {
+					LOG.error("Could not resolve storage URI: {}", stagingUri.toString(), e);
+				}
+				
+				CleanupPolicy p = area.getIngestCleanupPolicy();
+				switch (p) {
+				case DO_NOTHING:
+					break;
+				case DELETE_INGESTED_FILES:
+					deleteFile(storageUri);
+					break;
+				case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
+					File parent = deleteFile(storageUri);
+					if (parent != null && parent.exists()) {
+						if (parent.list().length == 0) {
+							try {
+								Files.delete(parent.toPath());
+								LOG.info("Deleted parent folder: {}", parent.toPath());
+							} catch (IOException e) {
+								LOG.error(
+										"Cannot delete an empty staging directory: "
+												+ parent.getAbsolutePath(), e);
+							}
+						}
+					} else {
+						LOG.warn("Unable to cleanup parent directory " + parent.getAbsolutePath() +
+						" because it does not exist");
+					}
+				default:
+					break;
+				}
 			}
+		} finally {
+			ni.close();
 		}
 	}
 	
@@ -162,31 +166,35 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		
 		// Create a list of files that need to be cleaned up
 		NodeIterator it = m.listObjectsOfProperty(dprop(m, DepositRelationship.cleanupLocation));
-		while (it.hasNext()) {
-			RDFNode n = it.nextNode();
-			URI cleanupUri = URI.create(n.asLiteral().getString());
-			
-			SharedStagingArea area = getStorageArea(cleanupUri);
-			if (area == null) {
-				continue;
+		try {
+			while (it.hasNext()) {
+				RDFNode n = it.nextNode();
+				URI cleanupUri = URI.create(n.asLiteral().getString());
+				
+				SharedStagingArea area = getStorageArea(cleanupUri);
+				if (area == null) {
+					continue;
+				}
+				
+				URI storageUri = null;
+				try {
+					storageUri = area.getStorageURI(cleanupUri);
+				} catch (StagingException e) {
+					LOG.error("Could not resolve storage URI: {}", cleanupUri.toString(), e);
+				}
+				
+				CleanupPolicy p = area.getIngestCleanupPolicy();
+				switch (p) {
+				case DELETE_INGESTED_FILES:
+				case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
+					cleanupPaths.add(storageUri.getPath());
+					break;
+				default:
+					break;
+				}
 			}
-			
-			URI storageUri = null;
-			try {
-				storageUri = area.getStorageURI(cleanupUri);
-			} catch (StagingException e) {
-				LOG.error("Could not resolve storage URI: {}", cleanupUri.toString(), e);
-			}
-			
-			CleanupPolicy p = area.getIngestCleanupPolicy();
-			switch (p) {
-			case DELETE_INGESTED_FILES:
-			case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
-				cleanupPaths.add(storageUri.getPath());
-				break;
-			default:
-				break;
-			}
+		} finally {
+			it.close();
 		}
 		
 		// Sort cleanup files so that deepest will be deleted first

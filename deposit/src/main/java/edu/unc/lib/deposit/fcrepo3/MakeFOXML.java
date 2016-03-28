@@ -138,8 +138,12 @@ public class MakeFOXML extends AbstractDepositJob {
 			if (o.hasProperty(hasModelP, cmodel(m, CONTAINER))) {
 				Bag bag = m.getBag(o);
 				NodeIterator contents = bag.iterator();
-				while(contents.hasNext()) {
-					relsExt.add(o, cdrprop(m, Relationship.contains), contents.next());
+				try {
+					while(contents.hasNext()) {
+						relsExt.add(o, cdrprop(m, Relationship.contains), contents.next());
+					}
+				} finally {
+					contents.close();
 				}
 			}
 

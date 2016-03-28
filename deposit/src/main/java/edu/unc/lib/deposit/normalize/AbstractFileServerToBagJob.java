@@ -110,19 +110,21 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			
 			// Search to see if a folder with the same name as this segment exists as a child
 			NodeIterator nodeIt = currentNode.iterator();
-			while (nodeIt.hasNext()) {
-				Resource child = nodeIt.nextNode().asResource();
-				
-				String label = child.getProperty(labelProp).getString();
-				if (label.equals(segment)) {
-					// Folder already exists, select it and move on
-					currentNode = model.getBag(child);
-					nodeIt.close();
-					continue segmentLoop;
+			try {
+				while (nodeIt.hasNext()) {
+					Resource child = nodeIt.nextNode().asResource();
+					
+					String label = child.getProperty(labelProp).getString();
+					if (label.equals(segment)) {
+						// Folder already exists, select it and move on
+						currentNode = model.getBag(child);
+						continue segmentLoop;
+					}
 				}
+			} finally {
+				nodeIt.close();
 			}
 			
-			nodeIt.close();
 			// No existing folder was found, create one
 			PID pid = new PID("uuid:" + UUID.randomUUID().toString());
 			
