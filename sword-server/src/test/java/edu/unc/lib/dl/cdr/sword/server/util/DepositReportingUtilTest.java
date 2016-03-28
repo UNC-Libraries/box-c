@@ -86,7 +86,6 @@ public class DepositReportingUtilTest extends Assert {
 		
 		List<Link> links = receiptEntry.getLinks(UriRegistry.REL_DERIVED_RESOURCE);
 		assertEquals(2, links.size());
-		
 		// Check derived resources.  Order can't be guaranteed since its going into a hashmap, so check both orders
 		if (links.get(0).getAttributeValue("href").equals(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + pid.getPid() + "/" + ContentModelHelper.Datastream.DATA_FILE.getName())){
 			assertEquals("image/jpg", links.get(0).getAttributeValue("type"));
@@ -94,7 +93,7 @@ public class DepositReportingUtilTest extends Assert {
 			assertEquals("http://localhost/sword/em/uuid:test/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), links.get(1).getAttributeValue("href"));
 		} else {
 			assertEquals("image/jpg", links.get(1).getAttributeValue("type"));
-			assertEquals("http://localhost/sword/em/uuid:test/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), links.get(1).getAttributeValue("href"));
+			assertEquals("http://localhost/sword/em/uuid:test/" + ContentModelHelper.Datastream.DATA_FILE.getName(), links.get(1).getAttributeValue("href"));
 			assertEquals("text/xml", links.get(0).getAttributeValue("type"));
 			assertEquals("http://localhost/sword/em/uuid:test/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), links.get(0).getAttributeValue("href"));
 		}
