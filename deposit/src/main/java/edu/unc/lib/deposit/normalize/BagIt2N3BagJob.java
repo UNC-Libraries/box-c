@@ -68,7 +68,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 	public void runJob() {
 		
 		Model model = getWritableModel();
-		com.hp.hpl.jena.rdf.model.Bag top = model.createBag(getDepositPID().getURI().toString());
+		com.hp.hpl.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
@@ -108,7 +108,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
 		// Turn the bag itself into the top level folder for this deposit
-		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(top, sourceFile);
+		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
 		
 		int i = 0;
 		// Add all of the payload objects into the bag folder
@@ -147,7 +147,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			try {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
-					model.add(top, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 				}
 			} catch (StagingException e) {
 				failJob(e, "Unable to get staged path for file {}", path);
@@ -160,7 +160,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			URI stagedURI = stages.getStagedURI(storedPath.toUri());
 			
 			if (stagedURI != null) {
-				model.add(top, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+				model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 			}
 		} catch (StagingException e) {
 			failJob(e, "Unable to get staged path for file {}", storedPath);

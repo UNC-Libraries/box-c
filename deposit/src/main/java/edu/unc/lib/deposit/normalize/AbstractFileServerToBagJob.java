@@ -79,8 +79,8 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	@Override
 	public abstract void runJob();
 	
-	protected Bag getSourceBag(Bag top, File sourceFile) {
-		Model model = top.getModel();
+	protected Bag getSourceBag(Bag depositBag, File sourceFile) {
+		Model model = depositBag.getModel();
 		Map<String, String> status = getDepositStatus();
 		
 		PID containerPID = new PID("uuid:" + UUID.randomUUID());
@@ -89,7 +89,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 				status.get(DepositField.fileName.name()));
 		model.add(bagFolder, fprop(model, FedoraProperty.hasModel), 
 				model.createResource(CONTAINER.getURI().toString()));
-		top.add(bagFolder);
+		depositBag.add(bagFolder);
 		
 		// Cache the source bag folder
 		pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
@@ -104,16 +104,16 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	 * Creates and returns a Jena Resource for the given path representing a file,
 	 * adding it to the hierarchy for the deposit  
 	 * 
-	 * @param top
+	 * @param sourceBag
 	 * @param filepath
 	 * @return
 	 */
-	protected Resource getFileResource(Bag top, String filepath) {
-		Bag parentBag = getParentBag(top, filepath);
+	protected Resource getFileResource(Bag sourceBag, String filepath) {
+		Bag parentBag = getParentBag(sourceBag, filepath);
 
 		PID pid = createPID();
 
-		Resource fileResource = top.getModel().createResource(pid.getURI());
+		Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
 		parentBag.add(fileResource);
 
 		return fileResource;
@@ -123,13 +123,13 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	 * Creates and returns a Jena Bag for the given filepath representing a folder, and adds
 	 * it to the hierarchy for the deposit
 	 * 
-	 * @param top
+	 * @param sourceBag
 	 * @param filepath
 	 * @param model
 	 * @return
 	 */
-	protected Bag getFolderBag(Bag top, String filepath, Model model) {
-		Bag parentBag = getParentBag(top, filepath);
+	protected Bag getFolderBag(Bag sourceBag, String filepath, Model model) {
+		Bag parentBag = getParentBag(sourceBag, filepath);
 		
 		PID pid = createPID();
 		
@@ -150,32 +150,32 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	/**
 	 * Returns a Jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
 	 * 
-	 * @param top
+	 * @param sourceBag
 	 * @param filepath
 	 * @return
 	 */
-	protected Bag getParentBag(Bag top, String filepath) {
+	protected Bag getParentBag(Bag sourceBag, String filepath) {
 		// Retrieve the bag from the cache by base filepath if available.
 		String basePath = Paths.get(filepath).getParent().toString();
 		if (pathToFolderBagCache.containsKey(basePath)) {
 			return pathToFolderBagCache.get(basePath);
 		}
 		
-		Model model = top.getModel();
+		Model model = sourceBag.getModel();
 		
 		// find or create a folder resource for the filepath
 		String[] pathSegments = filepath.split("/");
 		
 		// Nothing to do with paths that only have data
 		if (pathSegments.length <= 2) {
-			return top;
+			return sourceBag;
 		}
 		
 		Property labelProp = dprop(model, DepositRelationship.label);
 		Property hasModelProp = model.createProperty(FedoraProperty.hasModel.getURI().toString());
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 		
-		Bag currentNode = top;
+		Bag currentNode = sourceBag;
 		
 		for (int i = 1; i < pathSegments.length - 1; i++) {
 			

@@ -66,7 +66,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 	@Override
 	public void runJob() {
 		Model model = getWritableModel();
-		Bag top = model.createBag(getDepositPID().getURI().toString());
+		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
@@ -91,7 +91,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 
 		// Turn the base directory itself into the top level folder for this deposit
-		Bag sourceBag = getSourceBag(top, sourceFile);
+		Bag sourceBag = getSourceBag(depositBag, sourceFile);
 		
 		int i = 0;
 		// Add all of the payload objects into the bag folder
