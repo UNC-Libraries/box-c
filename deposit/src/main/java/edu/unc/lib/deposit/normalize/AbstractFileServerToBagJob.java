@@ -128,12 +128,12 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	 * @param model
 	 * @return
 	 */
-	protected Bag getFolderBag(Bag sourceBag, String filepath, Model model) {
+	protected Bag getFolderBag(Bag sourceBag, String filepath) {
 		Bag parentBag = getParentBag(sourceBag, filepath);
 		
 		PID pid = createPID();
 		
-		Bag bagFolder = model.createBag(pid.getURI());
+		Bag bagFolder = sourceBag.getModel().createBag(pid.getURI());
 		parentBag.add(bagFolder);
 		
 		pathToFolderBagCache.put(filepath, bagFolder);

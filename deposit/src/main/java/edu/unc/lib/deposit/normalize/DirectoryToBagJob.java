@@ -132,7 +132,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					failJob(e, "Unable to get staged path for file {}", storedPath);
 				}
 			} else {
-				Bag folderBag = getFolderBag(sourceBag, filePathString, model);
+				Bag folderBag = getFolderBag(sourceBag, filePathString);
 				model.add(folderBag, labelProp, filename);
 				model.add(folderBag, hasModelProp, containerResource);
 			}
