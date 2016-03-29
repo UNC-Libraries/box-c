@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -54,6 +57,8 @@ import gov.loc.repository.bagit.utilities.SimpleResult;
  * @date Nov 9, 2015
  */
 public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
+	private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
+	
 	public BagIt2N3BagJob() {
 		super();
 	}
@@ -114,8 +119,11 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		
 		addDescription(containerPID, status);
 		
+		int i = 0;
 		// Add all of the payload objects into the bag folder
 		for (BagFile file : payload) {
+			log.debug("Adding object {}: {}", i++, file.getFilepath());
+			
 			String filePath = file.getFilepath();
 			
 			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);

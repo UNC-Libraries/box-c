@@ -27,15 +27,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,12 +73,15 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
 		File sourceFile = new File(sourcePath);
-		Collection<File> listOfFiles = FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
-		Collection<File> fileListings = new ArrayList<File>();
 		
-		for (File file : listOfFiles) {
-			if (!file.equals(sourceFile)) {
-				fileListings.add(file);
+		// List all files and directories in the deposit, excluding the base directory
+		Collection<File> fileListings = FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
+		Iterator<File> filesIt = fileListings.iterator();
+		while (filesIt.hasNext()) {
+			File file = filesIt.next();
+			if (file.equals(sourceFile)) {
+				filesIt.remove();
+				break;
 			}
 		}
 		
@@ -97,10 +99,16 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		model.add(bagFolder, hasModelProp, containerResource);
 		top.add(bagFolder);
 		
+		// Cache the source bag folder
+		pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
+		
 		addDescription(containerPID, status);
 		
+		int i = 0;
 		// Add all of the payload objects into the bag folder
 		for (File file : fileListings) {
+			log.debug("Adding object {}: {}", i++, file.getName());
+			
 			Boolean isDir = file.isDirectory();
 			String checksum = null;
 
@@ -138,6 +146,9 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				Bag folderResource = getFolderBag(bagFolder, filePathString, model);
 				model.add(folderResource, labelProp, filename);
 				model.add(folderResource, hasModelProp, containerResource);
+				
+				// Cache the folder bag
+				pathToFolderBagCache.put(filePathString, folderResource);
 			}
 		}
 	}

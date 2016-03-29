@@ -18,10 +18,10 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.cleanupLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.cleanupLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
@@ -48,6 +48,7 @@ import org.mockito.stubbing.Answer;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
@@ -125,18 +126,31 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		
 		Bag childrenBag = model.getBag(folder.getURI());
 		
-		assertEquals(childrenBag.size(), 1);
+		assertEquals(childrenBag.size(), 2);
 
-		Resource file = (Resource) childrenBag.iterator().next();
+		// Put children into a map since we can't guarantee order from jena
+		Map<String, Resource> children = new HashMap<>(2);
+		NodeIterator childIt = childrenBag.iterator();
+		while (childIt.hasNext()) {
+			Resource file = (Resource) childIt.next();
+			children.put(file.getProperty(dprop(model, label)).getString(), file);
+		}
 		
-		assertEquals("File label was not set", "lorem.txt",
-				file.getProperty(dprop(model, label)).getString());
+		Resource file = children.get("lorem.txt");
 		assertEquals("Content model was not set", SIMPLE.toString(),
 				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
 				file.getProperty(dprop(model, md5sum)).getString());
 		assertEquals("File location not set", "tag:/valid-bag/data/test/lorem.txt",
 				file.getProperty(dprop(model, stagingLocation)).getString());
+		
+		Resource file2 = children.get("ipsum.txt");
+		assertEquals("Content model was not set", SIMPLE.toString(),
+				file2.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
+				file2.getProperty(dprop(model, md5sum)).getString());
+		assertEquals("File location not set", "tag:/valid-bag/data/test/ipsum.txt",
+				file2.getProperty(dprop(model, stagingLocation)).getString());
 		
 		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
 		assertTrue(modsFile.exists());

@@ -21,9 +21,13 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jdom2.Document;
@@ -35,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -60,11 +63,16 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	@Autowired
 	public Stages stages;
 	
+	protected Map<String, Bag> pathToFolderBagCache;
+	
 	public AbstractFileServerToBagJob() {
+		pathToFolderBagCache = new HashMap<>();
 	}
 	
 	public AbstractFileServerToBagJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
+		
+		pathToFolderBagCache = new HashMap<>();
 	}
 
 	@Override
@@ -123,6 +131,11 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	 * @return
 	 */
 	protected Bag getParentBag(Bag top, String filepath) {
+		// Retrieve the bag from the cache by base filepath if available.
+		String basePath = Paths.get(filepath).getParent().toString();
+		if (pathToFolderBagCache.containsKey(basePath)) {
+			return pathToFolderBagCache.get(basePath);
+		}
 		
 		Model model = top.getModel();
 		
@@ -140,26 +153,17 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		
 		Bag currentNode = top;
 		
-		segmentLoop: for (int i = 1; i < pathSegments.length - 1; i++) {
-			String segment = pathSegments[i];
+		for (int i = 1; i < pathSegments.length - 1; i++) {
 			
-			// Search to see if a folder with the same name as this segment exists as a child
-			NodeIterator nodeIt = currentNode.iterator();
-			try {
-				while (nodeIt.hasNext()) {
-					Resource child = nodeIt.nextNode().asResource();
-					
-					String label = child.getProperty(labelProp).getString();
-					if (label.equals(segment)) {
-						// Folder already exists, select it and move on
-						currentNode = model.getBag(child);
-						continue segmentLoop;
-					}
-				}
-			} finally {
-				nodeIt.close();
+			String segment = pathSegments[i];
+			String folderPath = StringUtils.join(Arrays.copyOfRange(pathSegments, 0, i + 1), "/");
+			
+			if (pathToFolderBagCache.containsKey(folderPath)) {
+				currentNode = pathToFolderBagCache.get(folderPath);
+				continue;
 			}
 			
+			log.debug("No cached folder bag for {}, creating new one", folderPath);
 			// No existing folder was found, create one
 			PID pid = new PID("uuid:" + UUID.randomUUID().toString());
 			
@@ -168,6 +172,8 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			
 			model.add(childBag, labelProp, segment);
 			model.add(childBag, hasModelProp, containerResource);
+			
+			pathToFolderBagCache.put(folderPath, childBag);
 			
 			currentNode = childBag;
 		}
