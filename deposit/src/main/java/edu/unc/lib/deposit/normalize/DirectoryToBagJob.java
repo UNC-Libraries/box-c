@@ -30,7 +30,6 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -43,7 +42,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -92,17 +90,8 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 
-		// Turn the bag itself into the top level folder for this deposit
-		PID containerPID = new PID("uuid:" + UUID.randomUUID());
-		Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
-		model.add(bagFolder, hasModelProp, containerResource);
-		top.add(bagFolder);
-		
-		// Cache the source bag folder
-		pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
-		
-		addDescription(containerPID, status);
+		// Turn the base directory itself into the top level folder for this deposit
+		Bag sourceBag = getSourceBag(top, sourceFile);
 		
 		int i = 0;
 		// Add all of the payload objects into the bag folder
@@ -117,7 +106,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			String filename = filePath.getFileName().toString();
 			
 			if (!isDir) {
-				Resource fileResource = getFileResource(bagFolder, filePathString);
+				Resource fileResource = getFileResource(sourceBag, filePathString);
 				model.add(fileResource, labelProp, filename);
 				
 				String fullPath = file.toString();
@@ -143,12 +132,9 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					failJob(e, "Unable to get staged path for file {}", storedPath);
 				}
 			} else {
-				Bag folderResource = getFolderBag(bagFolder, filePathString, model);
-				model.add(folderResource, labelProp, filename);
-				model.add(folderResource, hasModelProp, containerResource);
-				
-				// Cache the folder bag
-				pathToFolderBagCache.put(filePathString, folderResource);
+				Bag folderBag = getFolderBag(sourceBag, filePathString, model);
+				model.add(folderBag, labelProp, filename);
+				model.add(folderBag, hasModelProp, containerResource);
 			}
 		}
 	}

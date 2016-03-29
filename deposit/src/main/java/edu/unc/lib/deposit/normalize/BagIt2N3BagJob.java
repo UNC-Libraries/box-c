@@ -18,7 +18,6 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
@@ -27,7 +26,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +34,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -111,13 +108,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
 		// Turn the bag itself into the top level folder for this deposit
-		PID containerPID = new PID("uuid:" + UUID.randomUUID());
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
-		model.add(bagFolder, hasModelProp, model.createResource(CONTAINER.getURI().toString()));
-		top.add(bagFolder);
-		
-		addDescription(containerPID, status);
+		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(top, sourceFile);
 		
 		int i = 0;
 		// Add all of the payload objects into the bag folder
@@ -128,7 +119,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			
 			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
 			
-			Resource fileResource = getFileResource(bagFolder, filePath);
+			Resource fileResource = getFileResource(sourceBag, filePath);
 			
 			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
