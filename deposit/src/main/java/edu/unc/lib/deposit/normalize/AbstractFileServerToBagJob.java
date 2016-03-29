@@ -16,14 +16,19 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
+import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jdom2.Document;
@@ -35,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -60,40 +64,79 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	@Autowired
 	public Stages stages;
 	
+	private Map<String, Bag> pathToFolderBagCache;
+	
 	public AbstractFileServerToBagJob() {
+		pathToFolderBagCache = new HashMap<>();
 	}
 	
 	public AbstractFileServerToBagJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
+		
+		pathToFolderBagCache = new HashMap<>();
 	}
 
 	@Override
 	public abstract void runJob();
 	
+	protected Bag getSourceBag(Bag depositBag, File sourceFile) {
+		Model model = depositBag.getModel();
+		Map<String, String> status = getDepositStatus();
+		
+		PID containerPID = new PID("uuid:" + UUID.randomUUID());
+		Bag bagFolder = model.createBag(containerPID.getURI());
+		model.add(bagFolder, dprop(model, DepositRelationship.label), 
+				status.get(DepositField.fileName.name()));
+		model.add(bagFolder, fprop(model, FedoraProperty.hasModel), 
+				model.createResource(CONTAINER.getURI().toString()));
+		depositBag.add(bagFolder);
+		
+		// Cache the source bag folder
+		pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
+		
+		// Add extra descriptive information
+		addDescription(containerPID, status);
+		
+		return bagFolder;
+	}
+	
 	/**
-	 * Adds additional metadata fields for the root bag container if they are provided
+	 * Creates and returns a Jena Resource for the given path representing a file,
+	 * adding it to the hierarchy for the deposit  
 	 * 
-	 * @param containerPID
-	 * @param status
+	 * @param sourceBag
+	 * @param filepath
+	 * @return
 	 */
-	public Resource getFileResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
-		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
+	protected Resource getFileResource(Bag sourceBag, String filepath) {
+		Bag parentBag = getParentBag(sourceBag, filepath);
 
 		PID pid = createPID();
 
-		Resource fileResource = top.getModel().createResource(pid.getURI());
-		folderBag.add(fileResource);
+		Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
+		parentBag.add(fileResource);
 
 		return fileResource;
 	}
 	
-	public com.hp.hpl.jena.rdf.model.Bag getFolderResource(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath, Model model) {
-		com.hp.hpl.jena.rdf.model.Bag folderBag = getFolderBag(top, basepath, filepath);
+	/**
+	 * Creates and returns a Jena Bag for the given filepath representing a folder, and adds
+	 * it to the hierarchy for the deposit
+	 * 
+	 * @param sourceBag
+	 * @param filepath
+	 * @param model
+	 * @return
+	 */
+	protected Bag getFolderBag(Bag sourceBag, String filepath) {
+		Bag parentBag = getParentBag(sourceBag, filepath);
 		
 		PID pid = createPID();
 		
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(pid.getURI());
-		folderBag.add(bagFolder);
+		Bag bagFolder = sourceBag.getModel().createBag(pid.getURI());
+		parentBag.add(bagFolder);
+		
+		pathToFolderBagCache.put(filepath, bagFolder);
 		return bagFolder;
 	}
 	
@@ -104,52 +147,57 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		return pid;
 	}
 	
-	public com.hp.hpl.jena.rdf.model.Bag getFolderBag(com.hp.hpl.jena.rdf.model.Bag top, String basepath, String filepath) {
+	/**
+	 * Returns a Jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
+	 * 
+	 * @param sourceBag
+	 * @param filepath
+	 * @return
+	 */
+	protected Bag getParentBag(Bag sourceBag, String filepath) {
+		// Retrieve the bag from the cache by base filepath if available.
+		String basePath = Paths.get(filepath).getParent().toString();
+		if (pathToFolderBagCache.containsKey(basePath)) {
+			return pathToFolderBagCache.get(basePath);
+		}
 		
-		Model model = top.getModel();
+		Model model = sourceBag.getModel();
 		
 		// find or create a folder resource for the filepath
 		String[] pathSegments = filepath.split("/");
 		
 		// Nothing to do with paths that only have data
 		if (pathSegments.length <= 2) {
-			return top;
+			return sourceBag;
 		}
 		
 		Property labelProp = dprop(model, DepositRelationship.label);
 		Property hasModelProp = model.createProperty(FedoraProperty.hasModel.getURI().toString());
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 		
-		com.hp.hpl.jena.rdf.model.Bag currentNode = top;
+		Bag currentNode = sourceBag;
 		
-		segmentLoop: for (int i = 1; i < pathSegments.length - 1; i++) {
-			String segment = pathSegments[i];
+		for (int i = 1; i < pathSegments.length - 1; i++) {
 			
-			// Search to see if a folder with the same name as this segment exists as a child
-			NodeIterator nodeIt = currentNode.iterator();
-			try {
-				while (nodeIt.hasNext()) {
-					Resource child = nodeIt.nextNode().asResource();
-					
-					String label = child.getProperty(labelProp).getString();
-					if (label.equals(segment)) {
-						// Folder already exists, select it and move on
-						currentNode = model.getBag(child);
-						continue segmentLoop;
-					}
-				}
-			} finally {
-				nodeIt.close();
+			String segment = pathSegments[i];
+			String folderPath = StringUtils.join(Arrays.copyOfRange(pathSegments, 0, i + 1), "/");
+			
+			if (pathToFolderBagCache.containsKey(folderPath)) {
+				currentNode = pathToFolderBagCache.get(folderPath);
+				continue;
 			}
 			
+			log.debug("No cached folder bag for {}, creating new one", folderPath);
 			// No existing folder was found, create one
 			PID pid = new PID("uuid:" + UUID.randomUUID().toString());
 			
-			com.hp.hpl.jena.rdf.model.Bag childBag = model.createBag(pid.getURI());
+			Bag childBag = model.createBag(pid.getURI());
 			currentNode.add(childBag);
 			
 			model.add(childBag, labelProp, segment);
 			model.add(childBag, hasModelProp, containerResource);
+			
+			pathToFolderBagCache.put(folderPath, childBag);
 			
 			currentNode = childBag;
 		}

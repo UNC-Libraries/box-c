@@ -18,7 +18,6 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
@@ -27,13 +26,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
-import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -54,6 +54,8 @@ import gov.loc.repository.bagit.utilities.SimpleResult;
  * @date Nov 9, 2015
  */
 public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
+	private static final Logger log = LoggerFactory.getLogger(BagIt2N3BagJob.class);
+	
 	public BagIt2N3BagJob() {
 		super();
 	}
@@ -66,7 +68,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 	public void runJob() {
 		
 		Model model = getWritableModel();
-		com.hp.hpl.jena.rdf.model.Bag top = model.createBag(getDepositPID().getURI().toString());
+		com.hp.hpl.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
@@ -106,21 +108,18 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
 		// Turn the bag itself into the top level folder for this deposit
-		PID containerPID = new PID("uuid:" + UUID.randomUUID());
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
-		model.add(bagFolder, hasModelProp, model.createResource(CONTAINER.getURI().toString()));
-		top.add(bagFolder);
+		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
 		
-		addDescription(containerPID, status);
-		
+		int i = 0;
 		// Add all of the payload objects into the bag folder
 		for (BagFile file : payload) {
+			log.debug("Adding object {}: {}", i++, file.getFilepath());
+			
 			String filePath = file.getFilepath();
 			
 			Map<Manifest.Algorithm, String> checksums = bag.getChecksums(filePath);
 			
-			Resource fileResource = getFileResource(bagFolder, sourcePath, filePath);
+			Resource fileResource = getFileResource(sourceBag, filePath);
 			
 			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
@@ -148,7 +147,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			try {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
-					model.add(top, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 				}
 			} catch (StagingException e) {
 				failJob(e, "Unable to get staged path for file {}", path);
@@ -161,7 +160,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			URI stagedURI = stages.getStagedURI(storedPath.toUri());
 			
 			if (stagedURI != null) {
-				model.add(top, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+				model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 			}
 		} catch (StagingException e) {
 			failJob(e, "Unable to get staged path for file {}", storedPath);

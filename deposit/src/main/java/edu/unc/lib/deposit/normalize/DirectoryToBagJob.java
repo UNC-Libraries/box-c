@@ -23,29 +23,25 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -70,17 +66,20 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 	@Override
 	public void runJob() {
 		Model model = getWritableModel();
-		com.hp.hpl.jena.rdf.model.Bag top = model.createBag(getDepositPID().getURI().toString());
+		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
 		File sourceFile = new File(sourcePath);
-		Collection<File> listOfFiles = FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
-		Collection<File> fileListings = new ArrayList<File>();
 		
-		for (File file : listOfFiles) {
-			if (!file.equals(sourceFile)) {
-				fileListings.add(file);
+		// List all files and directories in the deposit, excluding the base directory
+		Collection<File> fileListings = FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
+		Iterator<File> filesIt = fileListings.iterator();
+		while (filesIt.hasNext()) {
+			File file = filesIt.next();
+			if (file.equals(sourceFile)) {
+				filesIt.remove();
+				break;
 			}
 		}
 		
@@ -91,17 +90,14 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 
-		// Turn the bag itself into the top level folder for this deposit
-		PID containerPID = new PID("uuid:" + UUID.randomUUID());
-		com.hp.hpl.jena.rdf.model.Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, labelProp, status.get(DepositField.fileName.name()));
-		model.add(bagFolder, hasModelProp, containerResource);
-		top.add(bagFolder);
+		// Turn the base directory itself into the top level folder for this deposit
+		Bag sourceBag = getSourceBag(depositBag, sourceFile);
 		
-		addDescription(containerPID, status);
-		
+		int i = 0;
 		// Add all of the payload objects into the bag folder
 		for (File file : fileListings) {
+			log.debug("Adding object {}: {}", i++, file.getName());
+			
 			Boolean isDir = file.isDirectory();
 			String checksum = null;
 
@@ -110,7 +106,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			String filename = filePath.getFileName().toString();
 			
 			if (!isDir) {
-				Resource fileResource = getFileResource(bagFolder, sourcePath, filePathString);
+				Resource fileResource = getFileResource(sourceBag, filePathString);
 				model.add(fileResource, labelProp, filename);
 				
 				String fullPath = file.toString();
@@ -136,9 +132,9 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					failJob(e, "Unable to get staged path for file {}", storedPath);
 				}
 			} else {
-				com.hp.hpl.jena.rdf.model.Bag folderResource = getFolderResource(bagFolder, sourcePath, filePathString, model);
-				model.add(folderResource, labelProp, filename);
-				model.add(folderResource, hasModelProp, containerResource);
+				Bag folderBag = getFolderBag(sourceBag, filePathString);
+				model.add(folderBag, labelProp, filename);
+				model.add(folderBag, hasModelProp, containerResource);
 			}
 		}
 	}
