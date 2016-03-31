@@ -77,7 +77,7 @@ public class FedoraContentService {
 	private final int numberOfRetries = 1;
 
 	private static List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name(),
-			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
 			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.PARENT_COLLECTION.name(),
 			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.TITLE.name());
 
@@ -105,12 +105,8 @@ public class FedoraContentService {
 			throw new InvalidRecordRequestException();
 
 		// If a label is available, use it for the filename
-		List<String> labelRelations = briefObject.getRelation("label");
-		String filename = null;
-		if (labelRelations != null && labelRelations.size() > 0) {
-			filename = labelRelations.get(0);
-		}
-
+		String filename = briefObject.getLabel();
+		
 		try {
 			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
 			if (datastreamResult == null)
