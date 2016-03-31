@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -387,6 +385,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					
 					// Record FOXML throughput metrics
 					metricsClient.incrDepositFileThroughput(foxml.length());
+					
 					return;
 				} catch (ServiceException e) {
 					waitIfConnectionLostOrRethrow(e);
@@ -398,7 +397,9 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					+ e.getLocalizedMessage());
 		} catch (ObjectExistsException e) {
 			if (confirmExisting || isDuplicateOkay(pid)) {
-				ingestsAwaitingConfirmation.remove(ingestPid);
+				if (ingestsAwaitingConfirmation.remove(ingestPid)) {
+					addClicks(1);
+				}
 			} else {
 				throw new DepositException("Object " + pid.getPid() + " already exists in the repository.", e);
 			}
@@ -426,23 +427,22 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			
 			Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
 			if (!objectResc.hasProperty(stagingLocation)) {
-				// No staging location, so nothing further to check
+				// No staging location, no file, no reason to check further
 				return true;
 			}
-			
-			String fileLocation = objectResc.getProperty(stagingLocation).getString();
-			fileLocation = new URI(fileLocation).getPath();
-			
-			// Confirm that incoming file is the same size as the one in the repository
-			long incomingSize = Files.size(
-					Paths.get(this.getDepositDirectory().getAbsolutePath(), fileLocation));
 			
 			// Get information for copy in the repository
 			Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
 			
-			if (incomingSize != ds.getSize() && !(ds.getSize() == -1 && incomingSize == 0)) {
-				// File sizes didn't match, so this is not the correct file
-				return false;
+			// Confirm that incoming file is the same size as the one in the repository
+			Property filesizeProperty = dprop(model, DepositRelationship.size);
+			if (objectResc.hasProperty(filesizeProperty)) {
+				long incomingSize = Long.parseLong(objectResc.getProperty(filesizeProperty).getString());
+				
+				if (incomingSize != ds.getSize() && !(ds.getSize() == -1 && incomingSize == 0)) {
+					// File sizes didn't match, so this is not the correct file
+					return false;
+				}
 			}
 			
 			// If a checksum is available, make sure it matches the one in the repository
@@ -453,7 +453,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 			}
 			
 			return true;
-		} catch (FedoraException | IOException | URISyntaxException e1) {
+		} catch (FedoraException e1) {
 			log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
 		} finally {
 			closeModel();

@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.deposit.fcrepo3;
 
+import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.DATA_FILE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
@@ -64,6 +68,7 @@ import edu.unc.lib.dl.fedora.JobForwardingJMSListener;
 import edu.unc.lib.dl.fedora.ListenerJob;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
+import edu.unc.lib.dl.fedora.ObjectExistsException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.ObjectProfile;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
@@ -71,8 +76,11 @@ import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.PremisEventLogger;
+import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
+import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * @author bbpennel
@@ -112,6 +120,8 @@ public class IngestDepositTest {
 	Collection<String> ingestsAwaitingConfirmation;
 	@Mock
 	private ActivityMetricsClient metricsClient;
+	@Mock
+	private TripleStoreQueryService tsqs;
 
 	private IngestDeposit job;
 
@@ -156,6 +166,7 @@ public class IngestDepositTest {
 		setField(job, "accessClient", accessClient);
 		setField(job, "digitalObjectManager", digitalObjectManager);
 		setField(job, "metricsClient", metricsClient);
+		setField(job, "tsqs", tsqs);
 
 		depositStatus.put(DepositField.containerId.name(), "uuid:destination");
 		depositStatus.put(DepositField.excludeDepositRecord.name(), "false");
@@ -338,6 +349,59 @@ public class IngestDepositTest {
 		assertTrue("Job must have been registered", jmsListener.registeredJob);
 		assertTrue("Job must have been unregistered", jmsListener.registeredJob);
 
+	}
+	
+	/**
+	 * Testing to see that getting an ObjectExistsException on an object with a tag uri for
+	 * its staging location is recoverable.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testTagDuplicate() throws Exception {
+
+		PID filePid = new PID("info:fedora/uuid:2a5d0363-899b-402d-981b-392a553e17a1");
+		
+		Model model = job.getWritableModel();
+		Resource fileResc = model.getResource(filePid.getURI());
+		Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
+		model.add(fileResc, stagingLocation, "tag:testuser@localhost,2016:/test.txt");
+		job.closeModel();
+		
+		when(tsqs.fetchBySubjectAndPredicate(any(PID.class), anyString()))
+			.thenReturn(Arrays.asList("info:fedora/uuid:bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae"));
+		
+		when(client.ingestRaw(any(byte[].class), any(Format.class), anyString())).thenReturn(new PID("pid"))
+			.thenThrow(new ObjectExistsException("")).thenReturn(new PID("pid"));
+
+		Thread.UncaughtExceptionHandler jobFailedHandler = new Thread.UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread th, Throwable ex) {
+				fail("Uncaught exception, job should have completed.");
+			}
+		};
+
+		Thread jobThread = new Thread(job);
+		Thread finishThread = new Thread(jmsListener);
+
+		jobThread.setUncaughtExceptionHandler(jobFailedHandler);
+
+		jobThread.start();
+		finishThread.start();
+
+		// Start processing with a timelimit to prevent infinite wait in case of failure
+		jobThread.join(5000L);
+		finishThread.join(5000L);
+
+		// All ingests, including the timed out object, should have registered as a click
+		verify(jobStatusFactory, times(job.getIngestObjectCount() + 1)).incrCompletion(eq(job.getJobUUID()), eq(1));
+
+		// All objects should have been ingested despite the timeout
+		verify(client, times(job.getIngestObjectCount() + 1))
+				.ingestRaw(any(byte[].class), any(Format.class), anyString());
+		
+		// Determine that the remote datastream's information was pulled for comparison purposes
+		verify(client).getDatastream(eq(filePid), eq(DATA_FILE.getName()));
 	}
 
 	@Test
