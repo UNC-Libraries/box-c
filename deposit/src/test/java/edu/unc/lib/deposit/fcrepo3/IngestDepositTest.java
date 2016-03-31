@@ -400,7 +400,7 @@ public class IngestDepositTest {
 		verify(client, times(job.getIngestObjectCount() + 1))
 				.ingestRaw(any(byte[].class), any(Format.class), anyString());
 		
-		// Determine that 
+		// Determine that the remote datastream's information was pulled for comparison purposes
 		verify(client).getDatastream(eq(filePid), eq(DATA_FILE.getName()));
 	}
 
