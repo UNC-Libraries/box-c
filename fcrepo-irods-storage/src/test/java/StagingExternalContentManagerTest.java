@@ -42,7 +42,7 @@ public class StagingExternalContentManagerTest {
 		Stages stages = externalContentManager.getStages();
 		StagingArea shc = stages.getAllAreas().get(URI.create("tag:cdr.lib.unc.edu,2013:/storhouse_shc/"));
 		assertTrue("The SHC test stage must be connected: "+shc.getStatus(), shc.isConnected());
-		String testURL = "tag:joey@cdr.lib.unc.edu,2013:/storhouse_shc/my+project/_-1/test+file.txt";
+		String testURL = "tag:joey@cdr.lib.unc.edu,2013:/storhouse_shc/my%20project/_-1/test%20file.txt";
 		ContentManagerParams params = new ContentManagerParams(testURL);
 		MIMETypedStream mts = externalContentManager.getExternalContent(params);
 		assertNotNull("Stream result must not be null", mts);
