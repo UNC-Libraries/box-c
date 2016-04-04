@@ -93,4 +93,11 @@ public class ActivityMetricsClient {
 			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-bytes", bytes);
 		}
 	}
+	
+	public void incrDepositDuration(long milliseconds) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "duration", milliseconds);
+		}
+	}
 }

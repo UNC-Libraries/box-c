@@ -159,7 +159,6 @@ public class DepositSupervisor implements WorkerListener {
 
 			@Override
 			public void run() {
-
 				try {
 					// Scan for actions and trigger them
 					for (Map<String, String> fields : depositStatusFactory.getAll()) {
@@ -168,7 +167,6 @@ public class DepositSupervisor implements WorkerListener {
 						String uuid = fields.get(DepositField.uuid.name());
 
 						if (DepositAction.register.name().equals(requestedActionName)) {
-							
 							LOG.info("Registering job {}", uuid);
 							
 							if (depositStatusFactory.addSupervisorLock(uuid, id)) {
@@ -613,6 +611,18 @@ public class DepositSupervisor implements WorkerListener {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
 			metricsClient.incrFinishedDeposit();
 			
+			Map<String, String> deposit = depositStatusFactory.get(depositUUID);
+			String strDepositStartTime = deposit.get(DepositField.startTime.name());
+			Long depositStartTime = Long.parseLong(strDepositStartTime, 10);
+			
+			long depositEndTime = System.currentTimeMillis();
+			long depositTotalTime = depositEndTime - depositStartTime;
+			
+			metricsClient.incrDepositDuration(depositTotalTime);
+			
+			String strDepositEndTime = Long.toString(depositEndTime);
+			depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
+			
 			depositEmailHandler.sendDepositResults(depositUUID);
 			depositMessageHandler.sendDepositMessage(depositUUID);
 			
@@ -650,6 +660,11 @@ public class DepositSupervisor implements WorkerListener {
 		LOG.info("Queuing first job for deposit {}", uuid);
 
 		Job job = makeJob(PackageIntegrityCheckJob.class, uuid);
+		
+	
+		long depositStartTime = System.currentTimeMillis();
+		String strDepositStartTime = Long.toString(depositStartTime);
+		depositStatusFactory.set(uuid, DepositField.startTime, strDepositStartTime);
 
 		depositStatusFactory.setState(uuid, DepositState.queued);
 		depositStatusFactory.clearActionRequest(uuid);
