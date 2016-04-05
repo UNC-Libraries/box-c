@@ -618,7 +618,7 @@ public class DepositSupervisor implements WorkerListener {
 			long depositEndTime = System.currentTimeMillis();
 			long depositTotalTime = depositEndTime - depositStartTime;
 			
-			metricsClient.incrDepositDuration(depositTotalTime);
+			metricsClient.incrDepositDuration(depositUUID, depositTotalTime);
 			
 			String strDepositEndTime = Long.toString(depositEndTime);
 			depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
@@ -661,7 +661,6 @@ public class DepositSupervisor implements WorkerListener {
 
 		Job job = makeJob(PackageIntegrityCheckJob.class, uuid);
 		
-	
 		long depositStartTime = System.currentTimeMillis();
 		String strDepositStartTime = Long.toString(depositStartTime);
 		depositStatusFactory.set(uuid, DepositField.startTime, strDepositStartTime);
