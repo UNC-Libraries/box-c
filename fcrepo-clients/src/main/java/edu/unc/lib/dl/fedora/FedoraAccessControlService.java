@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.httpclient.ConnectionInterruptedHttpMethodRetryHandler;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
 /**
@@ -62,6 +64,8 @@ public class FedoraAccessControlService implements AccessControlService {
 	public void init() {
 		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(username, password);
 		httpClient.getState().setCredentials(HttpClientUtil.getAuthenticationScope(aclEndpointUrl), creds);
+		httpClient.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+				new ConnectionInterruptedHttpMethodRetryHandler(10, 3000L));
 	}
 
 	public void destroy() {

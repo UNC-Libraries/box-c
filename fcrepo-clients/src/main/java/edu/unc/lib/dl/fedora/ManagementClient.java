@@ -98,6 +98,7 @@ import edu.unc.lib.dl.fedora.types.PurgeObject;
 import edu.unc.lib.dl.fedora.types.PurgeObjectResponse;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
+import edu.unc.lib.dl.httpclient.ConnectionInterruptedHttpMethodRetryHandler;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
@@ -479,6 +480,8 @@ public class ManagementClient extends WebServiceTemplate {
 
 		this.httpClient = HttpClientUtil.getAuthenticatedClient(this.getFedoraContextUrl(), this.getUsername(),
 				this.getPassword(), this.httpManager);
+		httpClient.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+				new ConnectionInterruptedHttpMethodRetryHandler(10, 3000L));
 	}
 
 	public void destroy() {
