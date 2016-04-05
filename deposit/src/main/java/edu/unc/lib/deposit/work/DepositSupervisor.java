@@ -612,10 +612,22 @@ public class DepositSupervisor implements WorkerListener {
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
 			metricsClient.incrFinishedDeposit();
-			
+
+			Map<String, String> deposit = depositStatusFactory.get(depositUUID);
+			String strDepositStartTime = deposit.get(DepositField.startTime.name());
+			Long depositStartTime = Long.parseLong(strDepositStartTime);
+
+			long depositEndTime = System.currentTimeMillis();
+			long depositTotalTime = depositEndTime - depositStartTime;
+
+			metricsClient.incrDepositDuration(depositUUID, depositTotalTime);
+
+			String strDepositEndTime = Long.toString(depositEndTime);
+			depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
+
 			depositEmailHandler.sendDepositResults(depositUUID);
 			depositMessageHandler.sendDepositMessage(depositUUID);
-			
+
 			// schedule cleanup job after the configured delay
 			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
 			LOG.info("Queuing {} for deposit {}",
@@ -623,7 +635,7 @@ public class DepositSupervisor implements WorkerListener {
 			enqueueJob(cleanJob, status, 1000 * this.getCleanupDelaySeconds());
 		}
 	}
-	
+
 	private void enqueueJob(Job job, Map<String, String> fields, long delay) {
 		Client c = makeJesqueClient();
 		try {
@@ -650,6 +662,10 @@ public class DepositSupervisor implements WorkerListener {
 		LOG.info("Queuing first job for deposit {}", uuid);
 
 		Job job = makeJob(PackageIntegrityCheckJob.class, uuid);
+
+		long depositStartTime = System.currentTimeMillis();
+		String strDepositStartTime = Long.toString(depositStartTime);
+		depositStatusFactory.set(uuid, DepositField.startTime, strDepositStartTime);
 
 		depositStatusFactory.setState(uuid, DepositState.queued);
 		depositStatusFactory.clearActionRequest(uuid);
