@@ -403,6 +403,13 @@ public class DepositSupervisor implements WorkerListener {
 		switch (event) {
 			case JOB_EXECUTE:
 				jobStatusFactory.started(j.getJobUUID(), j.getDepositUUID(), j.getClass());
+				
+				if (!status.containsKey(DepositField.startTime.name())) {
+					long depositStartTime = System.currentTimeMillis();
+					String strDepositStartTime = Long.toString(depositStartTime);
+					depositStatusFactory.set(depositUUID, DepositField.startTime, strDepositStartTime);
+				}
+
 				break;
 			case JOB_SUCCESS:
 				jobStatusFactory.completed(j.getJobUUID());
@@ -662,10 +669,6 @@ public class DepositSupervisor implements WorkerListener {
 		LOG.info("Queuing first job for deposit {}", uuid);
 
 		Job job = makeJob(PackageIntegrityCheckJob.class, uuid);
-
-		long depositStartTime = System.currentTimeMillis();
-		String strDepositStartTime = Long.toString(depositStartTime);
-		depositStatusFactory.set(uuid, DepositField.startTime, strDepositStartTime);
 
 		depositStatusFactory.setState(uuid, DepositState.queued);
 		depositStatusFactory.clearActionRequest(uuid);
