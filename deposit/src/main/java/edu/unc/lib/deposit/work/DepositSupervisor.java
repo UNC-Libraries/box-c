@@ -405,9 +405,16 @@ public class DepositSupervisor implements WorkerListener {
 				jobStatusFactory.started(j.getJobUUID(), j.getDepositUUID(), j.getClass());
 				
 				if (!status.containsKey(DepositField.startTime.name())) {
+					// Record the deposit start time
 					long depositStartTime = System.currentTimeMillis();
 					String strDepositStartTime = Long.toString(depositStartTime);
 					depositStatusFactory.set(depositUUID, DepositField.startTime, strDepositStartTime);
+					
+					// Check to see how long the deposit has been on the redis queue
+					String strQueuedStartTime = status.get(DepositField.submitTime.name());
+					long queuedStartTime = Long.parseLong(strQueuedStartTime);
+					long queuedTime = depositStartTime - queuedStartTime;
+					metricsClient.incrQueuedDepositDuration(depositUUID, queuedTime);
 				}
 
 				break;
@@ -620,8 +627,7 @@ public class DepositSupervisor implements WorkerListener {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
 			metricsClient.incrFinishedDeposit();
 
-			Map<String, String> deposit = depositStatusFactory.get(depositUUID);
-			String strDepositStartTime = deposit.get(DepositField.startTime.name());
+			String strDepositStartTime = status.get(DepositField.startTime.name());
 			Long depositStartTime = Long.parseLong(strDepositStartTime);
 
 			long depositEndTime = System.currentTimeMillis();

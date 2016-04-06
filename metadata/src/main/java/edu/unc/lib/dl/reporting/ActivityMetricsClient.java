@@ -102,4 +102,12 @@ public class ActivityMetricsClient {
 			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "duration", milliseconds);
 		}
 	}
+	
+	public void incrQueuedDepositDuration(String uuid, long milliseconds) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "queued-duration", milliseconds);
+		}
+	}
 }
