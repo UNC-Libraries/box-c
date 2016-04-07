@@ -32,7 +32,7 @@ import edu.unc.lib.dl.ui.util.ApplicationPathSettings;
 import edu.unc.lib.dl.ui.util.FileIOUtil;
 
 /**
- * Generates request, connects to, and streams the output from djatoka.  Sets pertinent headers. 
+ * Generates request, connects to, and streams the output from loris.  Sets pertinent headers. 
  * @author bbpennel
  */
 public class LorisContentService {
