@@ -86,11 +86,28 @@ public class ActivityMetricsClient {
 		}
 	}
 	
-	public void incrDepositFileThroughput(long bytes) {
+	public void incrDepositFileThroughput(String uuid, long bytes) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-files", 1);
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "throughput-bytes", bytes);
+
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "throughput-files", 1);
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "throughput-bytes", bytes);
+		}
+	}
+	
+	public void incrDepositDuration(String uuid, long milliseconds) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "duration", milliseconds);
+		}
+	}
+	
+	public void incrQueuedDepositDuration(String uuid, long milliseconds) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String date = metricsDateFormat.format(new Date());
+			
+			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "queued-duration", milliseconds);
 		}
 	}
 }

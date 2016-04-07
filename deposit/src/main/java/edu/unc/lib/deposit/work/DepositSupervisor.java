@@ -403,6 +403,20 @@ public class DepositSupervisor implements WorkerListener {
 		switch (event) {
 			case JOB_EXECUTE:
 				jobStatusFactory.started(j.getJobUUID(), j.getDepositUUID(), j.getClass());
+				
+				if (!status.containsKey(DepositField.startTime.name())) {
+					// Record the deposit start time
+					long depositStartTime = System.currentTimeMillis();
+					String strDepositStartTime = Long.toString(depositStartTime);
+					depositStatusFactory.set(depositUUID, DepositField.startTime, strDepositStartTime);
+					
+					// Check to see how long the deposit has been on the redis queue
+					String strQueuedStartTime = status.get(DepositField.submitTime.name());
+					long queuedStartTime = Long.parseLong(strQueuedStartTime);
+					long queuedTime = depositStartTime - queuedStartTime;
+					metricsClient.incrQueuedDepositDuration(depositUUID, queuedTime);
+				}
+
 				break;
 			case JOB_SUCCESS:
 				jobStatusFactory.completed(j.getJobUUID());
@@ -612,10 +626,21 @@ public class DepositSupervisor implements WorkerListener {
 		} else {
 			depositStatusFactory.setState(depositUUID, DepositState.finished);
 			metricsClient.incrFinishedDeposit();
-			
+
+			String strDepositStartTime = status.get(DepositField.startTime.name());
+			Long depositStartTime = Long.parseLong(strDepositStartTime);
+
+			long depositEndTime = System.currentTimeMillis();
+			long depositTotalTime = depositEndTime - depositStartTime;
+
+			metricsClient.incrDepositDuration(depositUUID, depositTotalTime);
+
+			String strDepositEndTime = Long.toString(depositEndTime);
+			depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
+
 			depositEmailHandler.sendDepositResults(depositUUID);
 			depositMessageHandler.sendDepositMessage(depositUUID);
-			
+
 			// schedule cleanup job after the configured delay
 			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
 			LOG.info("Queuing {} for deposit {}",
@@ -623,7 +648,7 @@ public class DepositSupervisor implements WorkerListener {
 			enqueueJob(cleanJob, status, 1000 * this.getCleanupDelaySeconds());
 		}
 	}
-	
+
 	private void enqueueJob(Job job, Map<String, String> fields, long delay) {
 		Client c = makeJesqueClient();
 		try {

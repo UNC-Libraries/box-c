@@ -384,7 +384,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 					client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
 					
 					// Record FOXML throughput metrics
-					metricsClient.incrDepositFileThroughput(foxml.length());
+					metricsClient.incrDepositFileThroughput(getDepositUUID(), foxml.length());
 					
 					return;
 				} catch (ServiceException e) {
@@ -500,7 +500,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 							cLocation.setAttribute("REF", newref);
 							
 							// Record throughput metrics
-							metricsClient.incrDepositFileThroughput(file.length());
+							metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
 							
 							break repeatUpload;
 						} catch (FedoraTimeoutException e) {
