@@ -95,7 +95,7 @@
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="solrPath"
 			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
-		<property name="djatokaPath" value="${djatoka.base.url}" />
+		<property name="lorisPath" value="${loris.base.url}" />
 		<property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
 		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
@@ -112,11 +112,11 @@
 		</property>
 	</bean>
 	
-	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
+	<bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
 	
-	<bean id="djatokaUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
+	<bean id="lorisUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
 		<property name="accessControlService" ref="accessControlService" />
 		<property name="solrQueryLayer" ref="queryLayer" />
 	</bean>

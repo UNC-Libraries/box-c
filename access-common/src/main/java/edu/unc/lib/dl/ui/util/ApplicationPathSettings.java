@@ -24,19 +24,19 @@ import org.slf4j.LoggerFactory;
 public class ApplicationPathSettings {
 	private static final Logger LOG = LoggerFactory.getLogger(ApplicationPathSettings.class);
 	
-	private String djatokaPath;
 	private String apiRecordPath;
 	private String fedoraPath;
 	private URL fedoraURL;
+	private String lorisPath;
 	private String solrPath;
 	private URL solrURL;
 	private String externalContentPath;
 	
-	public String getDjatokaPath() {
-		return djatokaPath;
+	public String getLorisPath() {
+		return lorisPath;
 	}
-	public void setDjatokaPath(String djatokaPath) {
-		this.djatokaPath = djatokaPath;
+	public void setlorisPath(String lorisPath) {
+		this.lorisPath = lorisPath;
 	}
 	public String getApiRecordPath() {
 		return apiRecordPath;

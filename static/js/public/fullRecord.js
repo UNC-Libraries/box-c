@@ -13,7 +13,7 @@ require.config({
 		'JP2Viewer' : 'cdr-access',
 		'VideoPlayer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
-		'openLayers' : '/static/plugins/OpenLayers/OpenLayers',
+		'openSeadragon' : '/static/plugins/openseadragon/openseadragon.min',
 		'audiojs' : '/static/plugins/audiojs/audio'
 	},
 	shim: {
