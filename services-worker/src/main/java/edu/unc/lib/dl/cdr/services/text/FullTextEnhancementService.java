@@ -55,7 +55,7 @@ public class FullTextEnhancementService extends AbstractDatastreamEnhancementSer
 		}
 		
 		// Filter out objects with non-applicable mimetypes
-		if (mimetypePattern != null && !mimetypePattern.matcher(dataDoc.getMIMEType()).matches()){
+		if (!isMimetypeApplicable(pid, dataDoc)) {
 			return false;
 		}
 		
