@@ -48,7 +48,6 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
 						 id: "jp2_viewer",
 					     prefixUrl: "/static/plugins/openseadragon/images/",
 					     immediateRender: true,
-					     wrapVertical: true,
 					     maxZoomLevel: 6,
 					     springStiffness: 20,
 					     tileSources: [data],
