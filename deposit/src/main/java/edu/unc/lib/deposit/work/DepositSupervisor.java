@@ -146,6 +146,19 @@ public class DepositSupervisor implements WorkerListener {
 			pool.getWorkerEventEmitter().addListener(this);
 		}
 	}
+	
+	private void depositDuration(String depositUUID, Map<String, String> status) {
+		String strDepositStartTime = status.get(DepositField.startTime.name());
+		Long depositStartTime = Long.parseLong(strDepositStartTime);
+
+		long depositEndTime = System.currentTimeMillis();
+		long depositTotalTime = depositEndTime - depositStartTime;
+
+		metricsClient.incrDepositDuration(depositUUID, depositTotalTime);
+
+		String strDepositEndTime = Long.toString(depositEndTime);
+		depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
+	}
 
 	public void start() {
 		// Repopulate the queue
@@ -642,27 +655,6 @@ public class DepositSupervisor implements WorkerListener {
 					cleanJob.getClassName(), depositUUID);
 			enqueueJob(cleanJob, status, 1000 * this.getCleanupDelaySeconds());
 		}
-	}
-	
-	/*private Long depositDuration( Map<String, String> status, long depositEndTime) {
-		String strDepositStartTime = status.get(DepositField.startTime.name());
-		Long depositStartTime = Long.parseLong(strDepositStartTime);
-		long depositTotalTime = depositEndTime - depositStartTime;
-		
-		return depositTotalTime;
-	} */
-	
-	private void depositDuration(String depositUUID, Map<String, String> status) {
-		String strDepositStartTime = status.get(DepositField.startTime.name());
-		Long depositStartTime = Long.parseLong(strDepositStartTime);
-
-		long depositEndTime = System.currentTimeMillis();
-		long depositTotalTime = depositEndTime - depositStartTime;
-
-		metricsClient.incrDepositDuration(depositUUID, depositTotalTime);
-
-		String strDepositEndTime = Long.toString(depositEndTime);
-		depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
 	}
 
 	private void enqueueJob(Job job, Map<String, String> fields, long delay) {
