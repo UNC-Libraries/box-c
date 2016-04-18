@@ -13,9 +13,7 @@ CdrGraphs.prototype.draw = function() {
     var parseDate = d3.time.format("%Y-%m-%d").parse;
 
     // Fields where metrics are by day only (e.g.) older dates & operations metrics
-    var sorted_operations = this.dateSort(this.operations);
-
-    sorted_operations.forEach(function(d) {
+    this.operations.forEach(function(d) {
         d.date = (typeof d.date === "object") ? d.date : parseDate(d.date);
         d.throughput_bytes = (d.throughput_bytes === "") ? 0 : d.throughput_bytes / 1000000;
         d.throughput_files = (d.throughput_files === "") ? 0 : +d.throughput_files;
@@ -24,9 +22,11 @@ CdrGraphs.prototype.draw = function() {
         d.failed_enhancements = (d.failed_enhancements === "") ? 0 : +d.failed_enhancements;
     });
     
+    var sorted_operations = this.dateSort(this.operations);
+    var data = this.dataFilter(sorted_operations, "throughput_bytes");
+    
     // Metrics by uuid & day, newer deposit date metrics
-    var deposits_by_uuid = this.dateSort(this.deposits);
-    deposits_by_uuid.forEach(function(d) {
+    this.deposits.forEach(function(d) {
         d.date = (typeof d.date === "object") ? d.date : parseDate(d.date);
         d.ingest_duration = d.ingest_duration / 1000;
         d.queued_duration = d.queued_duration / 1000;
@@ -34,8 +34,9 @@ CdrGraphs.prototype.draw = function() {
         d.throughput_bytes = (d.throughput_bytes === "") ? 0 : d.throughput_bytes / 1000000;
         d.throughput_files = (d.throughput_files === "") ? 0 : +d.throughput_files;
     });
+    
+    var deposits_by_uuid = this.dateSort(this.deposits);
 
-    var data = this.dataFilter(sorted_operations, "throughput_bytes");
     var height_range = [0, this.height];
 
     // xScale for most plots
@@ -80,9 +81,7 @@ CdrGraphs.prototype.draw = function() {
     
     // By uuid
     var xScaleDeposits = this.xScales(deposits_by_uuid, width);
-    var yScaleDeposits =  d3.scale.linear()
-        .domain([d3.max(deposits_by_uuid, d3.f(throughput)), 0])
-        .range(height_range);
+    var yScaleDeposits = this.yScales(deposits_by_uuid, throughput, height_range);
 
     var xAxisDeposits = this.getAxis(xScaleDeposits, "bottom");
     var yAxisDeposits  = this.getAxis(yScaleDeposits, "left");
@@ -99,9 +98,7 @@ CdrGraphs.prototype.draw = function() {
     
     // duration totals by deposit by day
     var total_time = "total_time";
-    var yScaleTotal =  d3.scale.linear()
-        .domain([d3.max(deposits_by_uuid, d3.f(total_time)), 0])
-        .range(height_range);
+    var yScaleTotal = this.yScales(deposits_by_uuid, total_time, height_range);
     var xAxisDuration = this.getAxis(xScaleDeposits, "bottom");
     var yAxisDuration = this.getAxis(yScaleTotal, "left");
     var duration_date = this.showAxises("#duration-date", xAxisDuration, yAxisDuration, width, "Time (Seconds)");
@@ -109,9 +106,7 @@ CdrGraphs.prototype.draw = function() {
     this.drawCircles(duration_date, deposits_by_uuid, xScaleDeposits, yScaleTotal, total_time);
     this.durationChartUpdate(deposits_by_uuid, xScaleDeposits, yScaleTotal, yAxisDuration);
 
-    var yScaleTotalDay =  d3.scale.linear()
-        .domain([d3.max(duration_all, d3.f(total_time)), 0])
-        .range(height_range);
+    var yScaleTotalDay = this.yScales(duration_all, total_time, height_range);
     var xAxisTotal = this.getAxis(xScaleDeposits, "bottom");
     var yAxisTotal = this.getAxis(yScaleTotalDay, "left");
     var all_duration_date = this.showAxises("#duration-total-date", xAxisTotal, yAxisTotal, width, "Time (Seconds)");
@@ -272,7 +267,7 @@ CdrGraphs.prototype.draw = function() {
 
             self.scatter_tip.html(self.tipTextOperations(d))
                 .style("top", (d3.event.pageY-28)+"px")
-                .style("left", (d3.event.pageX-188)+"px");
+                .style("left", (d3.event.pageX-158)+"px");
         }
 
         return chart;
