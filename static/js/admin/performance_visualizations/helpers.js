@@ -6,7 +6,7 @@
  * @constructor
  */
 function CdrGraphs(operation_totals, deposit_totals, scatter_tip) {
-    this.margins = {top: 50, right: 150, bottom: 75, left: 100 };
+    this.margins = {top: 50, right: 150, bottom: 75, left: 150 };
     this.stringDate = d3.time.format("%b %e, %Y");
     this.height = 500 - this.margins.top - this.margins.bottom;
     this.data_store = [];
@@ -82,7 +82,7 @@ CdrGraphs.prototype.showAxises = function(selector, xAxis, yAxis, width, text) {
         .attr("transform", "rotate(-90)")
         .attr("x", -this.height/2)
         .attr("y", 6)
-        .attr("dy", "3em")
+        .attr("dy", "5em")
         .style("text-anchor", "end")
         .text(text);
 
@@ -109,10 +109,10 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
         .on("mouseover", function(d) {
             var text = (/(duration|time)/.test(field)) ? self.tipTextDeposits(d) : self.tipTextOperations(d);
             self.tipShow(self.scatter_tip, text);
-            d3.select(this).attr("r", 10).style("stroke-width", 3);
+            d3.select(this).attr("r", 9).style("stroke-width", 3);
         }).on("mouseout", function(d) {
             self.tipHide(self.scatter_tip);
-            d3.select(this).attr("r", 5).style("stroke-width", 1);
+            d3.select(this).attr("r", 4.5).style("stroke-width", 1);
         });
 
     circles.transition().duration(1000)
@@ -122,7 +122,7 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
         .ease("sin-in-out")
         .attr("cx", function(d) { return xScale(d.date); })
         .attr("cy", function(d) { return yScale(d[field]); })
-        .attr("r", 5);
+        .attr("r", 4.5);
 
     circles.exit().remove();
 
@@ -142,12 +142,13 @@ CdrGraphs.prototype.dataFilter = function(data, value) {
 };
 
 /**
- * Format large numbers with commas
+ * Format large numbers with commas & 2 decimal places or just commas if not a decimal number
  * @param number
- * @returns {string}
+ * @returns {*}
  */
 CdrGraphs.prototype.numFormat = function(number) {
-    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    var format= /\./.test(number) ? d3.format(",.2f") : d3.format(",");
+    return format(number);
 };
 
 /**
@@ -161,7 +162,7 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
     text += "<p class='text-center'>Deposit Metrics</p>" +
         "<ul class='list-unstyled smaller'>" +
             "<li>" + "Files: " + this.numFormat(d.throughput_files) + "</li>" +
-            "<li>" + "Total MB: " + d.throughput_bytes.toFixed(2) + "</li>" +
+            "<li>" + "Total MB: " + this.numFormat(d.throughput_bytes) + "</li>" +
         "</ul>" +
 
         "<p class='text-center'>Operations Metrics</p>" +
@@ -189,12 +190,12 @@ CdrGraphs.prototype.tipTextDeposits = function(d) {
 
     if (d.throughput_files !== undefined) {
         text += "<li>" + "Files: " + this.numFormat(d.throughput_files) + "</li>" +
-            "<li>" + "Total MB: " + d.throughput_bytes.toFixed(2) + "</li>";
+            "<li>" + "Total MB: " + this.numFormat(d.throughput_bytes) + "</li>";
     }
 
-    text += "<li>" + "Total Time: " + d.total_time.toFixed(2) + "</li>" +
-            "<li>" + "Queued Time: " + d.queued_duration.toFixed(2) + "</li>" +
-            "<li>" + "Ingest Time: " + d.ingest_duration.toFixed(2) + "</li>" +
+    text += "<li>" + "Total Time: " + this.numFormat(d.total_time) + "</li>" +
+            "<li>" + "Queued Time: " + this.numFormat(d.queued_duration) + "</li>" +
+            "<li>" + "Ingest Time: " + this.numFormat(d.ingest_duration) + "</li>" +
         "</ul>"
 
     return text;
