@@ -84,7 +84,7 @@
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 					<div class="clear_space"></div>
-					<div id="jp2_viewer" class="jp2_imageviewer_window djatokalayers_window" data-url='${briefObject.id}'></div>
+					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
 				</c:when>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<c:choose>
