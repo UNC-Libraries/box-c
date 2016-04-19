@@ -130,18 +130,6 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
 };
 
 /**
- * Filter data
- * @param data
- * @param value
- * @returns {*}
- */
-CdrGraphs.prototype.dataFilter = function(data, value) {
-    return data.filter(function(d) {
-        return d[value] !== 0;
-    });
-};
-
-/**
  * Format large numbers with commas & 2 decimal places or just commas if not a decimal number
  * @param number
  * @returns {*}

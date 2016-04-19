@@ -22,8 +22,7 @@ CdrGraphs.prototype.draw = function() {
         d.failed_enhancements = (d.failed_enhancements === "") ? 0 : +d.failed_enhancements;
     });
     
-    var sorted_operations = this.dateSort(this.operations);
-    var data = this.dataFilter(sorted_operations, "throughput_bytes");
+    var data = this.dateSort(this.operations);
     
     // Metrics by uuid & day, newer deposit date metrics
     this.deposits.forEach(function(d) {
