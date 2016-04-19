@@ -154,7 +154,7 @@ public class DepositSupervisor implements WorkerListener {
 		long depositEndTime = System.currentTimeMillis();
 		long depositTotalTime = depositEndTime - depositStartTime;
 
-		metricsClient.incrDepositDuration(depositUUID, depositTotalTime);
+		metricsClient.setDepositDuration(depositUUID, depositTotalTime);
 
 		String strDepositEndTime = Long.toString(depositEndTime);
 		depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
@@ -427,7 +427,7 @@ public class DepositSupervisor implements WorkerListener {
 					String strQueuedStartTime = status.get(DepositField.submitTime.name());
 					long queuedStartTime = Long.parseLong(strQueuedStartTime);
 					long queuedTime = depositStartTime - queuedStartTime;
-					metricsClient.incrQueuedDepositDuration(depositUUID, queuedTime);
+					metricsClient.setQueuedDepositDuration(depositUUID, queuedTime);
 				}
 
 				break;

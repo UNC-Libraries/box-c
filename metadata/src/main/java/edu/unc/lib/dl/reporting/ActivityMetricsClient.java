@@ -95,19 +95,19 @@ public class ActivityMetricsClient {
 		}
 	}
 	
-	public void incrDepositDuration(String uuid, long milliseconds) {
+	public void setDepositDuration(String uuid, long milliseconds) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			String date = metricsDateFormat.format(new Date());
 			
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "duration", milliseconds);
+			jedis.hset(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "duration", Long.toString(milliseconds));
 		}
 	}
 	
-	public void incrQueuedDepositDuration(String uuid, long milliseconds) {
+	public void setQueuedDepositDuration(String uuid, long milliseconds) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			String date = metricsDateFormat.format(new Date());
 			
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "queued-duration", milliseconds);
+			jedis.hset(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "queued-duration", Long.toString(milliseconds));
 		}
 	}
 }
