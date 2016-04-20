@@ -1,4 +1,4 @@
-define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
+define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
 	$.widget("cdr.jp2Viewer", {
 		options : {
 			context : "",
@@ -16,9 +16,9 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
 		show : function() {
 			if (!this.initialized) {
 				var self = this;
-				require(['openSeadragon'], function(){
+				require(['leaflet-IIIF', 'leafletFullscreen'], function(){
 					self.element.show();
-					self._initOpenSeadragon();
+					self._initLeaflet();
 				});
 			} else {
 				this.element.show();
@@ -33,7 +33,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
 			return this.element.is(":visible");
 		},
 		
-		_initOpenSeadragon : function() {
+		_initLeaflet : function() {
 			var self = this;
 			
 			this.initialized = true;
@@ -44,18 +44,15 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui'], function($, ui) {
 				url: 'jp2Metadata/' + this.options.url + '/IMAGE_JP2000'
 			}).done(function(data) {
 				if (data !== null) {
-					 OpenSeadragon({
-						 id: "jp2_viewer",
-					     prefixUrl: "/static/plugins/openseadragon/images/",
-					     immediateRender: true,
-					     maxZoomLevel: 6,
-					     springStiffness: 20,
-					     tileSources: [data],
-					     showNavigator: true,
-					     autoHideControls: false,
-					     showRotationControl: true,
-					     showSequenceControl: false
+					var viewer = L.map('jp2_viewer', {
+						fullscreenControl: true,
+						center: [0, 0],
+						crs: L.CRS.Simple,
+						zoom: 0
 					});
+
+					var iiifLayers = {'img': L.tileLayer.iiif(data['@id'] + '/info.json')};
+					iiifLayers['img'].addTo(viewer);
 				} else {
 					self.element.removeClass("not_loaded").height("30px")
 					.html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
