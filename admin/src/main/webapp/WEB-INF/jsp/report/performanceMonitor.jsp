@@ -32,9 +32,33 @@
 </div>
 <div class="row dim">
     <div class="col-md-12">
+        <h4 class="text-center">Files Processed By Ingest (<span id="files-by-ingest-text">Total Files Ingested</span>)</h4>
+        <div class="text-center">
+            <div class="btn-group files-uuid" role="group">
+                <button type="button" class="btn btn-default" id="throughput_files">Total Files Ingested</button>
+                <button type="button" class="btn btn-default" id="avg_filesize">Avg. Filesize Ingested</button>
+            </div>
+        </div>
+        <svg id="files-by-ingest"></svg>
+    </div>
+    <div class="col-md-12">
+        <h4 class="text-center">Files Processed By Day (<span id="files-by-day-text">Total Files Ingested</span>)</h4>
+        <div class="text-center">
+            <div class="btn-group files" role="group">
+                <button type="button" class="btn btn-default" id="all_throughput_files">Total Files Ingested</button>
+                <button type="button" class="btn btn-default" id="all_avg_filesize">Avg. Filesize Ingested</button>
+            </div>
+        </div>
+        <svg id="files-by-day"></svg>
+        <svg id="files-legend"></svg>
+        <svg id="files-strip"></svg>
+    </div>
+</div>
+<div class="row dim">
+    <div class="col-md-12">
         <h4 class="text-center">Deposit Duration By Deposit (<span id="duration-date-text">Total Time</span>)</h4>
         <div class="text-center">
-            <div class="btn-group" role="group">
+            <div class="btn-group time-uuid" role="group">
                 <button type="button" class="btn btn-default" id="total_time">Total Time</button>
                 <button type="button" class="btn btn-default" id="queued_duration">Queued Time</button>
                 <button type="button" class="btn btn-default" id="ingest_duration">Ingest Time</button>
@@ -45,15 +69,13 @@
     <div class="col-md-12">
         <h4 class="text-center">Deposit Duration By Total (<span id="duration-total-date-text">Total Time</span>)</h4>
         <div class="text-center">
-            <div class="btn-group" role="group">
+            <div class="btn-group time" role="group">
                 <button type="button" class="btn btn-default" id="all_total_time">Total Time</button>
                 <button type="button" class="btn btn-default" id="all_queued_duration">Queued Time</button>
                 <button type="button" class="btn btn-default" id="all_ingest_duration">Ingest Time</button>
             </div>
         </div>
         <svg id="duration-total-date"></svg>
-     <!--   <svg id="duration-total-legend"></svg>
-        <svg id="duration-total-strip"></svg> -->
     </div>
 </div>
 <div class="row dim">

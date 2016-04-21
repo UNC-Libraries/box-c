@@ -9,7 +9,7 @@ function CdrGraphs(operation_totals, deposit_totals, scatter_tip) {
     this.margins = {top: 50, right: 150, bottom: 75, left: 150 };
     this.stringDate = d3.time.format("%b %e, %Y");
     this.height = 500 - this.margins.top - this.margins.bottom;
-    this.data_store = [];
+    this.data_store = {};
     this.operations = operation_totals;
     this.deposits = deposit_totals;
     this.scatter_tip = scatter_tip;
@@ -99,19 +99,18 @@ CdrGraphs.prototype.showAxises = function(selector, xAxis, yAxis, width, text) {
  * @returns {*}
  */
 CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
-    var self = this;
+    var _that = this;
     var circles = svg.selectAll("circle")
         .data(data);
-
     circles.enter().append("circle");
 
     circles.translate([this.margins.left, this.margins.top])
         .on("mouseover", function(d) {
-            var text = (/(duration|time)/.test(field)) ? self.tipTextDeposits(d) : self.tipTextOperations(d);
-            self.tipShow(self.scatter_tip, text);
+            var text = (/(time|throughput|duration)/.test(field)) ? _that.tipTextDeposits(d) : _that.tipTextOperations(d);
+            _that.tipShow(_that.scatter_tip, text);
             d3.select(this).attr("r", 9).style("stroke-width", 3);
         }).on("mouseout", function(d) {
-            self.tipHide(self.scatter_tip);
+            _that.tipHide(_that.scatter_tip);
             d3.select(this).attr("r", 4.5).style("stroke-width", 1);
         });
 
@@ -149,8 +148,9 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
 
     text += "<p class='text-center'>Deposit Metrics</p>" +
         "<ul class='list-unstyled smaller'>" +
-            "<li>" + "Files: " + this.numFormat(d.throughput_files) + "</li>" +
-            "<li>" + "Total MB: " + this.numFormat(d.throughput_bytes) + "</li>" +
+            "<li>" + "Files Ingested: " + this.numFormat(d.throughput_files) + "</li>" +
+            "<li>" + "Total MB Ingested: " + this.numFormat(d.throughput_bytes) + "</li>" +
+            "<li>" + "Avg Filesize (MB): " + this.numFormat(d.avg_filesize) + "</li>" +
         "</ul>" +
 
         "<p class='text-center'>Operations Metrics</p>" +
@@ -177,8 +177,9 @@ CdrGraphs.prototype.tipTextDeposits = function(d) {
         "<ul class='list-unstyled smaller'>";
 
     if (d.throughput_files !== undefined) {
-        text += "<li>" + "Files: " + this.numFormat(d.throughput_files) + "</li>" +
-            "<li>" + "Total MB: " + this.numFormat(d.throughput_bytes) + "</li>";
+        text += "<li>" + "Files Ingested: " + this.numFormat(d.throughput_files) + "</li>" +
+            "<li>" + "Total MB Ingested: " + this.numFormat(d.throughput_bytes) + "</li>" +
+            "<li>" + "Avg Filesize (MB): " + this.numFormat(d.avg_filesize) + "</li>";
     }
 
     text += "<li>" + "Total Time: " + this.numFormat(d.total_time) + "</li>" +
@@ -233,7 +234,7 @@ CdrGraphs.prototype.barWidth = function(width, data) {
 CdrGraphs.prototype.colorList = function(type) {
     switch(type) {
         case "throughput_bytes":
-        	return ['#ffeda0','#fed976','#feb24c','#fd8d3c','#fc4e2a','#e31a1c','#bd0026','#800026'];
+            return ['#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506'];
             break;
         case "total_time":
             return ['#e7e1ef','#d4b9da','#c994c7','#df65b0','#e7298a','#ce1256','#980043','#67001f'];
@@ -309,31 +310,36 @@ CdrGraphs.prototype.hideShow = function() {
 };
 
 /**
- * Update duration charts
- * @param data
+ * Update charts
  * @param xScale
  * @param yScale
  * @param axis
  */
-CdrGraphs.prototype.durationChartUpdate = function(data, xScale, yScale, axis) {
-    var self = this;
+CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
+    var _that = this;
     var values;
 
-    this.data_store.push(data);
-
-    d3.selectAll(".btn-group").on("click", function(d) {
+    d3.selectAll("." + selector).on("click", function(d) {
         var selected_id = d3.event.target.id;
         var text = d3.select("#" + selected_id).text();
         var type, selected_chart;
 
-        if (/^all/.test(selected_id)) {
+        if (/^(all_throughput|all_avg)/.test(selected_id)) {
+            type = selected_id.substr(4);
+            selected_chart = "#files-by-day";
+            values = _that.data_store["files-by-day"];
+        } else if (/file/.test(selected_id)) {
+            type = selected_id;
+            selected_chart = "#files-by-ingest";
+            values = _that.data_store["files-by-ingest"];
+        } else if (/^all/.test(selected_id)) {
             type = selected_id.substr(4);
             selected_chart = "#duration-total-date";
-            values = self.data_store[1];
+            values = _that.data_store["duration-total-date"];
         } else {
             type = selected_id;
             selected_chart = "#duration-date";
-            values = self.data_store[0];
+            values = _that.data_store["duration-date"];
         }
 
         d3.select(selected_chart + "-text").text(text);
@@ -344,8 +350,18 @@ CdrGraphs.prototype.durationChartUpdate = function(data, xScale, yScale, axis) {
             .call(axis);
 
         var chart = d3.select(selected_chart);
-        self.drawCircles(chart, values, xScale, yScale, type);
+        _that.drawCircles(chart, values, xScale, yScale, type);
     });
+};
+
+/**
+ * Comput average file size from data object
+ * @param d
+ * @returns {number}
+ */
+CdrGraphs.prototype.fileAvg = function(d) {
+    var avg_size = d.throughput_bytes / d.throughput_files;
+    return Number.isNaN(avg_size) ? 0 : avg_size;
 };
 
 /**
@@ -396,6 +412,8 @@ CdrGraphs.prototype.keyFunction = function() {
         var accepted_value;
         if (key !== "date") {
             accepted_value = parseInt(value1) + parseInt(value2);
+        } else if (key == "avg_filesize") {
+            return; // Don't want to merge these. It will give weird results
         } else {
             accepted_value = (typeof value1 === "object") ? value1 : new Date(value1);
         }
