@@ -29,7 +29,11 @@
 	fill: none;
     padding: 5px;
     shape-rendering: crispEdges;
-    stroke: black;
+    stroke: gray;
+}
+
+text {
+	fill: gray;
 }
 
 text.label {
@@ -71,6 +75,12 @@ circle {
     fill: none;
     pointer-events: all;
 }
+
+#files-by-day circle,
+#files-by-ingest circle {
+    stroke: #175455;
+}
+
 
 #duration-date circle,
 #duration-total-date circle {

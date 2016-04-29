@@ -35,7 +35,8 @@ CdrGraphs.prototype.draw = function() {
         d.avg_filesize = _that.fileAvg(d);
     });
 
-    var deposits_by_uuid = this.dateSort(this.deposits);
+    var deposits_filtered = this.dataFilter(this.deposits, "throughput_bytes");
+    var deposits_by_uuid = this.dateSort(deposits_filtered);
 
     var height_range = [0, this.height];
 
