@@ -21,10 +21,12 @@
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Throughput by Deposit</h4>
+        <div id="throughput-uuid-stats"></div>
         <svg id="throughput-deposit"></svg>
     </div>
     <div class="col-md-12">
         <h4 class="text-center">Throughput by Date</h4>
+        <div id="throughput-stats"></div>
         <svg id="throughput-date"></svg>
         <svg id="throughput-legend"></svg>
         <svg id="throughput-date-strip"></svg>
@@ -33,20 +35,22 @@
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Files Processed By Ingest (<span id="files-by-ingest-text">Total Files Ingested</span>)</h4>
+        <div id="files-by-ingest-stats"></div>
         <div class="text-center">
             <div class="btn-group files-uuid" role="group">
                 <button type="button" class="btn btn-default" id="throughput_files">Total Files Ingested</button>
-                <button type="button" class="btn btn-default" id="avg_filesize">Avg. Filesize Ingested</button>
+                <button type="button" class="btn btn-default" id="avg_filesize">Avg. Filesize Ingested (MB)</button>
             </div>
         </div>
         <svg id="files-by-ingest"></svg>
     </div>
     <div class="col-md-12">
         <h4 class="text-center">Files Processed By Day (<span id="files-by-day-text">Total Files Ingested</span>)</h4>
+        <div id="files-by-day-stats"></div>
         <div class="text-center">
             <div class="btn-group files" role="group">
                 <button type="button" class="btn btn-default" id="all_throughput_files">Total Files Ingested</button>
-                <button type="button" class="btn btn-default" id="all_avg_filesize">Avg. Filesize Ingested</button>
+                <button type="button" class="btn btn-default" id="all_avg_filesize">Avg. Filesize Ingested (MB)</button>
             </div>
         </div>
         <svg id="files-by-day"></svg>
@@ -57,6 +61,7 @@
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Deposit Duration By Deposit (<span id="duration-date-text">Total Time</span>)</h4>
+        <div id="duration-date-stats"></div>
         <div class="text-center">
             <div class="btn-group time-uuid" role="group">
                 <button type="button" class="btn btn-default" id="total_time">Total Time</button>
@@ -68,6 +73,7 @@
     </div>
     <div class="col-md-12">
         <h4 class="text-center">Deposit Duration By Total (<span id="duration-total-date-text">Total Time</span>)</h4>
+        <div id="duration-total-date-stats"></div>
         <div class="text-center">
             <div class="btn-group time" role="group">
                 <button type="button" class="btn btn-default" id="all_total_time">Total Time</button>
@@ -81,6 +87,7 @@
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Move Operations</h4>
+        <div id="moves-date-stats"></div>
         <svg id="moves-date"></svg>
         <svg id="moves-legend"></svg>
         <svg id="moves-date-strip"></svg>
@@ -89,6 +96,7 @@
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Finished Enhancements</h4>
+        <div id="enh-date-stats"></div>
         <svg id="enh-date"></svg>
         <svg id="enh-legend"></svg>
         <svg id="enh-date-strip"></svg>
@@ -97,6 +105,7 @@
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Failed Enhancements</h4>
+        <div id="failed-enh-stats"></div>
         <svg id="failed-enh-date"></svg>
         <svg id="failed-enh-legend"></svg>
         <svg id="failed-enh-date-strip"></svg>
@@ -106,9 +115,8 @@
 <script src="/static/js/admin/performance_visualizations/assets/d3-queue/d3-queue.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-tip/d3-tip.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-legend/d3-legend.min.js"></script>
-<!--<script src="/static/js/admin/performance_visualizations/assets/d3-jetpack/d3-jetpack.min.js"></script>
-<script src="/static/js/admin/performance_visualizations/assets/ramda/ramda.unc-custom.js"></script>
+<script src="/static/js/admin/performance_visualizations/assets/d3-jetpack/d3-jetpack.min.js"></script>
+<script src="/static/js/admin/performance_visualizations/assets/ramda/unc-custom-build.js"></script>
 <<script src="/static/js/admin/performance_visualizations/helpers.js"></script>
-<script src="/static/js/admin/performance_visualizations/draw.js"></script>-->
-<script src="/static/js/admin/performance_visualizations/cdr-visualizations.min.js"></script>
+<script src="/static/js/admin/performance_visualizations/draw.js"></script>
 <script src="/static/js/admin/performance_visualizations/load.js"></script>

@@ -78,27 +78,30 @@ CdrGraphs.prototype.draw = function() {
      *
      **/
     var throughput = "throughput_bytes";
+    
+ // By uuid
+    var yScaleDeposits = this.yScales(deposits_by_uuid, throughput, height_range);
+
+    var xAxisDeposits = this.getAxis(xScaleUUID, "bottom");
+    var yAxisDeposits  = this.getAxis(yScaleDeposits, "left");
+    
+    this.statsDisplay("#throughput-uuid-stats", deposits_by_uuid, throughput);
+    var throughput_uuid = this.showAxises("#throughput-deposit", xAxisDeposits , yAxisDeposits , width, "Throughput (MB)");
+    this.drawCircles(throughput_uuid, deposits_by_uuid, xScaleUUID, yScaleDeposits, throughput);
+    
+    // By date
     var yScale = this.yScales(throughput_all, throughput, height_range);
 
     var xAxis = this.getAxis(xScale, "bottom");
     var yAxis = this.getAxis(yScale, "left");
-
+    
+    this.statsDisplay("#throughput-stats", throughput_all, throughput);
     var throughput_date = this.showAxises("#throughput-date", xAxis, yAxis, width, "Throughput (MB)");
     this.drawCircles(throughput_date, throughput_all, xScale, yScale, throughput);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
     this.drawLegend("#throughput-legend", throughput_all, throughput);
     drawStrip("#throughput-date-strip", throughput_all, throughput);
-    
-    // By uuid
-    var yScaleDeposits = this.yScales(deposits_by_uuid, throughput, height_range);
-
-    var xAxisDeposits = this.getAxis(xScaleUUID, "bottom");
-    var yAxisDeposits  = this.getAxis(yScaleDeposits, "left");
-
-    var throughput_uuid = this.showAxises("#throughput-deposit", xAxisDeposits , yAxisDeposits , width, "Throughput (MB)");
-    this.drawCircles(throughput_uuid, deposits_by_uuid, xScaleUUID, yScaleDeposits, throughput);
-
 
     /**
      * File Counts by Deposit & Date
@@ -115,6 +118,7 @@ CdrGraphs.prototype.draw = function() {
     var xAxisFilesUUID = this.getAxis(xScaleUUID, "bottom");
     var yAxisFilesUUID = this.getAxis(yScaleFilesUUID, "left");
 
+    this.statsDisplay("#files-by-ingest-stats", deposits_by_uuid, throughput_files);
     var throughput_files_uuid = this.showAxises("#files-by-ingest", xAxisFilesUUID, yAxisFilesUUID, width, "Throughput (Files)");
     this.drawCircles(throughput_files_uuid, deposits_by_uuid, xScaleUUID, yScaleFilesUUID, throughput_files);
     this.data_store["files-by-ingest"] = deposits_by_uuid;
@@ -123,7 +127,8 @@ CdrGraphs.prototype.draw = function() {
     // Total files
     var yScaleFiles = this.yScales(throughput_all, throughput_files, height_range);
     var yAxisFiles = this.getAxis(yScaleFiles, "left");
-
+    
+    this.statsDisplay("#files-by-day-stats", throughput_all, throughput_files);
     var file_totals = this.showAxises("#files-by-day", xAxis, yAxisFiles, width, "Throughput (Files)");
     this.drawCircles(file_totals, throughput_all, xScale, yScaleFiles, throughput_files);
     focusHover(file_totals, throughput_all, "#files-by-day");
@@ -147,6 +152,7 @@ CdrGraphs.prototype.draw = function() {
     var yAxisDuration = this.getAxis(yScaleTotal, "left");
     var duration_date = this.showAxises("#duration-date", xAxisDuration, yAxisDuration, width, "Time (Seconds)");
 
+    this.statsDisplay("#duration-date-stats", deposits_by_uuid, total_time);
     this.drawCircles(duration_date, deposits_by_uuid, xScaleUUID, yScaleTotal, total_time);
     this.data_store["duration-date"] = deposits_by_uuid;
     this.chartUpdate("time-uuid", xScaleUUID, yScaleTotal, yAxisDuration);
@@ -155,7 +161,8 @@ CdrGraphs.prototype.draw = function() {
     var xAxisTotal = this.getAxis(xScaleUUID, "bottom");
     var yAxisTotal = this.getAxis(yScaleTotalDay, "left");
     var all_duration_date = this.showAxises("#duration-total-date", xAxisTotal, yAxisTotal, width, "Time (Seconds)");
-
+    
+    this.statsDisplay("#duration-total-date-stats", uuid_all, total_time);
     this.drawCircles(all_duration_date, uuid_all, xScaleUUID, yScaleTotalDay, total_time);
     this.data_store["duration-total-date"] = uuid_all;
     this.chartUpdate("time", xScaleUUID, yScaleTotalDay, yAxisTotal);
@@ -171,6 +178,8 @@ CdrGraphs.prototype.draw = function() {
     var yScaleMoves = this.yScales(data, moves, height_range);
     var yAxisMoves = this.getAxis(yScaleMoves, "left");
     var moves_date = this.showAxises("#moves-date", xAxis, yAxisMoves, width, "Move Operations");
+    
+    this.statsDisplay("#moves-date-stats", data, moves);
     this.drawCircles(moves_date,  data, xScale, yScaleMoves, moves);
     focusHover(moves_date, data, "#moves-date");
 
@@ -185,6 +194,8 @@ CdrGraphs.prototype.draw = function() {
     var yScaleFinishedEnh = this.yScales(data, finished_enh, height_range);
     var yAxis_finished_enh = this.getAxis(yScaleFinishedEnh, "left");
     var finished_enh_date = this.showAxises("#enh-date", xAxis, yAxis_finished_enh, width, "Finished Enhancements");
+    
+    this.statsDisplay("#enh-date-stats", data, finished_enh);
     this.drawCircles(finished_enh_date,  data, xScale, yScaleFinishedEnh, finished_enh);
     focusHover(finished_enh_date, data, "#enh-date");
 
@@ -199,6 +210,8 @@ CdrGraphs.prototype.draw = function() {
     var yScaleFailedEnh = this.yScales(data, failed_enh, height_range);
     var yAxis_failed_enh = this.getAxis(yScaleFailedEnh, "left");
     var failed_enh_date = this.showAxises("#failed-enh-date", xAxis, yAxis_failed_enh, width, "Failed Enhancements");
+    
+    this.statsDisplay("#failed-enh-stats", data, failed_enh);
     this.drawCircles(failed_enh_date,  data, xScale, yScaleFailedEnh, failed_enh);
     focusHover(failed_enh_date, data, "#failed-enh-date");
 

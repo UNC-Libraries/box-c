@@ -354,6 +354,8 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
 
         var chart = d3.select(selected_chart);
         _that.drawCircles(chart, values, xScale, yScale, type);
+
+        _that.statsDisplay(selected_chart + "-stats", values, type);
     });
 };
 
@@ -388,6 +390,49 @@ CdrGraphs.prototype.dataFilter = function(data, value) {
     return data.filter(function(d) {
         return d[value] !== 0;
     });
+};
+
+/**
+ * Get various stats parameters
+ * @param data
+ * @param type
+ * @returns {{mean: *, median: *, min: *, max: *}}
+ * @private
+ */
+CdrGraphs.prototype._stats = function(data, type) {
+    return {
+        mean: d3.mean(data, function(d) {
+            return d[type];
+        }),
+        median: d3.median(data, function(d) {
+            return d[type];
+        }),
+        min: d3.min(data, function(d) {
+            return d[type];
+        }),
+        max: d3.max(data, function(d) {
+            return d[type];
+        })
+    };
+};
+
+/**
+ * Display stats
+ * @param selector
+ * @param data
+ * @param type
+ */
+CdrGraphs.prototype.statsDisplay = function(selector, data, type) {
+    var results = this._stats(data, type);
+
+    var stats = '<ul class="list-unstyled list-inline text-center">' +
+        '<li>Mean: ' + this.numFormat(results.mean.toFixed(2)) + '</li>' +
+        '<li>Median: ' + this.numFormat(results.median.toFixed(2)) + '</li>' +
+        '<li>Min: ' + this.numFormat(results.min.toFixed(4)) + '</li>' +
+        '<li>Max: ' + this.numFormat(results.max.toFixed(2)) + '</li>' +
+    '</ul>';
+
+    d3.select(selector).html(stats);
 };
 
 /**
