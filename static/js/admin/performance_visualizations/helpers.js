@@ -424,12 +424,21 @@ CdrGraphs.prototype._stats = function(data, type) {
  */
 CdrGraphs.prototype.statsDisplay = function(selector, data, type) {
     var results = this._stats(data, type);
+    var identifier;
+
+    if (/(throughput_bytes|filesize)/.test(type)) {
+        identifier = " MB";
+    } else if (/(time|duration)/.test(type)) {
+        identifier = " Sec";
+    } else {
+        identifier = "";
+    }
 
     var stats = '<ul class="list-unstyled list-inline text-center">' +
-        '<li>Mean: ' + this.numFormat(results.mean.toFixed(2)) + '</li>' +
-        '<li>Median: ' + this.numFormat(results.median.toFixed(2)) + '</li>' +
-        '<li>Min: ' + this.numFormat(results.min.toFixed(4)) + '</li>' +
-        '<li>Max: ' + this.numFormat(results.max.toFixed(2)) + '</li>' +
+        '<li>Mean: ' + this.numFormat(results.mean.toFixed(2)) + identifier + '</li>' +
+        '<li>Median: ' + this.numFormat(results.median.toFixed(2)) + identifier + '</li>' +
+        '<li>Min: ' + this.numFormat(results.min.toFixed(4)) + identifier + '</li>' +
+        '<li>Max: ' + this.numFormat(results.max.toFixed(2)) + identifier + '</li>' +
     '</ul>';
 
     d3.select(selector).html(stats);

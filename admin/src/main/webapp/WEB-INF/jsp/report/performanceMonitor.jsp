@@ -60,7 +60,7 @@
 </div>
 <div class="row dim">
     <div class="col-md-12">
-        <h4 class="text-center">Deposit Duration By Deposit (<span id="duration-date-text">Total Time</span>)</h4>
+        <h4 class="text-center">Deposit Duration By Deposit (<span id="duration-date-text">Total Time</span> Seconds)</h4>
         <div id="duration-date-stats"></div>
         <div class="text-center">
             <div class="btn-group time-uuid" role="group">
@@ -72,7 +72,7 @@
         <svg id="duration-date"></svg>
     </div>
     <div class="col-md-12">
-        <h4 class="text-center">Deposit Duration By Total (<span id="duration-total-date-text">Total Time</span>)</h4>
+        <h4 class="text-center">Deposit Duration By Total (<span id="duration-total-date-text">Total Time</span> Seconds)</h4>
         <div id="duration-total-date-stats"></div>
         <div class="text-center">
             <div class="btn-group time" role="group">
