@@ -45,6 +45,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
 			}).done(function(data) {
 				if (data !== null) {
 					var viewer = L.map('jp2_viewer', {
+						attributionControl: false,
 						fullscreenControl: true,
 						center: [0, 0],
 						crs: L.CRS.Simple,
