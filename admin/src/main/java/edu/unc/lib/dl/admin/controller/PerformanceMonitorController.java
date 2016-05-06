@@ -15,14 +15,270 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 @Controller
 public class PerformanceMonitorController {
+	private static final Logger log = LoggerFactory
+			.getLogger(PerformanceMonitorController.class);
+	
+	private static final String NEW_LINE_SEPARATOR = "\n";
+	private static final Object [] FILE_HEADERS = {
+		"date",
+		"uuid",
+		"throughput_files",
+		"throughput_bytes",
+		"queued_duration",
+		"ingest_duration",
+		"finished",
+		"moves",
+		"finished_enhancements",
+		"failed_enhancements",
+		"failed_deposit",
+		"failed_deposit_job"
+	};
+	private CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator(NEW_LINE_SEPARATOR);
+	
+	@Autowired
+	private JedisPool jedisPool;
+	
+	public JedisPool getJedisPool() {
+		return jedisPool;
+	}
+
+	public void setJedisPool(JedisPool jedisPool) {
+		this.jedisPool = jedisPool;
+	}
+
+	public Set<String> getDepositMetrics() {
+		try (Jedis jedis = getJedisPool().getResource()){
+			return jedis.keys("deposit-metrics:*");
+		}
+	}
+	
+	/**
+	 * Gets totals for metrics that are only aggregated daily such as moves & enhancements
+	 * It also grabs throughput totals for older data, before these fields were set to measure performance at the individual deposit level
+	 * @return
+	 */
+	public String getOperationsData() {
+		FileWriter fileWriter = null;
+		CSVPrinter csvFilePrinter = null;
+		Set<String> operations = null;
+		Set<String> deposits = getDepositMetrics();
+		String filePath = "/opt/data/ingest-times-daily.csv";
+		Map<String, String> depositJob = null;
+		Map<String, String> operationJob = null;
+		String[] depositKeys = null;
+		
+		try (Jedis jedis = getJedisPool().getResource()){
+			operations = jedis.keys("operation-metrics:*");
+		}
+		
+		try {
+			fileWriter = new FileWriter(filePath);
+			csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+			csvFilePrinter.printRecord(FILE_HEADERS);
+			
+			Boolean matchingDate = false;
+			for (String deposit : deposits) {
+				try (Jedis jedis = getJedisPool().getResource()) {
+					depositJob = jedis.hgetAll(deposit);
+					depositKeys = deposit.split(":");
+				}
+				
+				// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
+				if (depositKeys.length > 2) {
+					continue;
+				}
+				
+				String jobDate = depositKeys[1];
+				String throughputFiles = depositJob.get("throughput-files");
+				String throughputBytes = depositJob.get("throughput-bytes");
+				String finished = depositJob.get("finished");
+				String failed = depositJob.get("failed");
+				String failedDepositJob = depositJob.get("failed-job:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+				
+				for (String operation : operations) {
+					String operationDate = operation.split(":")[1];
+					
+					if (operationDate.equals(jobDate)) {
+						try (Jedis jedis = getJedisPool().getResource()) {
+							operationJob = jedis.hgetAll(operation);
+						}
+
+						String moves = (operationJob.get("moves"));
+						String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+						String failedEnhancements = operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+
+						List<String> data = new ArrayList<>();
+						data.add(jobDate);
+						data.add("N/A");
+						data.add(throughputFiles);
+						data.add(throughputBytes);
+						data.add("0");
+						data.add("0");
+						data.add(finished);
+						data.add(moves);
+						data.add(finishedEnhancements);
+						data.add(failedEnhancements);
+						data.add(failed);
+						data.add(failedDepositJob);
+
+						csvFilePrinter.printRecord(data);
+
+						matchingDate = true;
+						break;
+					} else {
+						matchingDate = false;
+					}
+				}
+
+				if (!matchingDate) {
+					List<String> data = new ArrayList<>();
+					data.add(jobDate);
+					data.add("N/A");
+					data.add(throughputFiles);
+					data.add(throughputBytes);
+					data.add("0");
+					data.add("0");
+					data.add(finished);
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add(failed);
+					data.add(failedDepositJob);
+
+					csvFilePrinter.printRecord(data);
+				}
+			}
+		} catch (Exception e) {
+			log.error("Failed to write data to {}", filePath, e);
+		} finally {
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+				csvFilePrinter.close();
+			} catch (IOException e) {
+				log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
+			}
+		}
+		
+		try {
+			return FileUtils.readFileToString(new File(filePath));
+		} catch (IOException e) {
+			log.error("Error unable to read file to string from filepath {}", filePath, e);
+			return null;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getDepositsData() {
+		FileWriter fileWriter = null;
+		CSVPrinter csvFilePrinter = null;
+		Jedis jedis = getJedisPool().getResource();
+		Set<String> deposits = getDepositMetrics();
+		String filePath = "/opt/data/ingest-times-daily-deposit.csv";
+		
+		try {
+			fileWriter = new FileWriter(filePath);
+			csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+			csvFilePrinter.printRecord(FILE_HEADERS);
+			
+			for (String deposit : deposits) {
+				Map<String, String> depositJob = jedis.hgetAll(deposit);
+				String[] depositKeys = deposit.split(":");
+				
+				// Ignore data for daily deposits. Only need the ones  by uuid in this instance
+				if (depositKeys.length < 3) {
+					continue;
+				}
+
+				String jobDate = depositKeys[1];
+				String jobUUID = depositKeys[2];
+				String throughputFiles = depositJob.get("throughput-files");
+				String throughputBytes = depositJob.get("throughput-bytes");
+				String queuedDuration = depositJob.get("queued-duration");
+				String ingestDuration = depositJob.get("duration");
+
+				List<String> data = new ArrayList<String>();
+				data.add(jobDate);
+				data.add(jobUUID);
+				data.add(throughputFiles);
+				data.add(throughputBytes);
+				data.add(queuedDuration);
+				data.add(ingestDuration);
+				data.add("0");
+				data.add("0");
+				data.add("0");
+				data.add("0");
+				data.add("0");
+				data.add("0");
+
+				csvFilePrinter.printRecord(data);
+			}
+		} catch (Exception e) {
+			log.error("Failed to write data to {}", filePath, e);
+		} finally {
+			try {
+				fileWriter.flush();
+				fileWriter.close();
+				csvFilePrinter.close();
+			} catch (IOException e) {
+				log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
+			}
+		}
+		
+		try {
+			return FileUtils.readFileToString(new File(filePath));
+		} catch (IOException e) {
+			log.error("Error unable to read file to string from filepath {}", filePath, e);
+			return null;
+		}
+	}
+	
 	@RequestMapping(value = "performanceMonitor", method = RequestMethod.GET)
 	public String performanceMonitor() {
 		return "report/performanceMonitor";
+	}
+	
+	@RequestMapping(value = "sendOperationsData", method = RequestMethod.GET)
+	public @ResponseBody
+	String sendOperationsData(HttpServletResponse response) {
+		response.setContentType("text/plain; charset=utf-8");
+		return getOperationsData();
+	}
+	
+	@RequestMapping(value = "sendDepositsData", method = RequestMethod.GET)
+	public @ResponseBody
+	String sendDepositData(HttpServletResponse response) {
+		response.setContentType("text/plain; charset=utf-8");
+		return getDepositsData();
 	}
 }

@@ -1,6 +1,6 @@
 d3_queue.queue()
-	.defer(d3.csv,'/static/js/admin/performance_visualizations/data/ingest-times-daily.csv')
-	.defer(d3.csv,'/static/js/admin/performance_visualizations/data/ingest-times-daily-deposit.csv')
+	.defer(d3.csv,"/admin/sendOperationsData")
+	.defer(d3.csv,"/admin/sendDepositsData")
 	.await(function(error, operation_totals, deposit_totals) {
 	var scatter_tip = d3.select("body").append("div")
         .attr("class", "tooltip")
