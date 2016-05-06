@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +78,24 @@ public class PerformanceMonitorController {
 		}
 	}
 	
+	private Boolean buildFile(String path) {
+		File csvFile = new File(path);
+		
+		if(csvFile.exists() && !csvFile.isDirectory()) { 
+			Long currentTime = System.currentTimeMillis();
+			Long fileCreationTime = csvFile.lastModified();
+			
+			if ((currentTime - fileCreationTime ) > 3600000) {
+				return true;
+			}
+			return false;
+		} else if (!csvFile.exists()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	/**
 	 * Gets totals for metrics that are only aggregated daily such as moves & enhancements
 	 * It also grabs throughput totals for older data, before these fields were set to measure performance at the individual deposit level
@@ -98,42 +115,67 @@ public class PerformanceMonitorController {
 			operations = jedis.keys("operation-metrics:*");
 		}
 		
-		try {
-			fileWriter = new FileWriter(filePath);
-			csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
-			csvFilePrinter.printRecord(FILE_HEADERS);
-			
-			Boolean matchingDate = false;
-			for (String deposit : deposits) {
-				try (Jedis jedis = getJedisPool().getResource()) {
-					depositJob = jedis.hgetAll(deposit);
-					depositKeys = deposit.split(":");
-				}
+		if (buildFile(filePath)) {
+			try {
+				fileWriter = new FileWriter(filePath);
+				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+				csvFilePrinter.printRecord(FILE_HEADERS);
 				
-				// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
-				if (depositKeys.length > 2) {
-					continue;
-				}
-				
-				String jobDate = depositKeys[1];
-				String throughputFiles = depositJob.get("throughput-files");
-				String throughputBytes = depositJob.get("throughput-bytes");
-				String finished = depositJob.get("finished");
-				String failed = depositJob.get("failed");
-				String failedDepositJob = depositJob.get("failed-job:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-				
-				for (String operation : operations) {
-					String operationDate = operation.split(":")[1];
+				Boolean matchingDate = false;
+				for (String deposit : deposits) {
+					try (Jedis jedis = getJedisPool().getResource()) {
+						depositJob = jedis.hgetAll(deposit);
+						depositKeys = deposit.split(":");
+					}
 					
-					if (operationDate.equals(jobDate)) {
-						try (Jedis jedis = getJedisPool().getResource()) {
-							operationJob = jedis.hgetAll(operation);
+					// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
+					if (depositKeys.length > 2) {
+						continue;
+					}
+					
+					String jobDate = depositKeys[1];
+					String throughputFiles = depositJob.get("throughput-files");
+					String throughputBytes = depositJob.get("throughput-bytes");
+					String finished = depositJob.get("finished");
+					String failed = depositJob.get("failed");
+					String failedDepositJob = depositJob.get("failed-job:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+					
+					for (String operation : operations) {
+						String operationDate = operation.split(":")[1];
+						
+						if (operationDate.equals(jobDate)) {
+							try (Jedis jedis = getJedisPool().getResource()) {
+								operationJob = jedis.hgetAll(operation);
+							}
+	
+							String moves = (operationJob.get("moves"));
+							String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+							String failedEnhancements = operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+	
+							List<String> data = new ArrayList<>();
+							data.add(jobDate);
+							data.add("N/A");
+							data.add(throughputFiles);
+							data.add(throughputBytes);
+							data.add("0");
+							data.add("0");
+							data.add(finished);
+							data.add(moves);
+							data.add(finishedEnhancements);
+							data.add(failedEnhancements);
+							data.add(failed);
+							data.add(failedDepositJob);
+	
+							csvFilePrinter.printRecord(data);
+	
+							matchingDate = true;
+							break;
+						} else {
+							matchingDate = false;
 						}
-
-						String moves = (operationJob.get("moves"));
-						String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-						String failedEnhancements = operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-
+					}
+	
+					if (!matchingDate) {
 						List<String> data = new ArrayList<>();
 						data.add(jobDate);
 						data.add("N/A");
@@ -142,48 +184,25 @@ public class PerformanceMonitorController {
 						data.add("0");
 						data.add("0");
 						data.add(finished);
-						data.add(moves);
-						data.add(finishedEnhancements);
-						data.add(failedEnhancements);
+						data.add("0");
+						data.add("0");
+						data.add("0");
 						data.add(failed);
 						data.add(failedDepositJob);
-
+	
 						csvFilePrinter.printRecord(data);
-
-						matchingDate = true;
-						break;
-					} else {
-						matchingDate = false;
 					}
 				}
-
-				if (!matchingDate) {
-					List<String> data = new ArrayList<>();
-					data.add(jobDate);
-					data.add("N/A");
-					data.add(throughputFiles);
-					data.add(throughputBytes);
-					data.add("0");
-					data.add("0");
-					data.add(finished);
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add(failed);
-					data.add(failedDepositJob);
-
-					csvFilePrinter.printRecord(data);
+			} catch (Exception e) {
+				log.error("Failed to write data to {}", filePath, e);
+			} finally {
+				try {
+					fileWriter.flush();
+					fileWriter.close();
+					csvFilePrinter.close();
+				} catch (IOException e) {
+					log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
 				}
-			}
-		} catch (Exception e) {
-			log.error("Failed to write data to {}", filePath, e);
-		} finally {
-			try {
-				fileWriter.flush();
-				fileWriter.close();
-				csvFilePrinter.close();
-			} catch (IOException e) {
-				log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
 			}
 		}
 		
@@ -196,7 +215,7 @@ public class PerformanceMonitorController {
 	}
 	
 	/**
-	 * 
+	 * Gets totals for metrics that happen on every deposit gby uuid
 	 * @return
 	 */
 	public String getDepositsData() {
@@ -206,52 +225,54 @@ public class PerformanceMonitorController {
 		Set<String> deposits = getDepositMetrics();
 		String filePath = "/opt/data/ingest-times-daily-deposit.csv";
 		
-		try {
-			fileWriter = new FileWriter(filePath);
-			csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
-			csvFilePrinter.printRecord(FILE_HEADERS);
-			
-			for (String deposit : deposits) {
-				Map<String, String> depositJob = jedis.hgetAll(deposit);
-				String[] depositKeys = deposit.split(":");
-				
-				// Ignore data for daily deposits. Only need the ones  by uuid in this instance
-				if (depositKeys.length < 3) {
-					continue;
-				}
-
-				String jobDate = depositKeys[1];
-				String jobUUID = depositKeys[2];
-				String throughputFiles = depositJob.get("throughput-files");
-				String throughputBytes = depositJob.get("throughput-bytes");
-				String queuedDuration = depositJob.get("queued-duration");
-				String ingestDuration = depositJob.get("duration");
-
-				List<String> data = new ArrayList<String>();
-				data.add(jobDate);
-				data.add(jobUUID);
-				data.add(throughputFiles);
-				data.add(throughputBytes);
-				data.add(queuedDuration);
-				data.add(ingestDuration);
-				data.add("0");
-				data.add("0");
-				data.add("0");
-				data.add("0");
-				data.add("0");
-				data.add("0");
-
-				csvFilePrinter.printRecord(data);
-			}
-		} catch (Exception e) {
-			log.error("Failed to write data to {}", filePath, e);
-		} finally {
+		if (buildFile(filePath)) {
 			try {
-				fileWriter.flush();
-				fileWriter.close();
-				csvFilePrinter.close();
-			} catch (IOException e) {
-				log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
+				fileWriter = new FileWriter(filePath);
+				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
+				csvFilePrinter.printRecord(FILE_HEADERS);
+				
+				for (String deposit : deposits) {
+					Map<String, String> depositJob = jedis.hgetAll(deposit);
+					String[] depositKeys = deposit.split(":");
+					
+					// Ignore data for daily deposits. Only need the ones  by uuid in this instance
+					if (depositKeys.length < 3) {
+						continue;
+					}
+	
+					String jobDate = depositKeys[1];
+					String jobUUID = depositKeys[2];
+					String throughputFiles = depositJob.get("throughput-files");
+					String throughputBytes = depositJob.get("throughput-bytes");
+					String queuedDuration = depositJob.get("queued-duration");
+					String ingestDuration = depositJob.get("duration");
+	
+					List<String> data = new ArrayList<String>();
+					data.add(jobDate);
+					data.add(jobUUID);
+					data.add(throughputFiles);
+					data.add(throughputBytes);
+					data.add(queuedDuration);
+					data.add(ingestDuration);
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+	
+					csvFilePrinter.printRecord(data);
+				}
+			} catch (Exception e) {
+				log.error("Failed to write data to {}", filePath, e);
+			} finally {
+				try {
+					fileWriter.flush();
+					fileWriter.close();
+					csvFilePrinter.close();
+				} catch (IOException e) {
+					log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
+				}
 			}
 		}
 		
