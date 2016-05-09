@@ -42,7 +42,8 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 		
 		$.ajax({
 			url : "listSources/" + this.pid,
-			type : "GET"
+			type : "GET",
+			cache: false
 		}).done(function(data){
 			loadingOverlay.remove();
 			
@@ -258,6 +259,7 @@ define('IngestFromSourceForm', [ 'jquery', 'AbstractFileUploadForm', 'ModalLoadi
 				url : "ingestFromSource/" + self.pid,
 				type : "POST",
 				contentType: "application/json",
+				cache: false,
 				data : JSON.stringify(fileInfo)
 			}).success(function() {
 				self.options.alertHandler.alertHandler("message", "The selected packages have been submitted for deposit");
