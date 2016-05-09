@@ -35,6 +35,8 @@ public abstract class AbstractDatastreamEnhancementService extends AbstractIrods
 	protected String derivativeDatastream;
 	protected Pattern mimetypePattern;
 	
+	private final static String OCTET_STREAM_MIMETYPE = "application/octet-stream"; 
+	
 	@Override
 	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
 		String action = message.getQualifiedAction();
@@ -75,9 +77,9 @@ public abstract class AbstractDatastreamEnhancementService extends AbstractIrods
 		if (dataDoc == null) {
 			return false;
 		}
-		
+
 		// Filter out objects with non-applicable mimetypes
-		if (mimetypePattern != null && !mimetypePattern.matcher(dataDoc.getMIMEType()).matches()){
+		if (!isMimetypeApplicable(pid, dataDoc)) {
 			return false;
 		}
 		
@@ -112,8 +114,22 @@ public abstract class AbstractDatastreamEnhancementService extends AbstractIrods
 		}
 		
 		// Filter out objects with non-applicable mimetypes
-		if (mimetypePattern != null && !mimetypePattern.matcher(dataDoc.getMIMEType()).matches()){
-			return false;
+		return isMimetypeApplicable(pid, dataDoc);
+	}
+	
+	protected boolean isMimetypeApplicable(PID pid, edu.unc.lib.dl.fedora.types.Datastream dataDoc) {
+		// Filter out objects with non-applicable mimetypes
+		if (mimetypePattern != null) {
+			String mimetype = dataDoc.getMIMEType();
+			// If the mimetype from fedora isn't informative, retrieve source mimetype instead
+			if (OCTET_STREAM_MIMETYPE.equals(mimetype)) {
+				mimetype = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(pid, 
+						ContentModelHelper.CDRProperty.hasSourceMimeType.toString());
+			}
+			
+			if (!mimetypePattern.matcher(mimetype).matches()){
+				return false;
+			}
 		}
 		
 		return true;
