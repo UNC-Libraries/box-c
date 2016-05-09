@@ -68,32 +68,38 @@ h5.smaller {
     margin-top: -5px;
 }
 
-circle {
+circle,
+#throughput-date-line {
     stroke: orange;
     fill: none;
     pointer-events: all;
 }
 
 #files-by-day circle,
-#files-by-ingest circle {
+#files-by-ingest circle,
+#files-by-day-line {
     stroke: #175455;
 }
 
 
 #duration-date circle,
-#duration-total-date circle {
+#duration-total-date circle,
+#duration-total-date-line {
     stroke: #e7298a;
 }
 
-#moves-date circle {
+#moves-date circle,
+#moves-date-line {
     stroke: #0570b0;
 }
 
-#enh-date circle {
+#enh-date circle,
+#enh-date-line {
     stroke: #238b45;
 }
 
-#failed-enh-date circle {
+#failed-enh-date circle,
+#failed-enh-date-line {
     stroke: #de2d26;
 }
 

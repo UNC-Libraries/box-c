@@ -97,7 +97,11 @@ CdrGraphs.prototype.draw = function() {
     
     this.statsDisplay("#throughput-stats", throughput_all, throughput);
     var throughput_date = this.showAxises("#throughput-date", xAxis, yAxis, width, "Throughput (MB)");
-    this.drawCircles(throughput_date, throughput_all, xScale, yScale, throughput);
+    
+    var throughputLineScaleTotals = this.lineGenerator(xScale, yScale, throughput);
+    this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
+    
+   // this.drawCircles(throughput_date, throughput_all, xScale, yScale, throughput);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
     this.drawLegend("#throughput-legend", throughput_all, throughput);
@@ -120,7 +124,7 @@ CdrGraphs.prototype.draw = function() {
 
     this.statsDisplay("#files-by-ingest-stats", deposits_by_uuid, throughput_files);
     var throughput_files_uuid = this.showAxises("#files-by-ingest", xAxisFilesUUID, yAxisFilesUUID, width, "Throughput (Files)");
-    this.drawCircles(throughput_files_uuid, deposits_by_uuid, xScaleUUID, yScaleFilesUUID, throughput_files);
+    this.drawCircles(throughput_files_uuid, deposits_by_uuid, xScaleUUID, yScaleFilesUUID, throughput_files);	
     this.data_store["files-by-ingest"] = deposits_by_uuid;
     this.chartUpdate("files-uuid", xScaleUUID, yScaleFilesUUID, yAxisFilesUUID);
 
@@ -129,8 +133,12 @@ CdrGraphs.prototype.draw = function() {
     var yAxisFiles = this.getAxis(yScaleFiles, "left");
     
     this.statsDisplay("#files-by-day-stats", throughput_all, throughput_files);
+    
     var file_totals = this.showAxises("#files-by-day", xAxis, yAxisFiles, width, "Throughput (Files)");
-    this.drawCircles(file_totals, throughput_all, xScale, yScaleFiles, throughput_files);
+    var fileLineScaleTotals = this.lineGenerator(xScale, yScaleFiles, "throughput_files");
+    this.appendPath(file_totals, "files-by-day-line", fileLineScaleTotals, throughput_all);
+    
+  //  this.drawCircles(file_totals, throughput_all, xScale, yScaleFiles, throughput_files);
     focusHover(file_totals, throughput_all, "#files-by-day");
     this.data_store["files-by-day"] = throughput_all;
     this.chartUpdate("files", xScale, yScaleFiles, yAxisFiles);
@@ -163,7 +171,9 @@ CdrGraphs.prototype.draw = function() {
     var all_duration_date = this.showAxises("#duration-total-date", xAxisTotal, yAxisTotal, width, "Time (Seconds)");
     
     this.statsDisplay("#duration-total-date-stats", uuid_all, total_time);
-    this.drawCircles(all_duration_date, uuid_all, xScaleUUID, yScaleTotalDay, total_time);
+    var durationLineScaleTotals = this.lineGenerator(xScaleUUID, yScaleTotalDay, total_time);
+    this.appendPath(all_duration_date, "duration-total-date-line", durationLineScaleTotals, uuid_all);
+ //   this.drawCircles(all_duration_date, uuid_all, xScaleUUID, yScaleTotalDay, total_time);
     this.data_store["duration-total-date"] = uuid_all;
     this.chartUpdate("time", xScaleUUID, yScaleTotalDay, yAxisTotal);
 
@@ -180,7 +190,9 @@ CdrGraphs.prototype.draw = function() {
     var moves_date = this.showAxises("#moves-date", xAxis, yAxisMoves, width, "Move Operations");
     
     this.statsDisplay("#moves-date-stats", data, moves);
-    this.drawCircles(moves_date,  data, xScale, yScaleMoves, moves);
+    var movesLineScaleTotals = this.lineGenerator(xScale, yScaleMoves, moves);
+    this.appendPath(moves_date, "moves-date-line", movesLineScaleTotals, data);
+ //   this.drawCircles(moves_date,  data, xScale, yScaleMoves, moves);
     focusHover(moves_date, data, "#moves-date");
 
     this.drawLegend("#moves-legend", data, moves);
@@ -196,7 +208,9 @@ CdrGraphs.prototype.draw = function() {
     var finished_enh_date = this.showAxises("#enh-date", xAxis, yAxis_finished_enh, width, "Finished Enhancements");
     
     this.statsDisplay("#enh-date-stats", data, finished_enh);
-    this.drawCircles(finished_enh_date,  data, xScale, yScaleFinishedEnh, finished_enh);
+    var endLineScaleTotals = this.lineGenerator(xScale, yScaleFinishedEnh, finished_enh);
+    this.appendPath(finished_enh_date, "enh-date-line", endLineScaleTotals, data);
+ //   this.drawCircles(finished_enh_date,  data, xScale, yScaleFinishedEnh, finished_enh);
     focusHover(finished_enh_date, data, "#enh-date");
 
     this.drawLegend("#enh-legend", data, finished_enh);
@@ -212,7 +226,9 @@ CdrGraphs.prototype.draw = function() {
     var failed_enh_date = this.showAxises("#failed-enh-date", xAxis, yAxis_failed_enh, width, "Failed Enhancements");
     
     this.statsDisplay("#failed-enh-stats", data, failed_enh);
-    this.drawCircles(failed_enh_date,  data, xScale, yScaleFailedEnh, failed_enh);
+    var failedEnhScaleTotals = this.lineGenerator(xScale, yScaleFailedEnh, failed_enh);
+    this.appendPath(failed_enh_date, "failed-enh-date-line", failedEnhScaleTotals, data);
+  //  this.drawCircles(failed_enh_date,  data, xScale, yScaleFailedEnh, failed_enh);
     focusHover(failed_enh_date, data, "#failed-enh-date");
 
     this.drawLegend("#failed-enh-legend", data, failed_enh);

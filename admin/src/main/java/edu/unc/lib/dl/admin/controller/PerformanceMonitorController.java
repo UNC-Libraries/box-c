@@ -147,11 +147,11 @@ public class PerformanceMonitorController {
 							try (Jedis jedis = getJedisPool().getResource()) {
 								operationJob = jedis.hgetAll(operation);
 							}
-	
+
 							String moves = (operationJob.get("moves"));
 							String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
 							String failedEnhancements = operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-	
+
 							List<String> data = new ArrayList<>();
 							data.add(jobDate);
 							data.add("N/A");
@@ -215,7 +215,7 @@ public class PerformanceMonitorController {
 	}
 	
 	/**
-	 * Gets totals for metrics that happen on every deposit gby uuid
+	 * Gets totals for metrics that happen on every deposit grouped by uuid
 	 * @return
 	 */
 	public String getDepositsData() {

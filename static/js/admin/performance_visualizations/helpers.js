@@ -129,6 +129,53 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
 };
 
 /**
+ * Create line path function
+ * @param xScale
+ * @param yScale
+ * @param y
+ * @returns {*}
+ */
+CdrGraphs.prototype.lineGenerator = function(xScale, yScale, y) {
+    return d3.svg.line()
+        .interpolate("monotone")
+        .x(function(d) { return xScale(d.date); })
+        .y(function(d) { return yScale(d[y]); });
+}
+
+/**
+ * Add svg path to a chart
+ * @param svg
+ * @param id
+ * @param scale
+ * @param scale
+ * @returns {*}
+ */
+CdrGraphs.prototype.appendPath = function(svg, id, scale, data) {
+    svg.append("path#" + id)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 2.5)
+        .attr("d", scale(data))
+        .translate([this.margins.left, this.margins.top]);
+
+    return svg;
+}
+
+/**
+ * Draw SVG path
+ * @param selector
+ * @param scale
+ * @param data
+ * @returns {*}
+ */
+CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
+    return d3.select(selector).transition()
+        .duration(1000)
+        .ease("sin-in-out")
+        .attr("d", scale(data));
+}
+
+/**
  * Format large numbers with commas & 2 decimal places or just commas if not a decimal number
  * @param number
  * @returns {*}
@@ -353,7 +400,13 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
             .call(axis);
 
         var chart = d3.select(selected_chart);
-        _that.drawCircles(chart, values, xScale, yScale, type);
+        
+        if (d3.select(selected_chart + "-line")) {
+        	var lineScale = _that.lineGenerator(xScale, yScale, type);
+            _that.redrawPath(selected_chart + "-line", lineScale, values);
+        } else {
+        	_that.drawCircles(chart, values, xScale, yScale, type);
+        }
 
         _that.statsDisplay(selected_chart + "-stats", values, type);
     });
