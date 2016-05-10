@@ -105,48 +105,42 @@ public class PerformanceMonitorController {
 		FileWriter fileWriter = null;
 		CSVPrinter csvFilePrinter = null;
 		Set<String> operations = null;
-		Set<String> deposits = getDepositMetrics();
 		String filePath = "/opt/data/ingest-times-daily.csv";
 		Map<String, String> depositJob = null;
 		Map<String, String> operationJob = null;
 		String[] depositKeys = null;
-		
-		try (Jedis jedis = getJedisPool().getResource()){
-			operations = jedis.keys("operation-metrics:*");
-		}
-		
+
 		if (buildFile(filePath)) {
-			try {
+			Set<String> deposits = getDepositMetrics();
+			try (Jedis jedis = getJedisPool().getResource()) {
+				operations = jedis.keys("operation-metrics:*");
+
 				fileWriter = new FileWriter(filePath);
 				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
 				csvFilePrinter.printRecord(FILE_HEADERS);
-				
+
 				Boolean matchingDate = false;
 				for (String deposit : deposits) {
-					try (Jedis jedis = getJedisPool().getResource()) {
-						depositJob = jedis.hgetAll(deposit);
-						depositKeys = deposit.split(":");
-					}
+					depositJob = jedis.hgetAll(deposit);
+					depositKeys = deposit.split(":");
 					
 					// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
 					if (depositKeys.length > 2) {
 						continue;
 					}
-					
+
 					String jobDate = depositKeys[1];
 					String throughputFiles = depositJob.get("throughput-files");
 					String throughputBytes = depositJob.get("throughput-bytes");
 					String finished = depositJob.get("finished");
 					String failed = depositJob.get("failed");
 					String failedDepositJob = depositJob.get("failed-job:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-					
+
 					for (String operation : operations) {
 						String operationDate = operation.split(":")[1];
 						
 						if (operationDate.equals(jobDate)) {
-							try (Jedis jedis = getJedisPool().getResource()) {
-								operationJob = jedis.hgetAll(operation);
-							}
+							operationJob = jedis.hgetAll(operation);
 
 							String moves = (operationJob.get("moves"));
 							String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
@@ -221,12 +215,12 @@ public class PerformanceMonitorController {
 	public String getDepositsData() {
 		FileWriter fileWriter = null;
 		CSVPrinter csvFilePrinter = null;
-		Jedis jedis = getJedisPool().getResource();
-		Set<String> deposits = getDepositMetrics();
 		String filePath = "/opt/data/ingest-times-daily-deposit.csv";
 		
 		if (buildFile(filePath)) {
-			try {
+			try (Jedis jedis = getJedisPool().getResource()) { 
+				Set<String> deposits = getDepositMetrics();
+
 				fileWriter = new FileWriter(filePath);
 				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
 				csvFilePrinter.printRecord(FILE_HEADERS);
@@ -239,14 +233,14 @@ public class PerformanceMonitorController {
 					if (depositKeys.length < 3) {
 						continue;
 					}
-	
+
 					String jobDate = depositKeys[1];
 					String jobUUID = depositKeys[2];
 					String throughputFiles = depositJob.get("throughput-files");
 					String throughputBytes = depositJob.get("throughput-bytes");
 					String queuedDuration = depositJob.get("queued-duration");
 					String ingestDuration = depositJob.get("duration");
-	
+
 					List<String> data = new ArrayList<String>();
 					data.add(jobDate);
 					data.add(jobUUID);
@@ -260,7 +254,7 @@ public class PerformanceMonitorController {
 					data.add("0");
 					data.add("0");
 					data.add("0");
-	
+
 					csvFilePrinter.printRecord(data);
 				}
 			} catch (Exception e) {
@@ -283,7 +277,7 @@ public class PerformanceMonitorController {
 			return null;
 		}
 	}
-	
+
 	@RequestMapping(value = "performanceMonitor", method = RequestMethod.GET)
 	public String performanceMonitor() {
 		return "report/performanceMonitor";
