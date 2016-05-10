@@ -247,7 +247,6 @@ CdrGraphs.prototype.draw = function() {
      */
     function drawStrip(selector, data, field) {
         var strip_color = _that.stripColors(data, field);
-        var bar_width = _that.barWidth(width, _that.operations);
         var tip = d3.tip().attr("class", "d3-tip").html(function(d) {
             return _that.tipTextOperations(d);
         });
@@ -263,7 +262,7 @@ CdrGraphs.prototype.draw = function() {
         add.enter().append("rect");
 
         add.attr("x", function(d) { return xScale(d.date); })
-            .attr("width", bar_width)
+            .attr("width", 7)
             .attr("y", 0)
             .attr("height", 80)
             .translate([_that.margins.left, 0])
