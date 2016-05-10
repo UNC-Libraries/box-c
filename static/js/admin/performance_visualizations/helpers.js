@@ -263,16 +263,6 @@ CdrGraphs.prototype.tipHide = function(tip) {
 };
 
 /**
- * Bar width for barcode charts
- * @param width
- * @param data
- * @returns {number}
- */
-CdrGraphs.prototype.barWidth = function(width, data) {
-    return (width / data.length) - .3;
-};
-
-/**
  * Color list for different metric types
  * Color lists are from http://colorbrewer2.org/
  * @param type
@@ -413,7 +403,7 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
 };
 
 /**
- * Comput average file size from data object
+ * Compute average file size from data object
  * @param d
  * @returns {number}
  */
