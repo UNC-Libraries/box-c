@@ -262,7 +262,7 @@ CdrGraphs.prototype.draw = function() {
         add.enter().append("rect");
 
         add.attr("x", function(d) { return xScale(d.date); })
-            .attr("width", 7)
+            .attr("width", 4)
             .attr("y", 0)
             .attr("height", 80)
             .translate([_that.margins.left, 0])
