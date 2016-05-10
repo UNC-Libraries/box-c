@@ -326,7 +326,7 @@ CdrGraphs.prototype.draw = function() {
                 d0 = data[i - 1],
                 d1 = data[i];
 
-            if(d1 === undefined) {
+            if (d1 === undefined) {
                 d1 = Infinity;
             }
             var d = x0 - d0.key > d1.key - x0 ? d1 : d0;
