@@ -391,9 +391,10 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
 
         var chart = d3.select(selected_chart);
         
-        if (d3.select(selected_chart + "-line")) {
+        // Check to see if a line chart or scatter plot
+        if (d3.select(selected_chart + "-line")[0][0] !== null) {
         	var lineScale = _that.lineGenerator(xScale, yScale, type);
-            _that.redrawPath(selected_chart + "-line", lineScale, values);
+        	_that.redrawPath(selected_chart + "-line", lineScale, values);
         } else {
         	_that.drawCircles(chart, values, xScale, yScale, type);
         }
