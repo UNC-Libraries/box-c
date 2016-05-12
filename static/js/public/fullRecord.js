@@ -13,7 +13,9 @@ require.config({
 		'JP2Viewer' : 'cdr-access',
 		'VideoPlayer' : 'cdr-access',
 		'AudioPlayer' : 'cdr-access',
-		'openLayers' : '/static/plugins/OpenLayers/OpenLayers',
+		'leaflet': '/static/plugins/leaflet/leaflet',
+		'leafletFullscreen': '/static/plugins/Leaflet-fullscreen/dist/Leaflet.fullscreen',
+		'leaflet-IIIF' : '/static/plugins/Leaflet-IIIF/leaflet-iiif',
 		'audiojs' : '/static/plugins/audiojs/audio'
 	},
 	shim: {

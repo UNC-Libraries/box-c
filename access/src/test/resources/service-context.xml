@@ -84,10 +84,10 @@
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="solrPath"
 			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
-		<property name="djatokaPath" value="${djatoka.base.url}" />
+		<property name="lorisPath" value="${loris.base.url}" />
 		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
-	<bean id="djatokaContentService" class="edu.unc.lib.dl.ui.service.DjatokaContentService">
+	<bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
 </beans>
