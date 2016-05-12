@@ -16,8 +16,12 @@
 
 --%>
 <link rel="stylesheet" type="text/css" href="/static/css/admin/performance_visualizations.css" />
-<p id="loader" class="text-center">Loading...</p>
-<h3 class="text-center dim">CDR Performance Metrics</h3>
+<div class="row">
+	<div class="col-md-12">
+		<p id="loader" class="text-center">Loading...</p>
+		<h3 class="text-center dim">CDR Performance Metrics</h3>
+	</div>
+</div>
 <div class="row dim">
     <div class="col-md-12">
         <h4 class="text-center">Throughput by Deposit</h4>
