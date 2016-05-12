@@ -41,7 +41,7 @@ CdrGraphs.prototype.yScales = function(data, field, range) {
 };
 
 /**
- * Create axises
+ * Create axis
  * @param scale
  * @param orientation
  * @returns {*}
@@ -53,7 +53,7 @@ CdrGraphs.prototype.getAxis = function(scale, orientation) {
 };
 
 /**
- * Draw axises
+ * Draw axis
  * @param selector
  * @param xAxis
  * @param yAxis
@@ -102,7 +102,9 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
     var _that = this;
     var circles = svg.selectAll("circle")
         .data(data);
-    circles.enter().append("circle");
+    
+    circles.enter()
+    	.append("circle");
 
     circles.translate([this.margins.left, this.margins.top])
         .on("mouseover", function(d) {
@@ -115,9 +117,6 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
         });
 
     circles.transition().duration(1000)
-        .delay(function(d, i) {
-            return i * 5;
-        })
         .ease("sin-in-out")
         .attr("cx", function(d) { return xScale(d.date); })
         .attr("cy", function(d) { return yScale(d[field]); })
@@ -317,14 +316,15 @@ CdrGraphs.prototype.stripColors = function(data, type) {
 CdrGraphs.prototype.drawLegend = function(selector, data, type) {
     var scale = this.stripColors(data, type);
     var class_name = "legend-" + type;
+    var width = window.innerWidth - this.margins.left - this.margins.right;
 
     var svg = d3.select(selector)
         .attr("height", 50)
-        .attr("width", 1500);
+        .attr("width", width);
 
     svg.append("g")
         .attr("class", class_name)
-        .attr("width", 1200)
+        .attr("width", width)
         .translate([this.margins.left, 0]);
 
     var legend = d3.legend.color()
