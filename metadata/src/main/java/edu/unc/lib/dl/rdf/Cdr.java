@@ -32,7 +32,7 @@ public class Cdr {
     public static final Property depositMethod = createProperty( "http://cdr.unc.edu/definitions/model#depositMethod" );
     
     /** Subclassification of the packaging type for this deposit, such as a METS profile. */
-    public static final Property depositPackageSubType = createProperty( "http://cdr.unc.edu/definitions/model#depositPackageSubType" );
+    public static final Property depositPackageProfile = createProperty( "http://cdr.unc.edu/definitions/model#depositPackageProfile" );
     
     /** URI representing the type of packaging used for the original deposit represented 
      *  by this record, such as CDR METS or BagIt.
@@ -87,5 +87,13 @@ public class Cdr {
      *  warnings in the admin interface if there are invalid vocabulary terms.
      */
     public static final Property warnInvalidTerms = createProperty( "http://cdr.unc.edu/definitions/model#warnInvalidTerms" );
+    
+    public static final Resource FileObject = createResource( "http://cdr.unc.edu/definitions/model#FileObject" );
+    public static final Resource AggregateWork = createResource( "http://cdr.unc.edu/definitions/model#AggregateWork" );
+    public static final Resource Folder = createResource( "http://cdr.unc.edu/definitions/model#Folder" );
+    public static final Resource Collection = createResource( "http://cdr.unc.edu/definitions/model#Collection" );
+    public static final Resource AdminUnit = createResource( "http://cdr.unc.edu/definitions/model#AdminUnit" );
+    public static final Resource DepositRecord = createResource( "http://cdr.unc.edu/definitions/model#DepositRecord" );
+    
     
 }

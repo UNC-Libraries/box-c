@@ -46,4 +46,7 @@ public class PcdmModels {
     /** Links from an Object to a Object or Collection that it is related to. */
     public static final Property relatedObjectOf = createProperty( "http://pcdm.org/models#relatedObjectOf" );
     
+    public static final Resource Object = createResource( "http://pcdm.org/models#Object" );
+    public static final Resource Collection = createResource( "http://pcdm.org/models#Object" );
+    
 }
