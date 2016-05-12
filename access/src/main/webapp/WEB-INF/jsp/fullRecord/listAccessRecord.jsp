@@ -46,7 +46,7 @@
 					<li>
 						<span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
 						<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
-							<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
+							<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
 						</c:forEach>
 					</li>
 				</c:if>
