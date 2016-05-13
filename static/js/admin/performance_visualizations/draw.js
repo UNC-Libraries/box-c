@@ -174,6 +174,7 @@ CdrGraphs.prototype.draw = function() {
     var durationLineScaleTotals = this.lineGenerator(xScaleUUID, yScaleTotalDay, total_time);
     this.appendPath(all_duration_date, "duration-total-date-line", durationLineScaleTotals, uuid_all);
  //   this.drawCircles(all_duration_date, uuid_all, xScaleUUID, yScaleTotalDay, total_time);
+    focusHover(all_duration_date, uuid_all, "#duration-total-date"); 
     this.data_store["duration-total-date"] = uuid_all;
     this.chartUpdate("time", xScaleUUID, yScaleTotalDay, yAxisTotal);
 
@@ -321,7 +322,18 @@ CdrGraphs.prototype.draw = function() {
             .translate([margins.left, margins.top]);
 
         function mousemove() {
-            var x0 = xScale.invert(d3.mouse(this)[0]),
+        	var whichScale, whichTip;
+        	
+        	 // Duration has only been tracked since UUID deposits started
+        	if (/duration/.test(selector)) {
+        		whichScale = xScaleUUID;
+        		whichTip = 'deposits';
+        	} else {
+        		whichScale = xScale;
+        		whichTip = 'operations';
+        	}
+        	
+            var x0 = whichScale.invert(d3.mouse(this)[0]),
                 i = bisectDate(data, x0, 1),
                 d0 = data[i - 1],
                 d1 = data[i];
@@ -331,16 +343,16 @@ CdrGraphs.prototype.draw = function() {
             }
             var d = x0 - d0.key > d1.key - x0 ? d1 : d0;
 
-            var transform_values = [(xScale(d.date) + margins.left), margins.top];
+            var transform_values = [(whichScale(d.date) + margins.left), margins.top];
             d3.select(selector + " line.y0").translate(transform_values);
 
             _that.scatter_tip.transition()
                 .duration(100)
                 .style("opacity", .9);
 
-            _that.scatter_tip.html(_that.tipTextOperations(d))
+            _that.scatter_tip.html(_that.tipType(whichTip, d))
                 .style("top", (d3.event.pageY-28)+"px")
-                .style("left", (d3.event.pageX-158)+"px");
+                .style("left", (d3.event.pageX-175)+"px");
         }
 
         return chart;

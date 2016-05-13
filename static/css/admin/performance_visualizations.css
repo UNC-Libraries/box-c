@@ -114,8 +114,8 @@ circle,
 }
 
 .focus line {
-    stroke: darkslategray;
-    stroke-width: 1;
+    stroke: slategray;
+    stroke-width: 2.5;
 }
 
 /* D3-tip CSS From http://rawgit.com/Caged/d3-tip/master/examples/example-styles.css */

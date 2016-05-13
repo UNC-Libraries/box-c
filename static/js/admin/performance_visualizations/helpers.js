@@ -108,7 +108,7 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
 
     circles.translate([this.margins.left, this.margins.top])
         .on("mouseover", function(d) {
-            var text = (/(time|throughput|duration)/.test(field)) ? _that.tipTextDeposits(d) : _that.tipTextOperations(d);
+            var text = (/(time|throughput|duration)/.test(field)) ? _that.tipType("deposits", d) : _that.tipType("operations", d);
             _that.tipShow(_that.scatter_tip, text);
             d3.select(this).attr("r", 9).style("stroke-width", 3);
         }).on("mouseout", function(d) {
@@ -185,7 +185,7 @@ CdrGraphs.prototype.numFormat = function(number) {
 };
 
 /**
- * Tooltip operations text
+ * Tool tip operations text
  * @param d
  * @returns {string}
  */
@@ -211,7 +211,7 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
 };
 
 /**
- * Tooltip deposits text
+ * Tool tip deposits text
  * @param d
  * @returns {string}
  */
@@ -237,7 +237,16 @@ CdrGraphs.prototype.tipTextDeposits = function(d) {
 };
 
 /**
- * Show tooltip
+ * Figure out which tool tip type to show
+ * @param whichTip
+ * @param data
+ */
+CdrGraphs.prototype.tipType = function (whichTip, data) {
+	return (whichTip === "deposits") ? this.tipTextDeposits(data) : this.tipTextOperations(data);
+}
+
+/**
+ * Show tool tip
  * @param tip
  * @param text
  */
