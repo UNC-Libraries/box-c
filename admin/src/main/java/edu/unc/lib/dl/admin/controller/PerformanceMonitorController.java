@@ -81,15 +81,7 @@ public class PerformanceMonitorController {
 	private Boolean buildFile(String path) {
 		File csvFile = new File(path);
 		
-		if(csvFile.exists() && !csvFile.isDirectory()) { 
-			Long currentTime = System.currentTimeMillis();
-			Long fileCreationTime = csvFile.lastModified();
-			
-			if ((currentTime - fileCreationTime ) > 3600000) {
-				return true;
-			}
-			return false;
-		} else if (!csvFile.exists()) {
+		if (!csvFile.exists()) {
 			return true;
 		} else {
 			return false;
