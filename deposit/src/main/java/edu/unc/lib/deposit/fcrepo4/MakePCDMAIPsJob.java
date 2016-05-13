@@ -47,7 +47,7 @@ public class MakePCDMAIPsJob extends AbstractDepositJob {
 
 	@Override
 	public void runJob() {
-		getSubdir(DepositConstants.OBJECTS_DIR).mkdir();
+		getSubdir(DepositConstants.AIPS_DIR).mkdir();
 		
 		Model m = getReadOnlyModel();
 		
@@ -167,7 +167,7 @@ public class MakePCDMAIPsJob extends AbstractDepositJob {
 	}
 	
 	private void serializeObjectModel(PID pid, Model objModel) {
-		File propertiesFile = new File(getSubdir(DepositConstants.OBJECTS_DIR), pid.getUUID() + ".ttl");
+		File propertiesFile = new File(getSubdir(DepositConstants.AIPS_DIR), pid.getUUID() + ".ttl");
 		
 		try (FileOutputStream fos = new FileOutputStream(propertiesFile)) {
 			RDFDataMgr.write(fos, objModel, RDFFormat.TURTLE_PRETTY);
