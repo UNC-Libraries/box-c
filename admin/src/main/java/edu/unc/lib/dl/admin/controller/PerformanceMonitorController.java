@@ -106,17 +106,18 @@ public class PerformanceMonitorController {
 	 * @return
 	 */
 	public String getOperationsData() {
-		FileWriter fileWriter = null;
-		CSVPrinter csvFilePrinter = null;
-		Set<String> operations = null;
 		String filePath = dataPath + "ingest-times-daily.csv";
-		Map<String, String> depositJob = null;
-		Map<String, String> operationJob = null;
-		String[] depositKeys = null;
 
 		if (buildFile(filePath)) {
 			Set<String> deposits = getDepositMetrics();
 			try (Jedis jedis = getJedisPool().getResource()) {
+				FileWriter fileWriter = null;
+				CSVPrinter csvFilePrinter = null;
+				Set<String> operations = null;
+				Map<String, String> depositJob = null;
+				Map<String, String> operationJob = null;
+				String[] depositKeys = null;
+				
 				operations = jedis.keys("operation-metrics:*");
 
 				fileWriter = new FileWriter(filePath);
@@ -188,21 +189,15 @@ public class PerformanceMonitorController {
 						data.add("0");
 						data.add(failed);
 						data.add(failedDepositJob);
-	
+						
 						csvFilePrinter.printRecord(data);
 					}
+
+					csvFilePrinter.close();
 				}
 			} catch (Exception e) {
 				log.error("Failed to write data to {}", filePath, e);
-			} finally {
-				try {
-					fileWriter.flush();
-					fileWriter.close();
-					csvFilePrinter.close();
-				} catch (IOException e) {
-					log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
-				}
-			}
+			} 
 		}
 		
 		try {
@@ -218,13 +213,14 @@ public class PerformanceMonitorController {
 	 * @return
 	 */
 	public String getDepositsData() {
-		FileWriter fileWriter = null;
-		CSVPrinter csvFilePrinter = null;
 		String filePath = dataPath + "ingest-times-daily-deposit.csv";
 		
 		if (buildFile(filePath)) {
 			try (Jedis jedis = getJedisPool().getResource()) { 
 				Set<String> deposits = getDepositMetrics();
+				
+				FileWriter fileWriter = null;
+				CSVPrinter csvFilePrinter = null;
 
 				fileWriter = new FileWriter(filePath);
 				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
@@ -263,16 +259,10 @@ public class PerformanceMonitorController {
 
 					csvFilePrinter.printRecord(data);
 				}
+				
+				csvFilePrinter.close();
 			} catch (Exception e) {
 				log.error("Failed to write data to {}", filePath, e);
-			} finally {
-				try {
-					fileWriter.flush();
-					fileWriter.close();
-					csvFilePrinter.close();
-				} catch (IOException e) {
-					log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
-				}
 			}
 		}
 		
