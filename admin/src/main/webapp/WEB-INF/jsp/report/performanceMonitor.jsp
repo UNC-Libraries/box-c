@@ -121,6 +121,6 @@
 <script src="/static/js/admin/performance_visualizations/assets/d3-legend/d3-legend.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-jetpack/d3-jetpack.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/ramda/ramda-merge-with-key-only.js"></script>
-<<script src="/static/js/admin/performance_visualizations/helpers.js"></script>
+<script src="/static/js/admin/performance_visualizations/helpers.js"></script>
 <script src="/static/js/admin/performance_visualizations/draw.js"></script>
 <script src="/static/js/admin/performance_visualizations/load.js"></script>
