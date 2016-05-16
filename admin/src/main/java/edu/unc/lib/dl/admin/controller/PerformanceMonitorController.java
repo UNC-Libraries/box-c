@@ -41,6 +41,7 @@ import redis.clients.jedis.JedisPool;
 
 @Controller
 public class PerformanceMonitorController {
+	private final long SECONDS_IN_ONE_HOUR = 60 * 60 * 1000;
 	private static final Logger log = LoggerFactory
 			.getLogger(PerformanceMonitorController.class);
 	
@@ -62,6 +63,9 @@ public class PerformanceMonitorController {
 	private CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator(NEW_LINE_SEPARATOR);
 	
 	@Autowired
+	private String dataPath;
+	
+	@Autowired
 	private JedisPool jedisPool;
 	
 	public JedisPool getJedisPool() {
@@ -81,11 +85,11 @@ public class PerformanceMonitorController {
 	private Boolean buildFile(String path) {
 		File csvFile = new File(path);
 		
-		if(csvFile.exists() && !csvFile.isDirectory()) { 
+		if (csvFile.exists() && !csvFile.isDirectory()) { 
 			Long currentTime = System.currentTimeMillis();
 			Long fileCreationTime = csvFile.lastModified();
 			
-			if ((currentTime - fileCreationTime ) > 3600000) {
+			if ((currentTime - fileCreationTime ) > SECONDS_IN_ONE_HOUR) {
 				return true;
 			}
 			return false;
@@ -105,7 +109,7 @@ public class PerformanceMonitorController {
 		FileWriter fileWriter = null;
 		CSVPrinter csvFilePrinter = null;
 		Set<String> operations = null;
-		String filePath = "/opt/data/ingest-times-daily.csv";
+		String filePath = dataPath + "ingest-times-daily.csv";
 		Map<String, String> depositJob = null;
 		Map<String, String> operationJob = null;
 		String[] depositKeys = null;
@@ -121,13 +125,14 @@ public class PerformanceMonitorController {
 
 				Boolean matchingDate = false;
 				for (String deposit : deposits) {
-					depositJob = jedis.hgetAll(deposit);
 					depositKeys = deposit.split(":");
 					
 					// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
 					if (depositKeys.length > 2) {
 						continue;
 					}
+					
+					depositJob = jedis.hgetAll(deposit);
 
 					String jobDate = depositKeys[1];
 					String throughputFiles = depositJob.get("throughput-files");
@@ -215,7 +220,7 @@ public class PerformanceMonitorController {
 	public String getDepositsData() {
 		FileWriter fileWriter = null;
 		CSVPrinter csvFilePrinter = null;
-		String filePath = "/opt/data/ingest-times-daily-deposit.csv";
+		String filePath = dataPath + "ingest-times-daily-deposit.csv";
 		
 		if (buildFile(filePath)) {
 			try (Jedis jedis = getJedisPool().getResource()) { 
@@ -226,13 +231,14 @@ public class PerformanceMonitorController {
 				csvFilePrinter.printRecord(FILE_HEADERS);
 				
 				for (String deposit : deposits) {
-					Map<String, String> depositJob = jedis.hgetAll(deposit);
 					String[] depositKeys = deposit.split(":");
 					
 					// Ignore data for daily deposits. Only need the ones  by uuid in this instance
 					if (depositKeys.length < 3) {
 						continue;
 					}
+					
+					Map<String, String> depositJob = jedis.hgetAll(deposit);
 
 					String jobDate = depositKeys[1];
 					String jobUUID = depositKeys[2];
