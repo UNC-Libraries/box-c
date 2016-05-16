@@ -55,8 +55,16 @@ public class PerformanceMonitorController {
 		"ingest_duration",
 		"finished",
 		"moves",
-		"finished_enhancements",
-		"failed_enhancements",
+		"image_enh",
+		"failed_image_enh",
+		"metadata_enh",
+		"failed_metadata_enh",
+		"solr_enh",
+		"failed_soler_enh",
+		"full_text_enh",
+		"failed_fulltext_enh",
+		"thumbnail_enh",
+		"failed_thumb_nail_enh",
 		"failed_deposit",
 		"failed_deposit_job"
 	};
@@ -149,8 +157,16 @@ public class PerformanceMonitorController {
 							operationJob = jedis.hgetAll(operation);
 
 							String moves = (operationJob.get("moves"));
-							String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-							String failedEnhancements = operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+							String imageEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService")); 
+							String failedImageEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService"));
+							String metadataEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"));
+							String failedMetadataEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"));
+							String solrEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"));
+							String failedSolrEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"));
+							String fulltextEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService"));
+							String failedFulltextEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService")); 
+							String thumbnailEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"));
+							String failedThumbnailEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"));
 
 							List<String> data = new ArrayList<>();
 							data.add(jobDate);
@@ -161,8 +177,16 @@ public class PerformanceMonitorController {
 							data.add("0");
 							data.add(finished);
 							data.add(moves);
-							data.add(finishedEnhancements);
-							data.add(failedEnhancements);
+							data.add(imageEnhancements);
+							data.add(failedImageEnhancements);
+							data.add(metadataEnhancements);
+							data.add(failedMetadataEnhancements);
+							data.add(solrEnhancements);
+							data.add(failedSolrEnhancements);
+							data.add(fulltextEnhancements);
+							data.add(failedFulltextEnhancements);
+							data.add(thumbnailEnhancements);
+							data.add(failedThumbnailEnhancements);
 							data.add(failed);
 							data.add(failedDepositJob);
 	
@@ -184,6 +208,14 @@ public class PerformanceMonitorController {
 						data.add("0");
 						data.add("0");
 						data.add(finished);
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
 						data.add("0");
 						data.add("0");
 						data.add("0");
@@ -250,6 +282,15 @@ public class PerformanceMonitorController {
 					data.add(throughputBytes);
 					data.add(queuedDuration);
 					data.add(ingestDuration);
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
 					data.add("0");
 					data.add("0");
 					data.add("0");
