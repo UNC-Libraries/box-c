@@ -41,6 +41,7 @@ import redis.clients.jedis.JedisPool;
 
 @Controller
 public class PerformanceMonitorController {
+	private final long MILLISECONDS_IN_ONE_HOUR = 60 * 60 * 1000;
 	private static final Logger log = LoggerFactory
 			.getLogger(PerformanceMonitorController.class);
 	
@@ -54,12 +55,23 @@ public class PerformanceMonitorController {
 		"ingest_duration",
 		"finished",
 		"moves",
-		"finished_enhancements",
-		"failed_enhancements",
+		"image_enh",
+		"failed_image_enh",
+		"metadata_enh",
+		"failed_metadata_enh",
+		"solr_enh",
+		"failed_solr_enh",
+		"fulltext_enh",
+		"failed_fulltext_enh",
+		"thumbnail_enh",
+		"failed_thumbnail_enh",
 		"failed_deposit",
 		"failed_deposit_job"
 	};
 	private CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator(NEW_LINE_SEPARATOR);
+	
+	@Autowired
+	private String dataPath;
 	
 	@Autowired
 	private JedisPool jedisPool;
@@ -81,7 +93,15 @@ public class PerformanceMonitorController {
 	private Boolean buildFile(String path) {
 		File csvFile = new File(path);
 		
-		if (!csvFile.exists()) {
+		if (csvFile.exists() && !csvFile.isDirectory()) { 
+			Long currentTime = System.currentTimeMillis();
+			Long fileCreationTime = csvFile.lastModified();
+			
+			if ((currentTime - fileCreationTime ) > MILLISECONDS_IN_ONE_HOUR) {
+				return true;
+			}
+			return false;
+		} else if (!csvFile.exists()) {
 			return true;
 		} else {
 			return false;
@@ -94,17 +114,18 @@ public class PerformanceMonitorController {
 	 * @return
 	 */
 	public String getOperationsData() {
-		FileWriter fileWriter = null;
-		CSVPrinter csvFilePrinter = null;
-		Set<String> operations = null;
-		String filePath = "/opt/data/ingest-times-daily.csv";
-		Map<String, String> depositJob = null;
-		Map<String, String> operationJob = null;
-		String[] depositKeys = null;
+		String filePath = dataPath + "ingest-times-daily.csv";
 
 		if (buildFile(filePath)) {
 			Set<String> deposits = getDepositMetrics();
 			try (Jedis jedis = getJedisPool().getResource()) {
+				FileWriter fileWriter = null;
+				CSVPrinter csvFilePrinter = null;
+				Set<String> operations = null;
+				Map<String, String> depositJob = null;
+				Map<String, String> operationJob = null;
+				String[] depositKeys = null;
+				
 				operations = jedis.keys("operation-metrics:*");
 
 				fileWriter = new FileWriter(filePath);
@@ -113,13 +134,14 @@ public class PerformanceMonitorController {
 
 				Boolean matchingDate = false;
 				for (String deposit : deposits) {
-					depositJob = jedis.hgetAll(deposit);
 					depositKeys = deposit.split(":");
 					
 					// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
 					if (depositKeys.length > 2) {
 						continue;
 					}
+					
+					depositJob = jedis.hgetAll(deposit);
 
 					String jobDate = depositKeys[1];
 					String throughputFiles = depositJob.get("throughput-files");
@@ -135,8 +157,16 @@ public class PerformanceMonitorController {
 							operationJob = jedis.hgetAll(operation);
 
 							String moves = (operationJob.get("moves"));
-							String finishedEnhancements = operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-							String failedEnhancements = operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+							String imageEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService")); 
+							String failedImageEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService"));
+							String metadataEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"));
+							String failedMetadataEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"));
+							String solrEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"));
+							String failedSolrEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"));
+							String fulltextEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService"));
+							String failedFulltextEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService")); 
+							String thumbnailEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"));
+							String failedThumbnailEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"));
 
 							List<String> data = new ArrayList<>();
 							data.add(jobDate);
@@ -147,8 +177,16 @@ public class PerformanceMonitorController {
 							data.add("0");
 							data.add(finished);
 							data.add(moves);
-							data.add(finishedEnhancements);
-							data.add(failedEnhancements);
+							data.add(imageEnhancements);
+							data.add(failedImageEnhancements);
+							data.add(metadataEnhancements);
+							data.add(failedMetadataEnhancements);
+							data.add(solrEnhancements);
+							data.add(failedSolrEnhancements);
+							data.add(fulltextEnhancements);
+							data.add(failedFulltextEnhancements);
+							data.add(thumbnailEnhancements);
+							data.add(failedThumbnailEnhancements);
 							data.add(failed);
 							data.add(failedDepositJob);
 	
@@ -173,23 +211,25 @@ public class PerformanceMonitorController {
 						data.add("0");
 						data.add("0");
 						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
+						data.add("0");
 						data.add(failed);
 						data.add(failedDepositJob);
-	
+						
 						csvFilePrinter.printRecord(data);
 					}
+
+					csvFilePrinter.close();
 				}
 			} catch (Exception e) {
 				log.error("Failed to write data to {}", filePath, e);
-			} finally {
-				try {
-					fileWriter.flush();
-					fileWriter.close();
-					csvFilePrinter.close();
-				} catch (IOException e) {
-					log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
-				}
-			}
+			} 
 		}
 		
 		try {
@@ -205,26 +245,28 @@ public class PerformanceMonitorController {
 	 * @return
 	 */
 	public String getDepositsData() {
-		FileWriter fileWriter = null;
-		CSVPrinter csvFilePrinter = null;
-		String filePath = "/opt/data/ingest-times-daily-deposit.csv";
+		String filePath = dataPath + "ingest-times-daily-deposit.csv";
 		
 		if (buildFile(filePath)) {
 			try (Jedis jedis = getJedisPool().getResource()) { 
 				Set<String> deposits = getDepositMetrics();
+				
+				FileWriter fileWriter = null;
+				CSVPrinter csvFilePrinter = null;
 
 				fileWriter = new FileWriter(filePath);
 				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
 				csvFilePrinter.printRecord(FILE_HEADERS);
 				
 				for (String deposit : deposits) {
-					Map<String, String> depositJob = jedis.hgetAll(deposit);
 					String[] depositKeys = deposit.split(":");
 					
 					// Ignore data for daily deposits. Only need the ones  by uuid in this instance
 					if (depositKeys.length < 3) {
 						continue;
 					}
+					
+					Map<String, String> depositJob = jedis.hgetAll(deposit);
 
 					String jobDate = depositKeys[1];
 					String jobUUID = depositKeys[2];
@@ -246,19 +288,22 @@ public class PerformanceMonitorController {
 					data.add("0");
 					data.add("0");
 					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
+					data.add("0");
 
 					csvFilePrinter.printRecord(data);
 				}
+				
+				csvFilePrinter.close();
 			} catch (Exception e) {
 				log.error("Failed to write data to {}", filePath, e);
-			} finally {
-				try {
-					fileWriter.flush();
-					fileWriter.close();
-					csvFilePrinter.close();
-				} catch (IOException e) {
-					log.error("Error while flushing/closing fileWriter/csvPrinter for filepath {}", filePath, e);
-				}
 			}
 		}
 		

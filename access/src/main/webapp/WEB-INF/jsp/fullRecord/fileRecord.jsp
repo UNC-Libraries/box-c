@@ -41,7 +41,7 @@
 						<li>
 							<span class="bold">Creator<c:if test="${fn:length(briefObject.creator) > 1}">s</c:if>:</span> 
 							<c:forEach var="creatorObject" items="${briefObject.creator}" varStatus="creatorStatus">
-								<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">, </c:if>
+								<c:out value="${creatorObject}"/><c:if test="${!creatorStatus.last}">; </c:if>
 							</c:forEach>
 						</li>
 					</c:if>
@@ -83,6 +83,8 @@
 			
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
+					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
+					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
 					<div class="clear_space"></div>
 					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
 				</c:when>

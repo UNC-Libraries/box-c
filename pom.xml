@@ -234,7 +234,6 @@
 					</properties>
 					<excludes>
 						<exclude>README</exclude>
-						<exclude>djatoka-cdr/**</exclude>
 						<exclude>.git/**</exclude>
 						<exclude>**/.gitignore</exclude>
 						<exclude>**/*.md</exclude>
