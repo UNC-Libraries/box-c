@@ -94,6 +94,7 @@ public class Cdr {
     public static final Resource Collection = createResource( "http://cdr.unc.edu/definitions/model#Collection" );
     public static final Resource AdminUnit = createResource( "http://cdr.unc.edu/definitions/model#AdminUnit" );
     public static final Resource DepositRecord = createResource( "http://cdr.unc.edu/definitions/model#DepositRecord" );
+    public static final Resource SourceMetadata = createResource( "http://cdr.unc.edu/definitions/model#SourceMetadata" );
     
     
 }
