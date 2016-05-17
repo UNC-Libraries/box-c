@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.fcrepo4;
 
+import com.hp.hpl.jena.rdf.model.Model;
+
 import edu.unc.lib.dl.fedora.PID;
 
 public class Repository {
@@ -21,6 +23,10 @@ public class Repository {
 	}
 	
 	public DepositRecord getDepositRecord(String uuid) {
+		return null;
+	}
+	
+	public DepositRecord createDepositRecord(String uuid, Model model) {
 		return null;
 	}
 	

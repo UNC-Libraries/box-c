@@ -1,26 +1,38 @@
 package edu.unc.lib.dl.fcrepo4;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.Collection;
 
 public class DepositRecord {
-	private void createDepositRecord() {
-		
+
+	private String path;
+	private Repository repository;
+	
+	public DepositRecord(String path, Repository repository) {
+		this.repository = repository;
+		this.path = path;
 	}
 	
-	private void addManifest() {
-		
-	}
-	
-	private InputStream getManifest() {
+	/**
+	 * Adds the given file as a manifest for this deposit. 
+	 * 
+	 * @param manifest
+	 * @return path to the newly created manifest object
+	 */
+	public String addManifest(File manifest) {
 		return null;
 	}
 	
-	private Collection<String> getManifestPaths() {
+	public InputStream getManifest() {
 		return null;
 	}
 	
-	private Collection<?> listDepositedObjects() {
+	public Collection<String> getManifestPaths() {
+		return null;
+	}
+	
+	public Collection<?> listDepositedObjects() {
 		return null;
 	}
 
