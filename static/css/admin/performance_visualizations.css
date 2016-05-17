@@ -43,8 +43,8 @@ text.label {
 
 div.tooltip {
     position: absolute;
-    text-align: center;
-    width: auto;
+    text-align: left;
+    width: 275px;
     height: auto;
     padding: 15px 12px 5px 12px;
     fill: black;
@@ -104,6 +104,23 @@ circle,
 #failed-enh-date circle,
 #failed-enh-date-line {
     stroke: #de2d26;
+}
+
+.clicked {
+    color: #333;
+    border-color: #adadad;
+    background-color: #e6e6e6;
+}
+
+ul.columns {
+    -webkit-columns: 50px 2; /* Chrome, Safari, Opera */
+    -moz-columns: 50px 2; /* Firefox */
+    columns: 50px 2;
+}
+
+.heading {
+    font-weight: bolder;
+    font-size: 14px;
 }
 
 /* Overlay */

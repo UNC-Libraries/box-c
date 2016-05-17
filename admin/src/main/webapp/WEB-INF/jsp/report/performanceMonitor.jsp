@@ -99,7 +99,17 @@
 </div>
 <div class="row dim">
     <div class="col-md-12">
-        <h4 class="text-center">Finished Enhancements</h4>
+        <h4 class="text-center">Finished Enhancements (<span id="enh-date-text">All</span>)</h4>
+         <div class="text-center">
+            <div class="btn-group enh" role="group">
+                <button type="button" class="btn btn-default" id="enh_finished_all_enh">All</button>
+                <button type="button" class="btn btn-default" id="enh_image_enh">Image</button>
+                <button type="button" class="btn btn-default" id="enh_metadata_enh">Metadata</button>
+                <button type="button" class="btn btn-default" id="enh_solr_enh">Solr</button>
+                <button type="button" class="btn btn-default" id="enh_fulltext_enh">Fulltext</button>
+                <button type="button" class="btn btn-default" id="enh_thumbnail_enh">Thumbnail</button>
+            </div>
+        </div>
         <div id="enh-date-stats"></div>
         <svg id="enh-date"></svg>
         <svg id="enh-legend"></svg>
@@ -108,8 +118,18 @@
 </div>
 <div class="row dim">
     <div class="col-md-12">
-        <h4 class="text-center">Failed Enhancements</h4>
+        <h4 class="text-center">Failed Enhancements (<span id="failed-enh-date-text">All</span>)</h4>
         <div id="failed-enh-stats"></div>
+         <div class="text-center">
+            <div class="btn-group failed-enh" role="group">
+                <button type="button" class="btn btn-default" id="failed_all_enh">All</button>
+                <button type="button" class="btn btn-default" id="failed_image_enh">Image</button>
+                <button type="button" class="btn btn-default" id="failed_metadata_enh">Metadata</button>
+                <button type="button" class="btn btn-default" id="failed_solr_enh">Solr</button>
+                <button type="button" class="btn btn-default" id="failed_fulltext_enh">Fulltext</button>
+                <button type="button" class="btn btn-default" id="failed_thumbnail_enh">Thumbnail</button>
+            </div>
+        </div>
         <svg id="failed-enh-date"></svg>
         <svg id="failed-enh-legend"></svg>
         <svg id="failed-enh-date-strip"></svg>

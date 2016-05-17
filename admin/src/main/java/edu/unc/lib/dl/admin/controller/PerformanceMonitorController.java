@@ -41,7 +41,7 @@ import redis.clients.jedis.JedisPool;
 
 @Controller
 public class PerformanceMonitorController {
-	private final long SECONDS_IN_ONE_HOUR = 60 * 60 * 1000;
+	private final long MILLISECONDS_IN_ONE_HOUR = 60 * 60 * 1000;
 	private static final Logger log = LoggerFactory
 			.getLogger(PerformanceMonitorController.class);
 	
@@ -60,11 +60,11 @@ public class PerformanceMonitorController {
 		"metadata_enh",
 		"failed_metadata_enh",
 		"solr_enh",
-		"failed_soler_enh",
-		"full_text_enh",
+		"failed_solr_enh",
+		"fulltext_enh",
 		"failed_fulltext_enh",
 		"thumbnail_enh",
-		"failed_thumb_nail_enh",
+		"failed_thumbnail_enh",
 		"failed_deposit",
 		"failed_deposit_job"
 	};
@@ -97,7 +97,7 @@ public class PerformanceMonitorController {
 			Long currentTime = System.currentTimeMillis();
 			Long fileCreationTime = csvFile.lastModified();
 			
-			if ((currentTime - fileCreationTime ) > SECONDS_IN_ONE_HOUR) {
+			if ((currentTime - fileCreationTime ) > MILLISECONDS_IN_ONE_HOUR) {
 				return true;
 			}
 			return false;

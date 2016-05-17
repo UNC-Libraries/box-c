@@ -172,7 +172,16 @@ CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
         .duration(1000)
         .ease("sin-in-out")
         .attr("d", scale(data));
-}
+};
+
+/**
+ * Coerce string values to numbers
+ * @param field
+ * @returns {number}
+ */
+CdrGraphs.prototype.coerceToNum = function (field) {
+    return (field === "") ? 0 : +field;
+};
 
 /**
  * Format large numbers with commas & 2 decimal places or just commas if not a decimal number
@@ -192,19 +201,32 @@ CdrGraphs.prototype.numFormat = function(number) {
 CdrGraphs.prototype.tipTextOperations = function(d) {
     var text = "<h5 class='text-center smaller'>" + this.stringDate(d.date) + "</h5>";
 
-    text += "<p class='text-center'>Deposit Metrics</p>" +
+    text += "<p class='text-center'>Metrics</p>" +
         "<ul class='list-unstyled smaller'>" +
             "<li>" + "Files Ingested: " + this.numFormat(d.throughput_files) + "</li>" +
             "<li>" + "Total MB Ingested: " + this.numFormat(d.throughput_bytes) + "</li>" +
             "<li>" + "Avg Filesize (MB): " + this.numFormat(d.avg_filesize) + "</li>" +
-        "</ul>" +
+            "<li>" + "Moves: " + this.numFormat(d.moves) + "</li>" +
+        "</ul>";
 
-        "<p class='text-center'>Operations Metrics</p>" +
+    text += "<p class='text-center'>Enhancements</p>";
 
-        "<ul class='list-unstyled smaller'>" +
-        "<li>" + "Moves: " + this.numFormat(d.moves) + "</li>" +
-        "<li>" + "Finished Enh: " + this.numFormat(d.finished_enhancements) + "</li>" +
-        "<li>" + "Failed Enh: " + this.numFormat(d.failed_enhancements) + "</li>" +
+    text += "<ul class='list-unstyled smaller columns'>" +
+        "<li class='heading'>" + "Completed</li>" +
+        "<li>" + "All: " + this.numFormat(d.finished_all_enh) + "</li>" +
+        "<li>" + "Image: " + this.numFormat(d.image_enh) + "</li>" +
+        "<li>" + "Metadata: " + this.numFormat(d.metadata_enh) + "</li>" +
+        "<li>" + "Solr " + this.numFormat(d.solr_enh) + "</li>" +
+        "<li>" + "Fulltext: " + this.numFormat(d.fulltext_enh) + "</li>" +
+        "<li>" + "Thumbnail: " + this.numFormat(d.thumbnail_enh) + "</li>" +
+
+        "<li class='heading'>" + "Failed</li>" +
+        "<li>" + "All: " + this.numFormat(d.failed_all_enh) + "</li>" +
+        "<li>" + "Image: " + this.numFormat(d.failed_image_enh) + "</li>" +
+        "<li>" + "Metadata: " + this.numFormat(d.failed_metadata_enh) + "</li>" +
+        "<li>" + "Solr: " + this.numFormat(d.failed_solr_enh) + "</li>" +
+        "<li>" + "Fulltexth: " + this.numFormat(d.failed_fulltext_enh) + "</li>" +
+        "<li>" + "Thumbnail: " + this.numFormat(d.failed_thumbnail_enh) + "</li>" +
         "</ul>"
 
     return text;
@@ -290,10 +312,10 @@ CdrGraphs.prototype.colorList = function(type) {
         case "moves":
             return ['#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#045a8d','#023858'];
             break;
-        case "finished_enhancements":
+        case "finished_all_enh":
             return ['#e5f5f9','#ccece6','#99d8c9','#66c2a4','#41ae76','#238b45','#006d2c','#00441b'];
             break;
-        case "failed_enhancements":
+        case "failed_all_enh":
             return ['#fee0d2','#fcbba1','#fc9272','#fb6a4a','#ef3b2c','#cb181d','#a50f15','#67000d'];
             break;
         default:
@@ -370,8 +392,12 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
 
     d3.selectAll("." + selector).on("click", function(d) {
         var selected_id = d3.event.target.id;
-        var text = d3.select("#" + selected_id).text();
+        var selected = "#" + selected_id;
+        var text = d3.select(selected).text();
         var type, selected_chart;
+
+        d3.selectAll("button").classed("clicked", false);
+        d3.select(selected).classed('clicked', true);
 
         if (/^(all_throughput|all_avg)/.test(selected_id)) {
             type = selected_id.substr(4);
@@ -385,6 +411,14 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
             type = selected_id.substr(4);
             selected_chart = "#duration-total-date";
             values = _that.data_store["duration-total-date"];
+        } else if (/^enh/.test(selected_id)) {
+            type = selected_id.substr(4);
+            selected_chart = "#enh-date";
+            values = _that.data_store["enh-date"];
+        } else if (/^failed/.test(selected_id)) {
+            type = selected_id;
+            selected_chart = "#failed-enh-date";
+            values = _that.data_store["failed-enh-date"];
         } else {
             type = selected_id;
             selected_chart = "#duration-date";

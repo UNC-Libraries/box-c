@@ -15,11 +15,23 @@ CdrGraphs.prototype.draw = function() {
     // Fields where metrics are by day only (e.g.) older dates & operations metrics
     this.operations.forEach(function(d) {
         d.date = (typeof d.date === "object") ? d.date : parseDate(d.date);
-        d.throughput_bytes = (d.throughput_bytes === "") ? 0 : d.throughput_bytes / 1000000;
-        d.throughput_files = (d.throughput_files === "") ? 0 : +d.throughput_files;
-        d.moves = (d.moves === "") ? 0 : +d.moves;
-        d.finished_enhancements = (d.finished_enhancements === "") ? 0 : +d.finished_enhancements;
-        d.failed_enhancements = (d.failed_enhancements === "") ? 0 : +d.failed_enhancements;
+        d.throughput_bytes = _that.coerceToNum(d.throughput_bytes) / 1000000;
+        d.throughput_files = _that.coerceToNum(d.throughput_files);
+        d.moves = _that.coerceToNum(d.moves);
+        d.image_enh = _that.coerceToNum(d.image_enh);
+		d.failed_image_enh = _that.coerceToNum(d.failed_image_enh);
+		d.metadata_enh = _that.coerceToNum(d.metadata_enh);
+		d.failed_metadata_enh = _that.coerceToNum(d.failed_metadata_enh);
+		d.solr_enh = _that.coerceToNum(d.solr_enh);
+		d.failed_solr_enh = _that.coerceToNum(d.failed_solr_enh);
+		d.fulltext_enh = _that.coerceToNum(d.fulltext_enh);
+		d.failed_fulltext_enh = _that.coerceToNum(d.failed_fulltext_enh);
+		d.thumbnail_enh = _that.coerceToNum(d.thumbnail_enh);
+		d.failed_thumbnail_enh = _that.coerceToNum(d.failed_thumbnail_enh);
+        d.finished_all_enh = d.image_enh + d.metadata_enh + d.solr_enh + d.fulltext_enh + d.thumbnail_enh;
+        d.failed_all_enh = d.failed_image_enh + d.failed_metadata_enh + d.failed_solr_enh + d.failed_fulltext_enh + d.failed_thumbnail_enh;
+        d.failed_deposit = _that.coerceToNum(d.failed_deposit);
+        d.failed_deposit_job = _that.coerceToNum(d.failed_deposit_job);
     });
 
     var data = this.dateSort(this.operations);
@@ -30,8 +42,8 @@ CdrGraphs.prototype.draw = function() {
         d.ingest_duration = d.ingest_duration / 1000;
         d.queued_duration = d.queued_duration / 1000;
         d.total_time = d.ingest_duration + d.queued_duration;
-        d.throughput_bytes = (d.throughput_bytes === "") ? 0 : d.throughput_bytes / 1000000;
-        d.throughput_files = (d.throughput_files === "") ? 0 : +d.throughput_files;
+        d.throughput_bytes = _that.coerceToNum(d.throughput_bytes) / 1000000;
+        d.throughput_files = _that.coerceToNum(d.throughput_files);
         d.avg_filesize = _that.fileAvg(d);
     });
 
@@ -100,8 +112,6 @@ CdrGraphs.prototype.draw = function() {
     
     var throughputLineScaleTotals = this.lineGenerator(xScale, yScale, throughput);
     this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
-    
-   // this.drawCircles(throughput_date, throughput_all, xScale, yScale, throughput);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
     this.drawLegend("#throughput-legend", throughput_all, throughput);
@@ -137,8 +147,7 @@ CdrGraphs.prototype.draw = function() {
     var file_totals = this.showAxises("#files-by-day", xAxis, yAxisFiles, width, "Throughput (Files)");
     var fileLineScaleTotals = this.lineGenerator(xScale, yScaleFiles, "throughput_files");
     this.appendPath(file_totals, "files-by-day-line", fileLineScaleTotals, throughput_all);
-    
-  //  this.drawCircles(file_totals, throughput_all, xScale, yScaleFiles, throughput_files);
+
     focusHover(file_totals, throughput_all, "#files-by-day");
     this.data_store["files-by-day"] = throughput_all;
     this.chartUpdate("files", xScale, yScaleFiles, yAxisFiles);
@@ -173,7 +182,6 @@ CdrGraphs.prototype.draw = function() {
     this.statsDisplay("#duration-total-date-stats", uuid_all, total_time);
     var durationLineScaleTotals = this.lineGenerator(xScaleUUID, yScaleTotalDay, total_time);
     this.appendPath(all_duration_date, "duration-total-date-line", durationLineScaleTotals, uuid_all);
- //   this.drawCircles(all_duration_date, uuid_all, xScaleUUID, yScaleTotalDay, total_time);
     focusHover(all_duration_date, uuid_all, "#duration-total-date"); 
     this.data_store["duration-total-date"] = uuid_all;
     this.chartUpdate("time", xScaleUUID, yScaleTotalDay, yAxisTotal);
@@ -193,7 +201,6 @@ CdrGraphs.prototype.draw = function() {
     this.statsDisplay("#moves-date-stats", data, moves);
     var movesLineScaleTotals = this.lineGenerator(xScale, yScaleMoves, moves);
     this.appendPath(moves_date, "moves-date-line", movesLineScaleTotals, data);
- //   this.drawCircles(moves_date,  data, xScale, yScaleMoves, moves);
     focusHover(moves_date, data, "#moves-date");
 
     this.drawLegend("#moves-legend", data, moves);
@@ -203,7 +210,7 @@ CdrGraphs.prototype.draw = function() {
      * Scatter plot & Strip plot - enhancements by date
      */
 
-    var finished_enh = "finished_enhancements";
+    var finished_enh = "finished_all_enh";
     var yScaleFinishedEnh = this.yScales(data, finished_enh, height_range);
     var yAxis_finished_enh = this.getAxis(yScaleFinishedEnh, "left");
     var finished_enh_date = this.showAxises("#enh-date", xAxis, yAxis_finished_enh, width, "Finished Enhancements");
@@ -211,8 +218,9 @@ CdrGraphs.prototype.draw = function() {
     this.statsDisplay("#enh-date-stats", data, finished_enh);
     var endLineScaleTotals = this.lineGenerator(xScale, yScaleFinishedEnh, finished_enh);
     this.appendPath(finished_enh_date, "enh-date-line", endLineScaleTotals, data);
- //   this.drawCircles(finished_enh_date,  data, xScale, yScaleFinishedEnh, finished_enh);
     focusHover(finished_enh_date, data, "#enh-date");
+    this.data_store["enh-date"] = throughput_all;
+    this.chartUpdate("enh", xScale, yScaleFinishedEnh, yAxis_finished_enh);
 
     this.drawLegend("#enh-legend", data, finished_enh);
     drawStrip("#enh-date-strip", data, finished_enh);
@@ -221,7 +229,7 @@ CdrGraphs.prototype.draw = function() {
      * Scatter plot & Strip plot - failed enhancements by date
      */
 
-    var failed_enh = "failed_enhancements";
+    var failed_enh = "failed_all_enh";
     var yScaleFailedEnh = this.yScales(data, failed_enh, height_range);
     var yAxis_failed_enh = this.getAxis(yScaleFailedEnh, "left");
     var failed_enh_date = this.showAxises("#failed-enh-date", xAxis, yAxis_failed_enh, width, "Failed Enhancements");
@@ -229,8 +237,9 @@ CdrGraphs.prototype.draw = function() {
     this.statsDisplay("#failed-enh-stats", data, failed_enh);
     var failedEnhScaleTotals = this.lineGenerator(xScale, yScaleFailedEnh, failed_enh);
     this.appendPath(failed_enh_date, "failed-enh-date-line", failedEnhScaleTotals, data);
-  //  this.drawCircles(failed_enh_date,  data, xScale, yScaleFailedEnh, failed_enh);
     focusHover(failed_enh_date, data, "#failed-enh-date");
+    this.data_store["failed-enh-date"] = throughput_all;
+    this.chartUpdate("failed-enh", xScale, yScaleFailedEnh, yAxis_failed_enh);
 
     this.drawLegend("#failed-enh-legend", data, failed_enh);
     drawStrip("#failed-enh-date-strip", data, failed_enh);
