@@ -207,6 +207,7 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
             "<li>" + "Total MB Ingested: " + this.numFormat(d.throughput_bytes) + "</li>" +
             "<li>" + "Avg Filesize (MB): " + this.numFormat(d.avg_filesize) + "</li>" +
             "<li>" + "Moves: " + this.numFormat(d.moves) + "</li>" +
+            "<li>" + "Failed Deposit Jobs: " + this.numFormat(d.failed_deposit_job) + "</li>" +
         "</ul>";
 
     text += "<p class='text-center'>Enhancements</p>";
