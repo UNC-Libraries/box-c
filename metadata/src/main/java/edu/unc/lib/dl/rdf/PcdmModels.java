@@ -48,5 +48,6 @@ public class PcdmModels {
     
     public static final Resource Object = createResource( "http://pcdm.org/models#Object" );
     public static final Resource Collection = createResource( "http://pcdm.org/models#Object" );
+    public static final Resource File = createResource( "http://pcdm.org/models#File" );
     
 }

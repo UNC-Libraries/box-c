@@ -13,7 +13,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public class CdrDeposit {
     
     /** The namespace of the vocabulary as a string */
-    public static final String NS = "http://cdr.unc.edu/definitions/model#";
+    public static final String NS = "http://cdr.unc.edu/definitions/deposit#";
     
     /** The namespace of the vocabulary as a string
      *  @see #NS */
@@ -23,33 +23,40 @@ public class CdrDeposit {
     public static final Resource NAMESPACE = createResource( NS );
     
     /** File path suggested for cleanup after the deposit has been ingested */
-    public static final Property cleanupLocation = createProperty( "http://cdr.unc.edu/definitions/model#cleanupLocation" );
+    public static final Property cleanupLocation = createProperty( "http://cdr.unc.edu/definitions/deposit#cleanupLocation" );
     
     /** Created timestamp of this file on its original storage */
-    public static final Property createTime = createProperty( "http://cdr.unc.edu/definitions/model#createTime" );
+    public static final Property createTime = createProperty( "http://cdr.unc.edu/definitions/deposit#createTime" );
     
     /** Filename to provide for this object in the repository */
-    public static final Property label = createProperty( "http://cdr.unc.edu/definitions/model#label" );
+    public static final Property label = createProperty( "http://cdr.unc.edu/definitions/deposit#label" );
     
     /** MD5 checksum for this binary object */
-    public static final Property md5sum = createProperty( "http://cdr.unc.edu/definitions/model#md5sum" );
+    public static final Property md5sum = createProperty( "http://cdr.unc.edu/definitions/deposit#md5sum" );
     
     /** Provided mimetype for this binary object */
-    public static final Property mimetype = createProperty( "http://cdr.unc.edu/definitions/model#mimetype" );
+    public static final Property mimetype = createProperty( "http://cdr.unc.edu/definitions/deposit#mimetype" );
     
     /** RDF resource type for this object */
-    public static final Property objectType = createProperty( "http://cdr.unc.edu/definitions/model#objectType" );
+    public static final Property objectType = createProperty( "http://cdr.unc.edu/definitions/deposit#objectType" );
     
     /** Location URI for this object in its original storage location */
-    public static final Property originalLocation = createProperty( "http://cdr.unc.edu/definitions/model#originalLocation" );
+    public static final Property originalLocation = createProperty( "http://cdr.unc.edu/definitions/deposit#originalLocation" );
     
     /** SHA1 checksum for this binary object */
-    public static final Property sha1sum = createProperty( "http://cdr.unc.edu/definitions/model#sha1sum" );
+    public static final Property sha1sum = createProperty( "http://cdr.unc.edu/definitions/deposit#sha1sum" );
     
     /** Filesize in bytes for this binary object */
-    public static final Property size = createProperty( "http://cdr.unc.edu/definitions/model#size" );
+    public static final Property size = createProperty( "http://cdr.unc.edu/definitions/deposit#size" );
     
     /** Path to the staged content for ingest. */
-    public static final Property stagingLocation = createProperty( "http://cdr.unc.edu/definitions/model#stagingLocation" );
+    public static final Property stagingLocation = createProperty( "http://cdr.unc.edu/definitions/deposit#stagingLocation" );
+    
+    /** Link to binary objects contained by this object other than the main payload binary. */
+    public static final Property hasDatastream = createProperty( "http://cdr.unc.edu/definitions/deposit#hasDatastream" );
+    
+    /** >Link to a manifest file for this deposit. */
+    public static final Property hasManifest = createProperty( "http://cdr.unc.edu/definitions/deposit#hasManifest" );
+    
     
 }
