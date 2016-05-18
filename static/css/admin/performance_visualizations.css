@@ -91,6 +91,10 @@ circle,
     stroke: #e7298a;
 }
 
+#total-deposits-date-line {
+	stroke: #000;
+}
+
 #moves-date circle,
 #moves-date-line {
     stroke: #0570b0;

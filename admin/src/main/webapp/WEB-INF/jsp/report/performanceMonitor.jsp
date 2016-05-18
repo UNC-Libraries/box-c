@@ -90,11 +90,17 @@
 </div>
 <div class="row dim">
     <div class="col-md-12">
-        <h4 class="text-center">Failed Deposits</h4>
+        <h4 class="text-center">Total Deposits (<span id="total-deposits-date-text">Completed Deposits</span>)</h4>
         <div id="failed-deposits-stats"></div>
-        <svg id="failed-deposits-date"></svg>
-        <svg id="failed-deposits-legend"></svg>
-        <svg id="failed-deposits-date-strip"></svg>
+        <div class="text-center">
+            <div class="btn-group total-deposits" role="group">
+                <button type="button" class="btn btn-default" id="dep_finished">Completed Deposits</button>
+                <button type="button" class="btn btn-default" id="dep_failed_deposit">Failed Deposits</button>
+            </div>
+        </div>
+        <svg id="total-deposits-date"></svg>
+        <svg id="total-deposits-legend"></svg>
+        <svg id="total-deposits-date-strip"></svg>
     </div>
 </div>
 <div class="row dim">
