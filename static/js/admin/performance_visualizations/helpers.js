@@ -310,6 +310,9 @@ CdrGraphs.prototype.colorList = function(type) {
         case "total_time":
             return ['#e7e1ef','#d4b9da','#c994c7','#df65b0','#e7298a','#ce1256','#980043','#67001f'];
             break;
+        case "finished": // Colors for total deposits
+            return ['#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000'];
+            break;
         case "moves":
             return ['#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#045a8d','#023858'];
             break;
@@ -317,7 +320,6 @@ CdrGraphs.prototype.colorList = function(type) {
             return ['#e5f5f9','#ccece6','#99d8c9','#66c2a4','#41ae76','#238b45','#006d2c','#00441b'];
             break;
         case "failed_all_enh":
-        case "failed_deposit":
             return ['#fee0d2','#fcbba1','#fc9272','#fb6a4a','#ef3b2c','#cb181d','#a50f15','#67000d'];
             break;
         default:
@@ -417,6 +419,10 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
             type = selected_id.substr(4);
             selected_chart = "#enh-date";
             values = _that.data_store["enh-date"];
+        } else if (/^dep/.test(selected_id)) {
+            type = selected_id.substr(4);
+            selected_chart = "#total-deposits-date";
+            values = _that.data_store["total-deposits-date"];
         } else if (/^failed/.test(selected_id)) {
             type = selected_id;
             selected_chart = "#failed-enh-date";
