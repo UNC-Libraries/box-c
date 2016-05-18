@@ -135,6 +135,15 @@
         <svg id="failed-enh-date-strip"></svg>
     </div>
 </div>
+<div class="row dim">
+    <div class="col-md-12">
+        <h4 class="text-center">Failed Deposits</h4>
+        <div id="failed-deposits-stats"></div>
+        <svg id="failed-deposits-date"></svg>
+        <svg id="failed-deposits-legend"></svg>
+        <svg id="failed-deposits-date-strip"></svg>
+    </div>
+</div>
 <script src="/static/js/admin/performance_visualizations/assets/d3/d3.min.js" charset="utf-8"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-queue/d3-queue.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-tip/d3-tip.min.js"></script>

@@ -207,7 +207,7 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
             "<li>" + "Total MB Ingested: " + this.numFormat(d.throughput_bytes) + "</li>" +
             "<li>" + "Avg Filesize (MB): " + this.numFormat(d.avg_filesize) + "</li>" +
             "<li>" + "Moves: " + this.numFormat(d.moves) + "</li>" +
-            "<li>" + "Failed Deposit Jobs: " + this.numFormat(d.failed_deposit_job) + "</li>" +
+            "<li>" + "Failed Deposits: " + this.numFormat(d.failed_deposit) + "</li>" +
         "</ul>";
 
     text += "<p class='text-center'>Enhancements</p>";
@@ -226,7 +226,7 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
         "<li>" + "Image: " + this.numFormat(d.failed_image_enh) + "</li>" +
         "<li>" + "Metadata: " + this.numFormat(d.failed_metadata_enh) + "</li>" +
         "<li>" + "Solr: " + this.numFormat(d.failed_solr_enh) + "</li>" +
-        "<li>" + "Fulltexth: " + this.numFormat(d.failed_fulltext_enh) + "</li>" +
+        "<li>" + "Fulltext: " + this.numFormat(d.failed_fulltext_enh) + "</li>" +
         "<li>" + "Thumbnail: " + this.numFormat(d.failed_thumbnail_enh) + "</li>" +
         "</ul>"
 
