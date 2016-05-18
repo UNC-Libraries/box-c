@@ -102,7 +102,9 @@ circle,
 }
 
 #failed-enh-date circle,
-#failed-enh-date-line {
+#failed-deposits-date circle,
+#failed-enh-date-line,
+#failed-deposits-date-line{
     stroke: #de2d26;
 }
 

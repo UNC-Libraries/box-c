@@ -17,6 +17,7 @@ CdrGraphs.prototype.draw = function() {
         d.date = (typeof d.date === "object") ? d.date : parseDate(d.date);
         d.throughput_bytes = _that.coerceToNum(d.throughput_bytes) / 1000000;
         d.throughput_files = _that.coerceToNum(d.throughput_files);
+        d.moves = _that.coerceToNum(d.moves);
         d.failed_deposits = _that.coerceToNum(d.failed_deposits);
         d.image_enh = _that.coerceToNum(d.image_enh);
         d.failed_image_enh = _that.coerceToNum(d.failed_image_enh);
@@ -186,6 +187,25 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["duration-total-date"] = uuid_all;
     this.chartUpdate("time", xScaleUUID, yScaleTotalDay, yAxisTotal);
 
+    /**
+     *  Scatter plot & Strip plot - moves by date
+     *
+     *
+     **/
+
+    var moves = "moves";
+    var yScaleMoves = this.yScales(data, moves, height_range);
+    var yAxisMoves = this.getAxis(yScaleMoves, "left");
+    var moves_date = this.showAxises("#moves-date", xAxis, yAxisMoves, width, "Move Operations");
+
+    this.statsDisplay("#moves-date-stats", data, moves);
+    var movesLineScaleTotals = this.lineGenerator(xScale, yScaleMoves, moves);
+    this.appendPath(moves_date, "moves-date-line", movesLineScaleTotals, data);
+    focusHover(moves_date, data, "#moves-date");
+
+    this.drawLegend("#moves-legend", data, moves);
+    drawStrip("#moves-date-strip", data, moves);
+
 
     /**
      *  Scatter plot & Strip plot - failed_deposits by date
@@ -193,7 +213,7 @@ CdrGraphs.prototype.draw = function() {
      *
      **/
 
-    var failed_deposits = "failed_deposits";
+    var failed_deposits = "failed_deposit";
     var yScaleFailedDeposits = this.yScales(data, failed_deposits, height_range);
     var yAxisFailedDeposits = this.getAxis(yScaleFailedDeposits, "left");
     var failed_deposits_date = this.showAxises("#failed-deposits-date", xAxis, yAxisFailedDeposits, width, "Failed Deposits");
