@@ -33,6 +33,7 @@ CdrGraphs.prototype.draw = function() {
         d.failed_all_enh = d.failed_image_enh + d.failed_metadata_enh + d.failed_solr_enh + d.failed_fulltext_enh + d.failed_thumbnail_enh;
         d.failed_deposit = _that.coerceToNum(d.failed_deposit);
         d.failed_deposit_job = _that.coerceToNum(d.failed_deposit_job);
+        d.avg_filesize = _that.fileAvg(d);
     });
 
     var data = this.dateSort(this.operations);
@@ -75,7 +76,7 @@ CdrGraphs.prototype.draw = function() {
         this.counts(deposits_by_uuid, "total_time")
     );
 
-    // Only average file sizes after everything is combined
+    // Recalculate average file sizes after everything is combined
     throughput_all.forEach(function(d) {
         d.avg_filesize = _that.fileAvg(d);
     });

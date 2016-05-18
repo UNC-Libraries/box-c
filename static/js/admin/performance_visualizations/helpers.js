@@ -568,10 +568,11 @@ CdrGraphs.prototype.counts = function(data, field) {
 CdrGraphs.prototype.keyFunction = function() {
     function keyFunction(key, value1, value2) {
         var accepted_value;
-        if (key !== "date") {
-            accepted_value = parseInt(value1) + parseInt(value2);
-        } else if (key == "avg_filesize") {
+
+        if (key === "avg_filesize") {
             return; // Don't want to merge these. It will give weird results
+        } else if (key !== "date") {
+            accepted_value = parseInt(value1) + parseInt(value2);
         } else {
             accepted_value = (typeof value1 === "object") ? value1 : new Date(value1);
         }
