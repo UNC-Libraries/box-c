@@ -202,17 +202,18 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
     var text = "<h5 class='text-center smaller'>" + this.stringDate(d.date) + "</h5>";
 
     text += "<p class='text-center'>Metrics</p>" +
-        "<ul class='list-unstyled smaller'>" +
+        "<ul class='list-unstyled smaller text-center'>" +
             "<li>" + "Files Ingested: " + this.numFormat(d.throughput_files) + "</li>" +
             "<li>" + "Total MB Ingested: " + this.numFormat(d.throughput_bytes) + "</li>" +
             "<li>" + "Avg Filesize (MB): " + this.numFormat(d.avg_filesize) + "</li>" +
             "<li>" + "Moves: " + this.numFormat(d.moves) + "</li>" +
+            "<li>" + "Finished Deposits: " + this.numFormat(d.finished) + "</li>" +
             "<li>" + "Failed Deposits: " + this.numFormat(d.failed_deposit) + "</li>" +
         "</ul>";
 
     text += "<p class='text-center'>Enhancements</p>";
 
-    text += "<ul class='list-unstyled smaller columns'>" +
+    text += "<ul class='list-unstyled smaller columns text-center'>" +
         "<li class='heading'>" + "Completed</li>" +
         "<li>" + "All: " + this.numFormat(d.finished_all_enh) + "</li>" +
         "<li>" + "Image: " + this.numFormat(d.image_enh) + "</li>" +
@@ -243,7 +244,7 @@ CdrGraphs.prototype.tipTextDeposits = function(d) {
 
     text += (d.uuid !== undefined) ? d.uuid : "";
     text += "<p class='text-center'>Deposit Metrics</p>" +
-        "<ul class='list-unstyled smaller'>";
+        "<ul class='list-unstyled smaller text-center'>";
 
     if (d.throughput_files !== undefined) {
         text += "<li>" + "Files Ingested: " + this.numFormat(d.throughput_files) + "</li>" +
