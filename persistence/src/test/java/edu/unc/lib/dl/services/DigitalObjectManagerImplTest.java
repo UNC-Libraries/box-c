@@ -49,6 +49,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -367,11 +368,13 @@ public class DigitalObjectManagerImplTest {
 		this.getDigitalObjectManagerImpl().delete(new PID("foo"), "Delete", "user");
 	}
 	
+	@Ignore
 	@Test(expected = UpdateException.class)
 	public void testChangeResourceTypeInvalidNewType() throws Exception {
 		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), null, "user");
 	}
 	
+	@Ignore
 	@Test
 	public void testChangeResourceType() throws Exception {
 		String relsName = ContentModelHelper.Datastream.RELS_EXT.toString();
