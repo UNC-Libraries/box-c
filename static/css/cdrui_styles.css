@@ -372,6 +372,10 @@ h1 {
 	color: #0A5274;
 }
 
+.white h2 a:visited {
+	color: #629BB8;
+}
+
 .white h2 a:hover {
 	color: #1d759f;
 }
