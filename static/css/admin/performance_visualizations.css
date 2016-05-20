@@ -141,6 +141,13 @@ ul.columns {
     stroke-width: 2.5;
 }
 
+/* Brushing */
+.brush .extent {
+    stroke: #fff;
+    fill-opacity: .125;
+    shape-rendering: crispEdges;
+}
+
 /* D3-tip CSS From http://rawgit.com/Caged/d3-tip/master/examples/example-styles.css */
 
 .d3-tip {

@@ -32,6 +32,7 @@
         <h4 class="text-center">Throughput by Date</h4>
         <div id="throughput-stats"></div>
         <svg id="throughput-date"></svg>
+        <svg id="throughput-date-brush"></svg>
         <svg id="throughput-legend"></svg>
         <svg id="throughput-date-strip"></svg>
     </div>

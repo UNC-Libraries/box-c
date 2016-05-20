@@ -6,9 +6,10 @@
  * @constructor
  */
 function CdrGraphs(operation_totals, deposit_totals, scatter_tip) {
-    this.margins = {top: 50, right: 150, bottom: 75, left: 150 };
+    this.margins = {top: 20, right: 150, bottom: 25, left: 150 };
     this.stringDate = d3.time.format("%b %e, %Y");
     this.height = 500 - this.margins.top - this.margins.bottom;
+    this.brush_height = 125 - this.margins.top - this.margins.bottom;
     this.data_store = {};
     this.operations = operation_totals;
     this.deposits = deposit_totals;
@@ -61,30 +62,40 @@ CdrGraphs.prototype.getAxis = function(scale, orientation) {
  * @returns {*}
  */
 CdrGraphs.prototype.showAxises = function(selector, xAxis, yAxis, width, text) {
+    var height_type, width;
+    var is_brush = /brush/.test(selector);
+
+    if (is_brush) {
+        height_type = this.brush_height;
+    } else {
+        height_type = this.height;
+    }
     var svg = d3.select(selector);
 
     svg.attr("width", width + this.margins.left + this.margins.right)
-        .attr("height", this.height + this.margins.top + this.margins.bottom);
+        .attr("height", height_type + this.margins.top + this.margins.bottom);
 
     svg.append("g")
         .attr("class", "x axis")
-        .translate([this.margins.left, this.height + this.margins.top]);
+        .translate([this.margins.left, height_type + this.margins.top]);
 
     d3.selectAll(selector + " g.x").call(xAxis);
 
-    svg.append("g")
-        .attr("class", "y axis")
-        .translate([this.margins.left, this.margins.top]);
+    if (!is_brush) {
+        svg.append("g")
+            .attr("class", "y axis")
+            .translate([this.margins.left, this.margins.top]);
 
-    d3.selectAll(selector + " g.y").call(yAxis);
+        d3.selectAll(selector + " g.y").call(yAxis);
 
-    svg.append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -this.height/2)
-        .attr("y", 6)
-        .attr("dy", "5em")
-        .style("text-anchor", "end")
-        .text(text);
+        svg.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -this.height/2)
+            .attr("y", 6)
+            .attr("dy", "5em")
+            .style("text-anchor", "end")
+            .text(text);
+    }
 
     return svg;
 };
@@ -104,7 +115,7 @@ CdrGraphs.prototype.drawCircles = function(svg, data, xScale, yScale, field) {
         .data(data);
     
     circles.enter()
-    	.append("circle");
+        .append("circle");
 
     circles.translate([this.margins.left, this.margins.top])
         .on("mouseover", function(d) {
@@ -139,7 +150,7 @@ CdrGraphs.prototype.lineGenerator = function(xScale, yScale, y) {
         .interpolate("monotone")
         .x(function(d) { return xScale(d.date); })
         .y(function(d) { return yScale(d[y]); });
-}
+};
 
 /**
  * Add svg path to a chart
@@ -158,7 +169,7 @@ CdrGraphs.prototype.appendPath = function(svg, id, scale, data) {
         .translate([this.margins.left, this.margins.top]);
 
     return svg;
-}
+};
 
 /**
  * Draw SVG path
@@ -625,4 +636,63 @@ CdrGraphs.prototype.combined = function(arr1, arr2) {
     }
 
     return combined;
+};
+
+/**
+ * Create brush to select subset of elements in a graph
+ * Example of required fields in configuration object "params"
+ *   {
+ *      brushXScale: xScale2,
+ *      xScale: xScale,
+ *      yScale: yScale,
+ *      xAxis: xAxis,
+ *      yAxis: yAxis,
+ *      data: throughput_all,
+ *      field: "throughput_bytes",
+ *      chart_id: "throughput-date"
+ *   }
+ * @param graph
+ * @param params
+
+ * @returns {*}
+ */
+CdrGraphs.prototype.selectionBrushing = function(graph, params) {
+    var _that = this;
+    var brush = d3.svg.brush()
+        .x(params.brushXScale)
+        .on("brushend", brushed);
+
+    var brushg = graph.append("g")
+        .attr("class", "brush")
+        .translate([this.margins.left, 0])
+        .call(brush);
+
+    brushg.selectAll("rect")
+        .attr("height", this.brush_height)
+        .translate([0, this.margins.top]);
+
+    function brushed() {
+        var updated, lineScale;
+
+        if (!brush.empty()) {
+            params.xScale.domain(brush.extent());
+            updated = params.data.filter(function(d) {
+                return d.date.getTime() >= brush.extent()[0].getTime() && d.date.getTime() <= brush.extent()[1].getTime() ;
+            });
+
+            params.yScale.domain([d3.max(updated, d3.f(params.field)), 0]);
+            lineScale = _that.lineGenerator(params.xScale, params.yScale, params.field);
+        } else {
+            params.xScale.domain(d3.extent(params.data, d3.f('date')));
+            updated = params.data;
+            params.yScale.domain([d3.max(params.data, d3.f(params.field)), 0]);
+            lineScale = _that.lineGenerator(params.xScale, params.yScale, params.field);
+        }
+
+        _that.redrawPath("#" + params.chart_id + "-line", lineScale, updated);
+        d3.select("#" + params.chart_id +" .x.axis").transition().duration(500).ease("sin-in-out").call(params.xAxis);
+        d3.select("#" + params.chart_id +" .y.axis").transition().duration(500).ease("sin-in-out").call(params.yAxis);
+    }
+
+    return brushg;
 };

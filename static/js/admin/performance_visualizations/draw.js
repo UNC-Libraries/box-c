@@ -10,6 +10,7 @@ CdrGraphs.prototype.draw = function() {
      */
     var _that = this;
     var width = window.innerWidth - this.margins.left - this.margins.right;
+    var half_width = width / 2;
     var parseDate = d3.time.format("%Y-%m-%d").parse;
 
     // Fields where metrics are by day only (e.g.) older dates & operations metrics
@@ -104,7 +105,9 @@ CdrGraphs.prototype.draw = function() {
     this.drawCircles(throughput_uuid, deposits_by_uuid, xScaleUUID, yScaleDeposits, throughput);
     
     // By date
+    var xScaleBrush = this.xScales(data, width);
     var yScale = this.yScales(throughput_all, throughput, height_range);
+    var yScaleBrush = this.yScales(throughput_all, throughput, [0, this.brush_height]);
 
     var xAxis = this.getAxis(xScale, "bottom");
     var yAxis = this.getAxis(yScale, "left");
@@ -116,6 +119,25 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
+    // Add brush
+    var yAxisBrush = this.getAxis(yScaleBrush, "left");
+    var throughputLineBrush = this.lineGenerator(xScaleBrush, yScaleBrush, throughput);
+    var throughput_date_brush = this.showAxises("#throughput-date-brush", xAxis, yAxisBrush, width, "");
+    this.appendPath(throughput_date_brush, "throughput-date-brush-line", throughputLineBrush, throughput_all);
+
+    var params = {
+        brushXScale: xScaleBrush,
+        xScale: xScale,
+        yScale: yScale,
+        xAxis: xAxis,
+        yAxis: yAxis,
+        data: throughput_all,
+        field: "throughput_bytes",
+        chart_id: "throughput-date"
+    };
+    this.selectionBrushing(throughput_date_brush, params);
+
+    // Draw legend and heat strip
     this.drawLegend("#throughput-legend", throughput_all, throughput);
     drawStrip("#throughput-date-strip", throughput_all, throughput);
 
