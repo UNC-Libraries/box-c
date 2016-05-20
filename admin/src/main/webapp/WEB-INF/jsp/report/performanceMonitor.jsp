@@ -59,6 +59,7 @@
             </div>
         </div>
         <svg id="files-by-day"></svg>
+        <svg id="files-by-day-brush"></svg>
         <svg id="files-legend"></svg>
         <svg id="files-strip"></svg>
     </div>
@@ -75,6 +76,7 @@
             </div>
         </div>
         <svg id="duration-date"></svg>
+        
     </div>
     <div class="col-md-12">
         <h4 class="text-center">Deposit Duration By Total (<span id="duration-total-date-text">Total Time</span> Seconds)</h4>
@@ -86,6 +88,7 @@
                 <button type="button" class="btn btn-default" id="all_ingest_duration">Ingest Time</button>
             </div>
         </div>
+        <svg id="duration-total-date-brush"></svg>
         <svg id="duration-total-date"></svg>
     </div>
 </div>
@@ -100,6 +103,7 @@
             </div>
         </div>
         <svg id="total-deposits-date"></svg>
+        <svg id="total-deposits-date-brush"></svg>
         <svg id="total-deposits-legend"></svg>
         <svg id="total-deposits-date-strip"></svg>
     </div>
@@ -109,6 +113,7 @@
         <h4 class="text-center">Move Operations</h4>
         <div id="moves-date-stats"></div>
         <svg id="moves-date"></svg>
+        <svg id="moves-date-brush"></svg>
         <svg id="moves-legend"></svg>
         <svg id="moves-date-strip"></svg>
     </div>
@@ -128,6 +133,7 @@
         </div>
         <div id="enh-date-stats"></div>
         <svg id="enh-date"></svg>
+        <svg id="enh-date-brush"></svg>
         <svg id="enh-legend"></svg>
         <svg id="enh-date-strip"></svg>
     </div>
@@ -147,6 +153,7 @@
             </div>
         </div>
         <svg id="failed-enh-date"></svg>
+        <svg id="failed-enh-date-brush"></svg>
         <svg id="failed-enh-legend"></svg>
         <svg id="failed-enh-date-strip"></svg>
     </div>
