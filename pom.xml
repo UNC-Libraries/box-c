@@ -4,7 +4,7 @@
 	<groupId>edu.unc.lib.cdr</groupId>
 	<artifactId>cdr</artifactId>
 	<packaging>pom</packaging>
-	<version>3.4-SNAPSHOT</version>
+	<version>4.0-SNAPSHOT</version>
 	<name>Carolina Digital Repository</name>
 	<description>The Carolina Digital Repository (CDR) is a repository for material in electronic formats produced by members of the University of North Carolina at Chapel Hill community. Its chief purpose is to provide for the long-term preservation of such materials. By preservation we mean the ability to ingest the material, index and search it, replicate it, and keep it safe from alteration.</description>
 	<url>http://cdr.unc.edu</url>
@@ -71,7 +71,7 @@
 	</licenses>
 
 	<properties>
-		<cdr.version>3.4-SNAPSHOT</cdr.version>
+		<cdr.version>4.0-SNAPSHOT</cdr.version>
 		<spring.version>3.2.13.RELEASE</spring.version>
 		<fcrepo.version>3.8.0</fcrepo.version>
 		<spring.security.version>3.2.13.RELEASE</spring.security.version>
@@ -428,7 +428,7 @@
 			<dependency>
 				<groupId>edu.unc.lib.cdr</groupId>
 				<artifactId>fcrepo-clients</artifactId>
-				<version>3.4-SNAPSHOT</version>
+				<version>4.0-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.jackson</groupId>
