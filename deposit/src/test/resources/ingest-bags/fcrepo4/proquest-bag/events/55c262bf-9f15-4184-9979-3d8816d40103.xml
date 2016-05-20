@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<premis:premis xmlns:premis="info:lc/xmlns/premis-v2">
+  <object xmlns="info:lc/xmlns/premis-v2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="representation">
+    <objectIdentifier>
+      <objectIdentifierType>PID</objectIdentifierType>
+      <objectIdentifierValue>uuid:55c262bf-9f15-4184-9979-3d8816d40103</objectIdentifierValue>
+    </objectIdentifier>
+  </object>
+  <event xmlns="info:lc/xmlns/premis-v2">
+    <eventIdentifier>
+      <eventIdentifierType>URN</eventIdentifierType>
+      <eventIdentifierValue>urn:uuid:d90be8db-8e9b-4b2e-8efa-2f81a1708fc1</eventIdentifierValue>
+    </eventIdentifier>
+    <eventType>http://id.loc.gov/vocabulary/preservationEvents/normalization</eventType>
+    <eventDateTime>2014-04-29T17:24:51</eventDateTime>
+    <eventDetail>Normalized deposit package from http://proquest.com to http://cdr.unc.edu/BAGIT/profiles/N3</eventDetail>
+    <linkingAgentIdentifier>
+      <linkingAgentIdentifierType>PID</linkingAgentIdentifierType>
+      <linkingAgentIdentifierValue>edu.unc.lib.deposit.normalize.Proquest2N3BagJob</linkingAgentIdentifierValue>
+      <linkingAgentRole>Initiator</linkingAgentRole>
+    </linkingAgentIdentifier>
+  </event>
+</premis:premis>
+

@@ -14,6 +14,8 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -361,4 +363,14 @@ public abstract class AbstractDepositJob implements Runnable {
 		return new File(getDepositDirectory(), subpath);
 	}
 	
+	protected void serializeObjectModel(PID pid, Model objModel) {
+		File propertiesFile = new File(getSubdir(DepositConstants.AIPS_DIR), pid.getUUID() + ".ttl");
+		
+		try (FileOutputStream fos = new FileOutputStream(propertiesFile)) {
+			RDFDataMgr.write(fos, objModel, RDFFormat.TURTLE_PRETTY);
+		} catch (IOException e) {
+			failJob(e, "Failed to serialize properties for object {} to {}",
+					pid, propertiesFile.getAbsolutePath());
+		}
+	}
 }
