@@ -402,7 +402,7 @@ CdrGraphs.prototype.hideShow = function() {
  * @param yScale
  * @param axis
  */
-CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
+CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
     var _that = this;
     var values;
 
@@ -445,23 +445,36 @@ CdrGraphs.prototype.chartUpdate = function(selector, xScale, yScale, axis) {
             values = _that.data_store["duration-date"];
         }
 
+        // Rescale main chart
         d3.select(selected_chart + "-text").text(text);
-        yScale.domain([d3.max(values, function(d) { return d[type]}), 0]);
+        params.yScale.domain([d3.max(values, function(d) { return d[type]}), 0]);
 
         d3.select(selected_chart + " g.y.axis")
             .transition().duration(1500).ease("sin-in-out")
-            .call(axis);
+            .call(params.yAxis);
 
         var chart = d3.select(selected_chart);
-        
+
         // Check to see if a line chart or scatter plot
         if (d3.select(selected_chart + "-line")[0][0] !== null) {
-        	var lineScale = _that.lineGenerator(xScale, yScale, type);
-        	_that.redrawPath(selected_chart + "-line", lineScale, values);
+            var lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
+            _that.redrawPath(selected_chart + "-line", lineScale, values);
         } else {
-        	_that.drawCircles(chart, values, xScale, yScale, type);
+            _that.drawCircles(chart, values, params.xScale, params.yScale, type);
         }
 
+        // Redraw brush
+        if (brush) {
+            params.brushYScale.domain([d3.max(values, function(d) { return d[type]}), 0]);
+            var brushLineScale = _that.lineGenerator(params.xScale, params.brushYScale, type);
+            _that.redrawPath(selected_chart + "-brush-line", brushLineScale, values);
+
+            params.field = type;
+            params.data = values;
+            brush.selectionBrushing(params.brushAxis, params);
+        }
+
+        // Redisplay stats
         _that.statsDisplay(selected_chart + "-stats", values, type);
     });
 };

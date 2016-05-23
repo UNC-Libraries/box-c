@@ -159,9 +159,9 @@ CdrGraphs.prototype.draw = function() {
 
     this.statsDisplay("#files-by-ingest-stats", deposits_by_uuid, throughput_files);
     var throughput_files_uuid = this.showAxises("#files-by-ingest", xAxisFilesUUID, yAxisFilesUUID, width, "Throughput (Files)");
-    this.drawCircles(throughput_files_uuid, deposits_by_uuid, xScaleUUID, yScaleFilesUUID, throughput_files);	
+    this.drawCircles(throughput_files_uuid, deposits_by_uuid, xScaleUUID, yScaleFilesUUID, throughput_files);
     this.data_store["files-by-ingest"] = deposits_by_uuid;
-    this.chartUpdate("files-uuid", xScaleUUID, yScaleFilesUUID, yAxisFilesUUID);
+    this.chartUpdate("files-uuid", {xScale: xScaleUUID, yScale: yScaleFilesUUID, yAxis: yAxisFilesUUID}, false);
 
     // Total files
     var yScaleFiles = this.yScales(throughput_all, throughput_files, height_range);
@@ -175,8 +175,9 @@ CdrGraphs.prototype.draw = function() {
 
     focusHover(file_totals, throughput_all, "#files-by-day");
     this.data_store["files-by-day"] = throughput_all;
-    this.chartUpdate("files", xScale, yScaleFiles, yAxisFiles);
 
+
+    // Add Brush
     var yScaleFilesBrush = this.yScales(throughput_all, throughput_files, [0, this.brush_height]);
     var yAxisFileBrush = this.getAxis(yScaleFilesBrush, "left");
     var throughputFileBrush = this.lineGenerator(xScaleBrush, yScaleFilesBrush, throughput_files);
@@ -185,6 +186,8 @@ CdrGraphs.prototype.draw = function() {
 
     var files_params = {
         brushXScale: xScaleBrush,
+        brushYScale: yScaleBrush,
+        brushAxis: throughput_file_brush,
         xScale: xScale,
         yScale: yScaleFiles,
         xAxis: xAxis,
@@ -197,6 +200,8 @@ CdrGraphs.prototype.draw = function() {
     var fileBrush = new CreateBrush(this);
     fileBrush.selectionBrushing(throughput_file_brush, files_params);
 
+    this.chartUpdate("files", files_params, fileBrush);
+    // Add legend
     this.drawLegend("#files-legend", throughput_all, throughput_files);
     drawStrip("#files-strip", throughput_all, throughput_files);
 
@@ -217,7 +222,7 @@ CdrGraphs.prototype.draw = function() {
     this.statsDisplay("#duration-date-stats", deposits_by_uuid, total_time);
     this.drawCircles(duration_date, deposits_by_uuid, xScaleUUID, yScaleTotal, total_time);
     this.data_store["duration-date"] = deposits_by_uuid;
-    this.chartUpdate("time-uuid", xScaleUUID, yScaleTotal, yAxisDuration);
+    this.chartUpdate("time-uuid", {xScale: xScaleUUID, yScale: yScaleTotal, yAxis: yAxisDuration}, false);
 
     var yScaleTotalDay = this.yScales(uuid_all, total_time, height_range);
     var xAxisTotal = this.getAxis(xScaleUUID, "bottom");
@@ -229,7 +234,7 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(all_duration_date, "duration-total-date-line", durationLineScaleTotals, uuid_all);
     focusHover(all_duration_date, uuid_all, "#duration-total-date"); 
     this.data_store["duration-total-date"] = uuid_all;
-    this.chartUpdate("time", xScaleUUID, yScaleTotalDay, yAxisTotal);
+    this.chartUpdate("time", { xScale: xScaleUUID, yScale: yScaleTotalDay, yAxis: yAxisTotal}, false);
 
     /**
      *  Scatter plot & Strip plot - Total deposits by date
@@ -248,7 +253,31 @@ CdrGraphs.prototype.draw = function() {
     focusHover(total_deposits_date, data, "#total-deposits-date");
 
     this.data_store["total-deposits-date"] = data;
-    this.chartUpdate("total-deposits", xScale, yScaleTotalDeposits, yAxisTotalDeposits);
+
+    // Add brush
+    var yScaleTotalDepositsBrush = this.yScales(data, total_deposits, [0, this.brush_height]);
+    var yAxisTotalDepositsBrush = this.getAxis(yScaleTotalDepositsBrush, "left");
+    var totalDepositsBrush = this.lineGenerator(xScaleBrush, yScaleTotalDepositsBrush, total_deposits);
+    var total_deposits_date_brush = this.showAxises("#total-deposits-date-brush", xAxis, yAxisTotalDepositsBrush, width, "");
+    this.appendPath(total_deposits_date_brush, "total-deposits-date-brush-line", totalDepositsBrush, data);
+
+    var total_deposits_params = {
+        brushXScale: xScaleBrush,
+        brushYScale: yScaleTotalDepositsBrush,
+        brushAxis: total_deposits_date_brush,
+        xScale: xScale,
+        yScale: yScaleTotalDeposits,
+        xAxis: xAxis,
+        yAxis: yAxisTotalDeposits,
+        data: data,
+        field: total_deposits,
+        chart_id: "total-deposits-date"
+    };
+
+    var depositsBrush = new CreateBrush(this);
+    depositsBrush.selectionBrushing(total_deposits_date_brush, total_deposits_date_brush);
+
+    this.chartUpdate("total-deposits", total_deposits_params, depositsBrush);
 
     this.drawLegend("#total-deposits-legend", data, total_deposits);
     drawStrip("#total-deposits-date-strip", data, total_deposits);
@@ -269,6 +298,28 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(moves_date, "moves-date-line", movesLineScaleTotals, data);
     focusHover(moves_date, data, "#moves-date");
 
+    // Add brush
+    var yScaleMovesBrush = this.yScales(data, moves, [0, this.brush_height]);
+    var yAxisMovesBrush = this.getAxis(yScaleMovesBrush, "left");
+    var throughputMovesBrush = this.lineGenerator(xScaleBrush, yScaleMovesBrush, moves);
+    var throughput_moves_brush = this.showAxises("#moves-date-brush", xAxis, yAxisMovesBrush, width, "");
+    this.appendPath(throughput_moves_brush, "moves-date-brush-line", throughputMovesBrush, data);
+
+    var moves_params = {
+        brushXScale: xScaleBrush,
+        xScale: xScale,
+        yScale: yScaleMoves,
+        xAxis: xAxis,
+        yAxis: yAxisMoves,
+        data: data,
+        field: moves,
+        chart_id: "moves-date"
+    };
+
+    var movesBrush = new CreateBrush(this);
+    movesBrush.selectionBrushing(throughput_moves_brush, moves_params);
+
+    // Add legend
     this.drawLegend("#moves-legend", data, moves);
     drawStrip("#moves-date-strip", data, moves);
 
@@ -287,8 +338,33 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(finished_enh_date, "enh-date-line", endLineScaleTotals, data);
     focusHover(finished_enh_date, data, "#enh-date");
     this.data_store["enh-date"] = throughput_all;
-    this.chartUpdate("enh", xScale, yScaleFinishedEnh, yAxis_finished_enh);
 
+    // Add brush
+    var yScaleFinishedEnhBrush = this.yScales(data, finished_enh, [0, this.brush_height]);
+    var yAxisFinishedEnhBrush = this.getAxis(yScaleFinishedEnhBrush, "left");
+    var throughputFinishedEnhBrush = this.lineGenerator(xScaleBrush, yScaleFinishedEnhBrush, finished_enh);
+    var throughput_finished_enh_brush = this.showAxises("#enh-date-brush", xAxis, yAxisFinishedEnhBrush, width, "");
+    this.appendPath(throughput_finished_enh_brush, "enh-date-brush-line", throughputFinishedEnhBrush, data);
+
+    var finished_params = {
+        brushXScale: xScaleBrush,
+        brushYScale: yScaleFinishedEnhBrush,
+        brushAxis: throughput_finished_enh_brush,
+        xScale: xScale,
+        yScale: yScaleFinishedEnh,
+        xAxis: xAxis,
+        yAxis: yAxis_finished_enh,
+        data: data,
+        field: finished_enh,
+        chart_id: "enh-date"
+    };
+
+    var finishedBrush = new CreateBrush(this);
+    finishedBrush.selectionBrushing(throughput_finished_enh_brush, finished_params);
+
+    this.chartUpdate("enh", finished_params, finishedBrush);
+
+    // Draw strip chart and legend
     this.drawLegend("#enh-legend", data, finished_enh);
     drawStrip("#enh-date-strip", data, finished_enh);
 
@@ -306,8 +382,33 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(failed_enh_date, "failed-enh-date-line", failedEnhScaleTotals, data);
     focusHover(failed_enh_date, data, "#failed-enh-date");
     this.data_store["failed-enh-date"] = throughput_all;
-    this.chartUpdate("failed-enh", xScale, yScaleFailedEnh, yAxis_failed_enh);
 
+    // Add brush
+    var yScaleFailedEnhBrush = this.yScales(data, failed_enh, [0, this.brush_height]);
+    var yAxisFailedEnhBrush = this.getAxis(yScaleFailedEnhBrush, "left");
+    var throughputFailedEnhBrush = this.lineGenerator(xScaleBrush, yScaleFailedEnhBrush, failed_enh);
+    var throughput_failed_enh_brush = this.showAxises("#failed-enh-date-brush", xAxis, yAxisFailedEnhBrush, width, "");
+    this.appendPath(throughput_failed_enh_brush, "failed-enh-date-brush-line", throughputFailedEnhBrush, data);
+
+    var failed_params = {
+        brushXScale: xScaleBrush,
+        brushYScale: yScaleFailedEnhBrush,
+        brushAxis: throughput_failed_enh_brush,
+        xScale: xScale,
+        yScale: yScaleFailedEnh,
+        xAxis: xAxis,
+        yAxis: yAxis_failed_enh,
+        data: data,
+        field: failed_enh,
+        chart_id: "failed-enh-date"
+    };
+
+    var failedBrush = new CreateBrush(this);
+    failedBrush.selectionBrushing(throughput_failed_enh_brush, failed_params);
+
+    this.chartUpdate("failed-enh", failed_params, failedBrush);
+
+    // Add legend
     this.drawLegend("#failed-enh-legend", data, failed_enh);
     drawStrip("#failed-enh-date-strip", data, failed_enh);
 
