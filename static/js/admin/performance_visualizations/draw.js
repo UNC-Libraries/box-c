@@ -94,7 +94,7 @@ CdrGraphs.prototype.draw = function() {
      **/
     var throughput = "throughput_bytes";
     
- // By uuid
+    // By uuid
     var yScaleDeposits = this.yScales(deposits_by_uuid, throughput, height_range);
 
     var xAxisDeposits = this.getAxis(xScaleUUID, "bottom");
@@ -125,7 +125,7 @@ CdrGraphs.prototype.draw = function() {
     var throughput_date_brush = this.showAxises("#throughput-date-brush", xAxis, yAxisBrush, width, "");
     this.appendPath(throughput_date_brush, "throughput-date-brush-line", throughputLineBrush, throughput_all);
 
-    var params = {
+    var throughtput_params = {
         brushXScale: xScaleBrush,
         xScale: xScale,
         yScale: yScale,
@@ -135,7 +135,9 @@ CdrGraphs.prototype.draw = function() {
         field: "throughput_bytes",
         chart_id: "throughput-date"
     };
-    this.selectionBrushing(throughput_date_brush, params);
+
+    var throughputBrush = new CreateBrush(this);
+    throughputBrush.selectionBrushing(throughput_date_brush, throughtput_params);
 
     // Draw legend and heat strip
     this.drawLegend("#throughput-legend", throughput_all, throughput);
@@ -148,7 +150,6 @@ CdrGraphs.prototype.draw = function() {
      */
 
     var throughput_files = "throughput_files";
-    var throughput_avg_size = "avg_filesize";
 
     // Files by Deposit
     var yScaleFilesUUID = this.yScales(deposits_by_uuid, throughput_files, height_range);
@@ -175,6 +176,26 @@ CdrGraphs.prototype.draw = function() {
     focusHover(file_totals, throughput_all, "#files-by-day");
     this.data_store["files-by-day"] = throughput_all;
     this.chartUpdate("files", xScale, yScaleFiles, yAxisFiles);
+
+    var yScaleFilesBrush = this.yScales(throughput_all, throughput_files, [0, this.brush_height]);
+    var yAxisFileBrush = this.getAxis(yScaleFilesBrush, "left");
+    var throughputFileBrush = this.lineGenerator(xScaleBrush, yScaleFilesBrush, throughput_files);
+    var throughput_file_brush = this.showAxises("#files-by-day-brush", xAxis, yAxisFileBrush, width, "");
+    this.appendPath(throughput_file_brush, "files-by-day-brush-line", throughputFileBrush, throughput_all);
+
+    var files_params = {
+        brushXScale: xScaleBrush,
+        xScale: xScale,
+        yScale: yScaleFiles,
+        xAxis: xAxis,
+        yAxis: yAxisFiles,
+        data: throughput_all,
+        field: throughput_files,
+        chart_id: "files-by-day"
+    };
+
+    var fileBrush = new CreateBrush(this);
+    fileBrush.selectionBrushing(throughput_file_brush, files_params);
 
     this.drawLegend("#files-legend", throughput_all, throughput_files);
     drawStrip("#files-strip", throughput_all, throughput_files);

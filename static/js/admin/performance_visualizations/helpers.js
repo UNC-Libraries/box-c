@@ -163,7 +163,7 @@ CdrGraphs.prototype.lineGenerator = function(xScale, yScale, y) {
 CdrGraphs.prototype.appendPath = function(svg, id, scale, data) {
     svg.append("path#" + id)
         .attr("fill", "none")
-        .attr("stroke", "steelblue")
+        .attr("stroke", "lightgray")
         .attr("stroke-width", 2.5)
         .attr("d", scale(data))
         .translate([this.margins.left, this.margins.top]);
@@ -638,6 +638,16 @@ CdrGraphs.prototype.combined = function(arr1, arr2) {
     return combined;
 };
 
+
+/**
+ * Pass in the CdrGraphs object context to get access to its methods
+ * @param parent
+ * @constructor
+ */
+function CreateBrush(parent) {
+    this.parent = parent;
+}
+
 /**
  * Create brush to select subset of elements in a graph
  * Example of required fields in configuration object "params"
@@ -656,20 +666,22 @@ CdrGraphs.prototype.combined = function(arr1, arr2) {
 
  * @returns {*}
  */
-CdrGraphs.prototype.selectionBrushing = function(graph, params) {
+CreateBrush.prototype.selectionBrushing = function(graph, params) {
     var _that = this;
+    var brush_height = this.parent.brush_height;
+
     var brush = d3.svg.brush()
         .x(params.brushXScale)
         .on("brushend", brushed);
 
     var brushg = graph.append("g")
         .attr("class", "brush")
-        .translate([this.margins.left, 0])
+        .translate([this.parent.margins.left, 0])
         .call(brush);
 
     brushg.selectAll("rect")
-        .attr("height", this.brush_height)
-        .translate([0, this.margins.top]);
+        .attr("height", brush_height)
+        .translate([0, this.parent.margins.top]);
 
     function brushed() {
         var updated, lineScale;
@@ -681,15 +693,15 @@ CdrGraphs.prototype.selectionBrushing = function(graph, params) {
             });
 
             params.yScale.domain([d3.max(updated, d3.f(params.field)), 0]);
-            lineScale = _that.lineGenerator(params.xScale, params.yScale, params.field);
+            lineScale = _that.parent.lineGenerator(params.xScale, params.yScale, params.field);
         } else {
             params.xScale.domain(d3.extent(params.data, d3.f('date')));
             updated = params.data;
             params.yScale.domain([d3.max(params.data, d3.f(params.field)), 0]);
-            lineScale = _that.lineGenerator(params.xScale, params.yScale, params.field);
+            lineScale = _that.parent.lineGenerator(params.xScale, params.yScale, params.field);
         }
 
-        _that.redrawPath("#" + params.chart_id + "-line", lineScale, updated);
+        _that.parent.redrawPath("#" + params.chart_id + "-line", lineScale, updated);
         d3.select("#" + params.chart_id +" .x.axis").transition().duration(500).ease("sin-in-out").call(params.xAxis);
         d3.select("#" + params.chart_id +" .y.axis").transition().duration(500).ease("sin-in-out").call(params.yAxis);
     }
