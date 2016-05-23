@@ -1079,7 +1079,7 @@ p.navigation_bar a {
 .jp2_imageviewer_window {
 	background-color: #F6FBFD;
 	border: 1px solid #C8D8E0;
-	width: 600px;
+	width: 100%;
 	height: 500px;
 	display: none;
 	box-shadow: 0 0 20px #C8D8E0 inset;
