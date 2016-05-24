@@ -10,7 +10,6 @@ CdrGraphs.prototype.draw = function() {
      */
     var _that = this;
     var width = window.innerWidth - this.margins.left - this.margins.right;
-    var half_width = width / 2;
     var parseDate = d3.time.format("%Y-%m-%d").parse;
 
     // Fields where metrics are by day only (e.g.) older dates & operations metrics
@@ -125,7 +124,7 @@ CdrGraphs.prototype.draw = function() {
     var throughput_date_brush = this.showAxises("#throughput-date-brush", xAxis, yAxisBrush, width, "");
     this.appendPath(throughput_date_brush, "throughput-date-brush-line", throughputLineBrush, throughput_all);
 
-    var throughtput_params = {
+    var throughput_params = {
         brushXScale: xScaleBrush,
         xScale: xScale,
         yScale: yScale,
@@ -137,7 +136,7 @@ CdrGraphs.prototype.draw = function() {
     };
 
     var throughputBrush = new CreateBrush(this);
-    throughputBrush.selectionBrushing(throughput_date_brush, throughtput_params);
+    throughputBrush.selectionBrushing(throughput_date_brush, throughput_params);
 
     // Draw legend and heat strip
     this.drawLegend("#throughput-legend", throughput_all, throughput);
@@ -198,9 +197,9 @@ CdrGraphs.prototype.draw = function() {
     };
 
     var fileBrush = new CreateBrush(this);
-    fileBrush.selectionBrushing(throughput_file_brush, files_params);
+    var stuff = fileBrush.selectionBrushing(throughput_file_brush, files_params);
 
-    this.chartUpdate("files", files_params, fileBrush);
+    this.chartUpdate("files", files_params, stuff);
     // Add legend
     this.drawLegend("#files-legend", throughput_all, throughput_files);
     drawStrip("#files-strip", throughput_all, throughput_files);
@@ -224,6 +223,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["duration-date"] = deposits_by_uuid;
     this.chartUpdate("time-uuid", {xScale: xScaleUUID, yScale: yScaleTotal, yAxis: yAxisDuration}, false);
 
+    // duration totals by day
     var yScaleTotalDay = this.yScales(uuid_all, total_time, height_range);
     var xAxisTotal = this.getAxis(xScaleUUID, "bottom");
     var yAxisTotal = this.getAxis(yScaleTotalDay, "left");
@@ -234,7 +234,32 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(all_duration_date, "duration-total-date-line", durationLineScaleTotals, uuid_all);
     focusHover(all_duration_date, uuid_all, "#duration-total-date"); 
     this.data_store["duration-total-date"] = uuid_all;
-    this.chartUpdate("time", { xScale: xScaleUUID, yScale: yScaleTotalDay, yAxis: yAxisTotal}, false);
+
+    // Add brush
+    var xScaleUUIDBrush = this.xScales(uuid_all, width);
+    var yScaleTotalDurationBrush = this.yScales(uuid_all, total_time, [0, this.brush_height]);
+    var yAxisTotalDurationBrush = this.getAxis(yScaleTotalDurationBrush, "left");
+    var totalDurationBrush = this.lineGenerator(xScaleUUID, yScaleTotalDurationBrush, total_time);
+    var total_duration_date_brush = this.showAxises("#duration-total-date-brush", xAxis, yAxisTotalDurationBrush, width, "");
+    this.appendPath(total_duration_date_brush, "duration-total-date-brush-line", totalDurationBrush, uuid_all);
+
+    var total_duration_params = {
+        brushXScale: xScaleUUIDBrush,
+        brushYScale: yScaleTotalDurationBrush,
+        brushAxis: total_duration_date_brush,
+        xScale: xScaleUUID,
+        yScale: yScaleTotalDay,
+        xAxis: xAxisTotal,
+        yAxis: yAxisTotal,
+        data: uuid_all,
+        field: total_time,
+        chart_id: "duration-total-date"
+    };
+
+    var durationBrush = new CreateBrush(this);
+    durationBrush.selectionBrushing(total_duration_date_brush, total_duration_params);
+
+    this.chartUpdate("time", total_duration_params, durationBrush);
 
     /**
      *  Scatter plot & Strip plot - Total deposits by date
@@ -275,7 +300,7 @@ CdrGraphs.prototype.draw = function() {
     };
 
     var depositsBrush = new CreateBrush(this);
-    depositsBrush.selectionBrushing(total_deposits_date_brush, total_deposits_date_brush);
+    depositsBrush.selectionBrushing(total_deposits_date_brush, total_deposits_params);
 
     this.chartUpdate("total-deposits", total_deposits_params, depositsBrush);
 

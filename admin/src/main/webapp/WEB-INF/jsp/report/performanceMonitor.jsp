@@ -88,8 +88,8 @@
                 <button type="button" class="btn btn-default" id="all_ingest_duration">Ingest Time</button>
             </div>
         </div>
-        <svg id="duration-total-date-brush"></svg>
         <svg id="duration-total-date"></svg>
+        <svg id="duration-total-date-brush"></svg>
     </div>
 </div>
 <div class="row dim">

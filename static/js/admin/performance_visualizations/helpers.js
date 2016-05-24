@@ -456,22 +456,32 @@ CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
         var chart = d3.select(selected_chart);
 
         // Check to see if a line chart or scatter plot
-        if (d3.select(selected_chart + "-line")[0][0] !== null) {
+        if (d3.select(selected_chart + "-line")[0][0] !== null && !brush) {
             var lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
             _that.redrawPath(selected_chart + "-line", lineScale, values);
-        } else {
-            _that.drawCircles(chart, values, params.xScale, params.yScale, type);
-        }
 
-        // Redraw brush
-        if (brush) {
+        } else if(d3.select(selected_chart + "-line")[0][0] !== null && brush) {
+            // Update main chart
+            params.xScale.domain(d3.extent(values, d3.f('date')));
+
+            var lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
+            _that.redrawPath(selected_chart + "-line", lineScale, values);
+
+            d3.select(selected_chart + " g.x.axis")
+                .transition().duration(1500).ease("sin-in-out")
+                .call(params.xAxis);
+
+            // Update its brush chart. Remove old brush & add new one.
             params.brushYScale.domain([d3.max(values, function(d) { return d[type]}), 0]);
             var brushLineScale = _that.lineGenerator(params.xScale, params.brushYScale, type);
             _that.redrawPath(selected_chart + "-brush-line", brushLineScale, values);
 
+          //  d3.select(selected_chart + "-brush g.brush").remove();
             params.field = type;
             params.data = values;
             brush.selectionBrushing(params.brushAxis, params);
+        } else {
+            _that.drawCircles(chart, values, params.xScale, params.yScale, type);
         }
 
         // Redisplay stats
@@ -704,7 +714,6 @@ CreateBrush.prototype.selectionBrushing = function(graph, params) {
             updated = params.data.filter(function(d) {
                 return d.date.getTime() >= brush.extent()[0].getTime() && d.date.getTime() <= brush.extent()[1].getTime() ;
             });
-
             params.yScale.domain([d3.max(updated, d3.f(params.field)), 0]);
             lineScale = _that.parent.lineGenerator(params.xScale, params.yScale, params.field);
         } else {
