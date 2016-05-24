@@ -33,8 +33,6 @@
         <div id="throughput-stats"></div>
         <svg id="throughput-date"></svg>
         <svg id="throughput-date-brush"></svg>
-        <svg id="throughput-legend"></svg>
-        <svg id="throughput-date-strip"></svg>
     </div>
 </div>
 <div class="row dim">
@@ -60,8 +58,6 @@
         </div>
         <svg id="files-by-day"></svg>
         <svg id="files-by-day-brush"></svg>
-        <svg id="files-legend"></svg>
-        <svg id="files-strip"></svg>
     </div>
 </div>
 <div class="row dim">
@@ -104,8 +100,6 @@
         </div>
         <svg id="total-deposits-date"></svg>
         <svg id="total-deposits-date-brush"></svg>
-        <svg id="total-deposits-legend"></svg>
-        <svg id="total-deposits-date-strip"></svg>
     </div>
 </div>
 <div class="row dim">
@@ -114,8 +108,6 @@
         <div id="moves-date-stats"></div>
         <svg id="moves-date"></svg>
         <svg id="moves-date-brush"></svg>
-        <svg id="moves-legend"></svg>
-        <svg id="moves-date-strip"></svg>
     </div>
 </div>
 <div class="row dim">
@@ -134,8 +126,6 @@
         <div id="enh-date-stats"></div>
         <svg id="enh-date"></svg>
         <svg id="enh-date-brush"></svg>
-        <svg id="enh-legend"></svg>
-        <svg id="enh-date-strip"></svg>
     </div>
 </div>
 <div class="row dim">
@@ -154,14 +144,10 @@
         </div>
         <svg id="failed-enh-date"></svg>
         <svg id="failed-enh-date-brush"></svg>
-        <svg id="failed-enh-legend"></svg>
-        <svg id="failed-enh-date-strip"></svg>
     </div>
 </div>
 <script src="/static/js/admin/performance_visualizations/assets/d3/d3.min.js" charset="utf-8"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-queue/d3-queue.min.js"></script>
-<script src="/static/js/admin/performance_visualizations/assets/d3-tip/d3-tip.min.js"></script>
-<script src="/static/js/admin/performance_visualizations/assets/d3-legend/d3-legend.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-jetpack/d3-jetpack.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/ramda/ramda-merge-with-key-only.js"></script>
 <script src="/static/js/admin/performance_visualizations/helpers.js"></script>

@@ -57,11 +57,6 @@ div.tooltip {
     color:white;
 }
 
-rect {
-	stroke: lightgray;
-	stroke-width: .5;
-}
-
 .smaller,
 .smaller li {
     font-weight: normal;
@@ -146,66 +141,4 @@ ul.columns {
     stroke: #fff;
     fill-opacity: .125;
     shape-rendering: crispEdges;
-}
-
-/* D3-tip CSS From http://rawgit.com/Caged/d3-tip/master/examples/example-styles.css */
-
-.d3-tip {
-    line-height: 1;
-    font-weight: bold;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0.8);
-    width: 275px;
-    height: auto;
-    color: #fff;
-    -moz-border-radius: 8px;
-    -webkit-border-radius: 8px;
-    border-radius: 8px;
-    pointer-events: none;
-}
-
-/* Creates a small triangle extender for the tooltip */
-.d3-tip:after {
-    box-sizing: border-box;
-    display: inline;
-    font-size: 10px;
-    width: 100%;
-    line-height: 1;
-    color: rgba(0, 0, 0, 0.8);
-    position: absolute;
-    pointer-events: none;
-}
-
-/* Northward tooltips */
-.d3-tip.n:after {
-    content: "\25BC";
-    margin: -1px 0 0 0;
-    top: 100%;
-    left: 0;
-    text-align: center;
-}
-
-/* Eastward tooltips */
-.d3-tip.e:after {
-    content: "\25C0";
-    margin: -4px 0 0 0;
-    top: 50%;
-    left: -8px;
-}
-
-/* Southward tooltips */
-.d3-tip.s:after {
-    content: "\25B2";
-    margin: 0 0 1px 0;
-    top: -8px;
-    left: 0;
-    text-align: center;
-}
-
-/* Westward tooltips */
-.d3-tip.w:after {
-    content: "\25B6";
-    margin: -4px 0 0 -1px;
-    top: 50%;
-    left: 100%;
 }

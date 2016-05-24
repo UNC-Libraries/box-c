@@ -341,54 +341,6 @@ CdrGraphs.prototype.colorList = function(type) {
 };
 
 /**
- * Color codes for strip charts
- * @param data
- * @param type
- * @returns {*}
- */
-CdrGraphs.prototype.stripColors = function(data, type) {
-    var colors = this.colorList(type);
-
-    return d3.scale.quantize()
-        .domain([0, d3.max(data, function(d) { return d[type]})])
-        .range(colors);
-};
-
-/**
- * Create legend
- * @param selector
- * @param type
- * @returns {*}
- */
-CdrGraphs.prototype.drawLegend = function(selector, data, type) {
-    var scale = this.stripColors(data, type);
-    var class_name = "legend-" + type;
-    var width = window.innerWidth - this.margins.left - this.margins.right;
-
-    var svg = d3.select(selector)
-        .attr("height", 50)
-        .attr("width", width);
-
-    svg.append("g")
-        .attr("class", class_name)
-        .attr("width", width)
-        .translate([this.margins.left, 0]);
-
-    var legend = d3.legend.color()
-        .shapeWidth(90)
-        .cells(9)
-        .orient("horizontal")
-        .labelFormat(d3.format(",.4r"));
-
-    legend.scale(scale);
-
-    svg.select("." + class_name)
-        .call(legend);
-
-    return svg;
-};
-
-/**
  * Hide show loader/graphs
  */
 CdrGraphs.prototype.hideShow = function() {
@@ -453,9 +405,9 @@ CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
             .transition().duration(1500).ease("sin-in-out")
             .call(params.yAxis);
 
+        // Check to see if a line chart or scatter plot
         var chart = d3.select(selected_chart);
 
-        // Check to see if a line chart or scatter plot
         if (d3.select(selected_chart + "-line")[0][0] !== null && !brush) {
             var lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
             _that.redrawPath(selected_chart + "-line", lineScale, values);

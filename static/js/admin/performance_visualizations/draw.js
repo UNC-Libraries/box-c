@@ -138,10 +138,6 @@ CdrGraphs.prototype.draw = function() {
     var throughputBrush = new CreateBrush(this);
     throughputBrush.selectionBrushing(throughput_date_brush, throughput_params);
 
-    // Draw legend and heat strip
-    this.drawLegend("#throughput-legend", throughput_all, throughput);
-    drawStrip("#throughput-date-strip", throughput_all, throughput);
-
     /**
      * File Counts by Deposit & Date
      *
@@ -200,10 +196,6 @@ CdrGraphs.prototype.draw = function() {
     var stuff = fileBrush.selectionBrushing(throughput_file_brush, files_params);
 
     this.chartUpdate("files", files_params, stuff);
-    // Add legend
-    this.drawLegend("#files-legend", throughput_all, throughput_files);
-    drawStrip("#files-strip", throughput_all, throughput_files);
-
 
     /**
      * Deposit Duration
@@ -304,9 +296,6 @@ CdrGraphs.prototype.draw = function() {
 
     this.chartUpdate("total-deposits", total_deposits_params, depositsBrush);
 
-    this.drawLegend("#total-deposits-legend", data, total_deposits);
-    drawStrip("#total-deposits-date-strip", data, total_deposits);
-
     /**
      *  Scatter plot & Strip plot - moves by date
      *
@@ -343,11 +332,6 @@ CdrGraphs.prototype.draw = function() {
 
     var movesBrush = new CreateBrush(this);
     movesBrush.selectionBrushing(throughput_moves_brush, moves_params);
-
-    // Add legend
-    this.drawLegend("#moves-legend", data, moves);
-    drawStrip("#moves-date-strip", data, moves);
-
 
     /**
      * Scatter plot & Strip plot - enhancements by date
@@ -389,12 +373,8 @@ CdrGraphs.prototype.draw = function() {
 
     this.chartUpdate("enh", finished_params, finishedBrush);
 
-    // Draw strip chart and legend
-    this.drawLegend("#enh-legend", data, finished_enh);
-    drawStrip("#enh-date-strip", data, finished_enh);
-
     /**
-     * Scatter plot & Strip plot - failed enhancements by date
+     * Scatter plot & line chart - failed enhancements by date
      */
 
     var failed_enh = "failed_all_enh";
@@ -433,56 +413,8 @@ CdrGraphs.prototype.draw = function() {
 
     this.chartUpdate("failed-enh", failed_params, failedBrush);
 
-    // Add legend
-    this.drawLegend("#failed-enh-legend", data, failed_enh);
-    drawStrip("#failed-enh-date-strip", data, failed_enh);
-
     // Make graphs visible
     this.hideShow();
-
-
-    /**
-     * Draw strip chart
-     * @param selector
-     * @param data
-     * @param field
-     * @returns {*}
-     */
-    function drawStrip(selector, data, field) {
-        var strip_color = _that.stripColors(data, field);
-        var tip = d3.tip().attr("class", "d3-tip").html(function(d) {
-            return _that.tipTextOperations(d);
-        });
-
-        var strip = d3.select(selector)
-            .attr("width", width + _that.margins.left + _that.margins.right)
-            .attr("height", 110)
-            .call(tip);
-
-        var add = strip.selectAll("bar")
-            .data(data);
-
-        add.enter().append("rect");
-
-        add.attr("x", function(d) { return xScale(d.date); })
-            .attr("width", 4)
-            .attr("y", 0)
-            .attr("height", 80)
-            .translate([_that.margins.left, 0])
-            .style("fill", function(d) { return strip_color(d[field]); })
-            .on("mouseover", function(d) {
-                d3.select(this).attr("height", 100);
-                tip.show.call(this, d);
-            })
-            .on("mouseout", function(d) {
-                d3.select(this).attr("height", 80);
-                tip.hide.call(this, d);
-            });
-
-        add.exit().remove();
-
-        return add;
-    }
 
     /**
      * Add overlay line & text
