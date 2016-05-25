@@ -1107,12 +1107,6 @@ p.navigation_bar a {
 	height: 100%;
 }
 
-#video_player {
-	width: 100%;
-	height: 500px;
-	display: none;
-}
-
 #audio_player {
 	display: none;
 	width: 100%;
