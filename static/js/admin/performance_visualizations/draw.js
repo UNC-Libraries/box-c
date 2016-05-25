@@ -53,6 +53,7 @@ CdrGraphs.prototype.draw = function() {
     var deposits_by_uuid = this.dateSort(deposits_filtered);
 
     var height_range = [0, this.height];
+    var brush_height = [0, this.brush_height];
 
     // X-axis scales for charts
     var xScale = this.xScales(data, width);
@@ -106,7 +107,7 @@ CdrGraphs.prototype.draw = function() {
     // By date
     var xScaleBrush = this.xScales(data, width);
     var yScale = this.yScales(throughput_all, throughput, height_range);
-    var yScaleBrush = this.yScales(throughput_all, throughput, [0, this.brush_height]);
+    var yScaleBrush = this.yScales(throughput_all, throughput, brush_height);
 
     var xAxis = this.getAxis(xScale, "bottom");
     var yAxis = this.getAxis(yScale, "left");
@@ -173,7 +174,7 @@ CdrGraphs.prototype.draw = function() {
 
 
     // Add Brush
-    var yScaleFilesBrush = this.yScales(throughput_all, throughput_files, [0, this.brush_height]);
+    var yScaleFilesBrush = this.yScales(throughput_all, throughput_files, brush_height);
     var yAxisFileBrush = this.getAxis(yScaleFilesBrush, "left");
     var throughputFileBrush = this.lineGenerator(xScaleBrush, yScaleFilesBrush, throughput_files);
     var throughput_file_brush = this.showAxises("#files-by-day-brush", xAxis, yAxisFileBrush, width, "");
@@ -229,7 +230,7 @@ CdrGraphs.prototype.draw = function() {
 
     // Add brush
     var xScaleUUIDBrush = this.xScales(uuid_all, width);
-    var yScaleTotalDurationBrush = this.yScales(uuid_all, total_time, [0, this.brush_height]);
+    var yScaleTotalDurationBrush = this.yScales(uuid_all, total_time, brush_height);
     var yAxisTotalDurationBrush = this.getAxis(yScaleTotalDurationBrush, "left");
     var totalDurationBrush = this.lineGenerator(xScaleUUID, yScaleTotalDurationBrush, total_time);
     var total_duration_date_brush = this.showAxises("#duration-total-date-brush", xAxis, yAxisTotalDurationBrush, width, "");
@@ -272,7 +273,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["total-deposits-date"] = data;
 
     // Add brush
-    var yScaleTotalDepositsBrush = this.yScales(data, total_deposits, [0, this.brush_height]);
+    var yScaleTotalDepositsBrush = this.yScales(data, total_deposits, brush_height);
     var yAxisTotalDepositsBrush = this.getAxis(yScaleTotalDepositsBrush, "left");
     var totalDepositsBrush = this.lineGenerator(xScaleBrush, yScaleTotalDepositsBrush, total_deposits);
     var total_deposits_date_brush = this.showAxises("#total-deposits-date-brush", xAxis, yAxisTotalDepositsBrush, width, "");
@@ -313,7 +314,7 @@ CdrGraphs.prototype.draw = function() {
     focusHover(moves_date, data, "#moves-date");
 
     // Add brush
-    var yScaleMovesBrush = this.yScales(data, moves, [0, this.brush_height]);
+    var yScaleMovesBrush = this.yScales(data, moves, brush_height);
     var yAxisMovesBrush = this.getAxis(yScaleMovesBrush, "left");
     var throughputMovesBrush = this.lineGenerator(xScaleBrush, yScaleMovesBrush, moves);
     var throughput_moves_brush = this.showAxises("#moves-date-brush", xAxis, yAxisMovesBrush, width, "");
@@ -349,7 +350,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["enh-date"] = throughput_all;
 
     // Add brush
-    var yScaleFinishedEnhBrush = this.yScales(data, finished_enh, [0, this.brush_height]);
+    var yScaleFinishedEnhBrush = this.yScales(data, finished_enh, brush_height);
     var yAxisFinishedEnhBrush = this.getAxis(yScaleFinishedEnhBrush, "left");
     var throughputFinishedEnhBrush = this.lineGenerator(xScaleBrush, yScaleFinishedEnhBrush, finished_enh);
     var throughput_finished_enh_brush = this.showAxises("#enh-date-brush", xAxis, yAxisFinishedEnhBrush, width, "");
@@ -389,7 +390,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["failed-enh-date"] = throughput_all;
 
     // Add brush
-    var yScaleFailedEnhBrush = this.yScales(data, failed_enh, [0, this.brush_height]);
+    var yScaleFailedEnhBrush = this.yScales(data, failed_enh, brush_height);
     var yAxisFailedEnhBrush = this.getAxis(yScaleFailedEnhBrush, "left");
     var throughputFailedEnhBrush = this.lineGenerator(xScaleBrush, yScaleFailedEnhBrush, failed_enh);
     var throughput_failed_enh_brush = this.showAxises("#failed-enh-date-brush", xAxis, yAxisFailedEnhBrush, width, "");

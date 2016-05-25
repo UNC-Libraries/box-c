@@ -62,7 +62,7 @@ CdrGraphs.prototype.getAxis = function(scale, orientation) {
  * @returns {*}
  */
 CdrGraphs.prototype.showAxises = function(selector, xAxis, yAxis, width, text) {
-    var height_type, width;
+    var height_type;
     var is_brush = /brush/.test(selector);
 
     if (is_brush) {
@@ -350,9 +350,9 @@ CdrGraphs.prototype.hideShow = function() {
 
 /**
  * Update charts
- * @param xScale
- * @param yScale
- * @param axis
+ * @param selector this is a unique class name in the parent div of the selected button group
+ * @param params
+ * @param brush
  */
 CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
     var _that = this;
