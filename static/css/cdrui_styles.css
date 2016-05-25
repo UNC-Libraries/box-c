@@ -1079,7 +1079,7 @@ p.navigation_bar a {
 .jp2_imageviewer_window {
 	background-color: #F6FBFD;
 	border: 1px solid #C8D8E0;
-	width: 600px;
+	width: 100%;
 	height: 500px;
 	display: none;
 	box-shadow: 0 0 20px #C8D8E0 inset;
@@ -1107,15 +1107,9 @@ p.navigation_bar a {
 	height: 100%;
 }
 
-#video_player {
-	width: 425px;
-	height: 300px;
-	display: none;
-}
-
 #audio_player {
 	display: none;
-	width: 425px;
+	width: 100%;
 	height: 30px;
 	border: 1px solid #C8D8E0;
 	margin: 5px 5px 0 0;

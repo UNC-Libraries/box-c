@@ -62,7 +62,8 @@
 					<c:if test="${not empty embargoDate}"><li><span class="bold">Embargoed Until:</span> <fmt:formatDate pattern="yyyy-MM-dd" value="${embargoDate}" /></li></c:if>
 				</ul>
 			</div>
-			<div class="clear">
+		</div>
+		<div class="clear">
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
 					<div class="actionlink left download">
@@ -80,7 +81,6 @@
 					</div>
 				</c:when>
 			</c:choose>
-			
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
@@ -103,7 +103,6 @@
 					</c:choose>
 				</c:when>
 			</c:choose>
-			</div>
 		</div>
 	</div>
 </div>
