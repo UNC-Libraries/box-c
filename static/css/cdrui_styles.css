@@ -235,6 +235,10 @@ div#username_wrap {
 	font-size: 11px;
 }
 
+.searchitem h2 a:visited {
+    color: #656096;
+}
+
 .searchitem_container_count {
 	color: #676777;
 	white-space: nowrap;
