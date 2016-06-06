@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.ui.service.LorisContentService;
@@ -102,16 +101,17 @@ public class LorisContentController extends AbstractSolrSearchController {
 	 * @param request
 	 * @param response
 	 */
-	@RequestMapping("/jp2Region/{id}/{datastream}")
+	@RequestMapping("/jp2Region/{id}/{datastream}/{region}/{size}/{rotation}/{quality}.{format}/")
 	public void getRegion(@PathVariable("id") String id,
-			@PathVariable("datastream") String datastream, @RequestParam("svc.region") String region,
-			@RequestParam("svc.level") String scale, @RequestParam("svc.rotate") String rotate,
+			@PathVariable("datastream") String datastream, @PathVariable("region") String region,
+			@PathVariable("size") String size, @PathVariable("rotation") String rotation,
+			@PathVariable("quality") String quality, @PathVariable("format") String format,
 			HttpServletResponse response) {
 		// Check if the user is allowed to view this object
 		if (this.hasAccess(id, datastream)) {
 			try {
 				lorisContentService
-						.streamJP2(id, region, scale, rotate, datastream, response.getOutputStream(), response);
+						.streamJP2(id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
 			} catch (IOException e) {
 				LOG.error("Error retrieving streaming JP2 content for " + id, e);
 			}
