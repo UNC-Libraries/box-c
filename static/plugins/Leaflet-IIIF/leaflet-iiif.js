@@ -26,6 +26,13 @@ L.TileLayer.Iiif = L.TileLayer.extend({
     }
 
     options = L.setOptions(this, options);
+
+    if (typeof options.tileProxyPath !== 'undefined') {
+      this.tileProxyPath = options.tileProxyPath;
+    } else {
+      this.tileProxyPath = null;
+    }
+
     this._infoDeferred = new $.Deferred();
     this._infoUrl = url;
     this._baseUrl = this._templateUrl();
@@ -113,7 +120,6 @@ L.TileLayer.Iiif = L.TileLayer.extend({
   },
   _getInfo: function() {
     var _this = this;
-
     // Look for a way to do this without jQuery
     $.getJSON(_this._infoUrl)
       .done(function(data) {
@@ -188,11 +194,15 @@ L.TileLayer.Iiif = L.TileLayer.extend({
         _this._infoDeferred.resolve();
       });
   },
-  _infoToBaseUrl: function() {
+  _infoToTileUrl: function() {
+    if (this.tileProxyPath !== null) {
+      return this.tileProxyPath;
+    }
+
     return this._infoUrl.replace('info.json', '');
   },
   _templateUrl: function() {
-    return this._infoToBaseUrl() + '{region}/{size}/{rotation}/{quality}.{format}';
+    return this._infoToTileUrl() + '/{region}/{size}/{rotation}/{quality}.{format}/';
   },
   _tileShouldBeLoaded: function(coords) {
     var _this = this,
