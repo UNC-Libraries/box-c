@@ -33,6 +33,10 @@ L.TileLayer.Iiif = L.TileLayer.extend({
       this.tileProxyPath = null;
     }
 
+    if (typeof options.mapSelector !== 'undefined') {
+        this.mapSelector = options.mapSelector;
+    }
+
     this._infoDeferred = new $.Deferred();
     this._infoUrl = url;
     this._baseUrl = this._templateUrl();
@@ -123,6 +127,12 @@ L.TileLayer.Iiif = L.TileLayer.extend({
     // Look for a way to do this without jQuery
     $.getJSON(_this._infoUrl)
       .done(function(data) {
+        if (data === null) {
+            $(_this.mapSelector).removeClass("not_loaded").height("30px")
+              .html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
+
+            $(document.body).removeClass("full_screen");
+        }
         _this.y = data.height;
         _this.x = data.width;
 
