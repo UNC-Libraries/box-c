@@ -94,7 +94,7 @@ CdrGraphs.prototype.draw = function() {
      **/
     var throughput = "throughput_bytes";
     
-    // By uuid
+    // Throughput by UUID
     var yScaleDeposits = this.yScales(deposits_by_uuid, throughput, height_range);
 
     var xAxisDeposits = this.getAxis(xScaleUUID, "bottom");
@@ -104,7 +104,7 @@ CdrGraphs.prototype.draw = function() {
     var throughput_uuid = this.showAxises("#throughput-deposit", xAxisDeposits , yAxisDeposits , width, "Throughput (MB)");
     this.drawCircles(throughput_uuid, deposits_by_uuid, xScaleUUID, yScaleDeposits, throughput);
     
-    // By date
+    // Throughput by Date
     var xScaleBrush = this.xScales(data, width);
     var yScale = this.yScales(throughput_all, throughput, height_range);
     var yScaleBrush = this.yScales(throughput_all, throughput, brush_height);
@@ -119,7 +119,7 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
-    // Add brush
+    // Add Brush to Throughput by Date
     var yAxisBrush = this.getAxis(yScaleBrush, "left");
     var throughputLineBrush = this.lineGenerator(xScaleBrush, yScaleBrush, throughput);
     var throughput_date_brush = this.showAxises("#throughput-date-brush", xAxis, yAxisBrush, width, "");
@@ -159,7 +159,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["files-by-ingest"] = deposits_by_uuid;
     this.chartUpdate("files-uuid", {xScale: xScaleUUID, yScale: yScaleFilesUUID, yAxis: yAxisFilesUUID}, false);
 
-    // Total files
+    // Total Files by Day
     var yScaleFiles = this.yScales(throughput_all, throughput_files, height_range);
     var yAxisFiles = this.getAxis(yScaleFiles, "left");
     
@@ -173,7 +173,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["files-by-day"] = throughput_all;
 
 
-    // Add Brush
+    // Add Brush to Total Files by Day
     var yScaleFilesBrush = this.yScales(throughput_all, throughput_files, brush_height);
     var yAxisFileBrush = this.getAxis(yScaleFilesBrush, "left");
     var throughputFileBrush = this.lineGenerator(xScaleBrush, yScaleFilesBrush, throughput_files);
@@ -204,7 +204,7 @@ CdrGraphs.prototype.draw = function() {
      *
      */
     
-    // duration totals by deposit by day
+    // Duration Totals by UUID by Day
     var total_time = "total_time";
     var yScaleTotal = this.yScales(deposits_by_uuid, total_time, height_range);
     var xAxisDuration = this.getAxis(xScaleUUID, "bottom");
@@ -216,7 +216,7 @@ CdrGraphs.prototype.draw = function() {
     this.data_store["duration-date"] = deposits_by_uuid;
     this.chartUpdate("time-uuid", {xScale: xScaleUUID, yScale: yScaleTotal, yAxis: yAxisDuration}, false);
 
-    // duration totals by day
+    // Duration Totals by Day
     var yScaleTotalDay = this.yScales(uuid_all, total_time, height_range);
     var xAxisTotal = this.getAxis(xScaleUUID, "bottom");
     var yAxisTotal = this.getAxis(yScaleTotalDay, "left");
@@ -228,7 +228,7 @@ CdrGraphs.prototype.draw = function() {
     focusHover(all_duration_date, uuid_all, "#duration-total-date"); 
     this.data_store["duration-total-date"] = uuid_all;
 
-    // Add brush
+    // Add brush to Duration Totals by Day
     var xScaleUUIDBrush = this.xScales(uuid_all, width);
     var yScaleTotalDurationBrush = this.yScales(uuid_all, total_time, brush_height);
     var yAxisTotalDurationBrush = this.getAxis(yScaleTotalDurationBrush, "left");
@@ -255,8 +255,7 @@ CdrGraphs.prototype.draw = function() {
     this.chartUpdate("time", total_duration_params, durationBrush);
 
     /**
-     *  Scatter plot & Strip plot - Total deposits by date
-     *
+     *  Total Deposits by Date
      *
      **/
 
@@ -272,7 +271,7 @@ CdrGraphs.prototype.draw = function() {
 
     this.data_store["total-deposits-date"] = data;
 
-    // Add brush
+    // Add Brush to Total Deposits by Date
     var yScaleTotalDepositsBrush = this.yScales(data, total_deposits, brush_height);
     var yAxisTotalDepositsBrush = this.getAxis(yScaleTotalDepositsBrush, "left");
     var totalDepositsBrush = this.lineGenerator(xScaleBrush, yScaleTotalDepositsBrush, total_deposits);
@@ -298,8 +297,7 @@ CdrGraphs.prototype.draw = function() {
     this.chartUpdate("total-deposits", total_deposits_params, depositsBrush);
 
     /**
-     *  Scatter plot & Strip plot - moves by date
-     *
+     *  Moves by Date
      *
      **/
 
@@ -313,7 +311,7 @@ CdrGraphs.prototype.draw = function() {
     this.appendPath(moves_date, "moves-date-line", movesLineScaleTotals, data);
     focusHover(moves_date, data, "#moves-date");
 
-    // Add brush
+    // Add Brush to Moves by Date
     var yScaleMovesBrush = this.yScales(data, moves, brush_height);
     var yAxisMovesBrush = this.getAxis(yScaleMovesBrush, "left");
     var throughputMovesBrush = this.lineGenerator(xScaleBrush, yScaleMovesBrush, moves);
@@ -335,7 +333,7 @@ CdrGraphs.prototype.draw = function() {
     movesBrush.selectionBrushing(throughput_moves_brush, moves_params);
 
     /**
-     * Scatter plot & Strip plot - enhancements by date
+     * Enhancements by Date
      */
 
     var finished_enh = "finished_all_enh";
@@ -349,7 +347,7 @@ CdrGraphs.prototype.draw = function() {
     focusHover(finished_enh_date, data, "#enh-date");
     this.data_store["enh-date"] = throughput_all;
 
-    // Add brush
+    // Add Brush to Enhancements by Date
     var yScaleFinishedEnhBrush = this.yScales(data, finished_enh, brush_height);
     var yAxisFinishedEnhBrush = this.getAxis(yScaleFinishedEnhBrush, "left");
     var throughputFinishedEnhBrush = this.lineGenerator(xScaleBrush, yScaleFinishedEnhBrush, finished_enh);
@@ -375,7 +373,7 @@ CdrGraphs.prototype.draw = function() {
     this.chartUpdate("enh", finished_params, finishedBrush);
 
     /**
-     * Scatter plot & line chart - failed enhancements by date
+     * Failed Enhancements by Date
      */
 
     var failed_enh = "failed_all_enh";
@@ -389,7 +387,7 @@ CdrGraphs.prototype.draw = function() {
     focusHover(failed_enh_date, data, "#failed-enh-date");
     this.data_store["failed-enh-date"] = throughput_all;
 
-    // Add brush
+    // Add Brush to Failed Enhancements by Date
     var yScaleFailedEnhBrush = this.yScales(data, failed_enh, brush_height);
     var yAxisFailedEnhBrush = this.getAxis(yScaleFailedEnhBrush, "left");
     var throughputFailedEnhBrush = this.lineGenerator(xScaleBrush, yScaleFailedEnhBrush, failed_enh);
@@ -457,17 +455,17 @@ CdrGraphs.prototype.draw = function() {
             .translate([margins.left, margins.top]);
 
         function mousemove() {
-        	var whichScale, whichTip;
-        	
-        	 // Duration has only been tracked since UUID deposits started
-        	if (/duration/.test(selector)) {
-        		whichScale = xScaleUUID;
-        		whichTip = 'deposits';
-        	} else {
-        		whichScale = xScale;
-        		whichTip = 'operations';
-        	}
-        	
+            var whichScale, whichTip;
+
+            // Duration has only been tracked since deposit by UUID started
+            if (/duration/.test(selector)) {
+                whichScale = xScaleUUID;
+                whichTip = 'deposits';
+            } else {
+                whichScale = xScale;
+                whichTip = 'operations';
+            }
+
             var x0 = whichScale.invert(d3.mouse(this)[0]),
                 i = bisectDate(data, x0, 1),
                 d0 = data[i - 1],

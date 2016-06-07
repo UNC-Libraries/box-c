@@ -1,7 +1,7 @@
 /**
  *
  * @param operation_totals
- * @param daily_deposits
+ * @param deposit_totals
  * @param scatter_tip
  * @constructor
  */
@@ -157,7 +157,7 @@ CdrGraphs.prototype.lineGenerator = function(xScale, yScale, y) {
  * @param svg
  * @param id
  * @param scale
- * @param scale
+ * @param data
  * @returns {*}
  */
 CdrGraphs.prototype.appendPath = function(svg, id, scale, data) {
@@ -240,7 +240,7 @@ CdrGraphs.prototype.tipTextOperations = function(d) {
         "<li>" + "Solr: " + this.numFormat(d.failed_solr_enh) + "</li>" +
         "<li>" + "Fulltext: " + this.numFormat(d.failed_fulltext_enh) + "</li>" +
         "<li>" + "Thumbnail: " + this.numFormat(d.failed_thumbnail_enh) + "</li>" +
-        "</ul>"
+        "</ul>";
 
     return text;
 };
@@ -266,7 +266,7 @@ CdrGraphs.prototype.tipTextDeposits = function(d) {
     text += "<li>" + "Total Time: " + this.numFormat(d.total_time) + "</li>" +
             "<li>" + "Queued Time: " + this.numFormat(d.queued_duration) + "</li>" +
             "<li>" + "Ingest Time: " + this.numFormat(d.ingest_duration) + "</li>" +
-        "</ul>"
+        "</ul>";
 
     return text;
 };
@@ -277,8 +277,8 @@ CdrGraphs.prototype.tipTextDeposits = function(d) {
  * @param data
  */
 CdrGraphs.prototype.tipType = function (whichTip, data) {
-	return (whichTip === "deposits") ? this.tipTextDeposits(data) : this.tipTextOperations(data);
-}
+    return (whichTip === "deposits") ? this.tipTextDeposits(data) : this.tipTextOperations(data);
+};
 
 /**
  * Show tool tip
@@ -350,7 +350,7 @@ CdrGraphs.prototype.hideShow = function() {
 
 /**
  * Update charts
- * @param selector this is a unique class name in the parent div of the selected button group
+ * @param selector This is a unique class name in the parent div of the selected button group
  * @param params
  * @param brush
  */
@@ -407,16 +407,17 @@ CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
 
         // Check to see if a line chart or scatter plot
         var chart = d3.select(selected_chart);
+        var lineScale;
 
         if (d3.select(selected_chart + "-line")[0][0] !== null && !brush) {
-            var lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
+            lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
             _that.redrawPath(selected_chart + "-line", lineScale, values);
 
         } else if(d3.select(selected_chart + "-line")[0][0] !== null && brush) {
             // Update main chart
             params.xScale.domain(d3.extent(values, d3.f('date')));
 
-            var lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
+            lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
             _that.redrawPath(selected_chart + "-line", lineScale, values);
 
             d3.select(selected_chart + " g.x.axis")
