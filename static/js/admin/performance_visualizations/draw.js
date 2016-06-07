@@ -232,8 +232,8 @@ CdrGraphs.prototype.draw = function() {
     var xScaleUUIDBrush = this.xScales(uuid_all, width);
     var yScaleTotalDurationBrush = this.yScales(uuid_all, total_time, brush_height);
     var yAxisTotalDurationBrush = this.getAxis(yScaleTotalDurationBrush, "left");
-    var totalDurationBrush = this.lineGenerator(xScaleUUID, yScaleTotalDurationBrush, total_time);
-    var total_duration_date_brush = this.showAxises("#duration-total-date-brush", xAxis, yAxisTotalDurationBrush, width, "");
+    var totalDurationBrush = this.lineGenerator(xScaleUUIDBrush, yScaleTotalDurationBrush, total_time);
+    var total_duration_date_brush = this.showAxises("#duration-total-date-brush", xAxisTotal, yAxisTotalDurationBrush, width, "");
     this.appendPath(total_duration_date_brush, "duration-total-date-brush-line", totalDurationBrush, uuid_all);
 
     var total_duration_params = {
