@@ -39,32 +39,22 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
 			this.initialized = true;
 			this.element.addClass('not_loaded');
 		
-			$.ajax({
-				dataType: 'json',
-				url: 'jp2Metadata/' + this.options.url + '/IMAGE_JP2000'
-			}).done(function(data) {
-				if (data !== null) {
-					var viewer = L.map('jp2_viewer', {
-						attributionControl: false,
-						fullscreenControl: true,
-						center: [0, 0],
-						crs: L.CRS.Simple,
-						zoom: 0
-					});
+			try {
+                var viewer = L.map('jp2_viewer', {
+                    attributionControl: false,
+                    fullscreenControl: true,
+                    center: [0, 0],
+                    crs: L.CRS.Simple,
+                    zoom: 0
+                });
 
-					var iiifLayers = {'img': L.tileLayer.iiif(data['@id'] + '/info.json')};
-					iiifLayers['img'].addTo(viewer);
-				} else {
-					self.element.removeClass("not_loaded").height("30px")
-					.html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
-				}
-							 
-				self.element.removeClass("not_loaded");
-			}).fail(function(jqXHR, textStatus) {
-				self.element.removeClass("not_loaded").height("30px")
-					.html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
-				$(document.body).removeClass("full_screen");
-			});
+                var iiifLayers = {'img': L.tileLayer.iiif('jp2Proxy/' + this.options.url + '/IMAGE_JP2000/')};
+                iiifLayers['img'].addTo(viewer);
+            } catch (e) {
+                self.element.removeClass("not_loaded").height("30px")
+                    .html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
+                $(document.body).removeClass("full_screen");
+            }
 		}
 	});
 });
