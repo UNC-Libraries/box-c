@@ -70,6 +70,33 @@ public class LorisContentController extends AbstractSolrSearchController {
 		// TODO check publication status in Solr
 		return userAccessUtil.hasAccess(id, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
 	}
+	
+	/**
+	 * Handles requests for individual region tiles.
+	 * 
+	 * @param model
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping("/jp2Metadata/{id}/{datastream}/{region}/{size}/{rotation}/{quality}.{format}/")
+	public void getRegion(@PathVariable("id") String id,
+			@PathVariable("datastream") String datastream, @PathVariable("region") String region,
+			@PathVariable("size") String size, @PathVariable("rotation") String rotation,
+			@PathVariable("quality") String quality, @PathVariable("format") String format,
+			HttpServletResponse response) {
+		// Check if the user is allowed to view this object
+		if (this.hasAccess(id, datastream)) {
+			try {
+				lorisContentService
+						.streamJP2(id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
+			} catch (IOException e) {
+				LOG.error("Error retrieving streaming JP2 content for " + id, e);
+			}
+		} else {
+			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+			response.setStatus(HttpStatus.SC_FORBIDDEN);
+		}
+	}
 
 	/**
 	 * Handles requests for jp2 metadata
@@ -87,33 +114,6 @@ public class LorisContentController extends AbstractSolrSearchController {
 				lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
 			} catch (IOException e) {
 				LOG.error("Error retrieving JP2 metadata content for " + id, e);
-			}
-		} else {
-			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
-			response.setStatus(HttpStatus.SC_FORBIDDEN);
-		}
-	}
-
-	/**
-	 * Handles requests for individual region tiles.
-	 * 
-	 * @param model
-	 * @param request
-	 * @param response
-	 */
-	@RequestMapping("/jp2Region/{id}/{datastream}/{region}/{size}/{rotation}/{quality}.{format}/")
-	public void getRegion(@PathVariable("id") String id,
-			@PathVariable("datastream") String datastream, @PathVariable("region") String region,
-			@PathVariable("size") String size, @PathVariable("rotation") String rotation,
-			@PathVariable("quality") String quality, @PathVariable("format") String format,
-			HttpServletResponse response) {
-		// Check if the user is allowed to view this object
-		if (this.hasAccess(id, datastream)) {
-			try {
-				lorisContentService
-						.streamJP2(id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
-			} catch (IOException e) {
-				LOG.error("Error retrieving streaming JP2 content for " + id, e);
 			}
 		} else {
 			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
