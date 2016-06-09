@@ -90,13 +90,19 @@
 		<property name="forwardRequest" value="true"/>
 	</bean>
 	
+	
+	
 	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"
 		destroy-method="destroy">
 		<constructor-arg type="String" value="${redis.host:localhost}"/>
 		<constructor-arg type="int" value="${redis.port:6379}"/>
 	</bean>
 	
-
+	<bean id="dataPath" class="java.lang.String">
+		<constructor-arg
+			value="${data.dir}" />
+	</bean>
+	
 	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
 		<constructor-arg value="${redis.host:localhost}" />
 		<constructor-arg value="${redis.port:6379}" />
