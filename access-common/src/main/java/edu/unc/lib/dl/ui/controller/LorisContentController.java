@@ -78,15 +78,18 @@ public class LorisContentController extends AbstractSolrSearchController {
 	 * @param request
 	 * @param response
 	 */
-	@RequestMapping("/jp2Metadata/{id}/{datastream}/{region}/{size}/{rotation}/{quality}.{format}/")
+	@RequestMapping("/jp2Metadata/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
 	public void getRegion(@PathVariable("id") String id,
 			@PathVariable("datastream") String datastream, @PathVariable("region") String region,
 			@PathVariable("size") String size, @PathVariable("rotation") String rotation,
-			@PathVariable("quality") String quality, @PathVariable("format") String format,
-			HttpServletResponse response) {
+			@PathVariable("qualityFormat") String qualityFormat, HttpServletResponse response) {
 		// Check if the user is allowed to view this object
 		if (this.hasAccess(id, datastream)) {
 			try {
+				String[] qualityFormatArray = qualityFormat.split("\\.");
+				String quality = qualityFormatArray[0];
+				String format = qualityFormatArray[1];
+				
 				lorisContentService
 						.streamJP2(id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
 			} catch (IOException e) {

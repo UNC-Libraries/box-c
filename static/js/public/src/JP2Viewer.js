@@ -48,8 +48,7 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
                     zoom: 0
                 });
 
-                var iiifLayers = {'img': L.tileLayer.iiif('jp2Metadata/' + this.options.url + '/IMAGE_JP2000')
-                };
+                var iiifLayers = {'img': L.tileLayer.iiif('jp2Metadata/' + this.options.url + '/IMAGE_JP2000/')};
                 iiifLayers['img'].addTo(viewer);
             } catch (e) {
                 self.element.removeClass("not_loaded").height("30px")

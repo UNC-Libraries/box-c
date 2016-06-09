@@ -192,11 +192,11 @@ L.TileLayer.Iiif = L.TileLayer.extend({
         _this._infoDeferred.resolve();
       });
   },
-  _infoToTileUrl: function() {
+  _infoToBaseUrl: function() {
     return this._infoUrl.replace('info.json', '');
   },
   _templateUrl: function() {
-    return this._infoToTileUrl() + '/{region}/{size}/{rotation}/{quality}.{format}/';
+    return this._infoToBaseUrl() + '{region}/{size}/{rotation}/{quality}.{format}';
   },
   _tileShouldBeLoaded: function(coords) {
     var _this = this,
