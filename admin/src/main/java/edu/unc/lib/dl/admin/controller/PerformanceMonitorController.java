@@ -68,6 +68,21 @@ public class PerformanceMonitorController {
 		"failed_deposit",
 		"failed_deposit_job"
 	};
+	
+	private static final String[] MOVES_ENHANCEMENTS_JOBS_ARRAY = {
+		"moves",
+		"finished-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService",
+		"failed-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService",
+		"finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService",
+		"failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService",
+		"finished-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService",
+		"failed-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService",
+		"finished-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService",
+		"failed-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService",
+		"finished-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService",
+		"failed-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"
+	};
+	
 	private CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator(NEW_LINE_SEPARATOR);
 	
 	@Autowired
@@ -132,6 +147,7 @@ public class PerformanceMonitorController {
 				csvFilePrinter.printRecord(FILE_HEADERS);
 
 				Boolean matchingDate = false;
+
 				for (String deposit : deposits) {
 					depositKeys = deposit.split(":");
 					
@@ -154,20 +170,9 @@ public class PerformanceMonitorController {
 						
 						if (operationDate.equals(jobDate)) {
 							operationJob = jedis.hgetAll(operation);
-
-							String moves = (operationJob.get("moves"));
-							String imageEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService")); 
-							String failedImageEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.imaging.ImageEnhancementService"));
-							String metadataEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"));
-							String failedMetadataEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService"));
-							String solrEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"));
-							String failedSolrEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService"));
-							String fulltextEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService"));
-							String failedFulltextEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.text.FullTextEnhancementService")); 
-							String thumbnailEnhancements = (operationJob.get("finished-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"));
-							String failedThumbnailEnhancements = (operationJob.get("failed-enh:edu.unc.lib.dl.cdr.services.imaging.ThumbnailEnhancementService"));
-
+							
 							List<String> data = new ArrayList<>();
+
 							data.add(jobDate);
 							data.add("N/A");
 							data.add(throughputFiles);
@@ -175,17 +180,12 @@ public class PerformanceMonitorController {
 							data.add("0");
 							data.add("0");
 							data.add(finished);
-							data.add(moves);
-							data.add(imageEnhancements);
-							data.add(failedImageEnhancements);
-							data.add(metadataEnhancements);
-							data.add(failedMetadataEnhancements);
-							data.add(solrEnhancements);
-							data.add(failedSolrEnhancements);
-							data.add(fulltextEnhancements);
-							data.add(failedFulltextEnhancements);
-							data.add(thumbnailEnhancements);
-							data.add(failedThumbnailEnhancements);
+							
+							for (String field : MOVES_ENHANCEMENTS_JOBS_ARRAY) {
+								String fieldValue = depositJob.get(field);
+								data.add(fieldValue);
+							}
+
 							data.add(failed);
 							data.add(failedDepositJob);
 	
@@ -197,7 +197,7 @@ public class PerformanceMonitorController {
 							matchingDate = false;
 						}
 					}
-	
+
 					if (!matchingDate) {
 						List<String> data = new ArrayList<>();
 						data.add(jobDate);
@@ -207,17 +207,9 @@ public class PerformanceMonitorController {
 						data.add("0");
 						data.add("0");
 						data.add(finished);
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
-						data.add("0");
+
+						this.addEmptyFields(data, MOVES_ENHANCEMENTS_JOBS_ARRAY);
+
 						data.add(failed);
 						data.add(failedDepositJob);
 						
@@ -282,17 +274,9 @@ public class PerformanceMonitorController {
 					data.add(queuedDuration);
 					data.add(ingestDuration);
 					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
-					data.add("0");
+
+					this.addEmptyFields(data, MOVES_ENHANCEMENTS_JOBS_ARRAY);
+
 					data.add("0");
 					data.add("0");
 
@@ -311,6 +295,22 @@ public class PerformanceMonitorController {
 			log.error("Error unable to read file to string from filepath {}", filePath, e);
 			return null;
 		}
+	}
+	
+	/**
+	 * Add default value for fields that don't return anything
+	 * @param data
+	 * @param arrayValues
+	 * @return
+	 */
+	private List<String> addEmptyFields(List<String> data, String[] arrayValues) {
+		int i = 0;
+		while (i < arrayValues.length) {
+			data.add("0");
+			i++;
+		}
+		
+		return data;
 	}
 
 	@RequestMapping(value = "performanceMonitor", method = RequestMethod.GET)
