@@ -36,6 +36,12 @@
 					<c:set var="tabClass"><c:if test="${contentPage == 'report/statusMonitor.jsp'}">active</c:if></c:set>
 					<a href="statusMonitor" id="menu_status_monitor" class="${tabClass}">Status Monitor</a>
 				</li>
+				<c:if test="${sessionScope.accessLevel.highestRole.predicate == 'administrator'}">
+					<li>
+						<c:set var="tabClass"><c:if test="${contentPage == 'report/performanceMonitor.jsp'}">active</c:if></c:set>
+						<a href="performanceMonitor" class="${tabClass}">Metrics</a>
+					</li>
+				</c:if>
 				<li>
 					<c:set var="tabClass"><c:if test="${contentPage == 'collector/listBins.jsp'}">active</c:if></c:set>
 					<a href="collector" class="${tabClass}">Deposit Collectors</a>
