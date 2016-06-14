@@ -32,6 +32,10 @@ public class Premis {
      */
     public static final Resource Agent = createResource( "http://www.loc.gov/premis/rdf/v1#Agent" );
     
+    public static final Resource AgentName = createResource( "http://www.loc.gov/premis/rdf/v1#AgentName" );
+    
+    public static final Resource AgentType = createResource( "http://www.loc.gov/premis/rdf/v1#AgentType" );
+    
     public static final Resource ApplicableDates = createResource( "http://www.loc.gov/premis/rdf/v1#ApplicableDates" );
     
     public static final Resource Bitstream = createResource( "http://www.loc.gov/premis/rdf/v1#Bitstream" );
@@ -57,9 +61,15 @@ public class Premis {
      */
     public static final Resource Event = createResource( "http://www.loc.gov/premis/rdf/v1#Event" );
     
+    public static final Resource EventDateTime = createResource( "http://www.loc.gov/premis/rdf/v1#EventDateTime" );
+    
+    public static final Resource EventDetail = createResource( "http://www.loc.gov/premis/rdf/v1#EventDetail" );
+    
     public static final Resource EventOutcomeDetail = createResource( "http://www.loc.gov/premis/rdf/v1#EventOutcomeDetail" );
     
     public static final Resource EventOutcomeInformation = createResource( "http://www.loc.gov/premis/rdf/v1#EventOutcomeInformation" );
+    
+    public static final Resource EventType = createResource("http://www.loc.gov/premis/rdf/v1#EventType");
     
     public static final Resource File = createResource( "http://www.loc.gov/premis/rdf/v1#File" );
     
