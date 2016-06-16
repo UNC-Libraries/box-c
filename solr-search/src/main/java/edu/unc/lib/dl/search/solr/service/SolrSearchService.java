@@ -473,6 +473,11 @@ public class SolrSearchService {
 				solrQuery.set(GroupParams.GROUP_FACET, true);
 			}
 		}
+		
+		if (!searchState.getIncludeParts()) {
+			solrQuery.addFilterQuery(
+					solrSettings.getFieldName(SearchFieldKeys.IS_PART.name()) + ":false");
+		}
 
 		// Add sort parameters
 		addSort(solrQuery, searchState.getSortType(), searchState.getSortNormalOrder());

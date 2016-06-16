@@ -57,6 +57,7 @@ public class SearchState implements Serializable, Cloneable {
 	private List<String> resultFields;
 	private Boolean rollup;
 	private String rollupField;
+	private Boolean includeParts;
 
 	public SearchState() {
 		LOG.debug("Instantiating new SearchState");
@@ -71,6 +72,7 @@ public class SearchState implements Serializable, Cloneable {
 		rollup = null;
 		baseFacetLimit = null;
 		startRow = null;
+		includeParts = true;
 	}
 
 	public SearchState(SearchState searchState) {
@@ -120,6 +122,7 @@ public class SearchState implements Serializable, Cloneable {
 		searchTermOperator = searchState.getSearchTermOperator();
 		rollup = searchState.getRollup();
 		rollupField = searchState.rollupField;
+		includeParts = searchState.includeParts;
 	}
 
 	public Map<String, String> getSearchFields() {
@@ -351,6 +354,14 @@ public class SearchState implements Serializable, Cloneable {
 
 	public void setRollupField(String rollupField) {
 		this.rollupField = rollupField;
+	}
+	
+	public void setIncludeParts(boolean include) {
+		this.includeParts = include;
+	}
+	
+	public boolean getIncludeParts() {
+		return this.includeParts;
 	}
 
 	/**
