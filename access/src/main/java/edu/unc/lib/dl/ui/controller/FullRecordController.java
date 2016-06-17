@@ -206,6 +206,33 @@ public class FullRecordController extends AbstractSolrSearchController {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
 			model.addAttribute("neighborList", neighbors);
+			
+			// Get previous and next record in the same folder if there are any
+			List<BriefObjectMetadataBean> previousNext = new ArrayList<>();
+			
+			int selectedRecord = 0;
+			int index = 0;
+			
+			for (BriefObjectMetadataBean neighbor : neighbors) {
+				if (neighbor.getId().equals(briefObject.getId())) {
+					selectedRecord = index;
+					break;
+				}
+				index++;
+			}
+			
+			if (selectedRecord - 1 > -1) {
+				previousNext.add(neighbors.get(selectedRecord - 1));
+			} else {
+				previousNext.add(null);
+			}
+			
+			if (selectedRecord + 1 < neighbors.size()) {
+				previousNext.add(neighbors.get(selectedRecord + 1));
+			} else {
+				previousNext.add(null);
+			}
+			model.addAttribute("previousNext", previousNext);
 		}
 		
 		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
