@@ -32,26 +32,20 @@
 				</c:import>
 				
 				<ul id="prevNext">
-				<c:forEach items="${previousNext}" var="neighbor" varStatus="status">
-					<c:url var="fullRecordUrl" scope="page" value="record/${neighbor.value.id}">
-					</c:url>
-					<c:if test="${not empty neighbor}">
-						<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, neighbor.value)}"/>
-					</c:if>
-					
 					<c:choose>
-						<c:when test="${not empty neighbor.value and neighbor.key == 'previous'}">
-							<li><a href="<c:out value='${fullRecordUrl}' />"><i class="fa fa-arrow-left" aria-hidden="true"></i> Previous</a></li>
+						<c:when test="${not empty previousNext.previous and not cdr:hasListAccessOnly(requestScope.accessGroupSet, previousNext.previous)}">
+							<li><a href="<c:out value='record/${previousNext.previous.id}' />"><i class="fa fa-arrow-left" aria-hidden="true"></i> Previous</a></li>
 						</c:when>
-						<c:when test="${empty neighbor.value and neighbor.key == 'previous'}">
+						<c:otherwise>
 							<li><i class="fa fa-arrow-left"aria-hidden="true"></i> Previous</li>
-						</c:when>
-						<c:when test="${not empty neighbor.value and neighbor.key == 'next'}">
-							<li><a href="<c:out value='${fullRecordUrl}' />">Next <i class="fa fa-arrow-right" aria-hidden="true"></i></a></li>
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${not empty previousNext.next and not cdr:hasListAccessOnly(requestScope.accessGroupSet, previousNext.next)}">
+							<li><a href="<c:out value='record/${previousNext.next.id}' />">Next <i class="fa fa-arrow-right" aria-hidden="true"></i></a></li>
 						</c:when>
 						<c:otherwise><li>Next <i class="fa fa-arrow-right" aria-hidden="true"></i><li></c:otherwise> 
 					</c:choose>
-				</c:forEach>
 			</ul>
 			</div>
 			

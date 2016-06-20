@@ -222,10 +222,13 @@ public class FullRecordController extends AbstractSolrSearchController {
 			
 			if (selectedRecord > 0) {
 				previousNext.put("previous", neighbors.get(selectedRecord - 1));
+			} else {
+				previousNext.put("previous", null);
 			}
-			
 			if (selectedRecord + 1 < neighbors.size()) {
 				previousNext.put("next", neighbors.get(selectedRecord + 1));
+			} else {
+				previousNext.put("next", null);
 			}
 
 			model.addAttribute("previousNext", previousNext);
