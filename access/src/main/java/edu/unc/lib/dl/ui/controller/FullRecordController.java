@@ -212,7 +212,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 			
 			int selectedRecord = 0;
 			int index = 0;
-			
 			for (BriefObjectMetadataBean neighbor : neighbors) {
 				if (neighbor.getId().equals(briefObject.getId())) {
 					selectedRecord = index;
@@ -221,7 +220,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 				index++;
 			}
 			
-			if (selectedRecord - 1 > -1) {
+			if (selectedRecord > 0) {
 				previousNext.add(neighbors.get(selectedRecord - 1));
 			} else {
 				previousNext.add(null);
