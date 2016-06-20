@@ -23,6 +23,11 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI"%>
 <div class="onecol full_record_top">
 	<div class="contentarea">
+		<c:set var="thumbnailObject" value="${briefObject}" scope="request" />
+		<c:import url="common/thumbnail.jsp">
+			<c:param name="target" value="file" />
+			<c:param name="size" value="large" />
+		</c:import>
 		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
 			<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
 		</c:if>
