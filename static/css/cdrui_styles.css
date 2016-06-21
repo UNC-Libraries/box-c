@@ -1165,3 +1165,14 @@ p.navigation_bar a {
 .deleted .collinfo {
 	color: #888;
 }
+
+#prevNext {
+	float: right;
+}
+
+#prevNext li {
+	padding-left: 5px;
+	display: inline;
+	margin-left: 0;
+	text-indent: 0;
+}
