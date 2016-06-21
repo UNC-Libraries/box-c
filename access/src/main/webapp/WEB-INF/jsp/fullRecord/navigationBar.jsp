@@ -44,11 +44,12 @@
 						<c:when test="${not empty previousNext.next and not cdr:hasListAccessOnly(requestScope.accessGroupSet, previousNext.next)}">
 							<li><a href="<c:out value='record/${previousNext.next.id}' />">Next <i class="fa fa-arrow-right" aria-hidden="true"></i></a></li>
 						</c:when>
-						<c:otherwise><li>Next <i class="fa fa-arrow-right" aria-hidden="true"></i><li></c:otherwise> 
+						<c:otherwise>
+							<li>Next <i class="fa fa-arrow-right" aria-hidden="true"></i><li>
+						</c:otherwise> 
 					</c:choose>
-			</ul>
+				</ul>
 			</div>
-			
 		</div>
 	</div>
 </div>
