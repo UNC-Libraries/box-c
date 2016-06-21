@@ -210,7 +210,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 			model.addAttribute("neighborList", neighbors);
 			
 			// Get previous and next record in the same folder if there are any
-			int selectedRecord = 0;
+			Map<String, BriefObjectMetadataBean> previousNext = new HashMap<String, BriefObjectMetadataBean>();
+			
+			int selectedRecord = -1;
 			for (BriefObjectMetadataBean neighbor : neighbors) {
 				if (neighbor.getId().equals(briefObject.getId())) {
 					selectedRecord = neighbors.indexOf(neighbor);
@@ -218,17 +220,14 @@ public class FullRecordController extends AbstractSolrSearchController {
 				}
 			}
 			
-			Map<String, BriefObjectMetadataBean> previousNext = new HashMap<String, BriefObjectMetadataBean>();
-			
-			if (selectedRecord > 0) {
-				previousNext.put("previous", neighbors.get(selectedRecord - 1));
-			} else {
-				previousNext.put("previous", null);
-			}
-			if (selectedRecord + 1 < neighbors.size()) {
-				previousNext.put("next", neighbors.get(selectedRecord + 1));
-			} else {
-				previousNext.put("next", null);
+			if (selectedRecord != -1) {
+				if (selectedRecord > 0) {
+					previousNext.put("previous", neighbors.get(selectedRecord - 1));
+				}
+				
+				if (selectedRecord + 1 < neighbors.size()) {
+					previousNext.put("next", neighbors.get(selectedRecord + 1));
+				}
 			}
 
 			model.addAttribute("previousNext", previousNext);
