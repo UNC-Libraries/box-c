@@ -344,7 +344,7 @@
 	</xsl:template>
 <!-- mods:originInfo dates -->	
 	<xsl:template name="modsOriginDates">
-		<xsl:for-each-group select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
+		<xsl:for-each-group select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']" group-by="../@displayLabel, local-name(.[not(../@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>	
 			<tr>
 				<th>
