@@ -115,7 +115,7 @@ public class PerformanceMonitorController {
 				return true;
 			}
 			return false;
-		}else if (!csvFile.exists()) {
+		} else if (!csvFile.exists()) {
 			return true;
 		} else {
 			return false;
@@ -182,7 +182,8 @@ public class PerformanceMonitorController {
 							data.add(finished);
 							
 							for (String field : MOVES_ENHANCEMENTS_JOBS_ARRAY) {
-								String fieldValue = depositJob.get(field);
+								String f = field;
+								String fieldValue = operationJob.get(field);
 								data.add(fieldValue);
 							}
 
@@ -215,9 +216,9 @@ public class PerformanceMonitorController {
 						
 						csvFilePrinter.printRecord(data);
 					}
-
-					csvFilePrinter.close();
 				}
+				
+				csvFilePrinter.close();
 			} catch (Exception e) {
 				log.error("Failed to write data to {}", filePath, e);
 			} 
