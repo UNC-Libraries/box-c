@@ -182,7 +182,6 @@ public class PerformanceMonitorController {
 							data.add(finished);
 							
 							for (String field : MOVES_ENHANCEMENTS_JOBS_ARRAY) {
-								String f = field;
 								String fieldValue = operationJob.get(field);
 								data.add(fieldValue);
 							}
