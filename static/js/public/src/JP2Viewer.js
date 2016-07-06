@@ -50,6 +50,10 @@ define("JP2Viewer", [ 'jquery', 'jquery-ui', 'leaflet' ], function($, ui, L) {
 
                 var iiifLayers = {'img': L.tileLayer.iiif('jp2Proxy/' + this.options.url + '/IMAGE_JP2000/')};
                 iiifLayers['img'].addTo(viewer);
+
+                _.defer(function() {
+                    self.element.removeClass("not_loaded");
+                });
             } catch (e) {
                 self.element.removeClass("not_loaded").height("30px")
                     .html("<div class='error'>Sorry, an error occurred while loading the image.</div>");
