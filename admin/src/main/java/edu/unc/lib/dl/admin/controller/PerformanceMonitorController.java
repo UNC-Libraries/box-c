@@ -115,7 +115,7 @@ public class PerformanceMonitorController {
 				return true;
 			}
 			return false;
-		}else if (!csvFile.exists()) {
+		} else if (!csvFile.exists()) {
 			return true;
 		} else {
 			return false;
@@ -134,7 +134,6 @@ public class PerformanceMonitorController {
 			Set<String> deposits = getDepositMetrics();
 			try (Jedis jedis = getJedisPool().getResource()) {
 				FileWriter fileWriter = null;
-				CSVPrinter csvFilePrinter = null;
 				Set<String> operations = null;
 				Map<String, String> depositJob = null;
 				Map<String, String> operationJob = null;
@@ -143,36 +142,64 @@ public class PerformanceMonitorController {
 				operations = jedis.keys("operation-metrics:*");
 
 				fileWriter = new FileWriter(filePath);
-				csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat);
-				csvFilePrinter.printRecord(FILE_HEADERS);
-
-				Boolean matchingDate = false;
-
-				for (String deposit : deposits) {
-					depositKeys = deposit.split(":");
-					
-					// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
-					if (depositKeys.length > 2) {
-						continue;
-					}
-					
-					depositJob = jedis.hgetAll(deposit);
-
-					String jobDate = depositKeys[1];
-					String throughputFiles = depositJob.get("throughput-files");
-					String throughputBytes = depositJob.get("throughput-bytes");
-					String finished = depositJob.get("finished");
-					String failed = depositJob.get("failed");
-					String failedDepositJob = depositJob.get("failed-job:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
-
-					for (String operation : operations) {
-						String operationDate = operation.split(":")[1];
+				
+				try (CSVPrinter csvFilePrinter = new CSVPrinter(fileWriter, csvFileFormat)) {
+					csvFilePrinter.printRecord(FILE_HEADERS);
+	
+					Boolean matchingDate = false;
+	
+					for (String deposit : deposits) {
+						depositKeys = deposit.split(":");
 						
-						if (operationDate.equals(jobDate)) {
-							operationJob = jedis.hgetAll(operation);
+						// Ignore data for individual deposits by uuid. Only need the daily ones in this instance
+						if (depositKeys.length > 2) {
+							continue;
+						}
+						
+						depositJob = jedis.hgetAll(deposit);
+	
+						String jobDate = depositKeys[1];
+						String throughputFiles = depositJob.get("throughput-files");
+						String throughputBytes = depositJob.get("throughput-bytes");
+						String finished = depositJob.get("finished");
+						String failed = depositJob.get("failed");
+						String failedDepositJob = depositJob.get("failed-job:edu.unc.lib.dl.cdr.services.techmd.TechnicalMetadataEnhancementService");
+	
+						for (String operation : operations) {
+							String operationDate = operation.split(":")[1];
 							
+							if (operationDate.equals(jobDate)) {
+								operationJob = jedis.hgetAll(operation);
+								
+								List<String> data = new ArrayList<>();
+	
+								data.add(jobDate);
+								data.add("N/A");
+								data.add(throughputFiles);
+								data.add(throughputBytes);
+								data.add("0");
+								data.add("0");
+								data.add(finished);
+								
+								for (String field : MOVES_ENHANCEMENTS_JOBS_ARRAY) {
+									String fieldValue = operationJob.get(field);
+									data.add(fieldValue);
+								}
+	
+								data.add(failed);
+								data.add(failedDepositJob);
+		
+								csvFilePrinter.printRecord(data);
+		
+								matchingDate = true;
+								break;
+							} else {
+								matchingDate = false;
+							}
+						}
+	
+						if (!matchingDate) {
 							List<String> data = new ArrayList<>();
-
 							data.add(jobDate);
 							data.add("N/A");
 							data.add(throughputFiles);
@@ -180,44 +207,16 @@ public class PerformanceMonitorController {
 							data.add("0");
 							data.add("0");
 							data.add(finished);
-							
-							for (String field : MOVES_ENHANCEMENTS_JOBS_ARRAY) {
-								String fieldValue = depositJob.get(field);
-								data.add(fieldValue);
-							}
-
+	
+							this.addEmptyFields(data, MOVES_ENHANCEMENTS_JOBS_ARRAY);
+	
 							data.add(failed);
 							data.add(failedDepositJob);
-	
+							
 							csvFilePrinter.printRecord(data);
-	
-							matchingDate = true;
-							break;
-						} else {
-							matchingDate = false;
 						}
 					}
-
-					if (!matchingDate) {
-						List<String> data = new ArrayList<>();
-						data.add(jobDate);
-						data.add("N/A");
-						data.add(throughputFiles);
-						data.add(throughputBytes);
-						data.add("0");
-						data.add("0");
-						data.add(finished);
-
-						this.addEmptyFields(data, MOVES_ENHANCEMENTS_JOBS_ARRAY);
-
-						data.add(failed);
-						data.add(failedDepositJob);
-						
-						csvFilePrinter.printRecord(data);
-					}
-
-					csvFilePrinter.close();
-				}
+				} 
 			} catch (Exception e) {
 				log.error("Failed to write data to {}", filePath, e);
 			} 
