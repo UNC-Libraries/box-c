@@ -114,7 +114,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			}), new ResultObjectActionMenu({
 				trigger : 'right',
 				positionAtTrigger : false,
-				selector : ".res_entry td",
+				selector : ".res_entry td:not(:last-child)",
 				containerSelector : ".res_entry,.container_entry",
 				actionHandler : self.actionHandler,
 				alertHandler : self.options.alertHandler,
