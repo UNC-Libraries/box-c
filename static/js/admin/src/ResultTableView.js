@@ -1,6 +1,6 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'IsSorted',
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	
 	function ResultTableView(element, options) {
 		this.element = element;
@@ -22,6 +22,22 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			resultActions : undefined,
 			headerHeightClass : ''
 		};
+	
+	// Figure out if the list should be sorted already.
+	var sorted = IsSorted;
+	var sortedValues = sorted.getSorted();
+
+	$(document).on('click', ".context-menu-item", function() {
+		sortedValues.reloadRun = false;
+		sorted.setSorted(sortedValues);
+	});
+
+	if (!sorted.stale() && !sortedValues.reloadRun) {
+		location.replace(sortedValues.sortUrl);
+
+		sortedValues.reloadRun = true;
+		sorted.setSorted(sortedValues);
+	}
 	
 	ResultTableView.prototype.render = function(data) {
 		var self = this;
@@ -196,6 +212,15 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						self.sortOrder = !inverse;
 						
 						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
+						
+						var sortSettings = {
+							sortUrl: sortUrl,
+							sortTime: Date.now(),
+							reloadRun: false
+						};
+
+						IsSorted.setSorted(sortSettings);
+						
 						if (history.pushState) {
 							history.pushState({}, "", sortUrl);
 						}
