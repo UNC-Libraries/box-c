@@ -23,19 +23,22 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			headerHeightClass : ''
 		};
 	
-	// Figure out if the list should be sorted already.
+	// Figure out if the list should be sorted already. 
+	// Reset sort applied to table variable if context menu or Browse tab are selected.
 	var sorted = IsSorted;
 	var sortedValues = sorted.getSorted();
 
-	$(document).on('click', ".context-menu-item", function() {
+	$(document).on('click', ".context-menu-item, #mainmenu li:first-child", function() {
 		sortedValues.reloadRun = false;
 		sorted.setSorted(sortedValues);
 	});
 
 	if (!sorted.stale() && !sortedValues.reloadRun) {
-		location.replace(sortedValues.sortUrl);
+		location.replace(location.href + sortedValues.sortUrl);
 
 		sortedValues.reloadRun = true;
+		sortedValues.sortTime = Date.now();
+
 		sorted.setSorted(sortedValues);
 	}
 	
@@ -47,10 +50,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			self.element.html("");
 			
 			self.pagingActive = data.pageRows < data.resultCount;
-			
+
 			self.resultUrl = document.location.href;
 			var container = data.container;
-		
+
 			var navigationBar = navigationBarTemplate({
 				pageNavigation : data,
 				resultUrl : self.resultUrl,
@@ -214,7 +217,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
 						
 						var sortSettings = {
-							sortUrl: sortUrl,
+							sortUrl: URLUtilities.getAllParameters(sortUrl),
 							sortTime: Date.now(),
 							reloadRun: false
 						};

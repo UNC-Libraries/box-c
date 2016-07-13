@@ -23,6 +23,16 @@ define('URLUtilities', ['jquery'], function($) {
 				return null;
 			return decodeURI(value[1]);
 		},
+
+		getAllParameters: function(url) {
+			var parameters = url.split('?');
+
+			if (parameters.length > 0) {
+				return '?' + parameters[1];
+			}
+
+			return null;
+		},
 		
 		setParameter : function(url, key, paramVal){
 			var baseURL = this.removeParameter(url, key);
