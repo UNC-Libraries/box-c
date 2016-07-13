@@ -15,13 +15,22 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.PreDestroy;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,16 +52,22 @@ public class AnalyticsTrackerUtil {
 	// Google analytics tracking id
 	private String gaTrackingID;
 
-	private final MultiThreadedHttpConnectionManager httpManager;
-	private final HttpClient httpClient;
+	private final HttpClientConnectionManager httpManager;
+	private final CloseableHttpClient httpClient;
 
 	public AnalyticsTrackerUtil() {
 
 		// Use a threaded manager with timeouts
-		httpManager = new MultiThreadedHttpConnectionManager();
-		httpManager.getParams().setConnectionTimeout(2000);
+		httpManager = new PoolingHttpClientConnectionManager();
 
-		httpClient = new HttpClient(httpManager);
+		RequestConfig requestConfig = RequestConfig.custom()
+				.setConnectTimeout(2000)
+				.build();
+		
+		httpClient = HttpClients.custom()
+				.setConnectionManager(httpManager)
+				.setDefaultRequestConfig(requestConfig)
+				.build();
 	}
 
 	@PreDestroy
@@ -140,28 +155,30 @@ public class AnalyticsTrackerUtil {
 				log.debug("Tracking user {} with event {} in category {} with label {}",
 						new String[] { userData.cid, action, category, label });
 
-			PostMethod method = new PostMethod(GA_URL);
-			method.setParameter("v", "1");
-			method.setParameter("tid", gaTrackingID);
-			method.setParameter("cid", userData.cid);
-			method.setParameter("t", "event");
-			method.setParameter("uip", userData.uip);
+			HttpPost method = new HttpPost(GA_URL);
+			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair("v", "1"));
+			params.add(new BasicNameValuePair("tid", gaTrackingID));
+			params.add(new BasicNameValuePair("cid", userData.cid));
+			params.add(new BasicNameValuePair("t", "event"));
+			params.add(new BasicNameValuePair("uip", userData.uip));
 
-			if (category != null)
-				method.setParameter("ec", category);
-			if (action != null)
-				method.setParameter("ea", action);
-			if (label != null)
-				method.setParameter("el", label);
-			if (value != null)
-				method.setParameter("ev", value.toString());
+			if (category != null) {
+				params.add(new BasicNameValuePair("ec", category));
+			}
+			if (action != null) {
+				params.add(new BasicNameValuePair("ea", action));
+			}
+			if (label != null) {
+				params.add(new BasicNameValuePair("el", label));
+			}
+			if (value != null) {
+				params.add(new BasicNameValuePair("ev", value.toString()));
+			}
 
-			try {
-				httpClient.executeMethod(method);
+			try (CloseableHttpResponse resp = httpClient.execute(method)) {
 			} catch (Exception e) {
 				log.warn("Failed to issue tracking event for cid {}", e, userData.cid);
-			} finally {
-				method.releaseConnection();
 			}
 		}
 

@@ -27,9 +27,11 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,26 +171,26 @@ public class MODSController extends AbstractSwordController {
 		String mods = "";
 		String dataUrl = swordUrl + "em/" + pid + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE;
 
-		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
-		client.getParams().setAuthenticationPreemptive(true);
-		GetMethod method = new GetMethod(dataUrl);
+		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
+		HttpGet method = new HttpGet(dataUrl);
 
 		// Pass the users groups along with the request
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
+		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
 
-		try {
-			client.executeMethod(method);
-			if (method.getStatusCode() == HttpStatus.SC_OK) {
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
+			if (statusCode == HttpStatus.SC_OK) {
 				try {
-					mods = method.getResponseBodyAsString();
+					mods = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
 				} catch (IOException e) {
 					log.info("Problem uploading MODS for " + pid + ": " + e.getMessage());
 				} finally {
 					method.releaseConnection();
 				}
 			} else {
-				if (method.getStatusCode() == HttpStatus.SC_BAD_REQUEST || method.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+				if (statusCode == HttpStatus.SC_BAD_REQUEST || statusCode == HttpStatus.SC_NOT_FOUND) {
 					// Ensure that the object actually exists
 					PID existingPID = tripleStoreQueryService.verify(new PID(pid));
 					if (existingPID == null) {
@@ -196,7 +198,7 @@ public class MODSController extends AbstractSwordController {
 					}
 				} else {
 					throw new Exception("Failure to retrieve fedora content due to response of: "
-							+ method.getStatusLine().toString() + "\nPath was: " + method.getURI().getURI());
+							+ httpResp.getStatusLine() + "\nPath was: " + method.getURI());
 				}
 			}
 		} catch (Exception e) {

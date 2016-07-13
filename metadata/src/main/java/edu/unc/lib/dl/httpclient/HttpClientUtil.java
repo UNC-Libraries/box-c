@@ -15,11 +15,17 @@
  */
 package edu.unc.lib.dl.httpclient;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.auth.AuthScope;
-
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * Utitlity class for common <code>HttpClient</code> operations.
@@ -41,23 +47,40 @@ public class HttpClientUtil {
 	 * @throws IllegalArgumentException
 	 *            if <code>urlString</code> is not a valid URL
 	 */
-	public static HttpClient getAuthenticatedClient(String urlString, String user, String pass) {
+	public static CloseableHttpClient getAuthenticatedClient(String urlString, String user, String pass) {
 		return getAuthenticatedClient(urlString, user, pass, null);
 	}
 
-	public static HttpClient getAuthenticatedClient(String urlString, String user, String pass,
-			MultiThreadedHttpConnectionManager connectionManager) {
+	public static CloseableHttpClient getAuthenticatedClient(String urlString, String user, String pass,
+			HttpClientConnectionManager connectionManager) {
 		if (urlString == null) {
 			throw new IllegalArgumentException("Cannot create HttpClient for null URL");
 		}
-		HttpClient client;
-		if (connectionManager != null)
-			client = new HttpClient(connectionManager);
-		else
-			client = new HttpClient();
-		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user, pass);
-		client.getState().setCredentials(getAuthenticationScope(urlString), creds);
-		return client;
+		
+		HttpClientBuilder builder = getAuthenticatedClientBuilder(urlString, user, pass);
+		if (connectionManager != null) {
+			builder.setConnectionManager(connectionManager);
+		}
+		
+		return builder.build();
+	}
+	
+	public static HttpClientBuilder getAuthenticatedClientBuilder(String url, String user, String pass) {
+		if (url == null) {
+			throw new IllegalArgumentException("Cannot create HttpClient for null URL");
+		}
+		
+		HttpClientBuilder builder = HttpClients.custom()
+				.setDefaultCredentialsProvider(
+				getCredentialsProvider(url, user, pass));
+		return builder;
+	}
+	
+	public static CredentialsProvider getCredentialsProvider(String queryURL, String user, String pass) {
+		CredentialsProvider credsProvider = new BasicCredentialsProvider();
+		credsProvider.setCredentials(getAuthenticationScope(queryURL), 
+				new UsernamePasswordCredentials(user, pass));
+		return credsProvider;
 	}
 
 	/**

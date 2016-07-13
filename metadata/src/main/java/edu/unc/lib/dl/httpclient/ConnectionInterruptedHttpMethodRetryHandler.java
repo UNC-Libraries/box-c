@@ -3,13 +3,13 @@ package edu.unc.lib.dl.httpclient;
 import java.io.IOException;
 import java.net.SocketException;
 
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.HttpMethodRetryHandler;
-import org.apache.commons.httpclient.NoHttpResponseException;
+import org.apache.http.NoHttpResponseException;
+import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConnectionInterruptedHttpMethodRetryHandler implements HttpMethodRetryHandler {
+public class ConnectionInterruptedHttpMethodRetryHandler implements HttpRequestRetryHandler {
 	private static final Logger log = LoggerFactory.getLogger(ConnectionInterruptedHttpMethodRetryHandler.class);
 
 	private int retries = 5;
@@ -20,14 +20,15 @@ public class ConnectionInterruptedHttpMethodRetryHandler implements HttpMethodRe
 		this.retries = retries;
 		this.retryDelay = retryDelay;
 	}
-
+	
 	@Override
-	public boolean retryMethod(final HttpMethod method, final IOException e, int executionCount) {
+	public boolean retryRequest(IOException e, int executionCount, HttpContext context) {
 		if (executionCount >= retries) {
 			return false;
 		}
+		
 		if (e instanceof NoHttpResponseException || e instanceof SocketException) {
-			log.warn("Connection interrupted, retrying connection to {}", method.getPath());
+			log.warn("Connection interrupted, retrying connection");
 			if (retryDelay > 0) {
 				try {
 					Thread.sleep(retryDelay);
@@ -39,5 +40,4 @@ public class ConnectionInterruptedHttpMethodRetryHandler implements HttpMethodRe
 		}
 		return false;
 	}
-
 }

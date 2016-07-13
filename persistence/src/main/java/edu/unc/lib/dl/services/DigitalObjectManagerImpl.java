@@ -593,7 +593,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			// update PREMIS log
 			logger.logEvent(PremisEventLogger.Type.INGESTION, message, pid, dsid);
 			this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, pid);
-		} catch (FedoraException e) {
+		} catch (FedoraException | IOException e) {
 			throw new IngestException("Could not update the specified object.", e);
 		}
 		return result;
@@ -675,7 +675,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 						new ArrayList<String>(), modsLabel, true, modsContent);
 				logger.logEvent(Type.CREATION, message, pid, modsID);
 			}
-		} catch (FedoraException e) {
+		} catch (FedoraException | IOException e) {
 			throw new IngestException("Could not update the specified object.", e);
 		}
 
@@ -753,7 +753,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 							Collections.<String> emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
 				}
 			}
-		} catch (FedoraException e) {
+		} catch (FedoraException | IOException e) {
 			throw new UpdateException("Failed to modify datastream " + datastream.getName() + " for " + pid.getPid(), e);
 		}
 		return null;

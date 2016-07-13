@@ -19,10 +19,11 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,30 +47,27 @@ public class LorisContentService {
 	}
 	
 	public void getMetadata(String simplepid, String datastream, OutputStream outStream, HttpServletResponse response, int retryServerError){
-		HttpClientParams params = new HttpClientParams();
-		params.setContentCharset("UTF-8");
-		HttpClient client = new HttpClient();
-		client.setParams(params);
+		CloseableHttpClient client = HttpClients.createDefault();
 		
 		StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
 		path.append(simplepid);
 		
-		GetMethod method = new GetMethod(path.toString());
-		try {
-			client.executeMethod(method);
-			if (method.getStatusCode() == HttpStatus.SC_OK) {
+		HttpGet method = new HttpGet(path.toString());
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			if (statusCode == HttpStatus.SC_OK) {
 				if (response != null){
 					response.setHeader("Content-Type", "application/json");
 					response.setHeader("content-disposition", "inline");
 					
-					FileIOUtil.stream(outStream, method);
+					FileIOUtil.stream(outStream, httpResp);
 				}
 			} else {
-				if ((method.getStatusCode() == 500 || method.getStatusCode() == 404) && retryServerError > 0){
+				if ((statusCode == 500 || statusCode == 404) && retryServerError > 0){
 					this.getMetadata(simplepid, datastream, outStream, response, retryServerError-1);
 				} else {
-					LOG.error("Unexpected failure: " + method.getStatusLine().toString());
-					LOG.error("Path was: " + method.getURI().getURI());
+					LOG.error("Unexpected failure: " + httpResp.getStatusLine().toString());
+					LOG.error("Path was: " + method.getURI());
 				}
 			}
 		} catch (ClientAbortException e) {
@@ -89,29 +87,30 @@ public class LorisContentService {
 	
 	public void streamJP2(String simplepid, String region, String size, String rotation, String quality, String format, String datastream, 
 			OutputStream outStream, HttpServletResponse response, int retryServerError){
-		HttpClient client = new HttpClient();
+		CloseableHttpClient client = HttpClients.createDefault();
 		
 		StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
 
 		path.append(simplepid).append("/" + region).append("/" + size).append("/" + rotation).append("/" + quality + "." + format);
 		
-		GetMethod method = new GetMethod(path.toString());
+		HttpGet method = new HttpGet(path.toString());
 		
-		try {
-			client.executeMethod(method);
-			if (method.getStatusCode() == HttpStatus.SC_OK) {
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+
+			if (statusCode == HttpStatus.SC_OK) {
 				if (response != null){
 					response.setHeader("Content-Type", "image/jpeg");
 					response.setHeader("content-disposition", "inline");
 					
-					FileIOUtil.stream(outStream, method);
+					FileIOUtil.stream(outStream, httpResp);
 				}
 			} else {
-				if ((method.getStatusCode() == 500 || method.getStatusCode() == 404) && retryServerError > 0){
+				if ((statusCode == 500 || statusCode == 404) && retryServerError > 0){
 					this.getMetadata(simplepid, datastream, outStream, response, retryServerError-1);
 				} else {
-					LOG.error("Unexpected failure: " + method.getStatusLine().toString());
-					LOG.error("Path was: " + method.getURI().getURI());
+					LOG.error("Unexpected failure: " + httpResp.getStatusLine().toString());
+					LOG.error("Path was: " + method.getURI());
 				}
 			}
 		} catch (ClientAbortException e) {

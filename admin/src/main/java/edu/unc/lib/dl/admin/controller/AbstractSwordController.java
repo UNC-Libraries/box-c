@@ -28,11 +28,13 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.ParserOptions;
 import org.apache.abdera.parser.stax.FOMExtensibleElement;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,8 +63,8 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 		Entry entry = abdera.newEntry();
 		Parser parser = abdera.getParser();
 		Document<FOMExtensibleElement> doc;
-		HttpClient client;
-		PutMethod method;
+		CloseableHttpClient client;
+		HttpPut method;
 
 		ParserOptions parserOptions = parser.getDefaultParserOptions();
 		parserOptions.setCharset(request.getCharacterEncoding());
@@ -73,18 +75,15 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 			entry.addExtension(doc.getRoot());
 
 			client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
-			client.getParams().setAuthenticationPreemptive(true);
-			method = new PutMethod(dataUrl);
+			method = new HttpPut(dataUrl);
 			// Pass the users groups along with the request
-			method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
-
-			Header header = new Header("Content-Type", "application/atom+xml");
-			method.setRequestHeader(header);
+			method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+			method.addHeader("Content-Type", "application/atom+xml");
 			StringWriter stringWriter = new StringWriter(2048);
-			StringRequestEntity requestEntity;
+			StringEntity requestEntity;
 			entry.writeTo(stringWriter);
-			requestEntity = new StringRequestEntity(stringWriter.toString(), "application/atom+xml", "UTF-8");
-			method.setRequestEntity(requestEntity);
+			requestEntity = new StringEntity(stringWriter.toString(), ContentType.APPLICATION_ATOM_XML);
+			method.setEntity(requestEntity);
 		} catch (UnsupportedEncodingException e) {
 			log.error("Encoding not supported", e);
 			return null;
@@ -93,22 +92,23 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 			return null;
 		}
 
-		try {
-			client.executeMethod(method);
-			response.setStatus(method.getStatusCode());
-			if (method.getStatusCode() == HttpStatus.SC_NO_CONTENT) {
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
+			response.setStatus(statusCode);
+			if (statusCode == HttpStatus.SC_NO_CONTENT) {
 				// success
 				return "";
-			} else if (method.getStatusCode() >= 400 && method.getStatusCode() <= 500) {
-				if (method.getStatusCode() == 500)
-					log.warn("Failed to upload " + datastream + " " + method.getURI().getURI());
+			} else if (statusCode >= 400 && statusCode <= 500) {
+				if (statusCode == 500)
+					log.warn("Failed to upload " + datastream + " " + method.getURI());
 				// probably a validation problem
-				responseString = method.getResponseBodyAsString();
+				responseString = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
 				return responseString;
 			} else {
 				response.setStatus(500);
-				throw new Exception("Failure to update fedora content due to response of: " + method.getStatusLine().toString()
-						+ "\nPath was: " + method.getURI().getURI());
+				throw new Exception("Failure to update fedora content due to response of: " + httpResp.getStatusLine()
+						+ "\nPath was: " + method.getURI());
 			}
 		} catch (Exception e) {
 			log.error("Error while attempting to stream Fedora content for " + pid, e);

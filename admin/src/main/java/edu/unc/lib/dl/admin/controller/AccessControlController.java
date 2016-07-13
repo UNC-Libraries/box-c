@@ -27,9 +27,11 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -107,18 +109,18 @@ public class AccessControlController extends AbstractSwordController {
 
 		// Retrieve the targeted objects directly attributed ACL document
 		String dataUrl = swordUrl + "em/" + pid + "/ACL";
-		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
-		client.getParams().setAuthenticationPreemptive(true);
-		GetMethod method = new GetMethod(dataUrl);
+		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
+		HttpGet method = new HttpGet(dataUrl);
 		// Pass the users groups along with the request
 		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
+		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
 
 		Element accessControlElement;
-		try {
-			client.executeMethod(method);
-			if (method.getStatusCode() == HttpStatus.SC_OK) {
-				String accessControlXML = method.getResponseBodyAsString();
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
+			if (statusCode == HttpStatus.SC_OK) {
+				String accessControlXML = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
 				log.debug(accessControlXML);
 				SAXBuilder saxBuilder = new SAXBuilder();
 				accessControlElement = saxBuilder.build(new StringReader(accessControlXML)).getRootElement();
@@ -126,8 +128,8 @@ public class AccessControlController extends AbstractSwordController {
 				model.addAttribute("targetACLs", accessControlElement);
 			} else {
 				log.error("Failed to retrieve access control document for " + pid + ": "
-						+ method.getStatusLine().toString());
-				response.setStatus(method.getStatusCode());
+						+ httpResp.getStatusLine());
+				response.setStatus(statusCode);
 				return null;
 			}
 		} catch (Exception e) {
