@@ -101,7 +101,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 
 			if (/facet/.test(panel.data('href'))) {
 				filters = location.search;
-				if (filters !== undefined) {
+				if (filters) {
 					params = "&" + filters.substring(1);
 				}
 			}
