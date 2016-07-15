@@ -96,9 +96,18 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 
 		updatePanel : function(panel, isStructureBrowse) {
 			var self = this;
-			
+			var params = "";
+			var filters;
+
+			if (/facet/.test(panel.data('href'))) {
+				filters = location.search;
+				if (filters !== undefined) {
+					params = "&" + filters.substring(1);
+				}
+			}
+
 			$.ajax({
-				url : URLUtilities.uriEncodeParameters(panel.data('href')),
+				url : URLUtilities.uriEncodeParameters(panel.data('href') + params),
 				dataType : isStructureBrowse? 'json' : null,
 				success : function(data) {
 					if (isStructureBrowse) {
