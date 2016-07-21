@@ -70,8 +70,10 @@ public class IngestController {
 	Map<String, ? extends Object> ingestPackageController(@PathVariable("pid") String pid,
 			@RequestParam("type") String type, @RequestParam(value = "name", required = false) String name,
 			@RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
+		
 		String destinationUrl = swordUrl + "collection/" + pid;
-		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(destinationUrl, swordUsername, swordPassword);
+		CloseableHttpClient client = HttpClientUtil
+				.getAuthenticatedClient(null, swordUsername, swordPassword);
 		HttpPost method = new HttpPost(destinationUrl);
 
 		// Set SWORD related headers for performing ingest
@@ -79,7 +81,6 @@ public class IngestController {
 		method.addHeader("Packaging", type);
 		method.addHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
 		method.addHeader("Content-Type", ingestFile.getContentType());
-		method.addHeader("Content-Length", Long.toString(ingestFile.getSize()));
 		method.addHeader("mail", request.getHeader("mail"));
 		method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
 		if (name != null && name.trim().length() > 0)

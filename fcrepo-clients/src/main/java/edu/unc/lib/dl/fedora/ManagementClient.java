@@ -204,6 +204,8 @@ public class ManagementClient extends WebServiceTemplate {
 	private String password;
 
 	private String username;
+	
+	private String fedoraHost;
 
 	public String addManagedDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, String mimetype, String locationURI) throws FedoraException {
@@ -459,9 +461,11 @@ public class ManagementClient extends WebServiceTemplate {
 				.setConnectTimeout(5000)
 				.build();
 		
-		HttpClientBuilder builder = HttpClientUtil.getAuthenticatedClientBuilder(this.getFedoraContextUrl(), this.getUsername(),
-				this.getPassword());
+		HttpClientBuilder builder = HttpClientUtil
+				.getAuthenticatedClientBuilder(fedoraHost, getUsername(), getPassword());
 		builder.setDefaultRequestConfig(requestConfig);
+		
+		httpClient = builder.build();
 
 		initializeConnections();
 	}
@@ -727,29 +731,30 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public String upload(File file) throws FileNotFoundException {
-		return upload(new FileInputStream(file), "file", true);
+		return upload(new FileInputStream(file), true);
 	}
 
 	public String upload(String content) {
-		return upload(new ByteArrayInputStream(content.getBytes()), "tmp_" + System.nanoTime(), true);
+		return upload(new ByteArrayInputStream(content.getBytes()), true);
 	}
 
 	public String upload(Document xml) {
 		// write the document to a byte array
 		XMLOutputter out = new XMLOutputter();
+		
 		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			out.output(xml, baos);
-			return upload(new ByteArrayInputStream(baos.toByteArray()), "md_events.xml", true);
+			return upload(new ByteArrayInputStream(baos.toByteArray()), true);
 		} catch (IOException e) {
 			throw new ServiceException("Unexpected error writing to byte array output stream", e);
 		}
 	}
 	
-	public String upload(byte[] bytes, String fileName) {
-		return upload(new ByteArrayInputStream(bytes), fileName, true);
+	public String upload(byte[] bytes) {
+		return upload(new ByteArrayInputStream(bytes), true);
 	}
 
-	public String upload(InputStream content, String fileName, boolean retry) {
+	public String upload(InputStream content, boolean retry) {
 		String result = null;
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
 		
@@ -763,8 +768,9 @@ public class ManagementClient extends WebServiceTemplate {
 		
 		log.debug("Uploading to {}", uploadURL);
 		
+		// Add the file to the request.  It must be labeled 'file' for fedora to find it
 		HttpEntity fileEntity = MultipartEntityBuilder.create()
-				.addBinaryBody(fileName, content)
+				.addBinaryBody("file", content)
 				.build();
 		post.setEntity(fileEntity);
 		
@@ -784,7 +790,7 @@ public class ManagementClient extends WebServiceTemplate {
 				log.warn("Authorization to Fedora failed, attempting to reestablish connection.");
 				try {
 					this.initializeConnections();
-					return upload(content, fileName, false);
+					return upload(content, false);
 				} catch (Exception e) {
 					log.error("Failed to reestablish connection to Fedora", e);
 				}
@@ -1100,5 +1106,13 @@ public class ManagementClient extends WebServiceTemplate {
 	 */
 	public AccessClient getAccessClient() {
 		return accessClient;
+	}
+
+	public String getFedoraHost() {
+		return fedoraHost;
+	}
+
+	public void setFedoraHost(String fedoraHost) {
+		this.fedoraHost = fedoraHost;
 	}
 }

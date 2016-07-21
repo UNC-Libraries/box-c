@@ -74,7 +74,7 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 			doc = parser.parse(request.getInputStream(), parserOptions);
 			entry.addExtension(doc.getRoot());
 
-			client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
+			client = HttpClientUtil.getAuthenticatedClient(null, swordUsername, swordPassword);
 			method = new HttpPut(dataUrl);
 			// Pass the users groups along with the request
 			method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());

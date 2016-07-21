@@ -63,7 +63,7 @@ public class FedoraAccessControlService implements AccessControlService {
 	}
 
 	public void init() {
-		httpClient = HttpClientUtil.getAuthenticatedClientBuilder(aclEndpointUrl, username, password)
+		httpClient = HttpClientUtil.getAuthenticatedClientBuilder(null, username, password)
 				.setConnectionManager(httpConnectionManager)
 				.setRetryHandler(new ConnectionInterruptedHttpMethodRetryHandler(10, 3000L))
 				.build();
@@ -113,7 +113,7 @@ public class FedoraAccessControlService implements AccessControlService {
 		StringBuilder url = new StringBuilder();
 		url.append(this.aclEndpointUrl).append(pid.getPid())
 			.append("/hasAccess/").append(permission.name())
-			.append(URLEncodedUtils.format(params, "UTF-8"));
+			.append('?').append(URLEncodedUtils.format(params, "UTF-8"));
 		
 		HttpGet method = new HttpGet(url.toString());
 		try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
@@ -126,8 +126,6 @@ public class FedoraAccessControlService implements AccessControlService {
 			}
 		} catch (IOException e) {
 			log.error("Failed to check hasAccess for " + pid, e);
-		} finally {
-			method.releaseConnection();
 		}
 
 		return false;

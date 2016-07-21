@@ -65,6 +65,8 @@ public class FedoraContentService {
 	private AccessClient accessClient;
 
 	private FedoraUtil fedoraUtil;
+	
+	private String fedoraHost;
 
 	@Autowired
 	private SearchSettings searchSettings;
@@ -139,7 +141,8 @@ public class FedoraContentService {
 		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream.getName()
 				+ "/content";
 
-		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, accessClient.getUsername(),
+		CloseableHttpClient client = HttpClientUtil
+				.getAuthenticatedClient(fedoraHost, accessClient.getUsername(),
 				accessClient.getPassword());
 		HttpGet method = new HttpGet(dataUrl);
 		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
@@ -248,5 +251,13 @@ public class FedoraContentService {
 
 	public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
 		this.analyticsTracker = analyticsTracker;
+	}
+
+	public String getFedoraHost() {
+		return fedoraHost;
+	}
+
+	public void setFedoraHost(String fedoraHost) {
+		this.fedoraHost = fedoraHost;
 	}
 }

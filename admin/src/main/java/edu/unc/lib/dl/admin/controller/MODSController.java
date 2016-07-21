@@ -171,7 +171,7 @@ public class MODSController extends AbstractSwordController {
 		String mods = "";
 		String dataUrl = swordUrl + "em/" + pid + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE;
 
-		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, swordUsername, swordPassword);
+		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(null, swordUsername, swordPassword);
 		HttpGet method = new HttpGet(dataUrl);
 
 		// Pass the users groups along with the request
