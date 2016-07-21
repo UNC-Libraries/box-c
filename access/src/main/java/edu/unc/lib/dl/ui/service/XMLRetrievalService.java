@@ -18,43 +18,40 @@ package edu.unc.lib.dl.ui.service;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.httpclient.DefaultHttpMethodRetryHandler;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
-
 public class XMLRetrievalService {
-	public static Document getXMLDocument(String url) throws HttpException, IOException, JDOMException  {
+	public static Document getXMLDocument(String url) throws HttpException, IOException, JDOMException {
 		SAXBuilder builder = new SAXBuilder();
-		
-		HttpClient client = new HttpClient();
-		HttpMethod method = new GetMethod(url);
-		method.getParams().setParameter("http.socket.timeout", new Integer(2000));
-		method.getParams().setCookiePolicy(CookiePolicy.IGNORE_COOKIES);
-		method.getParams().setParameter(HttpMethodParams.RETRY_HANDLER, 
-	    		new DefaultHttpMethodRetryHandler(3, false));
-		method.getParams().setParameter("http.useragent", "");
-		
+
+		CloseableHttpClient client = HttpClients.createDefault();
+		HttpGet method = new HttpGet(url);
+		RequestConfig requestConfig = RequestConfig.custom()
+				.setSocketTimeout(2000)
+				.setConnectTimeout(2000)
+				.setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+				.build();
+		method.setConfig(requestConfig);
+
 		InputStream responseStream = null;
 		Document document = null;
-		
-		try {
-			client.executeMethod(method);
-			responseStream = method.getResponseBodyAsStream();
+
+		try (CloseableHttpResponse response = client.execute(method)) {
+			HttpEntity entity = response.getEntity();
+			responseStream = entity.getContent();
 			document = builder.build(responseStream);
-		} finally {
-			if (responseStream != null)
-				responseStream.close();
-			method.releaseConnection();
 		}
-		
+
 		return document;
 	}
 }

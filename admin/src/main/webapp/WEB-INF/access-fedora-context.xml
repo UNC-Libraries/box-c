@@ -39,6 +39,7 @@
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="fedoraHost" value="${fedora.host:localhost}" />
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 		<property name="accessClient" ref="accessClient"></property>
@@ -48,6 +49,7 @@
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="fedoraHost" value="${fedora.host:localhost}" />
 		<property name="username" value="${fedora.appUser.username}" />
 		<property name="password" value="${fedora.appUser.password}" />
 		<property name="interceptors">
@@ -94,6 +96,7 @@
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
 		<property name="accessClient" ref="forwardedAccessClient" />
 		<property name="fedoraUtil" ref="fedoraUtil" />
+		<property name="fedoraHost" value="${fedora.host:localhost}" />
 	</bean>
 	
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">

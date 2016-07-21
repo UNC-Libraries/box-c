@@ -16,13 +16,14 @@
 package edu.unc.lib.dl.ui.controller;
 
 import java.io.IOException;
+
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -97,7 +98,7 @@ public class LorisContentController extends AbstractSolrSearchController {
 			}
 		} else {
 			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
-			response.setStatus(HttpStatus.SC_FORBIDDEN);
+			response.setStatus(HttpStatus.FORBIDDEN.value());
 		}
 	}
 
@@ -120,7 +121,7 @@ public class LorisContentController extends AbstractSolrSearchController {
 			}
 		} else {
 			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
-			response.setStatus(HttpStatus.SC_FORBIDDEN);
+			response.setStatus(HttpStatus.FORBIDDEN.value());
 		}
 	}
 

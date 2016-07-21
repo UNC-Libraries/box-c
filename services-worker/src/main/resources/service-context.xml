@@ -68,6 +68,7 @@
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="fedoraHost" value="${fedora.host:localhost}" />
 		<property name="username" value="${fedora.admin.username}" />
 		<property name="password" value="${fedora.admin.password}" />
 		<property name="accessClient" ref="accessClient"/>
@@ -76,6 +77,7 @@
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+		<property name="fedoraHost" value="${fedora.host:localhost}" />
 		<property name="username" value="${fedora.appUser.username}" />
 		<property name="password" value="${fedora.appUser.password}" />
 		<property name="accessClient" ref="accessClient"/>

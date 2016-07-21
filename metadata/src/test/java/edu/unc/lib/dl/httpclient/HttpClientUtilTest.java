@@ -18,7 +18,7 @@ package edu.unc.lib.dl.httpclient;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.httpclient.auth.AuthScope;
+import org.apache.http.auth.AuthScope;
 import org.junit.Assert;
 import org.junit.Test;
 

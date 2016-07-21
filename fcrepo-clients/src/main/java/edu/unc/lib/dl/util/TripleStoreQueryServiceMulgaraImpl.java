@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
@@ -44,12 +43,17 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -57,6 +61,8 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.DOMBuilder;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.NodeList;
 
@@ -74,8 +80,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class TripleStoreQueryServiceMulgaraImpl implements
 		TripleStoreQueryService {
-	private static final Log log = LogFactory
-			.getLog(TripleStoreQueryServiceMulgaraImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(TripleStoreQueryServiceMulgaraImpl.class);
 
 	private String inferenceRulesModelUri;
 
@@ -86,16 +91,17 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	private String pass;
 	private String resourceIndexModelUri;
 	private String serverModelUri;
-	private HttpClient httpClient;
+	private CloseableHttpClient httpClient;
 	private ObjectMapper mapper;
 	private PID collections;
 
-	private final MultiThreadedHttpConnectionManager multiThreadedHttpConnectionManager;
+	private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
 
 	public TripleStoreQueryServiceMulgaraImpl() {
-		this.multiThreadedHttpConnectionManager = new MultiThreadedHttpConnectionManager();
-		this.httpClient = new HttpClient(
-				this.multiThreadedHttpConnectionManager);
+		this.multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
+		this.httpClient = HttpClients.custom()
+				.setConnectionManager(multiThreadedHttpConnectionManager)
+				.build();
 		this.mapper = new ObjectMapper();
 		this.collections = null;
 	}
@@ -844,44 +850,48 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 	}
 
 	public Map<?, ?> sendSPARQL(String query, String format, int retries) {
-		PostMethod post = null;
-		try {
-			String postUrl = this.getSparqlEndpointURL();
-			if (format != null) {
-				postUrl += "?format=" + format;
-			}
-			post = new PostMethod(postUrl);
-			post.setRequestHeader("Content-Type", "application/sparql-query");
-			post.addParameter("query", query);
+		HttpPost post = null;
 
-			log.debug("SPARQL URL: " + postUrl);
-			log.debug("SPARQL Query: " + query);
+		String postUrl = this.getSparqlEndpointURL();
+		// Format goes in the url
+		if (format != null) {
+			postUrl += "?format=" + format;
+		}
+		
+		// Query goes in the body
+		List<NameValuePair> params = new ArrayList<>();
+		params.add(new BasicNameValuePair("query", query));
+		
+		post = new HttpPost(postUrl);
+		post.addHeader("Content-Type", "application/sparql-query");
+		post.setEntity(new UrlEncodedFormEntity((Iterable<NameValuePair>) params));
 
-			int statusCode = httpClient.executeMethod(post);
+		log.debug("SPARQL URL: {}", postUrl);
+		log.debug("SPARQL Query: {}", query);
+
+		try (CloseableHttpResponse httpResp = httpClient.execute(post)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
 			if (statusCode != HttpStatus.SC_OK) {
 				throw new RuntimeException("SPARQL POST method failed: "
-						+ post.getStatusLine());
+						+ httpResp.getStatusLine());
 			} else {
-				log.debug("SPARQL POST method succeeded: "
-						+ post.getStatusLine());
-				byte[] resultBytes = post.getResponseBody();
-				log.debug(new String(resultBytes, "utf-8"));
+				log.debug("SPARQL POST method succeeded: {}",
+						httpResp.getStatusLine());
 				if (format != null && format.endsWith("json")) {
 					return (Map<?, ?>) mapper
-							.readValue(new ByteArrayInputStream(resultBytes),
+							.readValue(httpResp.getEntity().getContent(),
 									Object.class);
 				} else {
+					String resultString = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
+					
 					Map<String, String> resultMap = new HashMap<String, String>();
-					String resultString = new String(resultBytes, "utf-8");
 					resultMap.put("results", resultString);
 					return resultMap;
 				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			if (post != null)
-				post.releaseConnection();
 		}
 	}
 

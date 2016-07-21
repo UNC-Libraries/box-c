@@ -15,11 +15,28 @@
  */
 package edu.unc.lib.dl.httpclient;
 
-import org.apache.commons.httpclient.*;
-import org.apache.commons.httpclient.auth.AuthScope;
-
-import java.net.URL;
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.AuthState;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.protocol.HttpCoreContext;
 
 /**
  * Utitlity class for common <code>HttpClient</code> operations.
@@ -41,23 +58,66 @@ public class HttpClientUtil {
 	 * @throws IllegalArgumentException
 	 *            if <code>urlString</code> is not a valid URL
 	 */
-	public static HttpClient getAuthenticatedClient(String urlString, String user, String pass) {
+	public static CloseableHttpClient getAuthenticatedClient(String urlString, String user, String pass) {
 		return getAuthenticatedClient(urlString, user, pass, null);
 	}
 
-	public static HttpClient getAuthenticatedClient(String urlString, String user, String pass,
-			MultiThreadedHttpConnectionManager connectionManager) {
-		if (urlString == null) {
-			throw new IllegalArgumentException("Cannot create HttpClient for null URL");
+	public static CloseableHttpClient getAuthenticatedClient(String urlString, String user, String pass,
+			HttpClientConnectionManager connectionManager) {
+		
+		HttpClientBuilder builder = getAuthenticatedClientBuilder(urlString, user, pass);
+		if (connectionManager != null) {
+			builder.setConnectionManager(connectionManager);
 		}
-		HttpClient client;
-		if (connectionManager != null)
-			client = new HttpClient(connectionManager);
-		else
-			client = new HttpClient();
-		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(user, pass);
-		client.getState().setCredentials(getAuthenticationScope(urlString), creds);
-		return client;
+		
+		return builder.build();
+	}
+	
+	public static HttpClientBuilder getAuthenticatedClientBuilder(String host, String user, String pass) {
+		final CredentialsProvider credsProvider = new BasicCredentialsProvider();
+		AuthScope scope = null;
+
+		if (host == null || host.length() == 0) {
+			scope = new AuthScope(AuthScope.ANY);
+		} else {
+			scope = new AuthScope(new HttpHost(host));
+		}
+		
+		credsProvider.setCredentials(scope,
+				new UsernamePasswordCredentials(user, pass));
+		
+		HttpClientBuilder builder = HttpClients.custom()
+				.useSystemProperties()
+				.setDefaultCredentialsProvider(credsProvider)
+				.addInterceptorFirst(new PreemptiveAuthInterceptor());
+		return builder;
+	}
+	
+	static class PreemptiveAuthInterceptor implements HttpRequestInterceptor {
+
+		public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+			final AuthState authState = (AuthState) context.getAttribute(HttpClientContext.TARGET_AUTH_STATE);
+			// If no auth scheme available yet, try to initialize it
+			// preemptively
+			if (authState.getAuthScheme() == null) {
+				final CredentialsProvider credsProvider = (CredentialsProvider) context
+						.getAttribute(HttpClientContext.CREDS_PROVIDER);
+				final HttpHost targetHost = (HttpHost) context.getAttribute(HttpCoreContext.HTTP_TARGET_HOST);
+				final AuthScope authScope = new AuthScope(targetHost.getHostName(), targetHost.getPort());
+				final Credentials creds = credsProvider.getCredentials(authScope);
+				if (creds == null) {
+					throw new HttpException("No credentials for preemptive authentication");
+				}
+				authState.update(new BasicScheme(), creds);
+			}
+		}
+	}
+	
+	public static CredentialsProvider getCredentialsProvider(String queryURL, String user, String pass) {
+		CredentialsProvider credsProvider = new BasicCredentialsProvider();
+		credsProvider.setCredentials(getAuthenticationScope(queryURL), 
+				new UsernamePasswordCredentials(user, pass));
+		return credsProvider;
 	}
 
 	/**
