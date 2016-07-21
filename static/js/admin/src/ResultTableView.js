@@ -108,23 +108,36 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self._initEventHandlers();
 			}
 		
-			// Activate the result entry context menus, on the action gear and right clicking
-			self.contextMenus = [new ResultObjectActionMenu({
-				selector : ".action_gear",
-				containerSelector : ".res_entry,.container_entry",
-				actionHandler : self.actionHandler,
-				alertHandler : self.options.alertHandler
-			}), new ResultObjectActionMenu({
-				trigger : 'right',
-				positionAtTrigger : false,
-				selector : ".res_entry td:not(:last-child)",
-				containerSelector : ".res_entry,.container_entry",
-				actionHandler : self.actionHandler,
-				alertHandler : self.options.alertHandler,
-				multipleSelectionEnabled : true,
-				resultList : self.resultObjectList,
-				batchActions : self.options.resultActions
-			})];
+			// Activate the result entry context menus, on the action gear and  clicking
+			self.contextMenus = [
+				// Bind left and right click to open menu for the gear
+				new ResultObjectActionMenu({
+					trigger : 'left',
+					selector : ".action_gear",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler
+				}),
+				new ResultObjectActionMenu({
+					trigger : 'right',
+					selector : ".action_gear",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler
+				}),
+				// Bind just right click for opening menu on rest of the entry
+				new ResultObjectActionMenu({
+					trigger : 'right',
+					positionAtTrigger : false,
+					selector : ".res_entry td:not(:last-child)",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler,
+					multipleSelectionEnabled : true,
+					resultList : self.resultObjectList,
+					batchActions : self.options.resultActions
+				})
+			];
 		
 			// Initialize click and drag operations
 			self._initMoveLocations();
