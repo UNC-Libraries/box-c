@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.acl.filter;
 
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.client.methods.HttpPost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ws.client.WebServiceClientException;
@@ -23,7 +23,7 @@ import org.springframework.ws.client.support.interceptor.ClientInterceptor;
 import org.springframework.ws.context.MessageContext;
 import org.springframework.ws.transport.context.TransportContext;
 import org.springframework.ws.transport.context.TransportContextHolder;
-import org.springframework.ws.transport.http.CommonsHttpConnection;
+import org.springframework.ws.transport.http.HttpComponentsConnection;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -39,9 +39,9 @@ public class GroupsToHttpHeaderInterceptor implements ClientInterceptor {
 		if (groups != null) {
 			LOG.debug("GOT GROUPS FROM THREAD");
 			TransportContext context = TransportContextHolder.getTransportContext();
-			CommonsHttpConnection connection = (CommonsHttpConnection) context.getConnection();
-			PostMethod postMethod = connection.getPostMethod();
-			postMethod.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";", null, false));
+			HttpComponentsConnection connection = (HttpComponentsConnection) context.getConnection();
+			HttpPost postMethod = connection.getHttpPost();
+			postMethod.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";", null, false));
 			LOG.debug("Added HTTP header to POST: " + HttpClientUtil.FORWARDED_GROUPS_HEADER + " : " + groups.joinAccessGroups(";", null, false));
 		} else {
 			LOG.debug("NO GROUPS SET ON THREAD");

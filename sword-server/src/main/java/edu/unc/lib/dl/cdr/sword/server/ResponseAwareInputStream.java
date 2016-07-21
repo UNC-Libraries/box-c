@@ -18,25 +18,22 @@ package edu.unc.lib.dl.cdr.sword.server;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.log4j.Logger;
+import org.apache.http.client.methods.CloseableHttpResponse;
 
 /**
- * Input stream wrapper class for streams that originated from a HttpMethod which could not be closed at the time of
+ * Input stream wrapper class for streams that originated from a HttpResponse which could not be closed at the time of
  * reading.
  * 
  * @author bbpennel
  * 
  */
-public class MethodAwareInputStream extends InputStream {
-	private static Logger log = Logger.getLogger(MethodAwareInputStream.class);
-	
-	private HttpMethodBase method;
+public class ResponseAwareInputStream extends InputStream {
+	private CloseableHttpResponse response;
 	private InputStream originalStream;
 
-	public MethodAwareInputStream(HttpMethodBase method) throws IOException {
-		this.originalStream = method.getResponseBodyAsStream();
-		this.method = method;
+	public ResponseAwareInputStream(CloseableHttpResponse resp) throws IOException {
+		this.response = resp;
+		this.originalStream = resp.getEntity().getContent();
 	}
 
 	@Override
@@ -44,15 +41,9 @@ public class MethodAwareInputStream extends InputStream {
 		return originalStream.read();
 	}
 
-	public void close() {
-		if (method != null){
-			method.releaseConnection();
-		} else if (originalStream != null){
-			try {
-				originalStream.close();
-			} catch (Exception e) {
-				log.error("Failed to close original stream", e);
-			}
+	public void close() throws IOException {
+		if (response != null) {
+			response.close();
 		}
 	}
 }

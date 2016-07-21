@@ -1,6 +1,6 @@
-define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 
+define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities', 'IsSorted',
 		'ResultObjectActionMenu', 'ResultTableActionMenu', 'ConfirmationDialog', 'MoveDropLocation', 'detachplus'], 
-		function($, ui, ResultObjectList, URLUtilities, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
+		function($, ui, ResultObjectList, URLUtilities, IsSorted, ResultObjectActionMenu, ResultTableActionMenu, ConfirmationDialog, MoveDropLocation) {
 	
 	function ResultTableView(element, options) {
 		this.element = element;
@@ -23,6 +23,25 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			headerHeightClass : ''
 		};
 	
+	// Figure out if the list should be sorted already. 
+	// Reset sort applied to table variable if context menu or Browse tab are selected.
+	var sorted = IsSorted;
+	var sortedValues = sorted.getSorted();
+
+	$(document).on('click', ".result_entry_context_menu, #mainmenu li", function() {
+		sortedValues.reloadRun = false;
+		sorted.setSorted(sortedValues);
+	});
+
+	if (!sorted.stale() && !sortedValues.reloadRun) {
+		location.replace(location.href + sortedValues.sortUrl);
+
+		sortedValues.reloadRun = true;
+		sortedValues.sortTime = Date.now();
+
+		sorted.setSorted(sortedValues);
+	}
+	
 	ResultTableView.prototype.render = function(data) {
 		var self = this;
 		
@@ -31,10 +50,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 			self.element.html("");
 			
 			self.pagingActive = data.pageRows < data.resultCount;
-			
+
 			self.resultUrl = document.location.href;
 			var container = data.container;
-		
+
 			var navigationBar = navigationBarTemplate({
 				pageNavigation : data,
 				resultUrl : self.resultUrl,
@@ -89,23 +108,36 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 				self._initEventHandlers();
 			}
 		
-			// Activate the result entry context menus, on the action gear and right clicking
-			self.contextMenus = [new ResultObjectActionMenu({
-				selector : ".action_gear",
-				containerSelector : ".res_entry,.container_entry",
-				actionHandler : self.actionHandler,
-				alertHandler : self.options.alertHandler
-			}), new ResultObjectActionMenu({
-				trigger : 'right',
-				positionAtTrigger : false,
-				selector : ".res_entry td",
-				containerSelector : ".res_entry,.container_entry",
-				actionHandler : self.actionHandler,
-				alertHandler : self.options.alertHandler,
-				multipleSelectionEnabled : true,
-				resultList : self.resultObjectList,
-				batchActions : self.options.resultActions
-			})];
+			// Activate the result entry context menus, on the action gear and  clicking
+			self.contextMenus = [
+				// Bind left and right click to open menu for the gear
+				new ResultObjectActionMenu({
+					trigger : 'left',
+					selector : ".action_gear",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler
+				}),
+				new ResultObjectActionMenu({
+					trigger : 'right',
+					selector : ".action_gear",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler
+				}),
+				// Bind just right click for opening menu on rest of the entry
+				new ResultObjectActionMenu({
+					trigger : 'right',
+					positionAtTrigger : false,
+					selector : ".res_entry td:not(:last-child)",
+					containerSelector : ".res_entry,.container_entry",
+					actionHandler : self.actionHandler,
+					alertHandler : self.options.alertHandler,
+					multipleSelectionEnabled : true,
+					resultList : self.resultObjectList,
+					batchActions : self.options.resultActions
+				})
+			];
 		
 			// Initialize click and drag operations
 			self._initMoveLocations();
@@ -196,6 +228,15 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 						self.sortOrder = !inverse;
 						
 						var sortUrl = URLUtilities.setParameter(self.resultUrl, 'sort', self.sortType + (!self.sortOrder? ",reverse" : ""));
+						
+						var sortSettings = {
+							sortUrl: URLUtilities.getAllParameters(sortUrl),
+							sortTime: Date.now(),
+							reloadRun: false
+						};
+
+						IsSorted.setSorted(sortSettings);
+						
 						if (history.pushState) {
 							history.pushState({}, "", sortUrl);
 						}

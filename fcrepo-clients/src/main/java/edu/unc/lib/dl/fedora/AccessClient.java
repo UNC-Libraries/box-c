@@ -22,9 +22,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.ws.WebServiceMessage;
 import org.springframework.ws.client.WebServiceFaultException;
@@ -34,7 +34,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.soap.client.SoapFaultClientException;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
-import org.springframework.ws.transport.http.CommonsHttpMessageSender;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 
 import edu.unc.lib.dl.fedora.types.ArrayOfString;
 import edu.unc.lib.dl.fedora.types.DescribeRepository;
@@ -230,11 +230,11 @@ public class AccessClient extends WebServiceTemplate {
 		this.setMarshaller(marshaller);
 		this.setUnmarshaller(marshaller);
 
-		CommonsHttpMessageSender messageSender = new CommonsHttpMessageSender();
-		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.username, this.password);
-		messageSender.setCredentials(creds);
-		messageSender.afterPropertiesSet();
-		this.setMessageSender(messageSender);
+		HttpComponentsMessageSender sender = new HttpComponentsMessageSender();
+		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(this.username, this.password);
+		sender.setCredentials(credentials);
+		sender.afterPropertiesSet();
+		this.setMessageSender(sender);
 
 		// this.setFaultMessageResolver(new FedoraFaultMessageResolver());
 		this.setDefaultUri(this.getFedoraContextUrl() + "/services/access");

@@ -22,30 +22,34 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.math.BigInteger;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.HttpClientConnectionManager;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -64,7 +68,7 @@ import org.springframework.ws.client.core.WebServiceTemplate;
 import org.springframework.ws.soap.SoapMessage;
 import org.springframework.ws.soap.client.SoapFaultClientException;
 import org.springframework.ws.soap.saaj.SaajSoapMessageFactory;
-import org.springframework.ws.transport.http.CommonsHttpMessageSender;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -98,7 +102,6 @@ import edu.unc.lib.dl.fedora.types.PurgeObject;
 import edu.unc.lib.dl.fedora.types.PurgeObjectResponse;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionable;
 import edu.unc.lib.dl.fedora.types.SetDatastreamVersionableResponse;
-import edu.unc.lib.dl.httpclient.ConnectionInterruptedHttpMethodRetryHandler;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
@@ -108,8 +111,8 @@ import edu.unc.lib.dl.xml.RDFXMLUtil;
 
 public class ManagementClient extends WebServiceTemplate {
 	private AccessClient accessClient = null;
-	private MultiThreadedHttpConnectionManager httpManager;
-	private HttpClient httpClient;
+	private HttpClientConnectionManager httpManager;
+	private CloseableHttpClient httpClient;
 	
 	private static int RELS_EXT_RETRIES = 10;
 	private static long RELS_EXT_RETRY_DELAY = 250L;
@@ -201,6 +204,8 @@ public class ManagementClient extends WebServiceTemplate {
 	private String password;
 
 	private String username;
+	
+	private String fedoraHost;
 
 	public String addManagedDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, String mimetype, String locationURI) throws FedoraException {
@@ -229,13 +234,13 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public String addInlineXMLDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
-			String label, boolean versionable, Document xml) throws FedoraException {
+			String label, boolean versionable, Document xml) throws FedoraException, FileNotFoundException {
 		File file = ClientUtils.writeXMLToTempFile(xml);
 		return addInlineXMLDatastream(pid, dsid, force, message, altids, label, versionable, file);
 	}
 
 	public String addInlineXMLDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
-			String label, boolean versionable, File contentFile) throws FedoraException {
+			String label, boolean versionable, File contentFile) throws FedoraException, FileNotFoundException {
 		String location = null;
 		location = this.upload(contentFile);
 		contentFile.delete();
@@ -450,8 +455,17 @@ public class ManagementClient extends WebServiceTemplate {
 	}
 
 	public void init() throws Exception {
-		this.httpManager = new MultiThreadedHttpConnectionManager();
-		this.httpManager.getParams().setConnectionTimeout(5000);
+		httpManager = new PoolingHttpClientConnectionManager();
+
+		RequestConfig requestConfig = RequestConfig.custom()
+				.setConnectTimeout(5000)
+				.build();
+		
+		HttpClientBuilder builder = HttpClientUtil
+				.getAuthenticatedClientBuilder(fedoraHost, getUsername(), getPassword());
+		builder.setDefaultRequestConfig(requestConfig);
+		
+		httpClient = builder.build();
 
 		initializeConnections();
 	}
@@ -467,21 +481,16 @@ public class ManagementClient extends WebServiceTemplate {
 		this.setMarshaller(marshaller);
 		this.setUnmarshaller(marshaller);
 
-		CommonsHttpMessageSender messageSender = new CommonsHttpMessageSender();
-		UsernamePasswordCredentials creds = new UsernamePasswordCredentials(this.getUsername(), this.getPassword());
-		messageSender.setCredentials(creds);
-		messageSender.setReadTimeout(300 * 1000);
-		messageSender.afterPropertiesSet();
-		this.setMessageSender(messageSender);
+		HttpComponentsMessageSender sender = new HttpComponentsMessageSender();
+		UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(this.username, this.password);
+		sender.setCredentials(credentials);
+		sender.setReadTimeout(300 * 1000);
+		sender.afterPropertiesSet();
+		this.setMessageSender(sender);
 
 		// this.setFaultMessageResolver(new FedoraFaultMessageResolver());
 		this.setDefaultUri(this.getFedoraContextUrl() + "/services/management");
 		this.afterPropertiesSet();
-
-		this.httpClient = HttpClientUtil.getAuthenticatedClient(this.getFedoraContextUrl(), this.getUsername(),
-				this.getPassword(), this.httpManager);
-		httpClient.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
-				new ConnectionInterruptedHttpMethodRetryHandler(10, 3000L));
 	}
 
 	public void destroy() {
@@ -616,31 +625,28 @@ public class ManagementClient extends WebServiceTemplate {
 			builder.queryParam("lastModifiedDate", lastModifiedDate);
 		}
 		
-		PutMethod method = new PutMethod(builder.build().encode().toUriString());
-		method.setRequestEntity(new ByteArrayRequestEntity(content));
+		HttpPut method = new HttpPut(builder.build().encode().toUriString());
+		method.setEntity(new ByteArrayEntity(content));
 		if (GroupsThreadStore.getGroups() != null) {
-			method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER,
+			method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER,
 					GroupsThreadStore.getGroups().joinAccessGroups(";", null, false));
 		}
 
-		try {
-			int response = httpClient.executeMethod(method);
+		try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
 			
-			if (response == 403) {
+			if (statusCode == 403) {
 				throw new AuthorizationException("Failed to update datastream " + dsid + " on object "
 							+ pid + " due to insufficient permissions");
 			}
 			
-			if (response == 409) {
+			if (statusCode == 409) {
 				throw new OptimisticLockException("Datastream " + dsid + " on object " + pid
 						+ " has been modified more recently than the specified last modified date");
 			}
 		} catch (IOException e) {
 			throw new ServiceException("Failed to modify datastream " + dsid + " on object " + pid, e);
-		} finally {
-			method.releaseConnection();
 		}
-		
 	}
 
 	public String modifyObject(PID pid, String label, String ownerid, State state, String message)
@@ -721,144 +727,112 @@ public class ManagementClient extends WebServiceTemplate {
 		this.username = username;
 	}
 
-	public String upload(File file) {
-		return upload(file, true);
-	}
-
-	public String upload(File file, boolean retry) {
-		String result = null;
-		String uploadURL = this.getFedoraContextUrl() + "/upload";
-		PostMethod post = new PostMethod(uploadURL);
-		post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
-		log.debug("Uploading file with forwarded groups: " + GroupsThreadStore.getGroupString());
-		post.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
-		try {
-			log.debug("Uploading to " + uploadURL);
-			Part[] parts = { new FilePart("file", file) };
-			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
-			int status = httpClient.executeMethod(post);
-
-			StringWriter sw = new StringWriter();
-			try(InputStream in = post.getResponseBodyAsStream();
-					PrintWriter pw = new PrintWriter(sw)) {
-				int b;
-				while ((b = in.read()) != -1) {
-					pw.write(b);
-				}
-			}
-
-			switch (status) {
-				case HttpStatus.SC_OK:
-				case HttpStatus.SC_CREATED:
-				case HttpStatus.SC_ACCEPTED:
-					result = sw.toString().trim();
-					log.info("Upload complete, response=" + result);
-					break;
-				case HttpStatus.SC_FORBIDDEN:
-					log.warn("Authorization to Fedora failed, attempting to reestablish connection.");
-					try {
-						this.initializeConnections();
-						return upload(file, false);
-					} catch (Exception e) {
-						log.error("Failed to reestablish connection to Fedora", e);
-					}
-					break;
-				case HttpStatus.SC_SERVICE_UNAVAILABLE:
-					throw new FedoraTimeoutException("Fedora service unavailable, upload failed");
-				default:
-					log.warn("Upload failed, response=" + HttpStatus.getStatusText(status));
-					log.debug(sw.toString().trim());
-					break;
-			}
-		} catch (ServiceException ex) {
-			throw ex;
-		} catch (Exception ex) {
-			throw new ServiceException(ex);
-		} finally {
-			post.releaseConnection();
-		}
-		return result;
+	public String upload(File file) throws FileNotFoundException {
+		return upload(new FileInputStream(file), true);
 	}
 
 	public String upload(String content) {
-		return this.upload(content.getBytes(), "tmp_" + System.nanoTime());
+		return upload(new ByteArrayInputStream(content.getBytes()), true);
 	}
 
 	public String upload(Document xml) {
 		// write the document to a byte array
 		XMLOutputter out = new XMLOutputter();
+		
 		try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 			out.output(xml, baos);
-			return this.upload(baos.toByteArray(), "md_events.xml");
+			return upload(new ByteArrayInputStream(baos.toByteArray()), true);
 		} catch (IOException e) {
 			throw new ServiceException("Unexpected error writing to byte array output stream", e);
 		}
 	}
+	
+	public String upload(byte[] bytes) {
+		return upload(new ByteArrayInputStream(bytes), true);
+	}
 
-	public String upload(byte[] bytes, String fileName) {
+	public String upload(InputStream content, boolean retry) {
 		String result = null;
-		// construct a post request to Fedora upload service
 		String uploadURL = this.getFedoraContextUrl() + "/upload";
-		PostMethod post = new PostMethod(uploadURL);
-		post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, false);
-		log.debug("Uploading XML with forwarded groups: " + GroupsThreadStore.getGroupString());
-		post.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
-		try {
-			log.debug("Uploading to " + uploadURL);
-			Part[] parts = { new FilePart("file", new ByteArrayPartSource(fileName, bytes)) };
-			post.setRequestEntity(new MultipartRequestEntity(parts, post.getParams()));
-
-			int status = httpClient.executeMethod(post);
-
-			StringWriter sw = new StringWriter();
-			try(
-					InputStream in = post.getResponseBodyAsStream();
-					PrintWriter pw = new PrintWriter(sw)
-					) {
-				int b;
-				while ((b = in.read()) != -1) {
-					pw.write(b);
+		
+		RequestConfig conf = RequestConfig.custom()
+				.setExpectContinueEnabled(false)
+				.build();
+		HttpPost post = new HttpPost(uploadURL);
+		post.setConfig(conf);
+		log.debug("Uploading file with forwarded groups: {}", GroupsThreadStore.getGroupString());
+		post.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+		
+		log.debug("Uploading to {}", uploadURL);
+		
+		// Add the file to the request.  It must be labeled 'file' for fedora to find it
+		HttpEntity fileEntity = MultipartEntityBuilder.create()
+				.addBinaryBody("file", content)
+				.build();
+		post.setEntity(fileEntity);
+		
+		try (CloseableHttpResponse httpResp = httpClient.execute(post)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
+			String responseString = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
+			
+			switch (statusCode) {
+			case HttpStatus.SC_OK:
+			case HttpStatus.SC_CREATED:
+			case HttpStatus.SC_ACCEPTED:
+				result = responseString.trim();
+				log.info("Upload complete, response=" + result);
+				break;
+			case HttpStatus.SC_FORBIDDEN:
+				log.warn("Authorization to Fedora failed, attempting to reestablish connection.");
+				try {
+					this.initializeConnections();
+					return upload(content, false);
+				} catch (Exception e) {
+					log.error("Failed to reestablish connection to Fedora", e);
 				}
+				break;
+			case HttpStatus.SC_SERVICE_UNAVAILABLE:
+				throw new FedoraTimeoutException("Fedora service unavailable, upload failed");
+			default:
+				log.warn("Upload failed, response=" + statusCode);
+				log.debug(responseString.toString().trim());
+				break;
 			}
-			if (status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED || status == HttpStatus.SC_ACCEPTED) {
-				result = sw.toString().trim();
-				log.debug("Upload complete, response=" + result);
-			} else {
-				log.warn("Upload failed, response=" + HttpStatus.getStatusText(status));
-				log.debug(sw.toString().trim());
-			}
+		} catch (ServiceException ex) {
+			throw ex;
 		} catch (Exception ex) {
-			log.error("Upload failed due to error", ex);
 			throw new ServiceException(ex);
-		} finally {
-			post.releaseConnection();
 		}
 		return result;
+		
 	}
 
 	public String getIrodsPath(String dsFedoraLocationToken) {
-		log.debug("getting iRODS path for " + dsFedoraLocationToken);
+		log.debug("getting iRODS path for {}", dsFedoraLocationToken);
 		String result = null;
-		GetMethod get = null;
-		try {
-			String url = getFedoraContextUrl() + "/storagelocation";
-			get = new GetMethod(url);
-			get.setQueryString("pid=" + URLEncoder.encode(dsFedoraLocationToken, "utf-8"));
-			int statusCode = httpClient.executeMethod(get);
+		
+		List<NameValuePair> params = new ArrayList<>();
+		params.add(new BasicNameValuePair("pid", dsFedoraLocationToken));
+		
+		StringBuilder url = new StringBuilder();
+		url.append(getFedoraContextUrl()).append("/storagelocation?")
+			.append(URLEncodedUtils.format(params, "UTF-8"));
+		
+		HttpGet get = new HttpGet(url.toString());
+		
+		try (CloseableHttpResponse httpResp = httpClient.execute(get)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
 			if (statusCode != HttpStatus.SC_OK) {
-				throw new RuntimeException("CDR storage location GET method failed: " + get.getStatusLine());
+				throw new RuntimeException("CDR storage location GET method failed: " + httpResp.getStatusLine());
 			} else {
-				log.debug("CDR storage location GET method: " + get.getStatusLine());
-				byte[] resultBytes = get.getResponseBody();
-				result = new String(resultBytes, "utf-8");
-				result = result.trim();
+				log.debug("CDR storage location GET method: " + httpResp.getStatusLine());
+				result = EntityUtils.toString(httpResp.getEntity(), "UTF-8").trim();
 			}
 		} catch (Exception e) {
 			throw new ServiceException("Error while contacting iRODS location service with datastream location "
 					+ dsFedoraLocationToken, e);
-		} finally {
-			if (get != null)
-				get.releaseConnection();
 		}
 		return result;
 	}
@@ -1129,5 +1103,13 @@ public class ManagementClient extends WebServiceTemplate {
 	 */
 	public AccessClient getAccessClient() {
 		return accessClient;
+	}
+
+	public String getFedoraHost() {
+		return fedoraHost;
+	}
+
+	public void setFedoraHost(String fedoraHost) {
+		this.fedoraHost = fedoraHost;
 	}
 }

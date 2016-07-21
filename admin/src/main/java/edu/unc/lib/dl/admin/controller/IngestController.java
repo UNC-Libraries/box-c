@@ -29,10 +29,10 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.stax.FOMExtensibleElement;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,47 +70,55 @@ public class IngestController {
 	Map<String, ? extends Object> ingestPackageController(@PathVariable("pid") String pid,
 			@RequestParam("type") String type, @RequestParam(value = "name", required = false) String name,
 			@RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
+		
 		String destinationUrl = swordUrl + "collection/" + pid;
-		HttpClient client = HttpClientUtil.getAuthenticatedClient(destinationUrl, swordUsername, swordPassword);
-		client.getParams().setAuthenticationPreemptive(true);
-		PostMethod method = new PostMethod(destinationUrl);
+		CloseableHttpClient client = HttpClientUtil
+				.getAuthenticatedClient(null, swordUsername, swordPassword);
+		HttpPost method = new HttpPost(destinationUrl);
 
 		// Set SWORD related headers for performing ingest
-		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
-		method.addRequestHeader("Packaging", type);
-		method.addRequestHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
-		method.addRequestHeader("Content-Type", ingestFile.getContentType());
-		method.addRequestHeader("Content-Length", Long.toString(ingestFile.getSize()));
-		method.addRequestHeader("mail", request.getHeader("mail"));
-		method.addRequestHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
+		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+		method.addHeader("Packaging", type);
+		method.addHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
+		method.addHeader("Content-Type", ingestFile.getContentType());
+		method.addHeader("mail", request.getHeader("mail"));
+		method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
 		if (name != null && name.trim().length() > 0)
-			method.addRequestHeader("Slug", name);
+			method.addHeader("Slug", name);
 
 		// Setup the json response
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("action", "ingest");
 		result.put("destination", pid);
+		
 		try {
-			method.setRequestEntity(new InputStreamRequestEntity(ingestFile.getInputStream(), ingestFile.getSize()));
-			client.executeMethod(method);
-			response.setStatus(method.getStatusCode());
+			InputStreamEntity entity = new InputStreamEntity(ingestFile.getInputStream(), ingestFile.getSize());
+			method.setEntity(entity);
+		} catch (IOException e) {
+			log.error("Failed to read ingest file", e);
+			return null;
+		}
+		
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+			
+			response.setStatus(statusCode);
 
 			// Object successfully "create", or at least queued
-			if (method.getStatusCode() == 201) {
-				Header location = method.getResponseHeader("Location");
-				String newPid = location.getValue();
+			if (statusCode == 201) {
+				String newPid = httpResp.getFirstHeader("Location").getValue();
 				newPid = newPid.substring(newPid.lastIndexOf('/'));
 				result.put("pid", newPid);
-			} else if (method.getStatusCode() == 401) {
+			} else if (statusCode == 401) {
 				// Unauthorized
 				result.put("error", "Not authorized to ingest to container " + pid);
-			} else if (method.getStatusCode() == 400 || method.getStatusCode() >= 500) {
+			} else if (statusCode == 400 || statusCode >= 500) {
 				// Server error, report it to the client
 				result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName()
 						+ "\" to " + pid);
 
 				// Inspect the SWORD response, extracting the stacktrace
-				InputStream entryPart = method.getResponseBodyAsStream();
+				InputStream entryPart = httpResp.getEntity().getContent();
 				Abdera abdera = new Abdera();
 				Parser parser = abdera.getParser();
 				Document<Entry> entryDoc = parser.parse(entryPart);
@@ -135,13 +143,6 @@ public class IngestController {
 			result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName() + "\" to "
 					+ pid);
 			return result;
-		} finally {
-			method.releaseConnection();
-			try {
-				ingestFile.getInputStream().close();
-			} catch (IOException e) {
-				log.warn("Failed to close ingest package file", e);
-			}
 		}
 	}
 }

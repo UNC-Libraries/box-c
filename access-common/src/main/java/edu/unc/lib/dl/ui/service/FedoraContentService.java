@@ -22,10 +22,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,6 +65,8 @@ public class FedoraContentService {
 	private AccessClient accessClient;
 
 	private FedoraUtil fedoraUtil;
+	
+	private String fedoraHost;
 
 	@Autowired
 	private SearchSettings searchSettings;
@@ -139,16 +141,15 @@ public class FedoraContentService {
 		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream.getName()
 				+ "/content";
 
-		HttpClient client = HttpClientUtil.getAuthenticatedClient(dataUrl, accessClient.getUsername(),
+		CloseableHttpClient client = HttpClientUtil
+				.getAuthenticatedClient(fedoraHost, accessClient.getUsername(),
 				accessClient.getPassword());
-		client.getParams().setAuthenticationPreemptive(true);
-		GetMethod method = new GetMethod(dataUrl);
-		method.addRequestHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+		HttpGet method = new HttpGet(dataUrl);
+		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 
-		try {
-			client.executeMethod(method);
+		try (CloseableHttpResponse httpResp = client.execute(method)) {
 
-			if (method.getStatusCode() == HttpStatus.SC_OK) {
+			if (httpResp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
 				if (response != null) {
 					PID pid = new PID(simplepid);
 
@@ -157,7 +158,7 @@ public class FedoraContentService {
 					// Use the content length from Fedora it is not provided or negative, in which case use solr's
 					long contentLength;
 					try {
-						String contentLengthString = method.getResponseHeader("content-length").getValue();
+						String contentLengthString = httpResp.getFirstHeader("content-length").getValue();
 						contentLength = Long.parseLong(contentLengthString);
 					} catch (Exception e) {
 						// If the content length wasn't provided or wasn't a number, set it to -1
@@ -171,7 +172,7 @@ public class FedoraContentService {
 					// Use Fedora's content type unless it is unset or octet-stream
 					String mimeType;
 					try {
-						mimeType = method.getResponseHeader("content-type").getValue();
+						mimeType = httpResp.getFirstHeader("content-type").getValue();
 						if (mimeType == null || "application/octet-stream".equals(mimeType)) {
 							if ("mp3".equals(datastream.getExtension())) {
 								mimeType = "audio/mpeg";
@@ -210,30 +211,25 @@ public class FedoraContentService {
 				}
 
 				// Stream the content
-				FileIOUtil.stream(outStream, method);
-			} else if (method.getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+				FileIOUtil.stream(outStream, httpResp);
+			} else if (httpResp.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN) {
 				throw new AuthorizationException(
 						"User does not have sufficient permissions to retrieve the specified object");
 			} else {
 				// Retry server errors
-				if (method.getStatusCode() == 500 && retryServerError > 0) {
+				if (httpResp.getStatusLine().getStatusCode() == 500 && retryServerError > 0) {
 					LOG.warn("Failed to retrieve " + dataUrl + ", retrying.");
 					this.streamData(simplepid, datastream, filename, response, asAttachment, retryServerError - 1);
 				} else {
 					throw new ResourceNotFoundException("Failure to stream fedora content due to response of: "
-							+ method.getStatusLine().toString() + "\nPath was: " + dataUrl);
+							+ httpResp.getStatusLine().toString() + "\nPath was: " + dataUrl);
 				}
 			}
 		} catch (ClientAbortException e) {
 			if (LOG.isDebugEnabled())
 				LOG.debug("User client aborted request to stream Fedora content for " + simplepid, e);
-		} catch (HttpException e) {
-			LOG.error("Error while attempting to stream Fedora content for " + simplepid, e);
 		} catch (IOException e) {
 			LOG.warn("Problem retrieving " + dataUrl + " for " + simplepid, e);
-		} finally {
-			if (method != null)
-				method.releaseConnection();
 		}
 	}
 
@@ -255,5 +251,13 @@ public class FedoraContentService {
 
 	public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
 		this.analyticsTracker = analyticsTracker;
+	}
+
+	public String getFedoraHost() {
+		return fedoraHost;
+	}
+
+	public void setFedoraHost(String fedoraHost) {
+		this.fedoraHost = fedoraHost;
 	}
 }

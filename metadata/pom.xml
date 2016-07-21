@@ -30,10 +30,9 @@
 		<!-- Note that most of the dependencies here have optional set to "true" which means that projects 
 			which import this one need not pull in the dependencies transitively. -->
 		<dependency>
-			<groupId>commons-httpclient</groupId>
-			<artifactId>commons-httpclient</artifactId>
-			<version>3.1</version>
-			<optional>true</optional>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
