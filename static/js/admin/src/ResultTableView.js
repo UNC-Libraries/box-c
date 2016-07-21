@@ -28,7 +28,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 	var sorted = IsSorted;
 	var sortedValues = sorted.getSorted();
 
-	$(document).on('click', ".context-menu-item, #mainmenu li:first-child", function() {
+	$(document).on('click', ".result_entry_context_menu, #mainmenu li", function() {
 		sortedValues.reloadRun = false;
 		sorted.setSorted(sortedValues);
 	});
