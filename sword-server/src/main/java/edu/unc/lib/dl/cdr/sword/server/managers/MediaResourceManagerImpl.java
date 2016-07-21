@@ -44,6 +44,7 @@ import org.swordapp.server.SwordError;
 import org.swordapp.server.SwordServerException;
 
 import edu.unc.lib.dl.acl.util.AccessControlTransformationUtil;
+import edu.unc.lib.dl.cdr.sword.server.ResponseAwareInputStream;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
@@ -85,7 +86,9 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 				+ "/datastreams/" + datastream.getName() + "/content";
 		HttpGet method = new HttpGet(url);
 		
-		try (CloseableHttpResponse httpResp = client.execute(method)) {
+		try {
+			CloseableHttpResponse httpResp = client.execute(method);
+			
 			int statusCode = httpResp.getStatusLine().getStatusCode();
 			
 			if (statusCode == HttpStatus.SC_OK) {
@@ -102,7 +105,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 					mimeType = datastreamResults.get(0).get(0);
 					lastModified = datastreamResults.get(0).get(1);
 				}
-				inputStream = httpResp.getEntity().getContent(); // new MethodAwareInputStream(method);
+				inputStream = new ResponseAwareInputStream(httpResp);
 				
 				// For the ACL virtual datastream, transform RELS-EXT into accessControl tag
 				if ("ACL".equals(targetPID.getDatastream())) {
