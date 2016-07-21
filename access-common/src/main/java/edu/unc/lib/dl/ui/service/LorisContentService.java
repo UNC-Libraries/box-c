@@ -75,8 +75,6 @@ public class LorisContentService {
 				LOG.debug("User client aborted request to stream jp2 metadata for " + simplepid, e);
 		} catch (Exception e){
 			LOG.error("Problem retrieving metadata for " + path, e);
-		} finally {
-			method.releaseConnection();
 		}
 	}
 	

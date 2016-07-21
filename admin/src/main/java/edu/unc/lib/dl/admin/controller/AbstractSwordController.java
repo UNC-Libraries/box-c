@@ -112,9 +112,6 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 			}
 		} catch (Exception e) {
 			log.error("Error while attempting to stream Fedora content for " + pid, e);
-		} finally {
-			if (method != null)
-				method.releaseConnection();
 		}
 		return responseString;
 	}

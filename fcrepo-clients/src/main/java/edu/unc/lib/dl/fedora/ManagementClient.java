@@ -646,10 +646,7 @@ public class ManagementClient extends WebServiceTemplate {
 			}
 		} catch (IOException e) {
 			throw new ServiceException("Failed to modify datastream " + dsid + " on object " + pid, e);
-		} finally {
-			method.releaseConnection();
 		}
-		
 	}
 
 	public String modifyObject(PID pid, String label, String ownerid, State state, String message)

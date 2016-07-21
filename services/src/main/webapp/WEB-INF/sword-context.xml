@@ -187,6 +187,7 @@
 	
 	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"
 		init-method="init">
+		<property name="fedoraHost" value="${fedora.host:localhost}" />
 		<property name="fedoraPath" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}"/>
 		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
 	</bean>

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +35,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,13 +134,10 @@ public class AccessControlController extends AbstractSwordController {
 				response.setStatus(statusCode);
 				return null;
 			}
-		} catch (Exception e) {
+		} catch (IOException | JDOMException e) {
 			response.setStatus(500);
 			log.error("Failed to retrieve access control document for " + pid, e);
 			return null;
-		} finally {
-			if (method != null)
-				method.releaseConnection();
 		}
 
 		Map<String, List<RoleGrant>> rolesGranted = new LinkedHashMap<String, List<RoleGrant>>();

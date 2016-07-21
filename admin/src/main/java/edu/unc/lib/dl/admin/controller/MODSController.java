@@ -186,8 +186,6 @@ public class MODSController extends AbstractSwordController {
 					mods = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
 				} catch (IOException e) {
 					log.info("Problem uploading MODS for " + pid + ": " + e.getMessage());
-				} finally {
-					method.releaseConnection();
 				}
 			} else {
 				if (statusCode == HttpStatus.SC_BAD_REQUEST || statusCode == HttpStatus.SC_NOT_FOUND) {
