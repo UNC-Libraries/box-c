@@ -54,7 +54,7 @@ public class DashboardController extends AbstractSolrSearchController {
 		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
 
 		// Get unpublished counts
-		StringBuilder reviewFilter = new StringBuilder("status:Unpublished AND roleGroup:");
+		StringBuilder reviewFilter = new StringBuilder("isPart:false AND status:Unpublished AND roleGroup:");
 		reviewFilter.append(SolrQueryLayerService.getWriteRoleFilter(GroupsThreadStore.getGroups()));
 
 		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished",

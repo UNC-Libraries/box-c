@@ -104,7 +104,7 @@ public class ReviewController extends AbstractSearchController {
 		searchRequest.setApplyCutoffs(false);
 
 		SearchState searchState = searchRequest.getSearchState();
-
+		searchState.setIncludeParts(false);
 		GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
 		searchState.getFacets().put("STATUS", facet);
 

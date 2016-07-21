@@ -18,7 +18,9 @@ package edu.unc.lib.dl.ui.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -206,6 +208,29 @@ public class FullRecordController extends AbstractSolrSearchController {
 			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
 					searchSettings.maxNeighborResults, accessGroups);
 			model.addAttribute("neighborList", neighbors);
+			
+			// Get previous and next record in the same folder if there are any
+			Map<String, BriefObjectMetadataBean> previousNext = new HashMap<String, BriefObjectMetadataBean>();
+			
+			int selectedRecord = -1;
+			for (BriefObjectMetadataBean neighbor : neighbors) {
+				if (neighbor.getId().equals(briefObject.getId())) {
+					selectedRecord = neighbors.indexOf(neighbor);
+					break;
+				}
+			}
+			
+			if (selectedRecord != -1) {
+				if (selectedRecord > 0) {
+					previousNext.put("previous", neighbors.get(selectedRecord - 1));
+				}
+				
+				if (selectedRecord + 1 < neighbors.size()) {
+					previousNext.put("next", neighbors.get(selectedRecord + 1));
+				}
+			}
+
+			model.addAttribute("previousNext", previousNext);
 		}
 		
 		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)

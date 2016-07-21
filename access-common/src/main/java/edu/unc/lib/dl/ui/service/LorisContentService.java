@@ -82,17 +82,18 @@ public class LorisContentService {
 		}
 	}
 	
-	public void streamJP2(String simplepid, String region, String scale, String rotate, String datastream, 
+	public void streamJP2(String simplepid, String region, String size, String rotatation, String quality, String format, String datastream, 
 			OutputStream outStream, HttpServletResponse response){
-		this.streamJP2(simplepid, region, scale, rotate, datastream, outStream, response, 1);
+		this.streamJP2(simplepid, region, size, rotatation, quality, format, datastream, outStream, response, 1);
 	}
 	
-	public void streamJP2(String simplepid, String region, String scale, String rotate, String datastream, 
+	public void streamJP2(String simplepid, String region, String size, String rotation, String quality, String format, String datastream, 
 			OutputStream outStream, HttpServletResponse response, int retryServerError){
 		HttpClient client = new HttpClient();
 		
 		StringBuilder path = new StringBuilder(applicationPathSettings.getLorisPath());
-		path.append(datastream).append("/content");
+
+		path.append(simplepid).append("/" + region).append("/" + size).append("/" + rotation).append("/" + quality + "." + format);
 		
 		GetMethod method = new GetMethod(path.toString());
 		

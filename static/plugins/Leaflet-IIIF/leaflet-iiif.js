@@ -26,6 +26,11 @@ L.TileLayer.Iiif = L.TileLayer.extend({
     }
 
     options = L.setOptions(this, options);
+
+    if (typeof options.mapSelector !== 'undefined') {
+        this.mapSelector = options.mapSelector;
+    }
+
     this._infoDeferred = new $.Deferred();
     this._infoUrl = url;
     this._baseUrl = this._templateUrl();
@@ -113,7 +118,6 @@ L.TileLayer.Iiif = L.TileLayer.extend({
   },
   _getInfo: function() {
     var _this = this;
-
     // Look for a way to do this without jQuery
     $.getJSON(_this._infoUrl)
       .done(function(data) {

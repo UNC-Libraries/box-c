@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.ui.service.LorisContentService;
@@ -71,23 +70,30 @@ public class LorisContentController extends AbstractSolrSearchController {
 		// TODO check publication status in Solr
 		return userAccessUtil.hasAccess(id, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
 	}
-
+	
 	/**
-	 * Handles requests for jp2 metadata
+	 * Handles requests for individual region tiles.
 	 * 
 	 * @param model
 	 * @param request
 	 * @param response
 	 */
-	@RequestMapping("/jp2Metadata/{id}/{datastream}")
-	public void getMetadata(@PathVariable("id") String id,
-			@PathVariable("datastream") String datastream, HttpServletResponse response) {
+	@RequestMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
+	public void getRegion(@PathVariable("id") String id,
+			@PathVariable("datastream") String datastream, @PathVariable("region") String region,
+			@PathVariable("size") String size, @PathVariable("rotation") String rotation,
+			@PathVariable("qualityFormat") String qualityFormat, HttpServletResponse response) {
 		// Check if the user is allowed to view this object
 		if (this.hasAccess(id, datastream)) {
 			try {
-				lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
+				String[] qualityFormatArray = qualityFormat.split("\\.");
+				String quality = qualityFormatArray[0];
+				String format = qualityFormatArray[1];
+				
+				lorisContentService
+						.streamJP2(id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
 			} catch (IOException e) {
-				LOG.error("Error retrieving JP2 metadata content for " + id, e);
+				LOG.error("Error retrieving streaming JP2 content for " + id, e);
 			}
 		} else {
 			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
@@ -96,24 +102,21 @@ public class LorisContentController extends AbstractSolrSearchController {
 	}
 
 	/**
-	 * Handles requests for individual region tiles.
+	 * Handles requests for jp2 metadata
 	 * 
 	 * @param model
 	 * @param request
 	 * @param response
 	 */
-	@RequestMapping("/jp2Region/{id}/{datastream}")
-	public void getRegion(@PathVariable("id") String id,
-			@PathVariable("datastream") String datastream, @RequestParam("svc.region") String region,
-			@RequestParam("svc.level") String scale, @RequestParam("svc.rotate") String rotate,
-			HttpServletResponse response) {
+	@RequestMapping("/jp2Proxy/{id}/{datastream}")
+	public void getMetadata(@PathVariable("id") String id,
+			@PathVariable("datastream") String datastream, HttpServletResponse response) {
 		// Check if the user is allowed to view this object
 		if (this.hasAccess(id, datastream)) {
 			try {
-				lorisContentService
-						.streamJP2(id, region, scale, rotate, datastream, response.getOutputStream(), response);
+				lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
 			} catch (IOException e) {
-				LOG.error("Error retrieving streaming JP2 content for " + id, e);
+				LOG.error("Error retrieving JP2 metadata content for " + id, e);
 			}
 		} else {
 			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());

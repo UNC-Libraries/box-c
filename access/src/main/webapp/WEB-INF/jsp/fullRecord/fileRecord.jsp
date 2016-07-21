@@ -28,7 +28,6 @@
 			<c:param name="target" value="file" />
 			<c:param name="size" value="large" />
 		</c:import>
-		
 		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
 			<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
 		</c:if>

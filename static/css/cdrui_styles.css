@@ -235,6 +235,10 @@ div#username_wrap {
 	font-size: 11px;
 }
 
+.searchitem h2 a:visited {
+    color: #656096;
+}
+
 .searchitem_container_count {
 	color: #676777;
 	white-space: nowrap;
@@ -1160,4 +1164,16 @@ p.navigation_bar a {
 
 .deleted .collinfo {
 	color: #888;
+}
+
+#prevNext {
+	float: right;
+}
+
+#prevNext li {
+	padding-left: 5px;
+	display: inline;
+	margin-left: 0;
+	text-indent: 0;
+	color: #999;
 }
