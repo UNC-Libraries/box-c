@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	xmlns:xlink="http://www.w3.org/1999/xlink">
-	<xsl:import href="languageNames.xsl"/>
-	<xsl:import href="scriptNames.xsl"/>
+	<xsl:import href="/recordTransformations/languageNames.xsl"/>
+	<xsl:import href="/recordTransformations/scriptNames.xsl"/>
 	<xsl:output method="xml" omit-xml-declaration="yes" indent="no"/>
 	<!-- 
 	Transforms a mods record into a table formatted according to the needs of the 

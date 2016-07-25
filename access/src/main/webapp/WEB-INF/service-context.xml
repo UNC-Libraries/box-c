@@ -73,8 +73,11 @@
 		<prop key="external.base.url">${external.base.url}</prop>
 	</util:properties>
 	
+	<util:properties id="headerMenuProperties"
+		location="classpath:mappings/headerMenu.properties" />
+	
 	<bean name="headerMenuSettings" class="edu.unc.lib.dl.ui.util.HeaderMenuSettings" init-method="init">
-		<property name="propertiesUrl" value="${external.base.file.url}/mappings/headerMenu.properties"/>
+		<property name="properties" ref="headerMenuProperties" />
 	</bean>
 
 	<!-- Import controllers -->
@@ -107,7 +110,7 @@
 		<!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
 		<property name="views">
 			<map>
-				<entry key="external.xslView.fullRecord.url" value="${external.base.file.url}recordTransformations/modsToFullRecord.xsl"/>
+				<entry key="external.xslView.fullRecord.url" value="/recordTransformations/modsToFullRecord.xsl"/>
 			</map>
 		</property>
 	</bean>
