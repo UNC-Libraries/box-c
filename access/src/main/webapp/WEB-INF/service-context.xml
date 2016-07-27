@@ -120,6 +120,10 @@
 		<property name="requireViewAdmin" value="false" />
 	</bean>
 	
+	<bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
+	</bean>
+	
+	
 	<!-- JMX -->
 	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
 		lazy-init="false">

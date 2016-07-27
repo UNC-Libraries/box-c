@@ -40,6 +40,7 @@
 					<stopKey>STOP</stopKey>
 					<webApp>
 						<contextPath>/</contextPath>
+						<defaultsDescriptor>src/test/resources/jetty-webdefault.xml</defaultsDescriptor>
 					</webApp>
 					<contextHandlers>
 						<contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
