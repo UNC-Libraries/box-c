@@ -90,6 +90,8 @@
 		<property name="forwardRequest" value="true"/>
 	</bean>
 	
+	<bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
+	</bean>
 	
 	
 	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"

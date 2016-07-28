@@ -40,13 +40,20 @@
 					<stopKey>STOP</stopKey>
 					<webApp>
 						<contextPath>/</contextPath>
-						<defaultsDescriptor>src/test/resources/jetty-webdefault.xml</defaultsDescriptor>
+						<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
+						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webApp>
 					<contextHandlers>
 						<contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
 							<contextPath>/static</contextPath>
 							<resourceBase>${project.basedir}/../static</resourceBase>
 							<handler implementation="org.eclipse.jetty.server.handler.ResourceHandler" />
+						</contextHandler>
+						<contextHandler
+							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+							<war>../admin/target/admin.war</war>
+							<contextPath>/admin</contextPath>
+							<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
 						</contextHandler>
 					</contextHandlers>
 					<httpConnector>
@@ -55,7 +62,7 @@
 					<systemProperties>
 						<systemProperty>
 							<name>server.properties.uri</name>
-							<value>file:${project.basedir}/src/test/resources/server.properties</value>
+							<value>file:${project.basedir}/../etc/server.properties</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.dir</name>
@@ -142,13 +149,6 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-oxm</artifactId>
 			<version>${spring.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>

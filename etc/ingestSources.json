@@ -1,0 +1,1 @@
+[{"id":"test","name":"Test","base":"ingestSource","patterns":["*"],"containers":["cdr:collections"]}]
