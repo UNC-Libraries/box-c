@@ -115,7 +115,7 @@
 	
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<realm-name>Services Application</realm-name>
+		<realm-name>ServicesRealm</realm-name>
 	</login-config>
 	
 	<security-role>

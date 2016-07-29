@@ -103,28 +103,6 @@
 		<property name="threadGroupPrefix" value="Services"/>
 		<property name="serviceTimeout" value="${services.dataservice.timeout:12000}" />
 	</bean>
-
-	<bean id="irodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
-		<constructor-arg value="${irods.host}"/>
-		<constructor-arg value="${irods.port}" type="int"/>
-		<constructor-arg value="${irods.services.username}"/>
-		<constructor-arg value="${irods.services.password}"/>
-		<constructor-arg value="/${irods.zone}/home/${irods.services.username}"/>
-		<constructor-arg value="${irods.zone}"/>
-		<constructor-arg value="${irods.default.resc}"/>
-	</bean> 
-
-	<bean id="fedoraIrodsAccount" class="org.irods.jargon.core.connection.IRODSAccount">
-		<constructor-arg value="${fedora.irods.host}"/>
-		<constructor-arg value="${fedora.irods.port}" type="int"/>
-		<constructor-arg value="${fedora.irods.username}"/>
-		<constructor-arg value="${fedora.irods.password}"/>
-		<constructor-arg value="/${fedora.irods.zone}/home/${fedora.irods.username}"/>
-		<constructor-arg value="${fedora.irods.zone}"/>
-		<constructor-arg value="${fedora.irods.default.resc}"/>
-	</bean> 
-	
-	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
   
 	<!-- a pooling based JMS provider -->
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
@@ -246,6 +224,9 @@
 		<property name="queryLayer" ref="queryLayer" />
 		<property name="requireViewAdmin" value="true" />
 		<property name="nonAdminRedirectUrl" value="/error/401.html" />
+	</bean>
+	
+	<bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
 	</bean>
 	
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
