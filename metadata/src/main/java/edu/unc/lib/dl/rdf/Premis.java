@@ -69,6 +69,8 @@ public class Premis {
     
     public static final Property hasEventOutcomeInformation = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeInformation" );
     
+    public static final Property hasEventRelatedAgent = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventRelatedAgent" );
+    
     public static final Property hasEventType = createProperty("http://www.loc.gov/premis/rdf/v1#hasEventType");
     
     public static final Resource File = createResource( "http://www.loc.gov/premis/rdf/v1#File" );
@@ -156,6 +158,8 @@ public class Premis {
     public static final Resource Deletion = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/del" );
     
     public static final Resource DigitalSignatureValidation = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/dig" );
+    
+    public static final Resource EventRelatedAgentRole = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/exe" );
     
     public static final Resource FixityCheck = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/fix" );
     
