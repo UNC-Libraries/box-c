@@ -43,7 +43,7 @@ public class PremisLoggerTest {
 	}
 	
 	@Test
-	public void testTripleCreation() {
+	public void testEventbuilderCreation() {
 		PremisEventBuilder builder = premis.buildEvent(eventType, date);
 		
 		assertTrue("Returned object is not a PremisLogger", premis instanceof PremisLogger);
@@ -56,14 +56,12 @@ public class PremisLoggerTest {
 		String name = "ClamAV";
 		String versionNumber = "3.2.1";
 		
-		Model objModel = premis.objectModel();
 		Model premisBuilder = premis.buildEvent(eventType, date)
 				.addEventDetail(message)
 				.addSoftwareAgent(name, versionNumber)
 				.create();
 		
-		Model writeModel = premis.modelMerge(objModel, premisBuilder);
-		premis.writeEvent(writeModel);
+		premis.writeEvent(premisBuilder);
 		
 		InputStream in = new FileInputStream(this.file);
 		Model model = ModelFactory.createDefaultModel().read(in, null, "TURTLE");

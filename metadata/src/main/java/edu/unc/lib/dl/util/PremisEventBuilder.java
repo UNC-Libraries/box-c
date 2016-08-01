@@ -1,12 +1,12 @@
 package edu.unc.lib.dl.util;
 
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
-
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.rdf.Premis;
@@ -38,7 +38,10 @@ public class PremisEventBuilder {
 		return this;
 	}
 	
-	public PremisEventBuilder addEventDetail(String message) {
+	public PremisEventBuilder addEventDetail(String message, Object... args) {
+		if(args != null) {
+			message = MessageFormat.format(message, args);
+		}
 		Resource premisObjResc = getResource();
 		premisObjResc.addProperty(Premis.hasEventDetail, message);
 		
@@ -51,6 +54,17 @@ public class PremisEventBuilder {
 		premisObjResc.addProperty(Premis.hasAgentName, name+" ("+versionNumber+")");
 		premisObjResc.addProperty(Premis.hasAgentType, "Software");
 
+		return this;
+	}
+	
+	public PremisEventBuilder addDerivitave(String sourceDataStream, String destDataStream) {
+		Resource premisObjResc = getResource();
+		
+		premisObjResc.addProperty(Premis.hasAgentName, sourceDataStream);
+		premisObjResc.addProperty(Premis.hasAgentType, "Source Data");
+		premisObjResc.addProperty(Premis.hasAgentName, destDataStream);
+		premisObjResc.addProperty(Premis.hasAgentType, "Derived Data");
+		
 		return this;
 	}
 	
@@ -69,7 +83,7 @@ public class PremisEventBuilder {
 		return premisObjResc;
 	}
 	
-	public Model getModel() {
+	private Model getModel() {
 		if (model != null) {
 			return model;
 		}

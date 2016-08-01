@@ -60,7 +60,7 @@ public class PremisLogger {
 	}
 	
 	public Model objectModel() {
-		Model model = getModel(this.model);
+		Model model = getModel();
 		Resource premisObjResc = model.createResource(this.pid.getURI());
 		
 		premisObjResc.addProperty(Premis.hasEvent, cdrEventURI + this.eventId);
@@ -69,17 +69,16 @@ public class PremisLogger {
 	}
 	
 	public Model modelMerge(Model objModel, Model eventModel) {
-		
 		Model mergedModel = objModel.add(eventModel);
 		return mergedModel;
 	}
 	
-	public Model getModel(Model model) {
+	public Model getModel() {
+		model = ModelFactory.createDefaultModel();
+		
 		if (this.file.exists()) {
 			InputStream in = FileManager.get().open(this.file.getAbsolutePath());
-			model.read(in, null);
-		} else {
-			model = ModelFactory.createDefaultModel();
+			model.read(in, null, "TURTLE");
 		}
 		
 		return model;
