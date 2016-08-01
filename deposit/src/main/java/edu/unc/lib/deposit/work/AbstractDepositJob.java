@@ -6,8 +6,6 @@ import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.manifestURI;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
@@ -16,12 +14,6 @@ import javax.annotation.PostConstruct;
 
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,14 +23,12 @@ import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
-import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Constructed with deposit directory and deposit ID. Facilitates event logging
@@ -74,8 +64,6 @@ public abstract class AbstractDepositJob implements Runnable {
 	// Directory for local data files
 	private File dataDirectory;
 
-	private final PremisEventLogger eventLog = new PremisEventLogger(this
-			.getClass().getName());
 	// Directory containing PREMIS event files for individual objects in this
 	// deposit
 	private File eventsDirectory;
@@ -183,10 +171,6 @@ public abstract class AbstractDepositJob implements Runnable {
 		return dataDirectory;
 	}
 
-	public PremisEventLogger getEventLog() {
-		return eventLog;
-	}
-
 	public File getEventsDirectory() {
 		return eventsDirectory;
 	}
@@ -201,14 +185,6 @@ public abstract class AbstractDepositJob implements Runnable {
 		if (path == null)
 			return null;
 		return new File(path);
-	}
-
-	public void recordDepositEvent(Type type, String messageformat, Object... args) {
-		String message = MessageFormat.format(messageformat, args);
-		Element event = getEventLog().logEvent(type, message,
-				this.getDepositPID());
-		log.debug("event recorded: {}", event);
-		appendDepositEvent(getDepositPID(), event);
 	}
 
 	public void failJob(String message, String details) {
@@ -232,68 +208,24 @@ public abstract class AbstractDepositJob implements Runnable {
 	}
 
 	/**
-	 * Returns the PREMIS events file for the given PID
-	 *
-	 * @param pid
-	 * @return
-	 */
-	protected File getEventsFile(PID pid) {
-		return createOrAppendToEventsFile(pid, null);
-	}
-
-	/**
-	 * Appends an event to the PREMIS log for the given pid. If the log does not exist, it is created
-	 *
-	 * @param pid
-	 * @param event
-	 */
-	protected void appendDepositEvent(PID pid, Element event) {
-		createOrAppendToEventsFile(pid, event);
-	}
-
-	/**
 	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist or
 	 * is corrupt.
 	 *
 	 * @param pid
-	 * @param event
 	 * @return the premis document file
 	 */
-	private File createOrAppendToEventsFile(PID pid, Element event) {
-		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".xml");
+	public PremisLogger createOrAppendToEventsFile(PID pid) {
+		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
 
 		try {
-			Document dom;
+			PremisLogger premisLogger;
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
-				dom = createNewEventsFile(pid, file);
-			} else {
-				// Not appending anything, so return before attempting to load existing file
-				if (event == null)
-					return file;
+				
+			} 
+			premisLogger = createNewEventsFile(pid, file);
 
-				try {
-					dom = new SAXBuilder().build(file);
-				} catch (JDOMException e) {
-					log.warn("Failed to parse existing events file for {}, backing up corrupt log and creating a new log", e);
-					try {
-						Files.move(file.toPath(), Paths.get(file.getAbsolutePath() + ".backup." + System.currentTimeMillis()));
-					} catch (IOException e2) {
-						failJob(e2, "Failed to backup corrupt log file for object {}.", pid);
-					}
-					dom = createNewEventsFile(pid, file);
-				}
-			}
-
-			if (event != null) {
-				dom.getRootElement().addContent(event.detach());
-			}
-
-			try (FileOutputStream out = new FileOutputStream(file, false)) {
-				new XMLOutputter(Format.getPrettyFormat()).output(dom, out);
-			}
-
-			return file;
+			return premisLogger;
 		} catch (IOException e) {
 			failJob(e, "Unexpected problem with deposit events file {}.", file.getAbsoluteFile());
 		}
@@ -309,14 +241,9 @@ public abstract class AbstractDepositJob implements Runnable {
 	 * @return Returns the document representing the created PREMIS event log.
 	 * @throws IOException
 	 */
-	private Document createNewEventsFile(PID pid, File file) throws IOException {
-		file.createNewFile();
-		Document dom = new Document();
-		Element premis = new Element("premis", JDOMNamespaceUtil.PREMIS_V2_NS).addContent(PremisEventLogger
-				.getObjectElement(pid));
-		dom.setRootElement(premis);
-
-		return dom;
+	private PremisLogger createNewEventsFile(PID pid, File file) throws IOException {
+		PremisLogger premisLogger = new PremisLogger(pid, file);
+		return premisLogger;
 	}
 
 	public Model getWritableModel() {
