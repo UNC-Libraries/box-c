@@ -37,7 +37,7 @@ public class PremisLoggerTest {
 		depositUUID = UUID.randomUUID().toString();
 		pid = new PID(depositUUID);
 		eventType = Premis.VirusCheck;
-		file = new File(depositUUID + ".ttl");
+		file = File.createTempFile(depositUUID, ".ttl");
 		premis = new PremisLogger(pid, file);
 		date = new Date();
 	}
@@ -68,6 +68,8 @@ public class PremisLoggerTest {
 		InputStream in = new FileInputStream(this.file);
 		Model model = ModelFactory.createDefaultModel().read(in, null, "TURTLE");
 		Resource resource = model.getResource(premis.cdrEventURI + premis.eventId);
+		
+		this.file.deleteOnExit();
 		
 		assertTrue("File doesn't exist", file.exists());
 		assertEquals("Virus check property event not written to file", eventType, resource.getProperty(Premis.hasEventType).getObject());
