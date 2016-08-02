@@ -102,8 +102,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 				div.setAttribute("CONTENTIDS", sb.toString());
 			}
 			
-			PremisLogger premisLogger = createOrAppendToEventsFile(pid);
-			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization, null);
+			PremisLogger premisLogger = getPremisLogger(pid);
+			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization);
 			Model premisEvent = premisDepositEventBuilder
 					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
 					.create();
@@ -113,8 +113,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		}
 		
 		PID depositPID = getDepositPID();
-		PremisLogger premisDepositLogger = createOrAppendToEventsFile(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization, null);
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
 		Model premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count)
 				.create();
@@ -160,8 +160,8 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		}
 		
 		PID depositPID = getDepositPID();
-		PremisLogger premisDepositLogger = createOrAppendToEventsFile(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation, null);
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
 		Model premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("METS schema(s) validated")
 				.create();

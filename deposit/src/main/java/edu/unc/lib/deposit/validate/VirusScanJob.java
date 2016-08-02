@@ -110,8 +110,8 @@ public class VirusScanJob extends AbstractDepositJob {
 				failJob(e, "Unable to resolve staging location for file: {0}", href.getValue());
 			}
 			
-			PremisLogger premisLogger = createOrAppendToEventsFile(href.getKey());
-			PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck, null);
+			PremisLogger premisLogger = getPremisLogger(href.getKey());
+			PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 			
 			if (storageURI.getScheme() == null
 					|| storageURI.getScheme().contains("file")) {
@@ -160,8 +160,8 @@ public class VirusScanJob extends AbstractDepositJob {
 			}
 			
 			PID depositPID = getDepositPID();
-			PremisLogger premisDepositLogger = createOrAppendToEventsFile(depositPID);
-			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.VirusCheck, null);
+			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.VirusCheck);
 			Model premisDepositEvent = premisDepositEventBuilder.addEventDetail(scannedObjects + "files scanned for viruses.").create();
 			premisDepositLogger.writeEvent(premisDepositEvent);
 		}

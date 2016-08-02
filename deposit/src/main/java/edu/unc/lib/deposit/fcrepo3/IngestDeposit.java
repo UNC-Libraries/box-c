@@ -366,7 +366,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		}
 
 		// Add ingestion event to PREMIS log
-		PremisLogger premisDepositLogger = createOrAppendToEventsFile(pid);
+		PremisLogger premisDepositLogger = getPremisLogger(pid);
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion, null);
 		Model premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("ingested as PID:" + pid.getPid())
@@ -538,7 +538,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		PremisEventLogger destinationPremis = new PremisEventLogger(getDepositStatus().get(DepositField.depositorName));
 		
 		/* PID depositPID = getDepositPID();
-		PremisLogger premisDepositLogger = createOrAppendToEventsFile(depositPID);
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion, null);
 		Model premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("added " + ingestObjectCount + " child object(s) to this container", destinationPID)

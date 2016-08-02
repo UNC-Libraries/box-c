@@ -108,8 +108,8 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		}
 		
 		// Add normalization event to deposit record
-		PremisLogger premisDepositLogger = createOrAppendToEventsFile(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization, null);
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
 		Model premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())

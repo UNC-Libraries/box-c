@@ -208,13 +208,12 @@ public abstract class AbstractDepositJob implements Runnable {
 	}
 
 	/**
-	 * Appends an event to the PREMIS document for the given PID, creating the document if it does not already exist or
-	 * is corrupt.
+	 * Creates new PremisLogger object from which instances can build and write Premis events to a file
 	 *
 	 * @param pid
-	 * @return the premis document file
+	 * @return PremisLogger object
 	 */
-	public PremisLogger createOrAppendToEventsFile(PID pid) {
+	public PremisLogger getPremisLogger(PID pid) {
 		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
 
 		try {
