@@ -35,7 +35,7 @@ public class PremisEventBuilder {
 	}
 	
 	public PremisEventBuilder addEventDetail(String message, Object... args) {
-		if(args != null) {
+		if (args != null) {
 			message = MessageFormat.format(message, args);
 		}
 		Resource premisObjResc = getResource();
@@ -45,7 +45,7 @@ public class PremisEventBuilder {
 	}
 	
 	public PremisEventBuilder addEventDetailOutcomeNote(String detailNote, Object... args) {
-		if(args != null) {
+		if (args != null) {
 			detailNote = MessageFormat.format(detailNote, args);
 		}
 		

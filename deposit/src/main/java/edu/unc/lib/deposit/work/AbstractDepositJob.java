@@ -217,15 +217,12 @@ public abstract class AbstractDepositJob implements Runnable {
 		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
 
 		try {
-			PremisLogger premisLogger;
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
 				
 			} 
-			premisLogger = createNewEventsFile(pid, file);
-
-			return premisLogger;
-		} catch (IOException e) {
+			return new PremisLogger(pid, file);
+		} catch (Exception e) {
 			failJob(e, "Unexpected problem with deposit events file {}.", file.getAbsoluteFile());
 		}
 

@@ -136,7 +136,7 @@ public class VirusScanJob extends AbstractDepositJob {
 											.getLocalizedMessage());
 				case PASSED:
 					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
-						.addEventDetail("success")
+						.addEventDetail("File passed pre-ingest scan for viruses")
 						.create();
 					
 					scannedObjects++;
