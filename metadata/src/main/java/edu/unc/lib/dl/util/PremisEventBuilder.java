@@ -13,8 +13,6 @@ import edu.unc.lib.dl.rdf.Premis;
 
 public class PremisEventBuilder {
 	private String eventId;
-	private Resource eventType;
-	private Date date;
 	private Model model;
 	private PremisLogger premisLogger;
 	private Resource premisObjResc;
@@ -22,18 +20,16 @@ public class PremisEventBuilder {
 	public PremisEventBuilder(String eventId, Resource eventType, Date date,
 			PremisLogger premisLogger) {
 		this.eventId = eventId;
-		this.eventType = eventType;
-		this.date = date;
 		this.premisLogger = premisLogger;
-		addEvent();
+		addEvent(eventType, date);
 	}
 
-	private PremisEventBuilder addEvent() {
+	private PremisEventBuilder addEvent(Resource eventType, Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		Resource premisObjResc = getResource();
 
-		premisObjResc.addProperty(Premis.hasEventType, this.eventType);
-		premisObjResc.addProperty(Premis.hasEventDateTime, dateFormat.format(this.date));
+		premisObjResc.addProperty(Premis.hasEventType, eventType);
+		premisObjResc.addProperty(Premis.hasEventDateTime, dateFormat.format(date));
 		
 		return this;
 	}
@@ -45,6 +41,17 @@ public class PremisEventBuilder {
 		Resource premisObjResc = getResource();
 		premisObjResc.addProperty(Premis.hasEventDetail, message);
 		
+		return this;
+	}
+	
+	public PremisEventBuilder addEventDetailOutcomeNote(String detailNote, Object... args) {
+		if(args != null) {
+			detailNote = MessageFormat.format(detailNote, args);
+		}
+		
+		Resource premisObjResc = getResource();
+		premisObjResc.addProperty(Premis.hasEventOutcomeDetailNote, detailNote);
+
 		return this;
 	}
 	

@@ -53,11 +53,13 @@ public class PremisLoggerTest {
 	@Test
 	public void testTripleWrite() throws FileNotFoundException {
 		String message = "Test event successfully added";
+		String detailedNote = "No viruses found";
 		String name = "ClamAV";
 		String versionNumber = "3.2.1";
 		
 		Model premisBuilder = premis.buildEvent(eventType, date)
 				.addEventDetail(message)
+				.addEventDetailOutcomeNote(detailedNote)
 				.addSoftwareAgent(name, versionNumber)
 				.create();
 		
@@ -69,7 +71,8 @@ public class PremisLoggerTest {
 		
 		assertTrue("File doesn't exist", file.exists());
 		assertEquals("Virus check property event not written to file", eventType, resource.getProperty(Premis.hasEventType).getObject());
-		assertEquals("Virus check property detailed message not written to file", message, resource.getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Virus check property message not written to file", message, resource.getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Virus check property detailed note not written to file", detailedNote, resource.getProperty(Premis.hasEventOutcomeDetailNote).getObject().toString());
 		assertEquals("Virus check property software agent not written to file", name+" ("+versionNumber+")", resource.getProperty(Premis.hasAgentName).getObject().toString());
 	} 
 }

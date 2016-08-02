@@ -37,12 +37,26 @@ public class PremisLogger {
 		this.eventId = generateUUID();
 	}
 	
+	/**
+	 * Allows for an arbitrary timestamp to be set for a premis event
+	 * @param eventType
+	 * @return PremisEventBuilder
+	 */
 	public PremisEventBuilder buildEvent(Resource eventType, Date date) {
 		if (date == null) {
 			date = new Date();
 		}
 		
 		return new PremisEventBuilder(this.eventId, eventType, date, this);
+	}
+	
+	/**
+	 * Returns an instance of buildEvent with the timestamp automatically set to the current time
+	 * @param eventType
+	 * @return PremisEventBuilder
+	 */
+	public PremisEventBuilder buildEvent(Resource eventType) {
+		return new PremisEventBuilder(this.eventId, eventType, new Date(), this);
 	}
 	
 	public PremisLogger writeEvent(Model premisBuilder) {

@@ -67,6 +67,8 @@ public class Premis {
     
     public static final Property hasEventOutcomeDetail = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeDetail" );
     
+    public static final Property hasEventOutcomeDetailNote = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeDetailNote" );
+    
     public static final Property hasEventOutcomeInformation = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeInformation" );
     
     public static final Property hasEventRelatedAgent = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventRelatedAgent" );
