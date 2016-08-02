@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
@@ -66,7 +67,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Model premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);

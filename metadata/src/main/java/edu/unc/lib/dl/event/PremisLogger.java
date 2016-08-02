@@ -59,9 +59,9 @@ public class PremisLogger {
 		return new PremisEventBuilder(this.eventId, eventType, new Date(), this);
 	}
 	
-	public PremisLogger writeEvent(Model premisBuilder) {
+	public PremisLogger writeEvent(Resource premisBuilder) {
 		Model objModel = objectModel();
-		Model writeModel = modelMerge(objModel, premisBuilder);
+		Model writeModel = modelMerge(objModel, premisBuilder.getModel());
 		
 		try (FileOutputStream rdfFile = new FileOutputStream(this.file)) {
 			RDFDataMgr.write(rdfFile, writeModel, RDFFormat.TURTLE_PRETTY);

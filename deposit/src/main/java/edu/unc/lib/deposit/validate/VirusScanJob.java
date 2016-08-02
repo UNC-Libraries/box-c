@@ -77,7 +77,7 @@ public class VirusScanJob extends AbstractDepositJob {
 
 		Map<String, String> failures = new HashMap<String, String>();
 
-		Model premisEvent = null;
+		Resource premisEvent = null;
 		Model model = getReadOnlyModel();
 		Property fileLocation = model
 				.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
@@ -162,7 +162,7 @@ public class VirusScanJob extends AbstractDepositJob {
 			PID depositPID = getDepositPID();
 			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.VirusCheck);
-			Model premisDepositEvent = premisDepositEventBuilder.addEventDetail(scannedObjects + "files scanned for viruses.").create();
+			Resource premisDepositEvent = premisDepositEventBuilder.addEventDetail(scannedObjects + "files scanned for viruses.").create();
 			premisDepositLogger.writeEvent(premisDepositEvent);
 		}
 	}

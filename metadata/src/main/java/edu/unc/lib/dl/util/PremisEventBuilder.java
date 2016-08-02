@@ -75,8 +75,8 @@ public class PremisEventBuilder {
 		return this;
 	}
 	
-	public Model create() {
-		return getModel();
+	public Resource create() {
+		return getResource();
 	}
 	
 	private Resource getResource() {

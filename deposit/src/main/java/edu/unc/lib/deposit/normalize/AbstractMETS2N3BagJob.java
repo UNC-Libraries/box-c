@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
-import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -104,7 +104,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			
 			PremisLogger premisLogger = getPremisLogger(pid);
 			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization);
-			Model premisEvent = premisDepositEventBuilder
+			Resource premisEvent = premisDepositEventBuilder
 					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
 					.create();
 			premisLogger.writeEvent(premisEvent);
@@ -115,7 +115,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Model premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count)
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
@@ -162,7 +162,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
-		Model premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("METS schema(s) validated")
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);

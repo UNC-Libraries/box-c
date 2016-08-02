@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -61,7 +61,7 @@ public class ValidateMODS extends AbstractDepositJob {
 
 	@Override
 	public void runJob() {
-		Model premisNormalizationEvent;
+		Resource premisNormalizationEvent;
 		String message;
 		String detailNote;
 		int count = 0;
@@ -85,7 +85,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			
 			PremisLogger premisLogger = getPremisLogger(p);
 			PremisEventBuilder premisValidationBuilder = premisLogger.buildEvent(Premis.Validation);
-			Model premisEvent = premisValidationBuilder
+			Resource premisEvent = premisValidationBuilder
 					.addEventDetail(xsdMessage)
 					.create();
 			premisLogger.writeEvent(premisEvent); 
@@ -145,7 +145,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			PID depositPID = getDepositPID();
 			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
-			Model premisEvent = premisDepositEventBuilder
+			Resource premisEvent = premisDepositEventBuilder
 					.addEventDetail("{0} MODS records validated", count)
 					.create();
 			

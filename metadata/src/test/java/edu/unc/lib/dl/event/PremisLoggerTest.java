@@ -57,7 +57,7 @@ public class PremisLoggerTest {
 		String name = "ClamAV";
 		String versionNumber = "3.2.1";
 		
-		Model premisBuilder = premis.buildEvent(eventType, date)
+		Resource premisBuilder = premis.buildEvent(eventType, date)
 				.addEventDetail(message)
 				.addEventDetailOutcomeNote(detailedNote)
 				.addSoftwareAgent(name, versionNumber)
