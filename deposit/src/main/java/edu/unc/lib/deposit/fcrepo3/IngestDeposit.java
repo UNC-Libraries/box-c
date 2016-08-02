@@ -38,6 +38,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
@@ -51,6 +52,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.Datastream;
 import edu.unc.lib.dl.ingest.IngestException;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
@@ -59,6 +61,7 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JMSMessageUtil;
+import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -363,9 +366,12 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		}
 
 		// Add ingestion event to PREMIS log
-		Element ingestEvent = getEventLog().logEvent(PremisEventLogger.Type.INGESTION, "ingested as PID:" + pid.getPid(),
-				pid);
-		appendDepositEvent(pid, ingestEvent);
+		PremisLogger premisDepositLogger = getPremisLogger(pid);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion, null);
+		Resource premisDepositEvent = premisDepositEventBuilder
+				.addEventDetail("ingested as PID:" + pid.getPid())
+				.create();
+		premisDepositLogger.writeEvent(premisDepositEvent);
 
 		// Upload files included in this ingest and updates file references
 		uploadIngestFiles(foxmlDoc, pid);
@@ -530,6 +536,14 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		// Record ingest event on parent
 		PremisEventLogger destinationPremis = new PremisEventLogger(getDepositStatus().get(DepositField.depositorName));
+		
+		/* PID depositPID = getDepositPID();
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion, null);
+		Model premisDepositEvent = premisDepositEventBuilder
+				.addEventDetail("added " + ingestObjectCount + " child object(s) to this container", destinationPID)
+				.create();
+		premisDepositLogger.writeEvent(premisDepositEvent); */
 
 		destinationPremis.logEvent(PremisEventLogger.Type.INGESTION,
 				"added " + ingestObjectCount + " child object(s) to this container", destinationPID);

@@ -22,11 +22,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 
+import com.hp.hpl.jena.rdf.model.Resource;
+
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
@@ -97,11 +101,24 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 				}
 				div.setAttribute("CONTENTIDS", sb.toString());
 			}
-			Element pidEvent = getEventLog().logEvent(Type.NORMALIZATION, "Assigned PID to object defined in a METS div", pid);
-			appendDepositEvent(pid, pidEvent);
+			
+			PremisLogger premisLogger = getPremisLogger(pid);
+			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization);
+			Resource premisEvent = premisDepositEventBuilder
+					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
+					.create();
+			premisLogger.writeEvent(premisEvent);
+
 			count++;
 		}
-		recordDepositEvent(Type.NORMALIZATION, "Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count);
+		
+		PID depositPID = getDepositPID();
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
+		Resource premisDepositEvent = premisDepositEventBuilder
+				.addEventDetail("Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count)
+				.create();
+		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 
 	protected Document loadMETS() {
@@ -141,7 +158,14 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		} catch (IOException e) {
 			failJob(e, "Cannot parse METS file.");
 		}
-		recordDepositEvent(Type.VALIDATION, "METS schema(s) validated");
+		
+		PID depositPID = getDepositPID();
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
+		Resource premisDepositEvent = premisDepositEventBuilder
+				.addEventDetail("METS schema(s) validated")
+				.create();
+		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 
 	/**

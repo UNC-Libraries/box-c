@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +21,11 @@ import com.philvarner.clamavj.ClamScan;
 import com.philvarner.clamavj.ScanResult;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
 
@@ -77,6 +77,7 @@ public class VirusScanJob extends AbstractDepositJob {
 
 		Map<String, String> failures = new HashMap<String, String>();
 
+		Resource premisEvent = null;
 		Model model = getReadOnlyModel();
 		Property fileLocation = model
 				.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
@@ -108,6 +109,10 @@ public class VirusScanJob extends AbstractDepositJob {
 			} catch (StagingException e) {
 				failJob(e, "Unable to resolve staging location for file: {0}", href.getValue());
 			}
+			
+			PremisLogger premisLogger = getPremisLogger(href.getKey());
+			PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+			
 			if (storageURI.getScheme() == null
 					|| storageURI.getScheme().contains("file")) {
 				if(!storageURI.isAbsolute()) {
@@ -115,17 +120,13 @@ public class VirusScanJob extends AbstractDepositJob {
 				}
 				File file = new File(storageURI.getPath());
 				ScanResult result = this.clamScan.scan(file);
+				
 				switch (result.getStatus()) {
 				case FAILED:
-					Element ev = getEventLog().logEvent(
-							PremisEventLogger.Type.VIRUS_CHECK,
-							"File failed pre-ingest scan for viruses: "+storageURI.getPath(), href.getKey(),
-							ContentModelHelper.Datastream.DATA_FILE.getName());
-					PremisEventLogger.addSoftwareAgent(ev, "ClamAV", version);
-					PremisEventLogger.addDetailedOutcome(ev, "failure",
-							"found virus signature " + result.getSignature(),
-							null);
-					appendDepositEvent(href.getKey(), ev);
+					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
+						.addEventDetail("found virus signature " + result.getSignature())
+						.create();
+				
 					failures.put(storageURI.toString(), result.getSignature());
 					break;
 				case ERROR:
@@ -134,17 +135,15 @@ public class VirusScanJob extends AbstractDepositJob {
 									+ result.getException()
 											.getLocalizedMessage());
 				case PASSED:
-					Element ev2 = getEventLog().logEvent(
-							PremisEventLogger.Type.VIRUS_CHECK,
-							"File passed pre-ingest scan for viruses.", href.getKey(),
-							ContentModelHelper.Datastream.DATA_FILE.getName());
-					PremisEventLogger.addSoftwareAgent(ev2, "ClamAV", version);
-					PremisEventLogger.addDetailedOutcome(ev2, "success", null,
-							null);
-					appendDepositEvent(href.getKey(), ev2);
-						scannedObjects++;
+					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
+						.addEventDetail("File passed pre-ingest scan for viruses")
+						.create();
+					
+					scannedObjects++;
 					break;
 				}
+				
+				premisLogger.writeEvent(premisEvent);
 			}
 			addClicks(1);
 		}
@@ -159,8 +158,12 @@ public class VirusScanJob extends AbstractDepositJob {
 				failJob("Virus scan job did not attempt to scan all files.",
 						(hrefs.size() - scannedObjects) + " objects were not scanned.");
 			}
-			recordDepositEvent(Type.VIRUS_CHECK, "{0} files scanned for viruses.", scannedObjects);
+			
+			PID depositPID = getDepositPID();
+			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.VirusCheck);
+			Resource premisDepositEvent = premisDepositEventBuilder.addEventDetail(scannedObjects + "files scanned for viruses.").create();
+			premisDepositLogger.writeEvent(premisDepositEvent);
 		}
 	}
-
 }

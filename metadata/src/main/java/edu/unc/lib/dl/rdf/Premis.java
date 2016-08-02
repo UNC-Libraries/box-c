@@ -32,6 +32,10 @@ public class Premis {
      */
     public static final Resource Agent = createResource( "http://www.loc.gov/premis/rdf/v1#Agent" );
     
+    public static final Property hasAgentName = createProperty( "http://www.loc.gov/premis/rdf/v1#hasAgentName" );
+    
+    public static final Property hasAgentType = createProperty( "http://www.loc.gov/premis/rdf/v1#hasAgentType" );
+    
     public static final Resource ApplicableDates = createResource( "http://www.loc.gov/premis/rdf/v1#ApplicableDates" );
     
     public static final Resource Bitstream = createResource( "http://www.loc.gov/premis/rdf/v1#Bitstream" );
@@ -55,11 +59,21 @@ public class Premis {
      *  but not necessarily in an Event entity. Mandatory semantic units are: eventIdentifier, 
      *  eventType, and eventDateTime.
      */
-    public static final Resource Event = createResource( "http://www.loc.gov/premis/rdf/v1#Event" );
+    public static final Property hasEvent = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEvent" );
     
-    public static final Resource EventOutcomeDetail = createResource( "http://www.loc.gov/premis/rdf/v1#EventOutcomeDetail" );
+    public static final Property hasEventDateTime = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventDateTime" );
     
-    public static final Resource EventOutcomeInformation = createResource( "http://www.loc.gov/premis/rdf/v1#EventOutcomeInformation" );
+    public static final Property hasEventDetail = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventDetail" );
+    
+    public static final Property hasEventOutcomeDetail = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeDetail" );
+    
+    public static final Property hasEventOutcomeDetailNote = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeDetailNote" );
+    
+    public static final Property hasEventOutcomeInformation = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventOutcomeInformation" );
+    
+    public static final Property hasEventRelatedAgent = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventRelatedAgent" );
+    
+    public static final Property hasEventType = createProperty("http://www.loc.gov/premis/rdf/v1#hasEventType");
     
     public static final Resource File = createResource( "http://www.loc.gov/premis/rdf/v1#File" );
     
@@ -128,4 +142,40 @@ public class Premis {
     
     public static final Resource TermOfRestriction = createResource( "http://www.loc.gov/premis/rdf/v1#TermOfRestriction" );
     
+    /** Premis event types
+     * 
+     */
+    public static final Resource Capture = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/cap" );
+    
+    public static final Resource Compression = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/com" );
+    
+    public static final Resource Creation = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/cre" );
+    
+    public static final Resource Deaccession = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/dea" );
+    
+    public static final Resource Decompression = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/dec" );
+    
+    public static final Resource Decryption = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/der" );
+    
+    public static final Resource Deletion = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/del" );
+    
+    public static final Resource DigitalSignatureValidation = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/dig" );
+    
+    public static final Resource EventRelatedAgentRole = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/exe" );
+    
+    public static final Resource FixityCheck = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/fix" );
+    
+    public static final Resource Ingestion = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/ing" );
+    
+    public static final Resource MessageDigestCalculation = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/mes" );
+    
+    public static final Resource Migration = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/mig" );
+    
+    public static final Resource Normalization = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/nor" );
+    
+    public static final Resource Replication = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/rep" );
+    
+    public static final Resource Validation = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/val" );
+    
+    public static final Resource VirusCheck = createResource( "http://id.loc.gov/vocabulary/preservation/eventType/vir" );
 }
