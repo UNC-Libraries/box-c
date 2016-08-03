@@ -23,17 +23,14 @@
 				<directory>src/main/webapp/WEB-INF</directory>
 			</testResource>
 			<testResource>
+				<filtering>true</filtering>
+				<directory>../etc</directory>
+			</testResource>
+			<testResource>
 				<directory>src/test/resources</directory>
 			</testResource>
 		</testResources>
 	</build>
-<!-- 
-			<testResource>
-				<filtering>true</filtering>
-				<includes>
-					<include>server.properties</include>
-				</includes>
-			</testResource> -->
 	<dependencies>
 		<!-- Logging -->
 		<dependency>

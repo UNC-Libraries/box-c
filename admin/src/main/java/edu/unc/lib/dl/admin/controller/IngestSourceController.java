@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +127,12 @@ public class IngestSourceController {
 			}
 			
 			Map<String, String> deposit = new HashMap<>();
-			deposit.put(DepositField.sourcePath.name(), source.getBase() + packageDetails.getPackagePath());
+			try {
+				deposit.put(DepositField.sourcePath.name(),
+						new java.io.File(source.getBase(), packageDetails.getPackagePath()).getCanonicalPath());
+			} catch (IOException e) {
+				return "Failed to set package path";
+			}
 			deposit.put(DepositField.fileName.name(), filename);
 			deposit.put(DepositField.packagingType.name(), packageDetails.getPackagingType());
 			deposit.put(DepositField.uuid.name(), depositPID.getUUID());

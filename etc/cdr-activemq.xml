@@ -35,6 +35,10 @@
             <managementContext createConnector="false"/>
         </managementContext>
         
+        <persistenceAdapter>
+            <amqPersistenceAdapter directory="${services.activemq.data}"/>
+        </persistenceAdapter>
+        
         <transportConnectors>
             <transportConnector name="openwire" uri="tcp://0.0.0.0:61617"/>
         </transportConnectors>
