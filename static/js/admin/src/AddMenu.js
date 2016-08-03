@@ -9,14 +9,14 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	
 	AddMenu.prototype.getMenuItems = function() {
 		var items = {};
-		if ($.inArray('addRemoveContents', this.options.container.permissions) != -1) {
+		if ($.inArray('addRemoveContents', this.container.permissions) != -1) {
 			items["addContainer"] = {name : "Add Container"};
 			items["ingestPackage"] = {name : "Add Ingest Package"};
 			items["ingestSource"] = {name : "Add from File Server"};
 			items["simpleObject"] = {name : "Add Simple Object"};
 			
 		}
-		if ($.inArray('editDescription', this.options.container.permissions) != -1) {
+		if ($.inArray('editDescription', this.container.permissions) != -1) {
 			items["importMetadata"] = {name : "Import MODS"};
 		}
 		
@@ -25,6 +25,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	
 	AddMenu.prototype.setContainer = function(container) {
 		this.container = container;
+		return this;
 	};
 	
 	AddMenu.prototype.init = function() {

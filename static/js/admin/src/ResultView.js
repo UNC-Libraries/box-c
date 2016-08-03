@@ -220,7 +220,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 						element : $(".container_entry")});
 		
 				if (this.addMenu) {
-					this.addMenu.setContainer(container);
+					this.addMenu.setContainer(container).init();
 				} else {
 					this.addMenu = new AddMenu({
 						container : container,
