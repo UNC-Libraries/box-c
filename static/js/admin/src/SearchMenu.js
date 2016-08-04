@@ -41,6 +41,20 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 					minWidth: 300,
 					maxWidth: 600
 				}).css('visibility', 'visible');
+				
+				self.element.on("click", ".refresh_facet", function(e) {
+					var url = $(this).attr("href");
+					var pathParts = url.match(/(search|list)\/(.+)\?/);
+					var uuid = pathParts != null? pathParts[2] : null;
+					
+					if (history.pushState) {
+						history.pushState({}, "", url);
+					}
+					self.updateFacets(uuid);
+					
+					e.preventDefault();
+					e.stopPropagation();
+				});
 			
 				$(window).resize($.proxy(self._adjustHeight, self));
 			});
@@ -85,7 +99,12 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 			var limitsRegex = /(.*facets)\/?([^\?]+)?(\?.+)?/;
 			var limitsPath = limitsPanel.data("href");
 			var pathParts = limitsPath.match(limitsRegex);
-			var newLimitPath = pathParts[1] + "/" + uuid + pathParts[3];
+			var newLimitPath;
+			if (uuid) {
+				newLimitPath = pathParts[1] + "/" + uuid + pathParts[3];
+			} else {
+				newLimitPath = limitsPath;
+			}
 			
 			limitsPanel.data("href", newLimitPath).removeData("contentLoaded");
 			
