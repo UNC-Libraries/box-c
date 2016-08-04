@@ -85,7 +85,7 @@
 							<c:url var="facetExpandUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 								<c:param name="a.${searchSettings.actions['SET_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}:${searchSettings.expandedFacetsPerGroup}'/>
 							</c:url>
-							<li class="facet_view_expand_toggle"><a href="<c:out value="${facetExpandUrl}"/>">Show more...</a></li>
+							<li class="facet_view_expand_toggle"><a class="res_link refresh_facet" href="<c:out value="${facetExpandUrl}"/>">Show more...</a></li>
 						</c:when>
 						<c:otherwise>
 							<c:if test="${not empty facetValue.displayValue && not empty facetValue.searchValue}">
@@ -112,7 +112,7 @@
 								<c:url var="facetReduceUrl" scope="page" value='${queryPath}${searchStateParameters}'>
 									<c:param name="a.${searchSettings.actions['REMOVE_FACET_LIMIT']}" value='${searchSettings.searchFieldParams[facetField.name]}'/>
 								</c:url>
-								<li class="facet_view_expand_toggle"><a href="<c:out value="${facetReduceUrl}"/>">...Show less</a></li>
+								<li class="facet_view_expand_toggle"><a class="res_link refresh_facet" href="<c:out value="${facetReduceUrl}"/>">...Show less</a></li>
 							</c:if>
 						</c:otherwise>
 					</c:choose>
