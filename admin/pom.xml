@@ -30,6 +30,54 @@
 				<directory>src/test/resources</directory>
 			</testResource>
 		</testResources>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.version}</version>
+				<configuration>
+					<scanIntervalSeconds>2</scanIntervalSeconds>
+					<stopKey>STOP</stopKey>
+					<webApp>
+						<contextPath>/admin</contextPath>
+						<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
+						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+					</webApp>
+					<contextHandlers>
+						<contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
+							<contextPath>/static</contextPath>
+							<resourceBase>${project.basedir}/../static</resourceBase>
+							<handler implementation="org.eclipse.jetty.server.handler.ResourceHandler" />
+						</contextHandler>
+						<contextHandler
+							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+							<war>../services/target/services.war</war>
+							<contextPath>/services</contextPath>
+							<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
+						</contextHandler>
+					</contextHandlers>
+					<loginServices>
+						<loginService implementation="org.eclipse.jetty.security.HashLoginService">
+							<name>ServicesRealm</name>
+							<config>../etc/realm.properties</config>
+						</loginService>
+					</loginServices>
+					<httpConnector>
+						<port>8182</port>
+					</httpConnector>
+					<systemProperties>
+						<systemProperty>
+							<name>server.properties.uri</name>
+							<value>file:${project.basedir}/../etc/server.properties</value>
+						</systemProperty>
+						<systemProperty>
+							<name>log.dir</name>
+							<value>${project.basedir}/target/</value>
+						</systemProperty>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 	<dependencies>
 		<!-- Logging -->

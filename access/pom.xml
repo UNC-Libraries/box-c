@@ -50,25 +50,7 @@
 							<resourceBase>${project.basedir}/../static</resourceBase>
 							<handler implementation="org.eclipse.jetty.server.handler.ResourceHandler" />
 						</contextHandler>
-						<contextHandler
-							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-							<war>../admin/target/admin.war</war>
-							<contextPath>/admin</contextPath>
-							<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
-						</contextHandler>
-						<contextHandler
-							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-							<war>../services/target/services.war</war>
-							<contextPath>/services</contextPath>
-							<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
-						</contextHandler>
 					</contextHandlers>
-					<loginServices>
-						<loginService implementation="org.eclipse.jetty.security.HashLoginService">
-							<name>ServicesRealm</name>
-							<config>../etc/realm.properties</config>
-						</loginService>
-					</loginServices>
 					<httpConnector>
 						<port>8181</port>
 					</httpConnector>

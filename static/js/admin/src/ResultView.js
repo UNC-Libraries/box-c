@@ -81,7 +81,9 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			
 			var actionHandler = new ActionEventHandler({
 				baseContext : {
-					view : this
+					view : this,
+					accessBaseUrl : this.options.accessBaseUrl,
+					adminBaseUrl : this.options.adminBaseUrl
 				}
 			});
 			this.moveMonitor = new MoveActionMonitor(this.$alertHandler);
@@ -99,7 +101,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				resultEntryTemplate : self.options.resultEntryTemplate,
 				resultTableHeaderTemplate : this.options.resultTableHeaderTemplate,
 				navBarTemplate : this.options.navBarTemplate,
-				pathTrailTemplate : this.options.pathTrailTemplate
+				pathTrailTemplate : this.options.pathTrailTemplate,
+				accessBaseUrl : this.options.accessBaseUrl
 			});
 			
 			self.$resultPage.on("click", ".res_link", function(e){

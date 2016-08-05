@@ -59,6 +59,8 @@ require.config({
 define("resultList", ["module", "jquery", "ResultView"], function(module, $) {
 
 	$(".result_page").resultView({
-		resultUrl : module.config().resultUrl
+		resultUrl : module.config().resultUrl,
+		accessBaseUrl : module.config().accessBaseUrl,
+		adminBaseUrl : module.config().adminBaseUrl
 	});
 });

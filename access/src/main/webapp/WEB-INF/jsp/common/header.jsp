@@ -102,7 +102,7 @@
 						</c:when>
 					</c:choose>
 					<li>
-						<a href="/admin/${jumpToAdmin}" target="_blank">Admin</a>
+						<a href="${adminBaseUrl}/${jumpToAdmin}" target="_blank">Admin</a>
 					</li>
 				</c:if>
 				<c:choose>
