@@ -120,23 +120,4 @@
 		<filter-name>storeAccessLevelFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
-
-	<!-- Uncomment the following filter configuration for development purposes 
-		only. --> 
-	<!-- <filter>
-		<filter-name>SpoofShibbolethHeadersFilter</filter-name>
-		<filter-class>edu.unc.lib.dl.acl.filter.SpoofShibbolethHeadersFilter</filter-class>
-		<init-param>
-			<param-name>remoteUser</param-name>
-			<param-value>testuser</param-value>
-		</init-param>
-		<init-param>
-			<param-name>isMemberOfHeader</param-name>
-			<param-value></param-value>
-		</init-param>
-	</filter>
-	<filter-mapping>
-		<filter-name>SpoofShibbolethHeadersFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>-->
 </web-app>

@@ -50,6 +50,11 @@
 							<resourceBase>${project.basedir}/../static</resourceBase>
 							<handler implementation="org.eclipse.jetty.server.handler.ResourceHandler" />
 						</contextHandler>
+						<contextHandler
+							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+							<war>../spoof/target/spoof.war</war>
+							<contextPath>/spoof</contextPath>
+						</contextHandler>
 					</contextHandlers>
 					<httpConnector>
 						<port>8181</port>

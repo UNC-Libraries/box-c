@@ -125,6 +125,7 @@
 		<module>deposit</module>
 		<module>staging-areas</module>
 		<module>clamavj</module>
+		<module>spoof</module>
 	</modules>
 
 	<reporting>

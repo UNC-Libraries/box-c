@@ -557,24 +557,4 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
-	<!-- Setup the spoof page as a servlet -->
-	<servlet>
-		<servlet-name>spoof</servlet-name>
-		<jsp-file>/WEB-INF/jsp/spoof/spoof.jsp</jsp-file>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>spoof</servlet-name>
-		<url-pattern>/spoof</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Setup authentication detail page as servlet -->
-	<servlet>
-		<servlet-name>dump</servlet-name>
-		<jsp-file>/WEB-INF/jsp/spoof/dump.jsp</jsp-file>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>dump</servlet-name>
-		<url-pattern>/dumpheaders</url-pattern>
-	</servlet-mapping>
-
 </web-app>

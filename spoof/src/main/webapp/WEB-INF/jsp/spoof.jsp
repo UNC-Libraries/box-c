@@ -49,7 +49,6 @@ if (request.getCookies() != null) {
       String value = java.net.URLDecoder.decode(c.getValue(), "UTF-8");
     
       values.put(key, value);
-    
     }
   
   }
@@ -163,7 +162,7 @@ String otherMemberships = otherMembershipsBuilder.toString();
 
 %>
 
-<form method="post" action="/spoof">
+<form method="post" action="/spoof/">
   
   <table>
     <% for (String key : params) { %>
