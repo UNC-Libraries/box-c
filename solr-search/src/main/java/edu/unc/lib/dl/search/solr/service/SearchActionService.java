@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -194,14 +196,17 @@ public class SearchActionService {
 	
 	private void setFacetLimit(SearchState searchState, String[] values){
 		for (String value : values) {
-			String[] valueArray = value.split(":", 2);
-			String key = searchSettings.searchFieldKey(valueArray[0]);
-			if (key == null)
-				continue;
 			try {
+				value = URLDecoder.decode(value, "UTF-8");
+				String[] valueArray = value.split(":", 2);
+				String key = searchSettings.searchFieldKey(valueArray[0]);
+				if (key == null)
+					continue;
 				facetFieldUtil.setFacetLimit(key, Integer.parseInt(valueArray[1]), searchState);
 			} catch (NumberFormatException e){
-				LOG.error("Failed to perform set facet limit action: " + valueArray[1]);
+				LOG.error("Failed to perform set facet limit action: " + value);
+			} catch (UnsupportedEncodingException e) {
+				LOG.error("Unsupported character encoding while setting facet limit", e);
 			}
 		}
 	}
