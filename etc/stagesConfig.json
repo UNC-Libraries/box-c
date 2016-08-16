@@ -1,3 +1,3 @@
-{"customMappings":{"tag:cdr.lib.unc.edu,2014:/vagrant/":"file:${env.VAGRANT_CWD}"},
+{"customMappings":{"tag:cdr.lib.unc.edu,2014:/vagrant/":"file:${vagrant.cwd}"},
 "repositoryConfigurations":["file:${basedir}/../static/stages.json"],
 "stagingAreas":{"tag:cdr.lib.unc.edu,2014:/vagrant/":{"name":"Vagrant Shared"}}}
