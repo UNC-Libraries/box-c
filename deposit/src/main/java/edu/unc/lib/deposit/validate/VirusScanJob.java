@@ -72,6 +72,7 @@ public class VirusScanJob extends AbstractDepositJob {
 
 		// get ClamScan software and database versions
 		String version = this.clamScan.cmd("nVERSION\n".getBytes()).trim();
+		String softwareAgent = "ClamAV ("+version+")";
 
 		Map<PID, String> hrefs = new HashMap<PID, String>();
 
@@ -123,7 +124,7 @@ public class VirusScanJob extends AbstractDepositJob {
 				
 				switch (result.getStatus()) {
 				case FAILED:
-					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
+					premisEvent = premisEventBuilder.addSoftwareAgent(softwareAgent)
 						.addEventDetail("found virus signature " + result.getSignature())
 						.create();
 				
@@ -135,7 +136,7 @@ public class VirusScanJob extends AbstractDepositJob {
 									+ result.getException()
 											.getLocalizedMessage());
 				case PASSED:
-					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
+					premisEvent = premisEventBuilder.addSoftwareAgent(softwareAgent)
 						.addEventDetail("File passed pre-ingest scan for viruses")
 						.create();
 					

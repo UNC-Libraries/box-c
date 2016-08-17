@@ -370,6 +370,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion, null);
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("ingested as PID:" + pid.getPid())
+				.addSoftwareAgent("deposit")
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 

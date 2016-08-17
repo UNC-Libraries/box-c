@@ -219,7 +219,6 @@ public abstract class AbstractDepositJob implements Runnable {
 		try {
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
-				
 			} 
 			return new PremisLogger(pid, file);
 		} catch (Exception e) {
@@ -227,19 +226,6 @@ public abstract class AbstractDepositJob implements Runnable {
 		}
 
 		return null;
-	}
-
-	/**
-	 * Creates a new PREMIS event log file for the given PID using the provided file instance
-	 *
-	 * @param pid
-	 * @param file
-	 * @return Returns the document representing the created PREMIS event log.
-	 * @throws IOException
-	 */
-	private PremisLogger createNewEventsFile(PID pid, File file) throws IOException {
-		PremisLogger premisLogger = new PremisLogger(pid, file);
-		return premisLogger;
 	}
 
 	public Model getWritableModel() {

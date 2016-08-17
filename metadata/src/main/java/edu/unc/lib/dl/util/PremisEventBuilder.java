@@ -6,6 +6,7 @@ import java.util.Date;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
@@ -55,22 +56,40 @@ public class PremisEventBuilder {
 		return this;
 	}
 	
-	public PremisEventBuilder addSoftwareAgent(String name, String versionNumber) {	
-		Resource premisObjResc = getResource();
+	public PremisEventBuilder addSoftwareAgent(String agent) {
+		Model modelAgent = ModelFactory.createDefaultModel();
+		Resource softwareAgent = modelAgent.createResource("http://id.loc.gov/vocabulary/preservation/agentType/sof");
+		addAgent(Premis.hasEventRelatedAgentExecutor, softwareAgent, "#softwareAgent", agent);
 		
-		premisObjResc.addProperty(Premis.hasAgentName, name+" ("+versionNumber+")");
-		premisObjResc.addProperty(Premis.hasAgentType, "Software");
-
 		return this;
 	}
 	
-	public PremisEventBuilder addDerivitave(String sourceDataStream, String destDataStream) {
+	public PremisEventBuilder addAuthorizingAgent(String agent) {
+		Model modelAgent = ModelFactory.createDefaultModel();
+		Resource authorizingAgent = modelAgent.createResource("http://id.loc.gov/vocabulary/preservation/agentType/aut");
+		addAgent(Premis.hasEventRelatedAgentAuthorizor, authorizingAgent, "#authorizingAgent", agent);
+		
+		return this;
+	}
+	
+	public PremisEventBuilder addDerivative(String sourceDataStream, String destDataStream) {
 		Resource premisObjResc = getResource();
 		
 		premisObjResc.addProperty(Premis.hasAgentName, sourceDataStream);
 		premisObjResc.addProperty(Premis.hasAgentType, "Source Data");
 		premisObjResc.addProperty(Premis.hasAgentName, destDataStream);
 		premisObjResc.addProperty(Premis.hasAgentType, "Derived Data");
+		
+		return this;
+	}
+	
+	public PremisEventBuilder addAgent(Property role, Resource type, String agentId, String name) {
+		Resource premisObjResc = getResource();
+		Resource linkingAgentInfo = model.createResource(agentId);
+
+		linkingAgentInfo.addProperty(Premis.hasAgentType, type);
+		linkingAgentInfo.addProperty(Premis.hasAgentName, name);
+		premisObjResc.addProperty(role, linkingAgentInfo);
 		
 		return this;
 	}
