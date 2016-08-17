@@ -20,9 +20,6 @@
 		</resources>
 		<testResources>
 			<testResource>
-				<directory>src/main/webapp/WEB-INF</directory>
-			</testResource>
-			<testResource>
 				<filtering>true</filtering>
 				<directory>../etc</directory>
 			</testResource>
@@ -42,6 +39,7 @@
 						<contextPath>/admin</contextPath>
 						<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+						<extraClasspath>${basedir}/target/test-classes/</extraClasspath>
 					</webApp>
 					<contextHandlers>
 						<contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
@@ -68,7 +66,7 @@
 					<systemProperties>
 						<systemProperty>
 							<name>server.properties.uri</name>
-							<value>file:${project.basedir}/../etc/server.properties</value>
+							<value>classpath:server.properties</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.dir</name>

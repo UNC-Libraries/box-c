@@ -202,15 +202,19 @@
 				<filtering>false</filtering>
 				<directory>src/main/resources</directory>
 			</resource>
+			<resource>
+				<filtering>true</filtering>
+				<directory>../etc</directory>
+				<includes>
+					<include>deposit.properties</include>
+					<include>stagesConfig.json</include>
+				</includes>
+			</resource>
 		</resources>
 		<testResources>
 			<testResource>
 				<filtering>true</filtering>
 				<directory>src/test/resources</directory>
-			</testResource>
-			<testResource>
-				<filtering>true</filtering>
-				<directory>../etc</directory>
 			</testResource>
 		</testResources>
 		<plugins>
