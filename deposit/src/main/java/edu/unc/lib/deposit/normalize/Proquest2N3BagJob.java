@@ -74,6 +74,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventBuilder;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.ZipFileUtil;
 
 /**
@@ -123,7 +124,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri())
-				.addSoftwareAgent("deposit")
+				.addSoftwareAgent(SoftwareAgent.depositService.getValue())
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}

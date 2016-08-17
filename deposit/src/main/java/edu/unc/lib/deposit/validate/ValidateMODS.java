@@ -22,6 +22,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PremisEventBuilder;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Asserts that all MODS in the package complies with the XSD and controlled vocabularies,
@@ -87,7 +88,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			PremisEventBuilder premisValidationBuilder = premisLogger.buildEvent(Premis.Validation);
 			Resource premisEvent = premisValidationBuilder
 					.addEventDetail(xsdMessage)
-					.addSoftwareAgent("deposit")
+					.addSoftwareAgent(SoftwareAgent.depositService.getValue())
 					.create();
 			premisLogger.writeEvent(premisEvent); 
 			
@@ -97,7 +98,7 @@ public class ValidateMODS extends AbstractDepositJob {
 				getModsSchema().newValidator().validate(new StreamSource(f));
 				premisNormalizationEvent = premisNormalizationBuilder
 						.addEventDetail("MODS is valid with respect to the schema (XSD)")
-						.addSoftwareAgent("deposit")
+						.addSoftwareAgent(SoftwareAgent.depositService.getValue())
 						.create();
 				premisLogger.writeEvent(premisNormalizationEvent);
 			} catch (SAXException e) {
@@ -106,7 +107,7 @@ public class ValidateMODS extends AbstractDepositJob {
 				premisNormalizationEvent = premisNormalizationBuilder
 						.addEventDetail("MODS is not valid with respect to the schema (XSD)")
 						.addEventDetailOutcomeNote(e.getMessage())
-						.addSoftwareAgent("deposit")
+						.addSoftwareAgent(SoftwareAgent.depositService.getValue())
 						.create();
 				premisLogger.writeEvent(premisNormalizationEvent);
 
@@ -152,7 +153,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
 			Resource premisEvent = premisDepositEventBuilder
 					.addEventDetail("{0} MODS records validated", count)
-					.addSoftwareAgent("deposit")
+					.addSoftwareAgent(SoftwareAgent.depositService.getValue())
 					.create();
 			
 			premisDepositLogger.writeEvent(premisEvent);
