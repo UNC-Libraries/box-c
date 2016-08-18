@@ -23,6 +23,7 @@
 		factory-method="getProperty">
 		<constructor-arg index="0" value="deposit.properties.uri" />
 	</bean>
+	
 	<bean id="serverProperties"
 		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
 		<property name="locations">
@@ -31,6 +32,15 @@
 			</list>
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
+	</bean>
+	
+	<bean id="cdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+		<property name="arguments">
+			<list>
+				<value>${cdr.version}</value>
+			</list>
+		</property>
 	</bean>
 
 	<bean id="depositsDirectory" class="java.io.File">

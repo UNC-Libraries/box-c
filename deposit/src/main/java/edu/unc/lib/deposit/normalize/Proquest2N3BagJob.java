@@ -124,7 +124,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri())
-				.addSoftwareAgent(SoftwareAgent.depositService.getValue())
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}

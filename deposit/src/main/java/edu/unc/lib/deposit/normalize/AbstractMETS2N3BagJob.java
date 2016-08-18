@@ -107,7 +107,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization);
 			Resource premisEvent = premisDepositEventBuilder
 					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
-					.addSoftwareAgent(SoftwareAgent.depositService.getValue())
+					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();
 			premisLogger.writeEvent(premisEvent);
 
@@ -166,7 +166,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("METS schema(s) validated")
-				.addSoftwareAgent("deposit")
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
