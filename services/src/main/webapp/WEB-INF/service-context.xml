@@ -222,6 +222,7 @@
 	</bean>
 	
 	<bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
+		<property name="spoofEnabled" value="${spoofing.enabled:false}" />
 	</bean>
 	
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">

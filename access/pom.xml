@@ -41,7 +41,6 @@
 					<stopKey>STOP</stopKey>
 					<webApp>
 						<contextPath>/</contextPath>
-						<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					</webApp>
 					<contextHandlers>

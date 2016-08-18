@@ -17,11 +17,14 @@ package edu.unc.lib.dl.acl.filter;
 
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -32,12 +35,32 @@ import org.springframework.web.filter.OncePerRequestFilter;
  *
  */
 public class SpoofShibbolethFilter extends OncePerRequestFilter implements ServletContextAware {
+	private static final Logger log = LoggerFactory.getLogger(SpoofShibbolethFilter.class);
+	
+	private boolean spoofEnabled = false;
+	
+	@PostConstruct
+	public void init() {
+		if (spoofEnabled) {
+			log.warn("****Warning: Application started with spoofing filter enabled****");
+		}
+	}
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
-		
-		filterChain.doFilter(new SpoofShibbolethRequestWrapper(request), response);
+		if (spoofEnabled) {
+			filterChain.doFilter(new SpoofShibbolethRequestWrapper(request), response);
+		} else {
+			filterChain.doFilter(request, response);
+		}
 	}
 
+	public boolean isSpoofEnabled() {
+		return spoofEnabled;
+	}
+
+	public void setSpoofEnabled(boolean spoofEnabled) {
+		this.spoofEnabled = spoofEnabled;
+	}
 }

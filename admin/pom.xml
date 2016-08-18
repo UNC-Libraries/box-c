@@ -37,7 +37,6 @@
 					<stopKey>STOP</stopKey>
 					<webApp>
 						<contextPath>/admin</contextPath>
-						<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
 						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 						<extraClasspath>${basedir}/target/test-classes/</extraClasspath>
 					</webApp>
@@ -51,7 +50,6 @@
 							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
 							<war>../services/target/services.war</war>
 							<contextPath>/services</contextPath>
-							<defaultsDescriptor>${project.basedir}/../etc/jetty-webdefault.xml</defaultsDescriptor>
 						</contextHandler>
 					</contextHandlers>
 					<loginServices>
