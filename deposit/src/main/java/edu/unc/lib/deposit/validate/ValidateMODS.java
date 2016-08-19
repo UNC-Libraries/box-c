@@ -120,7 +120,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
 			premisEvent = premisValidationBuilder 
 					.addEventDetail(message)
-					.addSoftwareAgent("deposit")
+					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();
 			premisLogger.writeEvent(premisEvent);
 
@@ -137,7 +137,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			premisEvent = premisValidationBuilder 
 					.addEventDetail(message)
 					.addEventDetailOutcomeNote(detailNote)
-					.addSoftwareAgent("deposit")
+					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();
 			
 			premisLogger.writeEvent(premisEvent);

@@ -58,7 +58,7 @@ public class PremisEventBuilder {
 	
 	public PremisEventBuilder addSoftwareAgent(String agent) {
 		Model modelAgent = ModelFactory.createDefaultModel();
-		Resource softwareAgent = modelAgent.createResource("http://id.loc.gov/vocabulary/preservation/agentType/sof");
+		Resource softwareAgent = modelAgent.createResource(Premis.hasEventRelatedAgentExecutor);
 		addAgent(Premis.hasEventRelatedAgentExecutor, softwareAgent, "#softwareAgent", agent);
 		
 		return this;
@@ -66,7 +66,7 @@ public class PremisEventBuilder {
 	
 	public PremisEventBuilder addAuthorizingAgent(String agent) {
 		Model modelAgent = ModelFactory.createDefaultModel();
-		Resource authorizingAgent = modelAgent.createResource("http://id.loc.gov/vocabulary/preservation/agentType/aut");
+		Resource authorizingAgent = modelAgent.createResource(Premis.hasEventRelatedAgentAuthorizor);
 		addAgent(Premis.hasEventRelatedAgentAuthorizor, authorizingAgent, "#authorizingAgent", agent);
 		
 		return this;

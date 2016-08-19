@@ -12,12 +12,12 @@ public class SoftwareAgentConstants {
 	}
 
 	public enum SoftwareAgent {
-		depositService("deposit", cdrVersion), 
-		servicesWorker("services-worker", cdrVersion), 
-		selfDepositForms("forms", cdrVersion), 
-		servicesAPI("services", cdrVersion), 
-		fixityCheckingService("fixity", cdrVersion), 
-		embargoUpdateService("embargo-update", cdrVersion), 
+		depositService("deposit"), 
+		servicesWorker("services-worker"), 
+		selfDepositForms("forms"), 
+		servicesAPI("services"), 
+		fixityCheckingService("fixity"), 
+		embargoUpdateService("embargo-update"), 
 		clamav("clamav", "0.99"),
 		FITS("fits", "0.8.5"),
 		iRods("irods", "3.3"),
@@ -25,6 +25,10 @@ public class SoftwareAgentConstants {
 		
 		private String value;
 		private String version;
+		
+		private SoftwareAgent(String value) {
+			this.value = value;
+		}
 
 		private SoftwareAgent(String value, String version) {
 			this.value = value;
