@@ -21,6 +21,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PremisEventBuilder;
+import edu.unc.lib.dl.util.SoftwareAgentConstants;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 public class PremisLoggerTest {
 	private String depositUUID;
@@ -40,6 +42,7 @@ public class PremisLoggerTest {
 		file = File.createTempFile(depositUUID, ".ttl");
 		premis = new PremisLogger(pid, file);
 		date = new Date();
+		SoftwareAgentConstants.setCdrVersion("4.0-SNAPSHOT");
 	}
 	
 	@Test
@@ -54,13 +57,12 @@ public class PremisLoggerTest {
 	public void testTripleWrite() throws FileNotFoundException {
 		String message = "Test event successfully added";
 		String detailedNote = "No viruses found";
-		String name = "ClamAV";
-		String versionNumber = "3.2.1";
 		
 		Resource premisBuilder = premis.buildEvent(eventType, date)
 				.addEventDetail(message)
 				.addEventDetailOutcomeNote(detailedNote)
-				.addSoftwareAgent(name, versionNumber)
+				.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+				.addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
 				.create();
 		
 		premis.writeEvent(premisBuilder);
@@ -75,6 +77,9 @@ public class PremisLoggerTest {
 		assertEquals("Virus check property event not written to file", eventType, resource.getProperty(Premis.hasEventType).getObject());
 		assertEquals("Virus check property message not written to file", message, resource.getProperty(Premis.hasEventDetail).getObject().toString());
 		assertEquals("Virus check property detailed note not written to file", detailedNote, resource.getProperty(Premis.hasEventOutcomeDetailNote).getObject().toString());
-		assertEquals("Virus check property software agent not written to file", name+" ("+versionNumber+")", resource.getProperty(Premis.hasAgentName).getObject().toString());
+		assertEquals("Virus check property depositing agent not written to file", SoftwareAgent.clamav.getFullname(), resource.getProperty(Premis.hasEventRelatedAgentExecutor)
+				.getProperty(Premis.hasAgentName).getObject().toString());
+		assertEquals("Virus check property authorizing agent not written to file", SoftwareAgent.depositService.getFullname(), resource.getProperty(Premis.hasEventRelatedAgentAuthorizor)
+				.getProperty(Premis.hasAgentName).getObject().toString());
 	} 
 }

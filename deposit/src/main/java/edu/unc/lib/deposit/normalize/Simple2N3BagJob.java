@@ -50,6 +50,7 @@ import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Normalizes a simple deposit object into an N3 deposit structure.
@@ -113,6 +114,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}

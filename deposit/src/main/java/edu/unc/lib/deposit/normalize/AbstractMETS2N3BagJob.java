@@ -32,6 +32,7 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
 import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
 
@@ -106,6 +107,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization);
 			Resource premisEvent = premisDepositEventBuilder
 					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
+					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();
 			premisLogger.writeEvent(premisEvent);
 
@@ -164,6 +166,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("METS schema(s) validated")
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}

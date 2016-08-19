@@ -65,6 +65,7 @@ import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.JMSMessageUtil.FedoraActions;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
@@ -370,6 +371,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion, null);
 		Resource premisDepositEvent = premisDepositEventBuilder
 				.addEventDetail("ingested as PID:" + pid.getPid())
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+				.addAuthorizingAgent(getDepositStatus().get(DepositField.depositorName))
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
 

@@ -26,6 +26,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.PremisEventBuilder;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
 
@@ -69,9 +70,6 @@ public class VirusScanJob extends AbstractDepositJob {
 	@Override
 	public void runJob() {
 		log.debug("Running virus checks on : {}", getDepositDirectory());
-
-		// get ClamScan software and database versions
-		String version = this.clamScan.cmd("nVERSION\n".getBytes()).trim();
 
 		Map<PID, String> hrefs = new HashMap<PID, String>();
 
@@ -123,7 +121,7 @@ public class VirusScanJob extends AbstractDepositJob {
 				
 				switch (result.getStatus()) {
 				case FAILED:
-					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
+					premisEvent = premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
 						.addEventDetail("found virus signature " + result.getSignature())
 						.create();
 				
@@ -135,7 +133,7 @@ public class VirusScanJob extends AbstractDepositJob {
 									+ result.getException()
 											.getLocalizedMessage());
 				case PASSED:
-					premisEvent = premisEventBuilder.addSoftwareAgent("ClamAV", version)
+					premisEvent = premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
 						.addEventDetail("File passed pre-ingest scan for viruses")
 						.create();
 					

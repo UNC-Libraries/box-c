@@ -73,6 +73,12 @@ public class Premis {
     
     public static final Property hasEventRelatedAgent = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventRelatedAgent" );
     
+    public static final Property hasEventRelatedAgentExecutor = createProperty( "http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/exe" );
+    
+    public static final Property hasEventRelatedAgentAuthorizor = createProperty( "http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/aut" );
+    
+    public static final Property hasEventRelatedObject = createProperty( "http://www.loc.gov/premis/rdf/v1#hasEventRelatedObject" );
+    
     public static final Property hasEventType = createProperty("http://www.loc.gov/premis/rdf/v1#hasEventType");
     
     public static final Resource File = createResource( "http://www.loc.gov/premis/rdf/v1#File" );

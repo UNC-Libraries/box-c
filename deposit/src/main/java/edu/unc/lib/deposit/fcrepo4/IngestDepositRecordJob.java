@@ -12,14 +12,18 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
 import edu.unc.lib.dl.util.DepositConstants;
+import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 public class IngestDepositRecordJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
@@ -45,13 +49,23 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		
 		// Ingest the deposit record AIP
 		DepositRecord depositRecord = repository.createDepositRecord(getDepositPID().getUUID(), aipModel);
-		
+
 		// Add manifest files
 		StmtIterator manifestIt = deposit.listProperties(CdrDeposit.hasManifest);
 		while (manifestIt.hasNext()) {
 			String manifestPath = manifestIt.next().getString();
 			depositRecord.addManifest(new File(getDepositDirectory(), manifestPath));
 		}
+		
+		// Add ingestion event to PREMIS log
+		PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion);
+		Resource premisDepositEvent = premisDepositEventBuilder
+					.addEventDetail("ingested as PID:" + getDepositPID().getPid())
+					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+					.addAuthorizingAgent(DepositField.depositorName.name())
+					.create();
+		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 	
 	private Resource makeDepositRecord(Resource deposit, Map<String, String> status) {
