@@ -120,7 +120,7 @@
 						</mods:dateCreate>
 					</mods:originInfo>		
 		</xsl:for-each>-->
-		<mods:note type="thesis" displayLabel="Graduated"><xsl:value-of select="$graduationSemester"/></mods:note>
+		<mods:note type="thesis" displayLabel="Graduation Date"><xsl:value-of select="$graduationSemester"/></mods:note>
 		<xsl:for-each select="/DISS_submission/DISS_description/DISS_dates/DISS_comp_date">
 			<mods:originInfo>
 				<mods:dateIssued encoding="iso8601">
@@ -131,21 +131,7 @@
 						<xsl:value-of select="."/>
 					</mods:publisher>
 				</xsl:for-each>
-				<mods:place>
-					<mods:placeTerm>Chapel Hill, NC</mods:placeTerm>
-				</mods:place>
 			</mods:originInfo>
-		</xsl:for-each>
-		<!-- FILE INFORMATION: MODS:IDENTIFIER-->
-		<xsl:for-each select="DISS_content">
-			<xsl:choose>
-				<xsl:when test="DISS_binary">
-					<mods:identifier type="pdf">
-						<!-- @type was "hdl;" I changed it to PDF.  Am I missing something? Why was @type handle?  If we print the value of diss_binary, it will be the file name of a pdf.  Sonoe 4/08/14 -->
-						<xsl:value-of select="DISS_binary"/>
-					</mods:identifier>
-				</xsl:when>
-			</xsl:choose>
 		</xsl:for-each>
 		<!--The following seems more like an identifier than the file name above, but I left that in, and added this as well. Sonoe 04/10/2014-->
 		<mods:identifier type="umi">
@@ -156,14 +142,11 @@
 			<xsl:for-each select="DISS_categorization">
 				<xsl:choose>
 					<xsl:when test="DISS_category">
-						<!--would be great to have some level of control over these subject terms.  Drop downs? Sonoe 4/10/2014-->
-						<mods:subject>
-							<xsl:for-each select="//DISS_cat_desc">
-								<mods:topic>
-									<xsl:value-of select="."/>
-								</mods:topic>
-							</xsl:for-each>
-						</mods:subject>
+						<xsl:for-each select="//DISS_cat_desc">
+							<mods:note displayLabel="Keywords">
+								<xsl:value-of select="."/>
+							</mods:note>
+						</xsl:for-each>
 					</xsl:when>
 				</xsl:choose>
 				<mods:note displayLabel="Keywords">
@@ -181,7 +164,7 @@
 		</xsl:for-each>
 		<!-- ACADEMIC INFORMATION (DEGREE, DISCIPLINE and ADVISOR): MODS:NOTE, MODS:NAME-->
 		<xsl:variable name="normalizedDegree" select="translate(translate(/DISS_submission/DISS_description/DISS_degree, $uppercase, $smallcase), '.', '')"/>
-		<mods:note displayLabel="Degree Type">
+		<mods:note displayLabel="Degree">
 			<xsl:choose>
 				<xsl:when test="contains($normalizedDegree, 'ma')">Master of Arts</xsl:when>
 				<xsl:when test="contains($normalizedDegree, 'ms')">Master of Science</xsl:when>
@@ -204,12 +187,12 @@
 							<xsl:value-of select="DISS_inst_name"/>
 						</mods:namePart>
 						<mods:role>
-							<mods:roleTerm authority="marcrelator" type="text">Degree grantor</mods:roleTerm>
+							<mods:roleTerm authority="marcrelator" type="text">Degree granting institution</mods:roleTerm>
 						</mods:role>
 					</mods:name>
 				</xsl:if>
 				<xsl:if test="DISS_inst_contact">
-					<mods:note displayLabel="Thesis degree discipline">
+					<mods:note displayLabel="Academic concentration">
 						<xsl:value-of select="DISS_inst_contact"/>
 					</mods:note>
 				</xsl:if>
@@ -247,8 +230,6 @@
 		<!-- TYPE OF RESOURCE AND EXTENT: MODS:TYPE OF RESOURCE and MODS:PHYSICAL DESCRIPTION -->
 		<mods:typeOfResource>text</mods:typeOfResource>
 		<mods:physicalDescription>
-			<mods:form authority="marcform">electronic</mods:form>
-			<mods:internetMediaType>application/pdf</mods:internetMediaType>
 			<xsl:for-each select="DISS_description/@page_count">
 				<mods:extent>
 					<xsl:value-of select="."/>
@@ -269,9 +250,6 @@
 				<xsl:when test=".=3">
 					<mods:accessCondition displayLabel="Embargo" type="restrictionOnAccess">This item is restricted from public view for 2 years after publication.</mods:accessCondition>
 				</xsl:when>
-				<xsl:otherwise>
-					<mods:accessCondition displayLabel="Embargo" type="restrictionOnAccess">There are no restrictions to this item.</mods:accessCondition>
-				</xsl:otherwise>
 			</xsl:choose>
 		</xsl:for-each>
 	</xsl:template>
