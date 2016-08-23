@@ -68,7 +68,6 @@ import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
 
@@ -138,8 +137,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_DSPACE_SIP_1.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();

@@ -13,7 +13,6 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.METSProfile;
 
@@ -67,8 +66,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();

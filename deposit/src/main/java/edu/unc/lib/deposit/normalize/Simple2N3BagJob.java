@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
+import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.size;
 import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
@@ -27,11 +28,13 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +42,7 @@ import org.springframework.web.util.UriUtils;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
@@ -48,7 +52,6 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -110,8 +113,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		
 		// Add normalization event to deposit record
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
@@ -126,6 +128,26 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			failJob("Failed to find upload file for simple deposit: " + filename,
 					contentFile.getAbsolutePath());
 		}
+		
+		String checksum = null;
+		String fullPath = contentFile.toString();
+		
+		try {
+			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+			
+			PremisLogger premisDepositLogger = getPremisLogger(new PID(primaryResource.toString()));
+			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+					.addEventDetail("Checksum for file is {0}", checksum)
+					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+					.create();
+			
+			premisDepositLogger.writeEvent(premisDepositEvent);
+		} catch (IOException e) {
+			failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
+		}
+		
+		Property md5sumProp = dprop(model, md5sum);
+		model.add(primaryResource, md5sumProp, checksum);
 
 		if(alabel == null) alabel = contentFile.getName();
 		model.add(primaryResource, dprop(model, label), alabel);

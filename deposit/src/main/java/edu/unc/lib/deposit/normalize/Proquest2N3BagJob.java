@@ -73,7 +73,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.ZipFileUtil;
 
@@ -120,8 +119,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 		// Add normalization event to deposit record
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
