@@ -126,11 +126,6 @@
 				<mods:dateIssued encoding="iso8601">
 					<xsl:value-of select="/DISS_submission/DISS_description/DISS_dates/DISS_comp_date"/>
 				</mods:dateIssued>
-				<xsl:for-each select="/DISS_submission/DISS_description/DISS_institution/DISS_inst_name">
-					<mods:publisher>
-						<xsl:value-of select="."/>
-					</mods:publisher>
-				</xsl:for-each>
 			</mods:originInfo>
 		</xsl:for-each>
 		<!--SUBJECT and KEYWORDS: MODS:SUBJECT, MODS:NOTE-->
