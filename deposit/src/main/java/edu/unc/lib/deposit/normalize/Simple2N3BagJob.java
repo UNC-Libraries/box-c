@@ -135,7 +135,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		try {
 			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			
-			PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
+			PremisLogger premisDepositLogger = getPremisLogger(new PID(primaryResource.toString()));
 			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
 					.addEventDetail("Checksum for file is {0}", checksum)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
