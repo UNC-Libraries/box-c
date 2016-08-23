@@ -52,7 +52,6 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -114,8 +113,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		
 		// Add normalization event to deposit record
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Normalized deposit package from {0} to {1}",
 						PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
@@ -138,8 +136,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			
 			PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
-			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation);
-			Resource premisDepositEvent = premisDepositEventBuilder
+			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
 					.addEventDetail("Checksum for file is {0}", checksum)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();

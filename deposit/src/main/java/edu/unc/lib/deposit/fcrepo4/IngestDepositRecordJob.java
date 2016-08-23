@@ -21,7 +21,6 @@ import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
 import edu.unc.lib.dl.util.DepositConstants;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -59,8 +58,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		
 		// Add ingestion event to PREMIS log
 		PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Ingestion);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Ingestion)
 					.addEventDetail("ingested as PID:" + getDepositPID().getPid())
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.addAuthorizingAgent(DepositField.depositorName.name())

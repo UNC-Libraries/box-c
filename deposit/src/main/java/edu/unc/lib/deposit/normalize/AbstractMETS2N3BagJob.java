@@ -30,7 +30,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.METSParseException;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -104,8 +103,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			}
 			
 			PremisLogger premisLogger = getPremisLogger(pid);
-			PremisEventBuilder premisDepositEventBuilder = premisLogger.buildEvent(Premis.Normalization);
-			Resource premisEvent = premisDepositEventBuilder
+			Resource premisEvent = premisLogger.buildEvent(Premis.Normalization)
 					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();
@@ -116,8 +114,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count)
 				.create();
 		premisDepositLogger.writeEvent(premisDepositEvent);
@@ -163,8 +160,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
-		Resource premisDepositEvent = premisDepositEventBuilder
+		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Validation)
 				.addEventDetail("METS schema(s) validated")
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.create();
