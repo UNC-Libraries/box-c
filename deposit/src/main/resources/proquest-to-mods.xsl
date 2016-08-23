@@ -133,10 +133,6 @@
 				</xsl:for-each>
 			</mods:originInfo>
 		</xsl:for-each>
-		<!--The following seems more like an identifier than the file name above, but I left that in, and added this as well. Sonoe 04/10/2014-->
-		<mods:identifier type="umi">
-			<xsl:value-of select="//@external_id"/>
-		</mods:identifier>
 		<!--SUBJECT and KEYWORDS: MODS:SUBJECT, MODS:NOTE-->
 		<xsl:for-each select="DISS_description">
 			<xsl:for-each select="DISS_categorization">
@@ -229,13 +225,6 @@
 		</xsl:for-each>
 		<!-- TYPE OF RESOURCE AND EXTENT: MODS:TYPE OF RESOURCE and MODS:PHYSICAL DESCRIPTION -->
 		<mods:typeOfResource>text</mods:typeOfResource>
-		<mods:physicalDescription>
-			<xsl:for-each select="DISS_description/@page_count">
-				<mods:extent>
-					<xsl:value-of select="."/>
-				</mods:extent>
-			</xsl:for-each>
-		</mods:physicalDescription>
 		<!--RESTRICTIONS AND ACCESS: MODS:ACCESSCONDITION-->
 		<!--  06/08/2009  Added mods:accessCondition to ProQuest crosswalk (was not in specifications). Bridget.
 04/10/2014 Modified mods:accessCondition.  Wasn't mapped to DISS elements, so remapped mapped to DISS_submission/@embargo_code.  Conditional statements for embargo codes 0 - 2.  Sonoe-->
