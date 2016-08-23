@@ -64,4 +64,4 @@
 <c:if test="${empty collectionName}">
 	<c:set var="collectionName" value="(no collection)" />
 </c:if>
-<c:set var="gaCommands" scope="request">${gaCommands} ga('send', 'event', '${collectionName}', 'record', '<c:out value="${briefObject.title}|${briefObject.pid}" />');</c:set>
+<c:set var="gaCommands" scope="request">${gaCommands} ga('unc.send', 'event', '${collectionName}', 'record', '<c:out value="${briefObject.title}|${briefObject.pid}" />');</c:set>
