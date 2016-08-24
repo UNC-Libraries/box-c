@@ -59,7 +59,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		// Add ingestion event to PREMIS log
 		PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
 		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Ingestion)
-					.addEventDetail("ingested as PID:" + getDepositPID().getPid())
+					.addEventDetail("ingested as PID: {0}. {1}", getDepositPID().getPid(), 
+							aipObjResc.getProperty(DcElements.title).getObject().toString())
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.addAuthorizingAgent(DepositField.depositorName.name())
 					.create();
