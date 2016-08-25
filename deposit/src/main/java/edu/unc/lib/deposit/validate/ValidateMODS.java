@@ -91,12 +91,11 @@ public class ValidateMODS extends AbstractDepositJob {
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 					.create();
 			premisLogger.writeEvent(premisEvent); 
-			
-			PremisEventBuilder premisNormalizationBuilder = premisLogger.buildEvent(Premis.Normalization);
+
 			try {
 				// XSD validation
 				getModsSchema().newValidator().validate(new StreamSource(f));
-				premisNormalizationEvent = premisNormalizationBuilder
+				premisNormalizationEvent = premisValidationBuilder
 						.addEventDetail("MODS is valid with respect to the schema (XSD)")
 						.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 						.create();
@@ -104,7 +103,7 @@ public class ValidateMODS extends AbstractDepositJob {
 			} catch (SAXException e) {
 				invalidXSD++;
 				
-				premisNormalizationEvent = premisNormalizationBuilder
+				premisNormalizationEvent = premisValidationBuilder
 						.addEventDetail("MODS is not valid with respect to the schema (XSD)")
 						.addEventDetailOutcomeNote(e.getMessage())
 						.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
