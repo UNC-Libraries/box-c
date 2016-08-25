@@ -30,7 +30,6 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -117,7 +116,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				String fullPath = file.toString();
 				
 				try {
-					PID itemPID = new PID("uuid:" + UUID.randomUUID());
+					PID itemPID = new PID(fileResource.getURI());
 					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 					
 					PremisLogger premisDepositLogger = getPremisLogger(itemPID);
