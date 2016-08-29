@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -61,21 +58,6 @@ public class HeaderMenuSettings {
 	 * Processes the given properties file into the menu tree 
 	 */
 	private void processProperties() {
-		// Load the properties file from the given URL if one was provided.
-		if (propertiesUrl != null) {
-			LOG.debug("Loading menu properties from file " + this.propertiesUrl);
-			Properties properties = new Properties();
-			try {
-				properties.load(new FileInputStream(this.propertiesUrl));
-				this.setProperties(properties);
-				LOG.debug("Menu properties: " + this.properties);
-			} catch (FileNotFoundException e) {
-				LOG.error("Failed to load header menu properties file from " + this.propertiesUrl, e);
-			} catch (IOException e) {
-				LOG.error("Failed to load header menu properties file from " + this.propertiesUrl, e);
-			}
-		}
-		
 		Iterator<Entry<Object, Object>> propertiesIt = properties.entrySet().iterator();
 		while (propertiesIt.hasNext()) {
 			Entry<Object, Object> property = propertiesIt.next();
@@ -147,10 +129,6 @@ public class HeaderMenuSettings {
 
 	public void setProperties(Properties properties) {
 		this.properties = properties;
-	}
-	
-	public void setPropertiesUrl(String url) {
-		this.propertiesUrl = url;
 	}
 	
 	public void setReplacementValues(Map<String, String> replacementValues) {

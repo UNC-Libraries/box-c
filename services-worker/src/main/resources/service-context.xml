@@ -138,6 +138,11 @@
 	
 	<bean id="irodsFileSystem" class="org.irods.jargon.core.pub.IRODSFileSystem" factory-method="instance"/>
 	
+	<bean id="broker" class="org.apache.activemq.xbean.BrokerFactoryBean" destroy-method="destroy">
+		<property name="config" value="file:${services.activemq.config}" />
+		<property name="start" value="true" />
+	</bean>
+	
 	<!-- a pooling based JMS provider -->
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
 		<property name="connectionFactory">

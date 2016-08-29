@@ -52,7 +52,18 @@ build-access:
 		static/front/front.css \
 		static/front/peek.css \
 		> static/css/cdr_access.css
+
+SUSPEND = "n"
+
+run-access:
+	cd access && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48008,server=y,suspend=$(SUSPEND)"; mvn jetty:run
+
+run-admin:
+	cd admin && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48009,server=y,suspend=$(SUSPEND)"; mvn jetty:run
 	
+run-deposit:
+	cd deposit && mvn exec:exec
+
 ifneq ($(VERSION), "")
 	for i in static/js/public/*.js; do \
 		sed "s/\(urlArgs *: *\)\".*\"/\1\"v=$(VERSION)\"/" $$i > $$i.temp; \

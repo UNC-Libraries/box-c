@@ -31,7 +31,9 @@
 	var require = {
 			config: {
 				'trashList' : {
-					'resultUrl' : '${currentRelativeUrl}'
+					'resultUrl' : '${currentRelativeUrl}',
+					'accessBaseUrl' : '${accessBaseUrl}',
+					'adminBaseUrl' : '${adminBaseUrl}'
 				}
 			}
 	};

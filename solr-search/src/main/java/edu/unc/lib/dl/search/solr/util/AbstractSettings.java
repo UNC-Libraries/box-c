@@ -45,7 +45,10 @@ public abstract class AbstractSettings {
 		Iterator<Map.Entry<String, String>> pairIt = map.entrySet().iterator();
 		while (pairIt.hasNext()) {
 			Map.Entry<String, String> pair = pairIt.next();
-			inverted.put(pair.getValue(), pair.getKey());
+			// Prevent the search form of a field from becoming the representative field
+			if (!pair.getKey().endsWith("_LC")) {
+				inverted.put(pair.getValue(), pair.getKey());
+			}
 		}
 		return inverted;
 	}

@@ -25,8 +25,8 @@
 	var require = {
 		config: {
 			'editDescription' : {
-				'recordUrl' : '/record/${resultObject.id}',
-				'originalUrl' : '/${cdr:getDatastreamUrl(resultObject, "DATA_FILE", fedoraUtil)}'
+				'recordUrl' : '${accessBaseUrl}/record/${resultObject.id}',
+				'originalUrl' : '${accessBaseUrl}/${cdr:getDatastreamUrl(resultObject, "DATA_FILE", fedoraUtil)}'
 			}
 		}
 	};

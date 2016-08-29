@@ -1,0 +1,46 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+  <mods:titleInfo>
+    <mods:title/>
+  </mods:titleInfo>
+  <mods:name type="personal">
+    <mods:namePart type="given"/>
+    <mods:namePart type="family"/>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator">Creator</mods:roleTerm>
+    </mods:role>
+    <mods:affiliation/>
+    <mods:affiliation/>
+  </mods:name>
+  <mods:originInfo displayLabel="Date graduated">
+    <mods:dateOther encoding="iso8601" type="dateSubmitted"/>
+  </mods:originInfo>
+  <mods:note displayLabel="Keywords"/>
+  <mods:note displayLabel="Academic concentration"/>
+  <mods:note displayLabel="Degree" type="thesis"/>
+  <mods:language>
+    <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
+  </mods:language>
+  <mods:typeOfResource>text</mods:typeOfResource>
+  <mods:genre>thesis</mods:genre>
+  <mods:abstract/>
+  <mods:name authority="lcnaf" type="corporate">
+    <mods:namePart>University of North Carolina at Chapel Hill</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Degree granting institution</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="personal">
+    <mods:namePart type="given"/>
+    <mods:namePart type="family"/>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Thesis advisor</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="personal">
+    <mods:namePart type="given"/>
+    <mods:namePart type="family"/>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Reviewer</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+</mods:mods>

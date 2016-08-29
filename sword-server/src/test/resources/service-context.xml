@@ -106,9 +106,8 @@
 		<property name="swordPath" ref="swordPath" />
 		<property name="basePath"
 			value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}" />
-		<property name="tempDirectory" value="${sword.temp.dir}" />
 		<property name="swordVersion" value="${sword.version}" />
-		<property name="generatorVersion" value="${cdr.version}" />
+		<property name="generatorVersion" value="${project.version}" />
 		<property name="generator" value="${repository.protocol}://${repository.host}" />
 		<property name="depositorNamespace" value="${sword.depositorNamespace}" />
 		<property name="adminDepositor" value="${sword.username}" />
