@@ -34,7 +34,9 @@
 	var require = {
 		config: {
 			'resultList' : {
-				'resultUrl' : '${currentRelativeUrl}'
+				'resultUrl' : '${currentRelativeUrl}',
+				'accessBaseUrl' : '${accessBaseUrl}',
+				'adminBaseUrl' : '${adminBaseUrl}'
 			}
 		}
 	};

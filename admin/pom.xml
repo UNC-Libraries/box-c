@@ -20,20 +20,61 @@
 		</resources>
 		<testResources>
 			<testResource>
-				<directory>src/main/webapp/WEB-INF</directory>
+				<filtering>true</filtering>
+				<directory>../etc</directory>
 			</testResource>
 			<testResource>
 				<directory>src/test/resources</directory>
 			</testResource>
 		</testResources>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-maven-plugin</artifactId>
+				<version>${jetty.version}</version>
+				<configuration>
+					<scanIntervalSeconds>2</scanIntervalSeconds>
+					<stopKey>STOP</stopKey>
+					<webApp>
+						<contextPath>/admin</contextPath>
+						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+						<extraClasspath>${basedir}/target/test-classes/</extraClasspath>
+					</webApp>
+					<contextHandlers>
+						<contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
+							<contextPath>/static</contextPath>
+							<resourceBase>${project.basedir}/../static</resourceBase>
+							<handler implementation="org.eclipse.jetty.server.handler.ResourceHandler" />
+						</contextHandler>
+						<contextHandler
+							implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+							<war>../services/target/services.war</war>
+							<contextPath>/services</contextPath>
+						</contextHandler>
+					</contextHandlers>
+					<loginServices>
+						<loginService implementation="org.eclipse.jetty.security.HashLoginService">
+							<name>ServicesRealm</name>
+							<config>../etc/realm.properties</config>
+						</loginService>
+					</loginServices>
+					<httpConnector>
+						<port>8182</port>
+					</httpConnector>
+					<systemProperties>
+						<systemProperty>
+							<name>server.properties.uri</name>
+							<value>classpath:server.properties</value>
+						</systemProperty>
+						<systemProperty>
+							<name>log.dir</name>
+							<value>${project.basedir}/target/</value>
+						</systemProperty>
+					</systemProperties>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
-<!-- 
-			<testResource>
-				<filtering>true</filtering>
-				<includes>
-					<include>server.properties</include>
-				</includes>
-			</testResource> -->
 	<dependencies>
 		<!-- Logging -->
 		<dependency>
@@ -96,7 +137,7 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
@@ -112,7 +153,7 @@
 			<artifactId>jackson-xc</artifactId>
 			<version>1.9.2</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>gov.loc</groupId>
 			<artifactId>bagit</artifactId>
@@ -123,7 +164,7 @@
 		<dependency>
 			<groupId>jaxen</groupId>
 			<artifactId>jaxen</artifactId>
-			<version>1.1.1</version>
+			<version>1.1.6</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>xom</artifactId>
@@ -148,7 +189,7 @@
 			<artifactId>abdera-client</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-		
+
 		<!-- JMX -->
 		<dependency>
 			<groupId>org.apache.xbean</groupId>

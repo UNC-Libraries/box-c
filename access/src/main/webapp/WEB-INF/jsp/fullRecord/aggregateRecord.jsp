@@ -42,7 +42,7 @@
 		</c:import>
 		
 		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
-			<div class="actionlink right"><a href="/admin/describe/${briefObject.id}">Edit</a></div>
+			<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">Edit</a></div>
 		</c:if>
 
 		<div class="collinfo">

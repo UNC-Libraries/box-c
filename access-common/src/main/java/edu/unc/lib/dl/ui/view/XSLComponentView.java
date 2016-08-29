@@ -15,13 +15,16 @@
  */
 package edu.unc.lib.dl.ui.view;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.URIResolver;
 import javax.xml.transform.stream.StreamSource;
 
 import org.jdom2.Element;
@@ -49,7 +52,23 @@ public class XSLComponentView {
 	}
 
 	public void initializeTransformer() throws Exception {
-		transformer = TransformerFactory.newInstance().newTemplates(new StreamSource(source)).newTransformer();
+		InputStream stream = this.getClass().getResourceAsStream(source);
+		TransformerFactory factory = TransformerFactory.newInstance();
+		factory.setURIResolver(new URIResolver() {
+			public Source resolve(String href, String base)
+					throws TransformerException {
+				Source result = null;
+				if (href.startsWith("/"))
+					result = new StreamSource(XSLComponentView.class
+							.getResourceAsStream(href));
+				else
+					result = new StreamSource(XSLComponentView.class
+							.getResourceAsStream("classpath:" + href));
+				return result;
+			}
+		});
+		transformer = factory.newTemplates(new StreamSource(stream))
+				.newTransformer();
 	}
 
 	public String renderView(Element doc) throws TransformerException {

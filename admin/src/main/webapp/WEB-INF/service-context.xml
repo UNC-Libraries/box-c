@@ -49,6 +49,16 @@
 			value="${admin.services.url}${services.context}/rest/" />
 	</bean>
 	
+	<bean id="accessBaseUrl" class="java.lang.String">
+		<constructor-arg
+			value="${access.base.url}" />
+	</bean>
+	
+	<bean id="adminBaseUrl" class="java.lang.String">
+		<constructor-arg
+			value="${admin.base.url}" />
+	</bean>
+	
 	<bean id="swordUrl" class="java.lang.String">
 		<constructor-arg
 			value="${admin.services.url}${services.context}/sword/" />
@@ -71,6 +81,8 @@
 				<value>externalContentSettings</value>
 				<value>fedoraUtil</value>
 				<value>accessGroupConstants</value>
+				<value>accessBaseUrl</value>
+				<value>adminBaseUrl</value>
 			</list>
 		</property>
 		<property name="viewClass"
@@ -90,6 +102,9 @@
 		<property name="forwardRequest" value="true"/>
 	</bean>
 	
+	<bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
+		<property name="spoofEnabled" value="${spoofing.enabled:false}" />
+	</bean>
 	
 	
 	<bean id="jedisPool" class="redis.clients.jedis.JedisPool" scope="singleton"

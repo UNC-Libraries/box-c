@@ -33,7 +33,9 @@
 	var require = {
 			config: {
 				'reviewList' : {
-					'resultUrl' : '${currentRelativeUrl}'
+					'resultUrl' : '${currentRelativeUrl}',
+					'accessBaseUrl' : '${accessBaseUrl}',
+					'adminBaseUrl' : '${adminBaseUrl}'
 				}
 			}
 	};
