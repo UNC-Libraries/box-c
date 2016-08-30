@@ -384,7 +384,7 @@
 		<property name="targetMethod" value="updateEmbargoes" />
 	</bean>
 	
-	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="embargoJobDetail" />
 		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
 	</bean>
