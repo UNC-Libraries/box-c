@@ -72,10 +72,10 @@
 
 	<properties>
 		<cdr.version>4.0-SNAPSHOT</cdr.version>
-		<spring.version>3.2.13.RELEASE</spring.version>
+		<spring.version>4.3.2.RELEASE</spring.version>
 		<fcrepo.version>3.8.0</fcrepo.version>
-		<spring.security.version>3.2.13.RELEASE</spring.security.version>
-		<spring.ws.version>2.1.4.RELEASE</spring.ws.version>
+		<spring.security.version>4.3.2.RELEASE</spring.security.version>
+		<spring.ws.version>2.3.0.RELEASE</spring.ws.version>
 		<spring.tiger.ws.version>1.5.10</spring.tiger.ws.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

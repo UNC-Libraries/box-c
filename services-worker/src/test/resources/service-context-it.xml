@@ -203,7 +203,7 @@
 		<property name="targetMethod" value="cacheCleanupForCdrBasedAccessControl" />
 	</bean>
 	
-	<bean id="acCacheResetCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="acCacheResetCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="acCacheResetJobDetail" />
 		<property name="cronExpression" value="${scheduled.acCacheReset.cron}" />
 	</bean>-->
@@ -215,7 +215,7 @@
 		<property name="targetMethod" value="updateEmbargoes" />
 	</bean>
 	
-	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+	<bean id="embargoCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
 		<property name="jobDetail" ref="embargoJobDetail" />
 		<property name="cronExpression" value="${scheduled.embargoUpdate.cron}" />
 	</bean>-->

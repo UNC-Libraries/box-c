@@ -29,10 +29,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.annotation.ExpectedException;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.ManagementClient.Format;
 
@@ -85,8 +83,7 @@ public class ManagementClientIT {
 	public void tearDown() throws Exception {
 	}
 
-	@Test
-	@ExpectedException(ObjectExistsException.class)
+	@Test(expected = ObjectExistsException.class)
 	public void testIngestDuplicatePID() throws Exception {
 		ManagementClient c = this.getManagementClient();
 
@@ -125,8 +122,7 @@ public class ManagementClientIT {
 	 * {@link edu.unc.lib.dl.fedora.ManagementClient#ingest(org.jdom2.Document, edu.unc.lib.dl.fedora.ManagementClient.Format, java.lang.String)}
 	 * .
 	 */
-	@Test
-	@ExpectedException(Error.class)
+	@Test(expected = Error.class)
 	public void testUnknownHost() throws Exception {
 		// break the Fedora URL and re-init
 		ManagementClient c = this.getManagementClient();
@@ -143,8 +139,7 @@ public class ManagementClientIT {
 		}
 	}
 
-	@Test
-	@ExpectedException(ServiceException.class)
+	@Test(expected = ServiceException.class)
 	public void test404() throws Exception {
 		// break the Fedora URL and re-init
 		ManagementClient c = this.getManagementClient();
@@ -161,8 +156,7 @@ public class ManagementClientIT {
 		}
 	}
 
-	@Test
-	@ExpectedException(ServiceException.class)
+	@Test(expected = ServiceException.class)
 	public void testIngestAuth() throws Exception {
 		ManagementClient c = this.getManagementClient();
 		c.setPassword("swineflu876bad_password");
@@ -178,8 +172,7 @@ public class ManagementClientIT {
 		}
 	}
 
-	@Test
-	@ExpectedException(FedoraException.class)
+	@Test(expected = FedoraException.class)
 	public void testIngestBadFormat() throws Exception {
 		ManagementClient c = this.getManagementClient();
 
@@ -193,8 +186,7 @@ public class ManagementClientIT {
 		}
 	}
 
-	@Test
-	@ExpectedException(FedoraException.class)
+	@Test(expected = FedoraException.class)
 	public void testIngestBadExternalUrl() throws IOException, FedoraException {
 		ManagementClient c = this.getManagementClient();
 

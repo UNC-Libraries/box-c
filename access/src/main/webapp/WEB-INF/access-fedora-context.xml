@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2008 The University of North Carolina at Chapel Hill Licensed 
 	under the Apache License, Version 2.0 (the "License"); you may not use this 
@@ -126,7 +127,7 @@
 	<bean id="collectionsPid"
 		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="targetObject">
-			<ref local="tripleStoreQueryService" />
+			<ref bean="tripleStoreQueryService" />
 		</property>
 		<property name="targetMethod">
 			<value>fetchByRepositoryPath</value>
