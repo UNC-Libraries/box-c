@@ -15,19 +15,20 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import org.springframework.core.NestedCheckedException;
-import org.springframework.ws.soap.client.SoapFaultClientException;
-
 /**
  * @author Gregory Jansen
  * 
  */
-public class FedoraException extends NestedCheckedException {
+public class FedoraException extends Exception {
 
 	private static final long serialVersionUID = 7276162681909269101L;
 
-	public FedoraException(SoapFaultClientException e) {
-		super(e.getFaultStringOrReason(), e);
+	public FedoraException(Exception e) {
+		super(e);
+	}
+	
+	public FedoraException(String message, Exception e) {
+		super(message, e);
 	}
 
 	public FedoraException(String message) {

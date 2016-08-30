@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.fedora;
 
-import org.springframework.ws.soap.client.SoapFaultClientException;
-
 public class NotFoundException extends FedoraException {
 
     /**
@@ -24,7 +22,7 @@ public class NotFoundException extends FedoraException {
      */
     private static final long serialVersionUID = 4086598984144235534L;
 
-    public NotFoundException(SoapFaultClientException e) {
+    public NotFoundException(Exception e) {
 	super(e);
     }
 
