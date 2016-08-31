@@ -121,7 +121,7 @@ public class PremisEventLogger {
 	 *           the type of event
 	 * @param message
 	 *           event message
-	 * @param pid
+	 * @param objectPid
 	 *           the PID of the object acted upon
 	 * @param outcome
 	 *           a string describing the outcome

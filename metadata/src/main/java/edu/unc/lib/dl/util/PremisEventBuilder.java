@@ -98,6 +98,12 @@ public class PremisEventBuilder {
 		return getResource();
 	}
 	
+	public Resource write() {
+		Resource resource = getResource();
+		premisLogger.writeEvent(resource);
+		return resource;
+	}
+	
 	private Resource getResource() {
 		if (premisObjResc != null) {
 			return premisObjResc;
