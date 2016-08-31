@@ -1,3 +1,18 @@
+/**
+ * Copyright 2016 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.event;
 
 import java.io.File;
@@ -21,20 +36,22 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PremisEventBuilder;
 
+/**
+ * Logs PREMIS events for a repository object
+ * 
+ * @author lfarrell
+ *
+ */
 public class PremisLogger {
 	private static final Logger log = LoggerFactory
 			.getLogger(PremisLogger.class);
-	public File file;
-	public PID pid;
-	public PremisEventBuilder premisEventBuilder;
-	public Model model;
-	public String eventId;
+	public File premisFile;
+	public PID objectPid;
 	public String cdrEventURI = "http://cdr.lib.unc.edu/event/";
 	
 	public PremisLogger(PID pid, File file) {
-		this.pid = pid;
-		this.file = file;
-		this.eventId = generateUUID();
+		this.objectPid = pid;
+		this.premisFile = file;
 	}
 	
 	/**
@@ -47,7 +64,7 @@ public class PremisLogger {
 			date = new Date();
 		}
 		
-		return new PremisEventBuilder(this.eventId, eventType, date, this);
+		return new PremisEventBuilder(generateUUID(), eventType, date, this);
 	}
 	
 	/**
@@ -56,42 +73,48 @@ public class PremisLogger {
 	 * @return PremisEventBuilder
 	 */
 	public PremisEventBuilder buildEvent(Resource eventType) {
-		return new PremisEventBuilder(this.eventId, eventType, new Date(), this);
+		return new PremisEventBuilder(generateUUID(), eventType, new Date(), this);
 	}
 	
-	public PremisLogger writeEvent(Resource premisBuilder) {
-		Model objModel = objectModel();
-		Model writeModel = modelMerge(objModel, premisBuilder.getModel());
+	/**
+	 * Adds an event to the log file
+	 * 
+	 * @param eventResc
+	 * @return
+	 */
+	public PremisLogger writeEvent(Resource eventResc) {
+		Model model = addEventResource(eventResc);
 		
-		try (FileOutputStream rdfFile = new FileOutputStream(this.file)) {
-			RDFDataMgr.write(rdfFile, writeModel, RDFFormat.TURTLE_PRETTY);
+		try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
+			RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
 		} catch (IOException e) {
 			log.debug("Failed to serialize properties for object {} for the following reason {}", 
-				this.pid.getUUID(), e.getMessage());
+				this.objectPid.getUUID(), e.getMessage());
 		}
 		
 		return this;
 	}
 	
-	public Model objectModel() {
+	private Model addEventResource(Resource eventResc) {
 		Model model = getModel();
-		Resource premisObjResc = model.createResource(this.pid.getURI());
+		Resource premisObjResc = model.createResource(this.objectPid.getURI());
+		premisObjResc.addProperty(Premis.hasEvent, eventResc);
 		
-		premisObjResc.addProperty(Premis.hasEvent, cdrEventURI + this.eventId);
+		model.add(eventResc.getModel());
 		
-		return model;
+		return model; 
 	}
 	
-	public Model modelMerge(Model objModel, Model eventModel) {
-		Model mergedModel = objModel.add(eventModel);
-		return mergedModel;
-	}
-	
+	/**
+	 * Returns the Model containing events from this logger
+	 * 
+	 * @return
+	 */
 	public Model getModel() {
-		model = ModelFactory.createDefaultModel();
+		Model model = ModelFactory.createDefaultModel();
 		
-		if (this.file.exists()) {
-			InputStream in = FileManager.get().open(this.file.getAbsolutePath());
+		if (premisFile.exists()) {
+			InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
 			model.read(in, null, "TURTLE");
 		}
 		

@@ -1,6 +1,7 @@
 package edu.unc.lib.dl.event;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -28,7 +29,7 @@ public class PremisLoggerTest {
 	private String depositUUID;
 	private PID pid;
 	private Resource eventType;
-	private File file;
+	private File premisFile;
 	private PremisLogger premis;
 	private Date date;
 	
@@ -39,8 +40,9 @@ public class PremisLoggerTest {
 		depositUUID = UUID.randomUUID().toString();
 		pid = new PID(depositUUID);
 		eventType = Premis.VirusCheck;
-		file = File.createTempFile(depositUUID, ".ttl");
-		premis = new PremisLogger(pid, file);
+		premisFile = File.createTempFile(depositUUID, ".ttl");
+		premisFile.deleteOnExit();
+		premis = new PremisLogger(pid, premisFile);
 		date = new Date();
 		SoftwareAgentConstants.setCdrVersion("4.0-SNAPSHOT");
 	}
@@ -67,19 +69,59 @@ public class PremisLoggerTest {
 		
 		premis.writeEvent(premisBuilder);
 		
-		InputStream in = new FileInputStream(this.file);
+		InputStream in = new FileInputStream(this.premisFile);
 		Model model = ModelFactory.createDefaultModel().read(in, null, "TURTLE");
-		Resource resource = model.getResource(premis.cdrEventURI + premis.eventId);
+		Resource resource = model.getResource(premisBuilder.getURI());
 		
-		this.file.deleteOnExit();
+		assertTrue("File doesn't exist", premisFile.exists());
+		assertEquals("Virus check property event not written to file", eventType,
+				resource.getProperty(Premis.hasEventType).getObject());
+		assertEquals("Virus check property message not written to file", message,
+				resource.getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Virus check property detailed note not written to file", detailedNote,
+				resource.getProperty(Premis.hasEventOutcomeDetailNote).getObject().toString());
+		assertEquals("Virus check property depositing agent not written to file", SoftwareAgent.clamav.getFullname(),
+				resource.getProperty(Premis.hasEventRelatedAgentExecutor)
+				.getProperty(Premis.hasAgentName).getObject().toString());
+		assertEquals("Virus check property authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
+				resource.getProperty(Premis.hasEventRelatedAgentAuthorizor)
+				.getProperty(Premis.hasAgentName).getObject().toString());
+	}
+	
+	@Test
+	public void testMultipleEvents() throws Exception {
+		Resource event1 = premis.buildEvent(Premis.Normalization, date)
+				.addEventDetail("Event 1")
+				.addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+				.write();
 		
-		assertTrue("File doesn't exist", file.exists());
-		assertEquals("Virus check property event not written to file", eventType, resource.getProperty(Premis.hasEventType).getObject());
-		assertEquals("Virus check property message not written to file", message, resource.getProperty(Premis.hasEventDetail).getObject().toString());
-		assertEquals("Virus check property detailed note not written to file", detailedNote, resource.getProperty(Premis.hasEventOutcomeDetailNote).getObject().toString());
-		assertEquals("Virus check property depositing agent not written to file", SoftwareAgent.clamav.getFullname(), resource.getProperty(Premis.hasEventRelatedAgentExecutor)
-				.getProperty(Premis.hasAgentName).getObject().toString());
-		assertEquals("Virus check property authorizing agent not written to file", SoftwareAgent.depositService.getFullname(), resource.getProperty(Premis.hasEventRelatedAgentAuthorizor)
-				.getProperty(Premis.hasAgentName).getObject().toString());
-	} 
+		Resource event2 = premis.buildEvent(Premis.VirusCheck, date)
+				.addEventDetail("Event 2")
+				.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+				.write();
+		
+		InputStream in = new FileInputStream(premisFile);
+		Model model = ModelFactory.createDefaultModel().read(in, null, "TURTLE");
+		
+		Resource resc1 = model.getResource(event1.getURI());
+		Resource resc2 = model.getResource(event2.getURI());
+		
+		assertNotEquals("Events must have separate uris", resc1, resc2);
+		
+		assertEquals("Normalization type not written to file", Premis.Normalization,
+				resc1.getProperty(Premis.hasEventType).getObject());
+		assertEquals("Event detail not written to file", "Event 1",
+				resc1.getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
+				resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor)
+						.getProperty(Premis.hasAgentName).getObject().toString());
+		
+		assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
+				resc2.getProperty(Premis.hasEventType).getObject());
+		assertEquals("Event detail not written to file", "Event 2",
+				resc2.getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Related agent not written to file", SoftwareAgent.clamav.getFullname(),
+				resc2.getProperty(Premis.hasEventRelatedAgentExecutor)
+						.getProperty(Premis.hasAgentName).getObject().toString());
+	}
 }
