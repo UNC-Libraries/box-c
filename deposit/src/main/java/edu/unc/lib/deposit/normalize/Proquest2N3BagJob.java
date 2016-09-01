@@ -386,7 +386,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 	private String getRelativePath(File file) {
 		try {
-			return UriUtils.encodeUri(
+			return UriUtils.encodePath(
 					file.getAbsolutePath().substring(getDepositDirectory().getAbsolutePath().length() + 1), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			log.error("Failed to encode file path", e);
