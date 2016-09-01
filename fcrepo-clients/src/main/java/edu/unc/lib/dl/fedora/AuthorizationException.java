@@ -25,6 +25,10 @@ public class AuthorizationException extends FedoraException {
 	public AuthorizationException(String message) {
 		super(message);
 	}
+	
+	public AuthorizationException(Exception e) {
+		super(e);
+	}
 
 	public AuthorizationException(SoapFaultClientException e) {
 		super(e);

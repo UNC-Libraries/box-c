@@ -74,6 +74,7 @@
 		<cdr.version>4.0-SNAPSHOT</cdr.version>
 		<spring.version>4.3.2.RELEASE</spring.version>
 		<fcrepo.version>3.8.0</fcrepo.version>
+		<fcrepo4.version>4.5.0</fcrepo4.version>
 		<spring.security.version>4.3.2.RELEASE</spring.security.version>
 		<spring.ws.version>2.3.0.RELEASE</spring.ws.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -82,6 +83,10 @@
 		<xacml.version>2.0.9.Final</xacml.version>
 		<jetty.version>9.3.11.v20160721</jetty.version>
 		<junit.version>4.12</junit.version>
+		<grizzly.version>2.3.18</grizzly.version>
+		<jersey.version>2.15</jersey.version>
+		<fcrepo.client.version>0.2.0</fcrepo.client.version>
+		<mock.server.version>3.10.2</mock.server.version>
 	</properties>
 
 	<distributionManagement>
