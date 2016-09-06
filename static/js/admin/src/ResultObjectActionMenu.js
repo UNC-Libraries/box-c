@@ -102,7 +102,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		this.showingSingleMenu = true;
 		
 		var items = {};
+		var isContainerFlag = false;
 		if (resultObject.isContainer)
+			isContainerFlag = true;
 			items["openContainer"] = {name : "Open"};
 		items["viewInCDR"] = {name : "View in CDR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
@@ -130,7 +132,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["editAccess"] = {name : 'Edit Access'};
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			items["editLabel"] = {name : 'Edit Label'};
+			if(isContainerFlag) {
+				items["editLabel"] = {name : 'Edit Label'};
+			} else {
+				items["editLabel"] = {name : 'Edit Filename'};
+			}
 		}
 		
 		if ($.inArray('editAccessControl', metadata.permissions) != -1
