@@ -132,7 +132,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["editAccess"] = {name : 'Edit Access'};
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			if(isContainerFlag) {
+			if (isContainerFlag) {
 				items["editLabel"] = {name : 'Edit Label'};
 			} else {
 				items["editFilename"] = {name : 'Edit Filename'};
