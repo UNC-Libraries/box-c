@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'contextMenu'],
-		function($, ui, StringUtilities, EditLabelForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
+		function($, ui, StringUtilities, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -135,7 +135,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			if(isContainerFlag) {
 				items["editLabel"] = {name : 'Edit Label'};
 			} else {
-				items["editLabel"] = {name : 'Edit Filename'};
+				items["editFilename"] = {name : 'Edit Filename'};
 			}
 		}
 		
@@ -228,6 +228,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					
 					case "editLabel" :
 						self.editLabel(resultObject);
+						break;
+					case "editFilename" :
+						self.editFilename(resultObject);
 						break;
 					case "editType" :
 						self.actionHandler.addEvent({
@@ -388,6 +391,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			actionHandler : this.actionHandler
 		});
 		editLabelForm.open(resultObject);
+		
+	};
+
+	ResultObjectActionMenu.prototype.editFilename = function(resultObject) {
+		var editFilenameForm = new EditFilenameForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editFilenameForm.open(resultObject);
 		
 	};
 	
