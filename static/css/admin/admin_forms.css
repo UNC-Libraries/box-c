@@ -84,6 +84,10 @@
 	color: red;
 }
 
+.addwork {
+	opacity: 0;
+}
+
 .edit_form .errors {
 	display: none;
 }

@@ -17,6 +17,7 @@ require.config({
 		"UnpublishBatchButton" : "cdr-admin",
 		"PublishBatchButton" : "cdr-admin",
 		"DestroyBatchButton" : "cdr-admin",
+		"ModalCreate": "cdr-admin",
 		"ModalLoadingOverlay" : "cdr-admin",
 		"EditAccessControlForm" : "cdr-admin",
 		"EditFilenameForm" : "cdr-admin",

@@ -458,3 +458,7 @@ h1 {
 .edit_desc_page .result_warning {
 	margin-top: 8px;
 }
+
+div.in-admin-iframe {
+    display: none;
+}
