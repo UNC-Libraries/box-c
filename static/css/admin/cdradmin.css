@@ -289,6 +289,11 @@ h1 {
 	width: 100%;
 }
 
+.loading-icon {
+	min-width: 200px;
+	padding-top: 75px;
+}
+
 /* Alerts */
 
 .qtip-admin {

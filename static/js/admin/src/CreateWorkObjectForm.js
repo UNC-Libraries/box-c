@@ -28,12 +28,17 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
 
 		$("select[name='name']").on("change", function() {
+			var ajaxIcon = $(".loading-icon");
 			var iframe = $("#work_submission_form");
 			var formUrl = iframe.attr("src");
+
 			iframe.attr("src", formUrl + $(this).val() + "?admin-only=true");
+
+			ajaxIcon.removeClass("in-admin-iframe");
 
 			iframe.on("load", function () {
 				$(this).removeClass("addwork");
+				ajaxIcon.addClass("in-admin-iframe");
 			});
 		});
 	};
