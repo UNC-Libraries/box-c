@@ -8,15 +8,15 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 			showUploadProgress : false
 	};
 	
-	function editFilenameForm(options) {
+	function EditFilenameForm(options) {
 		this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 	};
 	
 	
-	editFilenameForm.prototype.constructor = editFilenameForm;
-	editFilenameForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+	EditFilenameForm.prototype.constructor = editFilenameForm;
+	EditFilenameForm.prototype = Object.create( AbstractFileUploadForm.prototype );
 	
-	editFilenameForm.prototype.validationErrors = function() {
+	EditFilenameForm.prototype.validationErrors = function() {
 		var errors = [];
 		var filename = $("input[name='filename']", this.$form).val();
 		// Validate input
@@ -26,16 +26,16 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 	};
 	
 		
-	editFilenameForm.prototype.getSuccessMessage = function(data) {
+	EditFilenameForm.prototype.getSuccessMessage = function(data) {
 		return "Filename has been successfully edited.";
 	};
 	
-	editFilenameForm.prototype.getErrorMessage = function(data) {
+	EditFilenameForm.prototype.getErrorMessage = function(data) {
 		return "An error occurred while editing the filename";
 	};
 	
 	
-	editFilenameForm.prototype.remove = function() {
+	EditFilenameForm.prototype.remove = function() {
 		AbstractFileUploadForm.prototype.remove.apply(this);
 		this.options.actionHandler.addEvent({
 			action : 'RefreshResult',
@@ -45,9 +45,9 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 		
 	};
 	
-	editFilenameForm.prototype.close = function() {
+	EditFilenameForm.prototype.close = function() {
 		AbstractFileUploadForm.prototype.remove.apply(this);
 	};
 	
-	return editFilenameForm;
+	return EditFilenameForm;
 });
