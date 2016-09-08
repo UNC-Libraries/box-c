@@ -29,8 +29,10 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 	var sortedValues = sorted.getSorted();
 
 	$(document).on('click', ".result_entry_context_menu, #mainmenu li", function() {
-		sortedValues.reloadRun = false;
-		sorted.setSorted(sortedValues);
+		if (sortedValues !== null) {
+			sortedValues.reloadRun = false;
+			sorted.setSorted(sortedValues);
+		}
 	});
 
 	if (!sorted.stale() && !sortedValues.reloadRun) {
