@@ -18,7 +18,7 @@ define('EditFilenameForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateCh
 	
 	EditFilenameForm.prototype.validationErrors = function() {
 		var errors = [];
-		var filename = $("input[name='filename']", this.$form).val();
+		var filename = $("input[name='label']", this.$form).val();
 		// Validate input
 		if (!filename)
 			errors.push("You must specify a filename.");
