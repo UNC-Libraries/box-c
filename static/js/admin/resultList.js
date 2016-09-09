@@ -19,6 +19,7 @@ require.config({
 		"DestroyBatchButton" : "cdr-admin",
 		"ModalLoadingOverlay" : "cdr-admin",
 		"EditAccessControlForm" : "cdr-admin",
+		"EditFilenameForm" : "cdr-admin",
 		"RemoteStateChangeMonitor" : "cdr-admin",
 		"ConfirmationDialog" : "cdr-admin",
 		"AlertHandler" : "cdr-admin",

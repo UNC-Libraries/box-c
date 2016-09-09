@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'contextMenu'],
-		function($, ui, StringUtilities, EditLabelForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
+		function($, ui, StringUtilities, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -102,7 +102,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		this.showingSingleMenu = true;
 		
 		var items = {};
+		var isContainerFlag = false;
 		if (resultObject.isContainer)
+			isContainerFlag = true;
 			items["openContainer"] = {name : "Open"};
 		items["viewInCDR"] = {name : "View in CDR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
@@ -130,7 +132,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			items["editAccess"] = {name : 'Edit Access'};
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
-			items["editLabel"] = {name : 'Edit Label'};
+			if (isContainerFlag) {
+				items["editLabel"] = {name : 'Edit Label'};
+			} else {
+				items["editFilename"] = {name : 'Edit Filename'};
+			}
 		}
 		
 		if ($.inArray('editAccessControl', metadata.permissions) != -1
@@ -222,6 +228,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					
 					case "editLabel" :
 						self.editLabel(resultObject);
+						break;
+					case "editFilename" :
+						self.editFilename(resultObject);
 						break;
 					case "editType" :
 						self.actionHandler.addEvent({
@@ -382,6 +391,15 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 			actionHandler : this.actionHandler
 		});
 		editLabelForm.open(resultObject);
+		
+	};
+
+	ResultObjectActionMenu.prototype.editFilename = function(resultObject) {
+		var editFilenameForm = new EditFilenameForm({
+			alertHandler : this.options.alertHandler,
+			actionHandler : this.actionHandler
+		});
+		editFilenameForm.open(resultObject);
 		
 	};
 	
