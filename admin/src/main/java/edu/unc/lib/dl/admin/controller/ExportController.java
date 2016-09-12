@@ -66,7 +66,7 @@ public class ExportController extends AbstractSolrSearchController {
 				SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
 				SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
 				SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-				SearchFieldKeys.LABEL.name()));
+				SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
 		searchState.setSortType("export");
 		searchState.setRowsPerPage(searchSettings.maxPerPage);
 		
@@ -177,8 +177,13 @@ public class ExportController extends AbstractSolrSearchController {
 			printer.print("");
 		}
 		
+		// Whether or not the object has a MODS description
+		
+		printer.print(object.getContentStatus());
+		
 		printer.println();
 		
 	}
+	
 	
 }
