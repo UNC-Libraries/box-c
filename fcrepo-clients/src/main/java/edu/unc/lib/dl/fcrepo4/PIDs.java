@@ -64,29 +64,38 @@ public class PIDs {
 
 			Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
 			if (matcher.matches()) {
+				// extract the qualifier/category portion of the path, ex: deposit, content, etc.
 				qualifier = matcher.group(1);
+				// store the trailing component path, which is everything after the object identifier
 				componentPath = matcher.group(5);
+				// store the identifier for the main object
 				id = matcher.group(3);
 			} else {
+				// Value was an invalid path within the repository
 				return null;
 			}
 		} else {
+			// Determine if the value matches the pattern for an identifier
 			Matcher matcher = RepositoryPathConstants.identifierPattern.matcher(value);
 			if (matcher.matches()) {
-				// Value was an identifier
+				// Store the qualifier if specified, otherwise use the default "content" qualifier
 				qualifier = matcher.group(2);
 				if (qualifier == null) {
 					qualifier = RepositoryPathConstants.CONTENT_BASE;
 				}
+				// store the identifier for the main object
 				id = matcher.group(4);
+				// store the trailing component path
 				componentPath = matcher.group(6);
 				// Expand the identifier into a repository path
 				repositoryPath = getRepositoryPath(id, qualifier, componentPath);
 			} else {
+				// No a recognized format for constructing a pid
 				return null;
 			}
 		}
 
+		// Build and return the new pid object
 		return new FedoraPID(id, qualifier, componentPath, URI.create(repositoryPath));
 	}
 
