@@ -99,7 +99,7 @@ public class ExportController extends AbstractSolrSearchController {
 		// Vitals: object type, pid, title, path, label, depth
 		
 		printer.print(object.getResourceType());
-		printer.print(object.getPid());
+		//printer.print(object.getPid());
 		printer.print(object.getTitle());
 		printer.print(object.getAncestorNames());
 		
