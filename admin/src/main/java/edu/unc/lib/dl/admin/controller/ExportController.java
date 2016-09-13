@@ -91,7 +91,7 @@ public class ExportController extends AbstractSolrSearchController {
 	}
 	
 	private void printHeaders(CSVPrinter printer) throws IOException {
-		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
+		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children", "Content Status");
 	}
 	
 	private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
@@ -177,9 +177,9 @@ public class ExportController extends AbstractSolrSearchController {
 			printer.print("");
 		}
 		
-		// Whether or not the object has a MODS description
+		// Content status: has a MODS description?
 		
-		printer.print(object.getContentStatus());
+		printer.print(object.getContentStatus().toString());
 		
 		printer.println();
 		
