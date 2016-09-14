@@ -109,4 +109,9 @@ public class FedoraPID extends PID {
 		}
 		return getQualifiedId();
 	}
+
+	@Override
+	public String toString() {
+		return getQualifiedId();
+	}
 }
