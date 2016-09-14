@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.fedora;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +28,9 @@ public class PID implements Serializable {
 	protected static final String uriPrefix = "info:fedora/";
     protected String pid;
 
+    public PID() {
+    }
+    
     /**
      * Construct an immutable digital object ID from a PID or a PID URI string.
      *
@@ -94,5 +98,24 @@ public class PID implements Serializable {
 		return pids;
 	}
 
+	public String getId() {
+		return pid;
+	}
+	
+	public String getQualifier() {
+		return pid;
+	}
+	
+	public String getQualifiedId() {
+		return pid;
+	}
+	
+	public String getComponentPath() {
+		return pid;
+	}
+	
+	public URI getRepositoryUri() {
+		return URI.create(this.getURI());
+	}
 }
 
