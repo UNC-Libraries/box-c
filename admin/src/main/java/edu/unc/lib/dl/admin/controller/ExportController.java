@@ -50,6 +50,9 @@ import edu.unc.lib.dl.util.ResourceType;
 @RequestMapping("export")
 public class ExportController extends AbstractSolrSearchController {
 	
+	private static final String DESCRIBED = "Described";
+	private static final String NOT_DESCRIBED = "Not Described";
+	
 	protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
 	@RequestMapping(value = "{pid}", method = RequestMethod.GET)
@@ -91,7 +94,7 @@ public class ExportController extends AbstractSolrSearchController {
 	}
 	
 	private void printHeaders(CSVPrinter printer) throws IOException {
-		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children", "Content Status");
+		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children", "Description");
 	}
 	
 	private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
@@ -177,9 +180,15 @@ public class ExportController extends AbstractSolrSearchController {
 			printer.print("");
 		}
 		
-		// Content status: has a MODS description?
+		// Description: does object have a MODS description?
 		
-		printer.print(object.getContentStatus().toString());
+		if (object.getContentStatus().contains(NOT_DESCRIBED)) {
+			printer.print(NOT_DESCRIBED);
+		} else if (object.getContentStatus().contains(DESCRIBED)) {
+			printer.print(DESCRIBED);
+		} else {
+			printer.print("");
+		}
 		
 		printer.println();
 		
