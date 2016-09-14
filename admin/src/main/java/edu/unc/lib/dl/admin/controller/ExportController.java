@@ -41,6 +41,7 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -49,9 +50,6 @@ import edu.unc.lib.dl.util.ResourceType;
 @Controller
 @RequestMapping("export")
 public class ExportController extends AbstractSolrSearchController {
-	
-	private static final String DESCRIBED = "Described";
-	private static final String NOT_DESCRIBED = "Not Described";
 	
 	protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
@@ -182,10 +180,10 @@ public class ExportController extends AbstractSolrSearchController {
 		
 		// Description: does object have a MODS description?
 		
-		if (object.getContentStatus().contains(NOT_DESCRIBED)) {
-			printer.print(NOT_DESCRIBED);
-		} else if (object.getContentStatus().contains(DESCRIBED)) {
-			printer.print(DESCRIBED);
+		if (object.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED) ){
+			printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
+		} else if (object.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED)) {
+			printer.print(FacetConstants.CONTENT_DESCRIBED));
 		} else {
 			printer.print("");
 		}
