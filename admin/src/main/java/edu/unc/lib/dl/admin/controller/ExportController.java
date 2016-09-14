@@ -41,6 +41,7 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -66,7 +67,7 @@ public class ExportController extends AbstractSolrSearchController {
 				SearchFieldKeys.STATUS.name(), SearchFieldKeys.DATASTREAM.name(),
 				SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(),
 				SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
-				SearchFieldKeys.LABEL.name()));
+				SearchFieldKeys.LABEL.name(), SearchFieldKeys.CONTENT_STATUS.name()));
 		searchState.setSortType("export");
 		searchState.setRowsPerPage(searchSettings.maxPerPage);
 		
@@ -91,7 +92,7 @@ public class ExportController extends AbstractSolrSearchController {
 	}
 	
 	private void printHeaders(CSVPrinter printer) throws IOException {
-		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children");
+		printer.printRecord("Object Type", "PID", "Title", "Path", "Label", "Depth", "Deleted", "Date Added", "Date Updated", "MIME Type", "Checksum", "File Size (bytes)", "Number of Children", "Description");
 	}
 	
 	private void printObject(CSVPrinter printer, BriefObjectMetadata object) throws IOException {
@@ -177,8 +178,19 @@ public class ExportController extends AbstractSolrSearchController {
 			printer.print("");
 		}
 		
+		// Description: does object have a MODS description?
+		
+		if (object.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED) ){
+			printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
+		} else if (object.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED)) {
+			printer.print(FacetConstants.CONTENT_DESCRIBED));
+		} else {
+			printer.print("");
+		}
+		
 		printer.println();
 		
 	}
+	
 	
 }
