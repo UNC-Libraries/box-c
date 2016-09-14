@@ -15,10 +15,13 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import java.net.URI;
+
 import org.fcrepo.client.FcrepoClient;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -46,24 +49,41 @@ public class Repository {
 	private String authPassword;
 
 	private String authHost;
+	
+	private RepositoryObjectFactory repositoryFactory;
+	
+	private RepositoryObjectDataLoader repositoryObjectDataLoader;
 
-	public String getDepositRecordsBase() {
-		return depositRecordBase;
-	}
-
-	/*
-	 * returns the path for a deposit record by uuid
+	/**
+	 * Retrieves an existing DepositRecord object
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
 	 */
-	public String getDepositRecordPath(String uuid) {
-		return depositRecordBase + uuid;
+	public DepositRecord getDepositRecord(PID pid) throws FedoraException {
+		DepositRecord record = new DepositRecord(pid, this, repositoryObjectDataLoader);
+		
+		// Verify that the retrieved object is a deposit record
+		return record.validateType();
 	}
 
-	public DepositRecord getDepositRecord(String uuid) {
-		return null;
-	}
-
-	public DepositRecord createDepositRecord(String uuid, Model model) {
-		return null;
+	/**
+	 * Creates a new deposit record object with the given uuid.
+	 * Properties in the supplied model will be added to the deposit record. 
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public DepositRecord createDepositRecord(PID pid, Model model) throws FedoraException {
+		URI depositRecordUri = repositoryFactory.createDepositRecord(pid.getRepositoryUri(), model);
+		// Create a new pid just in case fedora didn't agree to the suggested one
+		PID newPid = PIDs.get(depositRecordUri);
+		
+		DepositRecord depositRecord = new DepositRecord(newPid, this, repositoryObjectDataLoader);
+		return depositRecord;
 	}
 
 	public String getVocabulariesBase() {
@@ -169,5 +189,21 @@ public class Repository {
 					.throwExceptionOnFailure().build();
 		}
 		return client;
+	}
+
+	public RepositoryObjectDataLoader getRepositoryObjectDataLoader() {
+		return repositoryObjectDataLoader;
+	}
+
+	public void setRepositoryObjectDataLoader(RepositoryObjectDataLoader repositoryObjectDataLoader) {
+		this.repositoryObjectDataLoader = repositoryObjectDataLoader;
+	}
+
+	public RepositoryObjectFactory getRepositoryObjectFactory() {
+		return repositoryFactory;
+	}
+
+	public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
+		this.repositoryFactory = repositoryObjectFactory;
 	}
 }
