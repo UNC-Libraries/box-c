@@ -183,7 +183,7 @@ public class ExportController extends AbstractSolrSearchController {
 		if (object.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED) ){
 			printer.print(FacetConstants.CONTENT_NOT_DESCRIBED);
 		} else if (object.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED)) {
-			printer.print(FacetConstants.CONTENT_DESCRIBED));
+			printer.print(FacetConstants.CONTENT_DESCRIBED);
 		} else {
 			printer.print("");
 		}
