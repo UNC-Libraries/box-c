@@ -30,11 +30,15 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 		$("select[name='name']").on("change", function() {
 			var ajaxIcon = $(".loading-icon");
 			var iframe = $("#work_submission_form");
-			var formUrl = iframe.attr("src");
+			
+			var formUrl = iframe.attr("src").split("/");
+			var protocol = formUrl[0];
+			var host = formUrl[2];
+
 			var collectionUrl = location.href.split("/");
 			var collectionId = collectionUrl[collectionUrl.length - 1];
 
-			iframe.attr("src", formUrl + $(this).val() + "/" + collectionId + "/adminOnly");
+			iframe.attr("src", protocol + "//" + host + "/" + $(this).val() + "/" + collectionId + "/adminOnly");
 
 			ajaxIcon.removeClass("in-admin-iframe");
 
