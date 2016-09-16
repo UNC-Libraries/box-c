@@ -33,6 +33,8 @@ public class RepositoryPathConstants {
 	
 	public static final String EVENTS_CONTAINER = "event";
 	
+	public static final String FCR_METADATA = "fcr:metadata";
+	
 	public static final int HASHED_PATH_DEPTH = 4;
 	
 	public static final int HASHED_PATH_SIZE = 2;

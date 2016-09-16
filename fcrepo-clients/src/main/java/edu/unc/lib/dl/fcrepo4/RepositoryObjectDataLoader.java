@@ -1,6 +1,23 @@
+/**
+ * Copyright 2016 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.fcrepo4;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +36,11 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class RepositoryObjectDataLoader {
 
 	private FcrepoClient client;
@@ -53,9 +75,9 @@ public class RepositoryObjectDataLoader {
 	 * @throws FedoraException
 	 */
 	public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
-		PID pid = obj.getPid();
+		URI metadataUri = obj.getMetadataUri();
 
-		try (FcrepoResponse response = getClient().get(pid.getRepositoryUri())
+		try (FcrepoResponse response = getClient().get(metadataUri)
 				.accept("text/turtle")
 				.perform()) {
 			Model model = ModelFactory.createDefaultModel();
@@ -63,7 +85,7 @@ public class RepositoryObjectDataLoader {
 
 			obj.setModel(model);
 		} catch (IOException e) {
-			throw new FedoraException("Failed to read model for " + pid.getRepositoryUri(), e);
+			throw new FedoraException("Failed to read model for " + metadataUri, e);
 		} catch (FcrepoOperationFailedException e) {
 			throw ClientFaultResolver.resolve(e);
 		}
@@ -92,6 +114,24 @@ public class RepositoryObjectDataLoader {
 		}
 
 		return this;
+	}
+
+	/**
+	 * Retrieve the binary content for the given BinaryObject as an inputstream
+	 * 
+	 * @param obj
+	 * @return
+	 * @throws FedoraException
+	 */
+	public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
+		PID pid = obj.getPid();
+
+		try {
+			FcrepoResponse response = getClient().get(pid.getRepositoryUri()).perform();
+			return response.getBody();
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 
 	public void setClient(FcrepoClient client) {

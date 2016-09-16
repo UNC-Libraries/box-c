@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -85,6 +86,10 @@ public abstract class RepositoryObject {
 	public RepositoryObject setModel(Model model) {
 		this.model = model;
 		return this;
+	}
+
+	public Resource getResource() throws FedoraException {
+		return getModel().getResource(getUri().toString());
 	}
 
 	/**
@@ -192,5 +197,14 @@ public abstract class RepositoryObject {
 	 */
 	public void setTypes(List<String> types) {
 		this.types = types;
+	}
+
+	/**
+	 * The URI where RDF metadata about this object can be retrieved from.
+	 * 
+	 * @return
+	 */
+	public URI getMetadataUri() {
+		return pid.getRepositoryUri();
 	}
 }

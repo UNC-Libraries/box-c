@@ -106,7 +106,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 		String bodyString = "Test text";
 		String filename = "test.txt";
 		String mimetype = "text/plain";
-		InputStream contentStream = new ByteArrayInputStream("Test text".getBytes());
+		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
 		URI respUri = factory.createBinary(uri, "binary_test", contentStream, filename, mimetype, null, model);
 
