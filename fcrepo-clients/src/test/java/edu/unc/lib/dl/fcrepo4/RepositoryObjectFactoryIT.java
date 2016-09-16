@@ -19,8 +19,13 @@ import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.stream.Collectors;
 
+import org.apache.activemq.util.ByteArrayInputStream;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 import org.jgroups.util.UUID;
@@ -33,7 +38,10 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.Ebucore;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Ldp;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
@@ -83,6 +91,43 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 					respResc.hasProperty(Ldp.contains, createResource(manifestPath)));
 			String eventPath = path + "/" + RepositoryPathConstants.EVENTS_CONTAINER;
 			assertTrue("Event container not created", respResc.hasProperty(Ldp.contains, createResource(eventPath)));
+		}
+	}
+
+	@Test
+	public void createBinaryTest() throws Exception {
+		String path = serverAddress + "binary_test";
+		URI uri = URI.create(serverAddress);
+
+		Model model = ModelFactory.createDefaultModel();
+		Resource resc = model.createResource(path);
+		resc.addProperty(RDF.type, PcdmModels.Object);
+
+		String bodyString = "Test text";
+		String filename = "test.txt";
+		String mimetype = "text/plain";
+		InputStream contentStream = new ByteArrayInputStream("Test text".getBytes());
+
+		URI respUri = factory.createBinary(uri, "binary_test", contentStream, filename, mimetype, null, model);
+
+		try (FcrepoResponse resp = client.get(respUri).perform()) {
+			String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
+					.collect(Collectors.joining("\n"));
+
+			assertEquals("Binary content did not match submitted value", bodyString, respString);
+		}
+
+		// Verify that triples were added
+		URI metadataUri = URI.create(path + "/fcr:metadata");
+		try (FcrepoResponse resp = client.get(metadataUri).perform()) {
+			Model respModel = RDFModelUtil.createModel(resp.getBody());
+			Resource respResc = respModel.getResource(path);
+
+			assertTrue(respResc.hasProperty(RDF.type, Fcrepo4Repository.Binary));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+
+			assertEquals(respResc.getProperty(Ebucore.filename).getString(), filename);
+			assertEquals(respResc.getProperty(Ebucore.hasMimeType).getString(), mimetype);
 		}
 	}
 }

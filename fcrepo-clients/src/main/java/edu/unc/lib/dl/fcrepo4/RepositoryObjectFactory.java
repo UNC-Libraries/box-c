@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -73,6 +76,73 @@ public class RepositoryObjectFactory {
 		}
 
 		return depositRecordUri;
+	}
+
+	/**
+	 * Creates a binary resource at the given path.
+	 * 
+	 * @param path
+	 *            Repository path where the binary will be created
+	 * @param slug
+	 *            Name in the path for the binary resource. Optional.
+	 * @param content
+	 *            Input stream containing the binary content for this resource.
+	 * @param filename
+	 *            Filename of the binary content. Optional.
+	 * @param mimetype
+	 *            Mimetype of the content. Optional.
+	 * @param checksum
+	 *            SHA-1 digest of the content. Optional.
+	 * @param model
+	 *            Model containing additional triples to add to the new binary's
+	 *            metadata. Optional
+	 * @return URI of the newly created binary
+	 * @throws FedoraException
+	 */
+	public URI createBinary(URI path, String slug, InputStream content, String filename, String mimetype, String checksum,
+			Model model) throws FedoraException {
+		if (content == null) {
+			throw new IllegalArgumentException("Cannot create a binary object from a null content stream");
+		}
+
+		// Upload the binary and provided technical metadata
+		URI resultUri;
+		// Track the URI where metadata updates would be made to for this binary
+		URI describedBy;
+		try (FcrepoResponse response = getClient().post(path)
+				.slug(slug)
+				.body(content, mimetype)
+				.filename(filename)
+				.digest(checksum)
+				.perform()) {
+
+			resultUri = response.getLocation();
+			describedBy = response.getLinkHeaders("describedby").get(0);
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create binary at " + path, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+
+		if (model == null) {
+			return resultUri;
+		}
+
+		// If a model was provided, then add the triples to the new binary's metadata
+		// Turn model into sparql update query
+		String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
+		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+		try (FcrepoResponse response = getClient().patch(describedBy)
+				.body(sparqlStream)
+				.perform()) {
+		} catch (IOException e) {
+			throw new FedoraException("Unable to add triples to binary at " + path, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+
+		return resultUri;
 	}
 
 	public URI createPremisEvent(URI objectUri, Model model) throws FedoraException {
