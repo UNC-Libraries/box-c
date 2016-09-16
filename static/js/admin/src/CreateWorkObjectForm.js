@@ -47,8 +47,12 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 			});
 		});
 
-		iframe.on("dialogbeforeclose", function( event, ui ) {
+		iframe.on("dialogbeforeclose", function(event, ui) {
 			$(this).addClass("addwork");
+		});
+
+		$(".ui-dialog-titlebar button").on("click", function() {
+			$(".containingDialog").dialog("destroy");
 		});
 	};
 
