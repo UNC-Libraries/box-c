@@ -1,13 +1,13 @@
-<p>Add a work via an ingest form.</p>
+<p class="admin-forms">Add a work to the current collection.</p>
 <div class="form_field">
-	<label>Forms</label>
-	<select name="name">
-		<option value="">--Select a Form--</option>
+	<label class="admin-forms">Work Type</label>
+	<select name="name" class="admin-forms">
+		<option value="">--Select a Work Type--</option>
 		<option value="test-form">Image</option>
 		<option value="document">Document</option>
 	</select>
 	<div>
         <div class="loading-icon in-admin-iframe"><img src="/static/images/ajax-loader-lg.gif"></div>
-		<iframe class="addwork" id="work_submission_form" title="<%= pid %>" name="work_submission_form" height="600" width="900" src="http://localhost:4200/"></iframe>
+		<iframe class="addwork" id="work_submission_form" title="<%= pid %>" name="work_submission_form" height="600" width="1000" src="http://localhost:4200/"></iframe>
 	</div>
 </div>
