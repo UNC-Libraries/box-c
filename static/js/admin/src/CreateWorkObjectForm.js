@@ -27,10 +27,9 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 		this.$form = this.dialog.first();
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
 
-		var iframe = $("#work_submission_form");
-
 		$("select[name='name']").on("change", function() {
 			var ajaxIcon = $(".loading-icon");
+			var iframe = $("#work_submission_form");
 			var formUrl = iframe.attr("src").split("/");
 			var protocol = formUrl[0];
 			var host = formUrl[2];
@@ -47,12 +46,8 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 			});
 		});
 
-		iframe.on("dialogbeforeclose", function(event, ui) {
-			$(this).addClass("addwork");
-		});
-
-		$(".ui-dialog-titlebar button").on("click", function() {
-			$(".containingDialog").dialog("destroy");
+		$(".containingDialog").on("dialogclose", function(e, ui) {
+			$(this).dialog("destroy");
 		});
 	};
 
