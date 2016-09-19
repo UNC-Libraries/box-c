@@ -100,6 +100,11 @@ public class FedoraPID extends PID {
 				!repositoryPath.equals(pid.getRepositoryPath());
 	}
 
+	@Override
+	public String getURI() {
+		return getRepositoryPath();
+	}
+	
 	/**
 	 * Get the repository uri for this object or component, which is the full URI of the object in Fedora
 	 * 
@@ -125,6 +130,11 @@ public class FedoraPID extends PID {
 			return "uuid:" + id;
 		}
 		return getQualifiedId();
+	}
+
+	@Override
+	public String getUUID() {
+		return getId();
 	}
 
 	@Override

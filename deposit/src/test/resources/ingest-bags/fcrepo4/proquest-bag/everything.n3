@@ -1,5 +1,5 @@
-<info:fedora/uuid:55c262bf-9f15-4184-9979-3d8816d40103> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag> .
-<info:fedora/uuid:55c262bf-9f15-4184-9979-3d8816d40103> <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> <info:fedora/uuid:fc39ce7d-b81b-4c2b-bf38-e2f18ebfd4dd> .
+<http://examle.com/deposit/55/c2/62/bf/55c262bf-9f15-4184-9979-3d8816d40103> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag> .
+<http://examle.com/deposit/55/c2/62/bf/55c262bf-9f15-4184-9979-3d8816d40103> <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> <info:fedora/uuid:fc39ce7d-b81b-4c2b-bf38-e2f18ebfd4dd> .
 <info:fedora/uuid:fc39ce7d-b81b-4c2b-bf38-e2f18ebfd4dd> <http://cdr.unc.edu/definitions/deposit#objectType> <http://cdr.unc.edu/definitions/model#AggregateWork> .
 <info:fedora/uuid:fc39ce7d-b81b-4c2b-bf38-e2f18ebfd4dd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag> .
 <info:fedora/uuid:fc39ce7d-b81b-4c2b-bf38-e2f18ebfd4dd> <http://www.w3.org/1999/02/22-rdf-syntax-ns#_1> <info:fedora/uuid:8f8f587b-b109-4ff1-84b1-1206779faffb> .
