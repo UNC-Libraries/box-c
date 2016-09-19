@@ -19,12 +19,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import org.fcrepo.client.FcrepoOperationFailedException;
-import org.fcrepo.client.FcrepoResponse;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -34,7 +32,6 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Ldp;
 
 /**
  * A Deposit Record repository object, which tracks information pertaining to a single deposit.
@@ -49,46 +46,71 @@ public class DepositRecord extends RepositoryObject {
 	}
 
 	/**
-	 * Adds the given file as a manifest for this deposit.
-	 *
-	 * @param manifest
-	 * @return path to the newly created manifest object
+	 *  Adds the given file as a manifest for this deposit.
+	 * 
+	 * @param manifest File containing the manifest content
+	 * @param mimetype mimetype string of the manifest file
+	 * @return BinaryObject representing the newly created manifest object
+	 * @throws FedoraException
 	 */
-	public String addManifest(File manifest, String mimetype) throws FedoraException {
-		try (
-				InputStream fis = new FileInputStream(manifest);
-				FcrepoResponse response = repository.getClient()
-						.post(pid.getRepositoryUri())
-						.body(fis, mimetype)
-						.filename(manifest.getName())
-						.perform();
-				) {
-			return response.getLocation().toString();
-		} catch (IOException e) {
-			throw new FedoraException("Unable to create deposit record for " + pid.getRepositoryUri(), e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
+	public BinaryObject addManifest(File manifest, String mimetype)
+			throws FedoraException, IOException {
+
+		InputStream contentStream = new FileInputStream(manifest);
+		return addManifest(contentStream, manifest.getName(), mimetype);
+	}
+
+	/**
+	 * Adds the given inputstream as the content of a manifest for this deposit.
+	 * 
+	 * @param manifestStream inputstream containing the binary content for this manifest
+	 * @param filename filename for the manifest
+	 * @param mimetype mimetype for the content of the manifest
+	 * @return representing the newly created manifest object
+	 * @throws FedoraException
+	 */
+	public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype) throws FedoraException {
+		URI manifestsUri = getManifestsUri();
+		return repository.createBinary(manifestsUri, null, manifestStream, filename,
+				mimetype, null, null);
+	}
+
+	/**
+	 * Retrieves the requested manifest of this deposit record
+	 * 
+	 * @param pid
+	 * @return The requested manifest as a BinaryObject or null if the pid was
+	 *         not a component of this deposit record
+	 * @throws FedoraException
+	 */
+	public BinaryObject getManifest(PID pid) throws FedoraException {
+		if (!this.pid.containsComponent(pid)) {
+			return null;
 		}
+		return repository.getBinary(pid);
 	}
 
-	public InputStream getManifest() {
-		return null;
-	}
+	/**
+	 * Retrieves a list of pids for manifests contained by this deposit record
+	 * 
+	 * @return
+	 * @throws FedoraException
+	 */
+	public Collection<PID> listManifests() throws FedoraException {
+		Resource resource = getResource();
+		StmtIterator containsIt = resource.listProperties(Cdr.hasManifest);
 
-	public Collection<String> listManifestPaths() throws FedoraException {
-		Resource resource = getModel().getResource(pid.getRepositoryUri().toString());
-		StmtIterator containsIt = resource.listProperties(Ldp.contains);
-
-		List<String> paths = new ArrayList<>();
+		List<PID> pids = new ArrayList<>();
 		while (containsIt.hasNext()) {
 			String path = containsIt.next().getObject().toString();
-			paths.add(path);
+			pids.add(PIDs.get(path));
 		}
 
-		return paths;
+		return pids;
 	}
 
 	public Collection<?> listDepositedObjects() {
+		// TODO once objects are being deposited
 		return null;
 	}
 
@@ -107,4 +129,13 @@ public class DepositRecord extends RepositoryObject {
 		return this;
 	}
 
+	/**
+	 * Returns the URI for the container which holds manifests for this record
+	 * 
+	 * @return
+	 */
+	public URI getManifestsUri() {
+		return URI.create(pid.getRepositoryUri()
+				+ "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
+	}
 }
