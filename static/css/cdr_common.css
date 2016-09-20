@@ -74,6 +74,10 @@ body.full_screen {
 	width: 720px;
 }
 
+.cdr-header {
+    margin: 10px 20px 20px 20px;
+}
+
 .contentarea {
 	margin: 20px;
 }
@@ -197,12 +201,22 @@ li {
 /** Header menu */
 #mainmenu {
 	margin: 0 0 0 0px;
+    background-color: #E6E9EC;
+    padding: 0;
 }
 
 #mainmenu > li {
 	float: left;
-	margin: 10px 0 0 0;
-	text-indent: 0px;
+    line-height: 25px;
+    margin: 0;
+    text-indent: 0;
+    padding: 8px 20px;
+    background-color: #E6E9EC;
+    border-right: 3px solid #053a53;
+    font-family: helvetica;
+    font-size: 16px;
+    display: block;
+    color: #053a53;
 }
 
 .submenu {
@@ -212,21 +226,11 @@ li {
 }
 
 #mainmenu > li > a, .submenu > li > a{
-	display: block;
-	padding: 0 20px;
-	height: 30px;
-	line-height: 30px;
-	color: #0a5274;
-	background-color: #5aabcf;
-	border-right: 1px solid #0a5274;
-	background-image: url('/static/images/cdrui_contentshadowbottom.png');
-	background-repeat: repeat-x;
-	background-position: bottom left;
-	text-decoration: none;
+	color: #053a53;
 }
 
-#mainmenu > li > a:hover {
-	background-color: #7abcd9;
+#mainmenu > li:hover {
+	background-color: #C8DFF0;
 	background-image: none;
 }
 

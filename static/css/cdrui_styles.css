@@ -36,7 +36,7 @@
 
 div#username_wrap {
 	position: relative;
-	top: -10px;
+	top: 10px;
 	left: 0px;
 	text-align: right;
 	height: 0px;
@@ -394,7 +394,7 @@ h1 {
 }
 
 form {
-	margin: 0 0 5px 0;
+	margin: 0 0 2px 0;
 	float: left;
 	width: 100%;
 }
@@ -513,36 +513,39 @@ ul.fpfeed_list li {
 #hsearch_inputwrap {
 	background-color: #fff;
 	float: right;
-	margin-top: 24px;
+	margin-top: 0;
 	padding: 2px;
-	height: 20px;
+	height: 30px;
+    width: 300px;
 }
 
 #hsearch_text {
 	border: none;
 	color: #666;
-	height: 18px;
+	height: 30px;
 	float: left;
 	font-family: verdana, sans-serif;
-	*font-size: 11px;
+	font-size: 14px;
 	*height: 16px;
-	width: 155px;
+	width: 255px;
+    padding-left: 5px;
 }
 
 #hsearch_submit {
-	border: 1px solid #862e03;
+	border: none;
 	color: #fff;
 	margin: 0 0 0 0;
-	padding-left: 4px;
-	padding-right: 4px;
+	padding-left: 10px;
+	padding-right: 10px;
 	cursor: pointer;
-	height: 20px;
-	background-color: #c34d13;
+	height: 30px;
+	background-color: #5F5F5F;
 	font-family: verdana, sans-serif;
+    font-size: 14px;
 }
 
 #hsearch_submit:hover {
-	background-color: #862e03;
+	background-color: #999999;
 }
 
 #collectionsearch {
@@ -761,15 +764,6 @@ p.navigation_bar a {
 .container_browse a:hover {
 	background-color: #dcdcdc;
 	color: #862E03;
-}
-
-.login a {
-	background-color: #c34d13;
-	border: 1px solid #862e03;
-}
-
-.login a:hover {
-	background-color: #862e03;
 }
 
 .noaction {
@@ -1214,13 +1208,13 @@ li.deposit-option {
 	display: inline-block;
 	width: 150px;
 	text-indent: 0;
-	margin-top: 10px;
+	margin: 10px 30px 0 30px;
 	padding: 20px 10px;
 	border: 3px solid #053a53;
 }
 
 li.deposit-option:hover {
-	border: 3px solid #7abcd9;
+	border: 3px solid #7BAFD4;
 }
 
 li.deposit-option a {
@@ -1238,3 +1232,59 @@ div.deposit-icons {
 	position: relative;
 	height: 120px;
 }
+
+/*Header Top Bar*/
+
+#topbar {
+    background-color: #001B28;
+    height: 30px;
+    margin-bottom: 10px;
+}
+
+#topbar li {
+    float: right;
+    padding: 8px 20px;
+}
+
+#topbar li {
+    font-family: helvetica;
+}
+
+#topbar li a:hover {
+    color: #7BAFD4;
+}
+
+#topbar li#login {
+    font-weight: 600;
+}
+
+/*New CDR Logo*/
+
+#cdr-logo {
+    margin-bottom: 11px;
+    margin-left: -5px;
+}
+
+/*Header Search Options*/
+#searchoptions {
+    width: 240px; 
+    float: left; 
+    left: 240px; 
+    position: relative;
+    height: 112px;
+}
+
+#searchoptions-bottom {
+    position: absolute;
+    bottom: 1;
+    right: 0;
+}
+
+#advancedsearch {
+    margin: 0;
+    text-align: right;
+}
+
+#advancedsearch a:hover {
+    color: #7BAFD4;
+}		
