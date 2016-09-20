@@ -79,7 +79,7 @@ public class ExportController extends AbstractSolrSearchController {
 		queryLayer.getChildrenCounts(objects, searchRequest);
 		
 		try (ServletOutputStream out = response.getOutputStream()) {
-			Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.ISO_8859_1));
+			Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8);
 		
 			try (CSVPrinter printer = CSVFormat.EXCEL.print(writer)) {
 				printHeaders(printer);
