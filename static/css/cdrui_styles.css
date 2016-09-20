@@ -516,7 +516,7 @@ ul.fpfeed_list li {
 	margin-top: 0;
 	padding: 2px;
 	height: 30px;
-    width: 300px;
+	width: 300px;
 }
 
 #hsearch_text {
@@ -1183,19 +1183,19 @@ p.navigation_bar a {
 
 #deposit-banner h2 {
 	color: #fff;
-  font-family: "Avenir Next", helvetica, sans-serif;
-  font-weight: 400;
-  line-height: 1.2;
-  margin: 0;
+	font-family: "Avenir Next", helvetica, sans-serif;
+	font-weight: 400;
+	line-height: 1.2;
+	margin: 0;
 	font-size: 150%;
 }
 
 #deposit-banner-title h2 {
 	color: #fff;
-  font-family: "Avenir Next", helvetica, sans-serif;
-  font-weight: 600;
-  line-height: 1.2;
-  margin: 0;
+	font-family: "Avenir Next", helvetica, sans-serif;
+	font-weight: 600;
+	line-height: 1.2;
+	margin: 0;
 	padding: 0;
 	font-size: 300%;
 }
@@ -1236,9 +1236,9 @@ div.deposit-icons {
 /*Header Top Bar*/
 
 #topbar {
-    background-color: #001B28;
-    height: 30px;
-    margin-bottom: 10px;
+	background-color: #001B28;
+	height: 30px;
+	margin-bottom: 10px;
 }
 
 #topbar li {
