@@ -527,7 +527,7 @@ ul.fpfeed_list li {
 	font-family: verdana, sans-serif;
 	font-size: 14px;
 	*height: 16px;
-	width: 255px;
+	width: 230px;
     padding-left: 5px;
 }
 
@@ -1276,7 +1276,7 @@ div.deposit-icons {
 
 #searchoptions-bottom {
     position: absolute;
-    bottom: 1;
+    bottom: 0;
     right: 0;
 }
 
