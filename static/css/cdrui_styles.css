@@ -34,14 +34,8 @@
 	border-top: 1px solid #f3f3f3;
 }
 
-div#username_wrap {
-	position: relative;
-	top: 10px;
-	left: 0px;
-	text-align: right;
-	height: 0px;
-	font-size: 12px;
-	color: #FFF;
+#username_wrap {
+	font-style: oblique;
 }
 
 .browseitem,.searchitem {
@@ -332,11 +326,25 @@ div#username_wrap {
 
 /* Typography */
 h1 {
-	display: none;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 22px;
+}
+
+#cdr-logo {
+	margin: 20px 0 30px 0;
+	word-spacing: -5px;
+}
+
+.white-title {
+	color: #fff;
+}
+
+.blue-title {
+	color: #7BAFD4;
 }
 
 #titlelink {
-	margin-left: -10px;
+/*	margin-left: -10px;*/
 }
 
 .light h2,.lightest h2,.gray h2 {
@@ -1236,33 +1244,35 @@ div.deposit-icons {
 /*Header Top Bar*/
 
 #topbar {
-	background-color: #001B28;
-	height: 30px;
-	margin-bottom: 10px;
-}
-
-#topbar li {
-    float: right;
-    padding: 8px 20px;
-}
-
-#topbar li {
+    background-color: #001B28;
+	height: 25px;
     font-family: helvetica;
+	color: #fff;
 }
 
-#topbar li a:hover {
-    color: #7BAFD4;
+#topbar > li {
+	display: block;
+	float: right;
+	padding: 4px 25px;
+	text-indent: 0;
+	margin: 0;
+}
+
+.topbar-menu-option {
+	color: #fff;
+	cursor: pointer;
+}
+
+.topbar-menu-option:hover {
+	background-color: #ebf5fa;
+}
+
+.topbar-menu-option:hover > a{
+	color: #001B28;
 }
 
 #topbar li#login {
     font-weight: 600;
-}
-
-/*New CDR Logo*/
-
-#cdr-logo {
-    margin-bottom: 11px;
-    margin-left: -5px;
 }
 
 /*Header Search Options*/
@@ -1271,7 +1281,7 @@ div.deposit-icons {
     float: left; 
     left: 240px; 
     position: relative;
-    height: 112px;
+    height: 108px;
 }
 
 #searchoptions-bottom {
