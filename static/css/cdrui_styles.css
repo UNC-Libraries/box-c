@@ -1286,7 +1286,7 @@ div.deposit-icons {
 
 #searchoptions-bottom {
     position: absolute;
-    bottom: 0;
+    bottom: -2px;
     right: 0;
 }
 
