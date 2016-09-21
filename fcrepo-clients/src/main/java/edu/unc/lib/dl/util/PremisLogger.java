@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.event;
+package edu.unc.lib.dl.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,9 +32,9 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.FileManager;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 
 /**
  * Logs PREMIS events for a repository object
@@ -45,15 +45,15 @@ import edu.unc.lib.dl.util.PremisEventBuilder;
 public class PremisLogger {
 	private static final Logger log = LoggerFactory
 			.getLogger(PremisLogger.class);
+
 	public File premisFile;
 	public PID objectPid;
-	public String cdrEventURI = "http://cdr.lib.unc.edu/event/";
-	
+
 	public PremisLogger(PID pid, File file) {
 		this.objectPid = pid;
 		this.premisFile = file;
 	}
-	
+
 	/**
 	 * Allows for an arbitrary timestamp to be set for a premis event
 	 * @param eventType
@@ -63,19 +63,19 @@ public class PremisLogger {
 		if (date == null) {
 			date = new Date();
 		}
-		
-		return new PremisEventBuilder(generateUUID(), eventType, date, this);
+
+		return new PremisEventBuilder(generateEventId(), eventType, date, this);
 	}
-	
+
 	/**
 	 * Returns an instance of buildEvent with the timestamp automatically set to the current time
 	 * @param eventType
 	 * @return PremisEventBuilder
 	 */
 	public PremisEventBuilder buildEvent(Resource eventType) {
-		return new PremisEventBuilder(generateUUID(), eventType, new Date(), this);
+		return new PremisEventBuilder(generateEventId(), eventType, new Date(), this);
 	}
-	
+
 	/**
 	 * Adds an event to the log file
 	 * 
@@ -84,27 +84,27 @@ public class PremisLogger {
 	 */
 	public PremisLogger writeEvent(Resource eventResc) {
 		Model model = addEventResource(eventResc);
-		
+
 		try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
 			RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
 		} catch (IOException e) {
 			log.debug("Failed to serialize properties for object {} for the following reason {}", 
 				this.objectPid.getUUID(), e.getMessage());
 		}
-		
+
 		return this;
 	}
-	
+
 	private Model addEventResource(Resource eventResc) {
 		Model model = getModel();
 		Resource premisObjResc = model.createResource(this.objectPid.getURI());
 		premisObjResc.addProperty(Premis.hasEvent, eventResc);
-		
+
 		model.add(eventResc.getModel());
-		
+
 		return model; 
 	}
-	
+
 	/**
 	 * Returns the Model containing events from this logger
 	 * 
@@ -112,16 +112,19 @@ public class PremisLogger {
 	 */
 	public Model getModel() {
 		Model model = ModelFactory.createDefaultModel();
-		
+
 		if (premisFile.exists()) {
 			InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
 			model.read(in, null, "TURTLE");
 		}
-		
+
 		return model;
 	}
-	
-	private String generateUUID() {
-		return UUID.randomUUID().toString();
+
+	private String generateEventId() {
+		String uuid = UUID.randomUUID().toString();
+		String eventId = URIUtil.join(objectPid.getRepositoryPath(),
+				RepositoryPathConstants.EVENTS_CONTAINER, uuid);
+		return eventId;
 	}
 }

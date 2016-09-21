@@ -1,4 +1,4 @@
-package edu.unc.lib.dl.event;
+package edu.unc.lib.dl.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -22,6 +22,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PremisEventBuilder;
+import edu.unc.lib.dl.util.PremisLogger;
 import edu.unc.lib.dl.util.SoftwareAgentConstants;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
