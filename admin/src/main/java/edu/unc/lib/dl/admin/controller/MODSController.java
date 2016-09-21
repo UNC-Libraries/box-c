@@ -109,7 +109,7 @@ public class MODSController extends AbstractSwordController {
 		return "edit/description";
 	}
 
-	@RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET, produces = {"application/json, text/*; charset=UTF-8"})
+	@RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET, produces = {"application/json; text/*; charset=UTF-8"})
 	public @ResponseBody
 	Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
 		response.setContentType("application/json");
@@ -165,7 +165,7 @@ public class MODSController extends AbstractSwordController {
 	 * @param id
 	 * @return
 	 */
-	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET, produces = {"application/json, text/*; charset=UTF-8"})
+	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET, produces = {"application/json; text/*; charset=UTF-8"})
 	public @ResponseBody
 	String getMods(@PathVariable("pid") String pid) {
 		String mods = "";
@@ -214,7 +214,7 @@ public class MODSController extends AbstractSwordController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "describe/{pid}", method = RequestMethod.POST, produces = {"application/json, text/*; charset=UTF-8"})
+	@RequestMapping(value = "describe/{pid}", method = RequestMethod.POST, produces = {"application/json; text/*; charset=UTF-8"})
 	public @ResponseBody
 	String updateDescription(@PathVariable("pid") String pid, Model model,
 			HttpServletRequest request, HttpServletResponse response) {
