@@ -22,13 +22,13 @@
 				<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
 					<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
 				</c:url>
-				<li id="login"><a href="<c:out value='${logoutUrl}' />" class="login" id="login">Log out</a></li>
+				<li class="topbar-menu-option" id="login"><a href="<c:out value='${logoutUrl}' />" class="login" id="login">Log out</a></li>
 			</c:when>
 			<c:otherwise>
 				<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
 					<c:param name="target" value="${currentAbsoluteUrl}" />
 				</c:url>
-				<li><a href="<c:out value='${loginUrl}' />" class="login" id="login">Login</a></li>
+				<li class="topbar-menu-option"><a href="<c:out value='${loginUrl}' />" class="login" id="login">Login</a></li>
 			</c:otherwise>
 		</c:choose>
 		<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
@@ -43,15 +43,18 @@
 					<c:set var="jumpToAdmin" value="list/${briefObject.id}" />
 				</c:when>
 			</c:choose>
-			<li>
+			<li class="topbar-menu-option">
 				<a href="${adminBaseUrl}/${jumpToAdmin}" target="_blank">Admin</a>
 			</li>
 		</c:if>
-        <li>
+        <li class="topbar-menu-option">
         <a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact</a></li>
-        <li>
+        <li class="topbar-menu-option">
             <a href="http://blogs.lib.unc.edu/cdr/">About</a>
         </li>
+		<c:if test="${not empty pageContext.request.remoteUser}">
+			<li id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></li>
+		</c:if>
     </ul>
 	<div class="darkest fluid-cap-highlight">
 		<div class="fluid-cap-contents">
@@ -60,9 +63,7 @@
 					<div class="twocol fluid-cap-left">
 					
 		<div class="cdr-header">
-			<h1>Carolina Digital Repository</h1>
-			
-			<div id="cdr-logo"><a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository.png"></a></div>
+			<h1 id="cdr-logo"><a href="/" id="titlelink"><span class="white-title">CAROLINA</span> <span class="blue-title">DIGITAL</span> <span class="white-title">REPOSITORY</span></a></h1>
 			
 			<ul id="mainmenu">
 				<c:set var="referUrl">
@@ -123,9 +124,7 @@
 		</div>
 	</div>
     <div id="searchoptions">
-		<c:if test="${not empty pageContext.request.remoteUser}">
-			<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
-		</c:if>
+		
         <div class="contentarea">
         <div id="searchoptions-bottom">
             <div id="advancedsearch">
