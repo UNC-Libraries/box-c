@@ -45,6 +45,13 @@ public class PremisEventBuilder {
 		addEvent(eventType, date);
 	}
 
+	/**
+	 * Adds basic information required for all events
+	 * 
+	 * @param eventType
+	 * @param date
+	 * @return
+	 */
 	private PremisEventBuilder addEvent(Resource eventType, Date date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		Resource premisObjResc = getResource();
@@ -55,6 +62,16 @@ public class PremisEventBuilder {
 		return this;
 	}
 
+	/**
+	 * Add an event detail property to this event
+	 * 
+	 * @param message
+	 *            The detail message for this event.
+	 * @param args
+	 *            Optional parameters that should be formatted into the message,
+	 *            using String.format syntax.
+	 * @return this event builder
+	 */
 	public PremisEventBuilder addEventDetail(String message, Object... args) {
 		if (args != null) {
 			message = MessageFormat.format(message, args);
@@ -65,6 +82,16 @@ public class PremisEventBuilder {
 		return this;
 	}
 
+	/**
+	 * Add an event detail outcome note property to this event
+	 * 
+	 * @param detailNote
+	 *            The message for this outcome detail
+	 * @param args
+	 *            Optional parameters that should be formatted into the message,
+	 *            using String.format syntax.
+	 * @return this event builder
+	 */
 	public PremisEventBuilder addEventDetailOutcomeNote(String detailNote, Object... args) {
 		if (args != null) {
 			detailNote = MessageFormat.format(detailNote, args);
@@ -76,6 +103,12 @@ public class PremisEventBuilder {
 		return this;
 	}
 
+	/**
+	 * Add a related software agent to this event
+	 * 
+	 * @param agent Identifier for the agent
+	 * @return this event builder
+	 */
 	public PremisEventBuilder addSoftwareAgent(String agent) {
 		Model modelAgent = ModelFactory.createDefaultModel();
 		Resource softwareAgent = modelAgent.createResource(Premis.hasEventRelatedAgentExecutor);
@@ -84,6 +117,12 @@ public class PremisEventBuilder {
 		return this;
 	}
 
+	/**
+	 * Add a related authorizing agent to this event
+	 * 
+	 * @param agent identifier for the agent
+	 * @return this event builder
+	 */
 	public PremisEventBuilder addAuthorizingAgent(String agent) {
 		Model modelAgent = ModelFactory.createDefaultModel();
 		Resource authorizingAgent = modelAgent.createResource(Premis.hasEventRelatedAgentAuthorizor);
@@ -92,6 +131,15 @@ public class PremisEventBuilder {
 		return this;
 	}
 
+	/**
+	 * Add details describing the creation of a derivative datastream
+	 * 
+	 * @param sourceDataStream
+	 *            The identifier of source datastream
+	 * @param destDataStream
+	 *            The identifier of the datastream derived from the source.
+	 * @return this event builder
+	 */
 	public PremisEventBuilder addDerivative(String sourceDataStream, String destDataStream) {
 		Resource premisObjResc = getResource();
 
@@ -103,7 +151,16 @@ public class PremisEventBuilder {
 		return this;
 	}
 
-	public PremisEventBuilder addAgent(Property role, Resource type, String agentId, String name) {
+	/**
+	 * Add an agent to this event
+	 * 
+	 * @param role
+	 * @param type
+	 * @param agentId
+	 * @param name
+	 * @return
+	 */
+	private PremisEventBuilder addAgent(Property role, Resource type, String agentId, String name) {
 		Resource premisObjResc = getResource();
 		Resource linkingAgentInfo = model.createResource(agentId);
 
@@ -114,10 +171,20 @@ public class PremisEventBuilder {
 		return this;
 	}
 
+	/**
+	 * Finalize this builder by retrieving the created event resource
+	 * 
+	 * @return
+	 */
 	public Resource create() {
 		return getResource();
 	}
 
+	/**
+	 * Finalize this builder by pushing the built event back to the log
+	 * 
+	 * @return
+	 */
 	public Resource write() {
 		Resource resource = getResource();
 		premisLogger.writeEvent(resource);
