@@ -141,12 +141,13 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		}
 		
 		String sourceAbsPath = sourceFile.getAbsolutePath();
-		// Register the bag extras for cleanup later
+		// Register tag file as deposit manifests, then register  them for cleanup later 
 		for (BagFile tag : bag.getTags()) {
 			Path path = Paths.get(sourceAbsPath, tag.getFilepath());
 			try {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
+					getDepositStatusFactory().addManifest(getDepositUUID(), DepositField.manifestURI, stagedURI.toString());
 					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 				}
 			} catch (StagingException e) {

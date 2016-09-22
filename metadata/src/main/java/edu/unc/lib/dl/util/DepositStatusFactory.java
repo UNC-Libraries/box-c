@@ -4,9 +4,12 @@ import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,6 +53,13 @@ public class DepositStatusFactory {
 		}
 		getJedisPool().returnResource(jedis);
 		return result;
+	}
+	
+	public void addManifest(String depositUUID, DepositField field, String value) {
+			try (Jedis jedis = getJedisPool().getResource()) {
+				jedis.rpush(DEPOSIT_MANIFEST_PREFIX+depositUUID, field.name(), value);
+			}
+		
 	}
 
 	/**
