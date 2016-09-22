@@ -28,6 +28,7 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.apache.abdera.parser.ParserOptions;
 import org.apache.abdera.parser.stax.FOMExtensibleElement;
+import org.apache.http.Consts;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPut;
@@ -45,6 +46,8 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 public class AbstractSwordController extends AbstractSolrSearchController {
 	private static final Logger log = LoggerFactory.getLogger(AbstractSwordController.class);
+	public static final ContentType APPLICATION_ATOM_XML_UTF8 = ContentType.create(
+            "application/atom+xml", Consts.UTF_8);
 
 	@Autowired
 	private String swordUrl;
@@ -82,7 +85,7 @@ public class AbstractSwordController extends AbstractSolrSearchController {
 			StringWriter stringWriter = new StringWriter(2048);
 			StringEntity requestEntity;
 			entry.writeTo(stringWriter);
-			requestEntity = new StringEntity(stringWriter.toString(), ContentType.APPLICATION_ATOM_XML);
+			requestEntity = new StringEntity(stringWriter.toString(), APPLICATION_ATOM_XML_UTF8);
 			method.setEntity(requestEntity);
 		} catch (UnsupportedEncodingException e) {
 			log.error("Encoding not supported", e);
