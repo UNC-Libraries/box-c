@@ -213,7 +213,7 @@ li {
 	margin: 0;
 	text-indent: 0;
     background-color: #E6E9EC;
-    /*border-right: 1px solid #053a53;*/
+	border-right: 2px solid #053a53;
     font-family: helvetica;
     font-size: 16px;
     /*color: #053a53;*/
