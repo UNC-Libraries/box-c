@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +59,7 @@ public class RepositoryObjectFactory {
 		URI depositRecordUri;
 
 		try (FcrepoResponse response = getClient().put(path)
-				.body(RDFModelUtil.streamModel(model), "text/turtle")
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
 				.perform()) {
 
 			depositRecordUri = response.getLocation();

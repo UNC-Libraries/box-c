@@ -42,6 +42,8 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
  */
 public class RDFModelUtil {
 
+	public final static String TURTLE_MIMETYPE = "text/turtle";
+
 	public static void serializeModel(Model model, File file) throws IOException {
 		try (FileOutputStream fos = new FileOutputStream(file)) {
 			RDFDataMgr.write(fos, model, RDFFormat.TURTLE_PRETTY);

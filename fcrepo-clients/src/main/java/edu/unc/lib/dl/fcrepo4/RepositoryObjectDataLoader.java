@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -78,7 +80,7 @@ public class RepositoryObjectDataLoader {
 		URI metadataUri = obj.getMetadataUri();
 
 		try (FcrepoResponse response = getClient().get(metadataUri)
-				.accept("text/turtle")
+				.accept(TURTLE_MIMETYPE)
 				.perform()) {
 			Model model = ModelFactory.createDefaultModel();
 			model.read(response.getBody(), null, Lang.TURTLE.getName());
