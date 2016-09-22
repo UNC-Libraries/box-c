@@ -114,7 +114,8 @@ public class DepositRecord extends RepositoryObject {
 		return null;
 	}
 
-	public DepositRecord addPremisEvents(Model model) {
+	@Override
+	public DepositRecord addPremisEvents(Model model) throws FedoraException {
 		return (DepositRecord) super.addPremisEvents(model);
 	}
 

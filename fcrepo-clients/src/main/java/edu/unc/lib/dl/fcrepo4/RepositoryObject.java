@@ -20,10 +20,13 @@ import java.util.Date;
 import java.util.List;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 
 /**
  * A generic repository object, with properties common to objects in the repository.
@@ -96,9 +99,21 @@ public abstract class RepositoryObject {
 	 * 
 	 * @param model
 	 * @return
+	 * @throws FedoraException 
 	 */
-	public RepositoryObject addPremisEvents(Model model) {
-		// TODO
+	public RepositoryObject addPremisEvents(Model model) throws FedoraException {
+		ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType);
+		// Create events one by one
+		while (eventIt.hasNext()) {
+			Resource eventResc = eventIt.nextResource();
+			PID eventPid = PIDs.get(eventResc.getURI());
+
+			Model eventModel = ModelFactory.createDefaultModel();
+			eventModel.add(eventResc.listProperties());
+			
+			repository.createPremisEvent(eventPid, eventModel);
+		}
+
 		return this;
 	}
 

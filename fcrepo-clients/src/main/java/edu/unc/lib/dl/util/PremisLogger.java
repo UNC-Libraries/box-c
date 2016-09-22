@@ -34,7 +34,6 @@ import com.hp.hpl.jena.util.FileManager;
 
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
 
 /**
  * Logs PREMIS events for a repository object
@@ -46,8 +45,13 @@ public class PremisLogger {
 	private static final Logger log = LoggerFactory
 			.getLogger(PremisLogger.class);
 
-	public File premisFile;
-	public PID objectPid;
+	private File premisFile;
+	private PID objectPid;
+	private Model model;
+
+	public PremisLogger(PID pid) {
+		this.objectPid = pid;
+	}
 
 	public PremisLogger(PID pid, File file) {
 		this.objectPid = pid;
@@ -83,26 +87,20 @@ public class PremisLogger {
 	 * @return
 	 */
 	public PremisLogger writeEvent(Resource eventResc) {
-		Model model = addEventResource(eventResc);
+		// Add the event to the model for this event log
+		Model model = getModel().add(eventResc.getModel());
 
-		try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
-			RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
-		} catch (IOException e) {
-			log.debug("Failed to serialize properties for object {} for the following reason {}", 
-				this.objectPid.getUUID(), e.getMessage());
+		if (premisFile != null) {
+			// Persist the log to file
+			try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
+				RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
+			} catch (IOException e) {
+				log.debug("Failed to serialize properties for object {} for the following reason {}", 
+					this.objectPid.getUUID(), e.getMessage());
+			}
 		}
 
 		return this;
-	}
-
-	private Model addEventResource(Resource eventResc) {
-		Model model = getModel();
-		Resource premisObjResc = model.createResource(this.objectPid.getURI());
-		premisObjResc.addProperty(Premis.hasEvent, eventResc);
-
-		model.add(eventResc.getModel());
-
-		return model; 
 	}
 
 	/**
@@ -111,9 +109,13 @@ public class PremisLogger {
 	 * @return
 	 */
 	public Model getModel() {
+		if (model != null) {
+			return model;
+		}
+
 		Model model = ModelFactory.createDefaultModel();
 
-		if (premisFile.exists()) {
+		if (premisFile != null && premisFile.exists()) {
 			InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
 			model.read(in, null, "TURTLE");
 		}

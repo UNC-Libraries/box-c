@@ -39,6 +39,9 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.PremisLogger;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * 
@@ -86,9 +89,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 	@Test
 	public void createDepositRecordTest() throws Exception {
 
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryUri().toString());
-		resc.addProperty(RDF.type, Cdr.DepositRecord);
+		Model model = getDepositRecordModel();
 
 		DepositRecord record = repository.createDepositRecord(pid, model);
 
@@ -109,9 +110,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
 	@Test
 	public void getDepositRecord() throws Exception {
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryUri().toString());
-		resc.addProperty(RDF.type, Cdr.DepositRecord);
+		Model model = getDepositRecordModel();
 
 		repository.createDepositRecord(pid, model);
 
@@ -123,9 +122,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 	@Test
 	public void addManifestsTest() throws Exception {
 
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryUri().toString());
-		resc.addProperty(RDF.type, Cdr.DepositRecord);
+		Model model = getDepositRecordModel();
 
 		DepositRecord record = repository.createDepositRecord(pid, model);
 
@@ -167,5 +164,34 @@ public class DepositRecordIT extends AbstractFedoraIT {
 		String respString2 = new BufferedReader(new InputStreamReader(manifest2.getBinaryStream()))
 				.lines().collect(Collectors.joining("\n"));
 		assertEquals("Manifest content did not match submitted value", bodyString2, respString2);
+	}
+
+	@Test
+	public void addPremisEventsTest() throws Exception {
+		Model model = getDepositRecordModel();
+		
+		PremisLogger logger = new PremisLogger(pid);
+		logger.buildEvent(Premis.Ingestion)
+				.addAuthorizingAgent(SoftwareAgent.depositService.toString())
+				.addEventDetail("Event details")
+				.write();
+		logger.buildEvent(Premis.VirusCheck)
+				.addSoftwareAgent(SoftwareAgent.clamav.toString())
+				.write();
+		
+		repository.createDepositRecord(pid, model)
+			.addPremisEvents(logger.getModel());
+
+		DepositRecord record = repository.getDepositRecord(pid);
+
+		assertTrue(record.getTypes().contains(Cdr.DepositRecord.getURI()));
+	}
+	
+	private Model getDepositRecordModel() {
+		Model model = ModelFactory.createDefaultModel();
+		Resource resc = model.createResource(pid.getRepositoryUri().toString());
+		resc.addProperty(RDF.type, Cdr.DepositRecord);
+		
+		return model;
 	}
 }

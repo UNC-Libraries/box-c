@@ -15,15 +15,19 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
  * Client for interacting with a fedora repository and obtaining objects
@@ -132,6 +136,31 @@ public class Repository {
 
 		BinaryObject binary = new BinaryObject(newPid, this, repositoryObjectDataLoader);
 		return binary;
+	}
+	
+	/**
+	 * Creates an event for the specified object.
+	 * 
+	 * @param eventPid
+	 *            the PID of the event to add
+	 * @param model
+	 *            Model containing properties of this event. Must only contain
+	 *            the properties for one event.
+	 * @return URI of the event created
+	 * @throws FedoraException
+	 */
+	public URI createPremisEvent(PID eventPid, Model model) throws FedoraException {
+
+		try (FcrepoResponse response = getClient().put(eventPid.getRepositoryUri())
+				.body(RDFModelUtil.streamModel(model), "text/turtle")
+				.perform()) {
+
+			return response.getLocation();
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create premis event for " + eventPid, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 
 	public String getVocabulariesBase() {

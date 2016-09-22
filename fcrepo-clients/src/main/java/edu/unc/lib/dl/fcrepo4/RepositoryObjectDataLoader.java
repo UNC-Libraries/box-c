@@ -118,6 +118,10 @@ public class RepositoryObjectDataLoader {
 
 		return this;
 	}
+	
+	public List<PID> getPremisEventList(RepositoryObject obj) throws FedoraException {
+		
+	}
 
 	/**
 	 * Retrieve the binary content for the given BinaryObject as an inputstream
