@@ -83,9 +83,8 @@ public abstract class RepositoryObject {
 	 * @param model
 	 * @return
 	 */
-	public RepositoryObject setModel(Model model) {
+	public void setModel(Model model) {
 		this.model = model;
-		return this;
 	}
 
 	public Resource getResource() throws FedoraException {
