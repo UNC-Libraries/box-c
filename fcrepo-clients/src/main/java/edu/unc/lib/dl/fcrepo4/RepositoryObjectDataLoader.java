@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
 import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
@@ -99,7 +100,7 @@ public class RepositoryObjectDataLoader {
 		PID pid = obj.getPid();
 
 		try (FcrepoResponse response = getClient().head(pid.getRepositoryUri()).perform()) {
-			if (response.getStatusCode() != 200) {
+			if (response.getStatusCode() != HttpStatus.SC_OK) {
 				throw new FedoraException("Received " + response.getStatusCode()
 						+ " response while retrieving headers for " + pid.getRepositoryUri());
 			}
