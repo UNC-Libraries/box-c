@@ -32,7 +32,7 @@ public class URIUtil {
 	 * @return
 	 */
 	public static String join(URI base, String... segments) {
-		return join(base.toString(), segments);
+		return join(base != null? base.toString(): null, segments);
 	}
 
 	/**

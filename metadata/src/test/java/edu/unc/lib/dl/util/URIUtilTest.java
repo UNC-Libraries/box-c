@@ -25,6 +25,12 @@ public class URIUtilTest {
 
 	@Test
 	public void joinTest() {
+		assertEquals("http://example.com",
+				URIUtil.join("http://example.com/"));
+
+		assertEquals("http://example.com/base",
+				URIUtil.join("http://example.com/base/", new String[0]));
+
 		assertEquals("http://example.com/base/path",
 				URIUtil.join("http://example.com/base", "path"));
 
@@ -32,8 +38,13 @@ public class URIUtilTest {
 				URIUtil.join("http://example.com/", "base/", "/path", "to/"));
 
 		assertEquals("path/to", URIUtil.join("", "path", "to"));
+		
+		assertEquals("path/to", URIUtil.join((String) null, "path", "to"));
 
 		assertEquals("http://example.com/base/path",
 				URIUtil.join(URI.create("http://example.com/base"), "path"));
+
+		assertEquals("path",
+				URIUtil.join((URI) null, "path"));
 	}
 }
