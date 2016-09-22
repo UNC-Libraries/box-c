@@ -96,7 +96,7 @@ public class FedoraPID extends PID {
 	 */
 	@Override
 	public boolean containsComponent(PID pid) {
-		return repositoryPath.startsWith(pid.getRepositoryPath()) &&
+		return pid.getRepositoryPath().startsWith(repositoryPath) &&
 				!repositoryPath.equals(pid.getRepositoryPath());
 	}
 

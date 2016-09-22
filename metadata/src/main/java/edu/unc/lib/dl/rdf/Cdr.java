@@ -42,6 +42,9 @@ public class Cdr {
     /** User who this deposit was submitted on behalf of. */
     public static final Property depositedOnBehalfOf = createProperty( "http://cdr.unc.edu/definitions/model#depositedOnBehalfOf" );
     
+    /** Relationship indicating ownership of a manifest by this deposit record */
+    public static final Property hasManifest = createProperty( "http://cdr.unc.edu/definitions/model#hasManifest" );
+    
     /** Identifier indicating the profile of the metadata provided with this object 
      *  at deposit time. Used to identify what transformation was used to generate 
      *  descriptive metadata from the original metadata.
