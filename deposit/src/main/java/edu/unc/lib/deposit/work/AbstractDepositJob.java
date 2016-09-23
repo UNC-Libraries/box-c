@@ -1,7 +1,6 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
