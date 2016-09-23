@@ -34,12 +34,14 @@ public class FedoraPID extends PID {
 	private String qualifiedId;
 	private String componentPath;
 	private URI repositoryUri;
+	private String repositoryPath;
 
 	public FedoraPID(String id, String qualifier, String componentPath, URI repositoryUri) {
 		this.id = id;
 		this.qualifier = qualifier;
 		this.componentPath = componentPath;
 		this.repositoryUri = repositoryUri;
+		this.repositoryPath = repositoryUri.toString();
 		this.qualifiedId = qualifier + "/" + id;
 		if (componentPath != null) {
 			this.qualifiedId += "/" + componentPath;
@@ -89,6 +91,21 @@ public class FedoraPID extends PID {
 	}
 
 	/**
+	 * The passed in PID is a component of this pid if its repository path contains
+	 * this object but is not the same path. 
+	 */
+	@Override
+	public boolean containsComponent(PID pid) {
+		return pid.getRepositoryPath().startsWith(repositoryPath) &&
+				!repositoryPath.equals(pid.getRepositoryPath());
+	}
+
+	@Override
+	public String getURI() {
+		return getRepositoryPath();
+	}
+	
+	/**
 	 * Get the repository uri for this object or component, which is the full URI of the object in Fedora
 	 * 
 	 * @return
@@ -96,6 +113,11 @@ public class FedoraPID extends PID {
 	@Override
 	public URI getRepositoryUri() {
 		return repositoryUri;
+	}
+
+	@Override
+	public String getRepositoryPath() {
+		return repositoryPath;
 	}
 
 	/**
@@ -107,6 +129,16 @@ public class FedoraPID extends PID {
 		if (RepositoryPathConstants.CONTENT_BASE.equals(qualifier)) {
 			return "uuid:" + id;
 		}
+		return getQualifiedId();
+	}
+
+	@Override
+	public String getUUID() {
+		return getId();
+	}
+
+	@Override
+	public String toString() {
 		return getQualifiedId();
 	}
 }

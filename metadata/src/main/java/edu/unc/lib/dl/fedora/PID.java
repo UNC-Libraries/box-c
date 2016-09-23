@@ -53,6 +53,7 @@ public class PID implements Serializable {
     public boolean equals(Object obj) {
 	if (obj instanceof PID) {
 	    PID input = (PID) obj;
+	    String pid = getPid();
 	    if (pid != null) {
 		return pid.equals(input.getPid());
 	    }
@@ -98,24 +99,70 @@ public class PID implements Serializable {
 		return pids;
 	}
 
+	/**
+	 * Get the unique identifier for this object.
+	 * 
+	 * @return the unique identifier for this object
+	 */
 	public String getId() {
 		return pid;
 	}
 	
+	/**
+	 * Get the object type path qualifier for this object.
+	 * 
+	 * @return the object type path qualifier for this object.
+	 */
 	public String getQualifier() {
 		return pid;
 	}
 	
+	/**
+	 * Get the qualified unique identifier for this object, containing the
+	 * formatted qualifier and id.
+	 * 
+	 * @return the qualified id
+	 */
 	public String getQualifiedId() {
 		return pid;
 	}
 	
+	/**
+	 * Get the component path, which is the portion of the repository path identifying 
+	 * a specific component of the digital object
+	 * 
+	 * @return the component path
+	 */
 	public String getComponentPath() {
 		return pid;
 	}
-	
+
+	/**
+	 * Returns true if the provided pid is a component of the this pid
+	 * 
+	 * @param pid
+	 * @return
+	 */
+	public boolean containsComponent(PID pid) {
+		return false;
+	}
+
+	/**
+	 * Returns the full repository uri for this object or component.
+	 * 
+	 * @return
+	 */
 	public URI getRepositoryUri() {
 		return URI.create(this.getURI());
+	}
+
+	/**
+	 * Returns the repository URI for this pid as a string
+	 * 
+	 * @return
+	 */
+	public String getRepositoryPath() {
+		return this.getURI();
 	}
 }
 

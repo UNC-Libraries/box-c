@@ -4,7 +4,6 @@ import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.manifestURI;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -12,8 +11,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +21,13 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
+import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
@@ -50,6 +50,8 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	// UUID for this deposit and its deposit record
 	private String depositUUID;
+	
+	private PID depositPID;
 
 	// UUID for this ingest job
 	private String jobUUID;
@@ -77,7 +79,7 @@ public abstract class AbstractDepositJob implements Runnable {
 	public AbstractDepositJob(String uuid, String depositUUID) {
 		log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
 		this.jobUUID = uuid;
-		this.depositUUID = depositUUID;
+		this.setDepositUUID(depositUUID);
 	}
 
 	@PostConstruct
@@ -114,10 +116,11 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	public void setDepositUUID(String depositUUID) {
 		this.depositUUID = depositUUID;
+		this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
 	}
 
 	public PID getDepositPID() {
-		return new PID("uuid:" + this.depositUUID);
+		return depositPID;
 	}
 
 	public String getJobUUID() {
@@ -275,8 +278,8 @@ public abstract class AbstractDepositJob implements Runnable {
 	protected void serializeObjectModel(PID pid, Model objModel) {
 		File propertiesFile = new File(getSubdir(DepositConstants.AIPS_DIR), pid.getUUID() + ".ttl");
 		
-		try (FileOutputStream fos = new FileOutputStream(propertiesFile)) {
-			RDFDataMgr.write(fos, objModel, RDFFormat.TURTLE_PRETTY);
+		try {
+			RDFModelUtil.serializeModel(objModel, propertiesFile);
 		} catch (IOException e) {
 			failJob(e, "Failed to serialize properties for object {} to {}",
 					pid, propertiesFile.getAbsolutePath());

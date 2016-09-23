@@ -24,9 +24,6 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -40,19 +37,11 @@ import edu.unc.lib.dl.util.RDFModelUtil;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/spring-test/test-fedora-container.xml")
-public class LdpContainerFactoryIT {
+public class LdpContainerFactoryIT extends AbstractFedoraIT {
 
 	private FcrepoClient client;
 	private LdpContainerFactory factory;
-	
-	protected static final int SERVER_PORT = Integer.parseInt(System.getProperty("fcrepo.dynamic.test.port", "8080"));
 
-	protected static final String HOSTNAME = "localhost";
-
-	protected static final String serverAddress = "http://" + HOSTNAME + ":" + SERVER_PORT + "/rest/";
-	
 	@Before
 	public void init() {
 		client = FcrepoClient.client().build();

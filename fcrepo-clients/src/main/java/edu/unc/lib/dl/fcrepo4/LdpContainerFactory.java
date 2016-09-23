@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -91,7 +93,7 @@ public class LdpContainerFactory {
 	
 	private URI createLdpContainer(URI membershipResource, String relationTtl, String name) throws FedoraException, IOException {
 		try (FcrepoResponse response = client.post(membershipResource)
-				.body(new ByteArrayInputStream(relationTtl.getBytes(StandardCharsets.UTF_8)), "text/turtle")
+				.body(new ByteArrayInputStream(relationTtl.getBytes(StandardCharsets.UTF_8)), TURTLE_MIMETYPE)
 				.slug(name)
 				.perform()) {
 			
@@ -115,7 +117,7 @@ public class LdpContainerFactory {
 		String relations = String.format(INDIRECT_PROXY_TTL, proxyFor.toString(), proxyIn.toString());
 		
 		try (FcrepoResponse response = client.post(container)
-				.body(new ByteArrayInputStream(relations.getBytes(StandardCharsets.UTF_8)), "text/turtle")
+				.body(new ByteArrayInputStream(relations.getBytes(StandardCharsets.UTF_8)), TURTLE_MIMETYPE)
 				.perform()
 				) {
 			return response.getLocation();
