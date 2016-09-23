@@ -20,10 +20,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.net.URI;
 
-import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -39,16 +38,8 @@ import edu.unc.lib.dl.util.RDFModelUtil;
  */
 public class LdpContainerFactoryIT extends AbstractFedoraIT {
 
-	private FcrepoClient client;
+	@Autowired
 	private LdpContainerFactory factory;
-
-	@Before
-	public void init() {
-		client = FcrepoClient.client().build();
-		
-		factory = new LdpContainerFactory();
-		factory.setClient(client);
-	}
 	
 	@Test
 	public void createDirectContainerTest() throws Exception {

@@ -26,11 +26,10 @@ import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
-import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 import org.jgroups.util.UUID;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -51,22 +50,8 @@ import edu.unc.lib.dl.util.RDFModelUtil;
  */
 public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
-	private FcrepoClient client;
-	private LdpContainerFactory ldpFactory;
-
+	@Autowired
 	private RepositoryObjectFactory factory;
-
-	@Before
-	public void init() {
-		client = FcrepoClient.client().build();
-
-		ldpFactory = new LdpContainerFactory();
-		ldpFactory.setClient(client);
-
-		factory = new RepositoryObjectFactory();
-		factory.setClient(client);
-		factory.setLdpFactory(ldpFactory);
-	}
 
 	@Test
 	public void createDepositRecordTest() throws Exception {

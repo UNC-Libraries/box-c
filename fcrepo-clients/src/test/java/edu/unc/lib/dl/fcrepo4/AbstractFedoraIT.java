@@ -22,19 +22,18 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/spring-test/test-fedora-container.xml")
+@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public class AbstractFedoraIT {
 
-	protected static final int SERVER_PORT = Integer.parseInt(System.getProperty("fcrepo.dynamic.test.port", "8080"));
+	@Autowired
+	protected String serverAddress;
 
-	protected static final String HOSTNAME = "localhost";
-
-	protected static final String serverAddress = "http://" + HOSTNAME + ":" + SERVER_PORT + "/rest/";
-	
+	@Autowired
 	protected FcrepoClient client;
 	
 	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {

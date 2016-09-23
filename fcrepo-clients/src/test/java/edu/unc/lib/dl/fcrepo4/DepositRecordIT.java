@@ -27,9 +27,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
-import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -39,9 +39,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.PremisLogger;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * 
@@ -50,38 +47,13 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class DepositRecordIT extends AbstractFedoraIT {
 
-	private FcrepoClient client;
-	private LdpContainerFactory ldpFactory;
-
-	private RepositoryObjectFactory factory;
-	private RepositoryObjectDataLoader dataLoader;
-
+	@Autowired
 	private Repository repository;
 
 	private PID pid;
 
 	@Before
 	public void init() {
-		client = FcrepoClient.client().build();
-
-		ldpFactory = new LdpContainerFactory();
-		ldpFactory.setClient(client);
-
-		factory = new RepositoryObjectFactory();
-		factory.setClient(client);
-		factory.setLdpFactory(ldpFactory);
-
-		dataLoader = new RepositoryObjectDataLoader();
-		dataLoader.setClient(client);
-
-		repository = new Repository();
-		repository.setClient(client);
-		repository.setRepositoryObjectDataLoader(dataLoader);
-		repository.setRepositoryObjectFactory(factory);
-		repository.setFedoraBase(serverAddress);
-
-		PIDs.setRepository(repository);
-
 		// Generate a new ID every time so that tests don't conflict
 		pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString());
 	}
@@ -166,27 +138,6 @@ public class DepositRecordIT extends AbstractFedoraIT {
 		assertEquals("Manifest content did not match submitted value", bodyString2, respString2);
 	}
 
-	@Test
-	public void addPremisEventsTest() throws Exception {
-		Model model = getDepositRecordModel();
-		
-		PremisLogger logger = new PremisLogger(pid);
-		logger.buildEvent(Premis.Ingestion)
-				.addAuthorizingAgent(SoftwareAgent.depositService.toString())
-				.addEventDetail("Event details")
-				.write();
-		logger.buildEvent(Premis.VirusCheck)
-				.addSoftwareAgent(SoftwareAgent.clamav.toString())
-				.write();
-		
-		repository.createDepositRecord(pid, model)
-			.addPremisEvents(logger.getModel());
-
-		DepositRecord record = repository.getDepositRecord(pid);
-
-		assertTrue(record.getTypes().contains(Cdr.DepositRecord.getURI()));
-	}
-	
 	private Model getDepositRecordModel() {
 		Model model = ModelFactory.createDefaultModel();
 		Resource resc = model.createResource(pid.getRepositoryUri().toString());
