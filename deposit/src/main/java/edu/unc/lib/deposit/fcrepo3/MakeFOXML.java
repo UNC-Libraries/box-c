@@ -19,6 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -343,14 +344,19 @@ public class MakeFOXML extends AbstractDepositJob {
 		}
 
 		// add manifest DS
-		File manifest = getManifestFile();
-		log.info("Adding manifest file to foxml {}", manifest);
-		if (manifest != null && manifest.exists()) {
-			String dsLabel = Datastream.DATA_MANIFEST.getLabel();
-			Element el = FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DATA_MANIFEST.getName(),
-					"M", manifest.toURI().toString(), "text/xml", "URL", dsLabel, false, null);
-			foxml.getRootElement().addContent(el);
-			log.info("Manifest file exists and has been added");
+		String dsLabel = Datastream.DATA_MANIFEST.getLabel();
+		ArrayList<File> manifestFiles = getManifestFiles();
+		if (!manifestFiles.isEmpty()) {
+			int i = 0;
+			Element el ;
+			for (File manifest : manifestFiles) {
+			el	= FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DATA_MANIFEST.getName() + i++,
+						"M", manifest.getAbsolutePath(), "text/xml", "URL", dsLabel, false, null);
+				foxml.getRootElement().addContent(el);
+				log.info("Manifest files have been added to foxml");
+			} 
+		} else {
+			log.warn("No manifest files were found for the deposit");
 		}
 
 		addEventsDS(getDepositPID(), foxml);

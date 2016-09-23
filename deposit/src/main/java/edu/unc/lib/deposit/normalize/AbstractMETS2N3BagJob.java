@@ -150,7 +150,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	protected void addManifestURI() {
 		File metsFile = getMETSFile();
 		log.debug("Adding manifest URI referencing {}", metsFile);
-		getDepositStatusFactory().set(getDepositUUID(), DepositField.manifestURI, metsFile.getAbsolutePath());
+		getDepositStatusFactory().addManifest(getDepositUUID(), metsFile.getAbsolutePath());
 	}
 
 	protected void validateProfile(METSProfile profile) {

@@ -147,7 +147,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			try {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
-					getDepositStatusFactory().addManifest(getDepositUUID(), DepositField.manifestURI, stagedURI.toString());
+					getDepositStatusFactory().addManifest(getDepositUUID(), stagedURI.toString());
 					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 				}
 			} catch (StagingException e) {

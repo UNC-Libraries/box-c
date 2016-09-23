@@ -1,16 +1,17 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DepositField.manifestURI;
-
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
@@ -190,15 +191,17 @@ public abstract class AbstractDepositJob implements Runnable {
 	}
 
 	/**
-	 * Returns the file where the manifest for this deposit is stored. If no manifest was set, then null is returned
+	 * Returns the files where the manifest for this deposit is stored. If no manifest was set, then null is returned
 	 *
 	 * @return
 	 */
-	public File getManifestFile() {
-		String path = getDepositStatus().get(manifestURI.name());
-		if (path == null)
-			return null;
-		return new File(path);
+	public ArrayList<File> getManifestFiles() {
+		final Map<String,String> manifestRecords = getDepositStatus();
+		ArrayList<File> manifestFiles = new ArrayList<File>();
+		for (Entry<String,String> record : manifestRecords.entrySet()) {
+			manifestFiles.add(new File(record.getValue()));
+		}
+		return manifestFiles;
 	}
 
 	public void recordDepositEvent(Type type, String messageformat, Object... args) {
