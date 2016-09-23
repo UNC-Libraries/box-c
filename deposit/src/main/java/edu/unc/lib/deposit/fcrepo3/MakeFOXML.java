@@ -350,7 +350,7 @@ public class MakeFOXML extends AbstractDepositJob {
 			int i = 0;
 			Element el ;
 			for (File manifest : manifestFiles) {
-			el	= FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DATA_MANIFEST.getName() + i++,
+				el	= FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DATA_MANIFEST.getName() + i++,
 						"M", manifest.getAbsolutePath(), "text/xml", "URL", dsLabel, false, null);
 				foxml.getRootElement().addContent(el);
 				log.info("Manifest files have been added to foxml");
