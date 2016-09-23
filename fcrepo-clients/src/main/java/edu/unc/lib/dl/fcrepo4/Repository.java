@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.UUID;
 
 import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
@@ -32,6 +33,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Client for interacting with a fedora repository and obtaining objects
@@ -153,13 +155,13 @@ public class Repository {
 	 * @return URI of the event created
 	 * @throws FedoraException
 	 */
-	public URI createPremisEvent(PID eventPid, Model model) throws FedoraException {
+	public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
 
 		try (FcrepoResponse response = getClient().put(eventPid.getRepositoryUri())
 				.body(RDFModelUtil.streamModel(model), "text/turtle")
 				.perform()) {
 
-			return response.getLocation();
+			return new PremisEventObject(PIDs.get(response.getLocation()), this, repositoryObjectDataLoader);
 		} catch (IOException e) {
 			throw new FedoraException("Unable to create premis event for " + eventPid, e);
 		} catch (FcrepoOperationFailedException e) {
@@ -167,6 +169,23 @@ public class Repository {
 		}
 	}
 
+	public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
+		return new PremisEventObject(pid, this, repositoryObjectDataLoader).validateType();
+	}
+
+	/**
+	 * Mints a URL for a new event object belonging to the provided parent object 
+	 * 
+	 * @param parentPid The object which this event will belong to.
+	 * @return
+	 */
+	public String mintPremisEventUrl(PID parentPid) {
+		String uuid = UUID.randomUUID().toString();
+		String eventUrl = URIUtil.join(parentPid.getRepositoryPath(),
+				RepositoryPathConstants.EVENTS_CONTAINER, uuid);
+		return eventUrl;
+	}
+	
 	/**
 	 * Get a Model containing the properties held by the object identified by
 	 * the given metadataUri

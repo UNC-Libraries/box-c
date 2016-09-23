@@ -25,6 +25,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Logs and provides access to PREMIS events for a repository object
  * 
  * @author bbpennel
  *
@@ -50,20 +51,21 @@ public interface PremisLogger {
 	 * 
 	 * @param eventResc
 	 * @return
+	 * @throws IOException 
 	 */
 	public PremisLogger writeEvent(Resource eventResc);
 
 	/**
-	 * 
+	 * Return a list of PID objects for each event in this logger
+	 *
 	 * @return
-	 * @throws FedoraException
 	 */
-	public List<PID> listEvents() throws FedoraException;
+	public List<PID> listEvents();
 
 	/**
+	 * Return a list of PremisEventObjects for each event in this logger
 	 * 
 	 * @return
-	 * @throws FedoraException
 	 */
 	public List<PremisEventObject> getEvents() throws FedoraException;
 }

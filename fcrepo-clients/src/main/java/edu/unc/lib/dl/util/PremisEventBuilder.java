@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.util;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -184,8 +185,9 @@ public class PremisEventBuilder {
 	 * Finalize this builder by pushing the built event back to the log
 	 * 
 	 * @return
+	 * @throws IOException 
 	 */
-	public Resource write() {
+	public Resource write() throws IOException {
 		Resource resource = getResource();
 		premisLogger.writeEvent(resource);
 		return resource;
