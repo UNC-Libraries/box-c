@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -69,27 +68,22 @@ public class RepositoryPremisLogger implements PremisLogger {
 	}
 
 	@Override
-	public PremisLogger writeEvent(Resource eventResc) throws IOException {
+	public PremisLogger writeEvent(Resource eventResc) {
 		Model eventModel = eventResc.getModel();
 		PID eventPid = PIDs.get(eventResc.getURI());
 
 		try {
 			repository.createPremisEvent(eventPid, eventModel);
 		} catch (FedoraException e) {
-			throw new IOException("Failed to create event at " + eventPid, e);
+			throw new ObjectPersistenceException("Failed to create event at " + eventPid, e);
 		}
 
 		return this;
 	}
 
 	@Override
-	public List<PID> listEvents() throws IOException {
-		Model model;
-		try {
-			model = repoObject.getModel();
-		} catch (FedoraException e) {
-			throw new IOException(e);
-		}
+	public List<PID> listEvents() {
+		Model model = repoObject.getModel();
 
 		List<PID> pids = new ArrayList<>();
 		NodeIterator nodeIt = model.listObjectsOfProperty(Premis.hasEvent);
@@ -103,7 +97,7 @@ public class RepositoryPremisLogger implements PremisLogger {
 		return pids;
 	}
 
-	private void retrieveAllEvents() throws FedoraException, IOException {
+	private void retrieveAllEvents() {
 		List<PID> eventPids = listEvents();
 
 		for (PID pid : eventPids) {
@@ -112,14 +106,10 @@ public class RepositoryPremisLogger implements PremisLogger {
 	}
 
 	@Override
-	public List<PremisEventObject> getEvents() throws IOException {
+	public List<PremisEventObject> getEvents() {
 		if (events == null) {
 			events = new ArrayList<>();
-			try {
-				retrieveAllEvents();
-			} catch (FedoraException e) {
-				throw new IOException(e);
-			}
+			retrieveAllEvents();
 		}
 
 		return events;

@@ -51,7 +51,6 @@ public interface PremisLogger {
 	 * 
 	 * @param eventResc
 	 * @return
-	 * @throws IOException 
 	 */
 	public PremisLogger writeEvent(Resource eventResc);
 
@@ -67,5 +66,5 @@ public interface PremisLogger {
 	 * 
 	 * @return
 	 */
-	public List<PremisEventObject> getEvents() throws FedoraException;
+	public List<PremisEventObject> getEvents();
 }

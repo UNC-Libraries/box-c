@@ -196,7 +196,7 @@ public class PremisEventBuilder {
 	 * @return
 	 * @throws IOException 
 	 */
-	public Resource write() throws IOException {
+	public Resource write() {
 		Resource resource = getResource();
 		premisLogger.writeEvent(resource);
 		return resource;

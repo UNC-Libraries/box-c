@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -47,6 +49,8 @@ import edu.unc.lib.dl.rdf.Premis;
  */
 public class FilePremisLogger implements PremisLogger {
 
+	private static final Logger log = LoggerFactory.getLogger(FilePremisLogger.class);
+	
 	private File premisFile;
 	private PID objectPid;
 	private Model model;
@@ -98,7 +102,7 @@ public class FilePremisLogger implements PremisLogger {
 	 * @return
 	 */
 	@Override
-	public PremisLogger writeEvent(Resource eventResc) throws IOException {
+	public PremisLogger writeEvent(Resource eventResc) {
 		// Add the event to the model for this event log
 		Model model = getModel().add(eventResc.getModel());
 
@@ -106,6 +110,8 @@ public class FilePremisLogger implements PremisLogger {
 			// Persist the log to file
 			try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
 				RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
+			} catch (IOException e) {
+				throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
 			}
 		}
 

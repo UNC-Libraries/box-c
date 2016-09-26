@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;

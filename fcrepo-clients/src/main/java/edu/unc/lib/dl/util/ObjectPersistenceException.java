@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2016 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fedora;
+package edu.unc.lib.dl.util;
 
 /**
- * @author Gregory Jansen
+ * Exception thrown when persisting an object or its content fails, either in
+ * the repository or locally.
  * 
+ * @author bbpennel
+ *
  */
-public class FedoraException extends RuntimeException {
+public class ObjectPersistenceException extends RuntimeException {
 
-	private static final long serialVersionUID = 7276162681909269101L;
+	private static final long serialVersionUID = 3956045265306679210L;
 
-	public FedoraException(Exception e) {
-		super(e);
-	}
-	
-	public FedoraException(String message, Exception e) {
+	public ObjectPersistenceException(String message, Throwable e) {
 		super(message, e);
-	}
-
-	public FedoraException(String message) {
-		super(message);
 	}
 }
