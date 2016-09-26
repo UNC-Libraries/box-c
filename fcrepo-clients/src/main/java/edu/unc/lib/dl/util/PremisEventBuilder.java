@@ -17,8 +17,11 @@ package edu.unc.lib.dl.util;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
+import java.text.ParseException;
 import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
@@ -34,6 +37,8 @@ import edu.unc.lib.dl.rdf.Premis;
  *
  */
 public class PremisEventBuilder {
+	private static final Logger log = LoggerFactory.getLogger(PremisEventBuilder.class);
+	
 	private String eventUri;
 	private Model model;
 	private PremisLogger premisLogger;
@@ -54,11 +59,15 @@ public class PremisEventBuilder {
 	 * @return
 	 */
 	private PremisEventBuilder addEvent(Resource eventType, Date date) {
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		Resource premisObjResc = getResource();
 
 		premisObjResc.addProperty(Premis.hasEventType, eventType);
-		premisObjResc.addProperty(Premis.hasEventDateTime, dateFormat.format(date));
+		try {
+			premisObjResc.addProperty(Premis.hasEventDateTime,
+					DateTimeUtil.formatDateToUTC(date));
+		} catch (ParseException e) {
+			log.error("Failed to format event date", e);
+		}
 
 		return this;
 	}
