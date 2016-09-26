@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
@@ -115,8 +114,8 @@ public class DepositRecord extends RepositoryObject {
 	}
 
 	@Override
-	public DepositRecord addPremisEvents(Model model) throws FedoraException {
-		return (DepositRecord) super.addPremisEvents(model);
+	public DepositRecord addPremisEvents(List<PremisEventObject> events) throws FedoraException {
+		return (DepositRecord) super.addPremisEvents(events);
 	}
 
 	/**

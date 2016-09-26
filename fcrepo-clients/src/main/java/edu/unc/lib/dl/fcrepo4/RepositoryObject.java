@@ -20,13 +20,12 @@ import java.util.Date;
 import java.util.List;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.PremisLogger;
+import edu.unc.lib.dl.util.RepositoryPremisLogger;
 
 /**
  * A generic repository object, with properties common to objects in the repository.
@@ -50,6 +49,8 @@ public abstract class RepositoryObject {
 	protected String etag;
 
 	protected List<String> types;
+	
+	protected PremisLogger premisLog;
 
 	protected RepositoryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		this.repository = repository;
@@ -95,26 +96,30 @@ public abstract class RepositoryObject {
 	}
 
 	/**
-	 * Adds each event in the provided model to this object.
+	 * Adds each event to this object.
 	 * 
-	 * @param model
-	 * @return
+	 * @param events
+	 * @return this object
 	 * @throws FedoraException 
 	 */
-	public RepositoryObject addPremisEvents(Model model) throws FedoraException {
-		ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType);
-		// Create events one by one
-		while (eventIt.hasNext()) {
-			Resource eventResc = eventIt.nextResource();
-			PID eventPid = PIDs.get(eventResc.getURI());
-
-			Model eventModel = ModelFactory.createDefaultModel();
-			eventModel.add(eventResc.listProperties());
-			
-			repository.createPremisEvent(eventPid, eventModel);
+	public RepositoryObject addPremisEvents(List<PremisEventObject> events) throws FedoraException {
+		for (PremisEventObject event: events) {
+			repository.createPremisEvent(event.getPid(), event.getModel());
 		}
 
 		return this;
+	}
+
+	/**
+	 * Get the PREMIS event log for this object
+	 * 
+	 * @return
+	 */
+	public PremisLogger getPremisLog() {
+		if (premisLog == null) {
+			premisLog = new RepositoryPremisLogger(this, repository);
+		}
+		return premisLog;
 	}
 
 	/**
