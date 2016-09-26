@@ -1251,11 +1251,14 @@ div.deposit-icons {
 }
 
 #topbar > li {
-	display: block;
 	float: right;
-	padding: 4px 25px;
 	text-indent: 0;
 	margin: 0;
+}
+
+#topbar > li > a {
+	display: block;
+	padding: 4px 25px;
 }
 
 .topbar-menu-option {
