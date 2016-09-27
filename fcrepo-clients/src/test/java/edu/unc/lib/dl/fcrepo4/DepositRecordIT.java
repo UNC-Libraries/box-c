@@ -38,12 +38,12 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.event.FilePremisLogger;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.FilePremisLogger;
-import edu.unc.lib.dl.util.PremisLogger;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**

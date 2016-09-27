@@ -39,6 +39,9 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.event.FilePremisLogger;
+import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;

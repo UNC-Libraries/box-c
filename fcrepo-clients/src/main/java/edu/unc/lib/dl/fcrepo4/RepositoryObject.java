@@ -22,10 +22,10 @@ import java.util.List;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.PremisLogger;
-import edu.unc.lib.dl.util.RepositoryPremisLogger;
 
 /**
  * A generic repository object, with properties common to objects in the repository.

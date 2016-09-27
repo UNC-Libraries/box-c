@@ -33,6 +33,8 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;

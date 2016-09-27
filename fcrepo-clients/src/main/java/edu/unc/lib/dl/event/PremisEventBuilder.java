@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.dl.event;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -29,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * Builder for creating a PREMIS RDF event.

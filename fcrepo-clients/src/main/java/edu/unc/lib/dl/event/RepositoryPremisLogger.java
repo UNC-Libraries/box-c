@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.dl.event;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +31,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.ObjectPersistenceException;
 
 /**
  * Logs PREMIS events for a repository object, which are persisted as PREMIS
