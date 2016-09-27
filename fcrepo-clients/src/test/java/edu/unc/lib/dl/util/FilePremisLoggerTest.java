@@ -44,6 +44,11 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
+/**
+ * 
+ * @author lfarrell
+ *
+ */
 public class FilePremisLoggerTest {
 	private String depositUUID;
 	private PID pid;
@@ -53,11 +58,11 @@ public class FilePremisLoggerTest {
 	private Date date;
 	@Mock
 	private Repository repository;
-	
+
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);
-		
+
 		depositUUID = UUID.randomUUID().toString();
 		pid = new PID(depositUUID);
 		eventType = Premis.VirusCheck;
@@ -65,8 +70,7 @@ public class FilePremisLoggerTest {
 		premisFile.deleteOnExit();
 		premis = new FilePremisLogger(pid, premisFile, repository);
 		date = new Date();
-		SoftwareAgentConstants.setCdrVersion("4.0-SNAPSHOT");
-		
+
 		when(repository.mintPremisEventUrl(any(PID.class))).thenAnswer(new Answer<String>() {
 			@Override
 			public String answer(InvocationOnMock invocation) throws Throwable {
@@ -74,33 +78,33 @@ public class FilePremisLoggerTest {
 			}
 		});
 	}
-	
+
 	@Test
 	public void testEventbuilderCreation() {
 		PremisEventBuilder builder = premis.buildEvent(eventType, date);
-		
+
 		assertTrue("Returned object is not a PremisLogger", premis instanceof PremisLogger);
 		assertTrue("Returned object is not a PremisEventBuilder", builder instanceof PremisEventBuilder);	
 	}
-	
+
 	@Test
 	public void testTripleWrite() throws IOException {
 		String message = "Test event successfully added";
 		String detailedNote = "No viruses found";
-		
+
 		Resource premisBuilder = premis.buildEvent(eventType, date)
 				.addEventDetail(message)
 				.addEventDetailOutcomeNote(detailedNote)
 				.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
 				.addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
 				.create();
-		
+
 		premis.writeEvent(premisBuilder);
-		
+
 		InputStream in = new FileInputStream(this.premisFile);
 		Model model = ModelFactory.createDefaultModel().read(in, null, "TURTLE");
 		Resource resource = model.getResource(premisBuilder.getURI());
-		
+
 		assertTrue("File doesn't exist", premisFile.exists());
 		assertEquals("Virus check property event not written to file", eventType,
 				resource.getProperty(Premis.hasEventType).getObject());
@@ -115,27 +119,27 @@ public class FilePremisLoggerTest {
 				resource.getProperty(Premis.hasEventRelatedAgentAuthorizor)
 				.getProperty(Premis.hasAgentName).getObject().toString());
 	}
-	
+
 	@Test
 	public void testMultipleEvents() throws Exception {
 		Resource event1 = premis.buildEvent(Premis.Normalization, date)
 				.addEventDetail("Event 1")
 				.addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
 				.write();
-		
+
 		Resource event2 = premis.buildEvent(Premis.VirusCheck, date)
 				.addEventDetail("Event 2")
 				.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
 				.write();
-		
+
 		InputStream in = new FileInputStream(premisFile);
 		Model model = ModelFactory.createDefaultModel().read(in, null, "TURTLE");
-		
+
 		Resource resc1 = model.getResource(event1.getURI());
 		Resource resc2 = model.getResource(event2.getURI());
-		
+
 		assertNotEquals("Events must have separate uris", resc1, resc2);
-		
+
 		assertEquals("Normalization type not written to file", Premis.Normalization,
 				resc1.getProperty(Premis.hasEventType).getObject());
 		assertEquals("Event detail not written to file", "Event 1",
@@ -143,7 +147,7 @@ public class FilePremisLoggerTest {
 		assertEquals("Authorizing agent not written to file", SoftwareAgent.depositService.getFullname(),
 				resc1.getProperty(Premis.hasEventRelatedAgentAuthorizor)
 						.getProperty(Premis.hasAgentName).getObject().toString());
-		
+
 		assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
 				resc2.getProperty(Premis.hasEventType).getObject());
 		assertEquals("Event detail not written to file", "Event 2",
