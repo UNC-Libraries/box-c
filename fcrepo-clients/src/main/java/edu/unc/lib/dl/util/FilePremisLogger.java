@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
@@ -132,7 +132,7 @@ public class FilePremisLogger implements PremisLogger {
 
 		if (premisFile != null && premisFile.exists()) {
 			InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
-			model.read(in, null, "TURTLE");
+			model.read(in, null, Lang.TURTLE.getName());
 		}
 
 		return model;
@@ -143,8 +143,7 @@ public class FilePremisLogger implements PremisLogger {
 		List<PID> eventPids = new ArrayList<>();
 
 		// Find all of the individual events and turn their identifiers into pids
-		ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType);
-		while (eventIt.hasNext()) {
+		for (ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
 			Resource eventResc = eventIt.nextResource();
 			PID eventPid = PIDs.get(eventResc.getURI());
 
@@ -159,8 +158,7 @@ public class FilePremisLogger implements PremisLogger {
 		List<PremisEventObject> events = new ArrayList<>();
 
 		// Find all of the events and construct a list of PremisEventObjects from them.
-		ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType);
-		while (eventIt.hasNext()) {
+		for (ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
 			Resource eventResc = eventIt.nextResource();
 			PID eventPid = PIDs.get(eventResc.getURI());
 
