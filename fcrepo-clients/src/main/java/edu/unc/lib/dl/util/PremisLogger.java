@@ -21,7 +21,6 @@ import java.util.List;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
