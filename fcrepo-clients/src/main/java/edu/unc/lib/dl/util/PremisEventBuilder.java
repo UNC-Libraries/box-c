@@ -172,7 +172,7 @@ public class PremisEventBuilder {
 	 */
 	private PremisEventBuilder addAgent(Property role, Resource type, String agentId, String name) {
 		Resource premisObjResc = getResource();
-		Resource linkingAgentInfo = model.createResource(agentId);
+		Resource linkingAgentInfo = model.createResource(eventUri + agentId);
 
 		linkingAgentInfo.addProperty(Premis.hasAgentType, type);
 		linkingAgentInfo.addProperty(Premis.hasAgentName, name);
