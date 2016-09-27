@@ -15,15 +15,25 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.UUID;
 
+import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Client for interacting with a fedora repository and obtaining objects
@@ -132,6 +142,75 @@ public class Repository {
 
 		BinaryObject binary = new BinaryObject(newPid, this, repositoryObjectDataLoader);
 		return binary;
+	}
+	
+	/**
+	 * Creates an event for the specified object.
+	 * 
+	 * @param eventPid
+	 *            the PID of the event to add
+	 * @param model
+	 *            Model containing properties of this event. Must only contain
+	 *            the properties for one event.
+	 * @return URI of the event created
+	 * @throws FedoraException
+	 */
+	public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
+
+		try (FcrepoResponse response = getClient().put(eventPid.getRepositoryUri())
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+				.perform()) {
+
+			return new PremisEventObject(PIDs.get(response.getLocation()), this, repositoryObjectDataLoader);
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create premis event for " + eventPid, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
+
+	public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
+		return new PremisEventObject(pid, this, repositoryObjectDataLoader).validateType();
+	}
+
+	/**
+	 * Mints a URL for a new event object belonging to the provided parent object 
+	 * 
+	 * @param parentPid The object which this event will belong to.
+	 * @return
+	 */
+	public String mintPremisEventUrl(PID parentPid) {
+		String uuid = UUID.randomUUID().toString();
+		String eventUrl = URIUtil.join(parentPid.getRepositoryPath(),
+				RepositoryPathConstants.EVENTS_CONTAINER, uuid);
+		return eventUrl;
+	}
+	
+	/**
+	 * Get a Model containing the properties held by the object identified by
+	 * the given metadataUri
+	 * 
+	 * @param metadataUri
+	 *            Uri for the model to retrieve. For RDF Resources this is just
+	 *            the object URI, but for non-RDF Resources this must be to the
+	 *            metadata node
+	 * @return Model containing the properties held by the object
+	 * @throws FedoraException
+	 */
+	public Model getObjectModel(URI metadataUri) throws FedoraException {
+		try (FcrepoResponse response = getClient().get(metadataUri)
+				.accept(TURTLE_MIMETYPE)
+				.perform()) {
+
+			Model model = ModelFactory.createDefaultModel();
+			model.read(response.getBody(), null, Lang.TURTLE.getName());
+
+			return model;
+		} catch (IOException e) {
+			throw new FedoraException("Failed to read model for " + metadataUri, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 
 	public String getVocabulariesBase() {

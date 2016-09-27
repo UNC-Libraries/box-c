@@ -25,10 +25,9 @@ import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
-import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -42,35 +41,8 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  */
 public class BinaryObjectIT extends AbstractFedoraIT {
 
-	private LdpContainerFactory ldpFactory;
-
-	private RepositoryObjectFactory factory;
-	private RepositoryObjectDataLoader dataLoader;
-
+	@Autowired
 	private Repository repository;
-
-	@Before
-	public void init() {
-		client = FcrepoClient.client().build();
-
-		ldpFactory = new LdpContainerFactory();
-		ldpFactory.setClient(client);
-
-		factory = new RepositoryObjectFactory();
-		factory.setClient(client);
-		factory.setLdpFactory(ldpFactory);
-
-		dataLoader = new RepositoryObjectDataLoader();
-		dataLoader.setClient(client);
-
-		repository = new Repository();
-		repository.setClient(client);
-		repository.setRepositoryObjectDataLoader(dataLoader);
-		repository.setRepositoryObjectFactory(factory);
-		repository.setFedoraBase(serverAddress);
-
-		PIDs.setRepository(repository);
-	}
 
 	@Test
 	public void createBinaryTest() throws Exception {

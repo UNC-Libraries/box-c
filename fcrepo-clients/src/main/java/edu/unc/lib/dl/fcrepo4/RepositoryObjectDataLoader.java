@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -25,13 +23,11 @@ import java.util.List;
 
 import org.apache.http.HttpStatus;
 import org.apache.http.client.utils.DateUtils;
-import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -46,6 +42,8 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class RepositoryObjectDataLoader {
 
+	private Repository repository;
+	
 	private FcrepoClient client;
 	
 	/**
@@ -79,19 +77,9 @@ public class RepositoryObjectDataLoader {
 	 */
 	public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
 		URI metadataUri = obj.getMetadataUri();
+		Model model = repository.getObjectModel(metadataUri);
 
-		try (FcrepoResponse response = getClient().get(metadataUri)
-				.accept(TURTLE_MIMETYPE)
-				.perform()) {
-			Model model = ModelFactory.createDefaultModel();
-			model.read(response.getBody(), null, Lang.TURTLE.getName());
-
-			obj.setModel(model);
-		} catch (IOException e) {
-			throw new FedoraException("Failed to read model for " + metadataUri, e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
+		obj.setModel(model);
 
 		return this;
 	}
@@ -143,5 +131,13 @@ public class RepositoryObjectDataLoader {
 
 	public FcrepoClient getClient() {
 		return client;
+	}
+
+	public Repository getRepository() {
+		return repository;
+	}
+
+	public void setRepository(Repository repository) {
+		this.repository = repository;
 	}
 }

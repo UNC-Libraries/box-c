@@ -21,11 +21,11 @@ import com.philvarner.clamavj.ClamScan;
 import com.philvarner.clamavj.ScanResult;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
