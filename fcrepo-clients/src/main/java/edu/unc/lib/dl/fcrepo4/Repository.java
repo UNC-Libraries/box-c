@@ -158,7 +158,7 @@ public class Repository {
 	public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
 
 		try (FcrepoResponse response = getClient().put(eventPid.getRepositoryUri())
-				.body(RDFModelUtil.streamModel(model), "text/turtle")
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
 				.perform()) {
 
 			return new PremisEventObject(PIDs.get(response.getLocation()), this, repositoryObjectDataLoader);
