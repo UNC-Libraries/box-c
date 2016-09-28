@@ -40,6 +40,7 @@
 	</div>
 
 	<div>
+		<img id="loading-icon" class="hidden" src="/static/images/admin/loading_large.gif">
 		<div id="xml_editor"></div>
 	</div>
 </div>
