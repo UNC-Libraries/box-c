@@ -25,25 +25,37 @@ import java.util.regex.Pattern;
  */
 public class RepositoryPathConstants {
 
+	// Repository base paths
+
 	public static final String CONTENT_BASE = "content";
-	
+
 	public static final String DEPOSIT_RECORD_BASE = "deposits";
-	
+
+	// Container identifiers
+
 	public static final String DEPOSIT_MANIFEST_CONTAINER = "manifest";
-	
+
 	public static final String EVENTS_CONTAINER = "event";
-	
+
+	public static final String DATA_FILE_FILESET = "datafs";
+
+	// Special Fedora paths
+
 	public static final String FCR_METADATA = "fcr:metadata";
-	
+
+	// Base path generation and decomposition values 
+
+	// Number of levels of hierarchy to generate when create a hashed path
 	public static final int HASHED_PATH_DEPTH = 4;
-	
+
+	// Number of characters to use per level of hierarchy in a hashed path
 	public static final int HASHED_PATH_SIZE = 2;
-	
+
 	// Regex pattern for decomposing a repository URI for an object or component of an object
 	public static final Pattern repositoryPathPattern = Pattern
 			.compile("/?([a-zA-Z]+)/([a-f0-9]{" + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
 					+ "([a-f0-9\\\\-]+)(/(.+)?)?");
-	
+
 	// Regex pattern for decomposing an identifier for an object or component
 	public static final Pattern identifierPattern = Pattern
 			.compile("(([a-zA-Z]+)/)?(uuid:)?([a-f0-9\\-]+)(/(.+)?)?");

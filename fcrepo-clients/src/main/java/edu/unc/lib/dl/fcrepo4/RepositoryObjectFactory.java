@@ -22,15 +22,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RDFModelUtil;
 
@@ -51,33 +57,72 @@ public class RepositoryObjectFactory {
 	 * properties specified in the provided model
 	 * 
 	 * @param path
+	 *            URI of the full path where this deposit record should be
+	 *            created
 	 * @param model
-	 * @return
+	 *            Model containing additional properties to add to this Deposit
+	 *            Record. Optional.
+	 * @return the URI of the created deposit record
 	 * @throws FedoraException
 	 */
 	public URI createDepositRecord(URI path, Model model) throws FedoraException {
-		URI depositRecordUri;
+		// Add the deposit record type to the object being created
+		model = populateModelTypes(path, model, Arrays.asList(Cdr.DepositRecord));
 
 		try (FcrepoResponse response = getClient().put(path)
 				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
 				.perform()) {
 
-			depositRecordUri = response.getLocation();
+			URI createdUri = response.getLocation();
 
 			// Add the manifests container
-			ldpFactory.createDirectContainer(depositRecordUri, Cdr.hasManifest,
+			ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
 					RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
 
 			// Add the premis event container
-			ldpFactory.createDirectContainer(depositRecordUri, Premis.hasEvent,
-					RepositoryPathConstants.EVENTS_CONTAINER);
+			addEventContainer(createdUri);
+
+			return createdUri;
 		} catch (IOException e) {
 			throw new FedoraException("Unable to create deposit record at " + path, e);
 		} catch (FcrepoOperationFailedException e) {
 			throw ClientFaultResolver.resolve(e);
 		}
+	}
 
-		return depositRecordUri;
+	/**
+	 * Creates a minimal file object structure at the given path with the
+	 * properties specified in the provided model
+	 * 
+	 * @param path
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createFileObject(URI path, Model model) throws FedoraException {
+		// Add types to the object being created
+		model = populateModelTypes(path, model,
+				Arrays.asList(Cdr.FileObject, PcdmModels.Object));
+
+		try (FcrepoResponse response = getClient().put(path)
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+				.perform()) {
+
+			URI createdUri = response.getLocation();
+
+			// Add PREMIS event container
+			addEventContainer(createdUri);
+
+			// Add the manifests container
+			ldpFactory.createDirectFileSet(createdUri,
+					RepositoryPathConstants.DATA_FILE_FILESET);
+
+			return createdUri;
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create deposit record at " + path, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 
 	/**
@@ -126,9 +171,8 @@ public class RepositoryObjectFactory {
 			throw ClientFaultResolver.resolve(e);
 		}
 
-		if (model == null) {
-			return resultUri;
-		}
+		// Add in pcdm:File type to model
+		model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
 
 		// If a model was provided, then add the triples to the new binary's metadata
 		// Turn model into sparql update query
@@ -147,10 +191,42 @@ public class RepositoryObjectFactory {
 		return resultUri;
 	}
 
+	/**
+	 * Adds a set of resource types to the specified resource in the given
+	 * model. If no model is provided, then a new model is created.
+	 * 
+	 * @param model
+	 *            Model to add to. If no model is provided, then one is created.
+	 * @param rescUri
+	 *            URI of the resource types will be added to.
+	 * @param types
+	 *            list of types to add
+	 * @return The model with types added.
+	 */
+	private Model populateModelTypes(URI rescUri, Model model, List<Resource> types) {
+		// Create an empty model if none was provided
+		if (model == null) {
+			model = ModelFactory.createDefaultModel();
+		}
+
+		// Add the required type for DepositRecords
+		Resource mainResc = model.getResource(rescUri.toString());
+		for (Resource type : types) {
+			mainResc.addProperty(RDF.type, type);
+		}
+
+		return model;
+	}
+
+	private URI addEventContainer(URI parentUri) throws FedoraException, IOException {
+		return ldpFactory.createDirectContainer(parentUri, Premis.hasEvent,
+				RepositoryPathConstants.EVENTS_CONTAINER);
+	}
+
 	public URI createPremisEvent(URI objectUri, Model model) throws FedoraException {
 		return null;
 	}
-	
+
 	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}

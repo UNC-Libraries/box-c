@@ -41,7 +41,9 @@ import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.dl.rdf.PcdmUse;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * 
@@ -55,14 +57,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
 	@Test
 	public void createDepositRecordTest() throws Exception {
-		String path = serverAddress + RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString();
+		String path = serverAddress + RepositoryPathConstants.DEPOSIT_RECORD_BASE
+				+ "/" + UUID.randomUUID().toString();
 		URI uri = URI.create(path);
 
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(path);
-		resc.addProperty(RDF.type, Cdr.DepositRecord);
-
-		URI resultUri = factory.createDepositRecord(uri, model);
+		URI resultUri = factory.createDepositRecord(uri, null);
 		assertEquals("Requested URI did not match result", uri, resultUri);
 
 		try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -81,19 +80,20 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
 	@Test
 	public void createBinaryTest() throws Exception {
-		String path = serverAddress + "binary_test";
-		URI uri = URI.create(serverAddress);
+		String binarySlug = "binary_test";
+		String binaryPath = URIUtil.join(serverAddress, binarySlug);
+		URI serverUri = URI.create(serverAddress);
 
 		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(path);
-		resc.addProperty(RDF.type, PcdmModels.Object);
+		Resource resc = model.createResource(binaryPath);
+		resc.addProperty(RDF.type, PcdmUse.OriginalFile);
 
 		String bodyString = "Test text";
 		String filename = "test.txt";
 		String mimetype = "text/plain";
 		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		URI respUri = factory.createBinary(uri, "binary_test", contentStream, filename, mimetype, null, model);
+		URI respUri = factory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, model);
 
 		try (FcrepoResponse resp = client.get(respUri).perform()) {
 			String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
@@ -103,16 +103,41 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 		}
 
 		// Verify that triples were added
-		URI metadataUri = URI.create(path + "/fcr:metadata");
+		URI metadataUri = URI.create(binaryPath + "/fcr:metadata");
 		try (FcrepoResponse resp = client.get(metadataUri).perform()) {
 			Model respModel = RDFModelUtil.createModel(resp.getBody());
-			Resource respResc = respModel.getResource(path);
+			Resource respResc = respModel.getResource(binaryPath);
 
 			assertTrue(respResc.hasProperty(RDF.type, Fcrepo4Repository.Binary));
-			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmUse.OriginalFile));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.File));
 
 			assertEquals(respResc.getProperty(Ebucore.filename).getString(), filename);
 			assertEquals(respResc.getProperty(Ebucore.hasMimeType).getString(), mimetype);
+		}
+	}
+
+	@Test
+	public void createFileObject() throws Exception {
+		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		URI uri = URI.create(objectPath);
+
+		URI resultUri = factory.createFileObject(uri, null);
+		assertEquals("Requested URI did not match result", uri, resultUri);
+
+		try (FcrepoResponse resp = client.get(uri).perform()) {
+			Model respModel = RDFModelUtil.createModel(resp.getBody());
+
+			Resource respResc = respModel.getResource(objectPath);
+			// Verify that the correct RDF types were applied
+			assertTrue(respResc.hasProperty(RDF.type, Cdr.FileObject));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+
+			// Verify that subcontainers were created
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.DATA_FILE_FILESET))));
 		}
 	}
 }
