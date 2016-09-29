@@ -9,17 +9,19 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+import com.hp.hpl.jena.rdf.model.Resource;
+
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.DepositConstants;
-import edu.unc.lib.dl.util.PremisEventLogger;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.PremisEventBuilder;
 
 /**
  * Asserts that all MODS in the package complies with the XSD and controlled vocabularies,
@@ -59,6 +61,9 @@ public class ValidateMODS extends AbstractDepositJob {
 
 	@Override
 	public void runJob() {
+		Resource premisNormalizationEvent;
+		String message;
+		String detailNote;
 		int count = 0;
 		int invalidXSD = 0;
 		int invalidVocab = 0;
@@ -77,57 +82,81 @@ public class ValidateMODS extends AbstractDepositJob {
 			count++;
 			PID p = DepositConstants.getPIDForTagFile(f.getPath());
 			String xsdMessage = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
-			Element xsdEvent = getEventLog().logEvent(Type.VALIDATION, xsdMessage, p, "MD_DESCRIPTIVE");
+			
+			PremisLogger premisLogger = getPremisLogger(p);
+			PremisEventBuilder premisValidationBuilder = premisLogger.buildEvent(Premis.Validation);
+			Resource premisEvent = premisValidationBuilder
+					.addEventDetail(xsdMessage)
+					.addSoftwareAgent("deposit")
+					.create();
+			premisLogger.writeEvent(premisEvent); 
+			
+			PremisEventBuilder premisNormalizationBuilder = premisLogger.buildEvent(Premis.Normalization);
 			try {
 				// XSD validation
 				getModsSchema().newValidator().validate(new StreamSource(f));
-				PremisEventLogger.addDetailedOutcome(
-						xsdEvent,
-						"MODS is valid with respect to the schema (XSD)",
-						null, null);
-
-				appendDepositEvent(p, xsdEvent);
+				premisNormalizationEvent = premisNormalizationBuilder
+						.addEventDetail("MODS is valid with respect to the schema (XSD)")
+						.addSoftwareAgent("deposit")
+						.create();
+				premisLogger.writeEvent(premisNormalizationEvent);
 			} catch (SAXException e) {
 				invalidXSD++;
-				PremisEventLogger.addDetailedOutcome(
-						xsdEvent,
-						"MODS is not valid with respect to the schema (XSD)",
-						e.getMessage(), null);
+				
+				premisNormalizationEvent = premisNormalizationBuilder
+						.addEventDetail("MODS is not valid with respect to the schema (XSD)")
+						.addEventDetailOutcomeNote(e.getMessage())
+						.addSoftwareAgent("deposit")
+						.create();
+				premisLogger.writeEvent(premisNormalizationEvent);
 
-				appendDepositEvent(p, xsdEvent);
 				continue;
 			} catch (IOException unexpected) {
 				throw new Error(unexpected);
 			}
 
 			// Schematron validation
-			String message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
-			Element event = getEventLog().logEvent(Type.VALIDATION, message, p, "MD_DESCRIPTIVE");
+			message = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
+			premisEvent = premisValidationBuilder 
+					.addEventDetail(message)
+					.addSoftwareAgent("deposit")
+					.create();
+			premisLogger.writeEvent(premisEvent);
+
 			Document svrl = this.getSchematronValidator().validate(
 					new StreamSource(f), "vocabularies-mods");
 			if (!this.getSchematronValidator().hasFailedAssertions(svrl)) {
-				PremisEventLogger.addDetailedOutcome(
-								event,
-								"MODS is valid with respect to local conventions (Schematron rules)",
-								"The supplied MODS metadata meets CDR vocabulary requirements.",
-								null);
+				message = "MODS is valid with respect to local conventions (Schematron rules)";
+				detailNote = "The supplied MODS metadata meets CDR vocabulary requirements.";
 			} else {
-				PremisEventLogger.addDetailedOutcome(
-								event,
-								"MODS is not valid with respect to local conventions (Schematron rules)",
-								"The supplied MODS metadata does not meet CDR vocabulary requirements.",
-								svrl.detachRootElement());
+				message = "MODS is not valid with respect to local conventions (Schematron rules).";
+				detailNote = "The supplied MODS metadata does not meet CDR vocabulary requirements.";
 				invalidVocab++;
 			}
-			appendDepositEvent(p, event);
+			premisEvent = premisValidationBuilder 
+					.addEventDetail(message)
+					.addEventDetailOutcomeNote(detailNote)
+					.addSoftwareAgent("deposit")
+					.create();
+			
+			premisLogger.writeEvent(premisEvent);
 			addClicks(1);
 		}
 
-		if((invalidVocab + invalidXSD) > 0) {
-			String message = MessageFormat.format("{0} invalid against XSD; {1} invalid against vocabularies", invalidXSD, invalidVocab);
+		if ((invalidVocab + invalidXSD) > 0) {
+			message = MessageFormat.format("{0} invalid against XSD; {1} invalid against vocabularies", invalidXSD, invalidVocab);
 			failJob("Some descriptive metadata (MODS) did not meet requirements.", message);
 		} else {
-			recordDepositEvent(Type.VALIDATION, "{0} MODS records validated", count);
+			PID depositPID = getDepositPID();
+			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Validation);
+			Resource premisEvent = premisDepositEventBuilder
+					.addEventDetail("{0} MODS records validated", count)
+					.addSoftwareAgent("deposit")
+					.create();
+			
+			premisDepositLogger.writeEvent(premisEvent);
+
 		}
 	}
 

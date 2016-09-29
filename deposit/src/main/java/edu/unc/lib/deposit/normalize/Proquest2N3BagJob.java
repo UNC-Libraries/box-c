@@ -68,10 +68,12 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.PackagingType;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
+import edu.unc.lib.dl.util.PremisEventBuilder;
 import edu.unc.lib.dl.util.ZipFileUtil;
 
 /**
@@ -104,8 +106,9 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		unzipPackages();
 
 		// deposit RDF bag
+		PID depositPID = getDepositPID();
 		Model model = getWritableModel();
-		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
+		Bag depositBag = model.createBag(depositPID.getURI().toString());
 
 		File[] packageDirs = this.getDataDirectory().listFiles();
 		for (File packageDir : packageDirs) {
@@ -115,8 +118,14 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		}
 
 		// Add normalization event to deposit record
-		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}",
-				PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri());
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.Normalization);
+		Resource premisDepositEvent = premisDepositEventBuilder
+				.addEventDetail("Normalized deposit package from {0} to {1}",
+						PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri())
+				.addSoftwareAgent("deposit")
+				.create();
+		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 
 	private void normalizePackage(File packageDir, Model model, Bag depositBag) {

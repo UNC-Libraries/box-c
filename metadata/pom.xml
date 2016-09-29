@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>cdr</artifactId>
-		<version>3.4-SNAPSHOT</version>
+		<version>4.0-SNAPSHOT</version>
 	</parent>
 	<build>
 		<finalName>cdr-metadata</finalName>
@@ -138,6 +138,12 @@
 		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<version>2.13.0</version>
+			<type>pom</type>
 		</dependency>
 	</dependencies>
 </project>

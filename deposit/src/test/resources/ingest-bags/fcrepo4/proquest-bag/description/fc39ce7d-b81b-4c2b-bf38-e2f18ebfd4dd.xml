@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:name type="personal">
+    <mods:namePart type="given">Blandy</mods:namePart>
+    <mods:namePart type="family">Smith</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Author</mods:roleTerm>
+    </mods:role>
+    <mods:affiliation>Philosophy</mods:affiliation>
+  </mods:name>
+  <mods:titleInfo>
+    <mods:title>Perspective on Attachments and Ingests</mods:title>
+  </mods:titleInfo>
+  <mods:abstract>The purpose of this study is to test ingest of a proquest deposit object without any attachments</mods:abstract>
+  <mods:originInfo>
+    <mods:dateIssued encoding="iso8601">2011-01-01</mods:dateIssued>
+    <mods:publisher>University of North Carolina at Chapel Hill Graduate School</mods:publisher>
+    <mods:place>
+      <mods:placeTerm>Chapel Hill, NC</mods:placeTerm>
+    </mods:place>
+  </mods:originInfo>
+  <mods:identifier type="pdf">noattach_unc_1.pdf</mods:identifier>
+  <mods:identifier type="umi">http://dissertations.umi.com/unc:test</mods:identifier>
+  <mods:subject>
+    <mods:topic>Philosophy</mods:topic>
+  </mods:subject>
+  <mods:note displayLabel="Keywords">aesthetics, attachments</mods:note>
+  <mods:language>
+    <mods:languageTerm type="code" authority="iso639-2b">eng</mods:languageTerm>
+  </mods:language>
+  <mods:note displayLabel="Degree Type">Doctor of Philosophy</mods:note>
+  <mods:genre authority="local">Dissertation</mods:genre>
+  <mods:name type="corporate">
+    <mods:NamePart>University of North Carolina at Chapel Hill Graduate School</mods:NamePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Degree grantor</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:note displayLabel="Thesis degree discipline">Philosophy</mods:note>
+  <mods:name type="personal">
+    <mods:namePart type="given">John</mods:namePart>
+    <mods:namePart type="family">Advisor</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Thesis advisor</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:typeOfResource>text</mods:typeOfResource>
+  <mods:physicalDescription>
+    <mods:form authority="marcform">electronic</mods:form>
+    <mods:internetMediaType>application/pdf</mods:internetMediaType>
+    <mods:extent unit="page">805</mods:extent>
+  </mods:physicalDescription>
+  <mods:accessCondition displayLabel="Embargo" type="restrictionOnAccess">This item is restricted from public view for 1 year after publication.</mods:accessCondition>
+</mods:mods>
+

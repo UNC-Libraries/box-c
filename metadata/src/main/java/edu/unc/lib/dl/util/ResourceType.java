@@ -20,23 +20,24 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
-import java.util.Arrays;
 import java.util.List;
 
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public enum ResourceType {
-	Collection(1, Arrays.asList(CONTAINER, COLLECTION)),
-			Aggregate(3, Arrays.asList(CONTAINER, AGGREGATE_WORK)),
-			Folder(2, Arrays.asList(CONTAINER)),
-			File(3,  Arrays.asList(SIMPLE));
+	Collection(1, Cdr.Collection.getURI()),
+			Aggregate(3, Cdr.AggregateWork.getURI()),
+			Folder(2, Cdr.Folder.getURI()),
+			File(3,  Cdr.FileObject.getURI());
 	
 	private int displayOrder;
+	private String uri;
 	private List<Model> contentModels;
 	
-	ResourceType(int displayOrder, List<Model> contentModels) {
+	ResourceType(int displayOrder, String uri) {
 		this.displayOrder = displayOrder;
-		this.contentModels = contentModels;
+		this.uri = uri;
 	}
 	
 	public int getDisplayOrder(){
@@ -49,6 +50,15 @@ public enum ResourceType {
 	
 	public List<Model> getContentModels() {
 		return contentModels;
+	}
+	
+	public static ResourceType getResourceTypeByUri(String uri) {
+		for (ResourceType type : values()) {
+			if (type.uri.equals(uri)) {
+				return type;
+			}
+		}
+		return null;
 	}
 
 	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
