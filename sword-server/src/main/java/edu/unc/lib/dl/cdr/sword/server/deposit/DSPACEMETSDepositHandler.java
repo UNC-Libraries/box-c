@@ -71,7 +71,7 @@ public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 
 		// METS specific fields
 		Map<String, String> status = new HashMap<String, String>();
-		status.put(DepositField.metsProfile.name(), scanner.getProfile());
+		status.put(DepositField.packageProfile.name(), scanner.getProfile());
 		status.put(DepositField.metsType.name(), scanner.getType());
 		status.put(DepositField.createTime.name(), scanner.getCreateDate());
 		status.put(DepositField.intSenderDescription.name(), StringUtils.join(scanner.getNames(), ','));
