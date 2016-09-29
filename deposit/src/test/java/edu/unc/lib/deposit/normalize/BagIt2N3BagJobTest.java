@@ -31,17 +31,22 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -56,8 +61,10 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.Stages;
+import gov.loc.repository.bagit.BagFactory;
 
 public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
@@ -84,13 +91,14 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
-
 		job.init();
 	}
 
 	@Test
 	public void testConversion() throws Exception {
 		status.put(DepositField.sourcePath.name(), "src/test/resources/paths/valid-bag");
+		//BagFactory bagFactory = new BagFactory(); 
+		//gov.loc.repository.bagit.Bag bagitBag = bagFactory.createBag(new File("src/test/resources/paths/valid-bag"));
 		status.put(DepositField.fileName.name(), "Test File");
 		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
 		
@@ -135,6 +143,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 			Resource file = (Resource) childIt.next();
 			children.put(file.getProperty(dprop(model, label)).getString(), file);
 		}
+		
+		ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
+		verify(depositStatusFactory, times(2)).addManifest(anyString(), arg.capture());
+		List<String> capturedFilenames = Arrays.asList("bagit.txt", "manifest-md5.txt");
+		assertEquals("bagit.txt", capturedFilenames.get(0));
+		assertEquals("manifest-md5.txt", capturedFilenames.get(1));
 		
 		Resource file = children.get("lorem.txt");
 		assertEquals("Content model was not set", SIMPLE.toString(),

@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -194,12 +195,12 @@ public abstract class AbstractDepositJob implements Runnable {
 	 *
 	 * @return
 	 */
-	public ArrayList<File> getManifestFiles() {
-		final Map<String,String> manifestRecords = getDepositStatus();
-		ArrayList<File> manifestFiles = new ArrayList<File>();
-		for (Entry<String,String> record : manifestRecords.entrySet()) {
-			manifestFiles.add(new File(record.getValue()));
-		}
+	public List<File> getManifestFiles() {
+		List<String> filenames = depositStatusFactory.getManifestFilenames(getDepositUUID());
+		List<File> manifestFiles = new ArrayList<File>();
+		for (String filename : filenames) {
+			manifestFiles.add(new File(filename));
+			}
 		return manifestFiles;
 	}
 

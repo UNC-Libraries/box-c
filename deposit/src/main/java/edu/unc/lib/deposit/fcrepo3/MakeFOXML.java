@@ -345,7 +345,7 @@ public class MakeFOXML extends AbstractDepositJob {
 
 		// add manifest DS
 		String dsLabel = Datastream.DATA_MANIFEST.getLabel();
-		ArrayList<File> manifestFiles = getManifestFiles();
+		List<File> manifestFiles = getManifestFiles();
 		if (!manifestFiles.isEmpty()) {
 			int i = 0;
 			Element el ;
