@@ -21,7 +21,7 @@ public class RedisWorkerConstants {
 		uuid, state, actionRequest, contactName, depositorName, intSenderIdentifier, intSenderDescription,
 		fileName, resubmitDirName, resubmitFileName, isResubmit, depositMethod, containerId, payLoadOctets,
 		createTime, startTime, endTime, ingestedOctets, ingestedObjects, directory, lock, submitTime,
-		depositorEmail, packagingType, metsProfile, metsType, permissionGroups, depositMd5, depositSlug,
+		depositorEmail, packagingType, packageProfile, metsType, permissionGroups, depositMd5, depositSlug,
 		errorMessage, stackTrace, excludeDepositRecord, publishObjects, manifestURI,
 		fileMimetype, priority, sourcePath, extras;
 	}

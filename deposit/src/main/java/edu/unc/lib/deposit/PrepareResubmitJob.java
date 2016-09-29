@@ -1,10 +1,8 @@
 package edu.unc.lib.deposit;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,8 +10,6 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.PremisEventLogger.Type;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class PrepareResubmitJob extends AbstractDepositJob {
 	

@@ -42,9 +42,13 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.staging.StagingException;
 
 /**
@@ -112,11 +116,20 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				String fullPath = file.toString();
 				
 				try {
+					PID itemPID = new PID(fileResource.getURI());
 					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+					
+					PremisLogger premisDepositLogger = getPremisLogger(itemPID);
+					Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+							.addEventDetail("Checksum for file is {0}", checksum)
+							.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+							.create();
+					
+					premisDepositLogger.writeEvent(premisDepositEvent);
 				} catch (IOException e) {
-					failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
+					failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
 				}
-				
+
 				model.add(fileResource, hasModelProp, simpleResource);
 				model.add(fileResource, md5sumProp, checksum);
 				
