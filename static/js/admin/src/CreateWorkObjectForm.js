@@ -35,7 +35,7 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 			var host = formUrl[2];
 			var collectionId = iframe.attr("title");
 
-			iframe.attr("src", protocol + "//" + host + "/" + $(this).val() + "/" + collectionId + "/adminOnly");
+			iframe.attr("src", protocol + "//" + host + "/" + $(this).val() + "?collection=" + collectionId + "&adminOnly=true");
 
 			$(".admin-forms").addClass("in-admin-iframe");
 			ajaxIcon.removeClass("in-admin-iframe");
