@@ -19,3 +19,4 @@ static/css/cdr_admin.css
 static/js/cdr-access.js
 static/css/cdr_access.css
 *.log
+dump.rdb

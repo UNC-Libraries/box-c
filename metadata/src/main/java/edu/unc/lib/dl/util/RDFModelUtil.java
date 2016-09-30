@@ -28,6 +28,7 @@ import org.apache.jena.riot.RDFFormat;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -126,6 +127,27 @@ public class RDFModelUtil {
 
 		query.append("}\nWHERE {}");
 
+		return query.toString();
+	}
+	
+	public static String createSparqlInsert(String subjUri, Property property, Resource object) {
+		return createSparqlInsert(subjUri, property, "<" + object.getURI() + ">");
+	}
+
+	public static String createSparqlInsert(String subjUri, Property property, String object) {
+		StringBuilder query = new StringBuilder();
+		query.append("INSERT {\n");
+
+		if (subjUri == null) {
+			query.append(" <>");
+		} else {
+			query.append(" <").append(subjUri).append('>');
+		}
+		
+		query.append(" <").append(property.getURI()).append("> ")
+			.append(object).append(" .\n")
+			.append("}\nWHERE {}");
+		
 		return query.toString();
 	}
 }

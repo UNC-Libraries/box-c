@@ -15,9 +15,12 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -25,6 +28,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import edu.unc.lib.dl.fedora.PID;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
@@ -37,10 +42,23 @@ public class AbstractFedoraIT {
 	protected FcrepoClient client;
 	
 	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(serverAddress + "/" + RepositoryPathConstants.CONTENT_BASE);
+		URI baseUri = URI.create(serverAddress + "/" + name);
 		// Create a parent object to put the binary into
 		try (FcrepoResponse response = client.put(baseUri).perform()) {
 			return response.getLocation();
+		}
+	}
+	
+	/**
+	 * Asserts that the object identified by pid has been created in Fedora.  Does not work for binary resources
+	 * 
+	 * @param pid
+	 * @throws FcrepoOperationFailedException 
+	 * @throws IOException 
+	 */
+	protected void assertObjectExists(PID pid) throws IOException, FcrepoOperationFailedException {
+		try (FcrepoResponse response = client.head(pid.getRepositoryUri()).perform()) {
+			assertEquals(HttpStatus.SC_OK, response.getStatusCode());
 		}
 	}
 }

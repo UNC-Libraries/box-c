@@ -17,9 +17,11 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.apache.jena.riot.Lang;
@@ -29,6 +31,8 @@ import org.fcrepo.client.FcrepoResponse;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -95,6 +99,34 @@ public class Repository {
 		
 		DepositRecord depositRecord = new DepositRecord(newPid, this, repositoryObjectDataLoader);
 		return depositRecord;
+	}
+
+	/**
+	 * Retrieves an existing FileObject
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FileObject getFileObject(PID pid) throws FedoraException {
+		FileObject fileObject = new FileObject(pid, this, repositoryObjectDataLoader);
+		
+		return fileObject.validateType();
+	}
+
+	/**
+	 * Creates a new file object with the given PID.
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FileObject createFileObject(PID pid, Model model) throws FedoraException {
+		URI depositRecordUri = repositoryFactory.createFileObject(pid.getRepositoryUri(), model);
+		PID newPid = PIDs.get(depositRecordUri);
+
+		return new FileObject(newPid, this, repositoryObjectDataLoader);
 	}
 
 	/**
@@ -213,6 +245,27 @@ public class Repository {
 		}
 	}
 
+	/**
+	 * 
+	 * @param subject
+	 * @param property
+	 * @param object
+	 */
+	public void createRelationship(PID subject, Property property, Resource object) {
+		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
+		
+		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
+				.body(sparqlStream)
+				.perform()) {
+		} catch (IOException e) {
+			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
+	
 	public String getVocabulariesBase() {
 		return vocabulariesBase;
 	}

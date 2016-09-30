@@ -46,6 +46,14 @@ public class LdpContainerFactory {
 			" ldp:membershipResource <.> ;\n" +
 			" ldp:hasMemberRelation <%s> .";
 	
+	private static final String DIRECT_FILESET_TTL = 
+			"@prefix ldp: <http://www.w3.org/ns/ldp#>\n" +
+			"@prefix pcdm: <http://pcdm.org/models#>\n" +
+			"<> a ldp:DirectContainer ;\n" +
+			" a pcdm:FileSet ;\n" +
+			" ldp:membershipResource <.> ;\n" +
+			" ldp:hasMemberRelation pcdm:hasFile .";
+	
 	private static final String INDIRECT_CONTAINER_TTL =
 			"@prefix ldp: <http://www.w3.org/ns/ldp#>\n" +
 			"@prefix ore: <http://www.openarchives.org/ore/terms/>\n" +
@@ -60,11 +68,16 @@ public class LdpContainerFactory {
 			" ore:proxyIn <%s> .";
 
 	/**
-	 * Creates a LDP direct container as the child of the given membership resource for the supplied member relation.
+	 * Creates a LDP direct container as the child of the given membership
+	 * resource for the supplied member relation.
 	 * 
-	 * @param membershipResource URI of the resource that will contain this direct container and receive the member relations
-	 * @param memberRelation relation that will be added for each child of this container
-	 * @param name suggested name for the direct container resource
+	 * @param membershipResource
+	 *            URI of the resource that will contain this direct container
+	 *            and receive the member relations
+	 * @param memberRelation
+	 *            relation that will be added for each child of this container
+	 * @param name
+	 *            suggested name for the direct container resource
 	 * @return the path of the newly created direct container
 	 * @throws FedoraException
 	 * @throws IOException
@@ -74,13 +87,35 @@ public class LdpContainerFactory {
 		
 		return createLdpContainer(membershipResource, relations, name);
 	}
+
+	/**
+	 * Creates a PCDM FileSet implemented as a LDP direct container
+	 * 
+	 * @param membershipResource
+	 *            URI of the resource that will contain this direct container
+	 *            and receive pcdm:hasFile relations
+	 * @param name
+	 *            suggested name for the direct container resource
+	 * @returnthe path of the newly created direct container
+	 * @throws FedoraException
+	 * @throws IOException
+	 */
+	public URI createDirectFileSet(URI membershipResource, String name) throws FedoraException, IOException {
+		return createLdpContainer(membershipResource, DIRECT_FILESET_TTL, name);
+	}
 	
 	/**
-	 * Creates an LDP indirect container as the child of the given membership resource
+	 * Creates an LDP indirect container as the child of the given membership
+	 * resource
 	 * 
-	 * @param membershipResource URI of the resource that will contain this indirect container and receive the member relations
-	 * @param memberRelation relation that will be added for each child proxy of this container
-	 * @param name suggested name for the indirect container resource
+	 * @param membershipResource
+	 *            URI of the resource that will contain this indirect container
+	 *            and receive the member relations
+	 * @param memberRelation
+	 *            relation that will be added for each child proxy of this
+	 *            container
+	 * @param name
+	 *            suggested name for the indirect container resource
 	 * @return the path of the newly created indirect container
 	 * @throws FedoraException
 	 * @throws IOException
