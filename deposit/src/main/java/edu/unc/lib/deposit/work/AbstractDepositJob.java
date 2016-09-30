@@ -195,13 +195,9 @@ public abstract class AbstractDepositJob implements Runnable {
 	 *
 	 * @return
 	 */
-	public List<File> getManifestFiles() {
-		List<String> filenames = depositStatusFactory.getManifestFilenames(getDepositUUID());
-		List<File> manifestFiles = new ArrayList<File>();
-		for (String filename : filenames) {
-			manifestFiles.add(new File(filename));
-			}
-		return manifestFiles;
+	public List<String> getManifestFileURIs() {
+		List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
+		return filePaths;
 	}
 
 	public void recordDepositEvent(Type type, String messageformat, Object... args) {

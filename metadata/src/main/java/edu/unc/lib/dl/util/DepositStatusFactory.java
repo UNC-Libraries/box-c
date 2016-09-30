@@ -61,7 +61,7 @@ public class DepositStatusFactory {
 		
 	}
 	
-	public List<String> getManifestFilenames(String depositUUID) {
+	public List<String> getManifestURIs(String depositUUID) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			return jedis.lrange(DEPOSIT_MANIFEST_PREFIX+depositUUID, 0, -1);
 		}
