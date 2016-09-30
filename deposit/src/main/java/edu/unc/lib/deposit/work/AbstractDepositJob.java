@@ -188,7 +188,7 @@ public abstract class AbstractDepositJob implements Runnable {
 	}
 
 	/**
-	 * Returns the files where the manifest for this deposit is stored. If no manifest was set, then null is returned
+	 * Returns the manifest URIs for this deposit, or an empty list in case there are no manifests.
 	 *
 	 * @return
 	 */

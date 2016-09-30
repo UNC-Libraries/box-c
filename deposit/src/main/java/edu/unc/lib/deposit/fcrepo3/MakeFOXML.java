@@ -347,12 +347,12 @@ public class MakeFOXML extends AbstractDepositJob {
 		List<String> filePaths = getManifestFileURIs();
 		if (!filePaths.isEmpty()) {
 			int i = 0;
-			Element el ;
+			Element el;
 			for (String path : filePaths) {
 				el	= FOXMLJDOMUtil.makeLocatorDatastream(Datastream.DATA_MANIFEST.getName() + i++,
 						"M", path, "text/xml", "URL", dsLabel, false, null);
 				foxml.getRootElement().addContent(el);
-				log.info("Manifest files have been added to foxml");
+				log.info("Manifest file {} has been added to foxml", path);
 			} 
 		} else {
 			log.info("No manifest files were found for the deposit; not a bag/not METS");
