@@ -31,17 +31,22 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -84,7 +89,6 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
-
 		job.init();
 	}
 
@@ -135,6 +139,11 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 			Resource file = (Resource) childIt.next();
 			children.put(file.getProperty(dprop(model, label)).getString(), file);
 		}
+		
+		ArgumentCaptor<String> filePathCaptor = ArgumentCaptor.forClass(String.class);
+		verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
+		List<String> capturedFilePaths = Arrays.asList("tag:/valid-bag/bagit.txt", "tag:/valid-bag/manifest-md5.txt");
+		assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
 		
 		Resource file = children.get("lorem.txt");
 		assertEquals("Content model was not set", SIMPLE.toString(),
