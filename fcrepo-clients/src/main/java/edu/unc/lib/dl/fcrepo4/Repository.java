@@ -102,6 +102,34 @@ public class Repository {
 	}
 
 	/**
+	 * Retrieves an existing FileObject
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FileObject getFileObject(PID pid) throws FedoraException {
+		FileObject fileObject = new FileObject(pid, this, repositoryObjectDataLoader);
+		
+		return fileObject.validateType();
+	}
+
+	/**
+	 * Creates a new file object with the given PID.
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FileObject createFileObject(PID pid, Model model) throws FedoraException {
+		URI depositRecordUri = repositoryFactory.createFileObject(pid.getRepositoryUri(), model);
+		PID newPid = PIDs.get(depositRecordUri);
+
+		return new FileObject(newPid, this, repositoryObjectDataLoader);
+	}
+
+	/**
 	 * Retrieves the BinaryObject identified by PID
 	 * 
 	 * @param pid

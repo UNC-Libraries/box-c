@@ -39,6 +39,10 @@ public class RepositoryPathConstants {
 
 	public static final String DATA_FILE_FILESET = "datafs";
 
+	// Named objects
+	
+	public static final String ORIGINAL_FILE = "original_file";
+	
 	// Special Fedora paths
 
 	public static final String FCR_METADATA = "fcr:metadata";
