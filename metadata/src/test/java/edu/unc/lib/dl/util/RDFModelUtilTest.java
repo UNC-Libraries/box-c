@@ -30,6 +30,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
@@ -76,6 +77,23 @@ public class RDFModelUtilTest {
 		// Make sure the hash uri got added too
 		Resource destHash = destModel.getResource(hashUri);
 		assertTrue(destHash.hasProperty(Premis.hasEventType, Premis.Capture));
+	}
 
+	@Test
+	public void createSparqlSingleResourceInsertTest() {
+		String rescUri = "http://example.com/resource";
+		
+		String query = RDFModelUtil.createSparqlInsert(rescUri, RDF.type, PcdmModels.Object);
+		
+		// Make a model that the query will be applied to
+		Model destModel = ModelFactory.createDefaultModel();
+		Resource destResc = destModel.createResource(rescUri);
+		destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
+		
+		// Execute the query on the destination model to see that it works
+		UpdateAction.parseExecute(query, destModel);
+		
+		assertTrue(destResc.hasProperty(RDF.type, Fcrepo4Repository.Container));
+		assertTrue(destResc.hasProperty(RDF.type, PcdmModels.Object));
 	}
 }
