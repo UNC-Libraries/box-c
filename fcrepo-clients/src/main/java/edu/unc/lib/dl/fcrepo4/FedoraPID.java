@@ -127,7 +127,10 @@ public class FedoraPID extends PID {
 	public String getPid() {
 		// Special case for content paths for legacy purposes
 		if (RepositoryPathConstants.CONTENT_BASE.equals(qualifier)) {
-			return "uuid:" + id;
+			if (componentPath == null) {
+				return "uuid:" + id;
+			}
+			return "uuid:" + id + "/" + componentPath;
 		}
 		return getQualifiedId();
 	}
