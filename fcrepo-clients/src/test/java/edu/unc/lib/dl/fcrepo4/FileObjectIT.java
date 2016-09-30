@@ -109,7 +109,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 		// Retrieve the binary objects directly
 		List<BinaryObject> binaries = fileObj.getBinaryObjects();
 
-		assertEquals("Incorrect number of binaries add", 3, binaries.size());
+		assertEquals("Incorrect number of binaries added", 3, binaries.size());
 
 		// Find each of the created binaries by pid
 		BinaryObject rObj1 = findBinaryByPid(binaries, bObj1.getPid());
