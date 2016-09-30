@@ -61,10 +61,8 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.Stages;
-import gov.loc.repository.bagit.BagFactory;
 
 public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
