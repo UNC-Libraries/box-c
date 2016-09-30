@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.xerces.dom3.as.ASObjectList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
