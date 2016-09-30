@@ -118,7 +118,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 	}
 
 	@Test
-	public void createFileObject() throws Exception {
+	public void createFileObjectTest() throws Exception {
 		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
 		URI uri = URI.create(objectPath);
 
@@ -138,6 +138,28 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 					createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
 			assertTrue(respResc.hasProperty(Ldp.contains,
 					createResource(URIUtil.join(objectPath, RepositoryPathConstants.DATA_FILE_FILESET))));
+		}
+	}
+
+	@Test
+	public void createWorkObjectTest() throws Exception {
+		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		URI uri = URI.create(objectPath);
+
+		URI resultUri = factory.createWorkObject(uri, null);
+		assertEquals("Requested URI did not match result", uri, resultUri);
+
+		try (FcrepoResponse resp = client.get(uri).perform()) {
+			Model respModel = RDFModelUtil.createModel(resp.getBody());
+
+			Resource respResc = respModel.getResource(objectPath);
+			assertTrue(respResc.hasProperty(RDF.type, Cdr.Work));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
 		}
 	}
 }

@@ -39,6 +39,8 @@ public class RepositoryPathConstants {
 
 	public static final String DATA_FILE_FILESET = "datafs";
 
+	public static final String MEMBER_CONTAINER = "member";
+
 	// Named objects
 	
 	public static final String ORIGINAL_FILE = "original_file";

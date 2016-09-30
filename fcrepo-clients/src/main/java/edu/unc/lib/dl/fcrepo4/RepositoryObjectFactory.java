@@ -91,6 +91,55 @@ public class RepositoryObjectFactory {
 	}
 
 	/**
+	 * Creates a work object structure at the given path with the properties
+	 * specified.
+	 * 
+	 * @param path
+	 *            URI of the full path where the work will be created
+	 * @param model
+	 *            Model containing additional properties. Optional.
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createWorkObject(URI path, Model model) throws FedoraException {
+		// Add types to the object being created
+		model = populateModelTypes(path, model,
+				Arrays.asList(Cdr.Work, PcdmModels.Object));
+
+		return createContentContainerObject(path, model);
+	}
+
+	/**
+	 * Helper to create a content object that can contain members and events
+	 * 
+	 * @param path
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	private URI createContentContainerObject(URI path, Model model) throws FedoraException {
+		try (FcrepoResponse response = getClient().put(path)
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+				.perform()) {
+
+			URI createdUri = response.getLocation();
+
+			// Add PREMIS event container
+			addEventContainer(createdUri);
+
+			// Add the container for member objects
+			ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
+					RepositoryPathConstants.MEMBER_CONTAINER);
+
+			return createdUri;
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create deposit record at " + path, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
+
+	/**
 	 * Creates a minimal file object structure at the given path with the
 	 * properties specified in the provided model
 	 * 
