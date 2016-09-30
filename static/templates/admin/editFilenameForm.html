@@ -1,0 +1,18 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="edit_filename_form" method="post" action="editlabel/<%= pid %>" enctype="multipart/form-data" target="upload_file_container" class="edit_form edit_filename_form">
+	
+	<div class="form_field">
+		<label>Filename</label>
+		<input name="label" size="40" value="<%= metadata.label %>"></input>
+	</div>
+	
+	<div class="update_field">
+		<input type="submit" id="edit_filename_submit_button" class="update_button" value="Save Changes" />
+	</div>
+	
+	<div class="errors">
+		<h3>Errors</h3>
+		<div class="error_stack">
+		</div>
+	</div>
+</form>

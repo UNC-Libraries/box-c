@@ -28,6 +28,9 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 	
 	var pid = window.location.pathname;
 	pid = pid.substring(pid.lastIndexOf("/") + 1);
+
+	var loadingIcon = $("#loading-icon");
+	loadingIcon.removeClass("hidden");
 	
 	$.getJSON("describeInfo/" + pid, function(data) {
 		var resultObject = data.resultObject;
@@ -211,7 +214,9 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		if (vocabularyConfigs) {
 			editorOptions.vocabularyConfigs = vocabularyConfigs;
 		}
-	
+
+		loadingIcon.addClass("hidden");
+
 		$("#xml_editor").xmlEditor(editorOptions);
 		
 		$(window).resize();

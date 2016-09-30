@@ -270,6 +270,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		sb.append("dateAdded: " + dateAdded + "\n");
 		sb.append("dateUpdated: " + dateUpdated + "\n");
 		sb.append("timestamp: " + timestamp + "\n");
+		sb.append("contentStatus: " + contentStatus + "\n");
 		return sb.toString();
 	}
 

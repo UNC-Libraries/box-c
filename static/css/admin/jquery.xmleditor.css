@@ -849,3 +849,9 @@
 body + .template-form {
 	display: none;
 }
+
+/* Page loading icon */
+
+#loading-icon {
+	margin-left: 45%;
+}
