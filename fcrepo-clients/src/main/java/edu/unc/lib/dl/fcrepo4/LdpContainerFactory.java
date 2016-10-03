@@ -141,14 +141,13 @@ public class LdpContainerFactory {
 	/**
 	 * Creates a proxy for an object within an indirect container
 	 * 
-	 * @param container the indirect container to add the proxy to
-	 * @param proxyFor the URI of the resource which will be the subject of the generated relationship
-	 * @param proxyIn the URI of the resource which will be the object of the generated relationship
+	 * @param container the indirect container where the proxy will be created
+	 * @param proxyIn the URI of the resource which will be the subject of the generated relationship
+	 * @param proxyFor the URI of the resource which will be the object of the generated relationship
 	 * @return the URI of the created proxy
 	 * @throws FedoraException
-	 * @throws IOException
 	 */
-	public URI createIndirectProxy(URI container, URI proxyFor, URI proxyIn) throws FedoraException, IOException {
+	public URI createIndirectProxy(URI container, URI proxyIn, URI proxyFor) throws FedoraException {
 		String relations = String.format(INDIRECT_PROXY_TTL, proxyFor.toString(), proxyIn.toString());
 		
 		try (FcrepoResponse response = client.post(container)
@@ -158,6 +157,8 @@ public class LdpContainerFactory {
 			return response.getLocation();
 		} catch (FcrepoOperationFailedException e) {
 			throw ClientFaultResolver.resolve(e);
+		} catch (IOException e) {
+			throw new FedoraException("Unable to close response stream", e);
 		}
 	}
 

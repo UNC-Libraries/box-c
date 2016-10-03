@@ -40,7 +40,7 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 
 	@Autowired
 	private LdpContainerFactory factory;
-	
+
 	@Test
 	public void createDirectContainerTest() throws Exception {
 		URI objUri;
@@ -48,26 +48,26 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 		try (FcrepoResponse resp = client.post(URI.create(serverAddress)).perform()) {
 			objUri = resp.getLocation();
 		}
-		
+
 		URI childUri;
 		URI container = factory.createDirectContainer(objUri, PcdmModels.hasMember, "files");
 		try (FcrepoResponse resp = client.post(container).perform()) {
 			childUri = resp.getLocation();
 		}
-		
+
 		Model model;
 		try (FcrepoResponse resp = client.get(objUri).perform()) {
 			model = RDFModelUtil.createModel(resp.getBody());
 		}
-		
+
 		Resource objResc = model.getResource(objUri.toString());
 		Statement member = objResc.getProperty(PcdmModels.hasMember);
-		
+
 		assertNotNull("No hasMember relationship", member);
 		assertEquals("hasMember relation references the wrong object",
 				childUri.toString(), member.getResource().toString());
 	}
-	
+
 	@Test
 	public void createIndirectContainerTest() throws Exception {
 		URI objUri;
@@ -77,24 +77,24 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 		}
 		// Create the indirect container for the base object
 		URI container = factory.createIndirectContainer(objUri, PcdmModels.hasRelatedObject, "related");
-		
+
 		// Create another object, which will later be added the base object
 		URI childUri;
 		try (FcrepoResponse resp = client.post(URI.create(serverAddress)).perform()) {
 			childUri = resp.getLocation();
 		}
-		
+
 		// Add the proxy to the container
-		factory.createIndirectProxy(container, childUri, objUri);
-		
+		factory.createIndirectProxy(container, objUri, childUri);
+
 		Model model;
 		try (FcrepoResponse resp = client.get(objUri).perform()) {
 			model = RDFModelUtil.createModel(resp.getBody());
 		}
-		
+
 		Resource objResc = model.getResource(objUri.toString());
 		Statement member = objResc.getProperty(PcdmModels.hasRelatedObject);
-		
+
 		assertNotNull("No hasRelatedObject relationship", member);
 		assertEquals("hasRelatedObject relation references the wrong object",
 				childUri.toString(), member.getResource().toString());
