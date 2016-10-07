@@ -97,7 +97,7 @@ public class IngestDepositRecordJobTest {
 		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
 		when(repository.createDepositRecord(any(PID.class), any(Model.class)))
 				.thenReturn(depositRecord);
-		when(depositRecord.addPremisEvents(any(Model.class))).thenReturn(depositRecord);
+		//when(depositRecord.addPremisEvents(any(Model.class))).thenReturn(depositRecord);
 	}
 
 	private void initializeJob(String depositUUID, String packagePath, String n3File) throws Exception {
@@ -144,7 +144,7 @@ public class IngestDepositRecordJobTest {
 		assertEquals("Deposit record for proquest-bag", depositResc.getProperty(DcElements.title).getString());
 		assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
 
-		verify(depositRecord).addPremisEvents(any(Model.class));
+		//verify(depositRecord).addPremisEvents(any(Model.class));
 	}
 
 	@Test

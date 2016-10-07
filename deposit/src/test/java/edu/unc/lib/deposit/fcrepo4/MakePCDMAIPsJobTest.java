@@ -87,7 +87,7 @@ public class MakePCDMAIPsJobTest {
 		job.closeModel();
 		
 		depositUri = "http://example.com/fcrepo/deposits/" + depositUUID;
-		when(repository.getDepositRecordPath(anyString())).thenReturn(depositUri);
+		//when(repository.getDepositRecordPath(anyString())).thenReturn(depositUri);
 
 		aipsDir = new File(job.getDepositDirectory(), DepositConstants.AIPS_DIR);
 	}
@@ -104,7 +104,7 @@ public class MakePCDMAIPsJobTest {
 		String primaryPath = aggrObjPid.getUUID() + "/members/" + primaryObjPid.getUUID();
 		
 		ContentObject aggrObject = mock(ContentObject.class);
-		when(aggrObject.getChildPath(eq(primaryObjPid))).thenReturn(primaryPath);
+		//when(aggrObject.getChildPath(eq(primaryObjPid))).thenReturn(primaryPath);
 		when(repository.getContentObject(eq(aggrObjPid))).thenReturn(aggrObject);
 
 		job.run();

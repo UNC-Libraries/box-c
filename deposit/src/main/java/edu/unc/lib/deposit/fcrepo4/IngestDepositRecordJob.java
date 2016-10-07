@@ -79,7 +79,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		DepositRecord depositRecord;
 		try {
 			depositRecord = repository.createDepositRecord(getDepositPID(), aipModel)
-					.addPremisEvents(premisDepositEvent.getModel());
+					.addPremisEvents(premisDepositLogger.getEvents());
 
 			// Add manifest files
 			StmtIterator manifestIt = deposit.listProperties(CdrDeposit.hasManifest);

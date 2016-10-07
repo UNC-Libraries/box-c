@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -81,7 +82,7 @@ public class UpdateDocTransformer {
 	public void init() throws Exception {
 		ApplicationContext ctx = new ClassPathXmlApplicationContext();
 		Resource res = ctx.getResource("classpath:/transform/" + xslName);
-		
+		((Closeable)ctx).close();
 		Source transformSource = new StreamSource(res.getInputStream());
 		TransformerFactory factory = TransformerFactory.newInstance();
 		factory.setURIResolver(new URIResolver() {
