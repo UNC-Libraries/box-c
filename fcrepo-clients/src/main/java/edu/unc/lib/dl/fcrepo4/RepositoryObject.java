@@ -88,12 +88,12 @@ public abstract class RepositoryObject {
 	}
 
 	/**
-	 * Set the model
+	 * Store the relationships and properties belonging to this object
 	 * 
 	 * @param model
 	 * @return
 	 */
-	public void setModel(Model model) {
+	public void storeModel(Model model) {
 		this.model = model;
 		// Clear the cached types list
 		this.types = null;

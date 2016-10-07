@@ -100,7 +100,7 @@ public class RepositoryObjectDataLoader {
 			model.read(response.getBody(), null, Lang.TURTLE.getName());
 
 			// Store the fresh model
-			obj.setModel(model);
+			obj.storeModel(model);
 
 			// Store updated modification info to track if the object changes 
 			obj.setEtag(getETag(response));

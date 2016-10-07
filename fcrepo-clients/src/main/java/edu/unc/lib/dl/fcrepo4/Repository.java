@@ -175,7 +175,7 @@ public class Repository {
 
 	protected WorkObject getWorkObject(PID pid, Model model, String etag) {
 		WorkObject workObj = new WorkObject(pid, this, repositoryObjectDataLoader);
-		workObj.setModel(model);
+		workObj.storeModel(model);
 		workObj.setEtag(etag);
 
 		return workObj.validateType();
@@ -220,7 +220,7 @@ public class Repository {
 
 	protected FileObject getFileObject(PID pid, Model model, String etag) throws FedoraException {
 		FileObject fileObject = new FileObject(pid, this, repositoryObjectDataLoader);
-		fileObject.setModel(model);
+		fileObject.storeModel(model);
 		fileObject.setEtag(etag);
 
 		return fileObject.validateType();
