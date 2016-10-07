@@ -16,10 +16,17 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
+ * Represents a generic repository object within the main content tree.
  * 
  * @author bbpennel
  *
@@ -28,18 +35,35 @@ public abstract class ContentObject extends RepositoryObject {
 
 	protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
-		// TODO Auto-generated constructor stub
 	}
 
 	public void addChild(ContentObject child) {
 		// TODO
 	}
-	
+
 	public BinaryObject addDescription(InputStream contentStream) {
 		return null;
 	}
-	
+
 	public BinaryObject getDescription() {
 		return null;
+	}
+
+	/**
+	 * Retrieve a list of member content objects for this object.
+	 * 
+	 * @return
+	 */
+	public List<ContentObject> getMembers() {
+		List<ContentObject> members = new ArrayList<>();
+		Resource resc = getResource();
+
+		for (StmtIterator it = resc.listProperties(PcdmModels.hasMember); it.hasNext(); ) {
+			String memberUri = it.nextStatement().getResource().toString();
+
+			members.add(repository.getContentObject(PIDs.get(memberUri)));
+		}
+
+		return members;
 	}
 }

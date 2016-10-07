@@ -39,6 +39,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Creates objects in the repository matching specific object profile types.
@@ -270,6 +271,21 @@ public class RepositoryObjectFactory {
 	private URI addEventContainer(URI parentUri) throws FedoraException, IOException {
 		return ldpFactory.createDirectContainer(parentUri, Premis.hasEvent,
 				RepositoryPathConstants.EVENTS_CONTAINER);
+	}
+
+	/**
+	 * Creates a link between a parent object and a member object.
+	 * 
+	 * @param parentUri
+	 * @param memberUri
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createMemberLink(URI parentUri, URI memberUri) throws FedoraException {
+		String memberContainer = URIUtil.join(parentUri, RepositoryPathConstants.MEMBER_CONTAINER);
+
+		return ldpFactory.createIndirectProxy(URI.create(memberContainer),
+				parentUri, memberUri);
 	}
 
 	public URI createPremisEvent(URI objectUri, Model model) throws FedoraException {
