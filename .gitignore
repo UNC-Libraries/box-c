@@ -13,6 +13,7 @@
 /ssh_config
 /static.tar.gz
 /puppet.tar.gz
+*/fcrepo4-data
 .idea
 static/js/cdr-admin.js
 static/css/cdr_admin.css
