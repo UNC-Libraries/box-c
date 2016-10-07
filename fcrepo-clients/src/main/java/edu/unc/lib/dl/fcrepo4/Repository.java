@@ -24,6 +24,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -33,9 +34,12 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -64,9 +68,9 @@ public class Repository {
 	private String authPassword;
 
 	private String authHost;
-	
+
 	private RepositoryObjectFactory repositoryFactory;
-	
+
 	private RepositoryObjectDataLoader repositoryObjectDataLoader;
 
 	/**
@@ -78,7 +82,7 @@ public class Repository {
 	 */
 	public DepositRecord getDepositRecord(PID pid) throws FedoraException {
 		DepositRecord record = new DepositRecord(pid, this, repositoryObjectDataLoader);
-		
+
 		// Verify that the retrieved object is a deposit record
 		return record.validateType();
 	}
@@ -96,9 +100,111 @@ public class Repository {
 		URI depositRecordUri = repositoryFactory.createDepositRecord(pid.getRepositoryUri(), model);
 		// Create a new pid just in case fedora didn't agree to the suggested one
 		PID newPid = PIDs.get(depositRecordUri);
-		
+
 		DepositRecord depositRecord = new DepositRecord(newPid, this, repositoryObjectDataLoader);
 		return depositRecord;
+	}
+
+	/**
+	 * Mint a PID for a new content object
+	 * 
+	 * @return PID in the content path
+	 */
+	public PID mintContentPid() {
+		String uuid = UUID.randomUUID().toString();
+		String id = URIUtil.join(RepositoryPathConstants.CONTENT_BASE, uuid);
+
+		return PIDs.get(id);
+	}
+
+	/**
+	 * Retrieves an existing content object, or throws an
+	 * ObjectTypeMismatchException if the requested object is not a content
+	 * object.
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public ContentObject getContentObject(PID pid) throws FedoraException {
+		if (!pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE)) {
+			throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+		}
+
+		// No component path provided, the object requested should be a top
+		// level object
+		if (StringUtils.isEmpty(pid.getComponentPath())) {
+			try (FcrepoResponse response = getClient().get(pid.getRepositoryUri())
+					.accept(TURTLE_MIMETYPE)
+					.perform()) {
+
+				Model model = ModelFactory.createDefaultModel();
+				model.read(response.getBody(), null, Lang.TURTLE.getName());
+
+				Resource resc = model.getResource(pid.getRepositoryPath());
+
+				String etag = response.getHeaderValue("ETag");
+
+				if (resc.hasProperty(RDF.type, Cdr.Work)) {
+					return getWorkObject(pid, model, etag);
+				}
+				if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
+					return getFileObject(pid, model, etag);
+				}
+
+			} catch (IOException e) {
+				throw new FedoraException("Failed to read model for " + pid, e);
+			} catch (FcrepoOperationFailedException e) {
+				throw ClientFaultResolver.resolve(e);
+			}
+		}
+
+		throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+	}
+
+	/**
+	 * Retrieves an existing WorkObject
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public WorkObject getWorkObject(PID pid) throws FedoraException {
+		return getWorkObject(pid, null, null);
+	}
+
+	protected WorkObject getWorkObject(PID pid, Model model, String etag) {
+		WorkObject workObj = new WorkObject(pid, this, repositoryObjectDataLoader);
+		workObj.setModel(model);
+		workObj.setEtag(etag);
+
+		return workObj.validateType();
+	}
+
+	/**
+	 * Creates a new WorkObject with the given pid
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public WorkObject createWorkObject(PID pid) throws FedoraException {
+		return createWorkObject(pid, null);
+	}
+
+	/**
+	 * Creates a new WorkObject with the given pid and properties.
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public WorkObject createWorkObject(PID pid, Model model) throws FedoraException {
+		URI workUri = repositoryFactory.createWorkObject(pid.getRepositoryUri(), model);
+		PID createdPid = PIDs.get(workUri);
+
+		return new WorkObject(createdPid, this, repositoryObjectDataLoader);
 	}
 
 	/**
@@ -109,8 +215,14 @@ public class Repository {
 	 * @throws FedoraException
 	 */
 	public FileObject getFileObject(PID pid) throws FedoraException {
+		return getFileObject(pid, null, null);
+	}
+
+	protected FileObject getFileObject(PID pid, Model model, String etag) throws FedoraException {
 		FileObject fileObject = new FileObject(pid, this, repositoryObjectDataLoader);
-		
+		fileObject.setModel(model);
+		fileObject.setEtag(etag);
+
 		return fileObject.validateType();
 	}
 
@@ -138,12 +250,16 @@ public class Repository {
 	 *             if the object retrieved is not a binary or does not exist
 	 */
 	public BinaryObject getBinary(PID pid) throws FedoraException {
+		return getBinary(pid, null);
+	}
+
+	protected BinaryObject getBinary(PID pid, Model model) throws FedoraException {
 		BinaryObject binary = new BinaryObject(pid, this, repositoryObjectDataLoader);
-		
+
 		// Verify that the retrieved object is a deposit record
 		return binary.validateType();
 	}
-	
+
 	/**
 	 * Creates a binary object at the given path.
 	 * 
@@ -175,7 +291,7 @@ public class Repository {
 		BinaryObject binary = new BinaryObject(newPid, this, repositoryObjectDataLoader);
 		return binary;
 	}
-	
+
 	/**
 	 * Creates an event for the specified object.
 	 * 
@@ -217,7 +333,7 @@ public class Repository {
 				RepositoryPathConstants.EVENTS_CONTAINER, uuid);
 		return eventUrl;
 	}
-	
+
 	/**
 	 * Get a Model containing the properties held by the object identified by
 	 * the given metadataUri
@@ -253,7 +369,7 @@ public class Repository {
 	 */
 	public void createRelationship(PID subject, Property property, Resource object) {
 		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
-		
+
 		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
 
 		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
@@ -265,7 +381,18 @@ public class Repository {
 			throw ClientFaultResolver.resolve(e);
 		}
 	}
-	
+
+	/**
+	 * Add a member to the parent object.
+	 * 
+	 * @param parent
+	 * @param member
+	 */
+	public void addMember(ContentObject parent, ContentObject member) {
+		repositoryFactory.createMemberLink(parent.getPid().getRepositoryUri(),
+				member.getPid().getRepositoryUri());
+	}
+
 	public String getVocabulariesBase() {
 		return vocabulariesBase;
 	}
@@ -275,10 +402,6 @@ public class Repository {
 	}
 
 	public String getContentPath(PID pid) {
-		return null;
-	}
-
-	public ContentObject getContentObject(PID pid) {
 		return null;
 	}
 
