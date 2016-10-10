@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -82,10 +83,9 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 					.addPremisEvents(premisDepositLogger.getEvents());
 
 			// Add manifest files
-			StmtIterator manifestIt = deposit.listProperties(CdrDeposit.hasManifest);
-			while (manifestIt.hasNext()) {
-				String manifestPath = manifestIt.next().getString();
-				depositRecord.addManifest(new File(getDepositDirectory(), manifestPath), "text/plain");
+			List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
+			for (String uri : manifestURIs) {
+				depositRecord.addManifest(new File(getDepositDirectory(), uri), "text/plain");
 			}
 
 			// TODO add references to deposited objects 
