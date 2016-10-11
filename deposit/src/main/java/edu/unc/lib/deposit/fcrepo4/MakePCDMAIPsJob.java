@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
@@ -17,6 +18,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -53,8 +55,8 @@ public class MakePCDMAIPsJob extends AbstractDepositJob {
 		setTotalClicks(topDownObjects.size()); // + (excludeDepositRecord ? 0 : 1));
 		
 		// Build the deposit record object
-		String depositRecordUri = repository.getDepositRecordPath(getDepositPID().getUUID());
-		Resource depositRecordResc = createResource(depositRecordUri);
+		DepositRecord depositRecord = repository.getDepositRecord(getDepositPID());
+		//Resource depositRecordResc = createResource(depositRecord);
 
 		for (Resource dObjResc : topDownObjects) {
 			// Create model for this objects AIP
@@ -62,7 +64,7 @@ public class MakePCDMAIPsJob extends AbstractDepositJob {
 			Model aipModel = aipObjResc.getModel();
 			
 			// Add originalDeposit link
-			aipModel.add(aipObjResc, Cdr.originalDeposit, depositRecordResc);
+			aipModel.add(aipObjResc, Cdr.originalDeposit, (RDFNode) depositRecord);
 			
 			// Serialize the AIP model to file
 			serializeObjectModel(new PID(aipObjResc.getURI()), aipModel);

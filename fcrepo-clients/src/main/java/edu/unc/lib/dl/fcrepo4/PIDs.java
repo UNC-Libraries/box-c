@@ -52,6 +52,10 @@ public class PIDs {
 	 * @return new PID object for the given identifier or URI
 	 */
 	public static PID get(String value) {
+		if (value == null) {
+			return null;
+		}
+		
 		String id;
 		String qualifier;
 		String componentPath;
