@@ -50,8 +50,6 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 public class IngestDepositRecordJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
-	private Repository repository;
-
 	@Override
 	public void runJob() {
 		String depositUri = getDepositPID().getURI();

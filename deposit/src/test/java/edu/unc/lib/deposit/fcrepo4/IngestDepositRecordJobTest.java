@@ -25,8 +25,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Matchers.anyListOf;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +42,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.stubbing.OngoingStubbing;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -48,6 +52,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
@@ -97,7 +102,7 @@ public class IngestDepositRecordJobTest {
 		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
 		when(repository.createDepositRecord(any(PID.class), any(Model.class)))
 				.thenReturn(depositRecord);
-		//when(depositRecord.addPremisEvents(any(Model.class))).thenReturn(depositRecord);
+		when(depositRecord.addPremisEvents(anyListOf(PremisEventObject.class))).thenReturn(depositRecord);
 	}
 
 	private void initializeJob(String depositUUID, String packagePath, String n3File) throws Exception {
@@ -114,7 +119,7 @@ public class IngestDepositRecordJobTest {
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
-		setField(job, "repository", repository);
+		job.setRepository(repository);
 
 		job.init();
 
@@ -144,7 +149,7 @@ public class IngestDepositRecordJobTest {
 		assertEquals("Deposit record for proquest-bag", depositResc.getProperty(DcElements.title).getString());
 		assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
 
-		//verify(depositRecord).addPremisEvents(any(Model.class));
+		verify(depositRecord).addPremisEvents(anyListOf(PremisEventObject.class));
 	}
 
 	@Test
@@ -158,6 +163,8 @@ public class IngestDepositRecordJobTest {
 		depositStatus.put(DepositField.fileName.name(), "valid-bag");
 		depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
 		when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
+		List<String> manifestPaths = Arrays.asList("valid-bag/manifest-md5.txt", "valid-bag/bagit.txt");
+		when(depositStatusFactory.getManifestURIs(eq(depositUUID))).thenReturn(manifestPaths);
 
 		job.run();
 

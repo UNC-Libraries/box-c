@@ -159,7 +159,7 @@ public class FilePremisLogger implements PremisLogger {
 		List<PremisEventObject> events = new ArrayList<>();
 
 		// Find all of the events and construct a list of PremisEventObjects from them.
-		for (ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
+		for (ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
 			Resource eventResc = eventIt.nextResource();
 			PID eventPid = PIDs.get(eventResc.getURI());
 
