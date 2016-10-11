@@ -74,21 +74,29 @@ public abstract class RepositoryObject {
 	 * @throws FedoraException
 	 */
 	public Model getModel() throws FedoraException {
-		if (model == null) {
-			dataLoader.loadModel(this);
-		}
-
+		dataLoader.loadModel(this);
 		return model;
 	}
 
 	/**
-	 * Set the model
+	 * Return true if the model for this object has been populated
+	 * 
+	 * @return
+	 */
+	public boolean hasModel() {
+		return model != null;
+	}
+
+	/**
+	 * Store the relationships and properties belonging to this object
 	 * 
 	 * @param model
 	 * @return
 	 */
-	public void setModel(Model model) {
+	public void storeModel(Model model) {
 		this.model = model;
+		// Clear the cached types list
+		this.types = null;
 	}
 
 	public Resource getResource() throws FedoraException {

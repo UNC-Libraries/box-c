@@ -39,6 +39,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RDFModelUtil;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Creates objects in the repository matching specific object profile types.
@@ -81,6 +82,55 @@ public class RepositoryObjectFactory {
 
 			// Add the premis event container
 			addEventContainer(createdUri);
+
+			return createdUri;
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create deposit record at " + path, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
+
+	/**
+	 * Creates a work object structure at the given path with the properties
+	 * specified.
+	 * 
+	 * @param path
+	 *            URI of the full path where the work will be created
+	 * @param model
+	 *            Model containing additional properties. Optional.
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createWorkObject(URI path, Model model) throws FedoraException {
+		// Add types to the object being created
+		model = populateModelTypes(path, model,
+				Arrays.asList(Cdr.Work, PcdmModels.Object));
+
+		return createContentContainerObject(path, model);
+	}
+
+	/**
+	 * Helper to create a content object that can contain members and events
+	 * 
+	 * @param path
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	private URI createContentContainerObject(URI path, Model model) throws FedoraException {
+		try (FcrepoResponse response = getClient().put(path)
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+				.perform()) {
+
+			URI createdUri = response.getLocation();
+
+			// Add PREMIS event container
+			addEventContainer(createdUri);
+
+			// Add the container for member objects
+			ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
+					RepositoryPathConstants.MEMBER_CONTAINER);
 
 			return createdUri;
 		} catch (IOException e) {
@@ -221,6 +271,21 @@ public class RepositoryObjectFactory {
 	private URI addEventContainer(URI parentUri) throws FedoraException, IOException {
 		return ldpFactory.createDirectContainer(parentUri, Premis.hasEvent,
 				RepositoryPathConstants.EVENTS_CONTAINER);
+	}
+
+	/**
+	 * Creates a link between a parent object and a member object.
+	 * 
+	 * @param parentUri
+	 * @param memberUri
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createMemberLink(URI parentUri, URI memberUri) throws FedoraException {
+		String memberContainer = URIUtil.join(parentUri, RepositoryPathConstants.MEMBER_CONTAINER);
+
+		return ldpFactory.createIndirectProxy(URI.create(memberContainer),
+				parentUri, memberUri);
 	}
 
 	public URI createPremisEvent(URI objectUri, Model model) throws FedoraException {

@@ -27,7 +27,7 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public enum ResourceType {
 	Collection(1, Cdr.Collection.getURI()),
-			Aggregate(3, Cdr.AggregateWork.getURI()),
+			Aggregate(3, Cdr.Work.getURI()),
 			Folder(2, Cdr.Folder.getURI()),
 			File(3,  Cdr.FileObject.getURI());
 	

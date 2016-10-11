@@ -92,7 +92,7 @@ public class Cdr {
     public static final Property warnInvalidTerms = createProperty( "http://cdr.unc.edu/definitions/model#warnInvalidTerms" );
     
     public static final Resource FileObject = createResource( "http://cdr.unc.edu/definitions/model#FileObject" );
-    public static final Resource AggregateWork = createResource( "http://cdr.unc.edu/definitions/model#AggregateWork" );
+    public static final Resource Work = createResource( "http://cdr.unc.edu/definitions/model#Work" );
     public static final Resource Folder = createResource( "http://cdr.unc.edu/definitions/model#Folder" );
     public static final Resource Collection = createResource( "http://cdr.unc.edu/definitions/model#Collection" );
     public static final Resource AdminUnit = createResource( "http://cdr.unc.edu/definitions/model#AdminUnit" );

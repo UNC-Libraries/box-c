@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -22,12 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
-import org.apache.http.client.utils.DateUtils;
+import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -36,16 +41,18 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Data loader which retrieves repository data for objects.
  * 
  * @author bbpennel
  *
  */
 public class RepositoryObjectDataLoader {
+	private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
 
 	private Repository repository;
-	
+
 	private FcrepoClient client;
-	
+
 	/**
 	 * Loads and assigns the RDF types for the given object
 	 * 
@@ -77,34 +84,62 @@ public class RepositoryObjectDataLoader {
 	 */
 	public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
 		URI metadataUri = obj.getMetadataUri();
-		Model model = repository.getObjectModel(metadataUri);
+		// If the object is up to date and has already loaded the model then we're done
+		if (obj.hasModel() && isUnmodified(obj)) {
+			log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
+			return this;
+		}
 
-		obj.setModel(model);
+		// Need to load the model from fedora
+		try (FcrepoResponse response = getClient().get(metadataUri)
+				.accept(TURTLE_MIMETYPE)
+				.perform()) {
 
-		return this;
-	}
+			log.debug("Retrieving new model for {}", obj.getPid());
+			Model model = ModelFactory.createDefaultModel();
+			model.read(response.getBody(), null, Lang.TURTLE.getName());
 
-	public RepositoryObjectDataLoader loadHeaders(RepositoryObject obj) throws FedoraException {
-		PID pid = obj.getPid();
+			// Store the fresh model
+			obj.storeModel(model);
 
-		try (FcrepoResponse response = getClient().head(pid.getRepositoryUri()).perform()) {
-			if (response.getStatusCode() != HttpStatus.SC_OK) {
-				throw new FedoraException("Received " + response.getStatusCode()
-						+ " response while retrieving headers for " + pid.getRepositoryUri());
-			}
+			// Store updated modification info to track if the object changes 
+			obj.setEtag(getETag(response));
 
-			obj.setEtag(response.getHeaderValue("Etag"));
-			String lastModString = response.getHeaderValue("Last-Modified");
-			if (lastModString != null) {
-				obj.setLastModified(DateUtils.parseDate(lastModString));
-			}
+			return this;
 		} catch (IOException e) {
-			throw new FedoraException("Unable to create deposit record at " + pid.getRepositoryUri(), e);
+			throw new FedoraException("Failed to read model for " + metadataUri, e);
 		} catch (FcrepoOperationFailedException e) {
 			throw ClientFaultResolver.resolve(e);
 		}
+	}
 
-		return this;
+	/**
+	 * Returns true if the object provided is unmodified according to etag by
+	 * verifying if the locally held etag matches the current one in the
+	 * repository
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	private boolean isUnmodified(RepositoryObject obj) {
+		if (obj.getEtag() == null) {
+			return false;
+		}
+
+		try (FcrepoResponse response = getClient().head(obj.getMetadataUri()).perform()) {
+			if (response.getStatusCode() != HttpStatus.SC_OK) {
+				throw new FedoraException("Received " + response.getStatusCode()
+						+ " response while retrieving headers for " + obj.getPid().getRepositoryUri());
+			}
+
+			String remoteEtag = getETag(response);
+			return remoteEtag.equals(obj.getEtag());
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create deposit record at "
+					+ obj.getPid().getRepositoryUri(), e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 
 	/**
@@ -125,6 +160,17 @@ public class RepositoryObjectDataLoader {
 		}
 	}
 
+	/**
+	 * Retrieve the ETag of the response, with surrounding quotes stripped.
+	 * 
+	 * @param response
+	 * @return
+	 */
+	private static String getETag(FcrepoResponse response) {
+		String etag = response.getHeaderValue("ETag");
+		return etag.substring(1, etag.length() - 1);
+	}
+	
 	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}
