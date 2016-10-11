@@ -52,12 +52,16 @@ public class PIDs {
 	 * @return new PID object for the given identifier or URI
 	 */
 	public static PID get(String value) {
+		if (value == null) {
+			return null;
+		}
+		
 		String id;
 		String qualifier;
 		String componentPath;
 		String repositoryPath;
 
-		if (value != null && value.startsWith(repository.getFedoraBase())) {
+		if (value.startsWith(repository.getFedoraBase())) {
 			// Given value was a fedora path. Remove the base and decompose
 			repositoryPath = value;
 			String path = value.substring(repository.getFedoraBase().length());
@@ -74,7 +78,7 @@ public class PIDs {
 				// Value was an invalid path within the repository
 				return null;
 			}
-		} else if (value != null) {
+		} else {
 			// Determine if the value matches the pattern for an identifier
 			Matcher matcher = RepositoryPathConstants.identifierPattern.matcher(value);
 			if (matcher.matches()) {
@@ -93,9 +97,6 @@ public class PIDs {
 				// No a recognized format for constructing a pid
 				return null;
 			}
-			
-		} else {
-			return null;
 		}
 
 		// Build and return the new pid object

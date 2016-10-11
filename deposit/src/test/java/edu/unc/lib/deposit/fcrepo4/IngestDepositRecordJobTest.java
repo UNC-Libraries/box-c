@@ -28,7 +28,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import static org.mockito.Matchers.anyListOf;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +41,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.stubbing.OngoingStubbing;
-
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
