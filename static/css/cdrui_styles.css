@@ -231,7 +231,7 @@
 }
 
 .searchitem h2 a:visited {
-    color: #656096;
+	color: #656096;
 }
 
 .searchitem_container_count {
@@ -537,7 +537,7 @@ ul.fpfeed_list li {
 	font-size: 14px;
 	*height: 16px;
 	width: 230px;
-    padding-left: 5px;
+	padding-left: 5px;
 }
 
 #hsearch_submit {
@@ -550,7 +550,7 @@ ul.fpfeed_list li {
 	height: 30px;
 	background-color: #5F5F5F;
 	font-family: verdana, sans-serif;
-    font-size: 14px;
+	font-size: 14px;
 }
 
 #hsearch_submit:hover {
@@ -1245,9 +1245,9 @@ div.deposit-icons {
 /*Header Top Bar*/
 
 #topbar {
-    background-color: #001B28;
+	background-color: #001B28;
 	height: 25px;
-    font-family: helvetica;
+	font-family: helvetica;
 	color: #fff;
 }
 
@@ -1276,29 +1276,93 @@ div.deposit-icons {
 }
 
 #topbar li#login {
-    font-weight: 600;
+	font-weight: 600;
 }
 
 /*Header Search Options*/
 #searchoptions {
-    width: 240px; 
-    float: left; 
-    left: 240px; 
-    position: relative;
-    height: 108px;
+	width: 240px; 
+	float: left; 
+	left: 240px; 
+	position: relative;
+	height: 108px;
 }
 
 #searchoptions-bottom {
-    position: absolute;
+	position: absolute;
 	bottom: 1px;
-    right: 0;
+	right: 0;
 }
 
 #advancedsearch {
-    margin: 0;
-    text-align: right;
+	margin: 0;
+	text-align: right;
 }
 
 #advancedsearch a:hover {
-    color: #7BAFD4;
-}		
+	color: #7BAFD4;
+}
+
+/*Student Papers Landing Page*/
+
+#student-papers-heading h2 {
+	font-family: "Avenir Next";
+	font-weight: 600;
+	font-size: 28px;
+	text-align: center;
+	color: #000;
+	margin: 32px 0 24px;
+}
+
+#student-papers-options {
+	text-align: center;
+}
+
+#student-papers-options h3 {
+	font-family: "Avenir Next";
+	font-weight: 600;
+	font-size: 24px;
+	text-align: center;
+	color: #000;
+	margin: 32px 0;
+}
+
+#student-papers-options h4 {
+	font-family: "Avenir Next";
+	font-weight: 600;
+	font-size: 18px;
+	text-align: center;
+	color: #000;
+	display: inline;
+	margin-right: 20px;
+}
+
+#student-papers-options .button {
+	text-align: center;
+	margin: 60px 0;
+}
+
+#student-papers-options .button a {
+  text-decoration: none;
+	color: #fff;
+	background: #1d759f;
+	padding: 10px 35px 11px 20px;
+	border-radius: 28px;
+	position: relative;
+	white-space: nowrap;
+	text-decoration: none !important;
+	font-family: helvetica;
+	font-size: 18px;
+}
+
+#student-papers-options .button a:after {
+  content: "";
+  display: block;
+  width: 14px;
+  height: 22px;
+  background: url(/static/front/chevron-small-white.png);
+  position: absolute;
+  top: 50%;
+  margin-top: -11px;
+  right: 12px;
+}
