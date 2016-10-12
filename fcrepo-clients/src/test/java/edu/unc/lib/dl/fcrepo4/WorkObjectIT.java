@@ -138,9 +138,4 @@ public class WorkObjectIT extends AbstractFedoraIT {
 		BinaryObject suppFile = suppMember.getOriginalFile();
 		assertEquals(filenameS, suppFile.getFilename());
 	}
-
-	private ContentObject findContentObjectByPid(List<ContentObject> objs, PID pid) {
-		return objs.stream()
-				.filter(p -> p.getPid().equals(pid)).findAny().get();
-	}
 }
