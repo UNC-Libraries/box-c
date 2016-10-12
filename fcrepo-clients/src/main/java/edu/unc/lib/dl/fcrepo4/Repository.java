@@ -74,6 +74,18 @@ public class Repository {
 	private RepositoryObjectDataLoader repositoryObjectDataLoader;
 
 	/**
+	 * Mint a PID for a new deposit record object
+	 * 
+	 * @return PID in the deposit record path
+	 */
+	public PID mintDepositRecordPid() {
+		String uuid = UUID.randomUUID().toString();
+		String id = URIUtil.join(RepositoryPathConstants.DEPOSIT_RECORD_BASE, uuid);
+
+		return PIDs.get(id);
+	}
+	
+	/**
 	 * Retrieves an existing DepositRecord object
 	 * 
 	 * @param pid

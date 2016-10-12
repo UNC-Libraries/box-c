@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoResponse;
@@ -33,14 +32,11 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
@@ -63,7 +59,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
 	@Before
 	public void init() throws Exception {
-		parentPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString());
+		parentPid = repository.mintDepositRecordPid();
 
 		Model model = ModelFactory.createDefaultModel();
 		Resource resc = model.createResource(parentPid.getRepositoryUri().toString());
