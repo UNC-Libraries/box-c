@@ -53,7 +53,7 @@ public class FolderObject extends ContentObject {
 	}
 
 	/**
-	 * Creates and adds a new folder with the provide pid and properties to this
+	 * Creates and adds a new folder with the provided pid and properties to this
 	 * folder.
 	 * 
 	 * @param pid
