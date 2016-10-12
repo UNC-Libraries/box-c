@@ -37,10 +37,6 @@ public abstract class ContentObject extends RepositoryObject {
 		super(pid, repository, dataLoader);
 	}
 
-	public void addChild(ContentObject child) {
-		// TODO
-	}
-
 	public BinaryObject addDescription(InputStream contentStream) {
 		return null;
 	}

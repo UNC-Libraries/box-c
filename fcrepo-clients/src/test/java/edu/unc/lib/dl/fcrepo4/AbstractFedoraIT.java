@@ -19,6 +19,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
@@ -60,5 +61,10 @@ public class AbstractFedoraIT {
 		try (FcrepoResponse response = client.head(pid.getRepositoryUri()).perform()) {
 			assertEquals(HttpStatus.SC_OK, response.getStatusCode());
 		}
+	}
+
+	protected ContentObject findContentObjectByPid(List<ContentObject> objs, PID pid) {
+		return objs.stream()
+				.filter(p -> p.getPid().equals(pid)).findAny().get();
 	}
 }
