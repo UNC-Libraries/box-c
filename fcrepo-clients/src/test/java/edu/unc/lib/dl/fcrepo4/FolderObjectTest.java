@@ -46,7 +46,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * @author bbpennel
  *
  */
-public class FolderObjectTest extends AbstractFedoraTest{
+public class FolderObjectTest extends AbstractFedoraTest {
 
 	private PID pid;
 
