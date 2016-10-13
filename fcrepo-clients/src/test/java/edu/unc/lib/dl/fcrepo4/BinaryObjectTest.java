@@ -5,15 +5,23 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import static org.mockito.Matchers.eq;
+
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 
 import com.hp.hpl.jena.rdf.model.Model;
 
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 public class BinaryObjectTest {
 	@Mock
@@ -38,14 +46,12 @@ public class BinaryObjectTest {
 		
 		byte[] buf = new byte[10];
 		stream = new ByteArrayInputStream(buf);
-		when(mockLoader.getBinaryStream(binObj)).thenReturn(stream);
+		
 		
 		when(mockPid.getRepositoryUri()).thenReturn(new URI(BASE_PATH));
 		binObj = new BinaryObject(mockPid, mockRepo, mockLoader);
 		
 		when(mockLoader.loadModel(binObj)).thenReturn(mockLoader);
-		
-		
 		
 	}
 
@@ -56,16 +62,41 @@ public class BinaryObjectTest {
 
 	@Test
 	public void testValidateType() {
-		assertEquals(binObj, binObj.validateType());
+		// Return the correct RDF types
+		 	List<String> types = Arrays.asList(Fcrepo4Repository.Binary.toString());
+		 	when(mockLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+		        @Override
+		 		public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+		 			binObj.setTypes(types);
+		 			return mockLoader;
+		 		}
+		 	});
+		
+		 	binObj.validateType();
 	}
+	
+	@Test(expected = ObjectTypeMismatchException.class)
+	 public void invalidTypeTest() {
+			when(mockLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+	 		    @Override
+	 		    public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+	 			    binObj.setTypes(Arrays.asList());
+				    return mockLoader;
+	 	        }
+	        });
+	 
+	 	binObj.validateType();
+	 }
 
 	@Test
 	public void testGetBinaryStream() {
+		when(mockLoader.getBinaryStream(binObj)).thenReturn(stream);
 		assertEquals(binObj.getBinaryStream(), stream);
 	}
 
 	@Test
 	public void testGetFilename() {
+		
 		binObj.setFilename("sample.txt");
 		assertEquals("sample.txt", binObj.getFilename());
 		//TODO: null case
