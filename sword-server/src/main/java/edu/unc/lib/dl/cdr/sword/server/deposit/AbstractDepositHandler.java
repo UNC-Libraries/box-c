@@ -18,7 +18,6 @@ package edu.unc.lib.dl.cdr.sword.server.deposit;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
