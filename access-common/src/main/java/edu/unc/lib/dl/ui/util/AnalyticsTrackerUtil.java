@@ -121,7 +121,6 @@ public class AnalyticsTrackerUtil {
 			Cookie cookies[] = request.getCookies();
 			if (cookies != null) {
 				for (Cookie cookie : cookies) {
-					log.warn("_ga {} {}", cookie.getName(), cookie.getValue());
 					if ("_ga".equals(cookie.getName())) {
 						String[] parts = cookie.getValue().split("\\.");
 						if (parts.length == 4) {
