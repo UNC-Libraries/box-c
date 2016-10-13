@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,7 +30,6 @@ import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -39,45 +37,44 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.event.FilePremisLogger;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * 
  * @author lfarrell
  *
  */
-public class FilePremisLoggerTest {
+public class FilePremisLoggerTest extends AbstractFedoraTest {
 	private String depositUUID;
 	private PID pid;
 	private Resource eventType;
 	private File premisFile;
 	private PremisLogger premis;
 	private Date date;
-	@Mock
-	private Repository repository;
 
 	@Before
 	public void setup() throws Exception {
-		initMocks(this);
 
 		depositUUID = UUID.randomUUID().toString();
-		pid = new PID(depositUUID);
+		pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
 		eventType = Premis.VirusCheck;
 		premisFile = File.createTempFile(depositUUID, ".ttl");
 		premisFile.deleteOnExit();
 		premis = new FilePremisLogger(pid, premisFile, repository);
 		date = new Date();
 
-		when(repository.mintPremisEventUrl(any(PID.class))).thenAnswer(new Answer<String>() {
+		when(repository.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
 			@Override
-			public String answer(InvocationOnMock invocation) throws Throwable {
-				return "http://example.com/" + UUID.randomUUID().toString();
+			public PID answer(InvocationOnMock invocation) throws Throwable {
+				String path = URIUtil.join(pid.getRepositoryPath(), RepositoryPathConstants.EVENTS_CONTAINER,
+						UUID.randomUUID().toString());
+				return PIDs.get(path);
 			}
 		});
 	}

@@ -80,7 +80,7 @@ public class FilePremisLogger implements PremisLogger {
 			date = new Date();
 		}
 
-		return new PremisEventBuilder(repository.mintPremisEventUrl(objectPid),
+		return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
 				eventType, date, this);
 	}
 
@@ -92,7 +92,7 @@ public class FilePremisLogger implements PremisLogger {
 	 */
 	@Override
 	public PremisEventBuilder buildEvent(Resource eventType) {
-		return new PremisEventBuilder(repository.mintPremisEventUrl(objectPid),
+		return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
 				eventType, new Date(), this);
 	}
 

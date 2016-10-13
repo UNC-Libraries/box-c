@@ -307,8 +307,27 @@ public class RepositoryObjectFactory {
 				parentUri, memberUri);
 	}
 
-	public URI createPremisEvent(URI objectUri, Model model) throws FedoraException {
-		return null;
+	/**
+	 * Creates a fedora object at the given location with the provided
+	 * properties
+	 * 
+	 * @param uri
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createObject(URI uri, Model model) throws FedoraException {
+
+		try (FcrepoResponse response = getClient().put(uri)
+				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+				.perform()) {
+
+			return response.getLocation();
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create object at " + uri, e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 
 	public void setClient(FcrepoClient client) {

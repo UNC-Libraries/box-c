@@ -58,13 +58,13 @@ public class RepositoryPremisLogger implements PremisLogger {
 			date = new Date();
 		}
 
-		return new PremisEventBuilder(repository.mintPremisEventUrl(repoObject.getPid()),
+		return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
 				eventType, date, this);
 	}
 
 	@Override
 	public PremisEventBuilder buildEvent(Resource eventType) {
-		return new PremisEventBuilder(repository.mintPremisEventUrl(repoObject.getPid()),
+		return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
 				eventType, new Date(), this);
 	}
 

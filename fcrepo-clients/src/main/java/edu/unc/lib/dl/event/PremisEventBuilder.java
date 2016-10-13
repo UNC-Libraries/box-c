@@ -28,6 +28,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
@@ -40,14 +41,14 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 public class PremisEventBuilder {
 	private static final Logger log = LoggerFactory.getLogger(PremisEventBuilder.class);
 	
-	private String eventUri;
+	private PID eventPid;
 	private Model model;
 	private PremisLogger premisLogger;
 	private Resource premisObjResc;
 
-	public PremisEventBuilder(String eventUri, Resource eventType, Date date,
+	public PremisEventBuilder(PID eventPid, Resource eventType, Date date,
 			PremisLogger premisLogger) {
-		this.eventUri = eventUri;
+		this.eventPid = eventPid;
 		this.premisLogger = premisLogger;
 		addEvent(eventType, date);
 	}
@@ -173,7 +174,7 @@ public class PremisEventBuilder {
 	 */
 	private PremisEventBuilder addAgent(Property role, Resource type, String agentId, String name) {
 		Resource premisObjResc = getResource();
-		Resource linkingAgentInfo = model.createResource(eventUri + agentId);
+		Resource linkingAgentInfo = model.createResource(eventPid.getRepositoryPath() + agentId);
 
 		linkingAgentInfo.addProperty(Premis.hasAgentType, type);
 		linkingAgentInfo.addProperty(Premis.hasAgentName, name);
@@ -209,7 +210,7 @@ public class PremisEventBuilder {
 		}
 
 		model = getModel();
-		premisObjResc = model.createResource(this.eventUri);
+		premisObjResc = model.createResource(eventPid.getRepositoryPath());
 
 		return premisObjResc;
 	}
