@@ -165,8 +165,8 @@ public class AnalyticsTrackerUtil {
 			URIBuilder builder;
 			try {
 				builder = new URIBuilder(GA_URL);
-			} catch (URISyntaxException e2) {
-				e2.printStackTrace();
+			} catch (URISyntaxException e) {
+				log.warn("Failed to build URI for tracker", e);
 				return;
 			}
 			
@@ -177,12 +177,11 @@ public class AnalyticsTrackerUtil {
 			params.add(new BasicNameValuePair("t", "event"));
 			params.add(new BasicNameValuePair("uip", userData.uip));
 			params.add(new BasicNameValuePair("an", "cdr"));
-			params.add(new BasicNameValuePair("dl", "https://cdr-qa.lib.unc.edu/content/uuid:2bdda9df-9a7b-4794-9619-d9d2bef9b2a1"));
 			params.add(new BasicNameValuePair("de", "UTF-8"));
 			params.add(new BasicNameValuePair("ul", "en-us"));
-			log.warn("Tracking user {} with event {} in category {} with label {}",
+			log.debug("Tracking user {} with event {} in category {} with label {}",
 					new String[] { userData.cid, action, category, label });
-			log.warn("Tracking:{} {} {} {}", new Object[] { GA_URL, gaTrackingID, userData.cid, userData.uip});
+			log.debug("Tracking:{} {} {} {}", new Object[] { GA_URL, gaTrackingID, userData.cid, userData.uip});
 
 			if (category != null) {
 				params.add(new BasicNameValuePair("ec", category));
@@ -204,18 +203,10 @@ public class AnalyticsTrackerUtil {
 				URI url = builder.build();
 				method = new HttpGet(url);
 				method.addHeader("Accept", "*/*");
-				method.addHeader("Referer", "https://cdr-qa.lib.unc.edu/record/uuid:2bdda9df-9a7b-4794-9619-d9d2bef9b2a1");
-			} catch (URISyntaxException e1) {
-				e1.printStackTrace();
+			} catch (URISyntaxException e) {
+				log.warn("Failed to build tracking url", e);
 				return;
 			}
-			
-//			try {
-//				method.setEntity(new UrlEncodedFormEntity(params));
-//			} catch (UnsupportedEncodingException e) {
-//				log.warn("Failed to encode url parameters for google analytics request", e);
-//				return;
-//			}
 
 			try (CloseableHttpResponse resp = httpClient.execute(method)) {
 			} catch (Exception e) {
