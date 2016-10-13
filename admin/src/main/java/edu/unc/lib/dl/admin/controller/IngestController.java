@@ -17,6 +17,8 @@ package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,6 +74,7 @@ public class IngestController {
 			@RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
 		
 		String destinationUrl = swordUrl + "collection/" + pid;
+		String slugValue = null;
 		CloseableHttpClient client = HttpClientUtil
 				.getAuthenticatedClient(null, swordUsername, swordPassword);
 		HttpPost method = new HttpPost(destinationUrl);
@@ -82,9 +85,17 @@ public class IngestController {
 		method.addHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
 		method.addHeader("Content-Type", ingestFile.getContentType());
 		method.addHeader("mail", request.getHeader("mail"));
-		method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
 		if (name != null && name.trim().length() > 0)
-			method.addHeader("Slug", name);
+			slugValue = name;
+
+		try {
+			method.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(ingestFile.getOriginalFilename(), "UTF-8"));
+			method.addHeader("Slug", URLEncoder.encode(slugValue, "UTF-8"));
+		} catch (UnsupportedEncodingException e1) {
+			log.warn("Unable to properly encode value to UTF-8");
+			method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
+			method.addHeader("Slug", slugValue);
+		}
 
 		// Setup the json response
 		Map<String, Object> result = new HashMap<String, Object>();
