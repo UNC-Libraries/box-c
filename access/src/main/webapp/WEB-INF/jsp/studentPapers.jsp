@@ -20,7 +20,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>  
 
-<div id="content">
 			<div class="content-wrap">
 <div class="contentarea" id="student-papers-heading">
 	<h2>Student Papers</h2>
@@ -37,9 +36,13 @@
 				<select id="mp-dept">
 					<option value=""></option>
 					<option value="/forms/art-mfa">Art MFA</option>
-					<option value="/forms/sph_nutrition">Gillings Department of Nutrition</option><option value="/forms/sph_phlp_masters_papers">Gillings PHLP</option><option value="/forms/silsmp">School of Information and Library Science</option>
-					
-					
+          <option value="/forms/sph_ese_technical_report">Gillings ESE Technical Report</option>
+          <option value="/forms/sph_hb_cap_submission">Gillings HB Capstone</option>
+          <option value="/forms/sph_hp">Gillings Health Policy Management</option>
+          <option value="/forms/sph_mch_masters_papers">Gillings MCH</option>
+          <option value="/forms/sph_nutrition">Gillings Department of Nutrition</option>
+          <option value="/forms/sph_phlp_masters_papers">Gillings PHLP</option>
+          <option value="/forms/silsmp">School of Information and Library Science</option>
 					</select>
           </form>
 			</div>
@@ -47,4 +50,4 @@
 </div>
 <link rel="stylesheet" type="text/css" href="/static/css/jquery-ui.css">
 <link rel="stylesheet" type="text/css" href="/static/css/jquery.qtip.min.css">
-<script async="" src="//www.google-analytics.com/analytics.js"></script><script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/studentPapers"></script></div>
+<script async="" src="//www.google-analytics.com/analytics.js"></script><script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/studentPapers"></script>

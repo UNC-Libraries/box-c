@@ -1334,12 +1334,11 @@ div.deposit-icons {
 	text-align: center;
 	color: #000;
 	display: inline;
-	margin-right: 20px;
 }
 
 #student-papers-options .button {
 	text-align: center;
-	margin: 60px 0;
+	margin: 50px 0;
 }
 
 #student-papers-options .button a {
@@ -1365,4 +1364,8 @@ div.deposit-icons {
   top: 50%;
   margin-top: -11px;
   right: 12px;
+}
+
+#student-papers-options form {
+  margin: 32px 0;
 }
