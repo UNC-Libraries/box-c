@@ -54,7 +54,7 @@
               </a>
             </li>
 			<li class="deposit-option">
-              <a href="#">
+              <a href="/studentPapers">
               	<div class="deposit-icons"><i class="fa fa-graduation-cap"></i></div>
               	<h2>Student<br>Papers</h2>
 			</a>
