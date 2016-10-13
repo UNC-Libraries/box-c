@@ -9,8 +9,11 @@ require.config({
 		'jquery-ui' : ['jquery']
 	}
 });
-define('studentPapers', ['jquery'], function(module, $) {
-  $("#mp-dept").change(function () {
-    location.href = $(this).val();
+
+define('studentPapers', ['module', 'jquery'], function(module, $) {
+  $('#mp-dept').change(function () {
+    if ($(this).val() != '') {
+      location.href = $(this).val();
+    }
   })
 });
