@@ -124,7 +124,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		status.put(DepositField.packagingType.name(), type.getUri());
 		status.put(DepositField.depositMd5.name(), deposit.getMd5());
 		status.put(DepositField.depositSlug.name(), deposit.getSlug());
-		 try {
+		try {
 			 status.put(DepositField.fileName.name(),  URLDecoder.decode(deposit.getFilename(), "UTF-8"));
 			 status.put(DepositField.depositSlug.name(), URLDecoder.decode(deposit.getSlug(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
