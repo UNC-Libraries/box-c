@@ -92,7 +92,7 @@ public class IngestController {
 			method.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(ingestFile.getOriginalFilename(), "UTF-8"));
 			method.addHeader("Slug", URLEncoder.encode(slugValue, "UTF-8"));
 		} catch (UnsupportedEncodingException e1) {
-			log.warn("Unable to properly encode value to UTF-8");
+			log.warn("Unable to properly encode value to UTF-8", e1);
 			method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
 			method.addHeader("Slug", slugValue);
 		}
