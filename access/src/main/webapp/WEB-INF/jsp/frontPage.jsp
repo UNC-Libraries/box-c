@@ -41,12 +41,46 @@
 <script src="/static/js/lib/underscore.js"></script>
 <script src="/static/front/peek.js"></script>
 
+<div id="deposit-banner">
+	<div id="deposit-banner-title">
+	 <h2>Share Your Work</h2>
+	</div>
+	<nav class="how-to-deposit">
+		<ul class="deposit-options-list">
+  			<li class="deposit-option">
+              <a href="/forms/open-access-carolina">
+              	<div class="deposit-icons"><i class="fa fa-file-text-o"></i></div>
+              	<h2>Open Access Articles</h2>
+              </a>
+            </li>
+			<li class="deposit-option">
+              <a href="#">
+              	<div class="deposit-icons"><i class="fa fa-graduation-cap"></i></div>
+              	<h2>Student<br>Papers</h2>
+			</a>
+          </li>
+			<li class="deposit-option">
+              <a href="/forms/posters">
+              <div class="deposit-icons"><i class="fa fa-line-chart"></i></div>
+              <h2>Posters &amp; Presentations</h2>
+              </a>
+          </li>
+			<li class="deposit-option">
+              <a href="/forms/carolina-oer">
+              <div class="deposit-icons"><i class="fa fa-book"></i></div>
+              <h2>Open Educational Resources</h2>
+              </a>
+          </li>
+  		</ul>
+  </nav>
+  </div>
+  
 <div id="front">
 
 	<div class="row">
-		<div class="half" id="front-points">
+		<div id="front-points">
 			<table>
-				<tr>
+				<tbody><tr>
 					<td class="illustration"><img src="/static/front/tube.png"></td>
 					<td>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</td>
 				</tr>
@@ -58,20 +92,10 @@
 					<td class="illustration"><img src="/static/front/lock.png"></td>
 					<td>You decide who gets access: we offer a range of access controls including embargoes and granting access to specific groups on campus.</td>
 				</tr>
-			</table>
+			</tbody></table>
 		</div>
 		
-		<div class="half" id="open-access">
-			<h2>How to start preserving your work</h2>
-			
-			<p>UNC scholars: deposit your Open Access work into the CDR in order to provide long-term access and ensure the preservation of your work. <a href="http://blogs.lib.unc.edu/cdr/" target="_blank">Learn more.</a></p>
-			
-			<p class="button"><a href="/forms/open-access-carolina.form">Deposit Open Access Work</a></p>
-			
-			<hr>
-			
-			<p>In other cases, CDR staff will work with you to deposit your materials and associated descriptive information. <a href="http://blogs.lib.unc.edu/cdr/index.php/how-to-contribute-material-to-the-cdr/" target="_blank">Learn how to get started.</a></p>
-		</div>
+		
 	</div>
 
 	<hr>
