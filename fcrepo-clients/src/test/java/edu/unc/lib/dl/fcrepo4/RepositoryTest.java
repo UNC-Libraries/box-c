@@ -86,7 +86,8 @@ public class RepositoryTest extends AbstractFedoraTest {
 	public void mintDepositRecordPidTest() {
 		PID pid = repository.mintDepositRecordPid();
 
-		assertTrue(pid.getRepositoryPath().contains(RepositoryPathConstants.DEPOSIT_RECORD_BASE));
+		assertEquals(pid.getQualifier(), RepositoryPathConstants.DEPOSIT_RECORD_BASE);
+		assertTrue(pid.getQualifiedId().startsWith(RepositoryPathConstants.DEPOSIT_RECORD_BASE));
 	}
 
 	@Test
