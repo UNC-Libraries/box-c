@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.sword.server.deposit;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -53,7 +54,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 		if (deposit.getFile() != null) {
 			File dataDir = new File(dir, "data");
 			dataDir.mkdir();
-			File depositFile = new File(dataDir, deposit.getFilename());
+			File depositFile = new File(dataDir, URLDecoder.decode(deposit.getFilename(), "UTF-8"));
 			try {
 				FileUtils.moveFile(deposit.getFile(), depositFile);
 			} catch (IOException e) {
