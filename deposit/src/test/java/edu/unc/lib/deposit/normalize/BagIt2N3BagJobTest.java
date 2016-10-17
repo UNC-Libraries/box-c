@@ -15,13 +15,8 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.cleanupLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
@@ -61,6 +56,7 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.Stages;
 
@@ -118,13 +114,13 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertEquals(depositBag.size(), 1);
 		
 		Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-		assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(dprop(model, label)).getString());
+		assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
 		assertEquals("Content model was not set", CONTAINER.toString(),
 				bagFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		
 		Resource folder = (Resource) bagFolder.iterator().next();
 		
-		assertEquals("Folder label was not set", folder.getProperty(dprop(model, label)).getString(), "test");
+		assertEquals("Folder label was not set", folder.getProperty(CdrDeposit.label).getString(), "test");
 		assertEquals("Content model was not set", CONTAINER.toString(),
 				folder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		
@@ -137,7 +133,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		NodeIterator childIt = childrenBag.iterator();
 		while (childIt.hasNext()) {
 			Resource file = (Resource) childIt.next();
-			children.put(file.getProperty(dprop(model, label)).getString(), file);
+			children.put(file.getProperty(CdrDeposit.label).getString(), file);
 		}
 		
 		ArgumentCaptor<String> filePathCaptor = ArgumentCaptor.forClass(String.class);
@@ -149,23 +145,23 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertEquals("Content model was not set", SIMPLE.toString(),
 				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
-				file.getProperty(dprop(model, md5sum)).getString());
+				file.getProperty(CdrDeposit.md5sum).getString());
 		assertEquals("File location not set", "tag:/valid-bag/data/test/lorem.txt",
-				file.getProperty(dprop(model, stagingLocation)).getString());
+				file.getProperty(CdrDeposit.stagingLocation).getString());
 		
 		Resource file2 = children.get("ipsum.txt");
 		assertEquals("Content model was not set", SIMPLE.toString(),
 				file2.getPropertyResourceValue(fprop(model, hasModel)).getURI());
 		assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
-				file2.getProperty(dprop(model, md5sum)).getString());
+				file2.getProperty(CdrDeposit.md5sum).getString());
 		assertEquals("File location not set", "tag:/valid-bag/data/test/ipsum.txt",
-				file2.getProperty(dprop(model, stagingLocation)).getString());
+				file2.getProperty(CdrDeposit.stagingLocation).getString());
 		
 		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
 		assertTrue(modsFile.exists());
 		
 		Set<String> cleanupSet = new HashSet<>();
-		StmtIterator it = depositBag.listProperties(dprop(model, cleanupLocation));
+		StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);
 		while (it.hasNext()) {
 			Statement stmt = it.nextStatement();
 			cleanupSet.add(stmt.getString());
