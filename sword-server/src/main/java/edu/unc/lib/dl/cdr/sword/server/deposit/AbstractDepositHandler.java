@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.cdr.sword.server.deposit;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,7 +115,6 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		// generic deposit fields
 		status.put(DepositField.uuid.name(), depositPid.getUUID());
 		status.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
-		status.put(DepositField.fileName.name(), deposit.getFilename());
 		status.put(DepositField.fileMimetype.name(), deposit.getMimeType());
 		status.put(DepositField.depositorName.name(), owner);
 		status.put(DepositField.depositorEmail.name(), GroupsThreadStore.getEmail());
@@ -122,6 +123,14 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		status.put(DepositField.packagingType.name(), type.getUri());
 		status.put(DepositField.depositMd5.name(), deposit.getMd5());
 		status.put(DepositField.depositSlug.name(), deposit.getSlug());
+		try {
+			 status.put(DepositField.fileName.name(),  URLDecoder.decode(deposit.getFilename(), "UTF-8"));
+			 status.put(DepositField.depositSlug.name(), URLDecoder.decode(deposit.getSlug(), "UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			log.warn("Unable to properly decode value to UTF-8", e);
+			status.put(DepositField.fileName.name(), deposit.getFilename());
+			status.put(DepositField.depositSlug.name(), deposit.getSlug());
+		}
 		if (priority != null) {
 			status.put(DepositField.priority.name(), priority.name());
 		}
