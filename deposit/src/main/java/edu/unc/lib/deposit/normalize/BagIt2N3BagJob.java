@@ -34,6 +34,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -101,10 +102,11 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		
 		Collection<BagFile> payload = bag.getPayload();
 		
-		Property labelProp = dprop(model, DepositRelationship.label);
+		Property labelProp = CdrDeposit.label;
 		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
-		Property md5sumProp = dprop(model, md5sum);
-		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
+		Property md5sumProp = CdrDeposit.md5sum;
+		Property locationProp = CdrDeposit.stagingLocation;
+		Property cleanupLocProp = CdrDeposit.cleanupLocation;
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		
 		// Turn the bag itself into the top level folder for this deposit
@@ -148,7 +150,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
 					getDepositStatusFactory().addManifest(getDepositUUID(), stagedURI.toString());
-					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+					model.add(depositBag, cleanupLocProp, stagedURI.toString());
 				}
 			} catch (StagingException e) {
 				failJob(e, "Unable to get staged path for file {}", path);
@@ -161,7 +163,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			URI stagedURI = stages.getStagedURI(storedPath.toUri());
 			
 			if (stagedURI != null) {
-				model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+				model.add(depositBag, cleanupLocProp, stagedURI.toString());
 			}
 		} catch (StagingException e) {
 			failJob(e, "Unable to get staged path for file {}", storedPath);
