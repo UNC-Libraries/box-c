@@ -25,7 +25,6 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
@@ -61,7 +60,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 	@Before
 	public void init() {
 		// Generate a new ID every time so that tests don't conflict
-		pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString());
+		pid = repository.mintDepositRecordPid();
 	}
 
 	@Test
@@ -78,11 +77,10 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void getInvalidDepositRecord() throws Exception {
+		// Create a dummy non-depositRecord object
+		client.put(pid.getRepositoryUri()).perform().close();
 
-		Model model = ModelFactory.createDefaultModel();
-
-		repository.createDepositRecord(pid, model);
-
+		// Try (and fail) to retrieve it as a deposit record
 		repository.getDepositRecord(pid);
 	}
 
