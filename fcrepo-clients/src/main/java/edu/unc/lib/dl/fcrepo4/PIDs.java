@@ -55,7 +55,7 @@ public class PIDs {
 		if (value == null) {
 			return null;
 		}
-		
+
 		String id;
 		String qualifier;
 		String componentPath;
@@ -103,10 +103,21 @@ public class PIDs {
 		return new FedoraPID(id, qualifier, componentPath, URI.create(repositoryPath));
 	}
 
+	/**
+	 * Get a PID object with the given qualifier and id
+	 * 
+	 * @param qualifier
+	 * @param id
+	 * @return
+	 */
+	public static PID get(String qualifier, String id) {
+		return get(qualifier + "/" + id);
+	}
+
 	public static void setRepository(Repository repository) {
 		PIDs.repository = repository;
 	}
-	
+
 	/**
 	 * Expands the identifier for a repository object into the full repository path.
 	 * 
