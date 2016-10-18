@@ -87,6 +87,17 @@ public class WorkObject extends ContentObject {
 				PIDs.get(primaryStmt.getResource().getURI()));
 	}
 
+	@Override
+	public ContentObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+		if (!(member instanceof FileObject)) {
+			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
+					+ " as a member of WorkObject " + pid.getQualifiedId());
+		}
+		
+		repository.addMember(this, member);
+		return this;
+	}
+	
 	/**
 	 * Adds a new file object containing the provided input stream as its original file.
 	 * 
@@ -96,7 +107,26 @@ public class WorkObject extends ContentObject {
 	 * @param sha1Checksum
 	 * @return
 	 */
-	public FileObject addDataFile(InputStream contentStream, String filename,
+	public FileObject addDataFile(String filename, InputStream contentStream, String mimetype,
+			String sha1Checksum) {
+		PID fileObjPid = repository.mintContentPid();
+
+		return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum);
+	}
+
+	/**
+	 * Adds a new file object containing the provided input stream as its
+	 * original file, using the provided pid as the identifier for the new
+	 * FileObject.
+	 * 
+	 * @param childPid
+	 * @param contentStream
+	 * @param filename
+	 * @param mimetype
+	 * @param sha1Checksum
+	 * @return
+	 */
+	public FileObject addDataFile(PID childPid, InputStream contentStream, String filename,
 			String mimetype, String sha1Checksum) {
 
 		// Get a PID for the new file object

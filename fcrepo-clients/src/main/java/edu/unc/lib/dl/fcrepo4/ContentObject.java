@@ -22,6 +22,7 @@ import java.util.List;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
@@ -44,6 +45,8 @@ public abstract class ContentObject extends RepositoryObject {
 	public BinaryObject getDescription() {
 		return null;
 	}
+
+	public abstract ContentObject addMember(ContentObject member) throws ObjectTypeMismatchException;
 
 	/**
 	 * Retrieve a list of member content objects for this object.
