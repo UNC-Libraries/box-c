@@ -1306,7 +1306,7 @@ div.deposit-icons {
 /*Student Papers Landing Page*/
 
 #student-papers-heading h2 {
-	font-family: "Avenir Next";
+	font-family: "Avenir Next", "Arial", "Helvetica", sans-serif;
 	font-weight: 600;
 	font-size: 28px;
 	text-align: center;
