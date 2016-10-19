@@ -78,22 +78,14 @@
 <div id="front">
 
 	<div class="row">
-		<div id="front-points">
-			<table>
-				<tbody><tr>
-					<td class="illustration"><img src="/static/front/tube.png"></td>
-					<td>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</td>
-				</tr>
-				<tr>
-					<td class="illustration"><img src="/static/front/frame.png"></td>
-					<td>We ensure your work is accessible and searchable on our website and indexed in search engines.</td>
-				</tr>
-				<tr>
-					<td class="illustration"><img src="/static/front/lock.png"></td>
-					<td>You decide who gets access: we offer a range of access controls including embargoes and granting access to specific groups on campus.</td>
-				</tr>
-			</tbody></table>
-		</div>
+    <div id="front-points">
+    	<img src="/static/front/tube.png">
+    	<p>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</p>
+    	<img src="/static/front/frame.png">
+    	<p>We ensure your work is accessible and searchable on our website and indexed in search engines.</p>
+    	<img src="/static/front/lock.png">
+    	<p>You decide who gets access: we offer a range of access controls including embargoes and granting access to specific groups on campus.</p>
+    		</div>
 		
 		
 	</div>
