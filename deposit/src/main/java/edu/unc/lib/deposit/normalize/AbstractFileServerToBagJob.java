@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 
 import java.io.File;
@@ -40,13 +38,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.staging.Stages;
@@ -85,9 +83,9 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		
 		PID containerPID = new PID("uuid:" + UUID.randomUUID());
 		Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, dprop(model, DepositRelationship.label), 
+		model.add(bagFolder, CdrDeposit.label, 
 				status.get(DepositField.fileName.name()));
-		model.add(bagFolder, fprop(model, FedoraProperty.hasModel), 
+		model.add(bagFolder, RDF.type, 
 				model.createResource(CONTAINER.getURI().toString()));
 		depositBag.add(bagFolder);
 		
@@ -171,10 +169,6 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			return sourceBag;
 		}
 		
-		Property labelProp = dprop(model, DepositRelationship.label);
-		Property hasModelProp = model.createProperty(FedoraProperty.hasModel.getURI().toString());
-		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
-		
 		Bag currentNode = sourceBag;
 		
 		for (int i = 1; i < pathSegments.length - 1; i++) {
@@ -194,8 +188,8 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			Bag childBag = model.createBag(pid.getURI());
 			currentNode.add(childBag);
 			
-			model.add(childBag, labelProp, segment);
-			model.add(childBag, hasModelProp, containerResource);
+			model.add(childBag, CdrDeposit.label, segment);
+			model.add(childBag, RDF.type, Fcrepo4Repository.Container);
 			
 			pathToFolderBagCache.put(folderPath, childBag);
 			
