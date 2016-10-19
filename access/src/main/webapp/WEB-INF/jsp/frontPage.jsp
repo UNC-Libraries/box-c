@@ -66,9 +66,9 @@
               </a>
           </li>
 			<li class="deposit-option">
-              <a href="/forms/carolina-oer">
-              <div class="deposit-icons"><i class="fa fa-book"></i></div>
-              <h2>Open Educational Resources</h2>
+              <a href="/forms/dataset">
+              <div class="deposit-icons"><i class="fa fa-table"></i></div>
+              <h2>Open Access Datasets</h2>
               </a>
           </li>
   		</ul>
