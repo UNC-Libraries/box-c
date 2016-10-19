@@ -19,7 +19,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.staging.Stages;
 import edu.unc.lib.staging.StagingException;
 
@@ -45,7 +45,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 		Set<String> failures = new HashSet<String>();
 
 		Model model = getReadOnlyModel();
-		Property fileLocation = model.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
+		Property fileLocation = CdrDeposit.stagingLocation;
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource) null, fileLocation, (RDFNode) null));
 		while (i.hasNext()) {
 			Statement s = i.nextStatement();
