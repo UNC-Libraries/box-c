@@ -36,6 +36,7 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.vocabulary.DC;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
@@ -53,6 +54,7 @@ import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
+ * Ingests all content objects in the deposit into the Fedora repository.
  * 
  * @author bbpennel
  *
@@ -105,7 +107,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	}
 	
 	/**
-	 * Ingest the children of parentResc as child ContentObjects of destObj. 
+	 * Ingest the children of parentResc as children ContentObjects of destObj. 
 	 * 
 	 * @param destObj the repository object which children objects will be added to.
 	 * @param parentResc the parent resource where children will listed from
@@ -143,6 +145,16 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		}
 	}
 	
+	/**
+	 * Ingests the object in childResc as a FileObject into an existing
+	 * WorkObject.
+	 * 
+	 * @param parent
+	 * @param parentResc
+	 * @param childResc
+	 * @return
+	 * @throws DepositException
+	 */
 	private ContentObject ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 		Model model = ModelFactory.createDefaultModel();
@@ -156,6 +168,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		return obj;
 	}
 	
+	/**
+	 * Ingests the file object represented by childResc as a FileObject wrapped
+	 * in a newly constructed WorkObject. Descriptive information about the file
+	 * is migrated to the WorkObject.
+	 * 
+	 * @param parent
+	 * @param parentResc
+	 * @param childResc
+	 * @return
+	 * @throws DepositException
+	 */
 	private ContentObject ingestFileObjectAsWork(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 		
@@ -179,6 +202,16 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		return newWork;
 	}
 	
+	/**
+	 * Ingests the object represented by childResc as a FileObject as the child
+	 * of the given WorkObject, with the file properties provided with
+	 * childResc.
+	 * 
+	 * @param work
+	 * @param childResc
+	 * @return
+	 * @throws DepositException
+	 */
 	private FileObject addFileToWork(WorkObject work, Resource childResc) throws DepositException {
 		PID childPid = PIDs.get(childResc.getURI());
 		
@@ -191,12 +224,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// Pull out file properties if they are present
 		String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
 		String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
+		String label = getPropertyValue(childResc, CdrDeposit.label);
 		
-		File file = new File(getDepositDirectory(), stagingPath); 
+		File file = new File(getDepositDirectory(), stagingPath);
+		String filename = label != null? label : file.getName();
+		
 		try (InputStream fileStream = new FileInputStream(file)) {
 			
 			// Add the file to the work as the datafile of its own FileObject
-			return work.addDataFile(childPid, fileStream, file.getName(), mimetype, sha1);
+			return work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
 		} catch (FileNotFoundException e) {
 			throw new DepositException("Data file missing for child (" + childPid.getQualifiedId()
 					+ ") of work ("  + work.getPid().getQualifiedId() + "): " + stagingPath, e);
@@ -205,12 +241,27 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		}
 	}
 	
+	/**
+	 * Ingest childResc as a FolderObject as a member of the provided parent object.
+	 * 
+	 * @param parent
+	 * @param parentResc
+	 * @param childResc
+	 * @return
+	 * @throws DepositException
+	 */
 	private ContentObject ingestFolder(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 		
 		PID childPid = PIDs.get(childResc.getURI());
 		
 		Model model = ModelFactory.createDefaultModel();
+		Resource folderResc = model.getResource(childPid.getRepositoryPath());
+		String label = getPropertyValue(childResc, CdrDeposit.label);
+		if (label != null) {
+			folderResc.addProperty(DC.title, label);
+		}
+		
 		// TODO add ACLs
 		
 		FolderObject obj = repository.createFolderObject(childPid, model);
@@ -222,6 +273,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		return obj;
 	}
 	
+	/**
+	 * Ingest childResc as a WorkObject containing all of its child objects, as
+	 * a member of the provided parent object. Establishes the primaryObject
+	 * relationship to one of its children if specified.
+	 * 
+	 * @param parent
+	 * @param parentResc
+	 * @param childResc
+	 * @return
+	 * @throws DepositException
+	 */
 	private ContentObject ingestWork(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 		PID childPid = PIDs.get(childResc.getURI());
@@ -245,6 +307,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		return obj;
 	}
 	
+	/**
+	 * Get the String value of the specified property if present, or return null.
+	 * 
+	 * @param resc
+	 * @param property
+	 * @return
+	 */
 	private String getPropertyValue(Resource resc, Property property) {
 		Statement stmt = resc.getProperty(property);
 		if (stmt == null) {
@@ -262,17 +331,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		} else {
 			return null;
 		}
-	}
-	
-	private ContentObject depositFolder(Resource depositResc) {
-		PID objPid = PIDs.get(depositResc.getURI());
-		
-		Model model = ModelFactory.createDefaultModel();
-		
-		// Create the folder object in fedora
-		FolderObject obj = repository.createFolderObject(objPid, model);
-		
-		return obj;
 	}
 	
 	private void addAclProperties(Resource depositResc, Model aipModel) {
