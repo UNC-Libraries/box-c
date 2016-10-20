@@ -28,6 +28,8 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -62,6 +64,8 @@ public class CleanupDepositJobTest {
 	private ManagementClient client;
 	@Mock
 	private Dataset dataset;
+	@Mock
+	private Repository repo;
 
 	private Map<String, String> depositStatus;
 
@@ -105,6 +109,9 @@ public class CleanupDepositJobTest {
 
 		// save mappings
 		FileUtils.writeStringToFile(modifiedStagesConfig, stages.getLocalConfig());
+		
+		PIDs.setRepository(repo);
+		when(repo.getFedoraBase()).thenReturn("http://www.fcrepo.com");
 
 		createJob("bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae", "/cleanupDeposit");
 	}

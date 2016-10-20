@@ -1,4 +1,4 @@
-<info:fedora/uuid:foo> <http://cdr.unc.edu/definitions/deposit/stagingLocation> "tag:cdr.lib.unc.edu,2013:/noop_stage/project/folderA/ingested",
+<info:fedora/uuid:foo> <http://cdr.unc.edu/definitions/deposit#stagingLocation> "tag:cdr.lib.unc.edu,2013:/noop_stage/project/folderA/ingested",
 		"tag:cdr.lib.unc.edu,2013:/noop_stage/project/folderB/ingested",
 		"tag:cdr.lib.unc.edu,2013:/noop_stage/project/folderB/also_ingested",
 		"tag:cdr.lib.unc.edu,2013:/clean_files_stage/project/folderA/ingested",
@@ -10,6 +10,6 @@
 		"tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project/folderA/ingested",
 		"tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project/folderB/also_ingested",
 		"tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project/folderB/ingested" .
-<info:fedora/uuid:foo> <http://cdr.unc.edu/definitions/deposit/cleanupLocation> "tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project/folderA/leftover",
+<info:fedora/uuid:foo> <http://cdr.unc.edu/definitions/deposit#cleanupLocation> "tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project/folderA/leftover",
 		"tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project/folderA",
 		"tag:cdr.lib.unc.edu,2013:/clean_extras_stage/project" .
