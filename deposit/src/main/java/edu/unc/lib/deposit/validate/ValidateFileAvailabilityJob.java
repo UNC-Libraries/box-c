@@ -18,6 +18,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.staging.Stages;
@@ -49,7 +50,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource) null, fileLocation, (RDFNode) null));
 		while (i.hasNext()) {
 			Statement s = i.nextStatement();
-			PID p = new PID(s.getSubject().getURI());
+			PID p = PIDs.get(s.getSubject().getURI());
 			String href = s.getObject().asLiteral().getString();
 			hrefs.put(p, href);
 		}

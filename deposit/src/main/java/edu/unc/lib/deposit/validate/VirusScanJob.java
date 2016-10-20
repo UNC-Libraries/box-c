@@ -23,6 +23,7 @@ import com.philvarner.clamavj.ScanResult;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -81,7 +82,7 @@ public class VirusScanJob extends AbstractDepositJob {
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, fileLocation, (RDFNode)null));
 		while (i.hasNext()) {
 			Statement s = i.nextStatement();
-			PID p = new PID(s.getSubject().getURI());
+			PID p = PIDs.get(s.getSubject().getURI());
 			String href = s.getObject().asLiteral().getString();
 			hrefs.put(p, href);
 		}
