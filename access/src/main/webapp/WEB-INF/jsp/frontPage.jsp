@@ -79,13 +79,15 @@
 
 	<div class="row">
     <div id="front-points">
-    	<img src="/static/front/tube.png">
-    	<p>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</p>
-    	<img src="/static/front/frame.png">
-    	<p>We ensure your work is accessible and searchable on our website and indexed in search engines.</p>
-    	<img src="/static/front/lock.png">
-    	<p>You decide who gets access: we offer a range of access controls including embargoes and granting access to specific groups on campus.</p>
-    		</div>
+      <h2>Long-term Preservation</h2>
+        	<p>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</p>
+        	<h2>Accessible &amp; Searchable</h2>
+        	<p>We ensure your work is accessible and searchable on our website and indexed in search engines.</p>
+        	<h2>You Decide Who Gets Access</h2>
+        	<p>We offer a range of access controls including embargoes and granting access to specific groups on campus.</p>
+          <h2>Support for Larger Collections</h2>
+          <p>We offer deposit and preservation support for larger UNC digital collections. <a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact us</a> to deposit your collection.</p>
+        		</div>
 		
 		
 	</div>
