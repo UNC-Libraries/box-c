@@ -625,7 +625,7 @@ ul.fpfeed_list li {
 }
 
 .pipe_list li:last-child {
-  border-right: 0 none;
+	border-right: 0 none;
 }
 
 .navigation_bar {
@@ -1067,7 +1067,7 @@ p.navigation_bar a {
 .about_page h5 {
 	margin-bottom: 6px;
 	padding-left: 10px;
-  font-size: 13px;
+	font-size: 13px;
 }
 
 .about_page a {
@@ -1342,7 +1342,7 @@ div.deposit-icons {
 }
 
 #student-papers-options .button a {
-  text-decoration: none;
+	text-decoration: none;
 	color: #fff;
 	background: #1d759f;
 	padding: 10px 35px 11px 20px;
@@ -1355,17 +1355,17 @@ div.deposit-icons {
 }
 
 #student-papers-options .button a:after {
-  content: "";
-  display: block;
-  width: 14px;
-  height: 22px;
-  background: url(/static/front/chevron-small-white.png);
-  position: absolute;
-  top: 50%;
-  margin-top: -11px;
-  right: 12px;
+	content: "";
+	display: block;
+	width: 14px;
+	height: 22px;
+	background: url(/static/front/chevron-small-white.png);
+	position: absolute;
+	top: 50%;
+	margin-top: -11px;
+	right: 12px;
 }
 
 #student-papers-options form {
-  margin: 32px 0;
+	margin: 32px 0;
 }
