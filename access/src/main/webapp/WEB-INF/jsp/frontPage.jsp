@@ -66,9 +66,9 @@
               </a>
           </li>
 			<li class="deposit-option">
-              <a href="/forms/carolina-oer">
-              <div class="deposit-icons"><i class="fa fa-book"></i></div>
-              <h2>Open Educational Resources</h2>
+              <a href="/forms/dataset">
+              <div class="deposit-icons"><i class="fa fa-table"></i></div>
+              <h2>Open Access Datasets</h2>
               </a>
           </li>
   		</ul>
@@ -78,22 +78,16 @@
 <div id="front">
 
 	<div class="row">
-		<div id="front-points">
-			<table>
-				<tbody><tr>
-					<td class="illustration"><img src="/static/front/tube.png"></td>
-					<td>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</td>
-				</tr>
-				<tr>
-					<td class="illustration"><img src="/static/front/frame.png"></td>
-					<td>We ensure your work is accessible and searchable on our website and indexed in search engines.</td>
-				</tr>
-				<tr>
-					<td class="illustration"><img src="/static/front/lock.png"></td>
-					<td>You decide who gets access: we offer a range of access controls including embargoes and granting access to specific groups on campus.</td>
-				</tr>
-			</tbody></table>
-		</div>
+    <div id="front-points">
+      <h2>Long-term Preservation</h2>
+        	<p>We provide long-term access and safekeeping for scholarly works, datasets, research materials, records, and audiovisual materials produced by the UNC-Chapel Hill community.</p>
+        	<h2>Accessible &amp; Searchable</h2>
+        	<p>We ensure your work is accessible and searchable on our website and indexed in search engines.</p>
+        	<h2>You Decide Who Gets Access</h2>
+        	<p>We offer a range of access controls including embargoes and granting access to specific groups on campus.</p>
+          <h2>Support for Larger Collections</h2>
+          <p>We offer deposit and preservation support for larger UNC digital collections. <a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact us</a> to deposit your collection.</p>
+        		</div>
 		
 		
 	</div>
