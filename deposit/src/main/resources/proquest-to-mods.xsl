@@ -33,9 +33,9 @@
 	<xsl:template match="/">
 		<xsl:choose>
 			<xsl:when test="//DISS_collection">
-				<mods:modsCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-2.xsd">
+				<mods:modsCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-6.xsd">
 					<xsl:for-each select="//DISS_collection/DISS_submission">
-						<mods:mods version="3.2">
+						<mods:mods version="3.6">
 							<xsl:call-template name="DISS_submission"/>
 						</mods:mods>
 					</xsl:for-each>
