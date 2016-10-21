@@ -38,7 +38,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -55,7 +54,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -68,21 +66,13 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 	private Map<String, String> status;
 	
 	private Stages stages;
-	
-	@Mock
-	private Repository repo;
 
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);
 		stages = mock(Stages.class);
-		
 		status = new HashMap<String, String>();
-
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
-		PIDs.setRepository(repo);
-		when(repo.getFedoraBase()).thenReturn("http://www.fcrepo.com");
-
 		Dataset dataset = TDBFactory.createDataset();
 
 		job = new BagIt2N3BagJob();
