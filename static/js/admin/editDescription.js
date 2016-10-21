@@ -113,7 +113,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 		}
 		
 		var editorOptions = {
-			schema : "../../static/schemas/mods-3-5.json",
+			schema : "../../static/schemas/mods-3-6.json",
 			ajaxOptions : {
 				xmlRetrievalPath : "/admin/" + resultObject.id + "/mods",
 				xmlUploadPath : "/admin/describe/" + resultObject.id
