@@ -15,10 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,13 +36,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.staging.Stages;
@@ -83,12 +80,11 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 		Model model = depositBag.getModel();
 		Map<String, String> status = getDepositStatus();
 		
-		PID containerPID = new PID("uuid:" + UUID.randomUUID());
+		PID containerPID = createPID();
 		Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, dprop(model, DepositRelationship.label), 
+		model.add(bagFolder, CdrDeposit.label, 
 				status.get(DepositField.fileName.name()));
-		model.add(bagFolder, fprop(model, FedoraProperty.hasModel), 
-				model.createResource(CONTAINER.getURI().toString()));
+		model.add(bagFolder, RDF.type, Cdr.Folder);
 		depositBag.add(bagFolder);
 		
 		// Cache the source bag folder
@@ -142,7 +138,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	
 	private PID createPID() {
 		UUID uuid = UUID.randomUUID();
-		PID pid = new PID("uuid:" + uuid.toString());
+		PID pid = PIDs.get(uuid.toString());
 		
 		return pid;
 	}
@@ -171,10 +167,6 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			return sourceBag;
 		}
 		
-		Property labelProp = dprop(model, DepositRelationship.label);
-		Property hasModelProp = model.createProperty(FedoraProperty.hasModel.getURI().toString());
-		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
-		
 		Bag currentNode = sourceBag;
 		
 		for (int i = 1; i < pathSegments.length - 1; i++) {
@@ -189,13 +181,13 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			
 			log.debug("No cached folder bag for {}, creating new one", folderPath);
 			// No existing folder was found, create one
-			PID pid = new PID("uuid:" + UUID.randomUUID().toString());
+			PID pid = createPID();
 			
 			Bag childBag = model.createBag(pid.getURI());
 			currentNode.add(childBag);
 			
-			model.add(childBag, labelProp, segment);
-			model.add(childBag, hasModelProp, containerResource);
+			model.add(childBag, CdrDeposit.label, segment);
+			model.add(childBag, RDF.type, Cdr.Folder);
 			
 			pathToFolderBagCache.put(folderPath, childBag);
 			

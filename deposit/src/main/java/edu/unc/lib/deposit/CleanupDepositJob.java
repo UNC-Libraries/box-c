@@ -1,7 +1,5 @@
 package edu.unc.lib.deposit;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -17,11 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.staging.CleanupPolicy;
 import edu.unc.lib.staging.SharedStagingArea;
 import edu.unc.lib.staging.Stages;
@@ -108,8 +105,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 	}
 	
 	private void deleteStagedFiles(Model m) {
-		Property fileLocation = dprop(m, DepositRelationship.stagingLocation);
-		NodeIterator ni = m.listObjectsOfProperty(fileLocation);
+		NodeIterator ni = m.listObjectsOfProperty(CdrDeposit.stagingLocation);
 		try {
 			while (ni.hasNext()) {
 				RDFNode n = ni.nextNode();
@@ -165,7 +161,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		List<String> cleanupPaths = new ArrayList<>();
 		
 		// Create a list of files that need to be cleaned up
-		NodeIterator it = m.listObjectsOfProperty(dprop(m, DepositRelationship.cleanupLocation));
+		NodeIterator it = m.listObjectsOfProperty(CdrDeposit.cleanupLocation);
 		try {
 			while (it.hasNext()) {
 				RDFNode n = it.nextNode();

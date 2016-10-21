@@ -28,7 +28,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
-public class PackageIntegrityCheckJobTest {
+public class PackageIntegrityCheckJobTest extends AbstractNormalizationJobTest {
 
 	@Autowired
 	File depositsDirectory;

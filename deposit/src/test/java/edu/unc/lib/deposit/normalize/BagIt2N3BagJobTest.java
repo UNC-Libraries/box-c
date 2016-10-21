@@ -15,11 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -44,6 +40,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -53,9 +50,11 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.Stages;
@@ -70,12 +69,10 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void setup() throws Exception {
+		initMocks(this);
 		stages = mock(Stages.class);
-		
 		status = new HashMap<String, String>();
-
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
-
 		Dataset dataset = TDBFactory.createDataset();
 
 		job = new BagIt2N3BagJob();
@@ -115,14 +112,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		
 		Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
 		assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
-		assertEquals("Content model was not set", CONTAINER.toString(),
-				bagFolder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		assertTrue("Missing RDF type", bagFolder.hasProperty(RDF.type, Cdr.Folder ));
 		
 		Resource folder = (Resource) bagFolder.iterator().next();
 		
 		assertEquals("Folder label was not set", folder.getProperty(CdrDeposit.label).getString(), "test");
-		assertEquals("Content model was not set", CONTAINER.toString(),
-				folder.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		assertTrue("Missing RDF type", folder.hasProperty(RDF.type, Cdr.Folder));
 		
 		Bag childrenBag = model.getBag(folder.getURI());
 		
@@ -142,22 +137,20 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
 		
 		Resource file = children.get("lorem.txt");
-		assertEquals("Content model was not set", SIMPLE.toString(),
-				file.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
 				file.getProperty(CdrDeposit.md5sum).getString());
 		assertEquals("File location not set", "tag:/valid-bag/data/test/lorem.txt",
 				file.getProperty(CdrDeposit.stagingLocation).getString());
 		
 		Resource file2 = children.get("ipsum.txt");
-		assertEquals("Content model was not set", SIMPLE.toString(),
-				file2.getPropertyResourceValue(fprop(model, hasModel)).getURI());
+		assertTrue("Missing RDF type", file2.hasProperty(RDF.type, Cdr.FileObject));
 		assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
 				file2.getProperty(CdrDeposit.md5sum).getString());
 		assertEquals("File location not set", "tag:/valid-bag/data/test/ipsum.txt",
 				file2.getProperty(CdrDeposit.stagingLocation).getString());
 		
-		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
+		File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
 		assertTrue(modsFile.exists());
 		
 		Set<String> cleanupSet = new HashSet<>();

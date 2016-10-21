@@ -28,6 +28,7 @@ import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -49,7 +50,7 @@ public class DepositMessageHandler {
 	private Dataset dataset;
 
 	public void sendDepositMessage(String depositUUID) {
-		PID depositPID = new PID("uuid:" + depositUUID);
+		PID depositPID = PIDs.get(depositUUID);
 
 		// Retrieve the list of top level PIDs which were ingested
 		List<PID> ingestedPIDs = new ArrayList<>();
@@ -61,7 +62,7 @@ public class DepositMessageHandler {
 			List<String> ingested = new ArrayList<>();
 			DepositGraphUtils.walkChildrenDepthFirst(depositBag, ingested, false);
 			for (String id : ingested) {
-				ingestedPIDs.add(new PID(id));
+				ingestedPIDs.add(PIDs.get(id));
 			}
 		} finally {
 			if (dataset.isInTransaction()) {
@@ -72,7 +73,7 @@ public class DepositMessageHandler {
 
 		// Get deposit details
 		Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
-		PID destinationPID = new PID(depositStatus.get(DepositField.containerId.name()));
+		PID destinationPID = PIDs.get(DepositField.containerId.name());
 		String depositorName = depositStatus.get(DepositField.depositorName.name());
 
 		operationsMessageSender.sendAddOperation(depositorName, Arrays.asList(destinationPID), ingestedPIDs,
