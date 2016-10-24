@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -34,6 +35,7 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -237,6 +239,10 @@ public class RepositoryObjectFactory {
 		} catch (IOException e) {
 			throw new FedoraException("Unable to create binary at " + path, e);
 		} catch (FcrepoOperationFailedException e) {
+			if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
+				throw new ChecksumMismatchException("Failed to create binary for " + path + ", provided SHA1 checksum "
+						+ checksum + " did not match the submitted content according to the repository.", e);
+			}
 			throw ClientFaultResolver.resolve(e);
 		}
 
