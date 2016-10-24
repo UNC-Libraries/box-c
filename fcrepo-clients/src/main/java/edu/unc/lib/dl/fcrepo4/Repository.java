@@ -568,11 +568,6 @@ public class Repository {
 	}
 
 	public FcrepoClient getClient() {
-
-		if (client == null) {
-			client = FcrepoClient.client().credentials(authUsername, authPassword).authScope(authHost)
-					.throwExceptionOnFailure().build();
-		}
 		return client;
 	}
 
