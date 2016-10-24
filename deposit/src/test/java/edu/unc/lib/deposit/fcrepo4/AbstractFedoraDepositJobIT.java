@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
@@ -83,10 +84,16 @@ public class AbstractFedoraDepositJobIT {
 	}
 
 	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(serverAddress + "/" + name);
+		URI baseUri = URI.create(serverAddress + name);
 		// Create a parent object to put the binary into
 		try (FcrepoResponse response = client.put(baseUri).perform()) {
 			return response.getLocation();
+		} catch (FcrepoOperationFailedException e) {
+			// Eat conflict exceptions since this will run multiple times
+			if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+				throw e;
+			}
+			return baseUri;
 		}
 	}
 	

@@ -19,8 +19,11 @@ import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.InputStream;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.vocabulary.DC;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
@@ -129,11 +132,11 @@ public class WorkObject extends ContentObject {
 	public FileObject addDataFile(PID childPid, InputStream contentStream, String filename,
 			String mimetype, String sha1Checksum) {
 
-		// Get a PID for the new file object
-		PID fileObjPid = repository.mintContentPid();
+		Model model = ModelFactory.createDefaultModel();
+		model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
 
 		// Create the file object
-		FileObject fileObj = repository.createFileObject(fileObjPid, null);
+		FileObject fileObj = repository.createFileObject(childPid, null);
 		// Add the content to it as its original file
 		fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 
