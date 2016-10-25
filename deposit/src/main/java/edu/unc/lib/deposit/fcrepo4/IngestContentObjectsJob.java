@@ -66,6 +66,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 	private boolean resumed;
 
+	// The set of object paths from this deposit which already exist in the repository
 	private Set<String> previouslyIngestedSet;
 
 	@Autowired
@@ -292,7 +293,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		try (InputStream fileStream = new FileInputStream(file)) {
 			// Add the file to the work as the datafile of its own FileObject
-			return work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
+			FileObject fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
+			// Record the size of the file for throughput stats
+			metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
+			return fileObj;
 		} catch (FileNotFoundException e) {
 			throw new DepositException("Data file missing for child (" + childPid.getQualifiedId()
 					+ ") of work ("  + work.getPid().getQualifiedId() + "): " + stagingPath, e);

@@ -90,6 +90,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
+		setField(job, "metricsClient", metricsClient);
 		job.init();
 
 		depositPid = job.getDepositPID();

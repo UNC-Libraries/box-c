@@ -80,6 +80,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
+		setField(job, "metricsClient", metricsClient);
 		job.init();
 
 		createBaseContainer(RepositoryPathConstants.CONTENT_BASE);

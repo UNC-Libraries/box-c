@@ -30,6 +30,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 
@@ -56,6 +57,8 @@ public class AbstractDepositJobTest {
 	protected JobStatusFactory jobStatusFactory;
 	@Mock
 	protected DepositStatusFactory depositStatusFactory;
+	@Mock
+	protected ActivityMetricsClient metricsClient;
 	
 	protected String jobUUID;
 	

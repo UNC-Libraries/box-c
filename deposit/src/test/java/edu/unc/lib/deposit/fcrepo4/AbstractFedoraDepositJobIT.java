@@ -38,6 +38,7 @@ import com.hp.hpl.jena.query.Dataset;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 
@@ -62,6 +63,8 @@ public class AbstractFedoraDepositJobIT {
 	protected DepositStatusFactory depositStatusFactory;
 	@Autowired
 	protected FcrepoClient client;
+	@Autowired
+	protected ActivityMetricsClient metricsClient;
 	@Rule
 	public final TemporaryFolder tmpFolder = new TemporaryFolder();
 	
