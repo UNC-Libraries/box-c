@@ -9,10 +9,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 public class JobStatusFactory {
 
@@ -115,6 +115,13 @@ public class JobStatusFactory {
 		jedis.hincrBy(JOB_STATUS_PREFIX + jobUUID,
 				JobField.num.name(), amount);
 		getJedisPool().returnResource(jedis);
+	}
+
+	public void setCompletion(String jobUUID, int amount) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+				JobField.num.name(), Integer.toString(amount));
+		}
 	}
 
 	public String getJobState(String uuid) {

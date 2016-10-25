@@ -21,8 +21,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +37,6 @@ import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.DC;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -63,20 +64,56 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 public class IngestContentObjectsJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestContentObjectsJob.class);
 
+	private boolean resumed;
+
+	private Set<String> previouslyIngestedSet;
+
 	@Autowired
 	private ActivityMetricsClient metricsClient;
 
 	public IngestContentObjectsJob() {
-		// TODO Auto-generated constructor stub
+		super();
 	}
 
 	public IngestContentObjectsJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
-		// TODO Auto-generated constructor stub
 	}
 
-	private void preprocessStructure() {
+	/**
+	 * Determines how many operations will be required to complete this deposit.
+	 * 
+	 * @param depositBag
+	 */
+	private void calculateWorkRemaining(Bag depositBag) {
+		List<String> contentPaths = new ArrayList<>();
+		DepositGraphUtils.walkChildrenDepthFirst(depositBag, contentPaths, true);
+		// Number of actions is the number of ingest objects plus deposit record
+		setTotalClicks(contentPaths.size());
 
+		// Deposit is restarting from part way through
+		resumed = getDepositStatusFactory().isResumedDeposit(getDepositUUID());
+		if (resumed) {
+			populatePreviouslyIngested(contentPaths);
+		}
+	}
+
+	/**
+	 * Generates a list of objects in this deposit which already exist in the
+	 * repository, updating the status of the job to indicate how much work is
+	 * left
+	 * 
+	 * @param contentPaths
+	 */
+	private void populatePreviouslyIngested(List<String> contentPaths) {
+		// Generate a list of object paths from this deposit already in fedora
+		previouslyIngestedSet = new HashSet<>();
+		for (String path : contentPaths) {
+			if (repository.objectExists(PIDs.get(path))) {
+				previouslyIngestedSet.add(path);
+			}
+		}
+		// Update the ingested object count to reflect the number in the repo
+		getJobStatusFactory().setCompletion(getJobUUID(), previouslyIngestedSet.size());
 	}
 
 	@Override
@@ -86,20 +123,23 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		Model model = getReadOnlyModel();
 
-		// establish task size
-		List<Resource> topDownObjects = DepositGraphUtils.getObjectsBreadthFirst(model, getDepositPID());
-		setTotalClicks(topDownObjects.size());
-
 		log.debug("Ingesting content for deposit {} containing {} objects", getDepositPID());
 
-		// Build the deposit record object
-		// DepositRecord depositRecord = repository.getDepositRecord(getDepositPID());
-
+		// Retrieve the object where this deposit will be ingested to.
 		Map<String, String> depositStatus = getDepositStatus();
 		ContentObject destObj = repository.getContentObject(PIDs.get(
 				depositStatus.get(DepositField.containerId.name())));
 
 		Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
+
+		calculateWorkRemaining(depositBag);
+
+		// Mark the deposit as in progress, if it was not already
+		if (!resumed) {
+			getDepositStatusFactory().setIngestInprogress(getDepositUUID(), true);
+		}
+
+		// Ingest objects included in this deposit into the destination object
 		try {
 			ingestChildren(destObj, depositBag);
 		} catch (DepositException | FedoraException e) {
@@ -125,13 +165,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			while (iterator.hasNext()) {
 				Resource childResc = (Resource) iterator.next();
 
-				List<Resource> types = getResourceList(childResc, RDF.type);
 				// Ingest the child according to its object type
-				if (types.contains(Cdr.Folder)) {
+				if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
 					ingestFolder(destObj, parentResc, childResc);
-				} else if (types.contains(Cdr.Work)) {
+				} else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
 					ingestWork(destObj, parentResc, childResc);
-				} else if (types.contains(Cdr.FileObject)) {
+				} else if (childResc.hasProperty(RDF.type, Cdr.FileObject)) {
 					if (destObj instanceof WorkObject) {
 						// File object is being added to a work, go ahead
 						ingestFileObject(destObj, parentResc, childResc);
@@ -156,8 +195,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private ContentObject ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
+
+		if (skipResumed(childResc)) {
+			return;
+		}
 
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
@@ -165,7 +208,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		FileObject obj = addFileToWork(work, childResc);
 		// TODO add description to file object
 
-		return obj;
+		// Increment the count of objects deposited
+		addClicks(1);
 	}
 
 	/**
@@ -179,8 +223,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private ContentObject ingestFileObjectAsWork(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestFileObjectAsWork(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
+
+		if (skipResumed(childResc)) {
+			return;
+		}
 
 		PID childPid = PIDs.get(childResc.getURI());
 
@@ -200,7 +248,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		}
 		Resource workResc = workModel.createResource(workPid.getRepositoryPath());
 		workResc.addProperty(DC.title, label);
-		
+
 		WorkObject newWork = repository.createWorkObject(workPid, workModel);
 		// TODO add the FileObject's description to the work instead
 
@@ -211,7 +259,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// Add the newly created work to its parent
 		parent.addMember(newWork);
 
-		return newWork;
+		// Increment the count of objects deposited
+		addClicks(1);
 	}
 
 	/**
@@ -261,24 +310,32 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private ContentObject ingestFolder(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestFolder(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 
 		PID childPid = PIDs.get(childResc.getURI());
+		FolderObject obj;
+		if (skipResumed(childResc)) {
+			// Resuming, retrieve the existing folder object
+			obj = repository.getFolderObject(childPid);
+		} else {
+			// Create the new folder
+			Model model = ModelFactory.createDefaultModel();
+			Resource folderResc = model.getResource(childPid.getRepositoryPath());
+			populateAIPProperties(childResc, folderResc);
 
-		Model model = ModelFactory.createDefaultModel();
-		Resource folderResc = model.getResource(childPid.getRepositoryPath());
-		populateAIPProperties(childResc, folderResc);
+			// TODO add ACLs
 
-		// TODO add ACLs
+			obj = repository.createFolderObject(childPid, model);
+			parent.addMember(obj);
+			// TODO add description
 
-		FolderObject obj = repository.createFolderObject(childPid, model);
-		parent.addMember(obj);
-		// TODO add description
+			// Increment the count of objects deposited prior to adding children
+			addClicks(1);
+		}
 
+		// ingest all children of the folder
 		ingestChildren(obj, childResc);
-
-		return obj;
 	}
 
 	/**
@@ -292,30 +349,40 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private ContentObject ingestWork(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestWork(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 		PID childPid = PIDs.get(childResc.getURI());
 
-		Model model = ModelFactory.createDefaultModel();
-		Resource workResc = model.getResource(childPid.getRepositoryPath());
-		populateAIPProperties(childResc, workResc);
+		WorkObject obj;
+		boolean skip = skipResumed(childResc);
+		if (skip) {
+			obj = repository.getWorkObject(childPid);
+		} else {
+			Model model = ModelFactory.createDefaultModel();
+			Resource workResc = model.getResource(childPid.getRepositoryPath());
+			populateAIPProperties(childResc, workResc);
 
-		// TODO add ACLs
+			// TODO add ACLs
 
-		WorkObject obj = repository.createWorkObject(childPid, model);
-		parent.addMember(obj);
-		// TODO add description
+			obj = repository.createWorkObject(childPid, model);
+			parent.addMember(obj);
+			// TODO add description
+
+			// Increment the count of objects deposited prior to adding children
+			addClicks(1);
+		}
 
 		ingestChildren(obj, childResc);
 
-		// Set the primary object for this work if one was specified
-		Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
-		if (primaryStmt != null) {
-			String primaryPath = primaryStmt.getResource().getURI();
-			obj.setPrimaryObject(PIDs.get(primaryPath));
+		// Avoid adding primaryObject relation for a resuming deposit if already present
+		if (!skip || !obj.getResource().hasProperty(Cdr.primaryObject)) {
+			// Set the primary object for this work if one was specified
+			Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
+			if (primaryStmt != null) {
+				String primaryPath = primaryStmt.getResource().getURI();
+				obj.setPrimaryObject(PIDs.get(primaryPath));
+			}
 		}
-
-		return obj;
 	}
 
 	private void populateAIPProperties(Resource dResc, Resource aResc) {
@@ -323,6 +390,21 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		if (label != null) {
 			aResc.addProperty(DC.title, label);
 		}
+	}
+
+	/**
+	 * Returns true if the resource represents an object that does not need to
+	 * be deposited due to having been previously ingested
+	 * 
+	 * @param resc
+	 * @return
+	 */
+	private boolean skipResumed(Resource resc) {
+		if (!resumed) {
+			return false;
+		}
+		String path = resc.getURI();
+		return previouslyIngestedSet.contains(path);
 	}
 
 	/**
@@ -340,8 +422,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		return stmt.getString();
 	}
 
+	/**
+	 * Return an iterator for the children of the given resource, base on what
+	 * type of container is is.
+	 * 
+	 * @param resc
+	 * @return
+	 */
 	private NodeIterator getChildIterator(Resource resc) {
-		// Get an iterator for this resource's children, depending on what type of container it is.
 		if (resc.hasProperty(RDF.type, RDF.Bag)) {
 			return resc.getModel().getBag(resc).iterator();
 		} else if (resc.hasProperty(RDF.type, RDF.Seq)) {
@@ -354,17 +442,4 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	private void addAclProperties(Resource depositResc, Model aipModel) {
 		// TODO add access control properties
 	}
-
-	private List<Resource> getResourceList(Resource resc, Property property) {
-		List<Resource> types = new ArrayList<>();
-
-		for (StmtIterator it = resc.listProperties(RDF.type); it.hasNext();) {
-			Statement stmt = it.nextStatement();
-
-			types.add(stmt.getResource());
-		}
-
-		return types;
-	}
-
 }

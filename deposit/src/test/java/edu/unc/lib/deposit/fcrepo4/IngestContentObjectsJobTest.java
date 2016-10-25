@@ -17,16 +17,21 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -36,17 +41,23 @@ import org.junit.Test;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -71,6 +82,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		Dataset dataset = TDBFactory.createDataset();
 
 		job = new IngestContentObjectsJob();
+		job.setJobUUID(jobUUID);
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
@@ -124,6 +136,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		verify(repository).createFolderObject(eq(folderPid), any(Model.class));
 		verify(destinationObj).addMember(eq(folder));
+		verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 	}
 
 	private Bag setupWork(PID workPid, WorkObject work, Model model) {
@@ -172,6 +185,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
 				eq(supMime), anyString());
 		verify(work).setPrimaryObject(mainPid);
+
+		verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 	}
 
 	/**
@@ -246,8 +261,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		verify(work).setPrimaryObject(filePid);
 		verify(work).addDataFile(eq(filePid), any(InputStream.class), eq(fileLoc),
 				eq(fileMime), anyString());
+
+		// Only one ticket should register since the work object is generated
+		verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 	}
-	
+
 	@Test(expected = JobFailedException.class)
 	public void ingestfileObjectAsWorkNoStaging() {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
@@ -258,9 +276,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
-		
+
 		PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
-		
+
 		Resource fileResc = model.createResource(filePid.getRepositoryPath());
 		fileResc.addProperty(RDF.type, Cdr.FileObject);
 		fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
@@ -269,6 +287,147 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		job.closeModel();
 
 		job.run();
+	}
+
+	/**
+	 * Test resuming a Work ingest where the work and the main file were already
+	 * ingested
+	 */
+	@Test
+	public void resumeIngestWorkObjectTest() {
+		// Mark the deposit as resumed
+		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
+
+		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+		Model model = job.getWritableModel();
+		WorkObject work = mock(WorkObject.class);
+		Bag workBag = setupWork(workPid, work, model);
+		when(repository.getWorkObject(eq(workPid))).thenReturn(work);
+
+		Model workModel = ModelFactory.createDefaultModel();
+		Resource workResc = workModel.createResource(workPid.getRepositoryPath())
+				.addProperty(RDF.type, Cdr.Work);
+		when(work.getResource()).thenReturn(workResc);
+
+		String mainLoc = "pdf.pdf";
+		String mainMime = "application/pdf";
+		PID mainPid = addFileObject(workBag, mainLoc, mainMime);
+		String supLoc = "text.txt";
+		String supMime = "text/plain";
+		PID supPid = addFileObject(workBag, supLoc, supMime);
+
+		workBag.asResource().addProperty(Cdr.primaryObject,
+				model.getResource(mainPid.getRepositoryPath()));
+
+		job.closeModel();
+
+		when(repository.objectExists(eq(workPid))).thenReturn(true);
+		when(repository.objectExists(eq(mainPid))).thenReturn(true);
+
+		job.run();
+
+		// Check that the work object was retrieved rather than created
+		verify(repository).objectExists(eq(workPid));
+		verify(repository, never()).createWorkObject(any(PID.class));
+		verify(repository).getWorkObject(any(PID.class));
+
+		// Main file object should not be touched
+		verify(repository).objectExists(eq(mainPid));
+		verify(work, never()).addDataFile(eq(mainPid), any(InputStream.class),
+				anyString(), anyString(), anyString());
+		verify(repository, never()).getFileObject(eq(mainPid));
+
+		// Supplemental file should be created
+		verify(repository).objectExists(eq(supPid));
+		verify(repository, never()).getFileObject(eq(supPid));
+		verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
+				eq(supMime), anyString());
+
+		// Ensure that the primary object still got set
+		verify(work).setPrimaryObject(mainPid);
+
+		verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(2));
+		verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+	}
+
+	@Test
+	public void resumeIngestFileObjectAsWorkTest() {
+		// Mark the deposit as resumed
+		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
+
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		String fileLoc = "text.txt";
+		String fileMime = "text/plain";
+		PID filePid = addFileObject(depBag, fileLoc, fileMime);
+
+		when(repository.objectExists(eq(filePid))).thenReturn(true);
+
+		job.closeModel();
+
+		job.run();
+
+		// Check that the generated work was neither generated nor linked
+		verify(repository, never()).createWorkObject(any(PID.class), any(Model.class));
+		verify(destinationObj, never()).addMember(any(ContentObject.class));
+
+		// Only tick should be from preprocessing
+		verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), anyInt());
+		verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(1));
+	}
+
+	/**
+	 * Check that no significant deposit behaviors change with a file object as
+	 * work deposit due to resume being turned on
+	 */
+	@Test
+	public void resumeIngestNoCompleteTest() {
+		// Mark the deposit as resumed
+		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
+
+		ingestFileObjectAsWorkTest();
+
+		// No preprocessing ticks
+		verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(0));
+	}
+
+	@Test
+	public void permTest() {
+		Model model = ModelFactory.createDefaultModel();
+		Resource resource = model.createResource("http://example.com/stuff");
+		resource.addProperty(RDF.type, Cdr.Work);
+		resource.addProperty(RDF.type, PcdmModels.Collection);
+
+		{
+			long start = System.currentTimeMillis();
+			for (int i = 0; i < 50000; i++) {
+				List<Resource> list = getResourceList(resource, RDF.type);
+				list.contains(Cdr.Folder);
+				list.contains(Cdr.Work);
+			}
+			System.out.println((System.currentTimeMillis() - start));
+		}
+		{
+			long start = System.currentTimeMillis();
+			for (int i = 0; i < 50000; i++) {
+				resource.hasProperty(RDF.type, Cdr.Folder);
+				resource.hasProperty(RDF.type, Cdr.Work);
+			}
+			System.out.println((System.currentTimeMillis() - start));
+		}
+	}
+
+	private List<Resource> getResourceList(Resource resc, Property property) {
+		List<Resource> types = new ArrayList<>();
+
+		for (StmtIterator it = resc.listProperties(RDF.type); it.hasNext();) {
+			Statement stmt = it.nextStatement();
+
+			types.add(stmt.getResource());
+		}
+
+		return types;
 	}
 
 	private PID addFileObject(Bag parent, String stagingLocation, String mimetype) {

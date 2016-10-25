@@ -1,10 +1,10 @@
 package edu.unc.lib.dl.util;
 
+import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
 
 import java.text.SimpleDateFormat;
 import java.util.HashSet;
@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 public class DepositStatusFactory {
 
@@ -127,11 +127,17 @@ public class DepositStatusFactory {
 	}
 
 	public boolean isResumedDeposit(String depositUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		try {
-			return jedis.exists(INGESTS_UPLOADED_PREFIX + depositUUID);
-		} finally {
-			getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			String value = jedis.hget(DEPOSIT_STATUS_PREFIX + depositUUID,
+					DepositField.ingestInprogress.name());
+			return Boolean.parseBoolean(value);
+		}
+	}
+
+	public void setIngestInprogress(String depositUUID, boolean value) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID,
+					DepositField.ingestInprogress.name(), Boolean.toString(value));
 		}
 	}
 
