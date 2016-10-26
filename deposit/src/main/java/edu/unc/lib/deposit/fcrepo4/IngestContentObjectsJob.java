@@ -428,7 +428,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 	/**
 	 * Return an iterator for the children of the given resource, base on what
-	 * type of container is is.
+	 * type of container it is.
 	 * 
 	 * @param resc
 	 * @return

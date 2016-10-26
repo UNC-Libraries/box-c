@@ -29,9 +29,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -42,10 +40,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
@@ -57,7 +52,6 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -391,44 +385,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		// No preprocessing ticks
 		verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(0));
-	}
-
-	@Test
-	public void permTest() {
-		Model model = ModelFactory.createDefaultModel();
-		Resource resource = model.createResource("http://example.com/stuff");
-		resource.addProperty(RDF.type, Cdr.Work);
-		resource.addProperty(RDF.type, PcdmModels.Collection);
-
-		{
-			long start = System.currentTimeMillis();
-			for (int i = 0; i < 50000; i++) {
-				List<Resource> list = getResourceList(resource, RDF.type);
-				list.contains(Cdr.Folder);
-				list.contains(Cdr.Work);
-			}
-			System.out.println((System.currentTimeMillis() - start));
-		}
-		{
-			long start = System.currentTimeMillis();
-			for (int i = 0; i < 50000; i++) {
-				resource.hasProperty(RDF.type, Cdr.Folder);
-				resource.hasProperty(RDF.type, Cdr.Work);
-			}
-			System.out.println((System.currentTimeMillis() - start));
-		}
-	}
-
-	private List<Resource> getResourceList(Resource resc, Property property) {
-		List<Resource> types = new ArrayList<>();
-
-		for (StmtIterator it = resc.listProperties(RDF.type); it.hasNext();) {
-			Statement stmt = it.nextStatement();
-
-			types.add(stmt.getResource());
-		}
-
-		return types;
 	}
 
 	private PID addFileObject(Bag parent, String stagingLocation, String mimetype) {
