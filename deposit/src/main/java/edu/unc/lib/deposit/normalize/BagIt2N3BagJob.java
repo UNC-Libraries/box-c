@@ -15,11 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
-
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -33,9 +28,10 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.staging.StagingException;
 import gov.loc.repository.bagit.Bag;
@@ -101,11 +97,11 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		
 		Collection<BagFile> payload = bag.getPayload();
 		
-		Property labelProp = dprop(model, DepositRelationship.label);
-		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
-		Property md5sumProp = dprop(model, md5sum);
-		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
-		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
+		Property labelProp = CdrDeposit.label;
+		Property typeProp = RDF.type;
+		Property md5sumProp = CdrDeposit.md5sum;
+		Property locationProp = CdrDeposit.stagingLocation;
+		Property cleanupLocProp = CdrDeposit.cleanupLocation;
 		
 		// Turn the bag itself into the top level folder for this deposit
 		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
@@ -124,9 +120,12 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			// add checksum, size, label
 			String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
 			model.add(fileResource, labelProp, filename);
-			model.add(fileResource, hasModelProp, simpleResource);
+			model.add(fileResource, typeProp, Cdr.FileObject);
 			if (checksums.containsKey(Manifest.Algorithm.MD5)) {
 				model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.MD5));
+			}
+			if (checksums.containsKey(Manifest.Algorithm.SHA1)) {
+				model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.SHA1));
 			}
 			
 			// Find staged path for the file
@@ -148,7 +147,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 				URI stagedURI = stages.getStagedURI(path.toUri());
 				if (stagedURI != null) {
 					getDepositStatusFactory().addManifest(getDepositUUID(), stagedURI.toString());
-					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+					model.add(depositBag, cleanupLocProp, stagedURI.toString());
 				}
 			} catch (StagingException e) {
 				failJob(e, "Unable to get staged path for file {}", path);
@@ -161,7 +160,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			URI stagedURI = stages.getStagedURI(storedPath.toUri());
 			
 			if (stagedURI != null) {
-				model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
+				model.add(depositBag, cleanupLocProp, stagedURI.toString());
 			}
 		} catch (StagingException e) {
 			failJob(e, "Unable to get staged path for file {}", storedPath);

@@ -26,6 +26,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -198,7 +199,7 @@ public class DepositEmailHandler {
 			objectPid = status.get(DepositField.containerId.name());
 		} 
 		
-		ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(new PID(objectPid));
+		ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(PIDs.get(objectPid));
 		Date embargoUntil = accessControls.getLastActiveEmbargoUntilDate();
 		boolean hasPatronRoleForPublicGroup = accessControls.getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
 		
@@ -238,7 +239,7 @@ public class DepositEmailHandler {
 	
 	private String getMainObjectPidForDeposit(String depositUUID) {
 		try {
-			PID depositPID = new PID("uuid:" + depositUUID);
+			PID depositPID = PIDs.get(depositUUID);
 			
 			String uri = depositPID.getURI();
 			this.dataset.begin(ReadWrite.READ);
@@ -252,7 +253,7 @@ public class DepositEmailHandler {
 			
 			// There is a "main object" if the deposit has exactly one top-level object.
 			if (topLevelPids.size() == 1) {
-				return new PID(topLevelPids.get(0)).toString();
+				return PIDs.get(topLevelPids.get(0)).toString();
 			} else {
 				return null;
 			}

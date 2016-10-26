@@ -24,7 +24,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -72,6 +72,18 @@ public class Repository {
 	private RepositoryObjectFactory repositoryFactory;
 
 	private RepositoryObjectDataLoader repositoryObjectDataLoader;
+
+	/**
+	 * Mint a PID for a new deposit record object
+	 * 
+	 * @return PID in the deposit record path
+	 */
+	public PID mintDepositRecordPid() {
+		String uuid = UUID.randomUUID().toString();
+		String id = URIUtil.join(RepositoryPathConstants.DEPOSIT_RECORD_BASE, uuid);
+
+		return PIDs.get(id);
+	}
 
 	/**
 	 * Retrieves an existing DepositRecord object
@@ -127,9 +139,8 @@ public class Repository {
 	 * @throws FedoraException
 	 */
 	public ContentObject getContentObject(PID pid) throws FedoraException {
-		if (!pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE)) {
-			throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
-		}
+		// Reject non-content pids
+		verifyContentPID(pid);
 
 		// No component path provided, the object requested should be a top
 		// level object
@@ -151,6 +162,9 @@ public class Repository {
 				if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
 					return getFileObject(pid, model, etag);
 				}
+				if (resc.hasProperty(RDF.type, Cdr.Folder)) {
+					return getFolderObject(pid, model, etag);
+				}
 
 			} catch (IOException e) {
 				throw new FedoraException("Failed to read model for " + pid, e);
@@ -160,6 +174,53 @@ public class Repository {
 		}
 
 		throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+	}
+
+	/**
+	 * Retrieves an existing FolderObject
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FolderObject getFolderObject(PID pid) throws FedoraException {
+		return getFolderObject(pid, null, null);
+	}
+
+	protected FolderObject getFolderObject(PID pid, Model model, String etag) {
+		FolderObject folderObj = new FolderObject(pid, this, repositoryObjectDataLoader);
+		folderObj.storeModel(model);
+		folderObj.setEtag(etag);
+
+		return folderObj.validateType();
+	}
+
+	/**
+	 * Creates a new FolderObject with the given pid
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FolderObject createFolderObject(PID pid) throws FedoraException {
+		return createFolderObject(pid, null);
+	}
+
+	/**
+	 * Creates a new FolderObject with the given pid and properties.
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FolderObject createFolderObject(PID pid, Model model) throws FedoraException {
+		verifyContentPID(pid);
+
+		URI folderUri = repositoryFactory.createFolderObject(pid.getRepositoryUri(), model);
+		PID createdPid = PIDs.get(folderUri);
+
+		return new FolderObject(createdPid, this, repositoryObjectDataLoader);
 	}
 
 	/**
@@ -201,6 +262,8 @@ public class Repository {
 	 * @throws FedoraException
 	 */
 	public WorkObject createWorkObject(PID pid, Model model) throws FedoraException {
+		verifyContentPID(pid);
+
 		URI workUri = repositoryFactory.createWorkObject(pid.getRepositoryUri(), model);
 		PID createdPid = PIDs.get(workUri);
 
@@ -230,15 +293,40 @@ public class Repository {
 	 * Creates a new file object with the given PID.
 	 * 
 	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public FileObject createFileObject(PID pid) throws FedoraException {
+		return createFileObject(pid, null);
+	}
+
+	/**
+	 * Creates a new file object with the given PID.
+	 * 
+	 * @param pid
 	 * @param model
 	 * @return
 	 * @throws FedoraException
 	 */
 	public FileObject createFileObject(PID pid, Model model) throws FedoraException {
+		verifyContentPID(pid);
+
 		URI depositRecordUri = repositoryFactory.createFileObject(pid.getRepositoryUri(), model);
 		PID newPid = PIDs.get(depositRecordUri);
 
 		return new FileObject(newPid, this, repositoryObjectDataLoader);
+	}
+
+	/**
+	 * Throws a ObjectTypeMismatchException if the pid provided is not in the
+	 * content path
+	 * 
+	 * @param pid
+	 */
+	private void verifyContentPID(PID pid) {
+		if (!pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE)) {
+			throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+		}
 	}
 
 	/**
@@ -255,6 +343,7 @@ public class Repository {
 
 	protected BinaryObject getBinary(PID pid, Model model) throws FedoraException {
 		BinaryObject binary = new BinaryObject(pid, this, repositoryObjectDataLoader);
+		binary.storeModel(model);
 
 		// Verify that the retrieved object is a deposit record
 		return binary.validateType();
@@ -305,16 +394,9 @@ public class Repository {
 	 */
 	public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
 
-		try (FcrepoResponse response = getClient().put(eventPid.getRepositoryUri())
-				.body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-				.perform()) {
+		URI createdUri = repositoryFactory.createObject(eventPid.getRepositoryUri(), model);
 
-			return new PremisEventObject(PIDs.get(response.getLocation()), this, repositoryObjectDataLoader);
-		} catch (IOException e) {
-			throw new FedoraException("Unable to create premis event for " + eventPid, e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
+		return new PremisEventObject(PIDs.get(createdUri), this, repositoryObjectDataLoader);
 	}
 
 	public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
@@ -327,11 +409,11 @@ public class Repository {
 	 * @param parentPid The object which this event will belong to.
 	 * @return
 	 */
-	public String mintPremisEventUrl(PID parentPid) {
+	public PID mintPremisEventPid(PID parentPid) {
 		String uuid = UUID.randomUUID().toString();
 		String eventUrl = URIUtil.join(parentPid.getRepositoryPath(),
 				RepositoryPathConstants.EVENTS_CONTAINER, uuid);
-		return eventUrl;
+		return PIDs.get(eventUrl);
 	}
 
 	/**

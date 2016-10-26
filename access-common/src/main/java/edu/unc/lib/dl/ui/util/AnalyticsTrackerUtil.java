@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -47,7 +50,7 @@ public class AnalyticsTrackerUtil {
 	// Made up CID to use if the request does not include one, such as from a API request
 	private static final String DEFAULT_CID = "35009a79-1a05-49d7-b876-2b884d0f825b";
 	// Google analytics measurement API url
-	private final String GA_URL = "http://www.google-analytics.com/collect";
+	private final String GA_URL = "https://www.google-analytics.com/collect";
 
 	// Google analytics tracking id
 	private String gaTrackingID;
@@ -119,7 +122,10 @@ public class AnalyticsTrackerUtil {
 			if (cookies != null) {
 				for (Cookie cookie : cookies) {
 					if ("_ga".equals(cookie.getName())) {
-						cid = cookie.getValue();
+						String[] parts = cookie.getValue().split("\\.");
+						if (parts.length == 4) {
+							cid = parts[2] + "." + parts[3];
+						}
 						break;
 					}
 				}
@@ -155,13 +161,26 @@ public class AnalyticsTrackerUtil {
 				log.debug("Tracking user {} with event {} in category {} with label {}",
 						new String[] { userData.cid, action, category, label });
 
-			HttpPost method = new HttpPost(GA_URL);
+			URIBuilder builder;
+			try {
+				builder = new URIBuilder(GA_URL);
+			} catch (URISyntaxException e) {
+				log.warn("Failed to build URI for tracker", e);
+				return;
+			}
+			
 			List<NameValuePair> params = new ArrayList<NameValuePair>();
 			params.add(new BasicNameValuePair("v", "1"));
 			params.add(new BasicNameValuePair("tid", gaTrackingID));
 			params.add(new BasicNameValuePair("cid", userData.cid));
 			params.add(new BasicNameValuePair("t", "event"));
 			params.add(new BasicNameValuePair("uip", userData.uip));
+			params.add(new BasicNameValuePair("an", "cdr"));
+			params.add(new BasicNameValuePair("de", "UTF-8"));
+			params.add(new BasicNameValuePair("ul", "en-us"));
+			log.debug("Tracking user {} with event {} in category {} with label {}",
+					new String[] { userData.cid, action, category, label });
+			log.debug("Tracking:{} {} {} {}", new Object[] { GA_URL, gaTrackingID, userData.cid, userData.uip});
 
 			if (category != null) {
 				params.add(new BasicNameValuePair("ec", category));
@@ -174,6 +193,18 @@ public class AnalyticsTrackerUtil {
 			}
 			if (value != null) {
 				params.add(new BasicNameValuePair("ev", value.toString()));
+			}
+			
+			builder.addParameters(params);
+			
+			HttpGet method;
+			try {
+				URI url = builder.build();
+				method = new HttpGet(url);
+				method.addHeader("Accept", "*/*");
+			} catch (URISyntaxException e) {
+				log.warn("Failed to build tracking url", e);
+				return;
 			}
 
 			try (CloseableHttpResponse resp = httpClient.execute(method)) {

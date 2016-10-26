@@ -42,7 +42,7 @@
 	<c:if test="${empty collectionName}">
 		<c:set var="collectionName" value="(no collection)" />
 	</c:if>
-	<c:set var="gaCommands" scope="request">${gaCommands} ga('send', 'event', '${collectionName}', 'list', '<c:out value="${metadata.title}|${metadata.pid}" />');</c:set>
+	<c:set var="gaCommands" scope="request">${gaCommands} ga('unc.send', 'event', '${collectionName}', 'list', '<c:out value="${metadata.title}|${metadata.pid}" />');</c:set>
 </c:if>
 <c:forEach items="${resultResponse.resultList}" var="metadataEntry" varStatus="status">
 	<c:set var="metadata" scope="request" value="${metadataEntry}"/>
