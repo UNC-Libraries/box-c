@@ -13,29 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.fcrepo4;
-
-import java.io.InputStream;
-
-import edu.unc.lib.dl.fedora.PID;
+package edu.unc.lib.dl.fedora;
 
 /**
- * Represents a generic repository object within the main content tree.
+ * Checksum did not match the provided checksum value.
  * 
  * @author bbpennel
  *
  */
-public abstract class ContentObject extends RepositoryObject {
+public class ChecksumMismatchException extends FedoraException {
 
-	protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
+	private static final long serialVersionUID = -7456278395813803155L;
+
+	public ChecksumMismatchException(Exception e) {
+		super(e);
 	}
 
-	public BinaryObject addDescription(InputStream contentStream) {
-		return null;
+	public ChecksumMismatchException(String message, Exception e) {
+		super(message, e);
 	}
 
-	public BinaryObject getDescription() {
-		return null;
+	public ChecksumMismatchException(String message) {
+		super(message);
 	}
+
 }

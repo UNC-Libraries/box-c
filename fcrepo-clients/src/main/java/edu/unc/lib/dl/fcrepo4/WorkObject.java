@@ -19,8 +19,11 @@ import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.InputStream;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.vocabulary.DC;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
@@ -38,7 +41,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * @author bbpennel
  *
  */
-public class WorkObject extends ContentObject {
+public class WorkObject extends ContentContainerObject {
 
 	public WorkObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
@@ -87,6 +90,17 @@ public class WorkObject extends ContentObject {
 				PIDs.get(primaryStmt.getResource().getURI()));
 	}
 
+	@Override
+	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+		if (!(member instanceof FileObject)) {
+			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
+					+ " as a member of WorkObject " + pid.getQualifiedId());
+		}
+
+		repository.addMember(this, member);
+		return this;
+	}
+
 	/**
 	 * Adds a new file object containing the provided input stream as its original file.
 	 * 
@@ -96,14 +110,33 @@ public class WorkObject extends ContentObject {
 	 * @param sha1Checksum
 	 * @return
 	 */
-	public FileObject addDataFile(InputStream contentStream, String filename,
-			String mimetype, String sha1Checksum) {
-
-		// Get a PID for the new file object
+	public FileObject addDataFile(String filename, InputStream contentStream, String mimetype,
+			String sha1Checksum) {
 		PID fileObjPid = repository.mintContentPid();
 
+		return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum);
+	}
+
+	/**
+	 * Adds a new file object containing the provided input stream as its
+	 * original file, using the provided pid as the identifier for the new
+	 * FileObject.
+	 * 
+	 * @param childPid
+	 * @param contentStream
+	 * @param filename
+	 * @param mimetype
+	 * @param sha1Checksum
+	 * @return
+	 */
+	public FileObject addDataFile(PID childPid, InputStream contentStream, String filename,
+			String mimetype, String sha1Checksum) {
+
+		Model model = ModelFactory.createDefaultModel();
+		model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
+
 		// Create the file object
-		FileObject fileObj = repository.createFileObject(fileObjPid, null);
+		FileObject fileObj = repository.createFileObject(childPid, null);
 		// Add the content to it as its original file
 		fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 

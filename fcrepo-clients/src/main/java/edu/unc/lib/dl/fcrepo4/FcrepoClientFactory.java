@@ -15,27 +15,37 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.io.InputStream;
-
-import edu.unc.lib.dl.fedora.PID;
+import org.fcrepo.client.FcrepoClient;
 
 /**
- * Represents a generic repository object within the main content tree.
  * 
  * @author bbpennel
  *
  */
-public abstract class ContentObject extends RepositoryObject {
+public class FcrepoClientFactory {
 
-	protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
+	/**
+	 * Construct an fcrepoClient object with the supplied authentication information
+	 * 
+	 * @param host
+	 * @param user
+	 * @param password
+	 * @return
+	 */
+	public static FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
+		return FcrepoClient.client()
+				.credentials(user, password)
+				.authScope(host)
+				.throwExceptionOnFailure()
+				.build();
 	}
 
-	public BinaryObject addDescription(InputStream contentStream) {
-		return null;
-	}
-
-	public BinaryObject getDescription() {
-		return null;
+	/**
+	 * Construct an fcrepoClient with exceptions thrown on failure and no authentication.
+	 * 
+	 * @return
+	 */
+	public static FcrepoClient makeClient() {
+		return FcrepoClient.client().throwExceptionOnFailure().build();
 	}
 }

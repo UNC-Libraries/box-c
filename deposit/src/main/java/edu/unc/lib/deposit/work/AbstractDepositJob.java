@@ -1,12 +1,14 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -118,7 +120,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	public void setDepositUUID(String depositUUID) {
 		this.depositUUID = depositUUID;
-		this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
+		this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
 	}
 
 	public PID getDepositPID() {
@@ -178,6 +180,14 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	public File getEventsDirectory() {
 		return eventsDirectory;
+	}
+
+	public Repository getRepository() {
+		return repository;
+	}
+
+	public void setRepository(Repository repository) {
+		this.repository = repository;
 	}
 
 	/**

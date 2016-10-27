@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
@@ -475,6 +476,27 @@ public class Repository {
 				member.getPid().getRepositoryUri());
 	}
 
+	/**
+	 * Verify that the object identified by PID exists in the repository.
+	 * 
+	 * @param pid
+	 * @return
+	 */
+	public boolean objectExists(PID pid) {
+		URI metadataUri = URI.create(URIUtil.join(pid.getRepositoryPath(), "fcr:metadata"));
+		try (FcrepoResponse response = getClient().head(metadataUri)
+				.perform()) {
+			return true;
+		} catch (IOException e) {
+			throw new FedoraException("Failed to close HEAD response for " + pid, e);
+		} catch (FcrepoOperationFailedException e) {
+			if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+				return false;
+			}
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
+
 	public String getVocabulariesBase() {
 		return vocabulariesBase;
 	}
@@ -568,11 +590,6 @@ public class Repository {
 	}
 
 	public FcrepoClient getClient() {
-
-		if (client == null) {
-			client = FcrepoClient.client().credentials(authUsername, authPassword).authScope(authHost)
-					.throwExceptionOnFailure().build();
-		}
 		return client;
 	}
 
