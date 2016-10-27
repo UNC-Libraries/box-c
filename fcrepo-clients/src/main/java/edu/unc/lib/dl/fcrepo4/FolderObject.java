@@ -29,7 +29,7 @@ import edu.unc.lib.dl.rdf.Cdr;
  * @author bbpennel
  *
  */
-public class FolderObject extends ContentObject {
+public class FolderObject extends ContentContainerObject {
 
 	public FolderObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
@@ -44,16 +44,16 @@ public class FolderObject extends ContentObject {
 	}
 
 	@Override
-	public ContentObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
 		if (!(member instanceof FolderObject || member instanceof WorkObject)) {
 			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
 					+ " as a member of WorkObject " + pid.getQualifiedId());
 		}
-		
+
 		repository.addMember(this, member);
 		return this;
 	}
-	
+
 	/**
 	 * Creates and adds a new folder to this folder.
 	 * 

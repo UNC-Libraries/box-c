@@ -16,15 +16,8 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  * Represents a generic repository object within the main content tree.
@@ -44,25 +37,5 @@ public abstract class ContentObject extends RepositoryObject {
 
 	public BinaryObject getDescription() {
 		return null;
-	}
-
-	public abstract ContentObject addMember(ContentObject member) throws ObjectTypeMismatchException;
-
-	/**
-	 * Retrieve a list of member content objects for this object.
-	 * 
-	 * @return
-	 */
-	public List<ContentObject> getMembers() {
-		List<ContentObject> members = new ArrayList<>();
-		Resource resc = getResource();
-
-		for (StmtIterator it = resc.listProperties(PcdmModels.hasMember); it.hasNext(); ) {
-			String memberUri = it.nextStatement().getResource().toString();
-
-			members.add(repository.getContentObject(PIDs.get(memberUri)));
-		}
-
-		return members;
 	}
 }

@@ -38,6 +38,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
@@ -124,7 +125,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		// Verify that the destination has the folder added to it
 		ContentObject destObj = repository.getContentObject(destinationPid);
-		List<ContentObject> destMembers = destObj.getMembers();
+		List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
 		// Make sure that the folder is present and is actually a folder
@@ -169,7 +170,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		job.run();
 
-		ContentObject destObj = repository.getContentObject(destinationPid);
+		ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
 		List<ContentObject> destMembers = destObj.getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
@@ -212,7 +213,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		job.run();
 
 		ContentObject destObj = repository.getContentObject(destinationPid);
-		List<ContentObject> destMembers = destObj.getMembers();
+		List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
 		ContentObject mWork = destMembers.get(0);
@@ -220,7 +221,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		String workTitle = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not set to filename", FILE1_LOC, workTitle);
 
-		List<ContentObject> workMembers = mWork.getMembers();
+		List<ContentObject> workMembers = ((ContentContainerObject) mWork).getMembers();
 		assertEquals("Incorrect number of children on work", 1, workMembers.size());
 
 		FileObject primaryFile = ((WorkObject) mWork).getPrimaryObject();
@@ -257,10 +258,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		job.run();
 
 		ContentObject destObj = repository.getContentObject(destinationPid);
-		List<ContentObject> destMembers = destObj.getMembers();
+		List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
-		List<ContentObject> workMembers = destMembers.get(0).getMembers();
+		List<ContentObject> workMembers = ((ContentContainerObject) destMembers.get(0)).getMembers();
 		assertEquals("Incorrect number of members in work", 2, workMembers.size());
 
 		assertClickCount(3);
@@ -302,11 +303,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		// Check that the folder and first child successfully made it in
 		ContentObject destObj = repository.getContentObject(destinationPid);
-		List<ContentObject> destMembersFailed = destObj.getMembers();
+		List<ContentObject> destMembersFailed = ((ContentContainerObject) destObj).getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembersFailed.size());
 
 		ContentObject mFolderFailed = destMembersFailed.get(0);
-		List<ContentObject> folderMembersFailed = mFolderFailed.getMembers();
+		List<ContentObject> folderMembersFailed = ((ContentContainerObject) mFolderFailed).getMembers();
 		assertEquals("Incorrect number of children in folder", 1, folderMembersFailed.size());
 
 		// Fix the staging location of the second file
@@ -318,11 +319,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Second run of job
 		job.run();
 
-		List<ContentObject> destMembers = destObj.getMembers();
+		List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
 		ContentObject mFolder = destMembers.get(0);
-		List<ContentObject> folderMembers = mFolder.getMembers();
+		List<ContentObject> folderMembers = ((ContentContainerObject) mFolder).getMembers();
 		assertEquals("Incorrect number of children in folder", 2, folderMembers.size());
 
 		// Order of the children isn't guaranteed, so find by primary obj pid
@@ -372,7 +373,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		job.run();
 
 		ContentObject destObj = repository.getContentObject(destinationPid);
-		List<ContentObject> members = destObj.getMembers();
+		List<ContentObject> members = ((ContentContainerObject) destObj).getMembers();
 
 		for (int i = 0; i < nestingDepth; i++) {
 			assertEquals("Incorrect number of children", 1, members.size());

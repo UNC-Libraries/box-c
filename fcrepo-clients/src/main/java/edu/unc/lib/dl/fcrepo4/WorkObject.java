@@ -41,7 +41,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * @author bbpennel
  *
  */
-public class WorkObject extends ContentObject {
+public class WorkObject extends ContentContainerObject {
 
 	public WorkObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
@@ -91,16 +91,16 @@ public class WorkObject extends ContentObject {
 	}
 
 	@Override
-	public ContentObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
 		if (!(member instanceof FileObject)) {
 			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
 					+ " as a member of WorkObject " + pid.getQualifiedId());
 		}
-		
+
 		repository.addMember(this, member);
 		return this;
 	}
-	
+
 	/**
 	 * Adds a new file object containing the provided input stream as its original file.
 	 * 

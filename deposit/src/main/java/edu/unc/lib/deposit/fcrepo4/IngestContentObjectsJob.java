@@ -42,6 +42,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
@@ -130,6 +131,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		Map<String, String> depositStatus = getDepositStatus();
 		ContentObject destObj = repository.getContentObject(PIDs.get(
 				depositStatus.get(DepositField.containerId.name())));
+		if (!(destObj instanceof ContentContainerObject)) {
+			failJob("Cannot add children to destination", "Cannot deposit to destination " + destObj.getPid().getRepositoryPath()
+					+ ", types does not support children");
+		}
 
 		Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
@@ -142,7 +147,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// Ingest objects included in this deposit into the destination object
 		try {
-			ingestChildren(destObj, depositBag);
+			ingestChildren((ContentContainerObject) destObj, depositBag);
 		} catch (DepositException | FedoraException e) {
 			failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
 		}
@@ -155,7 +160,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param parentResc the parent resource where children will listed from
 	 * @throws DepositException
 	 */
-	private void ingestChildren(ContentObject destObj, Resource parentResc) throws DepositException {
+	private void ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException {
 		NodeIterator iterator = getChildIterator(parentResc);
 		// No more children, nothing further to do in this tree
 		if (iterator == null) {
@@ -224,7 +229,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private void ingestFileObjectAsWork(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestFileObjectAsWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 
 		if (skipResumed(childResc)) {
@@ -314,7 +319,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private void ingestFolder(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 
 		PID childPid = PIDs.get(childResc.getURI());
@@ -353,7 +358,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private void ingestWork(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 		PID childPid = PIDs.get(childResc.getURI());
 

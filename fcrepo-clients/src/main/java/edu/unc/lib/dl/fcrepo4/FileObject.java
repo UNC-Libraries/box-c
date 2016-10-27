@@ -68,12 +68,6 @@ public class FileObject extends ContentObject {
 		return this;
 	}
 
-	@Override
-	public ContentObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-		throw new ObjectTypeMismatchException("Cannot add member to FileObject " + pid.getQualifiedId()
-				+ ", type does not support members");
-	}
-
 	/**
 	 * Adds the original file for this file object
 	 * 
