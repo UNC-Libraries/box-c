@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="deposit.properties.uri" />
+	</bean>
+
+	<bean id="serverAddress" class="java.lang.String">
+		<constructor-arg
+			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
+	</bean>
+	
+	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
+	</bean>
+	
+	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+		<property name="client" ref="fcrepoClient" />
+	</bean>
+
+	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+		<property name="client" ref="fcrepoClient" />
+		<property name="ldpFactory" ref="ldpContainerFactory" />
+	</bean>
+	
+	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repository" ref="repository" />
+	</bean>
+	
+	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+		<property name="fedoraBase" ref="serverAddress" />
+	</bean>
+
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="edu.unc.lib.dl.fcrepo4.PIDs.setRepository" />
+		<property name="arguments">
+			<list>
+				<ref bean="repository" />
+			</list>
+		</property>
+	</bean>
+</beans>

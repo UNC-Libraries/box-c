@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<context:annotation-config />
+
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="deposit.properties.uri" />
+	</bean>
+	
+	<bean id="serverProperties"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<ref bean="propertiesURI" />
+			</list>
+		</property>
+		<property name="ignoreResourceNotFound" value="false" />
+	</bean>
+	
+	<bean id="injectedCdrVersion" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="edu.unc.lib.dl.util.SoftwareAgentConstants.setCdrVersion" />
+		<property name="arguments">
+			<list>
+				<value>4.0</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="depositsDirectory" class="java.io.File">
+		<constructor-arg value="${deposits.dir}" />
+	</bean>
+
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool"
+		destroy-method="destroy">
+		<constructor-arg ref="poolConfig"/>
+		<constructor-arg type="String" value="${redis.host:localhost}" />
+		<constructor-arg type="int" value="${redis.port:6379}" />
+	</bean>
+	
+	<bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxIdle" value="15"/>
+		<property name="minIdle" value="2"/>
+		<property name="maxTotal" value="25"/>
+	</bean>
+
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="${redis.host:localhost}" />
+		<constructor-arg value="${redis.port:6379}" />
+		<constructor-arg value="2000" />
+		<constructor-arg>
+			<null />
+		</constructor-arg>
+		<constructor-arg value="resque" />
+		<constructor-arg value="0" />
+	</bean>
+
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
+		scope="prototype">
+		<constructor-arg ref="jesqueConfig" />
+		<constructor-arg ref="jedisPool" />
+	</bean>
+	
+	<bean id="queueDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
+		<constructor-arg ref="jesqueConfig" />
+		<constructor-arg ref="jedisPool" />
+	</bean>
+	
+	<bean id="dataSet" class="com.hp.hpl.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
+		<constructor-arg value="${deposits.dir}/jena-tdb-dataset"/>
+	</bean>
+
+	<bean id="depositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>PREPARE</value>
+						<value>DELAYED_PREPARE</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.num:2}" />
+	</bean>
+	
+	<bean id="highPriorityDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>PREPARE_HIGH_PRIORITY</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.high.num:4}" />
+	</bean>
+	
+	<bean id="cdrMetsDepositWorkerPool" class="net.greghaines.jesque.worker.WorkerPool">
+		<constructor-arg name="workerFactory">
+			<bean class="net.greghaines.jesque.worker.WorkerImplFactory">
+				<constructor-arg name="config" ref="jesqueConfig" />
+				<constructor-arg name="queues">
+					<util:list>
+						<value>CDRMETSCONVERT</value>
+					</util:list>
+				</constructor-arg>
+				<constructor-arg ref="jobFactory" />
+			</bean>
+		</constructor-arg>
+		<constructor-arg name="numWorkers" value="${workers.mets.num:1}" />
+	</bean>
+	
+	<util:list id="depositWorkerPools" value-type="net.greghaines.jesque.worker.WorkerPool">
+		<ref bean="depositWorkerPool"/>
+		<ref bean="highPriorityDepositWorkerPool"/>
+		<ref bean="cdrMetsDepositWorkerPool"/>
+	</util:list>
+
+	<bean id="depositSupervisor" class="edu.unc.lib.deposit.work.DepositSupervisor">
+		<property name="jesqueConfig" ref="jesqueConfig"/>
+		<property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
+		<property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
+	</bean>
+
+	<bean id="jobFactory" class="edu.unc.lib.dl.util.SpringJobFactory" />
+
+	<bean id="jobStatusFactory" class="edu.unc.lib.dl.util.JobStatusFactory" >
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
+	
+	<bean id="activityMetricsClient" class="edu.unc.lib.dl.reporting.ActivityMetricsClient" >
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
+
+	<bean id="depositStatusFactory" class="edu.unc.lib.dl.util.DepositStatusFactory">
+		<property name="jedisPool" ref="jedisPool" />
+	</bean>
+
+	<bean id="stagesConfigURI" class="java.net.URL">
+		<constructor-arg value="${fedora.stagesConfiguration}" />
+	</bean>
+	
+	<bean id="stagesConfigFile" class="org.apache.commons.io.FileUtils" factory-method="toFile">
+		<constructor-arg ref="stagesConfigURI" />
+	</bean>
+	
+	<bean id="stagesConfigString" class="org.apache.commons.io.FileUtils" factory-method="readFileToString">
+		<constructor-arg ref="stagesConfigFile" />
+	</bean>
+	
+	<bean id="stages" class="edu.unc.lib.staging.Stages">
+		<constructor-arg ref="stagesConfigString" />
+		<constructor-arg><bean class="edu.unc.lib.staging.FileResolver"/></constructor-arg>
+	</bean>
+</beans>
