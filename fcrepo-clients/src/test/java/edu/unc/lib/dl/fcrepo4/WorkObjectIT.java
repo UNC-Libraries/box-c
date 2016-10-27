@@ -78,7 +78,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 		String mimetype = "text/plain";
 		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		obj.addDataFile(contentStream, filename, mimetype, null);
+		obj.addDataFile(filename, contentStream, mimetype, null);
 
 		List<ContentObject> members = obj.getMembers();
 		assertEquals(1, members.size());
@@ -105,7 +105,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 		String filename = "primary.txt";
 		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		FileObject primaryObj = obj.addDataFile(contentStream, filename, null, null);
+		FileObject primaryObj = obj.addDataFile(filename, contentStream, null, null);
 		// Set it as the primary object for our work
 		obj.setPrimaryObject(primaryObj.getPid());
 
@@ -114,7 +114,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 		String filenameS = "s1.txt";
 		InputStream contentStreamS = new ByteArrayInputStream(bodyStringS.getBytes());
 
-		FileObject supp = obj.addDataFile(contentStreamS, filenameS, null, null);
+		FileObject supp = obj.addDataFile(filenameS, contentStreamS, null, null);
 
 		// Retrieve the primary object and verify it
 		FileObject primaryResult = obj.getPrimaryObject();
