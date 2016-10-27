@@ -27,14 +27,23 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 		this.$form = this.dialog.first();
 		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
 
+		var containingDialog = $(".containingDialog");
+		var iframe = $("#work_submission_form");
 		$("select[name='name']").on("change", function() {
 			var ajaxIcon = $(".loading-icon");
-			var iframe = $("#work_submission_form");
+
 			var formUrl = location.href.split("/");
 			var protocol = formUrl[0];
-			var host = formUrl[2];
-			var subDirectory = /cdr/.test(formUrl[2]) ? "forms2/" : "";
 			var collectionId = iframe.attr("title");
+			var host, subDirectory;
+
+			if (/cdr/.test(formUrl[2])) {
+				host = formUrl[2];
+				subDirectory = "forms2/";
+			} else {
+				host = "localhost:4200";
+				subDirectory = "";
+			}
 
 			iframe.attr("src", protocol + "//" + host + "/" + subDirectory + $(this).val() + "?collection=" + collectionId + "&adminOnly=true");
 
@@ -45,11 +54,17 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 				$(this).removeClass("addwork");
 				ajaxIcon.addClass("in-admin-iframe");
 			});
+
 		});
 
-		$(".containingDialog").on("dialogclose", function(e, ui) {
+		containingDialog.on("dialogclose", function(e, ui) {
 			$(this).dialog("destroy");
-		});
+		}).on("dialogresizestop", function(e, ui) {
+				var height = $(this).dialog("option", "height") - 50;
+				iframe.attr("height", height);
+			});
+
+
 	};
 
 	return CreateWorkObjectForm;
