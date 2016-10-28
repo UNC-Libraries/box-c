@@ -63,7 +63,7 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 		byte[] buf = new byte[10];
 		stream = new ByteArrayInputStream(buf);
 		
-		when(mockPid.getRepositoryUri()).thenReturn(new URI(BASE_PATH));
+		when(mockPid.getRepositoryUri()).thenReturn(new URI(FEDORA_BASE));
 		binObj = new BinaryObject(mockPid, repository, dataLoader);
 		
 		when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);
@@ -79,33 +79,33 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
 	@Test
 	public void testGetMetadataUri() {
-		assertEquals(BASE_PATH + METADATA_PATH, binObj.getMetadataUri().toString());
+		assertEquals(FEDORA_BASE + RepositoryPathConstants.FCR_METADATA, binObj.getMetadataUri().toString());
 	}
 
 	@Test
 	public void testValidateType() {
 		// Return the correct RDF types
-		 	List<String> types = Arrays.asList(Fcrepo4Repository.Binary.toString());
-		 	when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-		        @Override
-		        public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-		 			binObj.setTypes(types);
-		 			return dataLoader;
-		 		}
-		 	});
+		List<String> types = Arrays.asList(Fcrepo4Repository.Binary.toString());
+	 	when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+	        @Override
+	        public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+	 			binObj.setTypes(types);
+	 			return dataLoader;
+	 		}
+	 	});
 		
-		 	binObj.validateType();
+		binObj.validateType();
 	}
 	
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void invalidTypeTest() {
-			when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-	 		    @Override
-	 		    public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-	 			    binObj.setTypes(Arrays.asList());
-				    return dataLoader;
-	 	        }
-	        });
+		when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+			@Override
+	 		public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+				binObj.setTypes(Arrays.asList());
+				return dataLoader;
+	 	    }
+	    });
 	 
 	 	binObj.validateType();
 	 }
