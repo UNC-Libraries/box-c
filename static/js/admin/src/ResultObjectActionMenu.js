@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
-		function($, ui, StringUtilities, EditLabelForm, EditFilenameForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'CreateSimpleObjectForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
+		function($, ui, StringUtilities, CreateSimpleObjectForm, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -147,6 +147,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}
+
+		items["simpleObject"] = {name : 'Add Simple Object'};
 		
 		// Export actions
 		items["sepexport"] = "";
@@ -225,7 +227,12 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'E
 					case "editAccess" :
 						self.editAccess(resultObject);
 						break;
-					
+
+					case "simpleObject" :
+						new CreateSimpleObjectForm({
+							alertHandler : self.options.alertHandler
+						}).open(resultObject);
+						break;
 					case "editLabel" :
 						self.editLabel(resultObject);
 						break;
