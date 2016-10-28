@@ -18,22 +18,21 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.hp.hpl.jena.rdf.model.Model;
-
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.Premis;
 
-public class BinaryObjectTest {
-	@Mock
-	private Repository mockRepo;
-	@Mock
-	private RepositoryObjectDataLoader mockLoader;
-	@Mock
-	private Model mockModel;
+public class BinaryObjectTest extends AbstractFedoraTest {
 	@Mock
 	private PID mockPid;
 	
 	private BinaryObject binObj;
+	private Model model;
+	private Resource resource;
 	
 	private ByteArrayInputStream stream;
 	
@@ -47,12 +46,18 @@ public class BinaryObjectTest {
 		byte[] buf = new byte[10];
 		stream = new ByteArrayInputStream(buf);
 		
-		
 		when(mockPid.getRepositoryUri()).thenReturn(new URI(BASE_PATH));
-		binObj = new BinaryObject(mockPid, mockRepo, mockLoader);
+		binObj = new BinaryObject(mockPid, repository, dataLoader);
 		
-		when(mockLoader.loadModel(binObj)).thenReturn(mockLoader);
+		when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);
 		
+		setupModel();
+	}
+	
+	private void setupModel() {
+		model = ModelFactory.createDefaultModel();
+		binObj.storeModel(model);
+		resource = binObj.getResource();
 	}
 
 	@Test
@@ -64,11 +69,11 @@ public class BinaryObjectTest {
 	public void testValidateType() {
 		// Return the correct RDF types
 		 	List<String> types = Arrays.asList(Fcrepo4Repository.Binary.toString());
-		 	when(mockLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+		 	when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
 		        @Override
 		 		public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
 		 			binObj.setTypes(types);
-		 			return mockLoader;
+		 			return dataLoader;
 		 		}
 		 	});
 		
@@ -77,11 +82,11 @@ public class BinaryObjectTest {
 	
 	@Test(expected = ObjectTypeMismatchException.class)
 	 public void invalidTypeTest() {
-			when(mockLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+			when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
 	 		    @Override
 	 		    public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
 	 			    binObj.setTypes(Arrays.asList());
-				    return mockLoader;
+				    return dataLoader;
 	 	        }
 	        });
 	 
@@ -90,16 +95,18 @@ public class BinaryObjectTest {
 
 	@Test
 	public void testGetBinaryStream() {
-		when(mockLoader.getBinaryStream(binObj)).thenReturn(stream);
+		when(dataLoader.getBinaryStream(binObj)).thenReturn(stream);
 		assertEquals(binObj.getBinaryStream(), stream);
 	}
 
 	@Test
 	public void testGetFilename() {
+		resource.addProperty(Ebucore.filename, "example.txt");
+		assertEquals("example.txt", binObj.getFilename());
 		
 		binObj.setFilename("sample.txt");
 		assertEquals("sample.txt", binObj.getFilename());
-		//TODO: null case
+		
 	}
 
 
@@ -107,14 +114,20 @@ public class BinaryObjectTest {
 	public void testGetMimetype() {
 		binObj.setMimetype("text/plain");
 		assertEquals("text/plain", binObj.getMimetype());
-		//TODO: null case
+		
+		binObj.setMimetype(null);
+		resource.addProperty(Ebucore.hasMimeType, "application/json");
+		assertEquals("application/json", binObj.getMimetype());
 	}
 
 	@Test
 	public void testGetChecksum() {
 		binObj.setChecksum("abcd1234");
 		assertEquals("abcd1234", binObj.getChecksum());
-		//TODO: null case
+		
+		binObj.setChecksum(null);
+		resource.addProperty(Premis.hasMessageDigest, "12345-67890");
+		assertEquals("12345-67890", binObj.getChecksum());
 	}
 
 	@Test
@@ -122,7 +135,9 @@ public class BinaryObjectTest {
 		long size = 42;
 		binObj.setFilesize(size);
 		assertTrue(size == binObj.getFilesize());
-		//TODO: null case
+		
+		binObj.setFilesize(null);
+		resource.addProperty(Premis.hasSize, Long.toString(99));
+		assertTrue(binObj.getFilesize() == 99L);
 	}
-
 }
