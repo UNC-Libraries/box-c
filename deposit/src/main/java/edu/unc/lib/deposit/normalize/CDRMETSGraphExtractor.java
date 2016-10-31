@@ -1,6 +1,5 @@
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
@@ -29,9 +28,9 @@ import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
@@ -95,11 +94,11 @@ public class CDRMETSGraphExtractor {
 			String pid = METSHelper.getPIDURI(div);
 			Resource o = m.getResource(pid);
 			if(div.getAttributeValue("LABEL") != null) {
-				m.add(o, dprop(m, DepositRelationship.label), div.getAttributeValue("LABEL"));
+				m.add(o, CdrDeposit.label, div.getAttributeValue("LABEL"));
 			}
 			String orig = METSHelper.getOriginalURI(div);
 			if(orig != null) {
-				m.add(o, dprop(m, DepositRelationship.originalLocation), m.getResource(orig));
+				m.add(o, CdrDeposit.originalLocation, m.getResource(orig));
 			}
 		}
 	}
