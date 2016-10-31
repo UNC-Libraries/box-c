@@ -229,9 +229,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'C
 						break;
 
 					case "simpleObject" :
-						new CreateSimpleObjectForm({
-							alertHandler : self.options.alertHandler
-						}).open(resultObject);
+						new CreateSimpleObjectForm().open(resultObject);
 						break;
 					case "editLabel" :
 						self.editLabel(resultObject);
