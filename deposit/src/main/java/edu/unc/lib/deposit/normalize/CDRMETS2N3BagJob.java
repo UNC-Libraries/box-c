@@ -10,6 +10,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PackagingType;
@@ -29,19 +30,14 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	@Override
 	public void runJob() {
 		validateMETS();
-
 		// Store a reference to the manifest file
 		addManifestURI();
-
-		LOG.info("METS XML validated");
 		validateProfile(METSProfile.CDR_SIMPLE);
-		LOG.info("METS Schematron validated");
 		Document mets = loadMETS();
-		LOG.info("METS dom document loaded");
-		assignPIDs(mets); // assign any missing PIDsq
-		LOG.info("PIDs assigned");
-		saveMETS(mets); // manifest updated to have record of all PIDs
-		LOG.info("METS saved with new PIDs");
+		// assign any missing PIDs
+		assignPIDs(mets);
+		// manifest updated to have record of all PIDs
+		saveMETS(mets);
 
 		Model model = getWritableModel();
 		CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
@@ -58,7 +54,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		extractor.saveDescriptions(new FilePathFunction() {
 		@Override
 			public String getPath(String piduri) {
-				String uuid = new PID(piduri).getUUID();
+				String uuid = PIDs.get(piduri).getUUID();
 				return new File(modsFolder, uuid+".xml").getAbsolutePath();
 			}
 		});

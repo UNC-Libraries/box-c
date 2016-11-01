@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
-import java.util.UUID;
-
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
@@ -90,8 +88,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			Element div = divs.next();
 			String cids = div.getAttributeValue("CONTENTIDS");
 			if(cids != null && cids.contains("info:fedora/")) continue;
-			UUID uuid = UUID.randomUUID();
-			PID pid = new PID("uuid:"+uuid.toString());
+			PID pid = repository.mintContentPid();
 			if(cids == null) {
 				div.setAttribute("CONTENTIDS", pid.getURI());
 			} else {
@@ -111,6 +108,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
 			count++;
 		}
+		log.info(count + " PIDs assigned");
 		
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
@@ -128,6 +126,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		} catch (Exception e) {
 			failJob(e, "Unexpected error parsing METS file.");
 		}
+		log.info("METS dom document loaded");
 		return mets;
 	}
 
@@ -137,6 +136,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		} catch(Exception e) {
 			failJob(e, "Unexpected error saving METS.");
 		}
+		log.info("METS saved with new PIDs");
 	}
 
 	protected void validateMETS() {
@@ -157,7 +157,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		} catch (IOException e) {
 			failJob(e, "Cannot parse METS file.");
 		}
-		
+		log.info("METS XML validated");
 		PID depositPID = getDepositPID();
 		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Validation)
@@ -186,6 +186,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 			}
 			failJob(msg, details.toString());
 		}
+		log.info("METS Schematron validated");
 	}
 
 }
