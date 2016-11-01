@@ -370,7 +370,7 @@ public class RepositoryTest extends AbstractFedoraTest {
 		when(objFactory.createObject(eq(eventUri), any(Model.class)))
 				.thenReturn(eventUri);
 
-		Model model = ModelFactory.createDefaultModel();
+		final Model model = ModelFactory.createDefaultModel();
 		Resource resc = model.getResource(eventPid.getRepositoryPath());
 		resc.addProperty(Premis.hasEventType, Premis.Ingestion);
 
