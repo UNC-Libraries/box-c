@@ -53,9 +53,6 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 	
 	private ByteArrayInputStream stream;
 	
-	private static final String BASE_PATH = FEDORA_BASE;
-	private static final String METADATA_PATH = RepositoryPathConstants.FCR_METADATA;
-	
 	@Before
 	public void init() throws URISyntaxException {
 		MockitoAnnotations.initMocks(this);

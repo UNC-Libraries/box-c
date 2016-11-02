@@ -47,7 +47,7 @@ public class BinaryObject extends RepositoryObject {
 		super(pid, repository, dataLoader);
 		
 		metadataUri = URI.create(pid.getRepositoryUri().toString()
-				+ "/" + RepositoryPathConstants.FCR_METADATA);
+				+ RepositoryPathConstants.FCR_METADATA);
 	}
 
 	@Override
