@@ -1,23 +1,23 @@
 /**
  * Implements functionality and UI for the generic Ingest Package form
  */
-define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createSimpleObjectForm',
+define('AddFileForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/addFileForm',
 	'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'],
-	function($, ui, _, RemoteStateChangeMonitor, simpleObjectTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
+	function($, ui, _, RemoteStateChangeMonitor, addWorkTemplate, ModalLoadingOverlay, ConfirmationDialog, AbstractFileUploadForm) {
 
 		var defaultOptions = {
-			title : 'Add Simple Object',
-			createFormTemplate : simpleObjectTemplate
+			title : 'Add File',
+			createFormTemplate : addWorkTemplate
 		};
 
-		function CreateSimpleObjectForm(options) {
+		function AddFileForm(options) {
 			this.options = $.extend({}, AbstractFileUploadForm.prototype.getDefaultOptions(), defaultOptions, options);
 		};
 
-		CreateSimpleObjectForm.prototype.constructor = CreateSimpleObjectForm;
-		CreateSimpleObjectForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+		AddFileForm.prototype.constructor = AddFileForm;
+		AddFileForm.prototype = Object.create( AbstractFileUploadForm.prototype );
 
-		CreateSimpleObjectForm.prototype.preprocessForm = function() {
+		AddFileForm.prototype.preprocessForm = function() {
 			var label = $("input[name='name']", this.$form).val();
 			if (!label && this.ingestFile) {
 				$("input[name='name']", this.$form).val(this.ingestFile.name);
@@ -25,7 +25,7 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		};
 
 		// Validate the form and retrieve any errors
-		CreateSimpleObjectForm.prototype.validationErrors = function() {
+		AddFileForm.prototype.validationErrors = function() {
 			var errors = [];
 			var dataFile = $("input[type='file']", this.$form).val();
 			if (!dataFile)
@@ -33,11 +33,11 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			return errors;
 		};
 
-		CreateSimpleObjectForm.prototype.getSuccessMessage = function(data) {
+		AddFileForm.prototype.getSuccessMessage = function(data) {
 			return this.ingestFile.name + " has been successfully uploaded for ingest.  You will receive an email when it completes.";
 		};
 
-		CreateSimpleObjectForm.prototype.getErrorMessage = function(data) {
+		AddFileForm.prototype.getErrorMessage = function(data) {
 			var message = "Failed to ingest file " + this.ingestFile.name + ".";
 			if (data && data.errorStack && !this.closed) {
 				message += "  See errors below.";
@@ -46,5 +46,5 @@ define('CreateSimpleObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 			return message;
 		};
 
-		return CreateSimpleObjectForm;
+		return AddFileForm;
 	});

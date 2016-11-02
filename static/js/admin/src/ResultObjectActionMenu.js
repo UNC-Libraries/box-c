@@ -1,4 +1,4 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'CreateSimpleObjectForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
 		function($, ui, StringUtilities, CreateSimpleObjectForm, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
@@ -148,8 +148,11 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'C
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 
-		items["simpleObject"] = {name : 'Add Simple Object'};
-		
+		// Add files to collections and compound objects
+		if (resultObject.isContainer || resultObject.metadata.type === 'Collection') {
+			items["addFile"] = {name : 'Add File'};
+		}
+
 		// Export actions
 		items["sepexport"] = "";
 		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
@@ -227,8 +230,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'C
 					case "editAccess" :
 						self.editAccess(resultObject);
 						break;
-
-					case "simpleObject" :
+					case "addFile" :
 						new CreateSimpleObjectForm().open(resultObject);
 						break;
 					case "editLabel" :
