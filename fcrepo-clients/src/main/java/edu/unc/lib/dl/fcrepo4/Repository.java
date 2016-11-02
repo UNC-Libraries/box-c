@@ -169,6 +169,9 @@ public class Repository {
 				if (resc.hasProperty(RDF.type, Cdr.Collection)) {
 					return getCollectionObject(pid, model, etag);
 				}
+				if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
+					return getContentRootObject(pid, model, etag);
+				}
 
 			} catch (IOException e) {
 				throw new FedoraException("Failed to read model for " + pid, e);
@@ -227,6 +230,25 @@ public class Repository {
 		return new CollectionObject(createdPid, this, repositoryObjectDataLoader);
 	}
 
+	 * Retrieves the root object for the content tree.
+	 * 
+	 * @return
+	 */
+	public ContentRootObject getContentRootObject() {
+		PID contentRootPid = PIDs.get(RepositoryPathConstants.CONTENT_ROOT_ID);
+
+		return getContentRootObject(contentRootPid, null, null);
+	}
+
+	protected ContentRootObject getContentRootObject(PID pid, Model model, String etag) {
+		ContentRootObject rootObj = new ContentRootObject(pid, this, repositoryObjectDataLoader);
+		rootObj.storeModel(model);
+		rootObj.setEtag(etag);
+
+		// not triggering validation for object, this method only called when
+		// the object's identity is already known
+		return rootObj;
+	}
 
 	/**
 	 * Retrieves an existing FolderObject

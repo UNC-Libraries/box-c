@@ -71,9 +71,12 @@ public class PIDs {
 				// extract the qualifier/category portion of the path, ex: deposit, content, etc.
 				qualifier = matcher.group(1);
 				// store the trailing component path, which is everything after the object identifier
-				componentPath = matcher.group(5);
+				componentPath = matcher.group(7);
 				// store the identifier for the main object
-				id = matcher.group(3);
+				id = matcher.group(4);
+				if (id == null) {
+					id = matcher.group(5);
+				}
 			} else {
 				// Value was an invalid path within the repository
 				return null;
@@ -87,12 +90,20 @@ public class PIDs {
 				if (qualifier == null) {
 					qualifier = RepositoryPathConstants.CONTENT_BASE;
 				}
-				// store the identifier for the main object
-				id = matcher.group(4);
 				// store the trailing component path
-				componentPath = matcher.group(6);
-				// Expand the identifier into a repository path
-				repositoryPath = getRepositoryPath(id, qualifier, componentPath);
+				componentPath = matcher.group(8);
+				if (matcher.group(5) != null) {
+					// store the identifier for the main object
+					id = matcher.group(5);
+
+					// Expand the identifier into a repository path
+					repositoryPath = getRepositoryPath(id, qualifier, componentPath, true);
+				} else {
+					// Reserved id found, path does not need to be expanded
+					id = matcher.group(6);
+
+					repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
+				}
 			} else {
 				// No a recognized format for constructing a pid
 				return null;
@@ -124,16 +135,21 @@ public class PIDs {
 	 * @param id
 	 * @param qualifier
 	 * @param componentPath
+	 * @param expand if true, then the id will be prepended with hashed subfolders
 	 * @return
 	 */
-	private static String getRepositoryPath(String id, String qualifier, String componentPath) {
+	private static String getRepositoryPath(String id, String qualifier, String componentPath, boolean expand) {
 		StringBuilder builder = new StringBuilder(repository.getFedoraBase());
 		builder.append(qualifier).append('/');
-		// Chunk the id into 
-		for (int i = 0; i < HASHED_PATH_DEPTH; i++) {
-			builder.append(id.substring(i * HASHED_PATH_SIZE, i * HASHED_PATH_SIZE + HASHED_PATH_SIZE))
-					.append('/');
+
+		if (expand) {
+			// Expand the id into chunked subfolders
+			for (int i = 0; i < HASHED_PATH_DEPTH; i++) {
+				builder.append(id.substring(i * HASHED_PATH_SIZE, i * HASHED_PATH_SIZE + HASHED_PATH_SIZE))
+						.append('/');
+			}
 		}
+
 		builder.append(id);
 		if (componentPath != null) {
 			builder.append('/').append(componentPath);

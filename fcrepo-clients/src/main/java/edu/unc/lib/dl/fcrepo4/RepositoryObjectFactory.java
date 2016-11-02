@@ -151,6 +151,22 @@ public class RepositoryObjectFactory {
 	}
 
 	/**
+	 * Creates a content root object structure with the provided properties
+	 * 
+	 * @param path
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public URI createContentRootObject(URI path, Model model) throws FedoraException {
+		// Add types to the object being created
+		model = populateModelTypes(path, model,
+				Arrays.asList(Cdr.ContentRoot));
+
+		return createContentContainerObject(path, model);
+	}
+
+	/**
 	 * Helper to create a content object that can contain members and events
 	 * 
 	 * @param path
