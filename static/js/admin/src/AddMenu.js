@@ -31,7 +31,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 					return self.isVisible(self);
 				}
 			};
-            items["addWork"] = {name : "Add Work",
+			items["addWork"] = {name : "Add Work",
 				visible: function(key, opt){
 					return self.isVisible(self);
 				}
