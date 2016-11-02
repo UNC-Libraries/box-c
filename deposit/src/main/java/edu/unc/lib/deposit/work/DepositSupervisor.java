@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.PrepareResubmitJob;
-import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
-import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
+import edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob;
+import edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
@@ -604,16 +604,14 @@ public class DepositSupervisor implements WorkerListener {
 			return makeJob(VirusScanJob.class, depositUUID);
 		}
 
-		// Make FOXML
-		if (!successfulJobs.contains(MakeFOXML.class.getName())) {
-			return makeJob(MakeFOXML.class, depositUUID);
+		// Ingest all content objects to repository
+		if (!successfulJobs.contains(IngestContentObjectsJob.class.getName())) {
+			return makeJob(IngestContentObjectsJob.class, depositUUID);
 		}
 
-		// TODO RDF Graph Validation
-
-		// Ingest
-		if (!successfulJobs.contains(IngestDeposit.class.getName())) {
-			return makeJob(IngestDeposit.class, depositUUID);
+		// Ingest the deposit record
+		if (!successfulJobs.contains(IngestDepositRecordJob.class.getName())) {
+			return makeJob(IngestDepositRecordJob.class, depositUUID);
 		}
 
 		return null;

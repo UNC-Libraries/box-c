@@ -193,7 +193,15 @@
 		</property>
 	</bean>
 	
-		<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+	<bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"
+		scope="prototype">
+	</bean>
+	
+	<bean id="ingestDepositRecordJob" class="edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob"
+		scope="prototype">
+	</bean>
+	
+	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="${smtp.host:localhost}" />
 		<property name="port" value="${smtp.port:25}" />
 		<property name="defaultEncoding" value="UTF-8" />
