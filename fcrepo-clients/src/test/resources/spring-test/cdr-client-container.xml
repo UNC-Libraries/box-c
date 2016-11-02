@@ -8,13 +8,10 @@
 
 	<bean id="serverAddress" class="java.lang.String">
 		<constructor-arg
-			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:8080}/rest/" />
+			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:48085}/rest/" />
 	</bean>
 
-	<bean id="fcrepoClientBuilder" class="org.fcrepo.client.FcrepoClient" factory-method="client">
-	</bean>
-	
-	<bean id="fcrepoClient" factory-method="build" factory-bean="fcrepoClientBuilder">
+	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
 	</bean>
 	
 	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">

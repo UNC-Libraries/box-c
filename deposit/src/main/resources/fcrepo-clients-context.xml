@@ -17,7 +17,7 @@
 
 	<bean id="serverAddress" class="java.lang.String">
 		<constructor-arg
-			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fedora}" />
+			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}" />
 	</bean>
 	
 	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
@@ -51,5 +51,12 @@
 				<ref bean="repository" />
 			</list>
 		</property>
+	</bean>
+	
+	<bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer"
+			init-method="initializeRepository">
+		<property name="fcrepoClient" ref="fcrepoClient" />
+		<property name="repository" ref="repository" />
+		<property name="objFactory" ref="repositoryObjectFactory" />
 	</bean>
 </beans>
