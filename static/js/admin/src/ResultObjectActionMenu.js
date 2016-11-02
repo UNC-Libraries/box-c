@@ -1,5 +1,5 @@
 define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
-		function($, ui, StringUtilities, CreateSimpleObjectForm, EditLabelForm, EditFilenameForm) {
+		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -231,7 +231,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.editAccess(resultObject);
 						break;
 					case "addFile" :
-						new CreateSimpleObjectForm().open(resultObject);
+						new AddFileForm({
+							alertHandler : self.options.alertHandler
+						}).open(resultObject);
 						break;
 					case "editLabel" :
 						self.editLabel(resultObject);
