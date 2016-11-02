@@ -149,7 +149,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		}
 
 		// Add files to collections and compound objects
-		if (resultObject.isContainer || resultObject.metadata.type === 'Collection') {
+		if (metadata.type === 'Collection' || metadata.type === 'Aggregate' || metadata.type === 'Folder') {
 			items["addFile"] = {name : 'Add File'};
 		}
 
