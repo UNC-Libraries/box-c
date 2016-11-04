@@ -1,6 +1,5 @@
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
@@ -27,11 +26,14 @@ import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
@@ -41,14 +43,10 @@ public class CDRMETSGraphExtractor {
 	
 	private static Map<String, URI> containerTypes = new HashMap<String, URI>();
 	static {
-		containerTypes.put("Folder",
-				ContentModelHelper.Model.CONTAINER.getURI());
-		containerTypes.put("Collection",
-				ContentModelHelper.Model.COLLECTION.getURI());
-		containerTypes.put("Aggregate Work",
-				ContentModelHelper.Model.AGGREGATE_WORK.getURI());
-		containerTypes.put("SWORD Object",
-				ContentModelHelper.Model.AGGREGATE_WORK.getURI());
+		containerTypes.put("Folder", URI.create(Cdr.Folder.getURI()));
+		containerTypes.put("Collection", URI.create(Cdr.Collection.getURI()));
+		containerTypes.put("Aggregate Work", URI.create(Cdr.Work.getURI()));
+		containerTypes.put("SWORD Object", URI.create(Cdr.Work.getURI()));
 	}
 
 	private PID depositId = null;
@@ -95,11 +93,11 @@ public class CDRMETSGraphExtractor {
 			String pid = METSHelper.getPIDURI(div);
 			Resource o = m.getResource(pid);
 			if(div.getAttributeValue("LABEL") != null) {
-				m.add(o, dprop(m, DepositRelationship.label), div.getAttributeValue("LABEL"));
+				m.add(o, CdrDeposit.label, div.getAttributeValue("LABEL"));
 			}
 			String orig = METSHelper.getOriginalURI(div);
 			if(orig != null) {
-				m.add(o, dprop(m, DepositRelationship.originalLocation), m.getResource(orig));
+				m.add(o, CdrDeposit.originalLocation, m.getResource(orig));
 			}
 		}
 	}
@@ -209,14 +207,9 @@ public class CDRMETSGraphExtractor {
 					parent.add(child);
 				}
 				// set container content model(s)
-				Property hasModel = m
-						.createProperty(ContentModelHelper.FedoraProperty.hasModel
-								.getURI().toString());
-				m.add(parent, hasModel, m
-						.createResource(ContentModelHelper.Model.CONTAINER
-								.getURI().toString()));
+				m.add(parent, RDF.type, Cdr.Folder);
 				if (!"Folder".equals(type)) {
-					m.add(parent, hasModel, m.createResource(containerTypes
+					m.add(parent, RDF.type, m.createResource(containerTypes
 							.get(type).toString()));
 				}
 			}
@@ -236,45 +229,22 @@ public class CDRMETSGraphExtractor {
 						.getChild("xmlData", METS_NS)
 						.getChild("accessControl", METS_ACL_NS);
 
-				// set allowIndexing, record "no" when discoverable is false
-				String discoverableVal = aclEl.getAttributeValue(
-						"discoverable", METS_ACL_NS);
-				if ("false".equals(discoverableVal)) {
-					Property allowIndexing = m
-							.createProperty(ContentModelHelper.CDRProperty.allowIndexing
-									.getURI().toString());
-					m.add(object, allowIndexing, "no");
-				}
-
-				// isPublished, when "false" record "no"
-				String publishedVal = aclEl.getAttributeValue("published",
+				// TODO: need to revisit this; isPublished, when "false" record "no"
+				/**String publishedVal = aclEl.getAttributeValue("published",
 						METS_ACL_NS);
 				if ("false".equals(publishedVal)) {
 					Property published = m
 							.createProperty(ContentModelHelper.CDRProperty.isPublished
 									.getURI().toString());
 					m.add(object, published, "no");
-				}
+				} */
 
 				// embargo, converts date to dateTime
 				String embargoUntilVal = aclEl.getAttributeValue(
 						"embargo-until", METS_ACL_NS);
 				if (embargoUntilVal != null) {
-					Property embargoUntil = m
-							.createProperty(ContentModelHelper.CDRProperty.embargoUntil
-									.getURI().toString());
-					m.add(object, embargoUntil, embargoUntilVal + "T00:00:00",
+					m.add(object, CdrAcl.embargoUntil, embargoUntilVal + "T00:00:00",
 							XSDDatatype.XSDdateTime);
-				}
-
-				// inherit, default is true, literal
-				String inheritVal = aclEl.getAttributeValue("inherit",
-						METS_ACL_NS);
-				if ("false".equals(inheritVal)) {
-					Property inheritPermissions = m
-							.createProperty(ContentModelHelper.CDRProperty.inheritPermissions
-									.getURI().toString());
-					m.add(object, inheritPermissions, "false");
 				}
 
 				// add grants to groups

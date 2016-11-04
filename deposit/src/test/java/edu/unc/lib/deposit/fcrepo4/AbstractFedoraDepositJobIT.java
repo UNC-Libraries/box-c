@@ -100,7 +100,7 @@ public class AbstractFedoraDepositJobIT {
 		}
 	}
 	
-	protected ContentObject findContentObjectByPid(List<ContentObject> objs, PID pid) {
+	protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
 		return objs.stream()
 				.filter(p -> p.getPid().equals(pid)).findAny().get();
 	}

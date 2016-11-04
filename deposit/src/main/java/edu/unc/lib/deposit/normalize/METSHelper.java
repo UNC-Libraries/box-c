@@ -16,6 +16,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -123,31 +124,26 @@ public class METSHelper {
 			// only supporting one USE in fileSec, i.e. source data
 			
 			// record file location
-			Property fileLocation = m.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
-			m.add(object, fileLocation, href);
+			m.add(object, CdrDeposit.stagingLocation, href);
 			
 			// record mimetype
 			if(fileEl.getAttributeValue("MIMETYPE") != null) {
-				Property hasMimetype = m.createProperty(ContentModelHelper.DepositRelationship.mimetype.toString());
-				m.add(object, hasMimetype, fileEl.getAttributeValue("MIMETYPE"));
+				m.add(object, CdrDeposit.mimetype, fileEl.getAttributeValue("MIMETYPE"));
 			}
 			
 			// record File checksum if supplied, we only support MD5 in Simple profile
 			if(fileEl.getAttributeValue("CHECKSUM") != null) {
-				Property hasChecksum = m.createProperty(ContentModelHelper.DepositRelationship.md5sum.toString());
-				m.add(object, hasChecksum, fileEl.getAttributeValue("CHECKSUM"));
+				m.add(object, CdrDeposit.md5sum, fileEl.getAttributeValue("CHECKSUM"));
 			}
 			
 			// record SIZE (bytes/octets)
 			if(fileEl.getAttributeValue("SIZE") != null) {
-				Property hasSize = m.createProperty(ContentModelHelper.DepositRelationship.size.toString());
-				m.add(object, hasSize, fileEl.getAttributeValue("SIZE"));
+				m.add(object, CdrDeposit.size, fileEl.getAttributeValue("SIZE"));
 			}
 			
 			// record CREATED (iso8601)
 			if(fileEl.getAttributeValue("CREATED") != null) {
-				Property hasCreated = m.createProperty(ContentModelHelper.DepositRelationship.createTime.toString());
-				m.add(object, hasCreated, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
+				m.add(object, CdrDeposit.createTime, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
 			}
 				
 		}
