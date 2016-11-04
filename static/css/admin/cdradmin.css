@@ -120,16 +120,12 @@ h1 {
   vertical-align: bottom;
 }
 
-#mainmenu li a {
-	margin-right: 6px;
-}
-
 #username_wrap {
 	color: #165D7F;
 }
 
 #mainmenu > li, .secondarymenu > li {
-	margin: 0;
+	background-color: transparent;
 }
 
 .secondarymenu li a {
@@ -143,7 +139,6 @@ h1 {
 }
 
 #mainmenu li a {
-	margin-right: 6px;
 	border-right: 0px;
 	background-color: #DDF0FA;
 	border-right: 0px;

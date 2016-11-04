@@ -202,21 +202,18 @@ li {
 
 #mainmenu {
 	margin: 0;
-	background-color: #E6E9EC;
+	
 	padding: 0;
 }
 
-#mainmenu > li
-/*, .submenu > li */
-{
+#mainmenu > li {
 	float: left;
 	margin: 0;
 	text-indent: 0;
-	background-color: #E6E9EC;
-	border-right: 2px solid #053a53;
+	margin-right: 4px;
 	font-family: helvetica;
 	font-size: 16px;
-	/*color: #053a53;*/
+	background-color: #E6E9EC;
 }
 
 .submenu {
