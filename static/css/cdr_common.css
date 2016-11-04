@@ -74,6 +74,10 @@ body.full_screen {
 	width: 720px;
 }
 
+.cdr-header {
+	margin: 10px 20px 20px 20px;
+}
+
 .contentarea {
 	margin: 20px;
 }
@@ -195,14 +199,21 @@ li {
 }
 
 /** Header menu */
+
 #mainmenu {
-	margin: 0 0 0 0px;
+	margin: 0;
+	
+	padding: 0;
 }
 
 #mainmenu > li {
 	float: left;
-	margin: 10px 0 0 0;
-	text-indent: 0px;
+	margin: 0;
+	text-indent: 0;
+	margin-right: 4px;
+	font-family: helvetica;
+	font-size: 16px;
+	background-color: #E6E9EC;
 }
 
 .submenu {
@@ -212,26 +223,19 @@ li {
 }
 
 #mainmenu > li > a, .submenu > li > a{
+	color: #053a53;
+	padding: 8px 20px;
+	line-height: 25px;
 	display: block;
-	padding: 0 20px;
-	height: 30px;
-	line-height: 30px;
-	color: #0a5274;
-	background-color: #5aabcf;
-	border-right: 1px solid #0a5274;
-	background-image: url('/static/images/cdrui_contentshadowbottom.png');
-	background-repeat: repeat-x;
-	background-position: bottom left;
-	text-decoration: none;
 }
 
 #mainmenu > li > a:hover {
-	background-color: #7abcd9;
+	background-color: #C8DFF0;
 	background-image: none;
 }
 
 #mainmenu > li > .active {
-	background-color: #fff;
+	background-color: #7BAFD4;
 	background-image: none;
 }
 
@@ -310,9 +314,9 @@ li {
 
 /** Faceting */
 .facets {
-    line-height: 14px;
-    margin-bottom: 15px;
-    margin-left: 15px;
+	line-height: 14px;
+	margin-bottom: 15px;
+	margin-left: 15px;
 }
 
 .crumblist {
