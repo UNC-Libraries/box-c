@@ -94,6 +94,25 @@ public class RepositoryObjectFactory {
 	}
 
 	/**
+	 * Creates a collection object structure at the given path with optional
+	 * properties.
+	 * 
+	 * @param path
+	 *            URI of the full path where the work will be created
+	 * @param model
+	 *            Model containing additional properties. Optional.
+	 * @return URI to the object created
+	 * @throws FedoraException
+	 */
+	public URI createCollectionObject(URI path, Model model) {
+		// Add types to the object being created
+		model = populateModelTypes(path, model,
+				Arrays.asList(Cdr.Collection, PcdmModels.Object));
+
+		return createContentContainerObject(path, model);
+	}
+	
+	/**
 	 * Creates a folder object structure at the given path with optional
 	 * properties.
 	 * 

@@ -166,6 +166,9 @@ public class Repository {
 				if (resc.hasProperty(RDF.type, Cdr.Folder)) {
 					return getFolderObject(pid, model, etag);
 				}
+				if (resc.hasProperty(RDF.type, Cdr.Collection)) {
+					return getCollectionObject(pid, model, etag);
+				}
 
 			} catch (IOException e) {
 				throw new FedoraException("Failed to read model for " + pid, e);
@@ -176,6 +179,54 @@ public class Repository {
 
 		throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
 	}
+
+	/**
+	 * Retrieves an existing CollectionObject
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public CollectionObject getCollectionObject(PID pid) throws FedoraException {
+		return getCollectionObject(pid, null, null);
+	}
+	
+	protected CollectionObject getCollectionObject(PID pid, Model model, String etag) {
+		CollectionObject collectionObj = new CollectionObject(pid, this, repositoryObjectDataLoader);
+		collectionObj.storeModel(model);
+		collectionObj.setEtag(etag);
+
+		return collectionObj.validateType();
+	}
+	
+	/**
+	 * Creates a new CollectionObject with the given pid
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public CollectionObject createCollectionObject(PID pid) throws FedoraException {
+		return createCollectionObject(pid, null);
+	}
+
+	/**
+	 * Creates a new CollectionObject with the given pid and properties.
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public CollectionObject createCollectionObject(PID pid, Model model) throws FedoraException {
+		verifyContentPID(pid);
+
+		URI collectionUri = repositoryFactory.createCollectionObject(pid.getRepositoryUri(), model);
+		PID createdPid = PIDs.get(collectionUri);
+
+		return new CollectionObject(createdPid, this, repositoryObjectDataLoader);
+	}
+
 
 	/**
 	 * Retrieves an existing FolderObject
