@@ -1,14 +1,19 @@
 <%--
+
     Copyright 2008 The University of North Carolina at Chapel Hill
+
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
+
             http://www.apache.org/licenses/LICENSE-2.0
+
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
 --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
@@ -16,7 +21,7 @@
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 
 <div class="darkest fluid-cap-container" id="header">
-    <ul id="topbar">
+	<ul id="topbar">
 		<c:choose>
 			<c:when test="${not empty pageContext.request.remoteUser}">
 				<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
@@ -47,15 +52,15 @@
 				<a href="${adminBaseUrl}/${jumpToAdmin}" target="_blank">Admin</a>
 			</li>
 		</c:if>
-        <li class="topbar-menu-option">
-        <a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact</a></li>
-        <li class="topbar-menu-option">
-            <a href="http://blogs.lib.unc.edu/cdr/">About</a>
-        </li>
+		<li class="topbar-menu-option">
+		<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact</a></li>
+		<li class="topbar-menu-option">
+			<a href="http://blogs.lib.unc.edu/cdr/">About</a>
+		</li>
 		<c:if test="${not empty pageContext.request.remoteUser}">
 			<li id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></li>
 		</c:if>
-    </ul>
+	</ul>
 	<div class="darkest fluid-cap-highlight">
 		<div class="fluid-cap-contents">
 			<div class ="fluid-cap-right-wrap darkest">
@@ -123,21 +128,21 @@
 			</ul>
 		</div>
 	</div>
-    <div id="searchoptions">
+	<div id="searchoptions">
 		
-        <div class="contentarea">
-        <div id="searchoptions-bottom">
-            <div id="advancedsearch">
-            <a href="advancedSearch">Advanced Search</a>
-            </div>
-                <form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
-				        <input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
-				        <div id="hsearch_inputwrap">
-					       <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
-					       <input type="submit" value="Go" id="hsearch_submit">
-				        </div>
-			     </form>
-        </div>
+		<div class="contentarea">
+		<div id="searchoptions-bottom">
+			<div id="advancedsearch">
+			<a href="advancedSearch">Advanced Search</a>
+			</div>
+				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
+						<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
+						<div id="hsearch_inputwrap">
+						   <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
+						   <input type="submit" value="Go" id="hsearch_submit">
+						</div>
+				 </form>
+		</div>
 	</div>
 </div>
 		</div>
