@@ -59,10 +59,8 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 		collection = new CollectionObject(pid, repository, dataLoader);
 
 		folderChildPid = PIDs.get(UUID.randomUUID().toString());
-		when(repository.mintContentPid()).thenReturn(folderChildPid);
-		
 		workChildPid = PIDs.get(UUID.randomUUID().toString());
-		when(repository.mintContentPid()).thenReturn(workChildPid);
+		when(repository.mintContentPid()).thenReturn(folderChildPid).thenReturn(workChildPid);
 		
 		folderChildObj = new FolderObject(folderChildPid, repository, dataLoader);
 		when(repository.createFolderObject(any(PID.class), any(Model.class)))
@@ -130,9 +128,6 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void addCollectionObjectMemberTest() {
 		CollectionObject childObj = new CollectionObject(workChildPid, repository, dataLoader);
-
-		when(repository.createCollectionObject(any(PID.class), any(Model.class)))
-				.thenReturn(childObj);
 
 		collection.addMember(childObj);
 	}

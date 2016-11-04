@@ -31,7 +31,7 @@ public class CollectionObject extends ContentContainerObject {
 		if (!isType(Cdr.Collection.getURI())) {
 			throw new ObjectTypeMismatchException("Object " + pid + " is not a Collection.");
 		}
-		if(!isType(PcdmModels.Object.getURI())) {
+		if (!isType(PcdmModels.Object.getURI())) {
 			throw new ObjectTypeMismatchException("Object " + pid + " is not a PCDM Object.");
 		}
 		return this;
