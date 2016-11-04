@@ -18,10 +18,50 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<div class="darkest shadowbottom" id="header">
-	<div class="threecol dark shadowbottom">
-		<div id="header_banner">
-			<a href="${pageContext.request.contextPath}/" id="titlelink"><img src="/static/images/carolinadigitalrepository-trans.png"></a>
+<div class="dark shadowbottom" id="header">
+	<ul id="topbar">
+		<c:choose>
+			<c:when test="${not empty pageContext.request.remoteUser}">
+				<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
+					<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
+				</c:url>
+				<li class="topbar-menu-option" id="login"><a href="<c:out value='${logoutUrl}' />" class="login" id="login">Log out</a></li>
+			</c:when>
+			<c:otherwise>
+				<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
+					<c:param name="target" value="${currentAbsoluteUrl}" />
+				</c:url>
+				<li class="topbar-menu-option"><a href="<c:out value='${loginUrl}' />" class="login" id="login">Login</a></li>
+			</c:otherwise>
+		</c:choose>
+		<c:if test="${sessionScope.accessLevel != null && sessionScope.accessLevel.viewAdmin}">
+			<c:choose>
+				<c:when test="${not empty resultResponse && not empty resultResponse.selectedContainer}">
+					<c:set var="jumpToAdmin" value="list/${resultResponse.selectedContainer.id}" />
+				</c:when>
+				<c:when test="${not empty briefObject && briefObject.resourceType == 'File'}">
+					<c:set var="jumpToAdmin" value="list/${briefObject.ancestorPathFacet.searchKey}" />
+				</c:when>
+				<c:when test="${not empty briefObject}">
+					<c:set var="jumpToAdmin" value="list/${briefObject.id}" />
+				</c:when>
+			</c:choose>
+			<li class="topbar-menu-option">
+				<a href="${accessBaseUrl}/" data-base-href="${accessBaseUrl}/" id="public_ui_link" target="_blank">Public</a>
+			</li>
+		</c:if>
+		<li class="topbar-menu-option">
+		<a href="http://blogs.lib.unc.edu/cdr/index.php/contact-us/">Contact</a></li>
+		<li class="topbar-menu-option">
+			<a href="http://blogs.lib.unc.edu/cdr/">About</a>
+		</li>
+		<c:if test="${not empty pageContext.request.remoteUser}">
+			<li id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></li>
+		</c:if>
+	</ul>
+	<div class="dark shadowbottom">
+		<div class="cdr-header">
+			<h1 id="cdr-logo"><a href="${pageContext.request.contextPath}/" id="titlelink"><span class="dark-title">CAROLINA</span> <span class="light-title">DIGITAL</span> <span class="dark-title">REPOSITORY</span></a></h1>
 			
 			<ul id="mainmenu">
 				<li>
@@ -47,33 +87,6 @@
 					<a href="collector" class="${tabClass}">Deposit Collectors</a>
 				</li>
 			</ul>
-			<ul class="secondarymenu">
-				<li>
-					<a href="${accessBaseUrl}/" data-base-href="${accessBaseUrl}/" id="public_ui_link" target="_blank">Public</a>
-				</li>
-				<c:choose>
-					<c:when test="${not empty pageContext.request.remoteUser}">
-						<c:url var="logoutUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Logout">
-							<c:param name="return" value="https://sso.unc.edu/idp/logout.jsp?return_url=${currentAbsoluteUrl}" />
-						</c:url>
-						<li><a href="<c:out value='${logoutUrl}' />" class="login" id="login">Log out</a></li>
-					</c:when>
-					<c:otherwise>
-						<c:url var="loginUrl" scope="request" value="https://${pageContext.request.serverName}/Shibboleth.sso/Login">
-							<c:param name="target" value="${currentAbsoluteUrl}" />
-						</c:url>
-						<li><a href="<c:out value='${loginUrl}' />" class="login" id="login">Login</a></li>
-					</c:otherwise>
-				</c:choose>
-				
-			</ul>
-		</div>
-	</div>
-	<div id="header_search" class="fourcol darkest">
-		<div class="contentarea">
-			<c:if test="${pageContext.request.remoteUser}">
-				<div id="username_wrap">Welcome, <c:out value="${pageContext.request.remoteUser}"/></div>
-			</c:if>
 		</div>
 	</div>
 </div>
