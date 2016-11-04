@@ -202,7 +202,8 @@ li {
 
 #cdr-logo {
 	margin: 20px 0 30px 0;
-	word-spacing: -5px;
+	word-spacing: -4px;
+	letter-spacing: -1px;
 }
 
 /*Header Top Bar*/

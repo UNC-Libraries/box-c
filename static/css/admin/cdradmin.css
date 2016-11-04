@@ -120,6 +120,12 @@ h1 {
 	color: #55BAEA;
 }
 
+.sub-title {
+	color: #8E889F;
+	font-size: 90%;
+	padding-left: 3px;
+}
+
 #header_banner {
 	padding: 5px 20px 0px;
 }
