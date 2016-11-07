@@ -31,7 +31,12 @@ public abstract class ContentObject extends RepositoryObject {
 		super(pid, repository, dataLoader);
 	}
 
-	public BinaryObject addDescription(InputStream contentStream) {
+	public BinaryObject addDescription(InputStream modsStream) {
+		return null;
+	}
+	
+	public BinaryObject addDescription(InputStream sourceMdStream, String sourceProfile,
+			InputStream modsStream) {
 		return null;
 	}
 
