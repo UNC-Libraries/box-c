@@ -156,6 +156,7 @@ public class Repository {
 				Resource resc = model.getResource(pid.getRepositoryPath());
 
 				String etag = response.getHeaderValue("ETag");
+				etag = etag.substring(1,  etag.length() - 1);
 
 				if (resc.hasProperty(RDF.type, Cdr.Work)) {
 					return getWorkObject(pid, model, etag);
@@ -632,6 +633,9 @@ public class Repository {
 
 	public void setFedoraBase(String fedoraBase) {
 		this.fedoraBase = fedoraBase;
+		if (!fedoraBase.endsWith("/")) {
+			this.fedoraBase += "/";
+		}
 	}
 
 	public String getAuthUsername() {
