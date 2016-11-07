@@ -59,6 +59,11 @@
 			value="${admin.base.url}" />
 	</bean>
 	
+	<bean id="formsBaseUrl" class="java.lang.String">
+		<constructor-arg
+			value="${forms.base.url}" />
+	</bean>
+	
 	<bean id="swordUrl" class="java.lang.String">
 		<constructor-arg
 			value="${admin.services.url}${services.context}/sword/" />
@@ -83,6 +88,7 @@
 				<value>accessGroupConstants</value>
 				<value>accessBaseUrl</value>
 				<value>adminBaseUrl</value>
+				<value>formsBaseUrl</value>
 			</list>
 		</property>
 		<property name="viewClass"
