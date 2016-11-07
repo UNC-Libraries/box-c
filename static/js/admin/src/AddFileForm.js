@@ -1,5 +1,5 @@
 /**
- * Implements functionality and UI for the generic Ingest Package form
+ * Implements functionality and UI for adding a single file to an aggregate work
  */
 define('AddFileForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/addFileForm',
 	'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm'],

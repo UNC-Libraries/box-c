@@ -1,5 +1,5 @@
 /**
- * Implements functionality and UI for the generic Ingest Package form
+ * Implements functionality and UI for adding an aggregate work to a collection or folder
  */
 define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'tpl!../templates/admin/createWorkObjectForm',
 		'ModalCreate', 'ModalLoadingOverlay', 'ConfirmationDialog', 'AbstractFileUploadForm', 'ResultObject'],
@@ -15,7 +15,7 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 	}
 	
 	CreateWorkObjectForm.prototype.constructor = CreateWorkObjectForm;
-	//CreateWorkObjectForm.prototype = Object.create( AbstractFileUploadForm.prototype );
+
 	CreateWorkObjectForm.prototype.open = function(resultObject) {
 		var self = this;
 		this.closed = false;
@@ -29,6 +29,8 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 
 		var containingDialog = $(".containingDialog");
 		var iframe = $("#work_submission_form");
+		var formSelected = false;
+
 		$("select[name='name']").on("change", function() {
 			var ajaxIcon = $(".loading-icon");
 
@@ -55,16 +57,22 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 				ajaxIcon.addClass("in-admin-iframe");
 			});
 
+			formSelected = true;
 		});
 
-		containingDialog.on("dialogclose", function(e, ui) {
+		containingDialog.on( "dialogbeforeclose", function(e, ui) {
+			if(formSelected) {
+				if (confirm("Are you sure you'd like to exit")) {
+					return true;
+				}
+				return false;
+			}
+		}).on("dialogclose", function(e, ui) {
 			$(this).dialog("destroy");
 		}).on("dialogresizestop", function(e, ui) {
-				var height = $(this).dialog("option", "height") - 50;
-				iframe.attr("height", height);
-			});
-
-
+			var height = $(this).dialog("option", "height") - 50;
+			iframe.attr("height", height);
+		});
 	};
 
 	return CreateWorkObjectForm;

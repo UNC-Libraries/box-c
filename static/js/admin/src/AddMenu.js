@@ -16,24 +16,24 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			items["addContainer"] = {
 				name : "Add Container",
 				visible: function(key, opt){
-					return self.isVisible(self);
+					return self.isAggregate(self);
 				}
 			};
 			items["ingestPackage"] = {
 				name : "Add Ingest Package",
 				visible: function(key, opt){
-					return self.isVisible(self);
+					return self.isAggregate(self);
 				}
 			};
 			items["ingestSource"] = {
 				name : "Add from File Server",
 				visible: function(key, opt){
-					return self.isVisible(self);
+					return self.isAggregate(self);
 				}
 			};
 			items["addWork"] = {name : "Add Work",
 				visible: function(key, opt){
-					return self.isVisible(self);
+					return self.isAggregate(self);
 				}
 			};
 			items["addFile"] = {name : "Add File",
@@ -53,7 +53,7 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 		return items;
 	};
 
-	AddMenu.prototype.isVisible = function(self) {
+	AddMenu.prototype.isAggregate = function(self) {
 		if (self.container.type == "Aggregate") {
 			return false;
 		}
