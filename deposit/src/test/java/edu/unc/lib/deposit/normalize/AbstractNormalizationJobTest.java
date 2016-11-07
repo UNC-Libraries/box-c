@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
@@ -98,15 +96,15 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 	protected void verifyMetadataSourceAssigned(Model model, Resource primaryResource, File depositDirectory,
 			String sourceType, String fileSuffix) {
 		Property stagingLoc = CdrDeposit.stagingLocation;
-		Property hasSourceMetadata = Cdr.hasSourceMetadataProfile;
-		Property sourceMD = RDF.type;
+		Property hasMetadataProfile = Cdr.hasSourceMetadataProfile;
 		Property hasDS = CdrDeposit.hasDatastream;
+		Property hasSourceMD = CdrDeposit.hasSourceMetadata;
 
-		assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(hasSourceMetadata)
+		assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(hasMetadataProfile)
 				.getLiteral().getString());
 
 		// Verify that the metadata source attribute is present and transitively points to the file
-		Resource sourceMDResource = primaryResource.getProperty(sourceMD).getResource();
+		Resource sourceMDResource = primaryResource.getProperty(hasSourceMD).getResource();
 		assertNotNull("Source metdata was not assigned to main resource", sourceMDResource);
 
 		File sourceMDFile = verifyStagingLocationExists(sourceMDResource, stagingLoc, depositDirectory,
