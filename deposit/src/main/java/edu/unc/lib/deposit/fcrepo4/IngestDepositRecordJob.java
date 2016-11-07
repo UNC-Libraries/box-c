@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -34,7 +33,6 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
@@ -50,6 +48,14 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 public class IngestDepositRecordJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
+	public IngestDepositRecordJob() {
+		super();
+	}
+
+	public IngestDepositRecordJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
+	}
+	
 	@Override
 	public void runJob() {
 		String depositUri = getDepositPID().getURI();
@@ -88,7 +94,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 
 			// TODO add references to deposited objects 
 		} catch (IOException | FedoraException e) {
-			failJob(e, "Failed to ingest deposit record {}", getDepositPID());
+			failJob(e, "Failed to ingest deposit record {0}", getDepositPID());
 		}
 	}
 
