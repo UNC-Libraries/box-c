@@ -32,7 +32,6 @@ import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -46,7 +45,6 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.staging.Stages;
 
 /**
  * Abstract deposit normalization job which processes walks file system paths to interpret them into n3 and MODS for
@@ -57,9 +55,6 @@ import edu.unc.lib.staging.Stages;
 public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory
 			.getLogger(AbstractFileServerToBagJob.class);
-	
-	@Autowired
-	public Stages stages;
 	
 	private Map<String, Bag> pathToFolderBagCache;
 	
@@ -249,9 +244,4 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			
 		}
 	}
-
-	public void setStages(Stages stages) {
-		this.stages = stages;
-	}
-
 }
