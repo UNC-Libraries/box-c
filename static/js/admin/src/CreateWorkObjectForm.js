@@ -52,7 +52,7 @@ define('CreateWorkObjectForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteSta
 
 		containingDialog.on( "dialogbeforeclose", function(e, ui) {
 			if(formSelected) {
-				if (confirm("Are you sure you'd like to exit")) {
+				if (confirm("Are you sure you'd like to exit?")) {
 					return true;
 				}
 				return false;
