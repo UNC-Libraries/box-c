@@ -1,3 +1,18 @@
+/**
+ * Copyright 2016 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.deposit.validate;
 
 import java.io.File;
@@ -28,8 +43,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.staging.Stages;
-import edu.unc.lib.staging.StagingException;
 
 /**
  * Scans all files mentioned in N3 manifest for viruses. If a Staging configuration
@@ -41,8 +54,8 @@ import edu.unc.lib.staging.StagingException;
 public class VirusScanJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory
 			.getLogger(VirusScanJob.class);
+
 	private ClamScan clamScan;
-	private Stages stages;
 
 	public VirusScanJob() {
 		super();
@@ -54,14 +67,6 @@ public class VirusScanJob extends AbstractDepositJob {
 
 	public void setClamScan(ClamScan clamScan) {
 		this.clamScan = clamScan;
-	}
-
-	public Stages getStages() {
-		return stages;
-	}
-
-	public void setStages(Stages stages) {
-		this.stages = stages;
 	}
 
 	public VirusScanJob(String uuid, String depositUUID) {
@@ -76,7 +81,6 @@ public class VirusScanJob extends AbstractDepositJob {
 
 		Map<String, String> failures = new HashMap<String, String>();
 
-		Resource premisEvent = null;
 		Model model = getReadOnlyModel();
 		Property fileLocation = CdrDeposit.stagingLocation;
 		StmtIterator i = model.listStatements(new SimpleSelector((Resource)null, fileLocation, (RDFNode)null));
@@ -93,39 +97,24 @@ public class VirusScanJob extends AbstractDepositJob {
 		for (Entry<PID, String> href : hrefs.entrySet()) {
 			verifyRunning();
 
-			URI manifestURI;
-			URI storageURI = null;
+			URI manifestURI = null;
 			try {
 				manifestURI = new URI(href.getValue());
-				if (manifestURI.getScheme() == null) {
-					storageURI = manifestURI;
-				} else {
-					storageURI = getStages().getStorageURI(manifestURI);
-				}
 			} catch (URISyntaxException e) {
 				failJob(e, "Unable to parse manifest URI: {0}", href.getValue());
-			} catch (StagingException e) {
-				failJob(e, "Unable to resolve staging location for file: {0}", href.getValue());
 			}
-			
-			PremisLogger premisLogger = getPremisLogger(href.getKey());
-			PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
-			
-			if (storageURI.getScheme() == null
-					|| storageURI.getScheme().contains("file")) {
-				if(!storageURI.isAbsolute()) {
-					storageURI = getDepositDirectory().toURI().resolve(storageURI);
+
+			if (manifestURI.getScheme() == null
+					|| manifestURI.getScheme().contains("file")) {
+				if(!manifestURI.isAbsolute()) {
+					manifestURI = getDepositDirectory().toURI().resolve(manifestURI);
 				}
-				File file = new File(storageURI.getPath());
+				File file = new File(manifestURI.getPath());
 				ScanResult result = this.clamScan.scan(file);
-				
+
 				switch (result.getStatus()) {
 				case FAILED:
-					premisEvent = premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
-						.addEventDetail("found virus signature " + result.getSignature())
-						.create();
-				
-					failures.put(storageURI.toString(), result.getSignature());
+					failures.put(manifestURI.toString(), result.getSignature());
 					break;
 				case ERROR:
 					throw new Error(
@@ -133,19 +122,21 @@ public class VirusScanJob extends AbstractDepositJob {
 									+ result.getException()
 											.getLocalizedMessage());
 				case PASSED:
-					premisEvent = premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+					PremisLogger premisLogger = getPremisLogger(href.getKey());
+					PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+
+					premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
 						.addEventDetail("File passed pre-ingest scan for viruses")
-						.create();
-					
+						.write();
+
 					scannedObjects++;
 					break;
 				}
-				
-				premisLogger.writeEvent(premisEvent);
 			}
 			addClicks(1);
 		}
-		if(failures.size() > 0) {
+
+		if (failures.size() > 0) {
 			StringBuilder sb = new StringBuilder("Virus checks failed for some files:\n");
 			for(String uri : failures.keySet()) {
 				sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
@@ -156,12 +147,13 @@ public class VirusScanJob extends AbstractDepositJob {
 				failJob("Virus scan job did not attempt to scan all files.",
 						(hrefs.size() - scannedObjects) + " objects were not scanned.");
 			}
-			
+
 			PID depositPID = getDepositPID();
 			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-			PremisEventBuilder premisDepositEventBuilder = premisDepositLogger.buildEvent(Premis.VirusCheck);
-			Resource premisDepositEvent = premisDepositEventBuilder.addEventDetail(scannedObjects + "files scanned for viruses.").create();
-			premisDepositLogger.writeEvent(premisDepositEvent);
+			premisDepositLogger.buildEvent(Premis.VirusCheck)
+					.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+					.addEventDetail(scannedObjects + "files scanned for viruses.")
+					.write();
 		}
 	}
 }

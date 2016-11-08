@@ -144,4 +144,9 @@ public class FedoraPID extends PID {
 	public String toString() {
 		return getQualifiedId();
 	}
+	
+	@Override
+	public int hashCode() {
+		return repositoryPath.hashCode();
+	}
 }
