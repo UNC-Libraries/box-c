@@ -145,6 +145,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		assertTrue("Timestamp on MODS file changed", modified == path.toFile().lastModified());
 	}
 
+	@SuppressWarnings("deprecation")
 	private Document getMODSDocument(String uuid) throws Exception {
 		File modsFile = new File(job.getDescriptionDir(), uuid + ".xml");
 

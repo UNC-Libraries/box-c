@@ -58,5 +58,5 @@ public class CdrDeposit {
     /** >Link to a manifest file for this deposit. */
     public static final Property hasManifest = createProperty( "http://cdr.unc.edu/definitions/deposit#hasManifest" );
     
-    
+    public static final Property hasSourceMetadata = createProperty("http://cdr.unc.edu/definitions/deposit#hasSourceMetadata");
 }

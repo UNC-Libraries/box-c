@@ -15,14 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMetadataProfile;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
@@ -49,9 +41,12 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -100,16 +95,16 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 
 	protected void verifyMetadataSourceAssigned(Model model, Resource primaryResource, File depositDirectory,
 			String sourceType, String fileSuffix) {
-		Property stagingLoc = dprop(model, stagingLocation);
-		Property hasSourceMetadata = cdrprop(model, hasSourceMetadataProfile);
-		Property sourceMD = cdrprop(model, sourceMetadata);
-		Property hasDS = dprop(model, hasDatastream);
+		Property stagingLoc = CdrDeposit.stagingLocation;
+		Property hasMetadataProfile = Cdr.hasSourceMetadataProfile;
+		Property hasDS = CdrDeposit.hasDatastream;
+		Property hasSourceMD = CdrDeposit.hasSourceMetadata;
 
-		assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(hasSourceMetadata)
+		assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(hasMetadataProfile)
 				.getLiteral().getString());
 
 		// Verify that the metadata source attribute is present and transitively points to the file
-		Resource sourceMDResource = primaryResource.getProperty(sourceMD).getResource();
+		Resource sourceMDResource = primaryResource.getProperty(hasSourceMD).getResource();
 		assertNotNull("Source metdata was not assigned to main resource", sourceMDResource);
 
 		File sourceMDFile = verifyStagingLocationExists(sourceMDResource, stagingLoc, depositDirectory,
@@ -147,9 +142,7 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 	}
 
 	protected boolean isContainerType(Resource resource, ContentModelHelper.Model containerType, Model model) {
-		Property hasContentModel = fprop(model, hasModel);
-
-		StmtIterator cmIt = resource.listProperties(hasContentModel);
+		StmtIterator cmIt = resource.listProperties(RDF.type);
 		boolean isSpecialized = false;
 		boolean isContainer = false;
 		while (cmIt.hasNext()) {

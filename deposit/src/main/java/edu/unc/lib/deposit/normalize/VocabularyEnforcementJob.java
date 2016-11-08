@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
 import static edu.unc.lib.deposit.work.DepositGraphUtils.walkChildrenDepthFirst;
 
 import java.io.File;
@@ -40,12 +39,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.VocabularyHelper;
@@ -142,7 +140,6 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 		if (invalidTermMap == null)
 			return;
 
-		Property invalidTermProp = cdrprop(model, CDRProperty.invalidTerm);
 		for (Entry<String, Set<String>> invalidTermEntry : invalidTermMap.entrySet()) {
 			Set<String> invalidTerms = invalidTermEntry.getValue();
 
@@ -150,7 +147,7 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 			if (invalidTerms.size() > 0) {
 				Resource resource = model.getResource(pid.getURI());
 				for (String invalid : invalidTerms) {
-					model.addLiteral(resource, invalidTermProp, model.createLiteral(invalid));
+					model.addLiteral(resource, Cdr.invalidTerm, model.createLiteral(invalid));
 				}
 			}
 		}
