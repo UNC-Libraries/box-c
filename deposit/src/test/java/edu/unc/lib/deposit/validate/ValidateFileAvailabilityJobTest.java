@@ -58,9 +58,6 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
 	private ValidateFileAvailabilityJob job;
 
-	private String examplesPath = "src/test/resources/examples";
-	private File examplesFile;
-
 	@Before
 	public void init() throws Exception {
 		initMocks(this);
@@ -83,7 +80,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
 		depositPid = job.getDepositPID();
 
-		examplesFile = new File(examplesPath);
+		File examplesFile = new File("src/test/resources/examples");
 		FileUtils.copyDirectory(examplesFile, depositDir);
 	}
 
@@ -118,9 +115,9 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 		workBag.addProperty(RDF.type, Cdr.Work);
 
 		depBag.add(workBag);
-		addFileObject(workBag, Paths.get(examplesFile.getAbsolutePath(), "pdf.pdf")
+		addFileObject(workBag, Paths.get(depositDir.getAbsolutePath(), "pdf.pdf")
 				.toAbsolutePath().toString());
-		addFileObject(workBag, Paths.get(examplesFile.getAbsolutePath(), "text.txt")
+		addFileObject(workBag, Paths.get(depositDir.getAbsolutePath(), "text.txt")
 				.toAbsolutePath().toString());
 
 		job.closeModel();

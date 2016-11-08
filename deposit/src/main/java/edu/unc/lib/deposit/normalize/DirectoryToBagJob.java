@@ -24,7 +24,6 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -49,7 +48,6 @@ import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.staging.StagingException;
 
 /**
  * Normalizes a simple directory submission into n3 for deposit
@@ -135,15 +133,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				
 				// Find staged path for the file
 				Path storedPath = Paths.get(file.getAbsolutePath());
-				try {
-					URI stagedURI = stages.getStagedURI(storedPath.toUri());
-					
-					if (stagedURI != null) {
-						model.add(fileResource, locationProp, stagedURI.toString());
-					}
-				} catch (StagingException e) {
-					failJob(e, "Unable to get staged path for file {}", storedPath);
-				}
+				model.add(fileResource, locationProp, storedPath.toUri().toString());
 			} else {
 				Bag folderBag = getFolderBag(sourceBag, filePathString);
 				model.add(folderBag, labelProp, filename);
