@@ -17,7 +17,15 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
+import org.bouncycastle.asn1.iana.IANAObjectIdentifiers;
+
+import com.hp.hpl.jena.vocabulary.RDF;
+
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.IanaRelation;
+import edu.unc.lib.dl.rdf.Ldp;
+import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  * Represents a generic repository object within the main content tree.
@@ -31,16 +39,36 @@ public abstract class ContentObject extends RepositoryObject {
 		super(pid, repository, dataLoader);
 	}
 
-	public BinaryObject addDescription(InputStream modsStream) {
+	public FileObject addDescription(InputStream modsStream) {
+		FileObject fileObj = createFileObject();
+		
+		BinaryObject orig = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
+		repository.createRelationship(pid, IanaRelation.describedby, orig.getResource());
+		
+		return fileObj;
+	}
+	
+	public FileObject addDescription(InputStream sourceMdStream, String sourceProfile,
+			InputStream modsStream) {
+		FileObject fileObj = createFileObject();
+		
+		BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
+		repository.createRelationship(pid, PcdmModels.hasRelatedObject, orig.getResource());
+		orig.getResource().addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);
+		
+		BinaryObject deriv = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
+		repository.createRelationship(pid, IanaRelation.describedby, deriv.getResource());
+		
+		return fileObj;
+	}
+
+	public FileObject getDescription() {
 		return null;
 	}
 	
-	public BinaryObject addDescription(InputStream sourceMdStream, String sourceProfile,
-			InputStream modsStream) {
-		return null;
-	}
-
-	public BinaryObject getDescription() {
-		return null;
+	private FileObject createFileObject() {
+		PID childPid = repository.mintContentPid();
+		FileObject fileObj = repository.createFileObject(childPid, null);
+		return fileObj;
 	}
 }
