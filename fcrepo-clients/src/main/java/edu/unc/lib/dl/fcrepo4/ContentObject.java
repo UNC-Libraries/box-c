@@ -17,6 +17,11 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.vocabulary.RDF;
+
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.IanaRelation;
@@ -29,20 +34,16 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  *
  */
 public abstract class ContentObject extends RepositoryObject {
-	
-	// the object containing MODS and (possibly also) source metadata
-	private FileObject fileObj;
-
-	private BinaryObject mods;
 
 	protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 	}
 
 	public FileObject addDescription(InputStream modsStream) {
-		fileObj = createFileObject();
+		FileObject fileObj = createFileObject();
 		
 		BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
+		repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
 		repository.createRelationship(pid, IanaRelation.describedby, mods.getResource());
 		
 		return fileObj;
@@ -50,10 +51,11 @@ public abstract class ContentObject extends RepositoryObject {
 	
 	public FileObject addDescription(InputStream sourceMdStream, String sourceProfile,
 			InputStream modsStream) {
-		fileObj = createFileObject();
+		FileObject fileObj = createFileObject();
 		
 		BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
-		repository.createRelationship(pid, PcdmModels.hasRelatedObject, orig.getResource());
+		repository.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
+		repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
 		orig.getResource().addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);
 		
 		BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
@@ -62,12 +64,32 @@ public abstract class ContentObject extends RepositoryObject {
 		return fileObj;
 	}
 
-	public FileObject getMetadata() {
-		return fileObj;
+	public FileObject getDescription() {
+		Model model = this.getModel();
+		NodeIterator iter = model.listObjectsOfProperty(PcdmModels.hasRelatedObject);
+		if(iter.hasNext()) {
+			RDFNode node = iter.next();
+			iter.close();
+			PID fileObjPid = PIDs.get(node.asResource().getURI());
+			return repository.getFileObject(fileObjPid);
+		} else {
+			iter.close();
+			return null;
+		}
 	}
 	
 	public BinaryObject getMODS() {
-		return mods;
+		Model model = this.getModel();
+		NodeIterator iter = model.listObjectsOfProperty(IanaRelation.describedby);
+		if(iter.hasNext()) {
+			RDFNode node = iter.next();
+			iter.close();
+			PID binPid = PIDs.get(node.asResource().getURI());
+			return repository.getBinary(binPid);
+		} else {
+			iter.close();
+			return null;
+		}
 	}
 	
 	private FileObject createFileObject() {
