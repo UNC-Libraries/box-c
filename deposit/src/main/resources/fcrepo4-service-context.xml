@@ -159,12 +159,8 @@
 		<constructor-arg ref="stagesConfigURI" />
 	</bean>
 	
-	<bean id="stagesConfigString" class="org.apache.commons.io.FileUtils" factory-method="readFileToString">
-		<constructor-arg ref="stagesConfigFile" />
-	</bean>
-	
-	<bean id="stages" class="edu.unc.lib.staging.Stages">
-		<constructor-arg ref="stagesConfigString" />
-		<constructor-arg><bean class="edu.unc.lib.staging.FileResolver"/></constructor-arg>
+	<bean id="stagingPolicyManager" class="edu.unc.lib.deposit.staging.StagingPolicyManager"
+			init-method="init">
+		<property name="configPath" value="#{stagesConfigFile.getAbsolutePath()}" />
 	</bean>
 </beans>
