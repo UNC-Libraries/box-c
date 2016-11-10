@@ -38,7 +38,14 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
  *
  */
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
+	
+	public ValidateFileAvailabilityJob() {
+	}
 
+	public ValidateFileAvailabilityJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
+	}
+	
 	@Override
 	public void runJob() {
 
