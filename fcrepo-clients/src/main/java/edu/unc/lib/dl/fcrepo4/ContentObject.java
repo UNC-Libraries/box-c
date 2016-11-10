@@ -17,14 +17,9 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
-import org.bouncycastle.asn1.iana.IANAObjectIdentifiers;
-
-import com.hp.hpl.jena.vocabulary.RDF;
-
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.IanaRelation;
-import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
