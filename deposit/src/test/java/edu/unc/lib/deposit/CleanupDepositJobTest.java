@@ -56,9 +56,6 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
-	private File depositsDir;
-	private File depositDir;
-
 	private File stagesDir;
 
 	private File stagingFolder;
@@ -88,15 +85,13 @@ public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
 	private void createJob() throws Exception {
 		// Create a deposit directory with a manifest file in it
-		depositDir = new File(depositsDir, depositUUID);
-		depositDir.mkdir();
 		File manifestFile = new File(depositDir, "manifest.txt");
 		manifestFile.createNewFile();
 
 		// Initialize the job
 		job = new CleanupDepositJob(jobUUID, depositUUID);
-		job.setStagingManager(stagingManager);
-		setField(job, "depositsDirectory", depositsDir);
+		job.setStagingPolicyManager(stagingManager);
+		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "dataset", dataset);

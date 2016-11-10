@@ -15,9 +15,13 @@
  */
 package edu.unc.lib.deposit;
 
+import static edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy.DELETE_INGESTED_FILES;
+import static edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
@@ -50,7 +54,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(CleanupDepositJob.class);
 
-	private StagingPolicyManager stagingManager;
+	private StagingPolicyManager stagingPolicyManager;
 
 	private int statusKeysExpireSeconds;
 
@@ -121,7 +125,7 @@ public class CleanupDepositJob extends AbstractDepositJob {
 				RDFNode n = ni.nextNode();
 				URI stagingUri = URI.create(n.asLiteral().getString());
 
-				CleanupPolicy cleanupPolicy = stagingManager.getCleanupPolicy(stagingUri);
+				CleanupPolicy cleanupPolicy = stagingPolicyManager.getCleanupPolicy(stagingUri);
 				switch (cleanupPolicy) {
 				case DO_NOTHING:
 					break;
@@ -130,20 +134,20 @@ public class CleanupDepositJob extends AbstractDepositJob {
 					break;
 				case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
 					File parent = deleteFile(stagingUri);
-					if (parent != null && parent.exists()) {
-						if (parent.list().length == 0) {
-							try {
-								Files.delete(parent.toPath());
-								LOG.info("Deleted parent folder: {}", parent.toPath());
-							} catch (IOException e) {
-								LOG.error(
-										"Cannot delete an empty staging directory: "
-												+ parent.getAbsolutePath(), e);
-							}
+					try {
+						if (parent != null) {
+							Files.delete(parent.toPath());
+							LOG.info("Deleted parent folder: {}", parent.toPath());
 						}
-					} else {
-						LOG.warn("Unable to cleanup parent directory " + parent.getAbsolutePath() +
-						" because it does not exist");
+					} catch (DirectoryNotEmptyException e) {
+						LOG.debug("Parent directory {} not cleaned up because it is not empty",
+								parent.getAbsolutePath());
+					} catch (NoSuchFileException e) {
+						LOG.info("Unable to cleanup parent directory {} because it does not exist",
+								parent.getAbsolutePath());
+					} catch (IOException e) {
+						failJob(e, "Failed to delete staging directory: {0}",
+								parent.getAbsolutePath());
 					}
 				default:
 					break;
@@ -165,14 +169,10 @@ public class CleanupDepositJob extends AbstractDepositJob {
 				RDFNode n = it.nextNode();
 				URI cleanupUri = URI.create(n.asLiteral().getString());
 
-				CleanupPolicy cleanupPolicy = stagingManager.getCleanupPolicy(cleanupUri);
-				switch (cleanupPolicy) {
-				case DELETE_INGESTED_FILES:
-				case DELETE_INGESTED_FILES_EMPTY_FOLDERS:
+				CleanupPolicy cleanupPolicy = stagingPolicyManager.getCleanupPolicy(cleanupUri);
+				if (cleanupPolicy.equals(DELETE_INGESTED_FILES)
+						|| cleanupPolicy.equals(DELETE_INGESTED_FILES_EMPTY_FOLDERS)) {
 					cleanupPaths.add(cleanupUri.getPath());
-					break;
-				default:
-					break;
 				}
 			}
 		} finally {
@@ -186,18 +186,16 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		for (String pathString : cleanupPaths) {
 			File cleanupFile = new File(pathString);
 			try {
-				if (cleanupFile.exists()) {
-					// non-recursive delete for files or folders
-					Files.delete(cleanupFile.toPath());
-					LOG.info("Deleted cleanup file: {}", cleanupFile.getAbsoluteFile());
-				}
+				// non-recursive delete for files or folders
+				Files.delete(cleanupFile.toPath());
+				LOG.info("Deleted cleanup file: {}", cleanupFile.getAbsoluteFile());
+			} catch (NoSuchFileException e) {
+				LOG.info("Cleanup file {} does not exist, skipping",
+						pathString);
+			} catch (DirectoryNotEmptyException e) {
+				LOG.warn("Cleanup directory {} not removed because it was not empty", pathString);
 			} catch (IOException e) {
-				if (cleanupFile.isDirectory()) {
-					LOG.warn("Failed to delete cleanup directory {}, it may not be empty",
-							pathString);
-				} else {
-					LOG.error("Failed to delete cleanup file {}", pathString, e);
-				}
+				LOG.error("Failed to delete cleanup file {}", pathString, e);
 			}
 		}
 	}
@@ -206,11 +204,11 @@ public class CleanupDepositJob extends AbstractDepositJob {
 		this.statusKeysExpireSeconds = seconds;
 	}
 
-	public StagingPolicyManager getStagingManager() {
-		return stagingManager;
+	public StagingPolicyManager getStagingPolicyManager() {
+		return stagingPolicyManager;
 	}
 
-	public void setStagingManager(StagingPolicyManager stagingManager) {
-		this.stagingManager = stagingManager;
+	public void setStagingPolicyManager(StagingPolicyManager stagingManager) {
+		this.stagingPolicyManager = stagingManager;
 	}
 }
