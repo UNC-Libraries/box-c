@@ -26,9 +26,13 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.tdb.TDBFactory;
+
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -63,6 +67,9 @@ public class AbstractDepositJobTest {
 	protected String jobUUID;
 	
 	protected String depositUUID;
+	protected PID depositPid;
+	
+	protected Dataset dataset;
 
 	@Before
 	public void initBase() throws Exception {
@@ -78,6 +85,9 @@ public class AbstractDepositJobTest {
 		depositUUID = UUID.randomUUID().toString();
 		depositDir = new File(depositsDirectory, depositUUID);
 		depositDir.mkdir();
+		depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+		
+		dataset = TDBFactory.createDataset();
 	}
 
 	protected PID makePid(String qualifier) {

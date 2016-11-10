@@ -44,11 +44,9 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.philvarner.clamavj.ClamScan;
 import com.philvarner.clamavj.ScanResult;
@@ -71,7 +69,7 @@ import edu.unc.lib.dl.util.URIUtil;
  * @author bbpennel
  *
  */
-public class VirusScanJobTest extends AbstractDepositJobTest{
+public class VirusScanJobTest extends AbstractDepositJobTest {
 
 	private PID depositPid;
 
@@ -86,8 +84,6 @@ public class VirusScanJobTest extends AbstractDepositJobTest{
 	@Before
 	public void init() throws Exception {
 		initMocks(this);
-
-		Dataset dataset = TDBFactory.createDataset();
 
 		job = new VirusScanJob();
 		job.setJobUUID(jobUUID);

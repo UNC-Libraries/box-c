@@ -18,10 +18,12 @@ package edu.unc.lib.deposit;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -33,209 +35,306 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
 
-import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.JobStatusFactory;
-import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.staging.FileResolver;
-import edu.unc.lib.staging.Stages;
+import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
+import edu.unc.lib.deposit.staging.StagingException;
+import edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy;
+import edu.unc.lib.deposit.staging.StagingPolicyManager;
+import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.URIUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class CleanupDepositJobTest extends AbstractDepositJobTest {
 
-	private static final URI CLEAN_FOLDERS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_folders_stage/");
-	private static final URI CLEAN_FILES_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_files_stage/");
-	private static final URI NOOP_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/noop_stage/");
-	private static final URI CLEAN_EXTRAS_STAGE_URI = URI.create("tag:cdr.lib.unc.edu,2013:/clean_extras_stage/");
-
-	@Rule
-	public TemporaryFolder tmpDir = new TemporaryFolder();
 	private File depositsDir;
+	private File depositDir;
+
 	private File stagesDir;
-	private File cleanDepositsStagingFolder;
-	private File cleanFoldersStagingFolder;
-	private File cleanFilesStagingFolder;
-	private File cleanExtrasStagingFolder;
-	private File noopStagingFolder;
 
-	private File modifiedStagesConfig;
-
-	@Mock
-	private JobStatusFactory jobStatusFactory;
-	@Mock
-	private DepositStatusFactory depositStatusFactory;
-	@Mock
-	private ManagementClient client;
-	@Mock
-	private Dataset dataset;
+	private File stagingFolder;
+	private String stagingPath;
 
 	private Map<String, String> depositStatus;
 
-	private CleanupDepositJob job;
+	@Mock
+	private StagingPolicyManager stagingManager;
 
-	private Stages stages;
+	private CleanupDepositJob job;
 
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);
 		depositStatus = new HashMap<>();
 		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
-		depositStatus.put(DepositField.permissionGroups.name(), "group");
 
-		depositsDir = tmpDir.newFolder("deposits");
-		stagesDir = tmpDir.newFolder("stages");
+		stagesDir = tmpFolder.newFolder("stages");
 
-		File templateStageDirectory = new File("src/test/resources/cleanupStage");
-		cleanDepositsStagingFolder = new File(stagesDir, "clean_deposits_stage");
-		cleanFoldersStagingFolder = new File(stagesDir, "clean_folders_stage");
-		cleanFilesStagingFolder = new File(stagesDir, "clean_files_stage");
-		cleanExtrasStagingFolder = new File(stagesDir, "clean_extras_stage");
-		noopStagingFolder = new File(stagesDir, "noop_stage");
-		FileUtils.copyDirectory(templateStageDirectory, cleanDepositsStagingFolder);
-		FileUtils.copyDirectory(templateStageDirectory, cleanFoldersStagingFolder);
-		FileUtils.copyDirectory(templateStageDirectory, cleanFilesStagingFolder);
-		FileUtils.copyDirectory(templateStageDirectory, noopStagingFolder);
-		FileUtils.copyDirectory(templateStageDirectory, cleanExtrasStagingFolder);
+		stagingFolder = new File(stagesDir, "staging_folder");
+		stagingPath = stagingFolder.getAbsolutePath();
+		populateStagingFolder(stagingFolder);
 
-		// load stages config
-		modifiedStagesConfig = tmpDir.newFile("stagesConfig.json");
-		stages = new Stages("{}", new FileResolver());
-		URI stagingConfigUri = new File("src/test/resources/cleanup_stages.json").toURI();
-		stages.addRepositoryConfigURL(stagingConfigUri.toString());
-
-		// add mappings
-		stages.setStorageMapping(CLEAN_FOLDERS_STAGE_URI, cleanFoldersStagingFolder.toURI());
-		stages.setStorageMapping(CLEAN_FILES_STAGE_URI, cleanFilesStagingFolder.toURI());
-		stages.setStorageMapping(NOOP_STAGE_URI, noopStagingFolder.toURI());
-		stages.setStorageMapping(CLEAN_EXTRAS_STAGE_URI, cleanExtrasStagingFolder.toURI());
-
-		// save mappings
-		FileUtils.writeStringToFile(modifiedStagesConfig, stages.getLocalConfig());
-
-		createJob("bd5ff703-9c2e-466b-b4cc-15bbfd03c8ae", "/cleanupDeposit");
+		createJob();
 	}
 
-	private void createJob(String depositUuid, String depositDirectoryPath) throws Exception {
-		// Clone the deposit directory
-		File depositFolder = new File(depositsDir, depositUuid);
-		File originalDepositDirectory = new File(getClass().getResource(depositDirectoryPath).toURI());
-		FileUtils.copyDirectory(originalDepositDirectory, depositFolder);
+	private void createJob() throws Exception {
+		// Create a deposit directory with a manifest file in it
+		depositDir = new File(depositsDir, depositUUID);
+		depositDir.mkdir();
+		File manifestFile = new File(depositDir, "manifest.txt");
+		manifestFile.createNewFile();
 
-		Model model = ModelFactory.createDefaultModel();
-		File modelFile = new File(depositFolder, "everything.n3");
-		model.read(modelFile.toURI().toString());
-		Model spyModel = spy(model);
-		doReturn(spyModel).when(spyModel).begin();
-
-		when(dataset.getNamedModel(anyString())).thenReturn(spyModel);
-
-		job = new CleanupDepositJob("jobuuid", depositUuid);
-		job.setStages(stages);
-		// job.setDepositDirectory(depositFolder);
-
+		// Initialize the job
+		job = new CleanupDepositJob(jobUUID, depositUUID);
+		job.setStagingManager(stagingManager);
 		setField(job, "depositsDirectory", depositsDir);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "dataset", dataset);
 
-		depositStatus.put(DepositField.containerId.name(), "uuid:destination");
-		depositStatus.put(DepositField.excludeDepositRecord.name(), "false");
-
 		job.init();
 	}
 
-	@Test
-	public void testCommonPathStageCleanup() throws InterruptedException {
-
-		Thread jobThread = new Thread(job);
-		jobThread.start();
-
-		// Start processing with a timelimit to prevent infinite wait in case of failure
-		jobThread.join();
-
-		// noop policy
-		assertTrue(new File(noopStagingFolder, "project/folderA/ingested").exists());
-		assertTrue(new File(noopStagingFolder, "project/folderA/leftover").exists());
-		assertTrue(new File(noopStagingFolder, "project/folderB/ingested").exists());
-		assertTrue(new File(noopStagingFolder, "project/folderB/also_ingested").exists());
-
-		// clean files policy
-		assertFalse(new File(cleanFilesStagingFolder, "project/folderA/ingested").exists());
-		assertTrue(new File(cleanFilesStagingFolder, "project/folderA/leftover").exists());
-		assertFalse(new File(cleanFilesStagingFolder, "project/folderB/ingested").exists());
-		assertFalse(new File(cleanFilesStagingFolder, "project/folderB/also_ingested").exists());
-		assertTrue(new File(cleanFilesStagingFolder, "project/folderB").exists());
-
-		// clean folders policy
-		assertFalse(new File(cleanFoldersStagingFolder, "project/folderA/ingested").exists());
-		assertTrue(new File(cleanFoldersStagingFolder, "project/folderA/leftover").exists());
-		assertFalse(new File(cleanFoldersStagingFolder, "project/folderB").exists());
-		
-		// clean up extra files
-		assertFalse(new File(cleanExtrasStagingFolder, "project").exists());
-
-		// deposit folder destroyed
-		assertFalse(job.getDepositDirectory().exists());
-
-		// project folder not cleaned
-		assertTrue(new File(cleanDepositsStagingFolder, "project").exists());
-
-		// keys have been set to expire
-		verify(depositStatusFactory, times(1)).expireKeys(Mockito.anyString(), Mockito.anyInt());
-		verify(jobStatusFactory, times(1)).expireKeys(Mockito.anyString(), Mockito.anyInt());
+	private void populateStagingFolder(File stagingFolder) throws Exception {
+		File templateStageDirectory = new File("src/test/resources/cleanupStage");
+		FileUtils.copyDirectory(templateStageDirectory, stagingFolder);
 	}
 
-	@Test
-	public void testCleanupNoDepositStagingFolder() throws InterruptedException {
-		// no deposit staging folder is set
-
-		Thread jobThread = new Thread(job);
-		jobThread.start();
-
-		// Start processing with a timelimit to prevent infinite wait in case of failure
-		jobThread.join(10000L);
-
-		// clean deposit policy
-		assertTrue(new File(cleanDepositsStagingFolder, "project").exists());
+	private void addIngestedFilesToModel() {
+		addIngestedFilesToModel(stagingPath);
 	}
-	
-	private volatile Throwable threadEx;
+
+	private void addIngestedFilesToModel(String basePath) {
+		Model model = job.getWritableModel();
+
+		Resource depositResc = model.createResource(depositPid.getRepositoryPath());
+		depositResc.addProperty(CdrDeposit.stagingLocation,
+				URIUtil.join(stagingPath, "project/folderA/ingested"));
+		depositResc.addProperty(CdrDeposit.stagingLocation,
+				URIUtil.join(stagingPath, "project/folderB/ingested"));
+		depositResc.addProperty(CdrDeposit.stagingLocation,
+				URIUtil.join(stagingPath, "project/folderB/also_ingested"));
+
+		job.closeModel();
+	}
+
+	private void assertDepositCleanedUp() {
+		assertFalse("Deposit directory not cleaned up", depositDir.exists());
+
+		verify(depositStatusFactory).expireKeys(eq(depositUUID), anyInt());
+		verify(depositStatusFactory).expireKeys(eq(depositUUID), anyInt());
+	}
+
 	/**
-	 * Test that the cleanup job does not fail when the ingest files have been deleted before cleanup occurs
+	 * Verify that no ingest file cleanup takes place, as prescribed by policy
 	 * 
 	 * @throws Exception
 	 */
 	@Test
-	public void testCleanupDoesNotExist() throws Throwable {
-		FileUtils.deleteDirectory(cleanFoldersStagingFolder);
-		
-		Thread.UncaughtExceptionHandler handler = new Thread.UncaughtExceptionHandler() {
-			public void uncaughtException(Thread th, Throwable ex) {
-				threadEx = ex;
-			}
-		};
-		
-		Thread jobThread = new Thread(job);
-		jobThread.setUncaughtExceptionHandler(handler);
-		jobThread.start();
+	public void doNothingTest() throws Exception {
+		addIngestedFilesToModel();
 
-		// Start processing with a timelimit to prevent infinite wait in case of failure
-		jobThread.join(10000L);
+		doReturn(CleanupPolicy.DO_NOTHING).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
 
-		if (threadEx != null) {
-			throw threadEx;
-		}
-		// clean deposit policy
-		assertFalse(new File(cleanFoldersStagingFolder, "project").exists());
+		job.run();
+
+		assertNothingDeleted(stagingFolder);
+
+		assertDepositCleanedUp();
 	}
 
+	private void assertNothingDeleted(File stagingFolder) {
+		assertTrue(new File(stagingFolder, "project/folderA/ingested").exists());
+		assertTrue(new File(stagingFolder, "project/folderA/leftover").exists());
+		assertTrue(new File(stagingFolder, "project/folderB/ingested").exists());
+		assertTrue(new File(stagingFolder, "project/folderB/also_ingested").exists());
+	}
+
+	/**
+	 * Verify that deleted files and empty folders were deleted as prescribed by
+	 * policy
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteIngestedFilesEmptyFoldersTest() throws Exception {
+		addIngestedFilesToModel();
+
+		doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		job.run();
+
+		assertIngestedFilesEmptyFoldersDeleted(stagingFolder);
+
+		assertDepositCleanedUp();
+	}
+
+	private void assertIngestedFilesEmptyFoldersDeleted(File stagingFolder) {
+		assertFalse(new File(stagingFolder, "project/folderA/ingested").exists());
+		assertTrue(new File(stagingFolder, "project/folderA/leftover").exists());
+		assertFalse(new File(stagingFolder, "project/folderB/ingested").exists());
+		assertFalse(new File(stagingFolder, "project/folderB/also_ingested").exists());
+		assertFalse(new File(stagingFolder, "project/folderB").exists());
+	}
+
+	/**
+	 * Verify that only ingested files, not folders, were deleted as defined by
+	 * policy
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void deleteIngestedFilesTest() throws Exception {
+		addIngestedFilesToModel();
+
+		doReturn(CleanupPolicy.DELETE_INGESTED_FILES).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		job.run();
+
+		assertIngestedFilesDeleted(stagingFolder);
+
+		assertDepositCleanedUp();
+	}
+
+	private void assertIngestedFilesDeleted(File stagingFolder) {
+		assertFalse(new File(stagingFolder, "project/folderA/ingested").exists());
+		assertTrue(new File(stagingFolder, "project/folderA/leftover").exists());
+		assertFalse(new File(stagingFolder, "project/folderB/ingested").exists());
+		assertFalse(new File(stagingFolder, "project/folderB/also_ingested").exists());
+		assertTrue(new File(stagingFolder, "project/folderB").exists());
+	}
+
+	/**
+	 * Test that the cleanup job does not fail if the staging folder specified
+	 * is not present at cleanup time
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void cleanupMissingStagingFolderTest() throws Exception {
+		doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		job.run();
+
+		// Mainly ensuring that no error occurs when there is nothing to delete
+		assertDepositCleanedUp();
+	}
+
+	/**
+	 * Test that registering multiple staging locations with different policies
+	 * works correctly
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void multipleStagingPoliciesTest() throws Exception {
+		addIngestedFilesToModel();
+		File stagingFolder2 = new File(stagesDir, "staging_folder2");
+		String stagingPath2 = stagingFolder2.getAbsolutePath();
+		addIngestedFilesToModel(stagingPath2);
+		populateStagingFolder(stagingFolder2);
+
+		doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		doReturn(CleanupPolicy.DO_NOTHING).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder2)));
+
+		job.run();
+
+		assertIngestedFilesEmptyFoldersDeleted(stagingFolder);
+		assertNothingDeleted(stagingFolder2);
+	}
+
+	@Test(expected = StagingException.class)
+	public void noCleanupPolicyTest() throws Exception {
+		when(stagingManager.getCleanupPolicy(any(URI.class)))
+				.thenThrow(new StagingException("No staging location"));
+
+		addIngestedFilesToModel();
+
+		job.run();
+	}
+
+	@Test
+	public void cleanupFilesCleanedUpTest() throws Exception {
+		doReturn(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		File cleanupFile = addCleanupFile();
+
+		job.run();
+
+		assertFalse("Cleanup file was not deleted", cleanupFile.exists());
+	}
+
+	@Test
+	public void doNothingToCleanupFilesTest() throws Exception {
+		doReturn(CleanupPolicy.DO_NOTHING).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		File cleanupFile = addCleanupFile();
+
+		job.run();
+
+		assertTrue("Cleanup file should not have been deleted", cleanupFile.exists());
+	}
+
+	private File addCleanupFile() throws Exception {
+		Model model = job.getWritableModel();
+		Resource depositResc = model.createResource(depositPid.getRepositoryPath());
+
+		String cleanupFilename = "extra-manifest.txt";
+		File cleanupFile = new File(stagingPath, cleanupFilename);
+		cleanupFile.createNewFile();
+		depositResc.addProperty(CdrDeposit.cleanupLocation,
+				URIUtil.join(stagingPath, cleanupFilename));
+
+		job.closeModel();
+
+		return cleanupFile;
+	}
+
+	@Test
+	public void cleanupFileAndCleanupStagedTest() throws Exception {
+		doReturn(CleanupPolicy.DELETE_INGESTED_FILES).when(stagingManager)
+				.getCleanupPolicy(argThat(new FileBeginsWithMatcher(stagingFolder)));
+
+		File cleanupFile = addCleanupFile();
+		addIngestedFilesToModel();
+
+		job.run();
+
+		assertFalse("Cleanup file was not deleted", cleanupFile.exists());
+		assertIngestedFilesDeleted(stagingFolder);
+	}
+
+	private class FileBeginsWithMatcher extends ArgumentMatcher<URI> {
+		private String basePath;
+
+		public FileBeginsWithMatcher(File baseFile) {
+			this.basePath = baseFile.getAbsolutePath();
+		}
+
+		@Override
+		public boolean matches(Object argument) {
+			URI compareUri = (URI) argument;
+			String comparePath = compareUri.getPath();
+			return comparePath.startsWith(basePath);
+		}
+
+	}
 }

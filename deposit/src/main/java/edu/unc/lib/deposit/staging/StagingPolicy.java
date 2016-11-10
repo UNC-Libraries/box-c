@@ -25,8 +25,7 @@ public class StagingPolicy {
 	public static enum CleanupPolicy {
 		DELETE_INGESTED_FILES,
 		DO_NOTHING,
-		DELETE_INGESTED_FILES_EMPTY_FOLDERS,
-		DELETE_INGESTED_DEPOSIT_FOLDERS
+		DELETE_INGESTED_FILES_EMPTY_FOLDERS
 	}
 
 	private String path;
