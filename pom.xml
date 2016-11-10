@@ -128,7 +128,6 @@
 		<module>admin</module>
 		<module>access-common</module>
 		<module>deposit</module>
-		<module>staging-areas</module>
 		<module>clamavj</module>
 		<module>spoof</module>
 	</modules>
