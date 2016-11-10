@@ -29,6 +29,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -390,9 +391,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	private PID addFileObject(Bag parent, String stagingLocation, String mimetype) {
 		PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
+		String absolutePath = Paths.get(depositDir.getAbsolutePath(), stagingLocation).toUri().toString();
 		Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
 		fileResc.addProperty(RDF.type, Cdr.FileObject);
-		fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+		fileResc.addProperty(CdrDeposit.stagingLocation, absolutePath);
 		fileResc.addProperty(CdrDeposit.mimetype, mimetype);
 
 		parent.add(fileResc);

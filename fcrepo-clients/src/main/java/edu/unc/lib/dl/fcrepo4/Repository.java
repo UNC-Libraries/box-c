@@ -231,6 +231,7 @@ public class Repository {
 		return new CollectionObject(createdPid, this, repositoryObjectDataLoader);
 	}
 
+	/**
 	 * Retrieves the root object for the content tree.
 	 * 
 	 * @return

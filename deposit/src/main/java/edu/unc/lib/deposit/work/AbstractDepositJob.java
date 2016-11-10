@@ -50,6 +50,7 @@ public abstract class AbstractDepositJob implements Runnable {
 	@Autowired
 	private DepositStatusFactory depositStatusFactory;
 
+	@Autowired
 	protected Repository repository;
 
 	// UUID for this deposit and its deposit record

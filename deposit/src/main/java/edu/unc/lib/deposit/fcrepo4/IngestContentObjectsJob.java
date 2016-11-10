@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -129,6 +131,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// Retrieve the object where this deposit will be ingested to.
 		Map<String, String> depositStatus = getDepositStatus();
+		String destinationPath = depositStatus.get(DepositField.containerId.name());
+		PID destinationPid = PIDs.get(destinationPath);
+		if (destinationPid == null) {
+			failJob("Invalid destination URI", "The provide destination uri " + destinationPath
+					+ " was not a valid repository path");
+		}
+
 		ContentObject destObj = repository.getContentObject(PIDs.get(
 				depositStatus.get(DepositField.containerId.name())));
 		if (!(destObj instanceof ContentContainerObject)) {
@@ -216,6 +225,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// Increment the count of objects deposited
 		addClicks(1);
+		
+		log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
 	}
 
 	/**
@@ -267,6 +278,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// Increment the count of objects deposited
 		addClicks(1);
+		
+		log.info("Created work {} for file object {} for deposit {}",
+				new Object[] {workPid, childPid, getDepositPID()});
 	}
 
 	/**
@@ -293,7 +307,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
 		String label = getPropertyValue(childResc, CdrDeposit.label);
 
-		File file = new File(getDepositDirectory(), stagingPath);
+		File file = null;
+		try {
+			URI stagingUri = new URI(stagingPath);
+			file = new File(stagingUri);
+		} catch (URISyntaxException e) {
+			failJob(e, "Unable to staging URI: {0}", stagingPath);
+		}
+
 		String filename = label != null? label : file.getName();
 
 		try (InputStream fileStream = new FileInputStream(file)) {
@@ -301,6 +322,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			FileObject fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
 			// Record the size of the file for throughput stats
 			metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
+			
+			log.info("Ingested file {} in {} for deposit {}", new Object[] {filename, childPid, getDepositPID()});
+			
 			return fileObj;
 		} catch (FileNotFoundException e) {
 			throw new DepositException("Data file missing for child (" + childPid.getQualifiedId()
@@ -341,6 +365,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);
+			
+			log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
 		}
 
 		// ingest all children of the folder
@@ -379,6 +405,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);
+			
+			log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 		}
 
 		ingestChildren(obj, childResc);

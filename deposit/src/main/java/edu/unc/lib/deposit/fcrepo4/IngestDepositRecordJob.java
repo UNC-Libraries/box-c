@@ -17,6 +17,8 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 
@@ -73,12 +75,12 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 
 		// Add ingestion event to PREMIS log
 		PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
-		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Ingestion)
-					.addEventDetail("ingested as PID: {0}. {1}", getDepositPID().getPid(), 
-							aipObjResc.getProperty(DcElements.title).getObject().toString())
-					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-					.addAuthorizingAgent(DepositField.depositorName.name())
-					.write();
+		premisDepositLogger.buildEvent(Premis.Ingestion)
+				.addEventDetail("ingested as PID: {0}. {1}", getDepositPID().getPid(), 
+						aipObjResc.getProperty(DcElements.title).getObject().toString())
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+				.addAuthorizingAgent(DepositField.depositorName.name())
+				.write();
 
 		// Create the deposit record object in Fedora
 		DepositRecord depositRecord;
@@ -88,12 +90,13 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 
 			// Add manifest files
 			List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
-			for (String uri : manifestURIs) {
-				depositRecord.addManifest(new File(getDepositDirectory(), uri), "text/plain");
+			for (String manifestPath : manifestURIs) {
+				URI uri = new URI(manifestPath);
+				depositRecord.addManifest(new File(uri), "text/plain");
 			}
 
 			// TODO add references to deposited objects 
-		} catch (IOException | FedoraException e) {
+		} catch (IOException | FedoraException | URISyntaxException e) {
 			failJob(e, "Failed to ingest deposit record {0}", getDepositPID());
 		}
 	}
