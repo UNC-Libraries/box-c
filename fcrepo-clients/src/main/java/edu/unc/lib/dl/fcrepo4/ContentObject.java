@@ -29,36 +29,45 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  *
  */
 public abstract class ContentObject extends RepositoryObject {
+	
+	// the object containing MODS and (possibly also) source metadata
+	private FileObject fileObj;
+
+	private BinaryObject mods;
 
 	protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 	}
 
 	public FileObject addDescription(InputStream modsStream) {
-		FileObject fileObj = createFileObject();
+		fileObj = createFileObject();
 		
-		BinaryObject orig = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
-		repository.createRelationship(pid, IanaRelation.describedby, orig.getResource());
+		BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
+		repository.createRelationship(pid, IanaRelation.describedby, mods.getResource());
 		
 		return fileObj;
 	}
 	
 	public FileObject addDescription(InputStream sourceMdStream, String sourceProfile,
 			InputStream modsStream) {
-		FileObject fileObj = createFileObject();
+		fileObj = createFileObject();
 		
 		BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
 		repository.createRelationship(pid, PcdmModels.hasRelatedObject, orig.getResource());
 		orig.getResource().addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);
 		
-		BinaryObject deriv = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
-		repository.createRelationship(pid, IanaRelation.describedby, deriv.getResource());
+		BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
+		repository.createRelationship(pid, IanaRelation.describedby, mods.getResource());
 		
 		return fileObj;
 	}
 
-	public FileObject getDescription() {
-		return null;
+	public FileObject getMetadata() {
+		return fileObj;
+	}
+	
+	public BinaryObject getMODS() {
+		return mods;
 	}
 	
 	private FileObject createFileObject() {
