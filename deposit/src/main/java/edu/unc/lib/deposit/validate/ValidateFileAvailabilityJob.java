@@ -35,8 +35,6 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 /**
  * Verifies that files referenced by this deposit for ingest are present and
  * available
- * 
- * @author daines
  *
  */
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
@@ -54,7 +52,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 
 		setTotalClicks(hrefs.size());
 
-		// Verify that the deposit is still running before preceeding with check
+		// Verify that the deposit is still running before proceeding with check
 		verifyRunning();
 
 		// Iterate through local file hrefs and verify that each one exists

@@ -117,11 +117,11 @@ public class StagingPolicyManagerTest {
 	}
 
 	@Test
-	public void inValidStagingLocationTest() {
+	public void isValidStagingLocationTest() {
 		manager.init();
 
-		assertTrue(manager.inValidStagingLocation(validUri));
+		assertTrue(manager.isValidStagingLocation(validUri));
 
-		assertFalse(manager.inValidStagingLocation(unregisteredUri));
+		assertFalse(manager.isValidStagingLocation(unregisteredUri));
 	}
 }

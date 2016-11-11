@@ -67,7 +67,7 @@ public class StagingPolicyManager {
 		for (StagingPolicy policy : policies) {
 			String path = policy.getPath();
 
-			// If path was no absolute, resolve it against the base path
+			// If path was not absolute, resolve it against the base path
 			if (!Paths.get(path).isAbsolute()) {
 				policy.setPath(URIUtil.join(basePath, path));
 			}
@@ -119,7 +119,7 @@ public class StagingPolicyManager {
 	 * @param fileUri
 	 * @return
 	 */
-	public boolean inValidStagingLocation(URI fileUri) {
+	public boolean isValidStagingLocation(URI fileUri) {
 		try {
 			getStagingPolicy(fileUri);
 			return true;
