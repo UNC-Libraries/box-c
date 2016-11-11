@@ -36,7 +36,8 @@
 			'resultList' : {
 				'resultUrl' : '${currentRelativeUrl}',
 				'accessBaseUrl' : '${accessBaseUrl}',
-				'adminBaseUrl' : '${adminBaseUrl}'
+				'adminBaseUrl' : '${adminBaseUrl}',
+				'formsBaseUrl' : '${formsBaseUrl}'
 			}
 		}
 	};

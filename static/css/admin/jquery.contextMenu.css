@@ -53,7 +53,7 @@
 	user-select: text;
 }
 
-.context-menu-item.hover {
+.context-menu-hover {
 	cursor: pointer;
 	background-color: #EEEEFF;
 }
@@ -153,7 +153,7 @@
 	top: 5px;
 }
 
-.context-menu-item.hover>.context-menu-list {
+.context-menu-hover>.context-menu-list {
 	display: block;
 }
 

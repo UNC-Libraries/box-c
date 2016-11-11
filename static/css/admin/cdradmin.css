@@ -311,6 +311,11 @@ h1 {
 	width: 100%;
 }
 
+.loading-icon {
+	min-width: 200px;
+	padding-top: 75px;
+}
+
 /* Alerts */
 
 .qtip-admin {
@@ -479,4 +484,9 @@ h1 {
 
 .edit_desc_page .result_warning {
 	margin-top: 8px;
+}
+
+div.in-admin-iframe,
+.admin-forms.in-admin-iframe {
+    display: none;
 }
