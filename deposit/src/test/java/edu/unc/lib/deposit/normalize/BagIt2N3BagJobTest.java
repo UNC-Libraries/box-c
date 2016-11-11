@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2016 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,14 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,9 +36,6 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -57,20 +52,16 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.staging.Stages;
 
 public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	private BagIt2N3BagJob job;
 
 	private Map<String, String> status;
-	
-	private Stages stages;
 
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);
-		stages = mock(Stages.class);
 		status = new HashMap<String, String>();
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
 		Dataset dataset = TDBFactory.createDataset();
@@ -78,7 +69,6 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		job = new BagIt2N3BagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
-		job.setStages(stages);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -87,22 +77,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Test
 	public void testConversion() throws Exception {
-		status.put(DepositField.sourcePath.name(), "src/test/resources/paths/valid-bag");
+		String sourcePath = "src/test/resources/paths/valid-bag";
+		status.put(DepositField.sourcePath.name(), sourcePath);
 		status.put(DepositField.fileName.name(), "Test File");
 		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
+		String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
 		
-		when(stages.getStagedURI(any(URI.class))).thenAnswer(new Answer<URI>() {
-			public URI answer(InvocationOnMock invocation) throws URISyntaxException {
-				Object[] args = invocation.getArguments();
-				URI uri = (URI) args[0];
-				String path = uri.toString();
-				int index = path.lastIndexOf("/paths");
-				path = path.substring(index + 6);
-				
-				return new URI("tag:" + path);
-			}
-		});
-
 		job.run();
 
 		Model model = job.getReadOnlyModel();
@@ -133,21 +113,22 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		
 		ArgumentCaptor<String> filePathCaptor = ArgumentCaptor.forClass(String.class);
 		verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
-		List<String> capturedFilePaths = Arrays.asList("tag:/valid-bag/bagit.txt", "tag:/valid-bag/manifest-md5.txt");
+		List<String> capturedFilePaths = Arrays.asList(absoluteSourcePath + "/bagit.txt",
+				absoluteSourcePath + "/manifest-md5.txt");
 		assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
 		
 		Resource file = children.get("lorem.txt");
 		assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
 		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
 				file.getProperty(CdrDeposit.md5sum).getString());
-		assertEquals("File location not set", "tag:/valid-bag/data/test/lorem.txt",
+		assertEquals("File location not set", absoluteSourcePath + "/data/test/lorem.txt",
 				file.getProperty(CdrDeposit.stagingLocation).getString());
 		
 		Resource file2 = children.get("ipsum.txt");
 		assertTrue("Missing RDF type", file2.hasProperty(RDF.type, Cdr.FileObject));
 		assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
 				file2.getProperty(CdrDeposit.md5sum).getString());
-		assertEquals("File location not set", "tag:/valid-bag/data/test/ipsum.txt",
+		assertEquals("File location not set", absoluteSourcePath + "/data/test/ipsum.txt",
 				file2.getProperty(CdrDeposit.stagingLocation).getString());
 		
 		File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
@@ -161,9 +142,9 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 		}
 		
 		assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
-		assertTrue("Cleanup of bag not set", cleanupSet.contains("tag:/valid-bag/"));
-		assertTrue("Cleanup of manifest not set", cleanupSet.contains("tag:/valid-bag/bagit.txt"));
-		assertTrue("Cleanup of manifest not set", cleanupSet.contains("tag:/valid-bag/manifest-md5.txt"));
+		assertTrue("Cleanup of bag not set", cleanupSet.contains(absoluteSourcePath + "/"));
+		assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(0)));
+		assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
 	}
 
 	@Test(expected = JobFailedException.class)

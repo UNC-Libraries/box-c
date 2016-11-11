@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -33,7 +32,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.staging.StagingException;
 import gov.loc.repository.bagit.Bag;
 import gov.loc.repository.bagit.Bag.Format;
 import gov.loc.repository.bagit.BagFactory;
@@ -130,42 +128,20 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 			
 			// Find staged path for the file
 			Path storedPath = Paths.get(sourceFile.getAbsolutePath(), filePath);
-			try {
-				URI stagedURI = stages.getStagedURI(storedPath.toUri());
-				model.add(fileResource, locationProp, stagedURI.toString());
-			} catch (StagingException e) {
-				failJob(e, "Unable to get staged path for file {}", storedPath);
-			}
-			
+			model.add(fileResource, locationProp, storedPath.toUri().toString());
 		}
 		
 		String sourceAbsPath = sourceFile.getAbsolutePath();
 		// Register tag file as deposit manifests, then register  them for cleanup later 
 		for (BagFile tag : bag.getTags()) {
 			Path path = Paths.get(sourceAbsPath, tag.getFilepath());
-			try {
-				URI stagedURI = stages.getStagedURI(path.toUri());
-				if (stagedURI != null) {
-					getDepositStatusFactory().addManifest(getDepositUUID(), stagedURI.toString());
-					model.add(depositBag, cleanupLocProp, stagedURI.toString());
-				}
-			} catch (StagingException e) {
-				failJob(e, "Unable to get staged path for file {}", path);
-			}
+			String pathUri = path.toUri().toString();
+			getDepositStatusFactory().addManifest(getDepositUUID(), pathUri);
+			model.add(depositBag, cleanupLocProp, pathUri);
 		}
 		
 		// Register the bag itself for cleanup
-		Path storedPath = sourceFile.toPath();
-		try {
-			URI stagedURI = stages.getStagedURI(storedPath.toUri());
-			
-			if (stagedURI != null) {
-				model.add(depositBag, cleanupLocProp, stagedURI.toString());
-			}
-		} catch (StagingException e) {
-			failJob(e, "Unable to get staged path for file {}", storedPath);
-		}
-		
+		model.add(depositBag, cleanupLocProp, sourceFile.toPath().toAbsolutePath().toUri().toString());
 	}
 	
 }

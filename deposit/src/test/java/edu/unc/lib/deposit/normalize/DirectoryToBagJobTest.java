@@ -26,22 +26,17 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -52,7 +47,6 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
-import edu.unc.lib.staging.Stages;
 
 public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 	
@@ -62,8 +56,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 	private DirectoryToBagJob job;
 
 	private Map<String, String> status;
-	
-	private Stages stages;
 	
 	private File depositDirectory;
 
@@ -80,8 +72,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		File testFile = new File(testDirectory, "lorem.txt");
 		testFile.createNewFile();
 		
-		stages = mock(Stages.class);
-		
 		status = new HashMap<String, String>();
 
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
@@ -91,7 +81,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		job = new DirectoryToBagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
-		job.setStages(stages);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -104,18 +93,6 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		status.put(DepositField.sourcePath.name(), depositDirectory.getAbsolutePath());
 		status.put(DepositField.fileName.name(), "Test File");
 		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
-		
-		when(stages.getStagedURI(any(URI.class))).thenAnswer(new Answer<URI>() {
-			public URI answer(InvocationOnMock invocation) throws URISyntaxException {
-				Object[] args = invocation.getArguments();
-				URI uri = (URI) args[0];
-				String path = uri.toString();
-				int index = path.lastIndexOf("/paths");
-				path = path.substring(index + 6);
-				
-				return new URI("tag:" + path);
-			}
-		});
 
 		job.run();
 

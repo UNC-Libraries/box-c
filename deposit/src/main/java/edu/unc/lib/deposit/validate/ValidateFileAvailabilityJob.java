@@ -1,12 +1,24 @@
+/**
+ * Copyright 2016 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.deposit.validate;
 
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.hp.hpl.jena.rdf.model.Model;
@@ -18,84 +30,62 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.staging.Stages;
-import edu.unc.lib.staging.StagingException;
 
+/**
+ * Verifies that files referenced by this deposit for ingest are present and
+ * available
+ *
+ */
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
-
-	private Stages stages;
-	
-	public Stages getStages() {
-		return stages;
-	}
-
-	public void setStages(Stages stages) {
-		this.stages = stages;
-	}
-
-	public ValidateFileAvailabilityJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
 
 	@Override
 	public void runJob() {
-		Map<PID, String> hrefs = new HashMap<PID, String>();
+
 		Set<String> failures = new HashSet<String>();
 
 		Model model = getReadOnlyModel();
-		Property fileLocation = CdrDeposit.stagingLocation;
-		StmtIterator i = model.listStatements(new SimpleSelector((Resource) null, fileLocation, (RDFNode) null));
-		while (i.hasNext()) {
-			Statement s = i.nextStatement();
-			PID p = PIDs.get(s.getSubject().getURI());
-			String href = s.getObject().asLiteral().getString();
-			hrefs.put(p, href);
-		}
+		// Construct a map of objects to file paths to verify
+		Set<String> hrefs = new HashSet<String>();
+		addLocations(hrefs, model, CdrDeposit.stagingLocation);
+		addLocations(hrefs, model, CdrDeposit.hasDatastream);
 
 		setTotalClicks(hrefs.size());
 
-		for (Entry<PID, String> href : hrefs.entrySet()) {
-			verifyRunning();
+		// Verify that the deposit is still running before proceeding with check
+		verifyRunning();
 
-			URI manifestURI;
-			URI storageURI = null;
+		// Iterate through local file hrefs and verify that each one exists
+		for (String href : hrefs) {
+			URI manifestURI = null;
 			try {
-				manifestURI = new URI(href.getValue());
-				if (manifestURI.getScheme() == null) {
-					storageURI = manifestURI;
-				} else {
-					storageURI = getStages().getStorageURI(manifestURI);
-				}
+				manifestURI = new URI(href);
 			} catch (URISyntaxException e) {
-				failJob(e, "Unable to parse manifest URI: {0}", href.getValue());
-			} catch (StagingException e) {
-				failJob(e, "Unable to resolve staging location for file: {0}", href.getValue());
+				failJob(e, "Unable to parse manifest URI: {0}", href);
 			}
-			
-			if (storageURI.getScheme() == null || storageURI.getScheme().contains("file")) {
-				if (!storageURI.isAbsolute()) {
-					storageURI = getDepositDirectory().toURI().resolve(storageURI);
+
+			if (manifestURI.getScheme() == null || manifestURI.getScheme().contains("file")) {
+				if (!manifestURI.isAbsolute()) {
+					manifestURI = getDepositDirectory().toURI().resolve(manifestURI);
 				}
-				
-				File file = new File(storageURI.getPath());
-				
+
+				File file = new File(manifestURI.getPath());
+
 				if (!file.exists()) {
-					failures.add(storageURI.toString());
+					failures.add(manifestURI.toString());
 				}
 			}
-			
+
 			addClicks(1);
 		}
-		
+
+		// Generate failure message of all missing files and fail job
 		if (failures.size() > 0) {
-			StringBuilder sb = new StringBuilder("Some of the files referenced by the deposit could not be found:\n");
+			StringBuilder sb = new StringBuilder("Some files referenced by the deposit could not be found:\n");
 			for (String uri : failures) {
-				sb.append(uri).append(" - ").append(uri).append("\n");
+				sb.append(" - ").append(uri).append("\n");
 			}
-			
+
 			if (failures.size() == 1) {
 				failJob("1 file referenced by the deposit could not be found.", sb.toString());
 			} else {
@@ -104,4 +94,13 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 		}
 	}
 
+	private void addLocations(Set<String> hrefs, Model model, Property property) {
+		Property fileLocation = CdrDeposit.stagingLocation;
+		StmtIterator i = model.listStatements(new SimpleSelector((Resource) null, fileLocation, (RDFNode) null));
+		while (i.hasNext()) {
+			Statement s = i.nextStatement();
+			String href = s.getObject().asLiteral().getString();
+			hrefs.add(href);
+		}
+	}
 }
