@@ -94,6 +94,37 @@ h1 {
 }
 
 /** Header */
+#topbar {
+	background-color: #3584A8;
+}
+
+#topbar > li > a {
+	color: #fff;
+}
+
+.topbar-menu-option:hover {
+	background-color: #fff;
+}
+
+#cdr-logo {
+	font-size: 22px;
+	font-family: "Open Sans", "Arial", "Helvetica", sans-serif;
+	padding: 0;
+}
+
+.dark-title {
+	color: #3584A8;
+}
+
+.light-title {
+	color: #55BAEA;
+}
+
+.sub-title {
+	color: #8E889F;
+	font-size: 90%;
+	padding-left: 3px;
+}
 
 #header_banner {
 	padding: 5px 20px 0px;
@@ -120,16 +151,13 @@ h1 {
   vertical-align: bottom;
 }
 
-#mainmenu li a {
-	margin-right: 6px;
-}
-
 #username_wrap {
-	color: #165D7F;
+	font-style: oblique;
+	padding: 4px 25px;
 }
 
 #mainmenu > li, .secondarymenu > li {
-	margin: 0;
+	background-color: transparent;
 }
 
 .secondarymenu li a {
@@ -143,17 +171,15 @@ h1 {
 }
 
 #mainmenu li a {
-	margin-right: 6px;
-	border-right: 0px;
 	background-color: #DDF0FA;
-	border-right: 0px;
-	border: 1px solid #D8EDf5;
+	border: 1px solid transparent;
 	color: #0A5274;
 	background-image: none;
 }
 
 #mainmenu > li > .active {
 	background-color: #fff;
+	border: 1px solid #D8EDf5;
 	border-bottom: 1px solid #fff;
 }
 
@@ -212,7 +238,7 @@ h1 {
 }
 
 .dark {
-	background-color: #FBFBFE;
+	background-color: #FEFEFD;
 }
 
 .darkest {
@@ -224,11 +250,7 @@ h1 {
 	color: #5AABCF;
 }
 
-
-
 /** Light color theme end **/
-
-
 
 /* Loading overlay */
 .load_modal {
