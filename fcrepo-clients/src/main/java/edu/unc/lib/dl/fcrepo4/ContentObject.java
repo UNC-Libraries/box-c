@@ -24,7 +24,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 
 /**
  * Represents a generic repository object within the main content tree.
