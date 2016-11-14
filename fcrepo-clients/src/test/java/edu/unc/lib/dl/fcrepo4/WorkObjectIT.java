@@ -20,6 +20,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -137,5 +139,22 @@ public class WorkObjectIT extends AbstractFedoraIT {
 		FileObject suppMember = (FileObject) findContentObjectByPid(members, supp.getPid());
 		BinaryObject suppFile = suppMember.getOriginalFile();
 		assertEquals(filenameS, suppFile.getFilename());
+	}
+	
+	@Test
+	public void addModsTest() throws Exception {
+		WorkObject obj = repository.createWorkObject(pid);
+		InputStream modsStream = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
+		obj.addDescription(modsStream);
+		assertObjectExists(obj.getMODS().getPid());
+	}
+	@Test
+	public void addSourceMdTest() throws Exception {
+		WorkObject anotherObj = repository.createWorkObject(pid);
+		String sourceProfile = "some source md";
+		InputStream sourceMdStream = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
+		InputStream modsStream2 = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
+		anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream2);
+		assertObjectExists(anotherObj.getDescription().getPid());
 	}
 }

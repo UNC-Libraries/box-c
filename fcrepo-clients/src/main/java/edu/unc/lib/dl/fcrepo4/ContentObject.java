@@ -17,15 +17,14 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.PcdmModels;
+import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 
 /**
  * Represents a generic repository object within the main content tree.
@@ -44,8 +43,7 @@ public abstract class ContentObject extends RepositoryObject {
 		
 		BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
 		repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
-		repository.createRelationship(pid, IanaRelation.describedby, mods.getResource());
-		
+		repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
 		return fileObj;
 	}
 	
@@ -59,35 +57,29 @@ public abstract class ContentObject extends RepositoryObject {
 		orig.getResource().addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);
 		
 		BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
-		repository.createRelationship(pid, IanaRelation.describedby, mods.getResource());
+		repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
 		
 		return fileObj;
 	}
 
 	public FileObject getDescription() {
-		Model model = this.getModel();
-		NodeIterator iter = model.listObjectsOfProperty(PcdmModels.hasRelatedObject);
-		if(iter.hasNext()) {
-			RDFNode node = iter.next();
-			iter.close();
-			PID fileObjPid = PIDs.get(node.asResource().getURI());
+		Resource sourceMd = this.getResource();
+		Statement s = sourceMd.getProperty(PcdmModels.hasRelatedObject);
+		if (s != null) {
+			PID fileObjPid = PIDs.get(s.getResource().getURI());
 			return repository.getFileObject(fileObjPid);
 		} else {
-			iter.close();
 			return null;
 		}
 	}
 	
 	public BinaryObject getMODS() {
-		Model model = this.getModel();
-		NodeIterator iter = model.listObjectsOfProperty(IanaRelation.describedby);
-		if(iter.hasNext()) {
-			RDFNode node = iter.next();
-			iter.close();
-			PID binPid = PIDs.get(node.asResource().getURI());
+		Resource mods = this.getResource();
+		Statement s = mods.getProperty(Cdr.hasMods);
+		if (s != null) {
+			PID binPid = PIDs.get(s.getResource().getURI());
 			return repository.getBinary(binPid);
 		} else {
-			iter.close();
 			return null;
 		}
 	}

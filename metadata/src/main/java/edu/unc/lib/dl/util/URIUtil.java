@@ -52,14 +52,16 @@ public class URIUtil {
 			}
 		}
 
-		for (String segment : segments) {
-			if (segment.charAt(0) != '/' && pathBuilder.length() > 0) {
-				pathBuilder.append('/');
-			}
-			if (segment.charAt(segment.length() - 1) == '/') {
-				pathBuilder.append(segment.substring(0, segment.length() - 1));
-			} else {
-				pathBuilder.append(segment);
+		if (segments[0] != null) {
+			for (String segment : segments) {
+				if (segment.charAt(0) != '/' && pathBuilder.length() > 0) {
+					pathBuilder.append('/');
+				}
+				if (segment.charAt(segment.length() - 1) == '/') {
+					pathBuilder.append(segment.substring(0, segment.length() - 1));
+				} else {
+					pathBuilder.append(segment);
+				}
 			}
 		}
 
