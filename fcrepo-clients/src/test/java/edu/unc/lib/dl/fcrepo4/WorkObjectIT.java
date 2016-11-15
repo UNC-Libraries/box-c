@@ -145,16 +145,25 @@ public class WorkObjectIT extends AbstractFedoraIT {
 	public void addModsTest() throws Exception {
 		WorkObject obj = repository.createWorkObject(pid);
 		InputStream modsStream = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
-		obj.addDescription(modsStream);
+		FileObject fileObj = obj.addDescription(modsStream);
 		assertObjectExists(obj.getMODS().getPid());
+		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
+		assertEquals(1, binObjs.size());
+		assertObjectExists(binObjs.get(0).getPid());
 	}
+	
 	@Test
 	public void addSourceMdTest() throws Exception {
 		WorkObject anotherObj = repository.createWorkObject(pid);
 		String sourceProfile = "some source md";
 		InputStream sourceMdStream = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
 		InputStream modsStream2 = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
-		anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream2);
+		FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream2);
+		// tests that FileObject exists
 		assertObjectExists(anotherObj.getDescription().getPid());
+		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
+		assertEquals(2, binObjs.size());
+		assertObjectExists(binObjs.get(0).getPid());
+		assertObjectExists(binObjs.get(1).getPid());
 	}
 }

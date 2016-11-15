@@ -52,8 +52,12 @@ public class URIUtil {
 			}
 		}
 
-		if (segments[0] != null) {
+			int i = 0;
 			for (String segment : segments) {
+				i++;
+				if (segments[i - 1] == null) {
+					continue;
+				}
 				if (segment.charAt(0) != '/' && pathBuilder.length() > 0) {
 					pathBuilder.append('/');
 				}
@@ -63,7 +67,7 @@ public class URIUtil {
 					pathBuilder.append(segment);
 				}
 			}
-		}
+		
 
 		return pathBuilder.toString();
 	}

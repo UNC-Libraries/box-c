@@ -515,6 +515,27 @@ public class Repository {
 			throw ClientFaultResolver.resolve(e);
 		}
 	}
+	
+	/**
+	 * 
+	 * @param subject
+	 * @param property
+	 * @param object
+	 */
+	public void createProperty(PID subject, Property property, String object) {
+		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
+
+		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
+				.body(sparqlStream)
+				.perform()) {
+		} catch (IOException e) {
+			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
 
 	/**
 	 * Add a member to the parent object.

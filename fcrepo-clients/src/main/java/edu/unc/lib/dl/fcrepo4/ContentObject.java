@@ -17,10 +17,13 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
+import javax.management.relation.InvalidRelationIdException;
+
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -47,13 +50,16 @@ public abstract class ContentObject extends RepositoryObject {
 	}
 	
 	public FileObject addDescription(InputStream sourceMdStream, String sourceProfile,
-			InputStream modsStream) {
+			InputStream modsStream) throws InvalidRelationshipException {
+		if (sourceProfile == null || sourceProfile == "") {
+			throw new InvalidRelationshipException("No source profile was provided");
+		}
 		FileObject fileObj = createFileObject();
 		
 		BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
+		repository.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
 		repository.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
 		repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
-		orig.getResource().addProperty(Cdr.hasSourceMetadataProfile, sourceProfile);
 		
 		BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
 		repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
@@ -62,8 +68,8 @@ public abstract class ContentObject extends RepositoryObject {
 	}
 
 	public FileObject getDescription() {
-		Resource sourceMd = this.getResource();
-		Statement s = sourceMd.getProperty(PcdmModels.hasRelatedObject);
+		Resource res = this.getResource();
+		Statement s = res.getProperty(PcdmModels.hasRelatedObject);
 		if (s != null) {
 			PID fileObjPid = PIDs.get(s.getResource().getURI());
 			return repository.getFileObject(fileObjPid);
@@ -73,8 +79,8 @@ public abstract class ContentObject extends RepositoryObject {
 	}
 	
 	public BinaryObject getMODS() {
-		Resource mods = this.getResource();
-		Statement s = mods.getProperty(Cdr.hasMods);
+		Resource res = this.getResource();
+		Statement s = res.getProperty(Cdr.hasMods);
 		if (s != null) {
 			PID binPid = PIDs.get(s.getResource().getURI());
 			return repository.getBinary(binPid);
