@@ -312,7 +312,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			URI stagingUri = new URI(stagingPath);
 			file = new File(stagingUri);
 		} catch (URISyntaxException e) {
-			failJob(e, "Unable to staging URI: {0}", stagingPath);
+			failJob(e, "Unable to resolve staging URI: {0}", stagingPath);
 		}
 
 		String filename = label != null? label : file.getName();
