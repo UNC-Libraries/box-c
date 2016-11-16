@@ -41,7 +41,7 @@ public abstract class ContentObject extends RepositoryObject {
 	}
 
 	/**
-	 * Adds MODS to the object by creating the necessary relations in Fedora
+	 * Adds description information to this object, which includes a MODS record
 	 * @param modsStream
 	 * @return the FileObject containing the BinaryObject for the MODS
 	 */
@@ -55,11 +55,11 @@ public abstract class ContentObject extends RepositoryObject {
 	}
 	
 	/**
-	 * Adds source metadata and MODS to the object by creating the necessary relations in Fedora
+	 * Adds description information to this object, which includes source metadata and a MODS record derived from it
 	 * @param sourceMdStream
-	 * @param sourceProfile
+	 * @param sourceProfile, identifies the encoding, profile, and/or origins of the sourceMdStream using an identifier defined in edu.unc.lib.dl.util.MetadataProfileConstants
 	 * @param modsStream
-	 * @return a FileObject containing BinaryObejcts for source metadata and MODS
+	 * @return a FileObject containing BinaryObjects for source metadata and MODS
 	 * @throws InvalidRelationshipException in case no source profile was provided
 	 */
 	public FileObject addDescription(InputStream sourceMdStream, String sourceProfile,
