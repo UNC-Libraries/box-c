@@ -40,6 +40,11 @@ public abstract class ContentObject extends RepositoryObject {
 		super(pid, repository, dataLoader);
 	}
 
+	/**
+	 * Adds MODS to the object by creating the necessary relations in Fedora
+	 * @param modsStream
+	 * @return the FileObject containing the BinaryObject for the MODS
+	 */
 	public FileObject addDescription(InputStream modsStream) {
 		FileObject fileObj = createFileObject();
 		
@@ -49,6 +54,14 @@ public abstract class ContentObject extends RepositoryObject {
 		return fileObj;
 	}
 	
+	/**
+	 * Adds source metadata and MODS to the object by creating the necessary relations in Fedora
+	 * @param sourceMdStream
+	 * @param sourceProfile
+	 * @param modsStream
+	 * @return a FileObject containing BinaryObejcts for source metadata and MODS
+	 * @throws InvalidRelationshipException in case no source profile was provided
+	 */
 	public FileObject addDescription(InputStream sourceMdStream, String sourceProfile,
 			InputStream modsStream) throws InvalidRelationshipException {
 		if (sourceProfile == null || sourceProfile == "") {
@@ -67,6 +80,10 @@ public abstract class ContentObject extends RepositoryObject {
 		return fileObj;
 	}
 
+	/**
+	 * Gets the FileObject with source metadata and MODS for this object
+	 * @return the FileObject 
+	 */
 	public FileObject getDescription() {
 		Resource res = this.getResource();
 		Statement s = res.getProperty(PcdmModels.hasRelatedObject);
@@ -78,6 +95,10 @@ public abstract class ContentObject extends RepositoryObject {
 		}
 	}
 	
+	/**
+	 * Gets the BinaryObject with the MODS for this object
+	 * @return the BinaryObject
+	 */
 	public BinaryObject getMODS() {
 		Resource res = this.getResource();
 		Statement s = res.getProperty(Cdr.hasMods);

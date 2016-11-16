@@ -144,26 +144,44 @@ public class WorkObjectIT extends AbstractFedoraIT {
 	@Test
 	public void addModsTest() throws Exception {
 		WorkObject obj = repository.createWorkObject(pid);
-		InputStream modsStream = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
+		String bodyString = "some MODS content";
+		InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
 		FileObject fileObj = obj.addDescription(modsStream);
+		
 		assertObjectExists(obj.getMODS().getPid());
 		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
 		assertEquals(1, binObjs.size());
 		assertObjectExists(binObjs.get(0).getPid());
+		// make sure content is added to MODS
+		String respString = new BufferedReader(new InputStreamReader(binObjs.get(0).getBinaryStream()))
+				.lines().collect(Collectors.joining("\n"));
+		assertEquals("Original content did not match submitted value", bodyString, respString);
 	}
 	
 	@Test
 	public void addSourceMdTest() throws Exception {
 		WorkObject anotherObj = repository.createWorkObject(pid);
 		String sourceProfile = "some source md";
-		InputStream sourceMdStream = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
-		InputStream modsStream2 = new FileInputStream(new File("src/test/resources/vocabTest.xml"));
-		FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream2);
-		// tests that FileObject exists
+		String sourceMdBodyString = "source md content";
+		String modsBodyString = "MODS content";
+		InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
+		InputStream modsStream = new ByteArrayInputStream(modsBodyString.getBytes());
+		FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream);
+		// tests that getDescription returns FileObject
 		assertObjectExists(anotherObj.getDescription().getPid());
+		
 		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
 		assertEquals(2, binObjs.size());
+		// tests that mods and source md binaries were created
 		assertObjectExists(binObjs.get(0).getPid());
 		assertObjectExists(binObjs.get(1).getPid());
+		// make sure content is added to source md
+		String sourceMdRespString = new BufferedReader(new InputStreamReader(binObjs.get(0).getBinaryStream()))
+				.lines().collect(Collectors.joining("\n"));
+		assertEquals("Original content did not match submitted value", sourceMdBodyString, sourceMdRespString);
+		// make sure content is added to MODS
+		String modsRespString = new BufferedReader(new InputStreamReader(binObjs.get(1).getBinaryStream()))
+				.lines().collect(Collectors.joining("\n"));
+		assertEquals("Original content did not match submitted value", modsBodyString, modsRespString);
 	}
 }
