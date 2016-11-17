@@ -167,20 +167,34 @@ public class WorkObjectIT extends AbstractFedoraIT {
 		InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
 		InputStream modsStream = new ByteArrayInputStream(modsBodyString.getBytes());
 		FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream);
-		// tests that getDescription returns FileObject
+		// tests that getDescription returns FileObject containing source md and mods
 		assertObjectExists(anotherObj.getDescription().getPid());
-		
+		assertNotNull(anotherObj.getMODS());
 		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
 		assertEquals(2, binObjs.size());
+		
+		BinaryObject b0 = binObjs.get(0);
+		BinaryObject b1 = binObjs.get(1);
+		PID pid0 = b0.getPid();
+		PID pid1 = b1.getPid();
 		// tests that mods and source md binaries were created
-		assertObjectExists(binObjs.get(0).getPid());
-		assertObjectExists(binObjs.get(1).getPid());
-		// make sure content is added to source md
-		String sourceMdRespString = new BufferedReader(new InputStreamReader(binObjs.get(0).getBinaryStream()))
+		assertObjectExists(pid0);
+		assertObjectExists(pid1);
+		// make sure content is added to source md and mods binaries
+		if (pid0.equals((anotherObj.getMODS().getPid()))) {
+			verifyContent(b1, b0, sourceMdBodyString, modsBodyString);
+		} else {
+			verifyContent(b0, b1, sourceMdBodyString, modsBodyString);
+		}
+	}
+	
+	private void verifyContent(BinaryObject sourceMdBin, BinaryObject modsBin,
+			String sourceMdBodyString, String modsBodyString) {
+		String sourceMdRespString = new BufferedReader(new InputStreamReader(sourceMdBin.getBinaryStream()))
 				.lines().collect(Collectors.joining("\n"));
 		assertEquals("Original content did not match submitted value", sourceMdBodyString, sourceMdRespString);
-		// make sure content is added to MODS
-		String modsRespString = new BufferedReader(new InputStreamReader(binObjs.get(1).getBinaryStream()))
+		
+		String modsRespString = new BufferedReader(new InputStreamReader(modsBin.getBinaryStream()))
 				.lines().collect(Collectors.joining("\n"));
 		assertEquals("Original content did not match submitted value", modsBodyString, modsRespString);
 	}

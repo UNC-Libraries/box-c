@@ -496,45 +496,25 @@ public class Repository {
 	}
 
 	/**
-	 * 
+	 * Creates a triple in Fedora from the given parameters
 	 * @param subject
 	 * @param property
 	 * @param object
 	 */
 	public void createRelationship(PID subject, Property property, Resource object) {
 		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
-
-		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
-
-		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
-				.body(sparqlStream)
-				.perform()) {
-		} catch (IOException e) {
-			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
+		persistTripleToFedora(subject, property, sparqlUpdate);
 	}
 	
 	/**
-	 * 
+	 * Creates a triple in Fedora from the given parameters
 	 * @param subject
 	 * @param property
 	 * @param object
 	 */
 	public void createProperty(PID subject, Property property, String object) {
 		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
-
-		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
-
-		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
-				.body(sparqlStream)
-				.perform()) {
-		} catch (IOException e) {
-			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
+		persistTripleToFedora(subject, property, sparqlUpdate);
 	}
 
 	/**
@@ -679,5 +659,18 @@ public class Repository {
 
 	public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
 		this.repositoryFactory = repositoryObjectFactory;
+	}
+	
+	private void persistTripleToFedora(PID subject, Property property, String sparqlUpdate) {
+		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
+				.body(sparqlStream)
+				.perform()) {
+		} catch (IOException e) {
+			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 }
