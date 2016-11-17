@@ -45,6 +45,8 @@ public class Cdr {
     /** Relationship indicating ownership of a manifest by this deposit record */
     public static final Property hasManifest = createProperty( "http://cdr.unc.edu/definitions/model#hasManifest" );
     
+   public static final Property hasMods = createProperty("http://cdr.unc.edu/definitions/model#hasMods");
+    
     /** Identifier indicating the profile of the metadata provided with this object 
      *  at deposit time. Used to identify what transformation was used to generate 
      *  descriptive metadata from the original metadata.
