@@ -42,9 +42,11 @@ public class RepositoryPathConstants {
 	public static final String MEMBER_CONTAINER = "member";
 
 	// Named objects
-	
+
 	public static final String ORIGINAL_FILE = "original_file";
-	
+
+	public static final String CONTENT_ROOT_ID = "collections";
+
 	// Special Fedora paths
 
 	public static final String FCR_METADATA = "fcr:metadata";
@@ -59,10 +61,10 @@ public class RepositoryPathConstants {
 
 	// Regex pattern for decomposing a repository URI for an object or component of an object
 	public static final Pattern repositoryPathPattern = Pattern
-			.compile("/?([a-zA-Z]+)/([a-f0-9]{" + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
-					+ "([a-f0-9\\\\-]+)(/(.+)?)?");
+			.compile("/?([a-zA-Z]+)/(([a-f0-9]{" + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
+					+ "([a-f0-9\\\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 
 	// Regex pattern for decomposing an identifier for an object or component
 	public static final Pattern identifierPattern = Pattern
-			.compile("(([a-zA-Z]+)/)?(uuid:)?([a-f0-9\\-]+)(/(.+)?)?");
+			.compile("(([a-zA-Z]+)/)?(uuid:)?(([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 }

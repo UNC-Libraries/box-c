@@ -234,4 +234,20 @@ public abstract class RepositoryObject {
 	public URI getMetadataUri() {
 		return pid.getRepositoryUri();
 	}
+
+	/**
+	 * Returns true if this object  is unmodified according to etag by
+	 * verifying if the locally held etag matches the current one in the
+	 * repository
+	 * 
+	 * @return
+	 */
+	public boolean isUnmodified() {
+		if (getEtag() == null) {
+			return false;
+		}
+
+		String remoteEtag = dataLoader.getEtag(this);
+		return remoteEtag.equals(getEtag());
+	}
 }

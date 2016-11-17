@@ -85,7 +85,7 @@ public class RepositoryObjectDataLoader {
 	public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
 		URI metadataUri = obj.getMetadataUri();
 		// If the object is up to date and has already loaded the model then we're done
-		if (obj.hasModel() && isUnmodified(obj)) {
+		if (obj.hasModel() && obj.isUnmodified()) {
 			log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
 			return this;
 		}
@@ -103,40 +103,11 @@ public class RepositoryObjectDataLoader {
 			obj.storeModel(model);
 
 			// Store updated modification info to track if the object changes 
-			obj.setEtag(getETag(response));
+			obj.setEtag(parseEtag(response));
 
 			return this;
 		} catch (IOException e) {
 			throw new FedoraException("Failed to read model for " + metadataUri, e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
-	}
-
-	/**
-	 * Returns true if the object provided is unmodified according to etag by
-	 * verifying if the locally held etag matches the current one in the
-	 * repository
-	 * 
-	 * @param obj
-	 * @return
-	 */
-	private boolean isUnmodified(RepositoryObject obj) {
-		if (obj.getEtag() == null) {
-			return false;
-		}
-
-		try (FcrepoResponse response = getClient().head(obj.getMetadataUri()).perform()) {
-			if (response.getStatusCode() != HttpStatus.SC_OK) {
-				throw new FedoraException("Received " + response.getStatusCode()
-						+ " response while retrieving headers for " + obj.getPid().getRepositoryUri());
-			}
-
-			String remoteEtag = getETag(response);
-			return remoteEtag.equals(obj.getEtag());
-		} catch (IOException e) {
-			throw new FedoraException("Unable to create deposit record at "
-					+ obj.getPid().getRepositoryUri(), e);
 		} catch (FcrepoOperationFailedException e) {
 			throw ClientFaultResolver.resolve(e);
 		}
@@ -161,16 +132,38 @@ public class RepositoryObjectDataLoader {
 	}
 
 	/**
+	 * Retrieves the etag for the provided object
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public String getEtag(RepositoryObject obj) {
+		try (FcrepoResponse response = getClient().head(obj.getMetadataUri()).perform()) {
+			if (response.getStatusCode() != HttpStatus.SC_OK) {
+				throw new FedoraException("Received " + response.getStatusCode()
+						+ " response while retrieving headers for " + obj.getPid().getRepositoryUri());
+			}
+
+			return parseEtag(response);
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create deposit record at "
+					+ obj.getPid().getRepositoryUri(), e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
+	}
+
+	/**
 	 * Retrieve the ETag of the response, with surrounding quotes stripped.
 	 * 
 	 * @param response
 	 * @return
 	 */
-	private static String getETag(FcrepoResponse response) {
+	private static String parseEtag(FcrepoResponse response) {
 		String etag = response.getHeaderValue("ETag");
 		return etag.substring(1, etag.length() - 1);
 	}
-	
+
 	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}

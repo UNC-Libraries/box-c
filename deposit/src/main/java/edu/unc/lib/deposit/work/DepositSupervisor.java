@@ -15,23 +15,14 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.client.Client;
-import net.greghaines.jesque.meta.QueueInfo;
-import net.greghaines.jesque.meta.dao.QueueInfoDAO;
-import net.greghaines.jesque.worker.Worker;
-import net.greghaines.jesque.worker.WorkerEvent;
-import net.greghaines.jesque.worker.WorkerListener;
-import net.greghaines.jesque.worker.WorkerPool;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.CleanupDepositJob;
 import edu.unc.lib.deposit.PrepareResubmitJob;
-import edu.unc.lib.deposit.fcrepo3.IngestDeposit;
-import edu.unc.lib.deposit.fcrepo3.MakeFOXML;
+import edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob;
+import edu.unc.lib.deposit.fcrepo4.IngestDepositRecordJob;
 import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
@@ -54,6 +45,14 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
+import net.greghaines.jesque.Job;
+import net.greghaines.jesque.client.Client;
+import net.greghaines.jesque.meta.QueueInfo;
+import net.greghaines.jesque.meta.dao.QueueInfoDAO;
+import net.greghaines.jesque.worker.Worker;
+import net.greghaines.jesque.worker.WorkerEvent;
+import net.greghaines.jesque.worker.WorkerListener;
+import net.greghaines.jesque.worker.WorkerPool;
 
 /**
  * Coordinates work on deposits via Redis and Resque. Responsible for putting
@@ -84,9 +83,6 @@ public class DepositSupervisor implements WorkerListener {
 	
 	@Autowired
 	private DepositEmailHandler depositEmailHandler;
-	
-	@Autowired
-	private DepositMessageHandler depositMessageHandler;
 
 	public net.greghaines.jesque.Config getJesqueConfig() {
 		return jesqueConfig;
@@ -608,16 +604,14 @@ public class DepositSupervisor implements WorkerListener {
 			return makeJob(VirusScanJob.class, depositUUID);
 		}
 
-		// Make FOXML
-		if (!successfulJobs.contains(MakeFOXML.class.getName())) {
-			return makeJob(MakeFOXML.class, depositUUID);
+		// Ingest all content objects to repository
+		if (!successfulJobs.contains(IngestContentObjectsJob.class.getName())) {
+			return makeJob(IngestContentObjectsJob.class, depositUUID);
 		}
 
-		// TODO RDF Graph Validation
-
-		// Ingest
-		if (!successfulJobs.contains(IngestDeposit.class.getName())) {
-			return makeJob(IngestDeposit.class, depositUUID);
+		// Ingest the deposit record
+		if (!successfulJobs.contains(IngestDepositRecordJob.class.getName())) {
+			return makeJob(IngestDepositRecordJob.class, depositUUID);
 		}
 
 		return null;
@@ -647,7 +641,6 @@ public class DepositSupervisor implements WorkerListener {
 			depositDuration(depositUUID, status);
 
 			depositEmailHandler.sendDepositResults(depositUUID);
-			depositMessageHandler.sendDepositMessage(depositUUID);
 
 			// schedule cleanup job after the configured delay
 			Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);

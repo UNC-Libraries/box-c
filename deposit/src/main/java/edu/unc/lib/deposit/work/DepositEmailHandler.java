@@ -22,12 +22,7 @@ import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.samskivert.mustache.Template;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.FedoraAccessControlService;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -54,8 +49,8 @@ public class DepositEmailHandler {
 	@Autowired
 	private Dataset dataset;
 	
-	@Autowired
-	private FedoraAccessControlService accessControlService;
+	//@Autowired
+	//private FedoraAccessControlService accessControlService;
 
 	protected DepositStatusFactory getDepositStatusFactory() {
 		return depositStatusFactory;
@@ -199,9 +194,9 @@ public class DepositEmailHandler {
 			objectPid = status.get(DepositField.containerId.name());
 		} 
 		
-		ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(PIDs.get(objectPid));
-		Date embargoUntil = accessControls.getLastActiveEmbargoUntilDate();
-		boolean hasPatronRoleForPublicGroup = accessControls.getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
+		//ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(PIDs.get(objectPid));
+		Date embargoUntil = null; //accessControls.getLastActiveEmbargoUntilDate();
+		boolean hasPatronRoleForPublicGroup = true; //accessControls.getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
 		
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.putAll(status);

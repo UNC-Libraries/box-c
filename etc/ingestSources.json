@@ -1,1 +1,1 @@
-[{"id":"test","name":"Test","base":"${env.VAGRANT_CWD}/data/ingestSource","patterns":["*"],"containers":["cdr:collections"]}]
+[{"id":"test","name":"Test","base":"${vagrant.cwd}/data/ingestSource","patterns":["*"],"containers":["cdr:collections"]}]

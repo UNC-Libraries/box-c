@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -39,6 +40,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
@@ -155,5 +157,37 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 		assertEquals("Related agent not written to file", SoftwareAgent.clamav.getFullname(),
 				resc2.getProperty(Premis.hasEventRelatedAgentExecutor)
 						.getProperty(Premis.hasAgentName).getObject().toString());
+	}
+
+	@Test
+	public void getEventsTest() {
+		Resource event1 = premis.buildEvent(Premis.Normalization, date)
+				.addEventDetail("Event 1")
+				.write();
+
+		Resource event2 = premis.buildEvent(Premis.VirusCheck, date)
+				.addEventDetail("Event 2")
+				.write();
+
+		List<PremisEventObject> events = premis.getEvents();
+		assertEquals(2, events.size());
+
+		PremisEventObject eventObj1 = findEventByPid(events, PIDs.get(event1.getURI()));
+		PremisEventObject eventObj2 = findEventByPid(events, PIDs.get(event2.getURI()));
+
+		assertEquals("Normalization type not written to file", Premis.Normalization,
+				eventObj1.getResource().getProperty(Premis.hasEventType).getObject());
+		assertEquals("Event detail not written to file", "Event 1",
+				eventObj1.getResource().getProperty(Premis.hasEventDetail).getObject().toString());
+
+		assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
+				eventObj2.getResource().getProperty(Premis.hasEventType).getObject());
+		assertEquals("Event detail not written to file", "Event 2",
+				eventObj2.getResource().getProperty(Premis.hasEventDetail).getObject().toString());
+	}
+
+	protected PremisEventObject findEventByPid(List<PremisEventObject> events, PID pid) {
+		return events.stream()
+				.filter(p -> p.getPid().equals(pid)).findAny().get();
 	}
 }

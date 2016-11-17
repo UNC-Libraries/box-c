@@ -21,3 +21,4 @@ static/js/cdr-access.js
 static/css/cdr_access.css
 *.log
 dump.rdb
+authorized_keys

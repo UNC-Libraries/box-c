@@ -51,7 +51,7 @@ import edu.unc.lib.dl.util.ObjectPersistenceException;
 public class FilePremisLogger implements PremisLogger {
 
 	private static final Logger log = LoggerFactory.getLogger(FilePremisLogger.class);
-	
+
 	private File premisFile;
 	private PID objectPid;
 	private Model model;
@@ -170,11 +170,13 @@ public class FilePremisLogger implements PremisLogger {
 			// Construct the event object with a presupplied model
 			PremisEventObject event = new PremisEventObject(eventPid, repository,
 					repository.getRepositoryObjectDataLoader());
-			event.storeModel(model);
+			event.storeModel(eventModel);
 
 			events.add(event);
 		}
 
+		log.debug("Retrieved {} events from file log for object {}",
+				events.size(), objectPid.getQualifiedId());
 		return events;
 	}
 }
