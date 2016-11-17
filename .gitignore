@@ -22,3 +22,4 @@ static/css/cdr_access.css
 *.log
 dump.rdb
 authorized_keys
+staging-areas
