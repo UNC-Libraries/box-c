@@ -31,7 +31,7 @@ public class DepositDaemon implements Daemon {
 	public void start() throws Exception {
 		LOG.info("Starting the Deposit Daemon");
 		if(appContext == null) {
-			appContext = new ClassPathXmlApplicationContext(new String[] {"fcrepo4-service-context.xml", "deposit-jobs-context.xml", "fcrepo-clients-context.xml"});
+			appContext = new ClassPathXmlApplicationContext(new String[] {"service-context.xml", "deposit-jobs-context.xml", "fcrepo-clients-context.xml"});
 			appContext.registerShutdownHook();
 		} else {
 			appContext.refresh();
