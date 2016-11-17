@@ -89,7 +89,7 @@ public class RepositoryInitializer {
 
 		// Don't initialize the object if it is already present.
 		if (objectExists(contentRootUri)) {
-			return contentUri;
+			return contentRootUri;
 		}
 		
 		Model model = ModelFactory.createDefaultModel();

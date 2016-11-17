@@ -41,7 +41,7 @@ public class PremisEventObject extends RepositoryObject implements Comparable<Pr
 
 	/**
 	 * Override to assume that the remote version will not change after creation
-	 * for PREMIS events to support offline creation
+	 * of the event. Supports offline creation of PREMIS event objects
 	 */
 	@Override
 	public boolean isUnmodified() {
