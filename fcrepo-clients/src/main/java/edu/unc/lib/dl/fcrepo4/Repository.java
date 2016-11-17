@@ -156,6 +156,7 @@ public class Repository {
 				Resource resc = model.getResource(pid.getRepositoryPath());
 
 				String etag = response.getHeaderValue("ETag");
+				etag = etag.substring(1,  etag.length() - 1);
 
 				if (resc.hasProperty(RDF.type, Cdr.Work)) {
 					return getWorkObject(pid, model, etag);
@@ -168,6 +169,9 @@ public class Repository {
 				}
 				if (resc.hasProperty(RDF.type, Cdr.Collection)) {
 					return getCollectionObject(pid, model, etag);
+				}
+				if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
+					return getContentRootObject(pid, model, etag);
 				}
 
 			} catch (IOException e) {
@@ -227,6 +231,26 @@ public class Repository {
 		return new CollectionObject(createdPid, this, repositoryObjectDataLoader);
 	}
 
+	/**
+	 * Retrieves the root object for the content tree.
+	 * 
+	 * @return
+	 */
+	public ContentRootObject getContentRootObject() {
+		PID contentRootPid = PIDs.get(RepositoryPathConstants.CONTENT_ROOT_ID);
+
+		return getContentRootObject(contentRootPid, null, null);
+	}
+
+	protected ContentRootObject getContentRootObject(PID pid, Model model, String etag) {
+		ContentRootObject rootObj = new ContentRootObject(pid, this, repositoryObjectDataLoader);
+		rootObj.storeModel(model);
+		rootObj.setEtag(etag);
+
+		// not triggering validation for object, this method only called when
+		// the object's identity is already known
+		return rootObj;
+	}
 
 	/**
 	 * Retrieves an existing FolderObject
@@ -496,24 +520,25 @@ public class Repository {
 	}
 
 	/**
-	 * 
+	 * Creates a triple in Fedora from the given parameters
 	 * @param subject
 	 * @param property
 	 * @param object
 	 */
 	public void createRelationship(PID subject, Property property, Resource object) {
 		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
-
-		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
-
-		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
-				.body(sparqlStream)
-				.perform()) {
-		} catch (IOException e) {
-			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
+		persistTripleToFedora(subject, property, sparqlUpdate);
+	}
+	
+	/**
+	 * Creates a triple in Fedora from the given parameters
+	 * @param subject
+	 * @param property
+	 * @param object
+	 */
+	public void createProperty(PID subject, Property property, String object) {
+		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
+		persistTripleToFedora(subject, property, sparqlUpdate);
 	}
 
 	/**
@@ -610,6 +635,9 @@ public class Repository {
 
 	public void setFedoraBase(String fedoraBase) {
 		this.fedoraBase = fedoraBase;
+		if (!fedoraBase.endsWith("/")) {
+			this.fedoraBase += "/";
+		}
 	}
 
 	public String getAuthUsername() {
@@ -658,5 +686,18 @@ public class Repository {
 
 	public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
 		this.repositoryFactory = repositoryObjectFactory;
+	}
+	
+	private void persistTripleToFedora(PID subject, Property property, String sparqlUpdate) {
+		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
+				.body(sparqlStream)
+				.perform()) {
+		} catch (IOException e) {
+			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
+		} catch (FcrepoOperationFailedException e) {
+			throw ClientFaultResolver.resolve(e);
+		}
 	}
 }

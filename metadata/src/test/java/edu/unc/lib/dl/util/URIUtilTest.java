@@ -46,5 +46,13 @@ public class URIUtilTest {
 
 		assertEquals("path",
 				URIUtil.join((URI) null, "path"));
+		
+		assertEquals("http://example.com/base",
+				URIUtil.join(URI.create("http://example.com/base"), (String) null));
+		
+		assertEquals("http://example.com/base/path/to/stuff",
+				URIUtil.join(URI.create("http://example.com/base"), "path", (String) null, "to", "stuff"));
 	}
+	
+	
 }

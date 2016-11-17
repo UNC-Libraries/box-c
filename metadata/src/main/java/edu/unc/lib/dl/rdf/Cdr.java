@@ -48,6 +48,8 @@ public class Cdr {
     /** Relationship indicating ownership of a manifest by this deposit record */
     public static final Property hasManifest = createProperty( "http://cdr.unc.edu/definitions/model#hasManifest" );
     
+   public static final Property hasMods = createProperty("http://cdr.unc.edu/definitions/model#hasMods");
+    
     /** Identifier indicating the profile of the metadata provided with this object 
      *  at deposit time. Used to identify what transformation was used to generate 
      *  descriptive metadata from the original metadata.
@@ -94,6 +96,7 @@ public class Cdr {
     public static final Resource Folder = createResource( "http://cdr.unc.edu/definitions/model#Folder" );
     public static final Resource Collection = createResource( "http://cdr.unc.edu/definitions/model#Collection" );
     public static final Resource AdminUnit = createResource( "http://cdr.unc.edu/definitions/model#AdminUnit" );
+    public static final Resource ContentRoot = createResource( "http://cdr.unc.edu/definitions/model#ContentRoot" );
     public static final Resource DepositRecord = createResource( "http://cdr.unc.edu/definitions/model#DepositRecord" );
     public static final Resource SourceMetadata = createResource( "http://cdr.unc.edu/definitions/model#SourceMetadata" );
     

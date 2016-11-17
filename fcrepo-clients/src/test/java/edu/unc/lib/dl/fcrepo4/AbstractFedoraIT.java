@@ -58,7 +58,11 @@ public class AbstractFedoraIT {
 	 * @throws IOException 
 	 */
 	protected void assertObjectExists(PID pid) throws IOException, FcrepoOperationFailedException {
-		try (FcrepoResponse response = client.head(pid.getRepositoryUri()).perform()) {
+		assertObjectExists(pid.getRepositoryUri());
+	}
+	
+	protected void assertObjectExists(URI uri) throws IOException, FcrepoOperationFailedException {
+		try (FcrepoResponse response = client.head(uri).perform()) {
 			assertEquals(HttpStatus.SC_OK, response.getStatusCode());
 		}
 	}

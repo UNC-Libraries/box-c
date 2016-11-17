@@ -1,16 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
-	<context:property-placeholder />
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="deposit.properties.uri" />
+	</bean>
 
 	<bean id="serverAddress" class="java.lang.String">
 		<constructor-arg
-			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:48085}/rest/" />
+			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}" />
 	</bean>
-
+	
 	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
 	</bean>
 	
@@ -42,5 +51,12 @@
 				<ref bean="repository" />
 			</list>
 		</property>
+	</bean>
+	
+	<bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer"
+			init-method="initializeRepository">
+		<property name="fcrepoClient" ref="fcrepoClient" />
+		<property name="repository" ref="repository" />
+		<property name="objFactory" ref="repositoryObjectFactory" />
 	</bean>
 </beans>
