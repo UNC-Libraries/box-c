@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
@@ -95,22 +97,17 @@ public class DepositRecord extends RepositoryObject {
 	 * @return
 	 * @throws FedoraException
 	 */
-	public Collection<PID> listManifests() throws FedoraException {
-		Resource resource = getResource();
-		StmtIterator containsIt = resource.listProperties(Cdr.hasManifest);
-
-		List<PID> pids = new ArrayList<>();
-		while (containsIt.hasNext()) {
-			String path = containsIt.next().getObject().toString();
-			pids.add(PIDs.get(path));
-		}
-
-		return pids;
+	public List<PID> listManifests() throws FedoraException {
+		return addPidsToList(Cdr.hasManifest);
 	}
 
-	public Collection<?> listDepositedObjects() {
-		// TODO once objects are being deposited
-		return null;
+	/**
+	 * Retrieves a list of pids for objects contained by this deposit record
+	 * @return
+	 * @throws FedoraException
+	 */
+	public List<PID> listDepositedObjects() throws FedoraException { 
+		return addPidsToList(Cdr.hasIngestedObject);
 	}
 
 	@Override
@@ -137,5 +134,16 @@ public class DepositRecord extends RepositoryObject {
 	public URI getManifestsUri() {
 		return URI.create(pid.getRepositoryUri()
 				+ "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
+	}
+	
+	private List<PID> addPidsToList(Property p) {
+		Resource resource = getResource();
+		StmtIterator containsIt = resource.listProperties(p);
+		List<PID> pids = new ArrayList<>();
+		while (containsIt.hasNext()) {
+			String path = containsIt.next().getObject().toString();
+			pids.add(PIDs.get(path));
+		}
+		return pids;
 	}
 }

@@ -105,12 +105,11 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 			DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
 			
 			Model triples = ModelFactory.createDefaultModel();
-			List<Statement> relations = new ArrayList<Statement>();
+			Resource res = triples.createResource(depositUri);
 			for (Resource child : children) {
-				relations.add(triples.createStatement(depositRecord.getResource(),
-						Cdr.hasIngestedObject, child.getURI()));
+				res.addProperty(Cdr.hasIngestedObject, child);
 			}
-			triples.add(relations);
+			triples.add(res.getModel());
 			repository.createRelationships(getDepositPID(), triples);
 			
 		} catch (IOException | FedoraException | URISyntaxException e) {
