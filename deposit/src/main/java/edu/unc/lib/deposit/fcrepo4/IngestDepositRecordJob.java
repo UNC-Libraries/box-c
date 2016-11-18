@@ -109,7 +109,6 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 			for (Resource child : children) {
 				res.addProperty(Cdr.hasIngestedObject, child);
 			}
-			triples.add(res.getModel());
 			repository.createRelationships(getDepositPID(), triples);
 			
 		} catch (IOException | FedoraException | URISyntaxException e) {
