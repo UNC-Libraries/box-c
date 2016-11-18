@@ -30,8 +30,6 @@ import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.event.PremisLogger;
