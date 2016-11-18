@@ -19,17 +19,21 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.Repository;
@@ -67,7 +71,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		Model dModel = getReadOnlyModel();
 		Map<String, String> status = getDepositStatus();
 
-		Resource deposit = dModel.getResource(getDepositPID().getURI());
+		Resource deposit = dModel.getResource(depositUri);
 
 		// Create aip model for the deposit record
 		Resource aipObjResc = makeDepositRecord(deposit, status);
@@ -95,7 +99,20 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 				depositRecord.addManifest(new File(uri), "text/plain");
 			}
 
-			// TODO add references to deposited objects 
+			// Add references to deposited objects 
+			Bag depositBag = dModel.getBag(getDepositPID().getRepositoryPath());
+			List<Resource> children = new ArrayList<Resource>();
+			DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
+			
+			Model triples = ModelFactory.createDefaultModel();
+			List<Statement> relations = new ArrayList<Statement>();
+			for (Resource child : children) {
+				relations.add(triples.createStatement(depositRecord.getResource(),
+						Cdr.hasIngestedObject, child.getURI()));
+			}
+			triples.add(relations);
+			repository.createRelationships(getDepositPID(), triples);
+			
 		} catch (IOException | FedoraException | URISyntaxException e) {
 			failJob(e, "Failed to ingest deposit record {0}", getDepositPID());
 		}

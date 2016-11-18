@@ -527,7 +527,17 @@ public class Repository {
 	 */
 	public void createRelationship(PID subject, Property property, Resource object) {
 		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
-		persistTripleToFedora(subject, property, sparqlUpdate);
+		persistTripleToFedora(subject, sparqlUpdate);
+	}
+	
+	/**
+	 * Creates the relevant triples in Fedora from the given model
+	 * @param pid
+	 * @param model
+	 */
+	public void createRelationships(PID pid, Model model) {
+		String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
+		persistTripleToFedora(pid, sparqlUpdate);
 	}
 	
 	/**
@@ -538,7 +548,7 @@ public class Repository {
 	 */
 	public void createProperty(PID subject, Property property, String object) {
 		String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
-		persistTripleToFedora(subject, property, sparqlUpdate);
+		persistTripleToFedora(subject, sparqlUpdate);
 	}
 
 	/**
@@ -688,7 +698,7 @@ public class Repository {
 		this.repositoryFactory = repositoryObjectFactory;
 	}
 	
-	private void persistTripleToFedora(PID subject, Property property, String sparqlUpdate) {
+	private void persistTripleToFedora(PID subject, String sparqlUpdate) {
 		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
 
 		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
