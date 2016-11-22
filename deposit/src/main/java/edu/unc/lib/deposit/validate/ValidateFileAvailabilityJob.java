@@ -29,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.SimpleSelector;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
@@ -38,6 +39,8 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
  *
  */
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
+	
+	private StagingPolicyManager policyManager;
 	
 	public ValidateFileAvailabilityJob() {
 	}
@@ -50,6 +53,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 	public void runJob() {
 
 		Set<String> failures = new HashSet<String>();
+		Set<String> invalidStagingLocs = new HashSet<String>();
 
 		Model model = getReadOnlyModel();
 		// Construct a map of objects to file paths to verify
@@ -70,6 +74,9 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 			} catch (URISyntaxException e) {
 				failJob(e, "Unable to parse manifest URI: {0}", href);
 			}
+			if (!policyManager.isValidStagingLocation(manifestURI)) {
+				invalidStagingLocs.add(manifestURI.toString());
+			}
 
 			if (manifestURI.getScheme() == null || manifestURI.getScheme().contains("file")) {
 				if (!manifestURI.isAbsolute()) {
@@ -85,6 +92,19 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 
 			addClicks(1);
 		}
+		
+		int invalidCount = invalidStagingLocs.size();
+		if (invalidCount > 0) {
+			StringBuilder sb = new StringBuilder("Some staging areas are unknown:\n");
+			for (String loc : invalidStagingLocs) {
+				sb.append(" - ").append(loc).append("\n");
+			}
+			if (invalidCount == 1) {
+				failJob("One staging area was invalid or unknown.", sb.toString());
+			} else {
+				failJob(invalidStagingLocs.size() + " staging areas were invalid or unknown.", sb.toString());
+			}
+		}
 
 		// Generate failure message of all missing files and fail job
 		if (failures.size() > 0) {
@@ -94,11 +114,15 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 			}
 
 			if (failures.size() == 1) {
-				failJob("1 file referenced by the deposit could not be found.", sb.toString());
+				failJob("One file referenced by the deposit could not be found.", sb.toString());
 			} else {
 				failJob(failures.size() + " files referenced by the deposit could not be found.", sb.toString());
 			}
 		}
+	}
+
+	public void setPolicyManager(StagingPolicyManager policyManager) {
+		this.policyManager = policyManager;
 	}
 
 	private void addLocations(Set<String> hrefs, Model model, Property property) {
