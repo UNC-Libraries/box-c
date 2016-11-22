@@ -36,6 +36,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
@@ -62,8 +63,9 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 	
 	@Override
 	public void runJob() {
-		String depositUri = getDepositPID().getURI();
-
+		PID depositPID = getDepositPID();
+		String depositUri = depositPID.getURI();
+		
 		log.debug("Creating record for deposit {}", depositUri);
 
 		Model dModel = getReadOnlyModel();
@@ -76,9 +78,9 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		Model aipModel = aipObjResc.getModel();
 
 		// Add ingestion event to PREMIS log
-		PremisLogger premisDepositLogger = getPremisLogger(getDepositPID());
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		premisDepositLogger.buildEvent(Premis.Ingestion)
-				.addEventDetail("ingested as PID: {0}. {1}", getDepositPID().getPid(), 
+				.addEventDetail("ingested as PID: {0}. {1}", depositPID.getPid(), 
 						aipObjResc.getProperty(DcElements.title).getObject().toString())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.addAuthorizingAgent(DepositField.depositorName.name())
@@ -87,7 +89,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 		// Create the deposit record object in Fedora
 		DepositRecord depositRecord;
 		try {
-			depositRecord = repository.createDepositRecord(getDepositPID(), aipModel)
+			depositRecord = repository.createDepositRecord(depositPID, aipModel)
 					.addPremisEvents(premisDepositLogger.getEvents());
 
 			// Add manifest files
@@ -97,20 +99,15 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 				depositRecord.addManifest(new File(uri), "text/plain");
 			}
 
-			// Add references to deposited objects 
-			Bag depositBag = dModel.getBag(getDepositPID().getRepositoryPath());
+			// Add references to deposited objects
+			Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
 			List<Resource> children = new ArrayList<Resource>();
+			// walks through the bag and adds children to the list
 			DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
-			
-			Model triples = ModelFactory.createDefaultModel();
-			Resource res = triples.createResource(depositUri);
-			for (Resource child : children) {
-				res.addProperty(Cdr.hasIngestedObject, child);
-			}
-			repository.createRelationships(getDepositPID(), triples);
+			depositRecord.addIngestedObjects(depositPID, children);
 			
 		} catch (IOException | FedoraException | URISyntaxException e) {
-			failJob(e, "Failed to ingest deposit record {0}", getDepositPID());
+			failJob(e, "Failed to ingest deposit record {0}", depositPID);
 		}
 	}
 

@@ -23,10 +23,14 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.hp.hpl.jena.rdf.model.Bag;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -97,6 +101,16 @@ public class DepositRecord extends RepositoryObject {
 	 */
 	public List<PID> listManifests() throws FedoraException {
 		return addPidsToList(Cdr.hasManifest);
+	}
+	
+	public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
+		Model triples = ModelFactory.createDefaultModel();
+		Resource res = triples.createResource(depositPID.getURI());
+		for (Resource child : children) {
+			res.addProperty(Cdr.hasIngestedObject, child);
+		}
+		repository.createRelationships(depositPID, triples);
+		return this;
 	}
 
 	/**
