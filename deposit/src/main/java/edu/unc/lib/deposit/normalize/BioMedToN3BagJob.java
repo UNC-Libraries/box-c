@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMetadataProfile;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
@@ -61,6 +59,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
@@ -186,7 +186,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 			// Move properties for data to the root resource
 			String location = rootResource.getProperty(fileLocation).getString();
 			String filename = location.substring("data/".length()).toLowerCase();
-			model.add(rootResource, dprop(model, DepositRelationship.label), filename);
+			model.add(rootResource, CdrDeposit.label, filename);
 			return rootResource;
 		}
 		
@@ -209,7 +209,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 				Resource child = children.nextNode().asResource();
 				String location = child.getProperty(fileLocation).getString();
 				String filename = location.substring("data/".length()).toLowerCase();
-				model.add(child, dprop(model, DepositRelationship.label), filename);
+				model.add(child, CdrDeposit.label, filename);
 			}
 		} finally {
 			children.close();
@@ -248,13 +248,13 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		
 		PID sourceMDPID = new PID(rootResource.getURI() + "/" + MD_SOURCE.getName());
 		Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
-		model.add(rootResource, dprop(model, hasDatastream), sourceMDResource);
-		model.add(rootResource, cdrprop(model, sourceMetadata), sourceMDResource);
+		model.add(rootResource, CdrDeposit.hasDatastream, sourceMDResource);
+		model.add(rootResource, CdrDeposit.hasSourceMetadata, sourceMDResource);
 
-		model.add(sourceMDResource, dprop(model, stagingLocation),
+		model.add(sourceMDResource, CdrDeposit.stagingLocation),
 				this.getDataDirectory().getName() + "/" + metadataFileName);
-		model.add(rootResource, cdrprop(model, hasSourceMetadataProfile), BIOMED_ARTICLE);
-		model.add(sourceMDResource, dprop(model, mimetype), "text/xml");
+		model.add(rootResource, Cdr.hasSourceMetadataProfile, BIOMED_ARTICLE);
+		model.add(sourceMDResource, CdrDeposit.mimetype, "text/xml");
 		
 		File modsFile = new File(getDescriptionDir(), new PID(rootResource.getURI()).getUUID() + ".xml");
 
