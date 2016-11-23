@@ -15,9 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,6 +48,7 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 
@@ -113,15 +112,13 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		assertTrue("Primary resource was not assigned content models to be an aggregate",
 				isAggregate(primaryResource, model));
 
-		Property stagingLoc = dprop(model, stagingLocation);
-
 		NodeIterator childIt = model.getBag(primaryResource).iterator();
 		int childCount = 0;
 		while (childIt.hasNext()) {
 			childCount++;
 
 			Resource child = (Resource) childIt.next();
-			verifyStagingLocationExists(child, stagingLoc, job.getDepositDirectory(), "Child content");
+			verifyStagingLocationExists(child, CdrDeposit.stagingLocation, job.getDepositDirectory(), "Child content");
 		}
 
 		assertEquals("Incorrect aggregate child count", 5, childCount);
