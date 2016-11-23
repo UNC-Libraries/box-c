@@ -251,7 +251,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		model.add(rootResource, CdrDeposit.hasDatastream, sourceMDResource);
 		model.add(rootResource, CdrDeposit.hasSourceMetadata, sourceMDResource);
 
-		model.add(sourceMDResource, CdrDeposit.stagingLocation),
+		model.add(sourceMDResource, CdrDeposit.stagingLocation,
 				this.getDataDirectory().getName() + "/" + metadataFileName);
 		model.add(rootResource, Cdr.hasSourceMetadataProfile, BIOMED_ARTICLE);
 		model.add(sourceMDResource, CdrDeposit.mimetype, "text/xml");
