@@ -101,6 +101,13 @@ public class DepositRecord extends RepositoryObject {
 		return addPidsToList(Cdr.hasManifest);
 	}
 	
+	/**
+	 * Establishes a relationship between the deposit record and each object
+	 * that was added to the deposit.
+	 * @param depositPID
+	 * @param children
+	 * @return the DepositRecord itself, to allow method chaining
+	 */
 	public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
 		Model triples = ModelFactory.createDefaultModel();
 		Resource res = triples.createResource(depositPID.getURI());
