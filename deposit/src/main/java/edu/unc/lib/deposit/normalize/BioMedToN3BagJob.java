@@ -15,12 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMetadataProfile;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.mimetype;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.BIOMED_ARTICLE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.EPDCX_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
