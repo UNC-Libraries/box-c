@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +34,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -44,7 +44,6 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -176,12 +175,16 @@ public class DepositRecordIT extends AbstractFedoraIT {
 		assertTrue(events.get(1).getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
 	}
 	
+	@Test
 	public void addObjectsTest() throws Exception {
 		Model model = getDepositRecordModel();
 		DepositRecord record = repository.createDepositRecord(pid, model);
 		
-		Resource res1 = model.createResource();
-		Resource res2 = model.createResource();
+		String res1Uri = repository.mintContentPid().getRepositoryUri().toString();
+		String res2Uri = repository.mintContentPid().getRepositoryUri().toString();
+		Resource res1 = model.createResource(res1Uri);
+		Resource res2 = model.createResource(res2Uri);
+		
 		List<Resource> depositedObjs = new ArrayList<>();
 		depositedObjs.add(res1);
 		depositedObjs.add(res2);
