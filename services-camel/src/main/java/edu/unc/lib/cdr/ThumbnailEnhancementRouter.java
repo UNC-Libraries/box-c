@@ -11,12 +11,11 @@ import org.apache.camel.Message;
 import org.apache.camel.Predicate;
 import org.apache.camel.Processor;
 
-import static org.apache.http.entity.ContentType.parse;
-import com.hp.hpl.jena.rdf.model.Model;
-import static org.apache.jena.rdf.model.createDefaultModel;
-import static org.apache.jena.riot.RDFLanguages.contentTypeToLang;
+//import static org.apache.http.entity.ContentType.parse;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+//import static com.hp.hpl.jena.riot.RDFLanguages.contentTypeToLang;
 
-import org.apache.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Model;
 //import org.fcrepo.camel.processor.EventProcessor;
 
 import com.google.common.base.Splitter;
@@ -43,10 +42,12 @@ public class ThumbnailEnhancementRouter extends RouteBuilder {
 			@Override
 			public void process(Exchange exchange) throws Exception {
 				final Message in = exchange.getIn();
-				final Model model = createDefaultModel();
+				final Model model = ModelFactory.createDefaultModel();
 				
-				Model values = model.read(in.getBody(InputStream.class),
-						contentTypeToLang(parse(in.getHeader(Exchange.CONTENT_TYPE, String.class)).getMimeType()).toString());
+			//	Model values = model.read(in.getBody(InputStream.class),
+			//			contentTypeToLang(parse(in.getHeader(Exchange.CONTENT_TYPE, String.class)).getMimeType()).toString());
+				
+				Model values = model.read(in.getBody(InputStream.class),  null, "TURTLE");
 				
 				String fcrepoMimeType = values.getProperty("hasMimeType").toString();
 				String fcrepoChecksum = values.getProperty("hasMessageDigest").toString();
