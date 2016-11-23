@@ -29,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.SimpleSelector;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
+import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
@@ -38,6 +39,8 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
  *
  */
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
+	
+	private StagingPolicyManager policyManager;
 	
 	public ValidateFileAvailabilityJob() {
 	}
@@ -50,6 +53,7 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 	public void runJob() {
 
 		Set<String> failures = new HashSet<String>();
+		Set<String> badlyStagedFiles = new HashSet<String>();
 
 		Model model = getReadOnlyModel();
 		// Construct a map of objects to file paths to verify
@@ -70,6 +74,9 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 			} catch (URISyntaxException e) {
 				failJob(e, "Unable to parse manifest URI: {0}", href);
 			}
+			if (!policyManager.isValidStagingLocation(manifestURI)) {
+				badlyStagedFiles.add(manifestURI.toString());
+			}
 
 			if (manifestURI.getScheme() == null || manifestURI.getScheme().contains("file")) {
 				if (!manifestURI.isAbsolute()) {
@@ -82,23 +89,41 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 					failures.add(manifestURI.toString());
 				}
 			}
-
 			addClicks(1);
 		}
-
-		// Generate failure message of all missing files and fail job
-		if (failures.size() > 0) {
-			StringBuilder sb = new StringBuilder("Some files referenced by the deposit could not be found:\n");
-			for (String uri : failures) {
-				sb.append(" - ").append(uri).append("\n");
-			}
-
-			if (failures.size() == 1) {
-				failJob("1 file referenced by the deposit could not be found.", sb.toString());
-			} else {
-				failJob(failures.size() + " files referenced by the deposit could not be found.", sb.toString());
+		
+		// Generate failure message of all files from invalid staging locations
+		StringBuilder sbInvalid = null;
+		int invalidCount = badlyStagedFiles.size();
+		if (invalidCount > 0) {
+			sbInvalid = new StringBuilder(badlyStagedFiles.size() + " files referenced by the deposit are located in invalid staging areas:\n");
+			for (String file : badlyStagedFiles) {
+				sbInvalid.append(" - ").append(file).append("\n");
 			}
 		}
+
+		// Generate failure message of all missing files
+		StringBuilder sbFailure = null;
+		int failureCount = failures.size();
+		if (failureCount > 0) {
+			sbFailure = new StringBuilder(failureCount + "  files referenced by the deposit could not be found:\n");
+			for (String uri : failures) {
+				sbFailure.append(" - ").append(uri).append("\n");
+			} 
+		}
+		
+		// fails job if any files were from invalid staging areas or could not be found
+		if (invalidCount > 0 && failureCount > 0) {
+			failJob("Deposit references invalid files", (sbInvalid.toString() + sbFailure.toString()));
+		} else if (invalidCount > 0) {
+			failJob("Deposit references invalid files", (sbInvalid.toString()));
+		} else if (failureCount > 0) {
+			failJob("Deposit references invalid files", (sbFailure.toString())); 
+		}
+	}
+
+	public void setStagingPolicyManager(StagingPolicyManager policyManager) {
+		this.policyManager = policyManager;
 	}
 
 	private void addLocations(Set<String> hrefs, Model model, Property property) {

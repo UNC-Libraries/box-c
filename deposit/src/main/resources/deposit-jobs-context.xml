@@ -161,6 +161,7 @@
 
 	<bean id="ValidateFileAvailabilityJob" class="edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob"
 		scope="prototype">
+		<property name="stagingPolicyManager" ref="stagingPolicyManager" />
 	</bean>
 
 	<bean id="ValidateMODS" class="edu.unc.lib.deposit.validate.ValidateMODS"
