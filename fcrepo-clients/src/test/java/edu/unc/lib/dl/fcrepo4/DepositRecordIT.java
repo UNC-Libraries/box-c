@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
+import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -180,10 +181,16 @@ public class DepositRecordIT extends AbstractFedoraIT {
 		Model model = getDepositRecordModel();
 		DepositRecord record = repository.createDepositRecord(pid, model);
 		
-		String res1Uri = repository.mintContentPid().getRepositoryUri().toString();
-		String res2Uri = repository.mintContentPid().getRepositoryUri().toString();
-		Resource res1 = model.createResource(res1Uri);
-		Resource res2 = model.createResource(res2Uri);
+		URI obj1Uri;
+		URI obj2Uri;
+		try (FcrepoResponse response = client.post(URI.create(serverAddress)).perform()) {
+			obj1Uri = response.getLocation();
+		}
+		try (FcrepoResponse response = client.post(URI.create(serverAddress)).perform()) {
+			obj2Uri = response.getLocation();
+		}
+		Resource res1 = model.createResource(obj1Uri.toString());
+		Resource res2 = model.createResource(obj2Uri.toString());
 		
 		List<Resource> depositedObjs = new ArrayList<>();
 		depositedObjs.add(res1);
