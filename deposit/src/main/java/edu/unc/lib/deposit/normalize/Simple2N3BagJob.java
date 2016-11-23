@@ -15,12 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.size;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
@@ -42,14 +36,14 @@ import org.springframework.web.util.UriUtils;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -146,19 +140,18 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
 		}
 		
-		Property md5sumProp = dprop(model, md5sum);
-		model.add(primaryResource, md5sumProp, checksum);
+		model.add(primaryResource, CdrDeposit.md5sum, checksum);
 
 		if(alabel == null) alabel = contentFile.getName();
-		model.add(primaryResource, dprop(model, label), alabel);
-		model.add(primaryResource, dprop(model, size), Long.toString(contentFile.length()));
+		model.add(primaryResource, CdrDeposit.label, alabel);
+		model.add(primaryResource, CdrDeposit.size, Long.toString(contentFile.length()));
 		if (mimetype != null) {
-			model.add(primaryResource, dprop(model, DepositRelationship.mimetype), mimetype);
+			model.add(primaryResource, CdrDeposit.mimetype, mimetype);
 		}
 
 		// Reference the content file as the data file
 		try {
-			model.add(primaryResource, dprop(model, stagingLocation),
+			model.add(primaryResource, CdrDeposit.stagingLocation,
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			failJob(e, "Failed to add staging location for {} due to encoding issues", contentFile.getName());
@@ -183,14 +176,14 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		}
 
 		// set the label
-		model.add(primaryResource, dprop(model, label), alabel);
+		model.add(primaryResource, CdrDeposit.label, alabel);
 
 		// Set container models depending on the type requested
-		model.add(primaryResource, fprop(model, hasModel), model.createResource(CONTAINER.toString()));
+		model.add(primaryResource, RDF.type, model.createResource(CONTAINER.toString()));
 		if (COLLECTION.equals(contentModel)) {
-			model.add(primaryResource, fprop(model, hasModel), model.createResource(COLLECTION.toString()));
+			model.add(primaryResource, RDF.type, model.createResource(COLLECTION.toString()));
 		} else if (AGGREGATE_WORK.equals(contentModel)) {
-			model.add(primaryResource, fprop(model, hasModel), model.createResource(AGGREGATE_WORK.toString()));
+			model.add(primaryResource, RDF.type, model.createResource(AGGREGATE_WORK.toString()));
 
 			// TODO if a file is provided, generate child and mark it as default web object
 		}
