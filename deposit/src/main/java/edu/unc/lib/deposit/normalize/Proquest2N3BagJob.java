@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.dateCreated;
 import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
@@ -194,9 +192,6 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 		// Capture other metadata, like embargoes
 		setEmbargoUntil(model, primaryResource, dataRoot);
-
-		// Creation date for the content file
-		model.add(primaryResource, cdrprop(model, dateCreated), modified.toString(), XSDDatatype.XSDdateTime);
 	}
 
 	private void unzipPackages() {
