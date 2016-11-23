@@ -122,6 +122,7 @@
 		<module>oai4solr/oai2-plugin</module>
 		<module>persistence</module>
 		<module>services</module>
+		<module>services-camel</module>
 		<module>services-worker</module>
 		<module>solr-ingest</module>
 		<module>solr-search</module>
