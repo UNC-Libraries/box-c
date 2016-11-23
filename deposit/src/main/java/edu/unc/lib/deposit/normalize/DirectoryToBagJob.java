@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 
@@ -38,14 +35,13 @@ import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
@@ -85,10 +81,6 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			}
 		}
 		
-		Property labelProp = dprop(model, DepositRelationship.label);
-		Property hasModelProp = fprop(model, FedoraProperty.hasModel);
-		Property md5sumProp = dprop(model, md5sum);
-		Property locationProp = dprop(model, DepositRelationship.stagingLocation);
 		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
 		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 
@@ -109,7 +101,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			
 			if (!isDir) {
 				Resource fileResource = getFileResource(sourceBag, filePathString);
-				model.add(fileResource, labelProp, filename);
+				model.add(fileResource, CdrDeposit.label, filename);
 				
 				String fullPath = file.toString();
 				
@@ -128,16 +120,16 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
 				}
 
-				model.add(fileResource, hasModelProp, simpleResource);
-				model.add(fileResource, md5sumProp, checksum);
+				model.add(fileResource, RDF.type, simpleResource);
+				model.add(fileResource, CdrDeposit.md5sum, checksum);
 				
 				// Find staged path for the file
 				Path storedPath = Paths.get(file.getAbsolutePath());
-				model.add(fileResource, locationProp, storedPath.toUri().toString());
+				model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
 			} else {
 				Bag folderBag = getFolderBag(sourceBag, filePathString);
-				model.add(folderBag, labelProp, filename);
-				model.add(folderBag, hasModelProp, containerResource);
+				model.add(folderBag, CdrDeposit.label, filename);
+				model.add(folderBag, RDF.type, containerResource);
 			}
 		}
 	}
