@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -23,7 +24,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.mockito.Matchers.any;
 
 import java.io.File;
 import java.net.URI;
@@ -44,7 +44,6 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
-import edu.unc.lib.deposit.staging.StagingException;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.deposit.work.JobInterruptedException;
@@ -81,7 +80,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
-		job.setPolicyManager(policyManager);
+		job.setStagingPolicyManager(policyManager);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);

@@ -114,15 +114,15 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 		
 		// fails job if any files were from invalid staging areas or could not be found
 		if (invalidCount > 0 && failureCount > 0) {
-			failJob("Deposit refences invalid files", (sbInvalid.toString() + sbFailure.toString()));
+			failJob("Deposit references invalid files", (sbInvalid.toString() + sbFailure.toString()));
 		} else if (invalidCount > 0) {
-			failJob("Deposit refences invalid files", (sbInvalid.toString()));
+			failJob("Deposit references invalid files", (sbInvalid.toString()));
 		} else if (failureCount > 0) {
-			failJob("Deposit refences invalid files", (sbFailure.toString())); 
+			failJob("Deposit references invalid files", (sbFailure.toString())); 
 		}
 	}
 
-	public void setPolicyManager(StagingPolicyManager policyManager) {
+	public void setStagingPolicyManager(StagingPolicyManager policyManager) {
 		this.policyManager = policyManager;
 	}
 
