@@ -42,6 +42,9 @@ public class Cdr {
     /** User who this deposit was submitted on behalf of. */
     public static final Property depositedOnBehalfOf = createProperty( "http://cdr.unc.edu/definitions/model#depositedOnBehalfOf" );
     
+    /** Relationship indicating that an ingested object was a part of a given deposit */
+    public static final Property hasIngestedObject = createProperty( "http://cdr.unc.edu/definitions/model#hasIngestedObject");
+    
     /** Relationship indicating ownership of a manifest by this deposit record */
     public static final Property hasManifest = createProperty( "http://cdr.unc.edu/definitions/model#hasManifest" );
     
@@ -61,11 +64,6 @@ public class Cdr {
     
     /** An invalid vocabulary term in this descriptive record. */
     public static final Property invalidTerm = createProperty( "http://cdr.unc.edu/definitions/model#invalidTerm" );
-    
-    /** Link from an object to the DepositRecord representing the deposit it was ingested 
-     *  as a part of.
-     */
-    public static final Property originalDeposit = createProperty( "http://cdr.unc.edu/definitions/model#originalDeposit" );
     
     /** Relation from an AggregateWork to a child which will be treated as the primary 
      *  work for this object.

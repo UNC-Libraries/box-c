@@ -21,9 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 
@@ -95,22 +97,34 @@ public class DepositRecord extends RepositoryObject {
 	 * @return
 	 * @throws FedoraException
 	 */
-	public Collection<PID> listManifests() throws FedoraException {
-		Resource resource = getResource();
-		StmtIterator containsIt = resource.listProperties(Cdr.hasManifest);
-
-		List<PID> pids = new ArrayList<>();
-		while (containsIt.hasNext()) {
-			String path = containsIt.next().getObject().toString();
-			pids.add(PIDs.get(path));
+	public List<PID> listManifests() throws FedoraException {
+		return addPidsToList(Cdr.hasManifest);
+	}
+	
+	/**
+	 * Establishes a relationship between the deposit record and each object
+	 * that was added to the deposit.
+	 * @param depositPID
+	 * @param children
+	 * @return the DepositRecord itself, to allow method chaining
+	 */
+	public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
+		Model triples = ModelFactory.createDefaultModel();
+		Resource res = triples.createResource(depositPID.getURI());
+		for (Resource child : children) {
+			res.addProperty(Cdr.hasIngestedObject, child);
 		}
-
-		return pids;
+		repository.createRelationships(depositPID, triples);
+		return this;
 	}
 
-	public Collection<?> listDepositedObjects() {
-		// TODO once objects are being deposited
-		return null;
+	/**
+	 * Retrieves a list of pids for objects contained by this deposit record
+	 * @return
+	 * @throws FedoraException
+	 */
+	public List<PID> listDepositedObjects() throws FedoraException { 
+		return addPidsToList(Cdr.hasIngestedObject);
 	}
 
 	@Override
@@ -137,5 +151,16 @@ public class DepositRecord extends RepositoryObject {
 	public URI getManifestsUri() {
 		return URI.create(pid.getRepositoryUri()
 				+ "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
+	}
+	
+	private List<PID> addPidsToList(Property p) {
+		Resource resource = getResource();
+		StmtIterator containsIt = resource.listProperties(p);
+		List<PID> pids = new ArrayList<>();
+		while (containsIt.hasNext()) {
+			String path = containsIt.next().getObject().toString();
+			pids.add(PIDs.get(path));
+		}
+		return pids;
 	}
 }

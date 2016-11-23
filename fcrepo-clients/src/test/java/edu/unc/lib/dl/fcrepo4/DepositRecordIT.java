@@ -22,12 +22,15 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
+import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,6 +174,31 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
 		// Check that the second event has the right type
 		assertTrue(events.get(1).getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
+	}
+	
+	@Test
+	public void addObjectsTest() throws Exception {
+		Model model = getDepositRecordModel();
+		DepositRecord record = repository.createDepositRecord(pid, model);
+		
+		URI obj1Uri;
+		URI obj2Uri;
+		try (FcrepoResponse response = client.post(URI.create(serverAddress)).perform()) {
+			obj1Uri = response.getLocation();
+		}
+		try (FcrepoResponse response = client.post(URI.create(serverAddress)).perform()) {
+			obj2Uri = response.getLocation();
+		}
+		Resource res1 = model.createResource(obj1Uri.toString());
+		Resource res2 = model.createResource(obj2Uri.toString());
+		
+		List<Resource> depositedObjs = new ArrayList<>();
+		depositedObjs.add(res1);
+		depositedObjs.add(res2);
+		
+		record.addIngestedObjects(pid, depositedObjs);
+		
+		assertTrue(record.listDepositedObjects().size() == 2);
 	}
 
 	private Model getDepositRecordModel() {

@@ -1,6 +1,3 @@
-[submodule "staging-areas"]
-	path = staging-areas
-	url = https://github.com/UNC-Libraries/staging-areas.git
 [submodule "oai4solr"]
 	url = https://github.com/UNC-Libraries/oai4solr.git
 	branch = dynamic-set
