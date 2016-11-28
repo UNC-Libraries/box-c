@@ -1,4 +1,4 @@
-package edu.unc.lib.cdr;
+package edu.unc.lib.cdr.thumbnail;
 
 import java.io.InputStream;
 import java.util.StringJoiner;
@@ -21,7 +21,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.google.common.base.Splitter;
 
 
-public class ThumbnailEnhancementRouter extends RouteBuilder {
+public class ThumbnailRouter extends RouteBuilder {
 	private static final String EVENT_TYPE = "http://fedora.info/definitions/v4/event";
 	
 	/**
@@ -34,10 +34,11 @@ public class ThumbnailEnhancementRouter extends RouteBuilder {
 		
 		from("activemq:topic:fedora")
 		.routeId("CdrServiceEnhancements")
-		.log(LoggingLevel.DEBUG, "Small Thumb")
+		.log(LoggingLevel.INFO, "Thumbnail Creation")
 //		.process(new EventProcessor())
 		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED'"))
 		.to("fcrepo:localhost:8080/fcrepo/rest")
+		.log(LoggingLevel.INFO, "INFO-HEADERS: ${headers}")
 		.process(new Processor() {
 			@Override
 			public void process(Exchange exchange) throws Exception {
@@ -69,6 +70,7 @@ public class ThumbnailEnhancementRouter extends RouteBuilder {
 				in.setHeader("BinaryPath", fullPath);
 			}
 		})
+		
 		.choice()
 			.when(PredicateBuilder.and(isCreated, isBinary, header("mimeType").startsWith("image")))
 				.to("fcrepo:localhost:8080/fcrepo/rest?metadata=false")
@@ -77,9 +79,11 @@ public class ThumbnailEnhancementRouter extends RouteBuilder {
 				.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
+		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64&amp;workingDir=/tmp&amp;outFile=/tmp/${headers[CheckSum]}"));
 		
 		from("direct:large.thumbnail")
+		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128&amp;workingDir=/tmp&amp;outFile=/tmp/${headers[CheckSum]}"));
 	}
 }

@@ -8,7 +8,7 @@
          http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
 
   <camelContext id="CdrServiceEnhancements" xmlns="http://camel.apache.org/schema/blueprint">
-    <package>edu.lib.cdr.services-camel</package>
+    <package>edu.unc.lib.cdr.thumbnail</package>
   </camelContext>
 
 </blueprint>
