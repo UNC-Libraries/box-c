@@ -40,6 +40,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -134,7 +135,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
 		assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
 		
-		File modsFile = new File(job.getDescriptionDir(), new PID(bagFolder.getURI()).getUUID() + ".xml");
+		File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()) + ".xml");
 		assertTrue(modsFile.exists());
 	}
 }

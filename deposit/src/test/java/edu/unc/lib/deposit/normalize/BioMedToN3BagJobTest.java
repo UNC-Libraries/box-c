@@ -82,6 +82,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setMetsSipSchema(metsSipSchema);
 		job.setSchematronValidator(validator);
+		job.setRepository(repo);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
@@ -160,6 +161,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testExistingMODS() throws Exception {
 		job.setDepositUUID("ad42cdd6-69c1-444b-9291-9374b40bf7fb");

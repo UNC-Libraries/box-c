@@ -57,7 +57,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void setup() throws Exception {
-
+		
 		status = new HashMap<String, String>();
 
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
@@ -67,6 +67,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		job = new Simple2N3BagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
+		job.setRepository(repo);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);

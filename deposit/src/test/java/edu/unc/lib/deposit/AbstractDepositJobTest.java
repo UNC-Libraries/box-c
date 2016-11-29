@@ -27,7 +27,7 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 public abstract class AbstractDepositJobTest {
 	
 	@Mock
-	private Repository repo;
+	protected Repository repo;
 
 	@Before
 	public void setUp() throws Exception {

@@ -44,6 +44,7 @@ import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.xml.StandaloneDatastreamOutputFilter;
 
+@SuppressWarnings("deprecation")
 public class ClientUtils {
 	private static final Log log = LogFactory.getLog(ClientUtils.class);
 
