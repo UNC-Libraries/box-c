@@ -21,7 +21,10 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.doAnswer;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -36,6 +39,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -45,6 +50,8 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -55,6 +62,7 @@ import edu.unc.lib.dl.util.JobStatusFactory;
  * @author bbpennel
  * @date Jun 18, 2014
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest{
 
 	@Rule
@@ -70,10 +78,22 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 	protected String jobUUID;
 	protected String depositUUID;
 	protected File depositDir;
+	
+	private PID premisEventPid;
 
 	@Before
 	public void initBase() throws Exception {
 		initMocks(this);
+		
+		String pidString =  UUID.randomUUID().toString();
+		premisEventPid = PIDs.get(pidString);
+		when(repo.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
+		Answer<PID> answer = new Answer<PID>() {
+			public PID answer(InvocationOnMock invocation) throws Throwable {
+				return PIDs.get(UUID.randomUUID().toString());
+			}
+		};
+		when(repo.mintContentPid()).thenAnswer(answer);
 
 		depositsDirectory = tmpFolder.newFolder("deposits");
 
