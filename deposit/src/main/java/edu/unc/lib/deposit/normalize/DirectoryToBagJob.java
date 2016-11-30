@@ -39,6 +39,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -106,7 +107,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				String fullPath = file.toString();
 				
 				try {
-					PID itemPID = new PID(fileResource.getURI());
+					PID itemPID = PIDs.get(fileResource.getURI());
 					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 					
 					PremisLogger premisDepositLogger = getPremisLogger(itemPID);
