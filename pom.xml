@@ -87,6 +87,7 @@
 		<jersey.version>2.15</jersey.version>
 		<fcrepo.client.version>0.2.1</fcrepo.client.version>
 		<mock.server.version>3.10.2</mock.server.version>
+		<commons-io.version>2.4</commons-io.version>
 	</properties>
 
 	<distributionManagement>
