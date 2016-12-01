@@ -34,6 +34,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.junit.Before;
@@ -104,7 +105,6 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	}
 
-	@SuppressWarnings("deprecation")
 	public void testNoAttachments(Model model, Resource primaryResource) throws Exception {
 
 		assertNotNull("Main object from the deposit not found", primaryResource);
@@ -118,7 +118,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		SAXBuilder sb = new SAXBuilder(false);
+		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 		Document modsDoc = sb.build(descriptionFile);
 
 		Element semesterEl = element("/mods:mods/mods:note[@type='thesis']", modsDoc);

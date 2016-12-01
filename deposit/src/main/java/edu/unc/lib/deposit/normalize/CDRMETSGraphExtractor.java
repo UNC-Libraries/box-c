@@ -32,8 +32,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
@@ -115,12 +113,7 @@ public class CDRMETSGraphExtractor {
 			String to = link.getAttributeValue("to", XLINK_NS);
 			if ("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder"
 					.equals(arcrole)) {
-				Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
-				Property role = m.createProperty(CDRProperty.sortOrder.getURI()
-						.toString());
-				Resource alpha = m
-						.createResource("http://cdr.unc.edu/definitions/1.0/base-model.xml#alphabetical");
-				m.add(fromR, role, alpha);
+				// TODO: handle alphabetic sorting
 			} else {
 				Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
 				Resource toR = m.createResource(helper.getPIDURIForDIVID(to));

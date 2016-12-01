@@ -29,6 +29,7 @@ import javax.xml.validation.Schema;
 
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -155,7 +156,6 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testExistingMODS() throws Exception {
 		job.setDepositUUID("ad42cdd6-69c1-444b-9291-9374b40bf7fb");
@@ -177,7 +177,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		SAXBuilder sb = new SAXBuilder(false);
+		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 		Document modsDoc = sb.build(descriptionFile);
 
 		List<?> originalNameObjects = xpath("//mods:namePart[text()='Test']", modsDoc);
