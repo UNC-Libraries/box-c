@@ -49,17 +49,14 @@ import org.slf4j.LoggerFactory;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
@@ -169,17 +166,15 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 	}
 	
 	private Resource constructResources(Model model, Element aggregateEl, List<Element> topChildren, METSHelper helper) {
-		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
-		Property fileLocation = model.createProperty(DepositRelationship.stagingLocation.toString());
 		
 		if (topChildren.size() == 1) {
 			Resource rootResource = model.createResource(METSHelper.getPIDURI(topChildren.get(0)));
-			model.add(rootResource, hasModel, model.createResource(ContentModelHelper.Model.SIMPLE.getURI().toString()));
+			model.add(rootResource, RDF.type, Cdr.FileObject);
 			
 			helper.addFileAssociations(model, true);
 			
 			// Move properties for data to the root resource
-			String location = rootResource.getProperty(fileLocation).getString();
+			String location = rootResource.getProperty(CdrDeposit.stagingLocation).getString();
 			String filename = location.substring("data/".length()).toLowerCase();
 			model.add(rootResource, CdrDeposit.label, filename);
 			return rootResource;
@@ -187,8 +182,8 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		
 		Bag rootObject = model.createBag(METSHelper.getPIDURI(aggregateEl));
 		
-		model.add(rootObject, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
-		model.add(rootObject, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
+		model.add(rootObject, RDF.type, Cdr.Folder);
+		model.add(rootObject, RDF.type, Cdr.Work);
 		
 		for (Element childEl : topChildren) {
 			Resource child = model.createResource(METSHelper.getPIDURI(childEl));
@@ -202,7 +197,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		try {
 			while (children.hasNext()) {
 				Resource child = children.nextNode().asResource();
-				String location = child.getProperty(fileLocation).getString();
+				String location = child.getProperty(CdrDeposit.stagingLocation).getString();
 				String filename = location.substring("data/".length()).toLowerCase();
 				model.add(child, CdrDeposit.label, filename);
 			}
@@ -281,23 +276,19 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 	
 	private void setDefaultWebObject(Model model, Bag rootObject) {
 		
-		Property fileLocation = model.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
-		
 		NodeIterator children = rootObject.iterator();
 		try {
 			// Find the main article file
 			while(children.hasNext()) {
 				Resource child = children.nextNode().asResource();
-				String location = child.getProperty(fileLocation).getString();
+				String location = child.getProperty(CdrDeposit.stagingLocation).getString();
 				// filename will be the article ID, but not XML
 				if (!mainArticlePattern.matcher(location).matches()) {
 					continue;
 				}
 	
 				log.debug("Found primary Biomed content document {}", location);
-				// If this is a main object, then designate it as a default web object for its parent container
-				Property defaultObject = model.getProperty(CDRProperty.defaultWebObject.getURI().toString());
-				model.add(rootObject, defaultObject, child);
+				model.add(rootObject, Cdr.primaryObject, child);
 				return;
 			}
 		} finally {

@@ -16,9 +16,6 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,6 +38,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -80,7 +78,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		String name = "testFolder";
 
 		status.put(DepositField.depositSlug.name(), name);
-		status.put(hasModel.toString(), CONTAINER.toString());
+		status.put(RDF.type.toString(), Cdr.Folder.toString());
 
 		job.run();
 
@@ -90,8 +88,8 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
 
-		assertEquals("Content model was not set", primaryResource.getPropertyResourceValue(RDF.type)
-				.getURI(), CONTAINER.toString());
+		assertEquals("Does not have Folder type", primaryResource.getPropertyResourceValue(RDF.type)
+				.getURI(), Cdr.Folder.toString());
 	}
 
 	@Test
@@ -101,7 +99,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		copyTestPackage("src/test/resources/simpleMods.xml", "mods.xml", job);
 
 		status.put(DepositField.depositSlug.name(), name);
-		status.put(hasModel.toString(), CONTAINER.toString());
+		status.put(RDF.type.toString(), Cdr.Folder.toString());
 
 		job.run();
 
@@ -111,8 +109,8 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
 
-		assertEquals("Content model was not set", primaryResource.getPropertyResourceValue(RDF.type)
-				.getURI(), CONTAINER.toString());
+		assertEquals("Does not have Folder type", primaryResource.getPropertyResourceValue(RDF.type)
+				.getURI(), Cdr.Folder.toString());
 
 		File descDir = new File(depositDir, DepositConstants.DESCRIPTION_DIR);
 		File destinationFile = new File(descDir, new PID(primaryResource.toString()).getUUID() + ".xml");
@@ -125,7 +123,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		String name = "testFolder";
 
 		status.put(DepositField.depositSlug.name(), name);
-		status.put(hasModel.toString(), COLLECTION.toString());
+		status.put(RDF.type.toString(), Cdr.Collection.toString());
 
 		job.run();
 
@@ -134,8 +132,6 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
 		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
-
-		assertTrue("Did not have collect content models", isContainerType(primaryResource, COLLECTION, model));
 
 	}
 
@@ -155,7 +151,7 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
 
-		assertFalse("Content models incorrectly assigned", primaryResource.hasProperty(RDF.type));
+		assertFalse("No RDF types assigned", primaryResource.hasProperty(RDF.type));
 	}
 
 	@Test(expected = JobFailedException.class)

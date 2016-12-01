@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +40,6 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 

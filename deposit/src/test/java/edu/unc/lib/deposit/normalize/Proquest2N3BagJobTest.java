@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.deposit.normalize.Proquest2N3BagJob.DATA_SUFFIX;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.defaultWebObject;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -49,6 +48,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
@@ -104,12 +104,13 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	}
 
+	@SuppressWarnings("deprecation")
 	public void testNoAttachments(Model model, Resource primaryResource) throws Exception {
 
 		assertNotNull("Main object from the deposit not found", primaryResource);
 
 		// Check that the main content file is assigned to the primary resource
-		verifyStagingLocationExists(primaryResource, CdrDeposit.stagingLocation, job.getDepositDirectory(), "Content");
+		verifyStagingLocationExists(primaryResource, job.getDepositDirectory(), "Content");
 
 		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
 
@@ -155,11 +156,8 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		assertTrue("Primary resource was not assigned content models to be an aggregate",
-				isAggregate(primaryResource, model));
-
 		// Check for default web object
-		Resource dwo = primaryResource.getProperty(model.createProperty(defaultWebObject.toString())).getResource();
+		Resource dwo = primaryResource.getProperty(Cdr.primaryObject).getResource();
 		assertNotNull("Default web object was not set", dwo);
 
 		// Make sure the content file is assigned as a child rather than a data stream of the primary resource
@@ -176,7 +174,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 			Resource child = (Resource) childIt.next();
 
 			// Make sure all of the children have valid staging locations assigned
-			File childFile = verifyStagingLocationExists(child, CdrDeposit.stagingLocation, job.getDepositDirectory(), "Child content");
+			File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
 
 			// Make sure the label is being set, using the description if provided
 			if ("attached1.pdf".equals(childFile.getName())) {

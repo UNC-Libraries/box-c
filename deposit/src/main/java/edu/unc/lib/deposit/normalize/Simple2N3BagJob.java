@@ -15,12 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,6 +36,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -86,12 +81,12 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		String slug = depositStatus.get(DepositField.depositSlug.name());
 		String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
-		String contentModel = depositStatus.get(hasModel.toString());
+		String contentModel = depositStatus.get(RDF.type.toString());
 
 		// Create the primary resource as a simple resource
 		Resource primaryResource = model.createResource(primaryPID.getURI());
 
-		if (contentModel == null || SIMPLE.equals(contentModel)) {
+		if (contentModel == null || Cdr.FileObject.equals(contentModel)) {
 			populateSimple(model, primaryResource, slug, filename, mimetype);
 		} else {
 			populateContainer(model, primaryResource, primaryPID, slug, contentModel);
@@ -179,11 +174,11 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		model.add(primaryResource, CdrDeposit.label, alabel);
 
 		// Set container models depending on the type requested
-		model.add(primaryResource, RDF.type, model.createResource(CONTAINER.toString()));
-		if (COLLECTION.equals(contentModel)) {
-			model.add(primaryResource, RDF.type, model.createResource(COLLECTION.toString()));
-		} else if (AGGREGATE_WORK.equals(contentModel)) {
-			model.add(primaryResource, RDF.type, model.createResource(AGGREGATE_WORK.toString()));
+		model.add(primaryResource, RDF.type, Cdr.Folder);
+		if (Cdr.Collection.equals(contentModel)) {
+			model.add(primaryResource, RDF.type, Cdr.Collection);
+		} else if (Cdr.Work.equals(contentModel)) {
+			model.add(primaryResource, RDF.type, Cdr.Work);
 
 			// TODO if a file is provided, generate child and mark it as default web object
 		}

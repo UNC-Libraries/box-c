@@ -42,7 +42,6 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
@@ -50,7 +49,6 @@ import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.schematron.SchematronValidator;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 
 /**
  * @author bbpennel
@@ -110,16 +108,13 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 		assertNotNull("Main object from the deposit not found", primaryResource);
 
-		assertTrue("Primary resource was not assigned content models to be an aggregate",
-				isAggregate(primaryResource, model));
-
 		NodeIterator childIt = model.getBag(primaryResource).iterator();
 		int childCount = 0;
 		while (childIt.hasNext()) {
 			childCount++;
 
 			Resource child = (Resource) childIt.next();
-			verifyStagingLocationExists(child, CdrDeposit.stagingLocation, job.getDepositDirectory(), "Child content");
+			verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
 		}
 
 		assertEquals("Incorrect aggregate child count", 5, childCount);
@@ -152,12 +147,11 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
 		// Check that labels were assigned to the children
-		Property labelP = model.createProperty(DepositRelationship.label.getURI().toString());
 		NodeIterator childIt = model.getBag(primaryResource).iterator();
 		while (childIt.hasNext()) {
 			Resource child = childIt.nextNode().asResource();
 
-			assertNotNull("Supplemental should have been assigned a label", child.getProperty(labelP));
+			assertNotNull("Supplemental should have been assigned a label", child.getProperty(CdrDeposit.label));
 		}
 	}
 
