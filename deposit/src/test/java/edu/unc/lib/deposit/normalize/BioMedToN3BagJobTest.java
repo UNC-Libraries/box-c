@@ -47,7 +47,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.DepositTestUtils;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 
@@ -144,7 +144,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
-		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
 		// Check that labels were assigned to the children
@@ -173,7 +173,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		Bag depositBag = m.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = depositBag.iterator().nextNode().asResource();
 		
-		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 

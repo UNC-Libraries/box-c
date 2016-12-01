@@ -13,11 +13,10 @@ import org.jdom2.filter.ElementFilter;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class METSHelper {
@@ -32,33 +31,23 @@ public class METSHelper {
 	protected Map<String, Element> elementsById = null;
 
 	protected static String getPIDURI(Element div) {
-		String result = null;
-		try {
-			String cids = div.getAttributeValue("CONTENTIDS");
-			for (String s : cids.split("\\s")) {
-				if (s.startsWith("info:fedora/")) {
-					result = s;
-					break;
-				}
+		String cids = div.getAttributeValue("CONTENTIDS");
+		for (String s : cids.split("\\s")) {
+			if (PIDs.get(s) != null) {
+				return s;
 			}
-		} catch (Exception ignored) {
 		}
-		return result;
+		return null;
 	}
 	
 	protected static String getOriginalURI(Element div) {
-		String result = null;
-		try {
-			String cids = div.getAttributeValue("CONTENTIDS");
-			for (String s : cids.split("\\s")) {
-				if (!s.startsWith("info:fedora/")) {
-					result = s;
-					break;
-				}
+		String cids = div.getAttributeValue("CONTENTIDS");
+		for (String s : cids.split("\\s")) {
+			if (PIDs.get(s) != null) {
+				return s;
 			}
-		} catch (Exception ignored) {
 		}
-		return result;
+		return null;
 	}
 
 	protected void initIdMap() {

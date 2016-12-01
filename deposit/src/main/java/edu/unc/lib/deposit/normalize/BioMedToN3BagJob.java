@@ -53,6 +53,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -219,7 +220,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 			epdcx2modsTransformer.transform(new JDOMSource(epdcxEl), mods);
 			final File modsFolder = getDescriptionDir();
 			modsFolder.mkdir();
-			File modsFile = new File(modsFolder, new PID(rootResource.getURI()).getUUID()+".xml");
+			File modsFile = new File(modsFolder, PIDs.get(rootResource.getURI()).getUUID() + ".xml");
 			fos = new FileOutputStream(modsFile);
 			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
 		} catch(NullPointerException ignored) {
