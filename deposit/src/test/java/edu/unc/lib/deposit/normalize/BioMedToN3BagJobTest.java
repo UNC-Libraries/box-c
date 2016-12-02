@@ -45,9 +45,11 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 
@@ -108,6 +110,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 		assertNotNull("Main object from the deposit not found", primaryResource);
+		assertTrue("Main object is not a work", primaryResource.hasProperty(RDF.type, Cdr.Work));
 
 		NodeIterator childIt = model.getBag(primaryResource).iterator();
 		int childCount = 0;

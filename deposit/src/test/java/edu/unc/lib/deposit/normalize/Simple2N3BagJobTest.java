@@ -18,11 +18,9 @@ package edu.unc.lib.deposit.normalize;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,10 +35,8 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -71,68 +67,6 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositStatusFactory", depositStatusFactory);
 
 		job.init();
-	}
-
-	@Test
-	public void depositContainerTest() throws Exception {
-		String name = "testFolder";
-
-		status.put(DepositField.depositSlug.name(), name);
-		status.put(RDF.type.toString(), Cdr.Folder.toString());
-
-		job.run();
-
-		Model model = job.getWritableModel();
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
-
-		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
-
-		assertEquals("Does not have Folder type", primaryResource.getPropertyResourceValue(RDF.type)
-				.getURI(), Cdr.Folder.toString());
-	}
-
-	@Test
-	public void depositContainerWithMODSTest() throws Exception {
-		String name = "testFolder";
-
-		copyTestPackage("src/test/resources/simpleMods.xml", "mods.xml", job);
-
-		status.put(DepositField.depositSlug.name(), name);
-		status.put(RDF.type.toString(), Cdr.Folder.toString());
-
-		job.run();
-
-		Model model = job.getWritableModel();
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
-
-		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
-
-		assertEquals("Does not have Folder type", primaryResource.getPropertyResourceValue(RDF.type)
-				.getURI(), Cdr.Folder.toString());
-
-		File descDir = new File(depositDir, DepositConstants.DESCRIPTION_DIR);
-		File destinationFile = new File(descDir, new PID(primaryResource.toString()).getUUID() + ".xml");
-
-		assertTrue("MODS file was not moved into place", destinationFile.exists());
-	}
-
-	@Test
-	public void depositCollection() throws Exception {
-		String name = "testFolder";
-
-		status.put(DepositField.depositSlug.name(), name);
-		status.put(RDF.type.toString(), Cdr.Collection.toString());
-
-		job.run();
-
-		Model model = job.getWritableModel();
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
-
-		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
-
 	}
 
 	@Test

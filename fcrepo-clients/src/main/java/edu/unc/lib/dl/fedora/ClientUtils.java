@@ -36,6 +36,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.jdom2.output.Format;
 import org.jdom2.output.SAXOutputter;
 import org.jdom2.output.XMLOutputter;
@@ -50,7 +51,7 @@ public class ClientUtils {
 
 	public static Document parseXML(byte[] input) throws SAXException {
 		Document result = null;
-		SAXBuilder builder = new SAXBuilder();
+		SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
 		try {
 			result = builder.build(new ByteArrayInputStream(input));
 		} catch (JDOMException e) {

@@ -183,7 +183,6 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		
 		Bag rootObject = model.createBag(METSHelper.getPIDURI(aggregateEl));
 		
-		model.add(rootObject, RDF.type, Cdr.Folder);
 		model.add(rootObject, RDF.type, Cdr.Work);
 		
 		for (Element childEl : topChildren) {

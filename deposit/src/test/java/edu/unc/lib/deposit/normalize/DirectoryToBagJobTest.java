@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
@@ -39,7 +38,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
@@ -104,8 +103,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		NodeIterator iterator = bagFolder.iterator();
 		Resource emptyFolder = (Resource) iterator.next();
 		assertEquals("Folder label was not set", "empty_test", emptyFolder.getProperty(CdrDeposit.label).getString());
-		assertEquals("Content model was not set", RDF.Bag,
-				emptyFolder.getPropertyResourceValue(RDF.type));
+		assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
 		
 		Bag emptyBag = model.getBag(emptyFolder.getURI());
 		
@@ -114,8 +112,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		Resource folder = (Resource) iterator.next();
 		
 		assertEquals("Folder label was not set", "test", folder.getProperty(CdrDeposit.label).getString());
-		assertEquals("Content model was not set", RDF.Bag,
-				folder.getPropertyResourceValue(RDF.type));
+		assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
 		
 		Bag childrenBag = model.getBag(folder.getURI());
 		
@@ -125,7 +122,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		
 		assertEquals("File label was not set", "lorem.txt",
 				file.getProperty(CdrDeposit.label).getString());
-		assertEquals("Content model was not set", SIMPLE.toString(),
+		assertEquals("Content model was not set", Cdr.FileObject.getURI(),
 				file.getPropertyResourceValue(RDF.type).getURI());
 		assertEquals("Checksum was not set", "d41d8cd98f00b204e9800998ecf8427e",
 				file.getProperty(CdrDeposit.md5sum).getString());
@@ -133,7 +130,5 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
 		assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
 		
-		File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()) + ".xml");
-		//assertTrue(modsFile.exists());
 	}
 }

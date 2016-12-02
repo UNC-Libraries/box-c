@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,6 +38,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -81,9 +79,6 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				break;
 			}
 		}
-		
-		Resource simpleResource = model.createResource(SIMPLE.getURI().toString());
-		Resource containerResource = model.createResource(CONTAINER.getURI().toString());
 
 		// Turn the base directory itself into the top level folder for this deposit
 		Bag sourceBag = getSourceBag(depositBag, sourceFile);
@@ -121,7 +116,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
 				}
 
-				model.add(fileResource, RDF.type, simpleResource);
+				model.add(fileResource, RDF.type, Cdr.FileObject);
 				model.add(fileResource, CdrDeposit.md5sum, checksum);
 				
 				// Find staged path for the file
@@ -130,7 +125,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 			} else {
 				Bag folderBag = getFolderBag(sourceBag, filePathString);
 				model.add(folderBag, CdrDeposit.label, filename);
-				model.add(folderBag, RDF.type, containerResource);
+				model.add(folderBag, RDF.type, Cdr.Folder);
 			}
 		}
 	}

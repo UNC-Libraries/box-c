@@ -69,15 +69,13 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 	protected String jobUUID;
 	protected String depositUUID;
 	protected File depositDir;
-	
-	private PID premisEventPid;
 
 	@Before
 	public void initBase() throws Exception {
 		initMocks(this);
 		
 		String pidString =  UUID.randomUUID().toString();
-		premisEventPid = PIDs.get(pidString);
+		PID premisEventPid = PIDs.get(pidString);
 		when(repo.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
 		Answer<PID> answer = new Answer<PID>() {
 			public PID answer(InvocationOnMock invocation) throws Throwable {

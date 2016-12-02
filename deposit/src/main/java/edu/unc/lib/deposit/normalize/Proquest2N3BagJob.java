@@ -15,9 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
@@ -56,6 +53,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -280,8 +278,8 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		// Create the primary resource as a bag
 		Bag primaryBag = model.createBag(primaryPID.getURI());
 
-		model.add(primaryBag, RDF.type, model.createResource(CONTAINER.getURI().toString()));
-		model.add(primaryBag, RDF.type, model.createResource(AGGREGATE_WORK.getURI().toString()));
+		model.add(primaryBag, RDF.type, Cdr.Folder);
+		model.add(primaryBag, RDF.type, Cdr.Work);
 		// Assign title to the main object as a label
 		if (title.length() > 128)
 			model.add(primaryBag, CdrDeposit.label, title.substring(0, 128));
@@ -327,7 +325,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 	private void setSourceMetadata(Model model, Resource primaryResource, File dataFile) {
 		// Add the data file as a metadata datastream of the primary object
-		PID sourceMDPID = new PID(primaryResource.getURI() + "/" + MD_SOURCE.getName());
+		PID sourceMDPID = PIDs.get(primaryResource.getURI() + "/" + Cdr.SourceMetadata.getURI());
 		Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
 		model.add(primaryResource, CdrDeposit.hasDatastream, sourceMDResource);
 		model.add(primaryResource, CdrDeposit.hasSourceMetadata, sourceMDResource);

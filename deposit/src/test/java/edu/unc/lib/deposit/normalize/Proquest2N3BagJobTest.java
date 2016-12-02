@@ -47,7 +47,9 @@ import com.hp.hpl.jena.rdf.model.NodeIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
@@ -115,7 +117,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
 
 		// Verify that the MODS was created
-		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
 		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
@@ -159,6 +161,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		// Check for default web object
 		Resource dwo = primaryResource.getProperty(Cdr.primaryObject).getResource();
 		assertNotNull("Default web object was not set", dwo);
+		assertTrue("Resource is not a work", dwo.hasProperty(RDF.type, Cdr.Work));
 
 		// Make sure the content file is assigned as a child rather than a data stream of the primary resource
 		assertNull("Content file incorrectly assigned to primary resource", primaryResource.getProperty(CdrDeposit.stagingLocation));

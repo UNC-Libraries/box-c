@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
@@ -31,12 +30,9 @@ import org.springframework.web.util.UriUtils;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
-
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -81,16 +77,10 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		String slug = depositStatus.get(DepositField.depositSlug.name());
 		String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
-		String contentModel = depositStatus.get(RDF.type.toString());
-
 		// Create the primary resource as a simple resource
 		Resource primaryResource = model.createResource(primaryPID.getURI());
-
-		if (contentModel == null || Cdr.FileObject.equals(contentModel)) {
-			populateSimple(model, primaryResource, slug, filename, mimetype);
-		} else {
-			populateContainer(model, primaryResource, primaryPID, slug, contentModel);
-		}
+		
+		populateFileObject(model, primaryResource, slug, filename, mimetype);
 
 		// Store primary resource as child of the deposit
 		depositBag.add(primaryResource);
@@ -110,7 +100,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 
-	private void populateSimple(Model model, Resource primaryResource, String alabel, String filename,
+	private void populateFileObject(Model model, Resource primaryResource, String alabel, String filename,
 			String mimetype) {
 		File contentFile = new File(this.getDataDirectory(), filename);
 		if (!contentFile.exists()) {
@@ -153,36 +143,4 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		}
 	}
 
-	private Resource populateContainer(Model model, Resource primaryResource, PID primaryPID, String alabel,
-			String contentModel) {
-
-		File modsFile = new File(this.getDataDirectory(), "mods.xml");
-		if (modsFile.exists()) {
-			File descDir = new File(this.getDepositDirectory(), DepositConstants.DESCRIPTION_DIR);
-			descDir.mkdir();
-
-			File destinationFile = new File(descDir, primaryPID.getUUID() + ".xml");
-
-			try {
-				FileUtils.copyFile(modsFile, destinationFile);
-			} catch (IOException e) {
-				log.error("Failed to copy descriptive file", e);
-			}
-		}
-
-		// set the label
-		model.add(primaryResource, CdrDeposit.label, alabel);
-
-		// Set container models depending on the type requested
-		model.add(primaryResource, RDF.type, Cdr.Folder);
-		if (Cdr.Collection.equals(contentModel)) {
-			model.add(primaryResource, RDF.type, Cdr.Collection);
-		} else if (Cdr.Work.equals(contentModel)) {
-			model.add(primaryResource, RDF.type, Cdr.Work);
-
-			// TODO if a file is provided, generate child and mark it as default web object
-		}
-
-		return primaryResource;
-	}
 }
