@@ -23,7 +23,7 @@ define('ModalCreate', [ 'jquery', 'jquery-ui', 'ResultObject'],
 			return dialog.dialog({
 				autoOpen: true,
 				width: 'auto',
-				minWidth: '500',
+				minWidth: '400',
 				height: 'auto',
 				modal: true,
 				title: self.options.title,
