@@ -27,72 +27,62 @@ import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 
 
 public class ThumbnailRouter extends RouteBuilder {
-	private static final String EVENT_TYPE = "http://fedora.info/definitions/v4/event";
-	
 	/**
 	 * Configure the thumbnail route workflow.
 	 */
 	public void configure() throws Exception {
 		final String baseBinaryPath = "/var/lib/tomcat7/fcrepo4-data/fcrepo.binary.directory/";
 		final Namespaces ns = new Namespaces("rdf", RdfNamespaces.RDF);
-		Predicate isCreated = header("org.fcrepo.jms.eventType").isEqualTo(EVENT_TYPE + "#ResourceCreation");
-	//	Predicate isUpdated = header("org.fcrepo.jms.eventType").isEqualTo(EVENT_TYPE + "#ResourceModification");
-	//	Predicate isBinary = xpath("/rdf:RDF/rdf:Description/rdf:type[@rdf:resource='http://fedora.info/definitions/v4/repository#Binary']", ns);
 		
 		from("activemq:topic:fedora")
-			.routeId("CdrServiceEnhancements")
-			.log(LoggingLevel.INFO, "Thumbnail Creation")
-			.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED'"))
-			
-		.to("fcrepo:localhost:8080/fcrepo/rest?preferInclude=ServerManged&accept=application/rdf+xml")
-		.filter(header("org.fcrepo.jms.eventType").isEqualTo(EVENT_TYPE + "#ResourceCreation"))
-		.filter()
+		.routeId("CdrServiceEnhancements")
+		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED' && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
+			.to("fcrepo:localhost:8080/fcrepo/rest?preferInclude=ServerManged&accept=application/rdf+xml")
+			.filter()
 			.xpath("/rdf:RDF/rdf:Description/rdf:type[@rdf:resource='http://fedora.info/definitions/v4/repository#Binary']", ns)
-			.to("fcrepo:localhost:8080/fcrepo/rest?preferInclude=ServerManged&accept=text/turtle")
-			.process(new Processor() {
-				@Override
-				public void process(final Exchange exchange) throws Exception {
-					final Message in = exchange.getIn();
-					final Model model = createDefaultModel();
-
-					Model values = model.read(in.getBody(InputStream.class),  null, "Turtle");
-					Resource resource = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary).next();
-
-					String mimeType = resource.getProperty(hasMimeType).getObject().toString();
-					String fcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
-					String[] fcrepoChecksumSplit = fcrepoChecksum.split(":");
-					String fcrepoChecksumStart = fcrepoChecksumSplit[2].substring(0, 6);
+				.to("fcrepo:localhost:8080/fcrepo/rest?preferInclude=ServerManged&accept=text/turtle")
+				.process(new Processor() {
+					@Override
+					public void process(final Exchange exchange) throws Exception {
+						final Message in = exchange.getIn();
+						final Model model = createDefaultModel();
+	
+						Model values = model.read(in.getBody(InputStream.class),  null, "Turtle");
+						ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
 						
-					String binaryPath = "";
-					for (String substring : Splitter.fixedLength(2).split(fcrepoChecksumStart)) {
-						binaryPath += substring + "/";
+						if (resources.hasNext()) {
+							Resource resource = resources.next();
+							String mimeType = resource.getProperty(hasMimeType).getObject().toString();
+							String fcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
+							String[] fcrepoChecksumSplit = fcrepoChecksum.split(":");
+							String fcrepoChecksumStart = fcrepoChecksumSplit[2].substring(0, 6);
+								
+							String binaryPath = "";
+							for (String substring : Splitter.fixedLength(2).split(fcrepoChecksumStart)) {
+								binaryPath += substring + "/";
+							}
+								
+							String fullPath = new StringJoiner("")
+								.add(baseBinaryPath)
+								.add(binaryPath)
+								.add(fcrepoChecksumSplit[2])
+								.toString();
+								
+							in.setHeader("Checksum", fcrepoChecksumSplit[2]);
+							in.setHeader("MimeType", mimeType);
+							in.setHeader("BinaryPath", fullPath);
+						}
 					}
-						
-					String fullPath = new StringJoiner("")
-						.add(baseBinaryPath)
-						.add(binaryPath)
-						.add(fcrepoChecksumSplit[2])
-						.toString();
-						
-					in.setHeader("Checksum", fcrepoChecksumSplit[2]);
-					in.setHeader("MimeType", mimeType);
-					in.setHeader("BinaryPath", fullPath);
-				}
-			})
-			.log("Minnie $header[MimeType]")
-		//	.choice()
-		//		.when(PredicateBuilder.and(isCreated, isBinary, header("mimeType").startsWith("image")))
-		//			.to("fcrepo:localhost:8080/fcrepo/rest?metadata=false")
-		//			.setHeader("CamelFileName", simple("${headers[org.fcrepo.jms.identifier]}"))
-					.multicast()
-					.to("direct:small.thumbnail", "direct:large.thumbnail");
+				})
+				.multicast()
+				.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64 ${headers[CheckSum]}-small&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128 ${headers[CheckSum]}-large&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
 	}
 }
