@@ -15,41 +15,27 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.md5sum;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.size;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
 
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -84,7 +70,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		Bag depositBag = model.createBag(depositPID.getURI().toString());
 
 		// Generate a uuid for the main object
-		PID primaryPID = new PID("uuid:" + UUID.randomUUID());
+		PID mainPID = repository.mintContentPid();
 
 		// Identify the important file from the deposit
 		Map<String, String> depositStatus = getDepositStatus();
@@ -92,19 +78,13 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		String slug = depositStatus.get(DepositField.depositSlug.name());
 		String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
-		String contentModel = depositStatus.get(hasModel.toString());
+		// Create the main resource as a simple resource
+		Resource mainResource = model.createResource(mainPID.getURI());
+		
+		populateFileObject(model, mainResource, slug, filename, mimetype);
 
-		// Create the primary resource as a simple resource
-		Resource primaryResource = model.createResource(primaryPID.getURI());
-
-		if (contentModel == null || SIMPLE.equals(contentModel)) {
-			populateSimple(model, primaryResource, slug, filename, mimetype);
-		} else {
-			populateContainer(model, primaryResource, primaryPID, slug, contentModel);
-		}
-
-		// Store primary resource as child of the deposit
-		depositBag.add(primaryResource);
+		// Store main resource as child of the deposit
+		depositBag.add(mainResource);
 
 		if (!this.getDepositDirectory().exists()) {
 			log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
@@ -121,7 +101,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 
-	private void populateSimple(Model model, Resource primaryResource, String alabel, String filename,
+	private void populateFileObject(Model model, Resource mainResource, String alabel, String filename,
 			String mimetype) {
 		File contentFile = new File(this.getDataDirectory(), filename);
 		if (!contentFile.exists()) {
@@ -135,7 +115,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		try {
 			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			
-			PremisLogger premisDepositLogger = getPremisLogger(new PID(primaryResource.toString()));
+			PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(mainResource.toString()));
 			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
 					.addEventDetail("Checksum for file is {0}", checksum)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
@@ -146,55 +126,22 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
 		}
 		
-		Property md5sumProp = dprop(model, md5sum);
-		model.add(primaryResource, md5sumProp, checksum);
+		model.add(mainResource, CdrDeposit.md5sum, checksum);
 
 		if(alabel == null) alabel = contentFile.getName();
-		model.add(primaryResource, dprop(model, label), alabel);
-		model.add(primaryResource, dprop(model, size), Long.toString(contentFile.length()));
+		model.add(mainResource, CdrDeposit.label, alabel);
+		model.add(mainResource, CdrDeposit.size, Long.toString(contentFile.length()));
 		if (mimetype != null) {
-			model.add(primaryResource, dprop(model, DepositRelationship.mimetype), mimetype);
+			model.add(mainResource, CdrDeposit.mimetype, mimetype);
 		}
 
 		// Reference the content file as the data file
 		try {
-			model.add(primaryResource, dprop(model, stagingLocation),
+			model.add(mainResource, CdrDeposit.stagingLocation,
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			failJob(e, "Failed to add staging location for {} due to encoding issues", contentFile.getName());
 		}
 	}
 
-	private Resource populateContainer(Model model, Resource primaryResource, PID primaryPID, String alabel,
-			String contentModel) {
-
-		File modsFile = new File(this.getDataDirectory(), "mods.xml");
-		if (modsFile.exists()) {
-			File descDir = new File(this.getDepositDirectory(), DepositConstants.DESCRIPTION_DIR);
-			descDir.mkdir();
-
-			File destinationFile = new File(descDir, primaryPID.getUUID() + ".xml");
-
-			try {
-				FileUtils.copyFile(modsFile, destinationFile);
-			} catch (IOException e) {
-				log.error("Failed to copy descriptive file", e);
-			}
-		}
-
-		// set the label
-		model.add(primaryResource, dprop(model, label), alabel);
-
-		// Set container models depending on the type requested
-		model.add(primaryResource, fprop(model, hasModel), model.createResource(CONTAINER.toString()));
-		if (COLLECTION.equals(contentModel)) {
-			model.add(primaryResource, fprop(model, hasModel), model.createResource(COLLECTION.toString()));
-		} else if (AGGREGATE_WORK.equals(contentModel)) {
-			model.add(primaryResource, fprop(model, hasModel), model.createResource(AGGREGATE_WORK.toString()));
-
-			// TODO if a file is provided, generate child and mark it as default web object
-		}
-
-		return primaryResource;
-	}
 }

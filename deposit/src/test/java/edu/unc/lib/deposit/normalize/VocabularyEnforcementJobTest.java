@@ -68,11 +68,8 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 	@Mock
 	private VocabularyHelper mockHelper;
-
-	private static final String MAIN_RESOURCE = "info:fedora/uuid:resource";
-	private static final String MAIN_UUID = "resource";
-
-	private static final String CONTAINER_PID = "info:fedora/container";
+	
+	private PID rescPid;
 
 	@Before
 	public void setup() throws Exception {
@@ -81,21 +78,24 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		job = new VocabularyEnforcementJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
+		job.setRepository(repo);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "vocabManager", vocabManager);
 		setField(job, "dataset", dataset);
 
+		PID depositPid = repo.mintContentPid();
 		depositStatus = new HashMap<>();
-		depositStatus.put(DepositField.containerId.name(), CONTAINER_PID);
+		depositStatus.put(DepositField.containerId.name(), depositPid.toString());
 		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
 		job.getDescriptionDir().mkdir();
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.createBag(job.getDepositPID().getURI());
-		Resource mainResource = model.createResource(MAIN_RESOURCE);
+		rescPid = repo.mintContentPid();
+		Resource mainResource = model.createResource(rescPid.getURI());
 		depositBag.add(mainResource);
 		job.closeModel();
 	}
@@ -103,7 +103,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 	@Test
 	public void rewriteMODSTest() throws Exception {
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
-				job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml"));
+				job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml"));
 
 		Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
 		when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
@@ -122,14 +122,14 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		verify(mockHelper).updateDocumentTerms(any(Element.class));
 
-		Document modsDoc = getMODSDocument(MAIN_UUID);
+		Document modsDoc = getMODSDocument(rescPid.getUUID());
 		Element testElement = element("/mods:mods/testElement", modsDoc);
 		assertTrue("Document was not modified", testElement != null);
 	}
 
 	@Test
 	public void noRewriteMODSTest() throws Exception {
-		Path path = job.getDescriptionDir().toPath().resolve(MAIN_UUID + ".xml");
+		Path path = job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml");
 		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), path);
 		long modified = path.toFile().lastModified();
 

@@ -36,6 +36,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.jdom2.output.Format;
 import org.jdom2.output.SAXOutputter;
 import org.jdom2.output.XMLOutputter;
@@ -44,12 +45,13 @@ import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.xml.StandaloneDatastreamOutputFilter;
 
+@SuppressWarnings("deprecation")
 public class ClientUtils {
 	private static final Log log = LogFactory.getLog(ClientUtils.class);
 
 	public static Document parseXML(byte[] input) throws SAXException {
 		Document result = null;
-		SAXBuilder builder = new SAXBuilder();
+		SAXBuilder builder = new SAXBuilder(XMLReaders.NONVALIDATING);
 		try {
 			result = builder.build(new ByteArrayInputStream(input));
 		} catch (JDOMException e) {

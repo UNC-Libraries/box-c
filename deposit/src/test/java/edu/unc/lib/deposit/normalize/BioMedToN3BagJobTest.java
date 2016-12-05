@@ -15,9 +15,7 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -31,6 +29,7 @@ import javax.xml.validation.Schema;
 
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,14 +43,15 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.DepositTestUtils;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.schematron.SchematronValidator;
-import edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship;
 
 /**
  * @author bbpennel
@@ -83,6 +83,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setMetsSipSchema(metsSipSchema);
 		job.setSchematronValidator(validator);
+		job.setRepository(repo);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
@@ -109,11 +110,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 		assertNotNull("Main object from the deposit not found", primaryResource);
-
-		assertTrue("Primary resource was not assigned content models to be an aggregate",
-				isAggregate(primaryResource, model));
-
-		Property stagingLoc = dprop(model, stagingLocation);
+		assertTrue("Main object is not a work", primaryResource.hasProperty(RDF.type, Cdr.Work));
 
 		NodeIterator childIt = model.getBag(primaryResource).iterator();
 		int childCount = 0;
@@ -121,7 +118,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 			childCount++;
 
 			Resource child = (Resource) childIt.next();
-			verifyStagingLocationExists(child, stagingLoc, job.getDepositDirectory(), "Child content");
+			verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
 		}
 
 		assertEquals("Incorrect aggregate child count", 5, childCount);
@@ -150,16 +147,15 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = (Resource) depositBag.iterator().next();
 
-		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
 		// Check that labels were assigned to the children
-		Property labelP = model.createProperty(DepositRelationship.label.getURI().toString());
 		NodeIterator childIt = model.getBag(primaryResource).iterator();
 		while (childIt.hasNext()) {
 			Resource child = childIt.nextNode().asResource();
 
-			assertNotNull("Supplemental should have been assigned a label", child.getProperty(labelP));
+			assertNotNull("Supplemental should have been assigned a label", child.getProperty(CdrDeposit.label));
 		}
 	}
 
@@ -180,11 +176,11 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		Bag depositBag = m.getBag(job.getDepositPID().getURI());
 		Resource primaryResource = depositBag.iterator().nextNode().asResource();
 		
-		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		SAXBuilder sb = new SAXBuilder(false);
+		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 		Document modsDoc = sb.build(descriptionFile);
 
 		List<?> originalNameObjects = xpath("//mods:namePart[text()='Test']", modsDoc);

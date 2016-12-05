@@ -15,22 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.deposit.work.DepositGraphUtils.cdrprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.dprop;
-import static edu.unc.lib.deposit.work.DepositGraphUtils.fprop;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.dateCreated;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.defaultWebObject;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.embargoUntil;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMetadataProfile;
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.sourceMetadata;
-import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.hasDatastream;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.label;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.mimetype;
-import static edu.unc.lib.dl.util.ContentModelHelper.DepositRelationship.stagingLocation;
-import static edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty.hasModel;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.PROQUEST_ETD;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
@@ -41,7 +25,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.UUID;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -64,12 +47,15 @@ import org.springframework.web.util.UriUtils;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.PackagingType;
@@ -130,8 +116,8 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 	private void normalizePackage(File packageDir, Model model, Bag depositBag) {
 
 		// Generate a uuid for the main object
-		PID primaryPID = new PID("uuid:" + UUID.randomUUID());
-		Resource primaryResource;
+		PID mainPID = repository.mintContentPid();
+		Resource mainResource;
 
 		// Identify the important files from the deposit
 		File dataFile = null, contentFile = null, attachmentDir = null;
@@ -173,7 +159,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 			dataRoot = dataDocument.getRootElement();
 
 			// Transform the data into MODS and store it to its final resting place
-			mods = extractMods(primaryPID, dataRoot, modified);
+			mods = extractMods(mainPID, dataRoot, modified);
 		} catch (TransformerException e) {
 			failJob(e, "Failed to transform metadata to MODS.");
 		} catch (Exception e) {
@@ -183,28 +169,17 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		// Detect if there are any attachments
 		List<?> attachmentElements = dataRoot.getChild("DISS_content").getChildren("DISS_attachment");
 
-		if (attachmentElements == null || attachmentElements.size() == 0) {
+		String title = mods.getRootElement().getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
 
-			// Simple object with the content as its source data
-			primaryResource = populateSimple(model, primaryPID, contentFile);
-		} else {
-			String title = mods.getRootElement().getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
+		mainResource = populateWork(model, mainPID, attachmentElements, attachmentDir, contentFile, title);
+		// Store main resource as child of the deposit
+		depositBag.add(mainResource);
 
-			// Has attachments, so it is an aggregate
-			primaryResource = populateAggregate(model, primaryPID, attachmentElements, attachmentDir, contentFile, title);
-		}
-
-		// Store primary resource as child of the deposit
-		depositBag.add(primaryResource);
-
-		// Add the data file as a metadata datastream of the primary object
-		setSourceMetadata(model, primaryResource, dataFile);
+		// Add the data file as a metadata datastream of the main object
+		setSourceMetadata(model, mainResource, dataFile);
 
 		// Capture other metadata, like embargoes
-		setEmbargoUntil(model, primaryResource, dataRoot);
-
-		// Creation date for the content file
-		model.add(primaryResource, cdrprop(model, dateCreated), modified.toString(), XSDDatatype.XSDdateTime);
+		setEmbargoUntil(model, mainResource, dataRoot);
 	}
 
 	private void unzipPackages() {
@@ -231,14 +206,14 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 	 * Transform the given root element from the data document into MODS and stores it as the metadata for the object
 	 * being ingested
 	 *
-	 * @param primaryPID
+	 * @param mainPID
 	 * @param dataRoot
 	 * @param modified
 	 * @throws TransformerException
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private Document extractMods(PID primaryPID, Element dataRoot, DateTime modified) throws TransformerException,
+	private Document extractMods(PID mainPID, Element dataRoot, DateTime modified) throws TransformerException,
 			FileNotFoundException,
 			IOException {
 
@@ -264,7 +239,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		final File modsFolder = getDescriptionDir();
 		modsFolder.mkdir();
 
-		File modsFile = new File(modsFolder, primaryPID.getUUID() + ".xml");
+		File modsFile = new File(modsFolder, mainPID.getUUID() + ".xml");
 
 		try (FileOutputStream fos = new FileOutputStream(modsFile)) {
 			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
@@ -272,51 +247,32 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 		return mods.getDocument();
 	}
-
-	private Resource populateSimple(Model model, PID primaryPID, File contentFile) {
-
-		// Create the primary resource as a simple resource
-		Resource primaryResource = model.createResource(primaryPID.getURI());
-
-		// use the filename as the label
-		model.add(primaryResource, dprop(model, label), contentFile.getName());
-
-		// Reference the content file as the data file
-		model.add(primaryResource, dprop(model, stagingLocation), getRelativePath(contentFile));
-
-		return primaryResource;
-	}
-
-	private Resource populateAggregate(Model model, PID primaryPID, List<?> attachmentElements, File attachmentDir,
+	
+	private Resource populateWork(Model model, PID mainPID, List<?> attachmentElements, File attachmentDir,
 			File contentFile, String title) {
 
-		Property labelP = dprop(model, label);
-		Property fileLocation = dprop(model, stagingLocation);
-		Property defaultWebObjectP = cdrprop(model, defaultWebObject);
-		Property hasModelP = fprop(model, hasModel);
+		// Create the main resource as a bag
+		Bag mainBag = model.createBag(mainPID.getURI());
 
-		// Create the primary resource as a bag
-		Bag primaryBag = model.createBag(primaryPID.getURI());
-
-		model.add(primaryBag, hasModelP, model.createResource(CONTAINER.getURI().toString()));
-		model.add(primaryBag, hasModelP, model.createResource(AGGREGATE_WORK.getURI().toString()));
+		model.add(mainBag, RDF.type, Cdr.Work);
 		// Assign title to the main object as a label
 		if (title.length() > 128)
-			model.add(primaryBag, labelP, title.substring(0, 128));
+			model.add(mainBag, CdrDeposit.label, title.substring(0, 128));
 		else
-			model.add(primaryBag, labelP, title);
+			model.add(mainBag, CdrDeposit.label, title);
 
-		// Create default web object child entry for the main document
-		PID defaultObjectPID = new PID("uuid:" + UUID.randomUUID());
-		Resource defaultObjectResource = model.createResource(defaultObjectPID.getURI());
-		primaryBag.add(defaultObjectResource);
+		// Create primary object child entry for the main document
+		PID primaryObjectPID = repository.mintContentPid();
+		Resource primaryObjectResource = model.createResource(primaryObjectPID.getURI());
+		mainBag.add(primaryObjectResource);
 
 		// Store the main content on the child
-		model.add(defaultObjectResource, labelP, contentFile.getName());
-		model.add(defaultObjectResource, fileLocation, getRelativePath(contentFile));
+		model.add(primaryObjectResource, RDF.type, Cdr.FileObject);
+		model.add(primaryObjectResource, CdrDeposit.label, contentFile.getName());
+		model.add(primaryObjectResource, CdrDeposit.stagingLocation, getRelativePath(contentFile));
 
-		// Store reference to content as the default web object
-		model.add(primaryBag, defaultWebObjectP, defaultObjectResource);
+		// Store reference to content as the primary object
+		model.add(mainBag, Cdr.primaryObject, primaryObjectResource);
 
 		// Add the attachments as supplemental files
 		for (Object attachmentObj : attachmentElements) {
@@ -326,36 +282,36 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 			String description = attachEl.getChildText("DISS_file_descr");
 
 			// Make the child entry with a new uuid
-			PID pid = new PID("uuid:" + UUID.randomUUID());
+			PID pid = repository.mintContentPid();
 			Resource child = model.createResource(pid.getURI());
-			primaryBag.add(child);
+			mainBag.add(child);
 
 			// Use the description as a label if one was provided
 			if (description != null && description.trim().length() > 0)
-				model.add(child, labelP, description);
+				model.add(child, CdrDeposit.label, description);
 			else
-				model.add(child, labelP, filename);
+				model.add(child, CdrDeposit.label, filename);
 
 			// Link the file to the child entry
-			model.add(child, fileLocation, getRelativePath(new File(attachmentDir, filename)));
+			model.add(child, CdrDeposit.stagingLocation, getRelativePath(new File(attachmentDir, filename)));
 		}
 
-		return primaryBag;
+		return mainBag;
 	}
 
-	private void setSourceMetadata(Model model, Resource primaryResource, File dataFile) {
-		// Add the data file as a metadata datastream of the primary object
-		PID sourceMDPID = new PID(primaryResource.getURI() + "/" + MD_SOURCE.getName());
+	private void setSourceMetadata(Model model, Resource mainResource, File dataFile) {
+		// Add the data file as a metadata datastream of the main object
+		PID sourceMDPID = repository.mintContentPid();
 		Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
-		model.add(primaryResource, dprop(model, hasDatastream), sourceMDResource);
-		model.add(primaryResource, cdrprop(model, sourceMetadata), sourceMDResource);
+		model.add(mainResource, CdrDeposit.hasDatastream, sourceMDResource);
+		model.add(mainResource, CdrDeposit.hasSourceMetadata, sourceMDResource);
 
-		model.add(sourceMDResource, dprop(model, stagingLocation), getRelativePath(dataFile));
-		model.add(primaryResource, cdrprop(model, hasSourceMetadataProfile), PROQUEST_ETD);
-		model.add(sourceMDResource, dprop(model, mimetype), "text/xml");
+		model.add(sourceMDResource, CdrDeposit.stagingLocation, getRelativePath(dataFile));
+		model.add(mainResource, Cdr.hasSourceMetadataProfile, PROQUEST_ETD);
+		model.add(sourceMDResource, CdrDeposit.mimetype, "text/xml");
 	}
 
-	private void setEmbargoUntil(Model model, Resource primaryResource, Element dataRoot) {
+	private void setEmbargoUntil(Model model, Resource mainResource, Element dataRoot) {
 
 		String embargoCode = dataRoot.getAttributeValue("embargo_code");
 
@@ -385,7 +341,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 			// Add the embargo end date as a triple
 			if (embargoEnd != null) {
-				model.add(primaryResource, cdrprop(model, embargoUntil),
+				model.add(mainResource, CdrAcl.embargoUntil,
 						DateTimeUtil.utcYMDFormatter.print(embargoEnd) + "T00:00:00",
 						XSDDatatype.XSDdateTime);
 			}
