@@ -80,11 +80,11 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		assertEquals("Folder label was not set", primaryResource.getProperty(CdrDeposit.label).getString(), name);
+		assertEquals("Folder label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
 
-		assertFalse("No RDF types assigned", primaryResource.hasProperty(RDF.type));
+		assertFalse("No RDF types assigned", mainResource.hasProperty(RDF.type));
 	}
 
 	@Test(expected = JobFailedException.class)

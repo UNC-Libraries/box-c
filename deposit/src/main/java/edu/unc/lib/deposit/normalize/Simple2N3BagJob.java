@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -30,6 +29,7 @@ import org.springframework.web.util.UriUtils;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
+
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -70,7 +70,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		Bag depositBag = model.createBag(depositPID.getURI().toString());
 
 		// Generate a uuid for the main object
-		PID primaryPID = PIDs.get("uuid:" + UUID.randomUUID());
+		PID mainPID = repository.mintContentPid();
 
 		// Identify the important file from the deposit
 		Map<String, String> depositStatus = getDepositStatus();
@@ -78,13 +78,13 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		String slug = depositStatus.get(DepositField.depositSlug.name());
 		String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
-		// Create the primary resource as a simple resource
-		Resource primaryResource = model.createResource(primaryPID.getURI());
+		// Create the main resource as a simple resource
+		Resource mainResource = model.createResource(mainPID.getURI());
 		
-		populateFileObject(model, primaryResource, slug, filename, mimetype);
+		populateFileObject(model, mainResource, slug, filename, mimetype);
 
-		// Store primary resource as child of the deposit
-		depositBag.add(primaryResource);
+		// Store main resource as child of the deposit
+		depositBag.add(mainResource);
 
 		if (!this.getDepositDirectory().exists()) {
 			log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
@@ -101,7 +101,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		premisDepositLogger.writeEvent(premisDepositEvent);
 	}
 
-	private void populateFileObject(Model model, Resource primaryResource, String alabel, String filename,
+	private void populateFileObject(Model model, Resource mainResource, String alabel, String filename,
 			String mimetype) {
 		File contentFile = new File(this.getDataDirectory(), filename);
 		if (!contentFile.exists()) {
@@ -115,7 +115,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		try {
 			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			
-			PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(primaryResource.toString()));
+			PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(mainResource.toString()));
 			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
 					.addEventDetail("Checksum for file is {0}", checksum)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
@@ -126,18 +126,18 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
 		}
 		
-		model.add(primaryResource, CdrDeposit.md5sum, checksum);
+		model.add(mainResource, CdrDeposit.md5sum, checksum);
 
 		if(alabel == null) alabel = contentFile.getName();
-		model.add(primaryResource, CdrDeposit.label, alabel);
-		model.add(primaryResource, CdrDeposit.size, Long.toString(contentFile.length()));
+		model.add(mainResource, CdrDeposit.label, alabel);
+		model.add(mainResource, CdrDeposit.size, Long.toString(contentFile.length()));
 		if (mimetype != null) {
-			model.add(primaryResource, CdrDeposit.mimetype, mimetype);
+			model.add(mainResource, CdrDeposit.mimetype, mimetype);
 		}
 
 		// Reference the content file as the data file
 		try {
-			model.add(primaryResource, CdrDeposit.stagingLocation,
+			model.add(mainResource, CdrDeposit.stagingLocation,
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			failJob(e, "Failed to add staging location for {} due to encoding issues", contentFile.getName());

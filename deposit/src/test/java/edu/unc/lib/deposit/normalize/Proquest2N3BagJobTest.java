@@ -107,7 +107,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 	}
 
 	private void testNoAttachments(Model model, Resource mainResource) throws Exception {
-		Bag primaryBag = model.getBag(mainResource);
+		Bag mainBag = model.getBag(mainResource);
 
 		assertNotNull("Main object from the deposit not found", mainResource);
 
@@ -123,13 +123,13 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertTrue("Resource is not a file object", primObj.hasProperty(RDF.type, Cdr.FileObject));
 
 		// Make sure the content file is assigned as a child rather than a data stream of the primary resource
-		assertNull("Content file incorrectly assigned to primary resource", mainResource.getProperty(CdrDeposit.stagingLocation));
-		// Check that the content is assigned to the default web object
+		assertNull("Content file incorrectly assigned to main resource", mainResource.getProperty(CdrDeposit.stagingLocation));
+		// Check that the content is assigned to the primary object
 		String primObjLocation = primObj.getProperty(CdrDeposit.stagingLocation).getString();
 		assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), primObjLocation).exists());
 
 		// Check that attachments were added
-		NodeIterator childIt = primaryBag.iterator();
+		NodeIterator childIt = mainBag.iterator();
 		int countChildren = 0;
 		while (childIt.hasNext()) {
 			countChildren++;
@@ -178,7 +178,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	private void testWithAttachments(Model model, Resource mainResource) {
 
-		Bag primaryBag = model.getBag(mainResource);
+		Bag mainBag = model.getBag(mainResource);
 
 		assertNotNull("Main object from the deposit not found", mainResource);
 
@@ -194,13 +194,13 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertTrue("Resource is not a file object", primObj.hasProperty(RDF.type, Cdr.FileObject));
 
 		// Make sure the content file is assigned as a child rather than a data stream of the primary resource
-		assertNull("Content file incorrectly assigned to primary resource", mainResource.getProperty(CdrDeposit.stagingLocation));
+		assertNull("Content file incorrectly assigned to main resource", mainResource.getProperty(CdrDeposit.stagingLocation));
 		// Check that the content is assigned to the default web object
 		String primObjLocation = primObj.getProperty(CdrDeposit.stagingLocation).getString();
 		assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), primObjLocation).exists());
 
 		// Check that attachments were added
-		NodeIterator childIt = primaryBag.iterator();
+		NodeIterator childIt = mainBag.iterator();
 		int countChildren = 0;
 		while (childIt.hasNext()) {
 			countChildren++;
@@ -328,11 +328,11 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		assertNotNull("Deposit object not found", depositBag);
 
 		int childCount = 0;
-		NodeIterator primaryIt = depositBag.iterator();
-		while (primaryIt.hasNext()) {
+		NodeIterator mainIt = depositBag.iterator();
+		while (mainIt.hasNext()) {
 			childCount++;
 
-			Resource mainResource = (Resource) primaryIt.next();
+			Resource mainResource = (Resource) mainIt.next();
 
 			Statement labelStatement = mainResource.getProperty(CdrDeposit.label);
 			if (labelStatement != null && labelStatement.getString().contains("Perspective on Proquest Ingests")) {
