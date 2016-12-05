@@ -118,7 +118,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 	private void normalizePackage(File packageDir, Model model, Bag depositBag) {
 
 		// Generate a uuid for the main object
-		PID primaryPID = new PID("uuid:" + UUID.randomUUID());
+		PID primaryPID = PIDs.get("uuid:" + UUID.randomUUID());
 		Resource primaryResource;
 
 		// Identify the important files from the deposit
@@ -171,17 +171,9 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 		// Detect if there are any attachments
 		List<?> attachmentElements = dataRoot.getChild("DISS_content").getChildren("DISS_attachment");
 
-		if (attachmentElements == null || attachmentElements.size() == 0) {
+		String title = mods.getRootElement().getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
 
-			// Simple object with the content as its source data
-			primaryResource = populateSimple(model, primaryPID, contentFile);
-		} else {
-			String title = mods.getRootElement().getChild("titleInfo", MODS_V3_NS).getChildText("title", MODS_V3_NS);
-
-			// Has attachments, so it is an aggregate
-			primaryResource = populateAggregate(model, primaryPID, attachmentElements, attachmentDir, contentFile, title);
-		}
-
+		primaryResource = populateWork(model, primaryPID, attachmentElements, attachmentDir, contentFile, title);
 		// Store primary resource as child of the deposit
 		depositBag.add(primaryResource);
 
@@ -257,46 +249,32 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
 		return mods.getDocument();
 	}
-
-	private Resource populateSimple(Model model, PID primaryPID, File contentFile) {
-
-		// Create the primary resource as a simple resource
-		Resource primaryResource = model.createResource(primaryPID.getURI());
-
-		// use the filename as the label
-		model.add(primaryResource, CdrDeposit.label, contentFile.getName());
-
-		// Reference the content file as the data file
-		model.add(primaryResource, CdrDeposit.stagingLocation, getRelativePath(contentFile));
-
-		return primaryResource;
-	}
-
-	private Resource populateAggregate(Model model, PID primaryPID, List<?> attachmentElements, File attachmentDir,
+	
+	private Resource populateWork(Model model, PID primaryPID, List<?> attachmentElements, File attachmentDir,
 			File contentFile, String title) {
 
 		// Create the primary resource as a bag
-		Bag primaryBag = model.createBag(primaryPID.getURI());
+		Bag mainBag = model.createBag(primaryPID.getURI());
 
-		model.add(primaryBag, RDF.type, Cdr.Folder);
-		model.add(primaryBag, RDF.type, Cdr.Work);
+		model.add(mainBag, RDF.type, Cdr.Work);
 		// Assign title to the main object as a label
 		if (title.length() > 128)
-			model.add(primaryBag, CdrDeposit.label, title.substring(0, 128));
+			model.add(mainBag, CdrDeposit.label, title.substring(0, 128));
 		else
-			model.add(primaryBag, CdrDeposit.label, title);
+			model.add(mainBag, CdrDeposit.label, title);
 
 		// Create default web object child entry for the main document
-		PID defaultObjectPID = new PID("uuid:" + UUID.randomUUID());
+		PID defaultObjectPID = repository.mintContentPid();
 		Resource defaultObjectResource = model.createResource(defaultObjectPID.getURI());
-		primaryBag.add(defaultObjectResource);
+		mainBag.add(defaultObjectResource);
 
 		// Store the main content on the child
+		model.add(defaultObjectResource, RDF.type, Cdr.FileObject);
 		model.add(defaultObjectResource, CdrDeposit.label, contentFile.getName());
 		model.add(defaultObjectResource, CdrDeposit.stagingLocation, getRelativePath(contentFile));
 
 		// Store reference to content as the default web object
-		model.add(primaryBag, Cdr.primaryObject, defaultObjectResource);
+		model.add(mainBag, Cdr.primaryObject, defaultObjectResource);
 
 		// Add the attachments as supplemental files
 		for (Object attachmentObj : attachmentElements) {
@@ -306,9 +284,9 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 			String description = attachEl.getChildText("DISS_file_descr");
 
 			// Make the child entry with a new uuid
-			PID pid = new PID("uuid:" + UUID.randomUUID());
+			PID pid = repository.mintContentPid();
 			Resource child = model.createResource(pid.getURI());
-			primaryBag.add(child);
+			mainBag.add(child);
 
 			// Use the description as a label if one was provided
 			if (description != null && description.trim().length() > 0)
@@ -320,12 +298,12 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 			model.add(child, CdrDeposit.stagingLocation, getRelativePath(new File(attachmentDir, filename)));
 		}
 
-		return primaryBag;
+		return mainBag;
 	}
 
 	private void setSourceMetadata(Model model, Resource primaryResource, File dataFile) {
 		// Add the data file as a metadata datastream of the primary object
-		PID sourceMDPID = PIDs.get(primaryResource.getURI() + "/" + Cdr.SourceMetadata.getURI());
+		PID sourceMDPID = repository.mintContentPid();
 		Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
 		model.add(primaryResource, CdrDeposit.hasDatastream, sourceMDResource);
 		model.add(primaryResource, CdrDeposit.hasSourceMetadata, sourceMDResource);

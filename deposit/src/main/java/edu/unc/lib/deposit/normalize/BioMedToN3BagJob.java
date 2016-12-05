@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.MD_SOURCE;
 import static edu.unc.lib.dl.util.MetadataProfileConstants.BIOMED_ARTICLE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.EPDCX_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
@@ -236,7 +235,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 			return;
 		}
 		
-		PID sourceMDPID = new PID(rootResource.getURI() + "/" + MD_SOURCE.getName());
+		PID sourceMDPID = repository.mintContentPid();
 		Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
 		model.add(rootResource, CdrDeposit.hasDatastream, sourceMDResource);
 		model.add(rootResource, CdrDeposit.hasSourceMetadata, sourceMDResource);
@@ -246,7 +245,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		model.add(rootResource, Cdr.hasSourceMetadataProfile, BIOMED_ARTICLE);
 		model.add(sourceMDResource, CdrDeposit.mimetype, "text/xml");
 		
-		File modsFile = new File(getDescriptionDir(), new PID(rootResource.getURI()).getUUID() + ".xml");
+		File modsFile = new File(getDescriptionDir(), PIDs.get(rootResource.getURI()).getUUID() + ".xml");
 
 		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 		sb.setFeature("http://xml.org/sax/features/validation", false);

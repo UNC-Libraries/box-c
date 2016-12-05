@@ -42,6 +42,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -80,10 +81,10 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 		SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
 
 		// Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
-		PID destinationPID = new PID(getDepositStatus().get(DepositField.containerId.name()));
+		PID destinationPID = PIDs.get(getDepositStatus().get(DepositField.containerId.name()));
 
 		for (String resourcePID : resourcePIDs) {
-			PID pid = new PID(resourcePID);
+			PID pid = PIDs.get(resourcePID);
 			File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
 
 			// Check if the resource has a description

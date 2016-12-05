@@ -50,7 +50,6 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -101,24 +100,55 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 		assertNotNull("Deposit object not found", depositBag);
 
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		testNoAttachments(model, primaryResource);
+		testNoAttachments(model, mainResource);
 
 	}
 
-	public void testNoAttachments(Model model, Resource primaryResource) throws Exception {
+	private void testNoAttachments(Model model, Resource mainResource) throws Exception {
+		Bag primaryBag = model.getBag(mainResource);
 
-		assertNotNull("Main object from the deposit not found", primaryResource);
+		assertNotNull("Main object from the deposit not found", mainResource);
 
-		// Check that the main content file is assigned to the primary resource
-		verifyStagingLocationExists(primaryResource, job.getDepositDirectory(), "Content");
-
-		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
+		verifyMetadataSourceAssigned(model, mainResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
 
 		// Verify that the MODS was created
-		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(mainResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
+
+		// Check for primary object
+		Resource primObj = mainResource.getProperty(Cdr.primaryObject).getResource();
+		assertNotNull("Primary object was not set", primObj);
+		assertTrue("Resource is not a file object", primObj.hasProperty(RDF.type, Cdr.FileObject));
+
+		// Make sure the content file is assigned as a child rather than a data stream of the primary resource
+		assertNull("Content file incorrectly assigned to primary resource", mainResource.getProperty(CdrDeposit.stagingLocation));
+		// Check that the content is assigned to the default web object
+		String primObjLocation = primObj.getProperty(CdrDeposit.stagingLocation).getString();
+		assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), primObjLocation).exists());
+
+		// Check that attachments were added
+		NodeIterator childIt = primaryBag.iterator();
+		int countChildren = 0;
+		while (childIt.hasNext()) {
+			countChildren++;
+			Resource child = (Resource) childIt.next();
+
+			// Make sure all of the children have valid staging locations assigned
+			File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
+
+			// Make sure the label is being set, using the description if provided
+			if ("attached1.pdf".equals(childFile.getName())) {
+				assertEquals("Provided label was not set for child", "Attached pdf", child.getProperty(CdrDeposit.label)
+						.getString());
+			} else {
+				assertEquals("File name not set as child label", childFile.getName(), child.getProperty(CdrDeposit.label)
+						.getString());
+			}
+		}
+
+		assertEquals("Incorrect aggregate child count", 1, countChildren);
 
 		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 		Document modsDoc = sb.build(descriptionFile);
@@ -141,33 +171,33 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
 
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		testWithAttachments(model, primaryResource);
+		testWithAttachments(model, mainResource);
 	}
 
-	private void testWithAttachments(Model model, Resource primaryResource) {
+	private void testWithAttachments(Model model, Resource mainResource) {
 
-		Bag primaryBag = model.getBag(primaryResource);
+		Bag primaryBag = model.getBag(mainResource);
 
-		assertNotNull("Main object from the deposit not found", primaryResource);
+		assertNotNull("Main object from the deposit not found", mainResource);
 
-		verifyMetadataSourceAssigned(model, primaryResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
+		verifyMetadataSourceAssigned(model, mainResource, job.getDepositDirectory(), PROQUEST_ETD, DATA_SUFFIX);
 
 		// Verify that the MODS was created
-		File descriptionFile = new File(job.getDescriptionDir(), new PID(primaryResource.getURI()).getUUID() + ".xml");
+		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(mainResource.getURI()).getUUID() + ".xml");
 		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		// Check for default web object
-		Resource dwo = primaryResource.getProperty(Cdr.primaryObject).getResource();
-		assertNotNull("Default web object was not set", dwo);
-		assertTrue("Resource is not a work", dwo.hasProperty(RDF.type, Cdr.Work));
+		// Check for primary object
+		Resource primObj = mainResource.getProperty(Cdr.primaryObject).getResource();
+		assertNotNull("Primary object was not set", primObj);
+		assertTrue("Resource is not a file object", primObj.hasProperty(RDF.type, Cdr.FileObject));
 
 		// Make sure the content file is assigned as a child rather than a data stream of the primary resource
-		assertNull("Content file incorrectly assigned to primary resource", primaryResource.getProperty(CdrDeposit.stagingLocation));
+		assertNull("Content file incorrectly assigned to primary resource", mainResource.getProperty(CdrDeposit.stagingLocation));
 		// Check that the content is assigned to the default web object
-		String dwoLocation = dwo.getProperty(CdrDeposit.stagingLocation).getString();
-		assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), dwoLocation).exists());
+		String primObjLocation = primObj.getProperty(CdrDeposit.stagingLocation).getString();
+		assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), primObjLocation).exists());
 
 		// Check that attachments were added
 		NodeIterator childIt = primaryBag.iterator();
@@ -207,9 +237,9 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		String embargoValue = primaryResource.getProperty(CdrAcl.embargoUntil).getString();
+		String embargoValue = mainResource.getProperty(CdrAcl.embargoUntil).getString();
 		assertEquals("Embargo value did not match the expected valued", "2015-05-05T00:00:00", embargoValue);
 
 		// Restore the system clock
@@ -231,9 +261,9 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		String embargoValue = primaryResource.getProperty(CdrAcl.embargoUntil).getString();
+		String embargoValue = mainResource.getProperty(CdrAcl.embargoUntil).getString();
 		assertEquals("Embargo value did not match the graduation date + 1 year", "2015-12-31T00:00:00", embargoValue);
 
 		// Restore the system clock
@@ -255,9 +285,9 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		assertNull("No embargo should be set since it has expired", primaryResource.getProperty(CdrAcl.embargoUntil));
+		assertNull("No embargo should be set since it has expired", mainResource.getProperty(CdrAcl.embargoUntil));
 
 		// Restore the system clock
 		DateTimeUtils.setCurrentMillisSystem();
@@ -275,9 +305,9 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+		Resource mainResource = (Resource) depositBag.iterator().next();
 
-		String embargoValue = primaryResource.getProperty(CdrAcl.embargoUntil).getString();
+		String embargoValue = mainResource.getProperty(CdrAcl.embargoUntil).getString();
 		assertEquals("Embargo value did not match the expected valued", "2016-05-05T00:00:00", embargoValue);
 
 		// Restore the system clock
@@ -302,13 +332,13 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		while (primaryIt.hasNext()) {
 			childCount++;
 
-			Resource primaryResource = (Resource) primaryIt.next();
+			Resource mainResource = (Resource) primaryIt.next();
 
-			Statement labelStatement = primaryResource.getProperty(CdrDeposit.label);
-			if (labelStatement != null && labelStatement.getString().contains("noattach")) {
-				this.testNoAttachments(model, primaryResource);
+			Statement labelStatement = mainResource.getProperty(CdrDeposit.label);
+			if (labelStatement != null && labelStatement.getString().contains("Perspective on Proquest Ingests")) {
+				this.testNoAttachments(model, mainResource);
 			} else {
-				this.testWithAttachments(model, primaryResource);
+				this.testWithAttachments(model, mainResource);
 			}
 		}
 

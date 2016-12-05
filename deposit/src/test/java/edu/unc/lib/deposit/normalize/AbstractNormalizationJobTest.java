@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.deposit.normalize;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -29,8 +28,9 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
+import org.jdom2.Content;
 import org.jdom2.Element;
-import org.jdom2.xpath.XPath;
+import org.jdom2.filter.Filters;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -48,12 +48,12 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author bbpennel
  * @date Jun 18, 2014
  */
-@SuppressWarnings("deprecation")
 public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest{
 
 	@Rule
@@ -147,8 +147,9 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 	}
 
 	protected List<?> xpath(String xpath, Object xmlObject) throws Exception {
-		XPath namePath = XPath.newInstance(xpath);
-		namePath.addNamespace("mods", MODS_V3_NS.getURI());
-		return namePath.selectNodes(xmlObject);
+		org.jdom2.xpath.XPathFactory xpfac = org.jdom2.xpath.XPathFactory.instance();
+		org.jdom2.xpath.XPathExpression<Content> xpe = xpfac.compile(xpath, Filters.content(), null,
+				JDOMNamespaceUtil.MODS_V3_NS);
+		return xpe.evaluate(xmlObject);
 	}
 }

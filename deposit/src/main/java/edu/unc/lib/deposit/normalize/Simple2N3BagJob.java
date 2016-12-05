@@ -32,6 +32,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -69,7 +70,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		Bag depositBag = model.createBag(depositPID.getURI().toString());
 
 		// Generate a uuid for the main object
-		PID primaryPID = new PID("uuid:" + UUID.randomUUID());
+		PID primaryPID = PIDs.get("uuid:" + UUID.randomUUID());
 
 		// Identify the important file from the deposit
 		Map<String, String> depositStatus = getDepositStatus();
@@ -114,7 +115,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 		try {
 			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
 			
-			PremisLogger premisDepositLogger = getPremisLogger(new PID(primaryResource.toString()));
+			PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(primaryResource.toString()));
 			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
 					.addEventDetail("Checksum for file is {0}", checksum)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
