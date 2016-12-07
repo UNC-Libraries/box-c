@@ -21,7 +21,9 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.google.common.base.Splitter;
 
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+//import edu.unc.lib.dl.fcrepo4.FileObject;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 
@@ -36,6 +38,7 @@ public class ThumbnailRouter extends RouteBuilder {
 		
 		from("activemq:topic:fedora")
 		.routeId("CdrServiceEnhancements")
+		.log("Dean: ${headers}")
 		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED' && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
 			.to("fcrepo:localhost:8080/fcrepo/rest?preferInclude=ServerManged&accept=application/rdf+xml")
 			.filter()
@@ -67,6 +70,7 @@ public class ThumbnailRouter extends RouteBuilder {
 								.add(binaryPath)
 								.add(fcrepoChecksumSplit[2])
 								.toString();
+
 								
 							in.setHeader("Checksum", fcrepoChecksumSplit[2]);
 							in.setHeader("MimeType", mimeType);
@@ -80,9 +84,11 @@ public class ThumbnailRouter extends RouteBuilder {
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64 ${headers[CheckSum]}-small&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
+		//.bean(new FileObject(simple("$headers['org.fcrepo.jms.baseURL']}/content/" + "${headers['org.fcrepo.jms.identifier']}")));
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128 ${headers[CheckSum]}-large&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
+		//.bean(new FileObject(new PID("")));
 	}
 }

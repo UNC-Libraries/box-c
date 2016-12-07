@@ -59,6 +59,11 @@
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>metadata</artifactId>
 	</dependency>
+	
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>fcrepo-clients</artifactId>
+	</dependency>
 
     <!-- Testing -->
     <dependency>
