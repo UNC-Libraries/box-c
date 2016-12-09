@@ -22,6 +22,7 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.google.common.base.Splitter;
 
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 //import edu.unc.lib.dl.fcrepo4.FileObject;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
@@ -71,7 +72,9 @@ public class ThumbnailRouter extends RouteBuilder {
 								.add(fcrepoChecksumSplit[2])
 								.toString();
 
-								
+						//	String fcrepoBaseUrl = in.getHeader("org.fcrepo.jms.baseURL").toString().split(",")[0].trim();
+
+						//	in.setHeader("FcrepoBaseUrl", fcrepoBaseUrl);
 							in.setHeader("Checksum", fcrepoChecksumSplit[2]);
 							in.setHeader("MimeType", mimeType);
 							in.setHeader("BinaryPath", fullPath);
@@ -82,9 +85,9 @@ public class ThumbnailRouter extends RouteBuilder {
 				.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
-		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail")
+		.log(LoggingLevel.INFO, "Grand Creating/Updating Small Thumbnail ${headers[BaseURL]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64 ${headers[CheckSum]}-small&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"));
-		//.bean(new FileObject(simple("$headers['org.fcrepo.jms.baseURL']}/content/" + "${headers['org.fcrepo.jms.identifier']}")));
+	//	.bean(FileObject.class, new PID("${headers.org.fcrepo.jms.baseURL}/${headers.org.fcrepo.jms.identifier}"), *, *);
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail")
