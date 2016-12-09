@@ -18,7 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <fcrepo-camel.version>4.5.0-SNAPSHOT</fcrepo-camel.version>
+    <fcrepo-camel.version>4.4.4</fcrepo-camel.version>
     <camel.version>2.17.3</camel.version>
   </properties>
 
