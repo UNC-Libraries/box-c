@@ -38,15 +38,15 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
-public class CollectionObjectTest extends AbstractFedoraTest {
+public class AdminUnitTest extends AbstractFedoraTest {
 	
 	private PID pid;
-	private CollectionObject collection;
+	private AdminUnit unit;
 	
-	private PID folderChildPid;
+	private PID collectionChildPid;
 	private PID workChildPid;
 
-	private FolderObject folderChildObj;
+	private CollectionObject collectionChildObj;
 	private WorkObject workChildObj;
 
 	@Before
@@ -55,15 +55,15 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 
 		pid = PIDs.get(UUID.randomUUID().toString());
 
-		collection = new CollectionObject(pid, repository, dataLoader);
+		unit = new AdminUnit(pid, repository, dataLoader);
 
-		folderChildPid = PIDs.get(UUID.randomUUID().toString());
+		collectionChildPid = PIDs.get(UUID.randomUUID().toString());
 		workChildPid = PIDs.get(UUID.randomUUID().toString());
-		when(repository.mintContentPid()).thenReturn(folderChildPid).thenReturn(workChildPid);
+		when(repository.mintContentPid()).thenReturn(collectionChildPid).thenReturn(workChildPid);
 		
-		folderChildObj = new FolderObject(folderChildPid, repository, dataLoader);
-		when(repository.createFolderObject(any(PID.class), any(Model.class)))
-				.thenReturn(folderChildObj);
+		collectionChildObj = new CollectionObject(collectionChildPid, repository, dataLoader);
+		when(repository.createCollectionObject(any(PID.class), any(Model.class)))
+				.thenReturn(collectionChildObj);
 		
 		workChildObj = new WorkObject(workChildPid, repository, dataLoader);
 		when(repository.createWorkObject(any(PID.class), any(Model.class)))
@@ -73,62 +73,54 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 	@Test
 	public void isValidTypeTest() {
 		// Return the correct RDF types
-		List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Collection.getURI());
-		when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+		List<String> types = Arrays.asList(PcdmModels.Collection.getURI(), Cdr.AdminUnit.getURI());
+		when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
 			@Override
 			public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-				collection.setTypes(types);
+				unit.setTypes(types);
 				return dataLoader;
 			}
 		});
 
-		collection.validateType();
+		unit.validateType();
 	}
 	
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void invalidTypeTest() {
-		List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-		when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+		List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
+		when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
 			@Override
 			public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-				collection.setTypes(types);
+				unit.setTypes(types);
 				return dataLoader;
 			}
 		});
 
-		collection.validateType();
+		unit.validateType();
 	}
 	
+	// should not be able to add a Work object as a member
 	@Test
 	public void addWorkMemberTest() {
-		collection.addMember(workChildObj);
+		unit.addMember(workChildObj);
 
 		ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-		verify(repository).addMember(eq(collection), captor.capture());
+		verify(repository).addMember(eq(unit), captor.capture());
 
 		ContentObject child = captor.getValue();
-		assertTrue("Incorrect type of child added", child instanceof WorkObject);
-		assertEquals("Child did not have the expected pid", workChildPid, child.getPid());
+		assertFalse("Should not be able to add Work to AdminUnit", child instanceof WorkObject);
 	}
 
 	@Test
-	public void addFolderMemberTest() {
-		collection.addMember(folderChildObj);
+	public void addCollectionObjectMemberTest() {
+		unit.addMember(collectionChildObj);
 
 		ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-		verify(repository).addMember(eq(collection), captor.capture());
+		verify(repository).addMember(eq(unit), captor.capture());
 
 		ContentObject child = captor.getValue();
-		assertTrue("Incorrect type of child added", child instanceof FolderObject);
-		assertEquals("Child did not have the expected pid", folderChildPid, child.getPid());
-	}
-
-	// should not be able to add a Collection object as a member
-	@Test(expected = ObjectTypeMismatchException.class)
-	public void addCollectionObjectMemberTest() {
-		CollectionObject childObj = new CollectionObject(workChildPid, repository, dataLoader);
-
-		collection.addMember(childObj);
+		assertTrue("Incorrect type of child added", child instanceof CollectionObject);
+		assertEquals("Child did not have the expected pid", collectionChildPid, child.getPid());
 	}
 
 }
