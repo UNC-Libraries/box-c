@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,6 +98,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		Map<String, String> status = new HashMap<>();
 		status.put(DepositField.containerId.name(), destinationPid.getRepositoryPath());
+		status.put(DepositField.permissionGroups.name(), "depositor");
 		depositStatusFactory.save(depositUUID, status);
 	}
 
@@ -313,7 +315,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Fix the staging location of the second file
 		model = job.getWritableModel();
 		Resource file2Resc = model.getResource(file2Pid.getRepositoryPath());
-		file2Resc.addProperty(CdrDeposit.stagingLocation, FILE2_LOC);
+		file2Resc.addProperty(CdrDeposit.stagingLocation, Paths.get(depositDir.getAbsolutePath(),
+				FILE2_LOC).toUri().toString());
 		job.closeModel();
 
 		// Second run of job
@@ -413,7 +416,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
 		fileResc.addProperty(RDF.type, Cdr.FileObject);
 		if (stagingLocation != null) {
-			fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+			fileResc.addProperty(CdrDeposit.stagingLocation, Paths.get(depositDir.getAbsolutePath(),
+					stagingLocation).toUri().toString());
 		}
 		fileResc.addProperty(CdrDeposit.mimetype, mimetype);
 		if (sha1 != null) {
