@@ -34,6 +34,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
@@ -97,7 +98,7 @@ public class FedoraAccessControlService implements AccessControlService {
 				List<String> publicationStatus = (List<String>) result.get("publicationStatus");
 				List<String> objectState = (List<String>) result.get("objectState");
 
-				return new ObjectAccessControlsBean(pid, roles, globalRoles, embargoes, publicationStatus, objectState);
+				return new ObjectAccessControlsBeanImpl(pid, roles, globalRoles, embargoes, publicationStatus, objectState);
 			}
 		} catch (IOException e) {
 			log.error("Failed to retrieve object access control for " + pid, e);
