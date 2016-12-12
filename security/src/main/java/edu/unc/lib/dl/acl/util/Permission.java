@@ -17,10 +17,30 @@ package edu.unc.lib.dl.acl.util;
 
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
+/**
+ * Permissions for user actions within the repository
+ * 
+ * @author bbpennel
+ *
+ */
 public enum Permission {
-	addRemoveContents, editAccessControl, editDescription, moveToTrash, publish,
+	// TODO Remove old 
+	addRemoveContents, editAccessControl, moveToTrash, publish,
 	purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
-	viewOriginal, editResourceType;
+	// current acl permissions
+	viewMetadata,
+	viewAccessCopies,
+	viewOriginal,
+	viewHidden,
+	editDescription,
+	bulkUpdateDescription,
+	ingest,
+	move,
+	markForDeletion,
+	destroy,
+	changePatronAccess,
+	assignStaffRoles,
+	editResourceType;
 	
 	private Permission() {}
 	
