@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */package edu.unc.lib.dl.fcrepo4;
+ */
+package edu.unc.lib.dl.fcrepo4;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
@@ -22,7 +23,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 
 public class CollectionObject extends ContentContainerObject {
 
-	public CollectionObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+	protected CollectionObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 	}
 

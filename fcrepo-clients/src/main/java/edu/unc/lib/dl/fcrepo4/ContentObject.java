@@ -17,8 +17,6 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
-import javax.management.relation.InvalidRelationIdException;
-
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
