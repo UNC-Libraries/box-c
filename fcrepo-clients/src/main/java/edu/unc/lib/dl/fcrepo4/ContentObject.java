@@ -17,12 +17,11 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
-import javax.management.relation.InvalidRelationIdException;
-
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -114,5 +113,14 @@ public abstract class ContentObject extends RepositoryObject {
 		PID childPid = repository.mintContentPid();
 		FileObject fileObj = repository.createFileObject(childPid, null);
 		return fileObj;
+	}
+
+	/**
+	 * Retrieve access control information for this content object.
+	 * 
+	 * @return
+	 */
+	public ObjectAccessControlsBean getAccessControls() {
+		return dataLoader.getAccessControls(this);
 	}
 }
