@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2016 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ public enum Permission {
 	viewMetadata,
 	viewAccessCopies,
 	viewOriginal,
+	// TODO replaces viewAdminUI and viewEmbargoed
 	viewHidden,
 	editDescription,
 	bulkUpdateDescription,
@@ -38,6 +39,7 @@ public enum Permission {
 	move,
 	markForDeletion,
 	destroy,
+	createCollection,
 	changePatronAccess,
 	assignStaffRoles,
 	editResourceType;

@@ -31,29 +31,33 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  */
 public enum UserRole {
+	// Patron roles
 	list("list", new Permission[] {}),
-	accessCopiesPatron("access-copies-patron", new Permission[] {Permission.viewDescription,
-			Permission.viewDerivative}),
-	metadataPatron("metadata-patron", new Permission[] {Permission.viewDescription}),
-	patron("patron", new Permission[] {Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	observer("observer", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.viewDescription,
-			Permission.viewDerivative, Permission.viewOriginal}),
-	ingester("ingester", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
-			Permission.addRemoveContents, Permission.editDescription, Permission.viewDescription,
-			Permission.viewDerivative, Permission.viewOriginal}),
-	metadataEditor("metadata-editor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
-			Permission.editDescription, Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	processor("processor", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
-			Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash,
-			Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal}),
-	curator("curator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed, Permission.addRemoveContents,
-			Permission.publish, Permission.editDescription, Permission.moveToTrash, Permission.editAccessControl,
-			Permission.viewDescription, Permission.viewDerivative, Permission.viewOriginal,
-			Permission.editResourceType}),
-	administrator("administrator", new Permission[] {Permission.viewAdminUI, Permission.viewEmbargoed,
-			Permission.addRemoveContents, Permission.publish, Permission.editDescription, Permission.moveToTrash,
-			Permission.editAccessControl, Permission.purgeForever, Permission.viewDescription, Permission.viewDerivative,
-			Permission.viewOriginal, Permission.editResourceType});
+	metadataPatron("metadata-patron", new Permission[] {
+			Permission.viewMetadata}),
+	accessCopiesPatron("access-copies-patron", new Permission[] {
+			Permission.viewMetadata, Permission.viewAccessCopies}),
+	patron("patron", new Permission[] {
+			Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	// Staff roles
+	canView("can-view", new Permission[] {
+			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	canIngest("can-ingest", new Permission[] {
+			Permission.ingest,
+			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	canDescribe("can-describe", new Permission[] {
+			Permission.editDescription, Permission.bulkUpdateDescription,
+			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	canManage("can-manage", new Permission[] {
+			Permission.ingest, Permission.editDescription, Permission.bulkUpdateDescription,
+			Permission.move, Permission.markForDeletion, Permission.changePatronAccess, Permission.editResourceType,
+			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	unitOwner("unit-owner", new Permission[] {
+			Permission.ingest, Permission.editDescription, Permission.bulkUpdateDescription,
+			Permission.move, Permission.markForDeletion, Permission.changePatronAccess, Permission.editResourceType,
+			Permission.destroy, Permission.createCollection, Permission.assignStaffRoles,
+			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal});
+
 	private URI uri;
 	private String predicate;
 	private Set<Permission> permissions;
