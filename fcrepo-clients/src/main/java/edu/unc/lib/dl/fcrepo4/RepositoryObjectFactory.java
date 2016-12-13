@@ -107,7 +107,7 @@ public class RepositoryObjectFactory {
 	public URI createAdminUnit(URI path, Model model) {
 		// Add types to the object being created
 		model = populateModelTypes(path, model,
-				Arrays.asList(Cdr.AdminUnit, PcdmModels.Object));
+				Arrays.asList(Cdr.AdminUnit, PcdmModels.Collection));
 
 		return createContentContainerObject(path, model);
 	}
