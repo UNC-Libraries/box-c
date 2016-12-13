@@ -51,6 +51,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -60,6 +61,9 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class RepositoryTest extends AbstractFedoraTest {
+	
+	private static String ETAG = "etag";
+	private static final String ETAG_HEADER =  "\"etag\"";
 
 	private Repository repository;
 
@@ -117,11 +121,9 @@ public class RepositoryTest extends AbstractFedoraTest {
 	@Test
 	public void getContentObjectFolderTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
 
 		// Fake the fcrepo client and its response to return a model with the Folder type
-		mockFcrepoResponse(pid, etag, Cdr.Folder);
-
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.Folder);
 		// Fake the dataloader to also give back the same types
 		mockLoadTypes(Arrays.asList(Cdr.Folder.getURI()));
 
@@ -129,34 +131,31 @@ public class RepositoryTest extends AbstractFedoraTest {
 
 		assertTrue("Incorrect type of object returned", obj instanceof FolderObject);
 		assertEquals(pid, obj.getPid());
-		assertEquals("Etag was not present or didn't match", etag, obj.getEtag());
+		assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
 		assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Folder));
 	}
 
 	@Test
 	public void getContentObjectWorkTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
 
 		// Fake the fcrepo client and its response to return a model with the Work type
-		mockFcrepoResponse(pid, etag, Cdr.Work);
-
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.Work);
 		mockLoadTypes(Arrays.asList(Cdr.Work.getURI()));
 
 		ContentObject obj = repository.getContentObject(pid);
 
 		assertTrue("Incorrect type of object returned", obj instanceof WorkObject);
 		assertEquals(pid, obj.getPid());
-		assertEquals("Etag was not present or didn't match", etag, obj.getEtag());
+		assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
 		assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Work));
 	}
 
 	@Test
 	public void getContentObjectFileTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
 
-		mockFcrepoResponse(pid, etag, Cdr.FileObject);
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.FileObject);
 
 		mockLoadTypes(Arrays.asList(Cdr.FileObject.getURI()));
 
@@ -164,17 +163,16 @@ public class RepositoryTest extends AbstractFedoraTest {
 
 		assertTrue("Incorrect type of object returned", obj instanceof FileObject);
 		assertEquals(pid, obj.getPid());
-		assertEquals("Etag was not present or didn't match", etag, obj.getEtag());
+		assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
 		assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.FileObject));
 	}
 
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void getContentObjectInvalidTypeTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
 
 		// Response returns DepositRecord type, which isn't a ContentObject
-		mockFcrepoResponse(pid, etag, Cdr.DepositRecord);
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.DepositRecord);
 
 		// Make the dataloader agree
 		mockLoadTypes(Arrays.asList(Cdr.DepositRecord.getURI()));
@@ -218,6 +216,68 @@ public class RepositoryTest extends AbstractFedoraTest {
 		repository.getContentObject(pid);
 	}
 
+	@Test
+	public void createAdminUnitTest() {
+		PID pid = repository.mintContentPid();
+
+		when(objFactory.createAdminUnit(eq(pid.getRepositoryUri()), (Model) isNull()))
+				.thenReturn(pid.getRepositoryUri());
+
+		AdminUnit obj = repository.createAdminUnit(pid);
+		assertNotNull(obj);
+		assertEquals(pid, obj.getPid());
+
+		verify(objFactory).createAdminUnit(eq(pid.getRepositoryUri()), (Model) isNull());
+	}
+
+	@Test
+	public void getAdminUnitTest() {
+		PID pid = repository.mintContentPid();
+
+		mockLoadTypes(Arrays.asList(Cdr.AdminUnit.getURI(), PcdmModels.Collection.getURI()));
+
+		AdminUnit obj = repository.getAdminUnit(pid);
+		assertEquals(pid, obj.getPid());
+	}
+
+	@Test(expected = ObjectTypeMismatchException.class)
+	public void createAdminUnitAtInvalidPathTest() {
+		PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
+
+		repository.createAdminUnit(pid);
+	}
+	
+	@Test
+	public void createCollectionObjectTest() {
+		PID pid = repository.mintContentPid();
+
+		when(objFactory.createCollectionObject(eq(pid.getRepositoryUri()), (Model) isNull()))
+				.thenReturn(pid.getRepositoryUri());
+
+		CollectionObject obj = repository.createCollectionObject(pid);
+		assertNotNull(obj);
+		assertEquals(pid, obj.getPid());
+
+		verify(objFactory).createCollectionObject(eq(pid.getRepositoryUri()), (Model) isNull());
+	}
+
+	@Test
+	public void getCollectionObjectTest() {
+		PID pid = repository.mintContentPid();
+
+		mockLoadTypes(Arrays.asList(Cdr.Collection.getURI(), PcdmModels.Object.getURI()));
+
+		CollectionObject obj = repository.getCollectionObject(pid);
+		assertEquals(pid, obj.getPid());
+	}
+
+	@Test(expected = ObjectTypeMismatchException.class)
+	public void createCollectionObjectAtInvalidPathTest() {
+		PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
+
+		repository.createCollectionObject(pid);
+	}
+	
 	@Test
 	public void createFolderObjectTest() {
 		PID pid = repository.mintContentPid();

@@ -184,4 +184,48 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 					createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
 		}
 	}
+	
+	@Test
+	public void createAdminUnitTest() throws Exception {
+		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		URI uri = URI.create(objectPath);
+
+		URI resultUri = factory.createAdminUnit(uri, null);
+		assertEquals("Requested URI did not match result", uri, resultUri);
+
+		try (FcrepoResponse resp = client.get(uri).perform()) {
+			Model respModel = RDFModelUtil.createModel(resp.getBody());
+
+			Resource respResc = respModel.getResource(objectPath);
+			assertTrue(respResc.hasProperty(RDF.type, Cdr.AdminUnit));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Collection));
+
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+		}
+	}
+	
+	@Test
+	public void createCollectionObjectTest() throws Exception {
+		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		URI uri = URI.create(objectPath);
+
+		URI resultUri = factory.createCollectionObject(uri, null);
+		assertEquals("Requested URI did not match result", uri, resultUri);
+
+		try (FcrepoResponse resp = client.get(uri).perform()) {
+			Model respModel = RDFModelUtil.createModel(resp.getBody());
+
+			Resource respResc = respModel.getResource(objectPath);
+			assertTrue(respResc.hasProperty(RDF.type, Cdr.Collection));
+			assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
+
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+			assertTrue(respResc.hasProperty(Ldp.contains,
+					createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+		}
+	}
 }

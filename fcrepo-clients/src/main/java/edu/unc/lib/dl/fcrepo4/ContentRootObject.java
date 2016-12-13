@@ -29,16 +29,15 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class ContentRootObject extends ContentContainerObject {
 
-	public ContentRootObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+	protected ContentRootObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 	}
 
 	@Override
 	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-		// TODO should only allow admin units, but allow folders for the moment
 		if (!(member instanceof FolderObject)) {
 			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
-					+ " as a member of WorkObject " + pid.getQualifiedId());
+					+ " as a member of ContentRootObject " + pid.getQualifiedId());
 		}
 
 		repository.addMember(this, member);

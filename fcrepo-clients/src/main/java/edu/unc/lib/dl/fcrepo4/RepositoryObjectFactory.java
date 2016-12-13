@@ -92,6 +92,25 @@ public class RepositoryObjectFactory {
 			throw ClientFaultResolver.resolve(e);
 		}
 	}
+	
+	/**
+	 * Creates an AdminUnit object structure at the given path with optional
+	 * properties.
+	 * 
+	 * @param path
+	 *            URI of the full path where the work will be created
+	 * @param model
+	 *            Model containing additional properties. Optional.
+	 * @return URI to the object created
+	 * @throws FedoraException
+	 */
+	public URI createAdminUnit(URI path, Model model) {
+		// Add types to the object being created
+		model = populateModelTypes(path, model,
+				Arrays.asList(Cdr.AdminUnit, PcdmModels.Collection));
+
+		return createContentContainerObject(path, model);
+	}
 
 	/**
 	 * Creates a collection object structure at the given path with optional
@@ -386,4 +405,5 @@ public class RepositoryObjectFactory {
 	public void setLdpFactory(LdpContainerFactory ldpFactory) {
 		this.ldpFactory = ldpFactory;
 	}
+
 }

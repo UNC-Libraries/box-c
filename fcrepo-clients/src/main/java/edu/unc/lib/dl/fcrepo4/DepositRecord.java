@@ -42,7 +42,7 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class DepositRecord extends RepositoryObject {
 
-	public DepositRecord(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+	protected DepositRecord(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 	}
 
