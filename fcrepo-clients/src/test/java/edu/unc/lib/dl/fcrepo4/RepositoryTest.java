@@ -51,6 +51,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -117,11 +118,12 @@ public class RepositoryTest extends AbstractFedoraTest {
 	@Test
 	public void getContentObjectFolderTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
+		String etag = "\"etag\"";
 
 		// Fake the fcrepo client and its response to return a model with the Folder type
 		mockFcrepoResponse(pid, etag, Cdr.Folder);
-
+		// take substring of etag to represent the correct expected etag value
+		etag = etag = etag.substring(1,  etag.length() - 1);
 		// Fake the dataloader to also give back the same types
 		mockLoadTypes(Arrays.asList(Cdr.Folder.getURI()));
 
@@ -140,7 +142,8 @@ public class RepositoryTest extends AbstractFedoraTest {
 
 		// Fake the fcrepo client and its response to return a model with the Work type
 		mockFcrepoResponse(pid, etag, Cdr.Work);
-
+		// take substring of etag to represent the correct expected etag value
+		etag = etag = etag.substring(1,  etag.length() - 1);
 		mockLoadTypes(Arrays.asList(Cdr.Work.getURI()));
 
 		ContentObject obj = repository.getContentObject(pid);
@@ -157,7 +160,8 @@ public class RepositoryTest extends AbstractFedoraTest {
 		String etag = "etag";
 
 		mockFcrepoResponse(pid, etag, Cdr.FileObject);
-
+		// take substring of etag to represent the correct expected etag value
+		etag = etag = etag.substring(1,  etag.length() - 1);
 		mockLoadTypes(Arrays.asList(Cdr.FileObject.getURI()));
 
 		ContentObject obj = repository.getContentObject(pid);
@@ -171,7 +175,7 @@ public class RepositoryTest extends AbstractFedoraTest {
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void getContentObjectInvalidTypeTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
+		String etag = "\"etag\"";
 
 		// Response returns DepositRecord type, which isn't a ContentObject
 		mockFcrepoResponse(pid, etag, Cdr.DepositRecord);
@@ -218,6 +222,68 @@ public class RepositoryTest extends AbstractFedoraTest {
 		repository.getContentObject(pid);
 	}
 
+	@Test
+	public void createAdminUnitTest() {
+		PID pid = repository.mintContentPid();
+
+		when(objFactory.createAdminUnit(eq(pid.getRepositoryUri()), (Model) isNull()))
+				.thenReturn(pid.getRepositoryUri());
+
+		AdminUnit obj = repository.createAdminUnit(pid);
+		assertNotNull(obj);
+		assertEquals(pid, obj.getPid());
+
+		verify(objFactory).createAdminUnit(eq(pid.getRepositoryUri()), (Model) isNull());
+	}
+
+	@Test
+	public void getAdminUnitTest() {
+		PID pid = repository.mintContentPid();
+
+		mockLoadTypes(Arrays.asList(Cdr.AdminUnit.getURI(), PcdmModels.Collection.getURI()));
+
+		AdminUnit obj = repository.getAdminUnit(pid);
+		assertEquals(pid, obj.getPid());
+	}
+
+	@Test(expected = ObjectTypeMismatchException.class)
+	public void createAdminUnitAtInvalidPathTest() {
+		PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
+
+		repository.createAdminUnit(pid);
+	}
+	
+	@Test
+	public void createCollectionObjectTest() {
+		PID pid = repository.mintContentPid();
+
+		when(objFactory.createCollectionObject(eq(pid.getRepositoryUri()), (Model) isNull()))
+				.thenReturn(pid.getRepositoryUri());
+
+		CollectionObject obj = repository.createCollectionObject(pid);
+		assertNotNull(obj);
+		assertEquals(pid, obj.getPid());
+
+		verify(objFactory).createCollectionObject(eq(pid.getRepositoryUri()), (Model) isNull());
+	}
+
+	@Test
+	public void getCollectionObjectTest() {
+		PID pid = repository.mintContentPid();
+
+		mockLoadTypes(Arrays.asList(Cdr.Collection.getURI(), PcdmModels.Object.getURI()));
+
+		CollectionObject obj = repository.getCollectionObject(pid);
+		assertEquals(pid, obj.getPid());
+	}
+
+	@Test(expected = ObjectTypeMismatchException.class)
+	public void createCollectionObjectAtInvalidPathTest() {
+		PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
+
+		repository.createCollectionObject(pid);
+	}
+	
 	@Test
 	public void createFolderObjectTest() {
 		PID pid = repository.mintContentPid();

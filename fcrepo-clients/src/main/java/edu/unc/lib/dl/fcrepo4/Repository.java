@@ -173,6 +173,9 @@ public class Repository {
 				if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
 					return getContentRootObject(pid, model, etag);
 				}
+				if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
+					return getAdminUnit(pid, model, etag);
+				}
 
 			} catch (IOException e) {
 				throw new FedoraException("Failed to read model for " + pid, e);
@@ -182,6 +185,53 @@ public class Repository {
 		}
 
 		throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+	}
+
+	/**
+	 * Retrieves an existing AdminUnit object
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public AdminUnit getAdminUnit(PID pid) throws FedoraException {
+		return getAdminUnit(pid, null, null);
+	}
+	
+	protected AdminUnit getAdminUnit(PID pid, Model model, String etag) {
+		AdminUnit adminUnitObj = new AdminUnit(pid, this, repositoryObjectDataLoader);
+		adminUnitObj.storeModel(model);
+		adminUnitObj.setEtag(etag);
+
+		return adminUnitObj.validateType();
+	}
+	
+	/**
+	 * Creates a new AdminUnit with the given pid
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws FedoraException
+	 */
+	public AdminUnit createAdminUnit(PID pid) throws FedoraException {
+		return createAdminUnit(pid, null);
+	}
+
+	/**
+	 * Creates a new AdminUnit with the given pid and properties.
+	 * 
+	 * @param pid
+	 * @param model
+	 * @return
+	 * @throws FedoraException
+	 */
+	public AdminUnit createAdminUnit(PID pid, Model model) throws FedoraException {
+		verifyContentPID(pid);
+
+		URI adminUnitUri = repositoryFactory.createAdminUnit(pid.getRepositoryUri(), model);
+		PID createdPid = PIDs.get(adminUnitUri);
+
+		return new AdminUnit(createdPid, this, repositoryObjectDataLoader);
 	}
 
 	/**
