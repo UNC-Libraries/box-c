@@ -61,6 +61,9 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class RepositoryTest extends AbstractFedoraTest {
+	
+	private static String ETAG = "etag";
+	private static final String ETAG_HEADER =  "\"etag\"";
 
 	private Repository repository;
 
@@ -118,12 +121,9 @@ public class RepositoryTest extends AbstractFedoraTest {
 	@Test
 	public void getContentObjectFolderTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "\"etag\"";
 
 		// Fake the fcrepo client and its response to return a model with the Folder type
-		mockFcrepoResponse(pid, etag, Cdr.Folder);
-		// take substring of etag to represent the correct expected etag value
-		etag = etag = etag.substring(1,  etag.length() - 1);
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.Folder);
 		// Fake the dataloader to also give back the same types
 		mockLoadTypes(Arrays.asList(Cdr.Folder.getURI()));
 
@@ -131,54 +131,48 @@ public class RepositoryTest extends AbstractFedoraTest {
 
 		assertTrue("Incorrect type of object returned", obj instanceof FolderObject);
 		assertEquals(pid, obj.getPid());
-		assertEquals("Etag was not present or didn't match", etag, obj.getEtag());
+		assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
 		assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Folder));
 	}
 
 	@Test
 	public void getContentObjectWorkTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
 
 		// Fake the fcrepo client and its response to return a model with the Work type
-		mockFcrepoResponse(pid, etag, Cdr.Work);
-		// take substring of etag to represent the correct expected etag value
-		etag = etag = etag.substring(1,  etag.length() - 1);
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.Work);
 		mockLoadTypes(Arrays.asList(Cdr.Work.getURI()));
 
 		ContentObject obj = repository.getContentObject(pid);
 
 		assertTrue("Incorrect type of object returned", obj instanceof WorkObject);
 		assertEquals(pid, obj.getPid());
-		assertEquals("Etag was not present or didn't match", etag, obj.getEtag());
+		assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
 		assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Work));
 	}
 
 	@Test
 	public void getContentObjectFileTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "etag";
 
-		mockFcrepoResponse(pid, etag, Cdr.FileObject);
-		// take substring of etag to represent the correct expected etag value
-		etag = etag = etag.substring(1,  etag.length() - 1);
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.FileObject);
+
 		mockLoadTypes(Arrays.asList(Cdr.FileObject.getURI()));
 
 		ContentObject obj = repository.getContentObject(pid);
 
 		assertTrue("Incorrect type of object returned", obj instanceof FileObject);
 		assertEquals(pid, obj.getPid());
-		assertEquals("Etag was not present or didn't match", etag, obj.getEtag());
+		assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
 		assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.FileObject));
 	}
 
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void getContentObjectInvalidTypeTest() throws Exception {
 		PID pid = repository.mintContentPid();
-		String etag = "\"etag\"";
 
 		// Response returns DepositRecord type, which isn't a ContentObject
-		mockFcrepoResponse(pid, etag, Cdr.DepositRecord);
+		mockFcrepoResponse(pid, ETAG_HEADER, Cdr.DepositRecord);
 
 		// Make the dataloader agree
 		mockLoadTypes(Arrays.asList(Cdr.DepositRecord.getURI()));
