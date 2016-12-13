@@ -17,8 +17,6 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +28,7 @@ import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
+
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -95,8 +94,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 			// Add manifest files
 			List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
 			for (String manifestPath : manifestURIs) {
-				URI uri = new URI(manifestPath);
-				depositRecord.addManifest(new File(uri), "text/plain");
+				depositRecord.addManifest(new File(manifestPath), "text/plain");
 			}
 
 			// Add references to deposited objects
@@ -106,7 +104,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 			DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
 			depositRecord.addIngestedObjects(depositPID, children);
 			
-		} catch (IOException | FedoraException | URISyntaxException e) {
+		} catch (IOException | FedoraException e) {
 			failJob(e, "Failed to ingest deposit record {0}", depositPID);
 		}
 	}

@@ -1156,9 +1156,10 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		for (String group : groups) {
 			String saneGroup = SolrSettings.sanitize(group);
-			roleString.append(UserRole.processor.getPredicate()).append('|').append(saneGroup).append(' ');
-			roleString.append(UserRole.curator.getPredicate()).append('|').append(saneGroup).append(' ');
-			roleString.append(UserRole.administrator.getPredicate()).append('|').append(saneGroup).append(' ');
+			// TODO rewrite to use edu.unc.lib.dl.acl.util.UserRole.getUserRoles(Collection<Permission>)
+//			roleString.append(UserRole.processor.getPredicate()).append('|').append(saneGroup).append(' ');
+//			roleString.append(UserRole.curator.getPredicate()).append('|').append(saneGroup).append(' ');
+//			roleString.append(UserRole.administrator.getPredicate()).append('|').append(saneGroup).append(' ');
 		}
 
 		roleString.append(')');

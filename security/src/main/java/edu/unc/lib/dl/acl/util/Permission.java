@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2016 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,32 @@ package edu.unc.lib.dl.acl.util;
 
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
+/**
+ * Permissions for user actions within the repository
+ * 
+ * @author bbpennel
+ *
+ */
 public enum Permission {
-	addRemoveContents, editAccessControl, editDescription, moveToTrash, publish,
+	// TODO Remove old 
+	addRemoveContents, editAccessControl, moveToTrash, publish,
 	purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
-	viewOriginal, editResourceType;
+	// current acl permissions
+	viewMetadata,
+	viewAccessCopies,
+	viewOriginal,
+	// TODO replaces viewAdminUI and viewEmbargoed
+	viewHidden,
+	editDescription,
+	bulkUpdateDescription,
+	ingest,
+	move,
+	markForDeletion,
+	destroy,
+	createCollection,
+	changePatronAccess,
+	assignStaffRoles,
+	editResourceType;
 	
 	private Permission() {}
 	
