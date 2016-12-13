@@ -15,7 +15,6 @@
  */package edu.unc.lib.dl.fcrepo4;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,16 +27,20 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import com.hp.hpl.jena.rdf.model.Model;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
+/**
+ * 
+ * @author harring
+ *
+ */
 public class CollectionObjectTest extends AbstractFedoraTest {
 	
 	private PID pid;
@@ -46,8 +49,12 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 	private PID folderChildPid;
 	private PID workChildPid;
 
+	@Mock
 	private FolderObject folderChildObj;
+	@Mock
 	private WorkObject workChildObj;
+	@Mock
+	private CollectionObject collectionChildObj;
 
 	@Before
 	public void init() {
@@ -58,16 +65,10 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 		collection = new CollectionObject(pid, repository, dataLoader);
 
 		folderChildPid = PIDs.get(UUID.randomUUID().toString());
+		when(folderChildObj.getPid()).thenReturn(folderChildPid);
 		workChildPid = PIDs.get(UUID.randomUUID().toString());
-		when(repository.mintContentPid()).thenReturn(folderChildPid).thenReturn(workChildPid);
+		when(workChildObj.getPid()).thenReturn(workChildPid);
 		
-		folderChildObj = new FolderObject(folderChildPid, repository, dataLoader);
-		when(repository.createFolderObject(any(PID.class), any(Model.class)))
-				.thenReturn(folderChildObj);
-		
-		workChildObj = new WorkObject(workChildPid, repository, dataLoader);
-		when(repository.createWorkObject(any(PID.class), any(Model.class)))
-				.thenReturn(workChildObj);
 	}
 
 	@Test
@@ -126,9 +127,7 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 	// should not be able to add a Collection object as a member
 	@Test(expected = ObjectTypeMismatchException.class)
 	public void addCollectionObjectMemberTest() {
-		CollectionObject childObj = new CollectionObject(workChildPid, repository, dataLoader);
-
-		collection.addMember(childObj);
+		collection.addMember(collectionChildObj);
 	}
 
 }

@@ -21,6 +21,12 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
+/**
+ * Represents the highest-level container in the repository.
+ * 
+ * @author harring
+ *
+ */
 public class AdminUnit extends ContentContainerObject {
 
 	protected AdminUnit(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {

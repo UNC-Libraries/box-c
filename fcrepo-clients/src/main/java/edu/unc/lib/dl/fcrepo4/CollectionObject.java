@@ -21,6 +21,13 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
+/**
+ * Represents a collection within the repository. This is a second-level container to which
+ * folders and works can be added.
+ * 
+ * @author harring
+ *
+ */
 public class CollectionObject extends ContentContainerObject {
 
 	protected CollectionObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
