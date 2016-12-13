@@ -19,28 +19,27 @@ import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.mockito.Matchers.anyListOf;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -50,12 +49,10 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
@@ -64,41 +61,21 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  * @author bbpennel
  *
  */
-public class IngestDepositRecordJobTest {
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
+public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 
-	@Mock
-	private DepositStatusFactory depositStatusFactory;
-	@Mock
-	private Repository repository;
 	@Mock
 	private DepositRecord depositRecord;
 
-	private File depositsDirectory;
-
 	private IngestDepositRecordJob job;
-
-	private File depositDir;
-
-	private PID depositPid;
-
-	private static final String FEDORA_BASE = "http://example.com/";
 
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);
 
-		depositsDirectory = tmpFolder.newFolder("deposits");
-
-		String depositUUID = UUID.randomUUID().toString();
-		File depositDir = new File(depositsDirectory, depositUUID);
-		depositDir.mkdir();
-
-		PIDs.setRepository(repository);
-		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
 		when(repository.createDepositRecord(any(PID.class), any(Model.class)))
 				.thenReturn(depositRecord);
+		PID eventPid = makePid("content");
+		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
 		when(depositRecord.addPremisEvents(anyListOf(PremisEventObject.class))).thenReturn(depositRecord);
 	}
 
@@ -127,7 +104,6 @@ public class IngestDepositRecordJobTest {
 
 	@Test
 	public void testProquestAggregateBag() throws Exception {
-		String depositUUID = "55c262bf-9f15-4184-9979-3d8816d40103";
 
 		initializeJob(depositUUID, "src/test/resources/ingest-bags/fcrepo4/proquest-bag",
 				"src/test/resources/ingest-bags/fcrepo4/proquest-bag/everything.n3");
@@ -151,7 +127,6 @@ public class IngestDepositRecordJobTest {
 
 	@Test
 	public void testWithManifests() throws Exception {
-		String depositUUID = "8c1ba3ea-d3f5-4d6f-b8c2-1c7fcdc5fcf2";
 
 		initializeJob(depositUUID, "src/test/resources/paths/valid-bag",
 				"src/test/resources/ingest-bags/fcrepo4/valid-bag.n3");
@@ -160,7 +135,9 @@ public class IngestDepositRecordJobTest {
 		depositStatus.put(DepositField.fileName.name(), "valid-bag");
 		depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
 		when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
-		List<String> manifestPaths = Arrays.asList("valid-bag/manifest-md5.txt", "valid-bag/bagit.txt");
+		List<String> manifestPaths = Arrays.asList(
+				Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toString(),
+				Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toString());
 		when(depositStatusFactory.getManifestURIs(eq(depositUUID))).thenReturn(manifestPaths);
 
 		job.run();
@@ -179,8 +156,8 @@ public class IngestDepositRecordJobTest {
 
 		List<File> manifests = manifestCaptor.getAllValues();
 
-		assertTrue(manifests.contains(new File(depositDir, "valid-bag/manifest-md5.txt")));
-		assertTrue(manifests.contains(new File(depositDir, "valid-bag/bagit.txt")));
+		assertTrue(manifests.contains(new File(depositDir, "manifest-md5.txt")));
+		assertTrue(manifests.contains(new File(depositDir, "bagit.txt")));
 	}
 
 	private Resource getAIPResource() throws Exception {

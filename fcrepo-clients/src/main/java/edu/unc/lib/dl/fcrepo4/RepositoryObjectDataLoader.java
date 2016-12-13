@@ -37,6 +37,8 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -50,6 +52,8 @@ public class RepositoryObjectDataLoader {
 	private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
 
 	private Repository repository;
+
+	private AccessControlService aclService;
 
 	private FcrepoClient client;
 
@@ -164,6 +168,16 @@ public class RepositoryObjectDataLoader {
 		return etag.substring(1, etag.length() - 1);
 	}
 
+	/**
+	 * Retrieve access control information for the given object
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public ObjectAccessControlsBean getAccessControls(RepositoryObject obj) {
+		return aclService.getObjectAccessControls(obj.getPid());
+	}
+
 	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}
@@ -178,5 +192,13 @@ public class RepositoryObjectDataLoader {
 
 	public void setRepository(Repository repository) {
 		this.repository = repository;
+	}
+
+	public AccessControlService getAclService() {
+		return aclService;
+	}
+
+	public void setAclService(AccessControlService aclService) {
+		this.aclService = aclService;
 	}
 }

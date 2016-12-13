@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +43,8 @@ import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -143,6 +144,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		if (!(destObj instanceof ContentContainerObject)) {
 			failJob("Cannot add children to destination", "Cannot deposit to destination " + destObj.getPid().getRepositoryPath()
 					+ ", types does not support children");
+		}
+		String groups = depositStatus.get(DepositField.permissionGroups.name());
+		AccessGroupSet groupSet = new AccessGroupSet(groups);
+		// Verify that the depositor is allow to ingest to the given destination
+		if (!destObj.getAccessControls().hasPermission(groupSet, Permission.ingest)) {
+			failJob("Cannot add children to destination",
+					"Depositor does not have permissions to ingest to destination "
+							+ destObj.getPid().getRepositoryPath());
 		}
 
 		Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
@@ -262,6 +271,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				throw new DepositException("No staging location provided for file object ("
 						+ childResc.getURI() + ")");
 			}
+			label = new File(label).getName();
 		}
 		Resource workResc = workModel.createResource(workPid.getRepositoryPath());
 		workResc.addProperty(DC.title, label);
@@ -307,13 +317,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
 		String label = getPropertyValue(childResc, CdrDeposit.label);
 
-		File file = null;
-		try {
-			URI stagingUri = new URI(stagingPath);
-			file = new File(stagingUri);
-		} catch (URISyntaxException e) {
-			failJob(e, "Unable to resolve staging URI: {0}", stagingPath);
-		}
+		File file = new File(URI.create(stagingPath));
 
 		String filename = label != null? label : file.getName();
 

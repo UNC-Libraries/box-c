@@ -36,6 +36,9 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -46,7 +49,11 @@ import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
@@ -69,6 +76,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	private PID destinationPid;
 
 	private FolderObject destinationObj;
+
+	@Mock
+	private ObjectAccessControlsBean objAcls;
 
 	@Before
 	public void init() throws Exception {
@@ -101,11 +111,16 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		Map<String, String> depositStatus = new HashMap<>();
 		depositStatus.put(DepositField.containerId.name(), destinationPid.getQualifiedId());
+		depositStatus.put(DepositField.permissionGroups.name(), "depositor");
 
 		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
 		destinationObj = mock(FolderObject.class);
+		when(destinationObj.getPid()).thenReturn(destinationPid);
 		when(repository.getContentObject(eq(destinationPid))).thenReturn(destinationObj);
+		when(destinationObj.getAccessControls()).thenReturn(objAcls);
+		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
+				.thenReturn(true);
 	}
 
 	/**
@@ -171,6 +186,13 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		job.closeModel();
 
+		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString())).thenAnswer(new Answer<FileObject>() {
+			@Override
+			public FileObject answer(InvocationOnMock invocation) throws Throwable {
+				return mock(FileObject.class);
+			}
+		});
+		
 		job.run();
 
 		verify(repository).createWorkObject(eq(workPid), any(Model.class));
@@ -219,6 +241,26 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		Bag workBag = setupWork(workPid, work, model);
 
 		addFileObject(workBag, "doesnotexist.txt", "text/plain");
+
+		job.closeModel();
+
+		job.run();
+	}
+
+	/**
+	 * Test that deposit fails when no permission to write to destination
+	 */
+	@Test(expected = JobFailedException.class)
+	public void ingestFailNoPermissionsTest() {
+		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+		Model model = job.getWritableModel();
+		WorkObject work = mock(WorkObject.class);
+		Bag workBag = setupWork(workPid, work, model);
+
+		addFileObject(workBag, "pdf.pdf", "application/pdf");
+		
+		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
+				.thenReturn(false);
 
 		job.closeModel();
 
@@ -319,6 +361,13 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		when(repository.objectExists(eq(workPid))).thenReturn(true);
 		when(repository.objectExists(eq(mainPid))).thenReturn(true);
+		
+		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString())).thenAnswer(new Answer<FileObject>() {
+			@Override
+			public FileObject answer(InvocationOnMock invocation) throws Throwable {
+				return mock(FileObject.class);
+			}
+		});
 
 		job.run();
 
