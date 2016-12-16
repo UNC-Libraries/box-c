@@ -20,15 +20,31 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.validation.Schema;
+import javax.xml.validation.Validator;
 
 import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 import org.springframework.core.io.ClassPathResource;
 
+import com.google.common.io.Files;
+import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.util.FileUtils;
+
+import edu.unc.lib.deposit.DepositTestUtils;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
  * 
@@ -36,9 +52,12 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
  *
  */
 public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
-	
+	@Mock
 	private Schema metsSipSchema;
+	@Mock
+	private Validator metsValidator;
 	private SchematronValidator schematronValidator;
+	private PID destinationPid;
 
 	private CDRMETS2N3BagJob job;
 
@@ -49,19 +68,43 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		initMocks(this);
 		status = new HashMap<String, String>();
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
-		
+		when(metsSipSchema.newValidator()).thenReturn(metsValidator);
+		Dataset dataset = TDBFactory.createDataset();
+		destinationPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+		// equivalent to command line cp source dest
+		File data = new File(depositDir, "data");
+		data.mkdir();
+		Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
 		ClassPathResource test = new ClassPathResource("simple_mets_profile.sch", SchematronValidator.class);
 		schematronValidator = new SchematronValidator();
     		schematronValidator.getSchemas().put("test", test);
     		schematronValidator.loadSchemas();
-
-		job = new CDRMETS2N3BagJob();
-		job.setDepositUUID(depositUUID);
+    		
+		job = new CDRMETS2N3BagJob(jobUUID, depositUUID);
+		setField(job, "dataset", dataset);
 		job.setDepositDirectory(depositDir);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
+		setField(job, "metsSipSchema", metsSipSchema);
+		job.setRepository(repo);
 		job.init();
 	}
 
+	@Test
+	public void testSimpleDeposit() throws Exception {
+		String sourcePath = "src/test/resources/paths/valid-bag";
+		status.put(DepositField.sourcePath.name(), sourcePath);
+		status.put(DepositField.fileName.name(), "Test File");
+		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
+		status.put(DepositField.containerId.name(), destinationPid.getQualifiedId());
+		status.put(DepositField.metsType.name(), "src/test/resources/mets.xml");
+		//String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
+		job.run();
+	}
+	
+	private PID makePid(String qualifier) {
+		String uuid = UUID.randomUUID().toString();
+		return PIDs.get(qualifier + "/" + uuid);
+	}
 
 }
