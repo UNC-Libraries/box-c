@@ -1,9 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
-       xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
-  <camelContext id="CdrServiceEnhancements" xmlns="http://camel.apache.org/schema/blueprint">
-    <package>edu.unc.lib.cdr.thumbnail</package>
-  </camelContext>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+	xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0
+		https://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+		http://camel.apache.org/schema/blueprint
+		http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+		http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0
+		http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
+
+	<cm:property-placeholder id="properties" persistent-id="edu.unc.lib.cdr.services-camel"
+		update-strategy="reload">
+		<cm:default-properties>
+			<cm:property name="error.maxRedeliveries" value="10" />
+			<cm:property name="fcrepo.baseUrl" value="http://localhost:8080/fcrepo/rest" />
+			<cm:property name="fcrepo.baseUri" value="localhost:8080/fcrepo/rest" />
+			<cm:property name="fcrepo.binaryBase" value="/var/lib/tomcat7/fcrepo4-data/fcrepo.binary.directory/"/>
+		</cm:default-properties>
+	</cm:property-placeholder>
+
+	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory"
+		factory-method="makeClient">
+	</bean>
+
+	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+		<property name="client" ref="fcrepoClient" />
+	</bean>
+
+	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+		<property name="client" ref="fcrepoClient" />
+		<property name="ldpFactory" ref="ldpContainerFactory" />
+	</bean>
+
+	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repository" ref="repository" />
+	</bean>
+
+	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+		<property name="fedoraBase" ref="serverAddress" />
+	</bean>
+
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="edu.unc.lib.dl.fcrepo4.PIDs.setRepository" />
+		<property name="arguments">
+			<list>
+				<ref bean="repository" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
+	</bean>
+
+	<bean id="addDerivativeProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
+	</bean>
+
+	<camelContext id="CdrServiceEnhancements"
+		xmlns="http://camel.apache.org/schema/blueprint">
+		<package>edu.unc.lib.cdr.thumbnail</package>
+	</camelContext>
 </blueprint>
