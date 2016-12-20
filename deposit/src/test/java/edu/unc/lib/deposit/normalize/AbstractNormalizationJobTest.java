@@ -40,7 +40,8 @@ import org.mockito.stubbing.Answer;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
-import edu.unc.lib.deposit.AbstractDepositJobTest;
+
+import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
@@ -54,7 +55,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  * @date Jun 18, 2014
  */
-public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest{
+public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest {
 
 	@Rule
 	public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -71,18 +72,18 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 	protected File depositDir;
 
 	@Before
-	public void initBase() throws Exception {
+	public void initNorm() throws Exception {
 		initMocks(this);
 		
 		String pidString =  UUID.randomUUID().toString();
 		PID premisEventPid = PIDs.get(pidString);
-		when(repo.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
+		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
 		Answer<PID> answer = new Answer<PID>() {
 			public PID answer(InvocationOnMock invocation) throws Throwable {
 				return PIDs.get(UUID.randomUUID().toString());
 			}
 		};
-		when(repo.mintContentPid()).thenAnswer(answer);
+		when(repository.mintContentPid()).thenAnswer(answer);
 
 		depositsDirectory = tmpFolder.newFolder("deposits");
 

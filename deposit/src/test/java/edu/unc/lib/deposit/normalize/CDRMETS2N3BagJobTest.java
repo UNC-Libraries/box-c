@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -37,9 +36,8 @@ import org.springframework.core.io.ClassPathResource;
 import com.google.common.io.Files;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.util.FileUtils;
 
-import edu.unc.lib.deposit.DepositTestUtils;
+import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
@@ -56,6 +54,8 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	private Schema metsSipSchema;
 	@Mock
 	private Validator metsValidator;
+	@Mock
+	private PremisEventBuilder eventBuilder;
 	private SchematronValidator schematronValidator;
 	private PID destinationPid;
 
@@ -71,10 +71,13 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		when(metsSipSchema.newValidator()).thenReturn(metsValidator);
 		Dataset dataset = TDBFactory.createDataset();
 		destinationPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+		
+		
 		// equivalent to command line cp source dest
 		File data = new File(depositDir, "data");
 		data.mkdir();
 		Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+		
 		ClassPathResource test = new ClassPathResource("simple_mets_profile.sch", SchematronValidator.class);
 		schematronValidator = new SchematronValidator();
     		schematronValidator.getSchemas().put("test", test);
@@ -86,7 +89,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "metsSipSchema", metsSipSchema);
-		job.setRepository(repo);
+		job.setRepository(repository);
 		job.init();
 	}
 
@@ -100,11 +103,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		status.put(DepositField.metsType.name(), "src/test/resources/mets.xml");
 		//String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
 		job.run();
-	}
-	
-	private PID makePid(String qualifier) {
-		String uuid = UUID.randomUUID().toString();
-		return PIDs.get(qualifier + "/" + uuid);
 	}
 
 }

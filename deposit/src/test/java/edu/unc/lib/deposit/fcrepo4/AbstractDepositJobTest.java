@@ -50,7 +50,7 @@ public class AbstractDepositJobTest {
 	@Mock
 	protected RepositoryObjectDataLoader dataLoader;
 	@Mock
-	protected Repository repository;
+	public Repository repository;
 	@Rule
 	public final TemporaryFolder tmpFolder = new TemporaryFolder();
 	
@@ -78,6 +78,7 @@ public class AbstractDepositJobTest {
 		PIDs.setRepository(repository);
 		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
 		
+		tmpFolder.create();
 		depositsDirectory = tmpFolder.newFolder("deposits");
 		
 		jobUUID = UUID.randomUUID().toString();

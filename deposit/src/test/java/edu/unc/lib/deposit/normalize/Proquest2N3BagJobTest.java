@@ -79,7 +79,7 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setProquest2ModsTransformer(proquest2ModsTransformer);
-		job.setRepository(repo);
+		job.setRepository(repository);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
