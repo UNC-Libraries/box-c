@@ -61,7 +61,6 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void setup() throws Exception {
-		initMocks(this);
 		status = new HashMap<String, String>();
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
 		Dataset dataset = TDBFactory.createDataset();

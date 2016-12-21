@@ -73,8 +73,6 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 
 	@Before
 	public void initNorm() throws Exception {
-		initMocks(this);
-		
 		String pidString =  UUID.randomUUID().toString();
 		PID premisEventPid = PIDs.get(pidString);
 		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);

@@ -83,7 +83,6 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
 	@Before
 	public void init() throws Exception {
-		initMocks(this);
 
 		job = new VirusScanJob();
 		job.setJobUUID(jobUUID);

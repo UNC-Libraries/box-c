@@ -23,8 +23,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
@@ -38,7 +36,6 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -65,7 +62,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void setup() throws Exception {
-		initMocks(this);
 		status = new HashMap<String, String>();
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
 		when(metsSipSchema.newValidator()).thenReturn(metsValidator);

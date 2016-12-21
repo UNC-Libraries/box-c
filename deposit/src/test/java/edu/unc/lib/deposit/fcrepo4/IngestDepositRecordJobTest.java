@@ -70,8 +70,6 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 
 	@Before
 	public void setup() throws Exception {
-		initMocks(this);
-
 		when(repository.createDepositRecord(any(PID.class), any(Model.class)))
 				.thenReturn(depositRecord);
 		PID eventPid = makePid("content");
