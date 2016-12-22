@@ -61,14 +61,17 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	protected File getMETSFile() {
 		File dataDir = new File(getDepositDirectory(), "data");
 		File result = new File(dataDir, "mets.xml");
-		if(!result.exists()) {
+		if (!result.exists()) {
 			result = new File(dataDir, "METS.xml");
 		}
-		if(!result.exists()) {
+		if (!result.exists()) {
 			result = new File(dataDir, "METS.XML");
 		}
-		if(!result.exists()) {
+		if (!result.exists()) {
 			result = new File(dataDir, getDepositStatus().get(DepositField.fileName.name()));
+			if (!result.exists()) {
+				failJob("Cannot find a METS file", "A METS was not found in the expected locations: mets.xml, METS.xml, METS.XML.");
+			}
 		}
 		return result;
 	}
@@ -84,16 +87,16 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	protected void assignPIDs(Document mets) {
 		int count = 0;
 		Iterator<Element> divs = mets.getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
-		while(divs.hasNext()) {
+		while (divs.hasNext()) {
 			Element div = divs.next();
 			String cids = div.getAttributeValue("CONTENTIDS");
-			if(cids != null && cids.contains("info:fedora/")) continue;
+			if (cids != null && cids.contains("info:fedora/")) continue;
 			PID pid = repository.mintContentPid();
-			if(cids == null) {
+			if (cids == null) {
 				div.setAttribute("CONTENTIDS", pid.getURI());
 			} else {
 				StringBuilder sb = new StringBuilder(pid.getURI());
-				for(String s : cids.split("\\s")) {
+				for (String s : cids.split("\\s")) {
 					sb.append(" ").append(s);
 				}
 				div.setAttribute("CONTENTIDS", sb.toString());
@@ -131,21 +134,17 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	}
 
 	protected void saveMETS(Document mets) {
-		try(FileOutputStream fos = new FileOutputStream(getMETSFile())) {
+		try (FileOutputStream fos = new FileOutputStream(getMETSFile())) {
 			new XMLOutputter().output(mets, fos);
-		} catch(Exception e) {
+		} catch (Exception e) {
 			failJob(e, "Unexpected error saving METS.");
 		}
 		log.info("METS saved with new PIDs");
 	}
 
 	protected void validateMETS() {
-		if(!getMETSFile().exists()) {
-			failJob("Cannot find a METS file", "A METS was not found in the expected locations: mets.xml, METS.xml, METS.XML.");
-		}
 		Validator metsValidator = getMetsSipSchema().newValidator();
-		METSParseException handler = new METSParseException(
-				"There was a problem parsing METS XML.");
+		METSParseException handler = new METSParseException("There was a problem parsing METS XML.");
 		metsValidator.setErrorHandler(handler);
 		try {
 			metsValidator.validate(new StreamSource(getMETSFile()));
@@ -178,10 +177,10 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
 	protected void validateProfile(METSProfile profile) {
 		List<String> errors = schematronValidator.validateReportErrors(new StreamSource(getMETSFile()), profile.getName());
-		if(errors != null && errors.size() > 0) {
+		if (errors != null && errors.size() > 0) {
 			String msg = MessageFormat.format("METS is not valid with respect to profile: {0}", profile.getName());
 			StringBuilder details = new StringBuilder();
-			for(String error : errors) {
+			for (String error : errors) {
 				details.append(error).append('\n');
 			}
 			failJob(msg, details.toString());
