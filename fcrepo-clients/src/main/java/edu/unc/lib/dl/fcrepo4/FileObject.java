@@ -30,8 +30,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 
-import org.apache.camel.Handler;
-
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -115,7 +113,6 @@ public class FileObject extends ContentObject {
 	 * @param type
 	 * @return the created derivative as a binary object
 	 */
-	@Handler
 	public BinaryObject addDerivative(String slug, InputStream contentStream, String filename, String mimetype, Resource type) {
 
 		String derivPath = URIUtil.join(fileSetPath, slug);
