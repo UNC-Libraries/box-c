@@ -15,8 +15,7 @@
  */
 package edu.unc.lib.cdr;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -30,15 +29,16 @@ import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
-import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -82,9 +82,9 @@ public class BinaryMetadataProcessorTest {
 		Model model = ModelFactory.createDefaultModel();
 
 		Resource resc = model.createResource(RESC_ID);
-		resc.addProperty(RDF.type, createResource(Fcrepo4Repository.Binary.getURI()));
-		resc.addProperty(createProperty(Ebucore.hasMimeType.getURI()), mimetype);
-		resc.addProperty(createProperty(Premis.hasMessageDigest.getURI()), checksumPrefix + checksum);
+		resc.addProperty(RDF.type, Fcrepo4Repository.Binary);
+		resc.addProperty(Ebucore.hasMimeType, mimetype);
+		resc.addProperty(Premis.hasMessageDigest, checksumPrefix + checksum);
 
 		setMessageBody(model);
 

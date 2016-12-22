@@ -41,7 +41,7 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="fedoraBase" ref="serverAddress" />
+		<property name="fedoraBase" value="http://localhost:8080/fcrepo/rest" />
 	</bean>
 
 	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
