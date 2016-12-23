@@ -33,7 +33,6 @@ import javax.xml.validation.Validator;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.internal.runners.statements.Fail;
 import org.mockito.Mock;
 import org.xml.sax.SAXException;
 
@@ -42,9 +41,7 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;
@@ -59,8 +56,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	private Schema metsSipSchema;
 	@Mock
 	private Validator metsValidator;
-	//@Mock
-	//private PremisEventBuilder eventBuilder;
 	@Mock
 	private SchematronValidator schematronValidator;
 	private CDRMETS2N3BagJob job;
@@ -109,7 +104,14 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	@Test
 	public void testMETSInvalid() throws Exception {
 		doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
-		//test validator (is it valid mets?) returns false; test schematron (is it valid cdr mets?) returns false
+		doThrow(new JobFailedException("METS is not valid with respect to profile", "METS file is junk"))
+			.when(schematronValidator).validateReportErrors(any(StreamSource.class), eq(METSProfile.CDR_SIMPLE.name()));
+	}
+	
+	@Test
+	public void testPidsAssigned() throws Exception {
+		fail();
+		// need to create PremisLoggerFactory class to facilitate testing
 	}
 	
 }
