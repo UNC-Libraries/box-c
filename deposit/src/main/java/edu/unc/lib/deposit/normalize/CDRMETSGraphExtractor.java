@@ -89,7 +89,7 @@ public class CDRMETSGraphExtractor {
 		while (divs.hasNext()) {
 			Element div = divs.next();
 			String pid = METSHelper.getPIDURI(div);
-			Resource o = m.getResource(pid);
+			Resource o = m.createResource(pid);
 			if(div.getAttributeValue("LABEL") != null) {
 				m.add(o, CdrDeposit.label, div.getAttributeValue("LABEL"));
 			}

@@ -22,6 +22,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,20 +100,37 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	
 	@Test(expected = JobFailedException.class)
 	public void testMissingFile() throws Exception {
+		// no file provided
 		job.run();
 	}
 
-	@Test
+	@Test(expected = JobFailedException.class)
 	public void testMETSInvalid() throws Exception {
-		doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
-		doThrow(new JobFailedException("METS is not valid with respect to profile", "METS file is junk"))
-			.when(schematronValidator).validateReportErrors(any(StreamSource.class), eq(METSProfile.CDR_SIMPLE.name()));
+		try {
+			doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
+			Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+			job.run();
+		} finally {
+			verify(metsValidator).validate(any(StreamSource.class));
+		}
 	}
 	
 	@Test
 	public void testPidsAssigned() throws Exception {
 		fail();
-		// need to create PremisLoggerFactory class to facilitate testing
+		// need to create PremisLoggerFactory class first
+		// check that relevant events were created (lines 106-121)
+	}
+	
+	@Test
+	public void testObjectAdded() throws Exception {
+		// check object has right type
+		// contains the file
+		// verify props get set, e.g., checksum
+		// verify correct acl
+		// test line 58 of job, that file was created
+		// hold off on premis stuff until loggerFactory ticket finished
+		// maybe do another test case where only the object itself is present
 	}
 	
 }
