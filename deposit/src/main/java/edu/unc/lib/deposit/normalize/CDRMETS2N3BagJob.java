@@ -19,6 +19,7 @@ import edu.unc.lib.dl.xml.METSProfile;
 
 public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 	private static final Logger LOG = LoggerFactory.getLogger(CDRMETS2N3BagJob.class);
+	
 	public CDRMETS2N3BagJob() {
 		super();
 	}
@@ -61,7 +62,7 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 		LOG.info("MODS descriptions saved");
 		
 		PID depositPID = getDepositPID();
-		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+		PremisLogger premisDepositLogger = premisLoggerFactory.createPremisLogger(depositPID);
 		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(), PackagingType.BAG_WITH_N3.getUri())
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
