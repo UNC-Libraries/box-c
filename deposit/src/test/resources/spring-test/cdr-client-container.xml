@@ -17,6 +17,9 @@
 	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
 		<property name="client" ref="fcrepoClient" />
 	</bean>
+	
+	<bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
+	</bean>
 
 	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
