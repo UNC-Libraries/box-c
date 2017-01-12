@@ -130,15 +130,14 @@ public class DepositStatusFactory {
 	}
 
 	public DepositState getState(String depositUUID) {
-		DepositState result = null;
-		
 		try (Jedis jedis = getJedisPool().getResource()) {
 			String state = jedis.hget(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name());
-			result = DepositState.valueOf(state);
-		} catch (IllegalArgumentException | NullPointerException e) {
-			log.debug("Failed to retrieve state for deposit {}", depositUUID, e);
+			if (state == null) {
+				log.debug("No state was found for deposit {}", depositUUID);
+				return null;
+			}
+			return DepositState.valueOf(state);
 		}
-		return result;
 	}
 
 	public boolean isResumedDeposit(String depositUUID) {
