@@ -20,8 +20,8 @@ import com.hp.hpl.jena.query.ReadWrite;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
-import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
@@ -52,7 +52,10 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	@Autowired
 	protected Repository repository;
-
+	
+	@Autowired
+	protected PremisLoggerFactory premisLoggerFactory;
+	
 	// UUID for this deposit and its deposit record
 	private String depositUUID;
 	
@@ -234,7 +237,7 @@ public abstract class AbstractDepositJob implements Runnable {
 			if (!file.exists()) {
 				file.getParentFile().mkdirs();
 			} 
-			return new FilePremisLogger(pid, file, repository);
+			return premisLoggerFactory.createPremisLogger(pid, file, repository);
 		} catch (Exception e) {
 			failJob(e, "Unexpected problem with deposit events file {}.", file.getAbsoluteFile());
 		}

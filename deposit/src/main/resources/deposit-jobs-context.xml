@@ -26,6 +26,9 @@
 		<property name="failedTextTemplate" ref="failedTextTemplate" />
 	</bean>
 	
+	<bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
+	</bean>
+	
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
 		<property name="schemas">

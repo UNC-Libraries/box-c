@@ -58,10 +58,6 @@ public class FilePremisLogger implements PremisLogger {
 
 	private Repository repository;
 
-	public FilePremisLogger(PID pid) {
-		this.objectPid = pid;
-	}
-
 	public FilePremisLogger(PID pid, File file, Repository repository) {
 		this.objectPid = pid;
 		this.premisFile = file;
