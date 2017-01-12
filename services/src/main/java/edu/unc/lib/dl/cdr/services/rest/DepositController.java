@@ -44,9 +44,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,6 +59,8 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 /**
  * @author Gregory Jansen
@@ -148,9 +147,8 @@ public class DepositController {
 	}
 
 	private Map<String, MutableInt> countWorkerStates() {
-		Jedis jedis = getJedisPool().getResource();
-		try {
-			Map<String, MutableInt> result = new HashMap<String, MutableInt>();
+		try (Jedis jedis = getJedisPool().getResource()) {
+			Map<String, MutableInt> result = new HashMap<>();
 			result.put("idle", new MutableInt());
 			result.put("paused", new MutableInt());
 			result.put("active", new MutableInt());
@@ -175,13 +173,11 @@ public class DepositController {
 				}
 			}
 			return result;
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 	}
 
 	private Map<String, Map<String, String>> fetchDepositMap() {
-		Map<String, Map<String, String>> result = new HashMap<String, Map<String, String>>();
+		Map<String, Map<String, String>> result = new HashMap<>();
 		for (Map<String, String> deposit : this.depositStatusFactory.getAll()) {
 			String uuid = deposit.get(DepositField.uuid.name());
 			result.put(uuid, deposit);
@@ -191,7 +187,7 @@ public class DepositController {
 
 	public Map<String, Object> getByState(DepositState state) {
 		LOG.debug("get by state: {}", state.name());
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new HashMap<>();
 		Map<String, Map<String, String>> deposits = fetchDepositMap();
 
 		boolean isRunning = state.equals(DepositState.running);
@@ -345,17 +341,18 @@ public class DepositController {
 	public @ResponseBody
 	Map<String, Map<String, String>> getJobs(@PathVariable String uuid) {
 		LOG.debug("getJobs( {} )", uuid);
-		Jedis jedis = getJedisPool().getResource();
-		Map<String, Map<String, String>> jobs = new HashMap<String, Map<String, String>>();
-		Set<String> jobUUIDs = jedis
-				.smembers(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX + uuid);
-		for (String jobUUID : jobUUIDs) {
-			Map<String, String> info = jedis
-					.hgetAll(RedisWorkerConstants.JOB_STATUS_PREFIX + jobUUID);
-			jobs.put(jobUUID, info);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			Map<String, Map<String, String>> jobs = new HashMap<>();
+			Set<String> jobUUIDs = jedis
+					.smembers(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX + uuid);
+			for (String jobUUID : jobUUIDs) {
+				Map<String, String> info = jedis
+						.hgetAll(RedisWorkerConstants.JOB_STATUS_PREFIX + jobUUID);
+				jobs.put(jobUUID, info);
+			}
+			return jobs;
 		}
-		getJedisPool().returnResource(jedis);
-		return jobs;
+		
 	}
 
 	public JedisPool getJedisPool() {
@@ -366,11 +363,12 @@ public class DepositController {
 	public @ResponseBody
 	Document getEvents(@PathVariable String uuid) throws Exception {
 		LOG.debug("getEvents( {} )", uuid);
-		Jedis jedis = getJedisPool().getResource();
-		String bagDirectory = jedis.hget(
-				RedisWorkerConstants.DEPOSIT_STATUS_PREFIX + uuid,
-				RedisWorkerConstants.DepositField.directory.name());
-		getJedisPool().returnResource(jedis);
+		String bagDirectory;
+		try (Jedis jedis = getJedisPool().getResource()) {
+			bagDirectory = jedis.hget(
+					RedisWorkerConstants.DEPOSIT_STATUS_PREFIX + uuid,
+					RedisWorkerConstants.DepositField.directory.name());
+		}
 		File bagFile = new File(bagDirectory);
 		if (!bagFile.exists())
 			return null;
