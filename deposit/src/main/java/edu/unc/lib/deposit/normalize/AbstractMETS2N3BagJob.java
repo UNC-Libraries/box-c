@@ -99,7 +99,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 				div.setAttribute("CONTENTIDS", sb.toString());
 			}
 			
-			PremisLogger premisLogger = premisLoggerFactory.createPremisLogger(pid);
+			PremisLogger premisLogger = getPremisLogger(pid);
 			Resource premisEvent = premisLogger.buildEvent(Premis.Normalization)
 					.addEventDetail("Assigned PID, {0}, to object defined in a METS div", pid)
 					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
@@ -111,7 +111,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		log.info(count + " PIDs assigned");
 		
 		PID depositPID = getDepositPID();
-		PremisLogger premisDepositLogger = premisLoggerFactory.createPremisLogger(depositPID);
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Assigned {0,choice,1#PID|2#PIDs} to {0,choice,1#one object|2#{0,number} objects} ", count)
 				.create();
@@ -159,7 +159,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 		}
 		log.info("METS XML validated");
 		PID depositPID = getDepositPID();
-		PremisLogger premisDepositLogger = premisLoggerFactory.createPremisLogger(depositPID);
+		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
 		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Validation)
 				.addEventDetail("METS schema(s) validated")
 				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())

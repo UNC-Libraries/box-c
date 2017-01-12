@@ -29,10 +29,6 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class PremisLoggerFactory {
 	
-	public PremisLogger createPremisLogger(PID pid) {
-		return new FilePremisLogger(pid);
-	}
-	
 	public PremisLogger createPremisLogger(PID pid, File file, Repository repository) {
 		return new FilePremisLogger(pid, file, repository);
 	}
