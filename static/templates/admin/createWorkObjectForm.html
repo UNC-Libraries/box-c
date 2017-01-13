@@ -1,0 +1,14 @@
+<p class="admin-forms">Add a work to the current collection.</p>
+<div class="form_field">
+	<label class="admin-forms">Work Type</label>
+	<select name="name" class="admin-forms">
+		<option value="">--Select a Work Type--</option>
+		<option value="basic_item">Generic Work</option>
+		<option value="image">Image</option>
+		<option value="continuing_resource">Continuing Resource</option>
+	</select>
+	<div>
+		<div class="loading-icon in-admin-iframe"><img src="/static/images/ajax-loader-lg.gif"></div>
+			<iframe class="addwork" id="work_submission_form" title="<%= pid %>" name="work_submission_form" height="600" width="1000" src=""></iframe>
+	</div>
+</div>
