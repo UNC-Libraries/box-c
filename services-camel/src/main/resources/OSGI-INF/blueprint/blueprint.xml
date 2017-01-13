@@ -44,13 +44,8 @@
 		<property name="fedoraBase" value="http://localhost:8080/fcrepo/rest" />
 	</bean>
 
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="staticMethod" value="edu.unc.lib.dl.fcrepo4.PIDs.setRepository" />
-		<property name="arguments">
-			<list>
-				<ref bean="repository" />
-			</list>
-		</property>
+	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
+		<property name="repository" ref="repository" />
 	</bean>
 
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
