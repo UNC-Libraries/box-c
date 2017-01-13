@@ -41,14 +41,6 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 	protected SchematronValidator schematronValidator = null;
 	@Autowired
 	private Schema metsSipSchema = null;
-	
-	public AbstractMETS2N3BagJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
-
-	public AbstractMETS2N3BagJob() {
-		super();
-	}
 
 	public SchematronValidator getSchematronValidator() {
 		return schematronValidator;
@@ -56,6 +48,14 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
 
 	public void setSchematronValidator(SchematronValidator schematronValidator) {
 		this.schematronValidator = schematronValidator;
+	}
+
+	public AbstractMETS2N3BagJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
+	}
+
+	public AbstractMETS2N3BagJob() {
+		super();
 	}
 
 	protected File getMETSFile() {

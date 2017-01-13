@@ -23,6 +23,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,15 +36,23 @@ import javax.xml.validation.Validator;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.xml.sax.SAXException;
 
 import com.google.common.io.Files;
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.xml.METSProfile;
@@ -60,11 +69,21 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	private Validator metsValidator;
 	@Mock
 	private SchematronValidator schematronValidator;
+	@Mock
+	private PremisLoggerFactory premisFactory;
+	@Mock
+	private PremisLogger premisLogger;
+	@Mock
+	private PremisEventBuilder premisEventBuilder;
+	@Mock
+	private Resource testResource;
+	
 	private CDRMETS2N3BagJob job;
 
 	private Map<String, String> status;
 	
 	private File data;
+	
 
 	@Before
 	public void setup() throws Exception {
@@ -85,10 +104,21 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "metsSipSchema", metsSipSchema);
+		setField(job, "premisLoggerFactory", premisFactory);
 		job.setRepository(repository);
 		job.setSchematronValidator(schematronValidator);
 		when(schematronValidator.validateReportErrors(any(StreamSource.class), eq(METSProfile.CDR_SIMPLE.name())))
 			.thenReturn(new ArrayList<String>());
+		
+		when(premisFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+			.thenReturn(premisLogger);
+		when(premisLogger.buildEvent(eq(Premis.Validation))).thenReturn(premisEventBuilder);
+		when(premisLogger.buildEvent(eq(Premis.Normalization))).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.addEventDetail(anyString())).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.addSoftwareAgent(anyString())).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.create()).thenReturn(testResource);
+		
 		job.init();
 	}
 
@@ -100,7 +130,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	
 	@Test(expected = JobFailedException.class)
 	public void testMissingFile() throws Exception {
-		// no file provided
+		// case where no file provided
 		job.run();
 	}
 
@@ -117,19 +147,28 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	
 	@Test
 	public void testPidsAssigned() throws Exception {
-		fail();
-		// need to create PremisLoggerFactory class first
-		// check that relevant events were created (lines 106-121)
+		try {
+			Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+			job.run();
+		} finally {
+			// check that relevant events were created (lines 106-121 of AbstractMETS job)
+			verify(premisLogger).buildEvent(eq(Premis.Validation));
+			verify(premisLogger, times(4)).buildEvent(eq(Premis.Normalization));
+			verify(premisEventBuilder, times(3)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
+			verify(premisEventBuilder).addEventDetail(anyString());
+			verify(premisEventBuilder, times(3)).addSoftwareAgent(anyString());
+			verify(premisEventBuilder, times(4)).create();
+		}
 	}
 	
 	@Test
 	public void testObjectAdded() throws Exception {
+		fail();
 		// check object has right type
 		// contains the file
 		// verify props get set, e.g., checksum
 		// verify correct acl
 		// test line 58 of job, that file was created
-		// hold off on premis stuff until loggerFactory ticket finished
 		// maybe do another test case where only the object itself is present
 	}
 	
