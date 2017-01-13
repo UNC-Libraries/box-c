@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.security.AccessControlUtils;
@@ -92,7 +92,7 @@ public class AccessLookupController {
 		List<String> publicationStatus = accessControlUtils.getPublished(pid);
 		List<String> objectState = accessControlUtils.getObjectState(pid);
 
-		return (new ObjectAccessControlsBean(pid, roles, accessControlUtils.getGlobalRoles(), activeEmbargoes,
+		return (new ObjectAccessControlsBeanImpl(pid, roles, accessControlUtils.getGlobalRoles(), activeEmbargoes,
 				publicationStatus, objectState)).hasPermission(accessGroups, permission);
 	}
 

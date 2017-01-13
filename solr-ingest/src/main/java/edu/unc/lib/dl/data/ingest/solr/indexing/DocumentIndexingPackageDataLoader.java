@@ -30,6 +30,7 @@ import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -116,7 +117,7 @@ public class DocumentIndexingPackageDataLoader {
 			// No parent object, ask fedora for access control
 			return accessControlService.getObjectAccessControls(dip.getPid());
 		}
-		return new ObjectAccessControlsBean(dip.getParentDocument().getAclBean(), dip.getPid(), dip.getTriples());
+		return new ObjectAccessControlsBeanImpl(dip.getParentDocument().getAclBean(), dip.getPid(), dip.getTriples());
 	}
 	
 	public List<PID> loadChildren(DocumentIndexingPackage dip) throws IndexingException {

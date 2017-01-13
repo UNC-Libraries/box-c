@@ -293,11 +293,11 @@ public class AccessControlUtils {
 			}
 			// Add the admin group into the results
 			if (this.getCuratorGroup() != null) {
-				Set<String> curatorGroups = globalRoles.get(UserRole.curator
+				Set<String> curatorGroups = globalRoles.get(UserRole.canManage
 						.getURI().toString());
 				if (curatorGroups == null) {
 					curatorGroups = new HashSet<String>();
-					globalRoles.put(UserRole.curator.getURI().toString(), curatorGroups);
+					globalRoles.put(UserRole.canManage.getURI().toString(), curatorGroups);
 				}
 				curatorGroups.add(this.getCuratorGroup());
 			}
@@ -315,7 +315,7 @@ public class AccessControlUtils {
 			}
 			
 			if(this.getCuratorGroup() != null && groups.contains(this.getCuratorGroup())) {
-				result.add(UserRole.curator.getURI().toString());
+				result.add(UserRole.canManage.getURI().toString());
 			}
 			
 			Map<String, Set<String>> roles2Groups = groupRolesFactory

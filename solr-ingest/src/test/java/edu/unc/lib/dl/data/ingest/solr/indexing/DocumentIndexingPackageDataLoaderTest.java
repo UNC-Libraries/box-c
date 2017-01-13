@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.AccessClient;
@@ -129,7 +130,7 @@ public class DocumentIndexingPackageDataLoaderTest extends Assert {
 
 	@Test
 	public void getAclBeanFromParentTest() throws Exception {
-		aclBean = new ObjectAccessControlsBean(new PID("uuid:parent"), Collections.<String>emptyList());
+		aclBean = new ObjectAccessControlsBeanImpl(new PID("uuid:parent"), Collections.<String>emptyList());
 		
 		when(parentDip.hasAclBean()).thenReturn(true);
 		when(parentDip.getAclBean()).thenReturn(aclBean);

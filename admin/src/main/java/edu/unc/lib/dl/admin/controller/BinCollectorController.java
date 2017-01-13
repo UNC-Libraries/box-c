@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -118,7 +119,7 @@ public class BinCollectorController {
 			BriefObjectMetadata entryBean = queryLayer.getObjectById(entryRequest);
 
 			// Only select collectors where the user can ingest to the destination container
-			ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(entryBean.getPid(), entryBean.getRoleGroup());
+			ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(entryBean.getPid(), entryBean.getRoleGroup());
 
 			boolean hasPermission = aclBean.hasPermission(groups, Permission.addRemoveContents);
 			if (!hasPermission)
