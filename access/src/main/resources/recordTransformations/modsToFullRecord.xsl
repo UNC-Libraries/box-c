@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-	xmlns:xlink="http://www.w3.org/1999/xlink">
+		xmlns:xlink="http://www.w3.org/1999/xlink"
+		xmlns:cdrfn="http://cdr.lib.unc.edu/fn/"
+		xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xsl:import href="/recordTransformations/languageNames.xsl"/>
 	<xsl:import href="/recordTransformations/scriptNames.xsl"/>
 	<xsl:output method="xml" omit-xml-declaration="yes" indent="no"/>
@@ -85,6 +87,29 @@
 		</xsl:choose>
 		
 		<br/><xsl:value-of select="$newline"/>
+		
+		<xsl:variable name="orcid" select="*[local-name() = 'nameIdentifier' and @type = 'orcid']"/>
+		<xsl:if test="boolean($orcid)">
+			<xsl:variable name="orcid_id">
+				<xsl:choose>
+					<xsl:when test="contains($orcid, 'orcid.org/')">
+						<xsl:value-of select="cdrfn:substring-after-last($orcid, '/')" />
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:value-of select="$orcid" />
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:variable>
+			
+			<span>
+				<a>
+					<xsl:attribute name="href">
+						<xsl:text>http://orcid.org/</xsl:text><xsl:value-of select="$orcid_id"/>
+					</xsl:attribute>
+					<xsl:text>orcid.org/</xsl:text><xsl:value-of select="$orcid_id"/>
+				</a><br/><xsl:value-of select="$newline"/>
+			</span>
+		</xsl:if>
 		
 		<xsl:variable name="affiliation" select="*[local-name() = 'affiliation']"/>
 		<xsl:if test="boolean($affiliation)">
@@ -1053,4 +1078,17 @@
 			<xsl:apply-templates select="/*[local-name() = 'mods']"/>
 		</view>
 	</xsl:template>
+	
+	<xsl:function name="cdrfn:substring-after-last" as="xs:string">
+		<xsl:param name="value" as="xs:string?"/>
+		<xsl:param name="separator" as="xs:string"/>		
+		<xsl:choose>
+			<xsl:when test="contains($value, $separator)">
+				<xsl:value-of select="cdrfn:substring-after-last(substring-after($value, $separator), $separator)" />
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:value-of select="$value" />
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:function>
 </xsl:stylesheet>

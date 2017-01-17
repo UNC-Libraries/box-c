@@ -83,7 +83,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				baseContext : {
 					view : this,
 					accessBaseUrl : this.options.accessBaseUrl,
-					adminBaseUrl : this.options.adminBaseUrl
+					adminBaseUrl : this.options.adminBaseUrl,
+					formsBaseUrl : this.options.formsBaseUrl
 				}
 			});
 			this.moveMonitor = new MoveActionMonitor(this.$alertHandler);

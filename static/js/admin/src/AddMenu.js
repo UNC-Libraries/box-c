@@ -1,5 +1,5 @@
-define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateSimpleObjectForm', 'ImportMetadataXMLForm', 'IngestFromSourceForm', 'qtip'],
-		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateSimpleObjectForm, ImportMetadataXMLForm, IngestFromSourceForm) {
+define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 'IngestPackageForm', 'CreateWorkObjectForm', 'AddFileForm', 'ImportMetadataXMLForm', 'IngestFromSourceForm', 'qtip'],
+		function($, ui, _, CreateContainerForm, IngestPackageForm, CreateWorkObjectForm, AddFileForm, ImportMetadataXMLForm, IngestFromSourceForm) {
 	
 	function AddMenu(options) {
 		this.options = $.extend({}, options);
@@ -9,18 +9,55 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	
 	AddMenu.prototype.getMenuItems = function() {
 		var items = {};
+
 		if ($.inArray('addRemoveContents', this.container.permissions) != -1) {
-			items["addContainer"] = {name : "Add Container"};
-			items["ingestPackage"] = {name : "Add Ingest Package"};
-			items["ingestSource"] = {name : "Add from File Server"};
-			items["simpleObject"] = {name : "Add Simple Object"};
-			
+			var self = this;
+
+			items["addContainer"] = {
+				name : "Add Container",
+				visible: function(key, opt){
+					return self.isAggregate(self);
+				}
+			};
+			items["ingestPackage"] = {
+				name : "Add Ingest Package",
+				visible: function(key, opt){
+					return self.isAggregate(self);
+				}
+			};
+			items["ingestSource"] = {
+				name : "Add from File Server",
+				visible: function(key, opt){
+					return self.isAggregate(self);
+				}
+			};
+			items["addWork"] = {name : "Add Work",
+				visible: function(key, opt){
+					return self.isAggregate(self);
+				}
+			};
+			items["addFile"] = {name : "Add File",
+				visible: function(key, opt){
+					if (self.container.type == "Aggregate") {
+						return true;
+					}
+					return false;
+				}
+			};
+
 		}
 		if ($.inArray('editDescription', this.container.permissions) != -1) {
 			items["importMetadata"] = {name : "Import MODS"};
 		}
 		
 		return items;
+	};
+
+	AddMenu.prototype.isAggregate = function(self) {
+		if (self.container.type == "Aggregate") {
+			return false;
+		}
+		return true;
 	};
 	
 	AddMenu.prototype.setContainer = function(container) {
@@ -65,8 +102,13 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 							alertHandler : self.options.alertHandler
 						}).open(self.container.id);
 						break;
-					case "simpleObject" :
-						new CreateSimpleObjectForm({
+					case "addWork" :
+						new CreateWorkObjectForm({
+							alertHandler : self.options.alertHandler
+						}).open(self.container.id);
+						break;
+					case "addFile" :
+						new AddFileForm({
 							alertHandler : self.options.alertHandler
 						}).open(self.container.id);
 						break;

@@ -1,0 +1,23 @@
+<iframe id="upload_file_frame" name="upload_file_frame" height="0" width="0" style="display: none;"></iframe>
+<form id="create_simple_object_form" method="post" action="ingest/<%= pid %>" enctype="multipart/form-data" target="upload_file_container" class="edit_form create_simple_object_form">
+    <p>Add a file to this work.  If no label is provided, the filename will be used.</p>
+    <h3>Add File</h3>
+    <div class="form_field">
+        <label>Label</label>
+        <input name="name" size="40"></input>
+    </div>
+    <div class="form_field">
+        <label>File*</label>
+        <input type="file" id="data_file" name="file"/>
+        <div class="file_info">&nbsp;</div>
+    </div>
+    <div class="update_field">
+        <input type="submit" id="object_submit_button" class="update_button" value="Ingest" />
+    </div>
+    <input type="hidden" name="type" value="http://cdr.unc.edu/model/Simple" />
+    <div class="errors">
+        <h3>Errors</h3>
+        <div class="error_stack">
+        </div>
+    </div>
+</form>

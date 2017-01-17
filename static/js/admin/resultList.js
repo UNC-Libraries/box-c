@@ -17,6 +17,7 @@ require.config({
 		"UnpublishBatchButton" : "cdr-admin",
 		"PublishBatchButton" : "cdr-admin",
 		"DestroyBatchButton" : "cdr-admin",
+		"ModalCreate": "cdr-admin",
 		"ModalLoadingOverlay" : "cdr-admin",
 		"EditAccessControlForm" : "cdr-admin",
 		"EditFilenameForm" : "cdr-admin",
@@ -62,6 +63,7 @@ define("resultList", ["module", "jquery", "ResultView"], function(module, $) {
 	$(".result_page").resultView({
 		resultUrl : module.config().resultUrl,
 		accessBaseUrl : module.config().accessBaseUrl,
-		adminBaseUrl : module.config().adminBaseUrl
+		adminBaseUrl : module.config().adminBaseUrl,
+		formsBaseUrl : module.config().formsBaseUrl
 	});
 });
