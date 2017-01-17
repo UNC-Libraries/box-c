@@ -19,10 +19,10 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.xml.Namespaces;
-import org.fcrepo.camel.RdfNamespaces;
 
 import edu.unc.lib.cdr.AddDerivativeProcessor;
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
+import edu.unc.lib.dl.rdf.Rdf;
 
 
 /**
@@ -41,16 +41,16 @@ public class ThumbnailRouter extends RouteBuilder {
 	 * Configure the thumbnail route workflow.
 	 */
 	public void configure() throws Exception {
-		final Namespaces ns = new Namespaces("rdf", RdfNamespaces.RDF);
+		final Namespaces ns = new Namespaces("rdf", Rdf.NS);
 		
 		from("activemq:topic:fedora")
 		.routeId("CdrServiceEnhancements")
 		.log("Dean: ${headers}")
 		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED' && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
-			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManged&accept=application/rdf+xml")
+			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=application/rdf+xml")
 			.filter()
 			.xpath("/rdf:RDF/rdf:Description/rdf:type[@rdf:resource='http://fedora.info/definitions/v4/repository#Binary']", ns)
-				.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManged&accept=text/turtle")
+				.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 				.process(mdProcessor).id("thumbBinaryMetadataProcessor")
 				.multicast()
 				.to("direct:small.thumbnail", "direct:large.thumbnail");

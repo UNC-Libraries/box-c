@@ -1,7 +1,6 @@
 package edu.unc.lib.cdr.thumbnail;
 
 import org.apache.camel.BeanInject;
-import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
@@ -15,8 +14,8 @@ public class SimpleThumbnailRouter extends RouteBuilder {
 	@BeanInject(value = "binaryMetadataProcessor")
 	private BinaryMetadataProcessor mdProcessor;
 	
-	@PropertyInject(value = "fcrepo.binaryBase")
-	private String baseBinaryPath;
+//	@PropertyInject(value = "fcrepo.binaryBase")
+//	private String baseBinaryPath;
 	
 	public void configure() throws Exception {
 		from("activemq:topic:fedora2")

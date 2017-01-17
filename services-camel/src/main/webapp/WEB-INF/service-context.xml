@@ -15,6 +15,10 @@
 
 	<context:annotation-config />
 	
+	<bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:config.properties"/>
+	</bean>
+	
 	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory"
 		factory-method="makeClient">
 	</bean>
@@ -45,13 +49,14 @@
 	</bean>
 
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
+		<constructor-arg value="/fake/path/fill/me/in"/>
 	</bean>
 
 	<bean id="addDerivativeProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
+		<constructor-arg ref="repository"/>
 	</bean>
 
-	<camelContext id="CdrServiceEnhancements"
-		xmlns="http://camel.apache.org/schema/spring">
-		<package>edu.unc.lib.cdr.thumbnail</package>
-	</camelContext>
+	<camel:camelContext id="CdrServiceEnhancements">
+		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
+	</camel:camelContext>
 </beans>

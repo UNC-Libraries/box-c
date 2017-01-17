@@ -33,10 +33,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
 import org.apache.camel.test.spring.UseAdviceWith;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.fcrepo.camel.FcrepoHeaders;
-import org.fcrepo.camel.JmsHeaders;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -114,7 +110,7 @@ public class ThumbnailRouterTest extends CamelBlueprintTestSupport {
 		// Serialize the object as a string so that the processor can receive it
 		String body;
 		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
+			//RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
 			body = new String(bos.toByteArray(), "UTF-8");
 		}
 		
@@ -127,14 +123,14 @@ public class ThumbnailRouterTest extends CamelBlueprintTestSupport {
 	private static Map<String, Object> createEvent(final String identifier, final String eventTypes) {
 
 		final Map<String, Object> headers = new HashMap<>();
-		headers.put(JmsHeaders.BASE_URL, baseUri);
-		headers.put(JmsHeaders.IDENTIFIER, identifier);
-		headers.put(JmsHeaders.TIMESTAMP, timestamp);
-		headers.put(JmsHeaders.USER, userID);
-		headers.put(JmsHeaders.USER_AGENT, userAgent);
-		headers.put(JmsHeaders.EVENT_TYPE, eventTypes);
-		headers.put(FcrepoHeaders.FCREPO_IDENTIFIER, identifier);
-		headers.put(FcrepoHeaders.FCREPO_BASE_URL, baseUri);
+//		headers.put(JmsHeaders.BASE_URL, baseUri);
+//		headers.put(JmsHeaders.IDENTIFIER, identifier);
+//		headers.put(JmsHeaders.TIMESTAMP, timestamp);
+//		headers.put(JmsHeaders.USER, userID);
+//		headers.put(JmsHeaders.USER_AGENT, userAgent);
+//		headers.put(JmsHeaders.EVENT_TYPE, eventTypes);
+//		headers.put(FcrepoHeaders.FCREPO_IDENTIFIER, identifier);
+//		headers.put(FcrepoHeaders.FCREPO_BASE_URL, baseUri);
 		return headers;
 	}
 }

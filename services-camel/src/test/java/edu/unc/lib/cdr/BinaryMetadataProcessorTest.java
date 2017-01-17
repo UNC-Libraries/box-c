@@ -29,8 +29,6 @@ import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -110,7 +108,7 @@ public class BinaryMetadataProcessorTest {
 
 	private void setMessageBody(Model model) throws Exception {
 		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
+			//RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
 			when(message.getBody(eq(InputStream.class)))
 					.thenReturn(new ByteArrayInputStream(bos.toByteArray()));
 		}

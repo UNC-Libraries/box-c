@@ -18,7 +18,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<fcrepo-camel.version>4.4.4</fcrepo-camel.version>
+		<fcrepo-camel.version>4.5.0</fcrepo-camel.version>
 		<camel.version>2.17.3</camel.version>
 		<activemq.version>5.14.1</activemq.version>
 		<osgi.export.packages>edu.unc.lib.cdr.thumbnail;version=${project.version}</osgi.export.packages>
@@ -35,13 +35,18 @@
 	</dependency>
 	<dependency>
 		<groupId>org.apache.camel</groupId>
-		<artifactId>camel-blueprint</artifactId>
+		<artifactId>camel-spring</artifactId>
 		<version>${camel.version}</version>
 	</dependency>
 	<dependency>
 		<groupId>org.apache.camel</groupId>
 		<artifactId>camel-exec</artifactId>
 		<version>${camel.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.activemq</groupId>
+		<artifactId>activemq-camel</artifactId>
+		<version>${activemq.version}</version>
 	</dependency>
 
 	<dependency>
@@ -61,18 +66,24 @@
 		<version>${fcrepo.client.version}</version>
 	</dependency>
 
-	<dependency>
+	<!-- <dependency>
 		<groupId>org.apache.activemq</groupId>
 		<artifactId>activemq-camel</artifactId>
 		<version>${activemq.version}</version>
 		<scope>test</scope>
-	</dependency>
+	</dependency> -->
 	
 	<dependency>
 		<groupId>org.apache.jena</groupId>
 		<artifactId>apache-jena-libs</artifactId>
 		<version>2.13.0</version>
 		<type>pom</type>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-core</artifactId>
+		<version>${spring.version}</version>
 	</dependency>
 	
 	<dependency>
