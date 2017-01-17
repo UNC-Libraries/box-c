@@ -130,7 +130,7 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	
 	@Test(expected = JobFailedException.class)
 	public void testMissingFile() throws Exception {
-		// case where no file provided
+		// checks case where no file is provided
 		job.run();
 	}
 
@@ -151,13 +151,12 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 			Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
 			job.run();
 		} finally {
-			// check that relevant events were created (lines 106-121 of AbstractMETS job)
+			// check that relevant events were created in AbstractMETS and CDRMETS jobs)
 			verify(premisLogger).buildEvent(eq(Premis.Validation));
 			verify(premisLogger, times(4)).buildEvent(eq(Premis.Normalization));
-			verify(premisEventBuilder, times(3)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
-			verify(premisEventBuilder).addEventDetail(anyString());
-			verify(premisEventBuilder, times(3)).addSoftwareAgent(anyString());
-			verify(premisEventBuilder, times(4)).create();
+			verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
+			verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
+			verify(premisEventBuilder, times(5)).create();
 		}
 	}
 	
