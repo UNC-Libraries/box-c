@@ -83,7 +83,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
 						// else if (queryLayer.hasRole(groups, UserRole.processor))
 						// accessLevel.setHighestRole(UserRole.processor);
 						// else accessLevel.setHighestRole(UserRole.observer);
-						accessLevel.setHighestRole(UserRole.observer);
+						accessLevel.setHighestRole(UserRole.canView);
 					}
 				}
 			}

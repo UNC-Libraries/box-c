@@ -15,6 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.sword.managers;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.endsWith;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,13 +35,13 @@ import org.junit.Test;
 import org.swordapp.server.AuthCredentials;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import static org.mockito.Mockito.*;
 
 public class CollectionListManagerTest extends Assert {
 	private static Logger log = Logger.getLogger(CollectionListManagerTest.class);
@@ -51,7 +57,7 @@ public class CollectionListManagerTest extends Assert {
 		
 		aclService = mock(AccessControlService.class);
 		ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
-		when(objectACLs.hasPermission(any(String[].class), any(Permission.class))).thenReturn(true);
+		when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
 		when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
 		manager.setAclService(aclService);
 		

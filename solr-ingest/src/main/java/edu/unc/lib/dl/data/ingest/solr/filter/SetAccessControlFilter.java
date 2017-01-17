@@ -25,7 +25,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -51,7 +51,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		Map<String, List<String>> triples = dip.getTriples();
 
 		// Generate access control information
-		ObjectAccessControlsBean aclBean = dip.getAclBean();
+		ObjectAccessControlsBeanImpl aclBean = (ObjectAccessControlsBeanImpl) dip.getAclBean();
 
 		List<String> status = new ArrayList<String>();
 		setAccessStatus(triples, status);
@@ -125,7 +125,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	private void setPublicationStatus(DocumentIndexingPackage dip, ObjectAccessControlsBean aclBean, List<String> status) {
+	private void setPublicationStatus(DocumentIndexingPackage dip, ObjectAccessControlsBeanImpl aclBean, List<String> status) {
 		// Published by default unless overridden by this item or its parents.
 		boolean isPublished = aclBean.getIsPublished();
 		boolean parentIsPublished = aclBean.isAncestorsPublished();
@@ -164,7 +164,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 	 * @param triples
 	 * @param status
 	 */
-	private void setObjectStateStatus(DocumentIndexingPackage dip, ObjectAccessControlsBean aclBean, List<String> status) {
+	private void setObjectStateStatus(DocumentIndexingPackage dip, ObjectAccessControlsBeanImpl aclBean, List<String> status) {
 		// Check if the object itself is tagged as deleted
 		if (!aclBean.getIsActive())
 			status.add("Deleted");

@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dl.search.solr.tags;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -32,7 +37,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.Tag;
-import static org.mockito.Mockito.*;
 
 public class AccessRestrictionsTagProviderTest extends Assert {
 
@@ -42,7 +46,7 @@ public class AccessRestrictionsTagProviderTest extends Assert {
 		BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
 		Set<UserRole> roles = new HashSet<UserRole>();
 		ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
-		when(access.getRoles(any(String[].class))).thenReturn(roles);
+		when(access.getRoles(any(AccessGroupSet.class))).thenReturn(roles);
 		when(metadata.getAccessControlBean()).thenReturn(access);
 		when(metadata.getRelations()).thenReturn(Arrays.asList("embargo-until|2084-03-05T00:00:00"));
 
@@ -59,7 +63,7 @@ public class AccessRestrictionsTagProviderTest extends Assert {
 		metadata.setRelations(new ArrayList<String>());
 		List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#observer|obs");
 
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("test"), roleGroupList);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(new PID("test"), roleGroupList);
 		metadata.setAccessControlBean(aclBean);
 
 		AccessGroupSet groups = new AccessGroupSet("obs");
@@ -78,7 +82,7 @@ public class AccessRestrictionsTagProviderTest extends Assert {
 		List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#observer|obs",
 				"http://cdr.unc.edu/definitions/roles#curator|obs");
 
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("test"), roleGroupList);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(new PID("test"), roleGroupList);
 		metadata.setAccessControlBean(aclBean);
 
 		AccessGroupSet groups = new AccessGroupSet("obs");
@@ -95,7 +99,7 @@ public class AccessRestrictionsTagProviderTest extends Assert {
 		BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
 		Set<UserRole> roles = new HashSet<UserRole>();
 		ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
-		when(access.getRoles(any(String[].class))).thenReturn(roles);
+		when(access.getRoles(any(AccessGroupSet.class))).thenReturn(roles);
 		when(metadata.getAccessControlBean()).thenReturn(access);
 		when(metadata.getStatus()).thenReturn(Arrays.asList("Deleted"));
 		

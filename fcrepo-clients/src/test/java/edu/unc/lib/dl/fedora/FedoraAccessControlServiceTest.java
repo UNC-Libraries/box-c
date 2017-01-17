@@ -24,10 +24,10 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fedora.PID;
 
 public class FedoraAccessControlServiceTest extends Assert {
 
@@ -36,12 +36,12 @@ public class FedoraAccessControlServiceTest extends Assert {
 		
 		Map<String, List<String>> roleMappings = new HashMap<String,List<String>>();
 		roleMappings.put(UserRole.patron.getURI().toString(), Arrays.asList("group1", "group2"));
-		roleMappings.put(UserRole.curator.getURI().toString(), Arrays.asList("cur1"));
+		roleMappings.put(UserRole.canManage.getURI().toString(), Arrays.asList("cur1"));
 		roleMappings.put(UserRole.metadataPatron.getURI().toString(), Arrays.asList("group3"));
 		
 		PID pid = new PID("uuid:test");
 		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(pid, roleMappings, null, null, null, null);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(pid, roleMappings, null, null, null, null);
 		
 		AccessGroupSet groups = new AccessGroupSet("group1;group3");
 		Set<UserRole> userRoles = aclBean.getRoles(groups);
@@ -49,7 +49,7 @@ public class FedoraAccessControlServiceTest extends Assert {
 		assertEquals(2, userRoles.size());
 		assertTrue(userRoles.contains(UserRole.patron));
 		assertTrue(userRoles.contains(UserRole.metadataPatron));
-		assertFalse(userRoles.contains(UserRole.curator));
+		assertFalse(userRoles.contains(UserRole.canManage));
 	}
 	
 	@Test
@@ -58,7 +58,7 @@ public class FedoraAccessControlServiceTest extends Assert {
 		
 		PID pid = new PID("uuid:test");
 		
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(pid, roleMappings, null, null, null, null);
+		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(pid, roleMappings, null, null, null, null);
 		
 		AccessGroupSet groups = new AccessGroupSet("group1;group3");
 		Set<UserRole> userRoles = aclBean.getRoles(groups);
