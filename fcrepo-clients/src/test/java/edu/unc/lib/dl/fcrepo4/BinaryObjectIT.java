@@ -29,7 +29,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;

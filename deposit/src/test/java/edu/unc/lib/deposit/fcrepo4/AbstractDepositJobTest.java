@@ -26,8 +26,8 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.tdb.TDBFactory;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;

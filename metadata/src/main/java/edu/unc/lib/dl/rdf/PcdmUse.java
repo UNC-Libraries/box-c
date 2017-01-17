@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.rdf; 
 
-import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  * Portland Common Data Model: Use Extension

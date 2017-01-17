@@ -18,7 +18,7 @@ package edu.unc.lib.dl.fcrepo4;
 import java.io.InputStream;
 import java.net.URI;
 
-import com.hp.hpl.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.Statement;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
