@@ -215,6 +215,12 @@
 			<artifactId>fcrepo-java-client</artifactId>
 			<version>${fcrepo.client.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>apache-jena-libs</artifactId>
+			<version>${jena.version}</version>
+			<type>pom</type>
+		</dependency>
 		<!-- integration testing -->
 		<dependency>
 			<groupId>org.fcrepo</groupId>

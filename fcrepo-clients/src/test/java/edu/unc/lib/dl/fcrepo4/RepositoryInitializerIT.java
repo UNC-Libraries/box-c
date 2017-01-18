@@ -21,14 +21,13 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.URIUtil;
@@ -41,9 +40,6 @@ import edu.unc.lib.dl.util.URIUtil;
 public class RepositoryInitializerIT extends AbstractFedoraIT {
 
 	private RepositoryInitializer repoInitializer;
-
-	@Autowired
-	private Repository repository;
 
 	@Autowired
 	private RepositoryObjectFactory objFactory;

@@ -35,29 +35,29 @@ public class JobStatusFactory {
 				String.valueOf(System.currentTimeMillis()));
 		status.put(JobField.num.name(), "0");
 
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hmset(JOB_STATUS_PREFIX + jobUUID, status);
-		jedis.rpush(DEPOSIT_TO_JOBS_PREFIX + depositUUID, jobUUID);
-		getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hmset(JOB_STATUS_PREFIX + jobUUID, status);
+			jedis.rpush(DEPOSIT_TO_JOBS_PREFIX + depositUUID, jobUUID);
+		}
 	}
 
 	public void interrupted(String jobUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.queued.name());
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
-		getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.queued.name());
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+					JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
+		}
 	}
 
 	public void failed(String jobUUID, String message) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.failed.name());
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
-		if (message != null) {
-			jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.message.name(), message);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.status.name(), JobStatus.failed.name());
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+					JobField.endtime.name(), String.valueOf(System.currentTimeMillis()));
+			if (message != null) {
+				jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.message.name(), message);
+			}
 		}
-		getJedisPool().returnResource(jedis);
 	}
 
 	public void failed(String jobUUID) {
@@ -79,42 +79,39 @@ public class JobStatusFactory {
 		uuids.addAll(queued);
 		uuids.addAll(working);
 
-		Jedis jedis = getJedisPool().getResource();
-		try {
+		try (Jedis jedis = getJedisPool().getResource()) {
 			for (String uuid : uuids) {
 				jedis.del(JOB_STATUS_PREFIX + uuid);
 				jedis.lrem(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, uuid);
 			}
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 	}
 
 	public void completed(String jobUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.status.name(), JobStatus.completed.name());
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.endtime.name(),
-				String.valueOf(System.currentTimeMillis()));
-		getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+					JobField.status.name(), JobStatus.completed.name());
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+					JobField.endtime.name(),
+					String.valueOf(System.currentTimeMillis()));
+		}
 	}
 
 	public void killed(String jobUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.status.name(), JobStatus.killed.name());
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID,
-				JobField.endtime.name(),
-				String.valueOf(System.currentTimeMillis()));
-		getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+					JobField.status.name(), JobStatus.killed.name());
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID,
+					JobField.endtime.name(),
+					String.valueOf(System.currentTimeMillis()));
+		}
 	}
 
 	public void incrCompletion(String jobUUID, int amount) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hincrBy(JOB_STATUS_PREFIX + jobUUID,
-				JobField.num.name(), amount);
-		getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hincrBy(JOB_STATUS_PREFIX + jobUUID,
+					JobField.num.name(), amount);
+		}
 	}
 
 	public void setCompletion(String jobUUID, int amount) {
@@ -125,25 +122,23 @@ public class JobStatusFactory {
 	}
 
 	public String getJobState(String uuid) {
-		Jedis jedis = getJedisPool().getResource();
-		String result = jedis.hget(JOB_STATUS_PREFIX + uuid,
-				JobField.status.name());
-		getJedisPool().returnResource(jedis);
-		return result;
+		try (Jedis jedis = getJedisPool().getResource()) {
+			return jedis.hget(JOB_STATUS_PREFIX + uuid,
+					JobField.status.name());
+		}
 	}
 
 	public void setTotalCompletion(String jobUUID, int totalClicks) {
-		Jedis jedis = getJedisPool().getResource();
-		jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.total.name(),
-				String.valueOf(totalClicks));
-		getJedisPool().returnResource(jedis);
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.hset(JOB_STATUS_PREFIX + jobUUID, JobField.total.name(),
+					String.valueOf(totalClicks));
+		}
 	}
 
 	public Map<String, String> get(String jobUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		Map<String, String> result = jedis.hgetAll(JOB_STATUS_PREFIX + jobUUID);
-		getJedisPool().returnResource(jedis);
-		return result;
+		try (Jedis jedis = getJedisPool().getResource()) {
+			return jedis.hgetAll(JOB_STATUS_PREFIX + jobUUID);
+		}
 	}
 
 	/**
@@ -153,8 +148,7 @@ public class JobStatusFactory {
 	 */
 	public List<String> getSuccessfulJobNames(String depositUUID) {
 		List<String> result = new ArrayList<String>();
-		Jedis jedis = getJedisPool().getResource();
-		try {
+		try (Jedis jedis = getJedisPool().getResource()) {
 			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
 			for (String jobUUID : jobUUIDs) {
@@ -165,8 +159,6 @@ public class JobStatusFactory {
 					result.add(info.get(1));
 				}
 			}
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 		return result;
 	}
@@ -176,16 +168,13 @@ public class JobStatusFactory {
 	 * @param depositUUID
 	 */
 	public void deleteAll(String depositUUID) {
-		Jedis jedis = getJedisPool().getResource();
-		try {
+		try (Jedis jedis = getJedisPool().getResource()) {
 			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
 			for (String jobUUID : jobUUIDs) {
 				jedis.del(JOB_STATUS_PREFIX + jobUUID);
 			}
 			jedis.del(DEPOSIT_TO_JOBS_PREFIX + depositUUID);
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 	}
 
@@ -194,8 +183,7 @@ public class JobStatusFactory {
 	}
 
 	public String getJobByStatus(String depositUUID, JobStatus status) {
-		Jedis jedis = getJedisPool().getResource();
-		try {
+		try (Jedis jedis = getJedisPool().getResource()) {
 			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
 			for (String jobUUID : jobUUIDs) {
@@ -205,18 +193,14 @@ public class JobStatusFactory {
 					return jobUUID;
 				}
 			}
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 
 		return null;
 	}
 
 	public List<String> getJobsByStatus(String depositUUID, JobStatus status) {
-		Jedis jedis = getJedisPool().getResource();
-
-		List<String> result = new ArrayList<String>();
-		try {
+		List<String> result = new ArrayList<>();
+		try (Jedis jedis = getJedisPool().getResource()) {
 			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
 			for (String jobUUID : jobUUIDs) {
@@ -226,8 +210,6 @@ public class JobStatusFactory {
 					result.add(jobUUID);
 				}
 			}
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 
 		return result;
@@ -239,8 +221,7 @@ public class JobStatusFactory {
 	 * @param statusKeysExpireSeconds time until expire
 	 */
 	public void expireKeys(String depositUUID, int seconds) {
-		Jedis jedis = getJedisPool().getResource();
-		try {
+		try (Jedis jedis = getJedisPool().getResource()) {
 			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
 			for (String jobUUID : jobUUIDs) {
@@ -248,24 +229,19 @@ public class JobStatusFactory {
 			}
 			jedis.expire(RedisWorkerConstants.DEPOSIT_TO_JOBS_PREFIX
 					+ depositUUID, seconds);
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 	}
 
 	public Map<String, Map<String, String>> getAllJobs(String depositUUID) {
-		Map<String, Map<String, String>> results = new LinkedHashMap<String, Map<String, String>>();
+		Map<String, Map<String, String>> results = new LinkedHashMap<>();
 
-		Jedis jedis = getJedisPool().getResource();
-		try {
+		try (Jedis jedis = getJedisPool().getResource()) {
 			List<String> jobUUIDs = jedis.lrange(DEPOSIT_TO_JOBS_PREFIX + depositUUID, 0, -1);
 
 			for (String jobUUID : jobUUIDs) {
 				Map<String, String> status = jedis.hgetAll(JOB_STATUS_PREFIX + jobUUID);
 				results.put(jobUUID, status);
 			}
-		} finally {
-			getJedisPool().returnResource(jedis);
 		}
 
 		return results;

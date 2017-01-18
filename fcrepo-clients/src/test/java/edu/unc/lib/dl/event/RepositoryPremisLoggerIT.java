@@ -22,20 +22,17 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraIT;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -50,9 +47,6 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
 	private RepositoryPremisLogger logger;
-
-	@Autowired
-	private Repository repository;
 
 	private PID parentPid;
 	private RepositoryObject parentObject;

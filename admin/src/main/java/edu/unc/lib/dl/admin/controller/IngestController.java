@@ -74,7 +74,6 @@ public class IngestController {
 			@RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
 		
 		String destinationUrl = swordUrl + "collection/" + pid;
-		String slugValue = null;
 		CloseableHttpClient client = HttpClientUtil
 				.getAuthenticatedClient(null, swordUsername, swordPassword);
 		HttpPost method = new HttpPost(destinationUrl);
@@ -85,16 +84,22 @@ public class IngestController {
 		method.addHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
 		method.addHeader("Content-Type", ingestFile.getContentType());
 		method.addHeader("mail", request.getHeader("mail"));
-		if (name != null && name.trim().length() > 0)
-			slugValue = name;
 
-		try {
-			method.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(ingestFile.getOriginalFilename(), "UTF-8"));
-			method.addHeader("Slug", URLEncoder.encode(slugValue, "UTF-8"));
-		} catch (UnsupportedEncodingException e1) {
-			log.warn("Unable to properly encode value to UTF-8", e1);
-			method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
-			method.addHeader("Slug", slugValue);
+		if (ingestFile.getOriginalFilename() != null) {
+			try {
+				method.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(ingestFile.getOriginalFilename(), "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				log.warn("Unable to properly encode value to UTF-8", e);
+				method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
+			}
+		}
+		if (name != null && name.trim().length() > 0) {
+			try {
+				method.addHeader("Slug", URLEncoder.encode(name, "UTF-8"));
+			} catch (UnsupportedEncodingException e1) {
+				log.warn("Unable to properly encode value to UTF-8", e1);
+				method.addHeader("Slug", name);
+			}
 		}
 
 		// Setup the json response

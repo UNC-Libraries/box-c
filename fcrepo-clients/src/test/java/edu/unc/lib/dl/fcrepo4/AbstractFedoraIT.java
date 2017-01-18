@@ -25,12 +25,14 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.URIUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
@@ -42,11 +44,25 @@ public class AbstractFedoraIT {
 	@Autowired
 	protected FcrepoClient client;
 	
+	@Autowired
+	protected Repository repository;
+
+	@Before
+	public void initBase() {
+		PIDs.setRepository(repository);
+	}
+	
 	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(serverAddress + "/" + name);
+		URI baseUri = URI.create(URIUtil.join(serverAddress, name));
 		// Create a parent object to put the binary into
 		try (FcrepoResponse response = client.put(baseUri).perform()) {
 			return response.getLocation();
+		} catch(FcrepoOperationFailedException e) {
+			if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+				throw e;
+			}
+			// Ignore duplicate creation of base container
+			return baseUri;
 		}
 	}
 	
