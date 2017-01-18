@@ -24,10 +24,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -62,7 +62,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 	public void runJob() {
 		
 		Model model = getWritableModel();
-		com.hp.hpl.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
+		org.apache.jena.rdf.model.Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 		
 		Map<String, String> status = getDepositStatus();
 		String sourcePath = status.get(DepositField.sourcePath.name());
@@ -102,7 +102,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 		Property cleanupLocProp = CdrDeposit.cleanupLocation;
 		
 		// Turn the bag itself into the top level folder for this deposit
-		com.hp.hpl.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
+		org.apache.jena.rdf.model.Bag sourceBag = getSourceBag(depositBag, sourceFile);
 		
 		int i = 0;
 		// Add all of the payload objects into the bag folder

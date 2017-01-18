@@ -53,9 +53,11 @@ public class FileObjectIT extends AbstractFedoraIT {
 	private static final String origSha1Checksum = DigestUtils.sha1Hex(origBodyString);
 
 	@Before
-	public void init() {
+	public void init() throws Exception {
 		// Generate a new ID every time so that tests don't conflict
 		pid = PIDs.get(RepositoryPathConstants.CONTENT_BASE + "/" + UUID.randomUUID().toString());
+		
+		createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
 	}
 
 	@Test
