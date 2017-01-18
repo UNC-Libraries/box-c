@@ -31,9 +31,6 @@ import org.jdom2.Content;
 import org.jdom2.Element;
 import org.jdom2.filter.Filters;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -42,12 +39,13 @@ import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.event.FilePremisLogger;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -55,20 +53,6 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @date Jun 18, 2014
  */
 public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest {
-
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
-
-	@Mock
-	protected JobStatusFactory jobStatusFactory;
-	@Mock
-	protected DepositStatusFactory depositStatusFactory;
-
-	protected File depositsDirectory;
-
-	protected String jobUUID;
-	protected String depositUUID;
-	protected File depositDir;
 
 	@Before
 	public void initNorm() throws Exception {
@@ -81,14 +65,6 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
 			}
 		};
 		when(repository.mintContentPid()).thenAnswer(answer);
-
-		depositsDirectory = tmpFolder.newFolder("deposits");
-
-		jobUUID = UUID.randomUUID().toString();
-
-		depositUUID = UUID.randomUUID().toString();
-		depositDir = new File(depositsDirectory, depositUUID);
-		depositDir.mkdir();
 	}
 
 	protected File verifyStagingLocationExists(Resource resource, File depositDirectory,

@@ -17,7 +17,7 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.mockito.Matchers.anyString;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -42,16 +42,19 @@ import org.xml.sax.SAXException;
 
 import com.google.common.io.Files;
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Bag;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.NodeIterator;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
+import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -69,14 +72,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 	private Validator metsValidator;
 	@Mock
 	private SchematronValidator schematronValidator;
-	@Mock
-	private PremisLoggerFactory premisFactory;
-	@Mock
-	private PremisLogger premisLogger;
-	@Mock
-	private PremisEventBuilder premisEventBuilder;
-	@Mock
-	private Resource testResource;
 	
 	private CDRMETS2N3BagJob job;
 
@@ -104,20 +99,14 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "metsSipSchema", metsSipSchema);
-		setField(job, "premisLoggerFactory", premisFactory);
+		setField(job, "premisLoggerFactory", premisLoggerFactory);
 		job.setRepository(repository);
 		job.setSchematronValidator(schematronValidator);
 		when(schematronValidator.validateReportErrors(any(StreamSource.class), eq(METSProfile.CDR_SIMPLE.name())))
 			.thenReturn(new ArrayList<String>());
 		
-		when(premisFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
-			.thenReturn(premisLogger);
 		when(premisLogger.buildEvent(eq(Premis.Validation))).thenReturn(premisEventBuilder);
 		when(premisLogger.buildEvent(eq(Premis.Normalization))).thenReturn(premisEventBuilder);
-		when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);
-		when(premisEventBuilder.addEventDetail(anyString())).thenReturn(premisEventBuilder);
-		when(premisEventBuilder.addSoftwareAgent(anyString())).thenReturn(premisEventBuilder);
-		when(premisEventBuilder.create()).thenReturn(testResource);
 		
 		job.init();
 	}
@@ -152,18 +141,27 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 			job.run();
 		} finally {
 			// check that relevant events were created in AbstractMETS and CDRMETS jobs)
+			// test case assumes one object belonging to one work in the mets.xml
 			verify(premisLogger).buildEvent(eq(Premis.Validation));
 			verify(premisLogger, times(4)).buildEvent(eq(Premis.Normalization));
 			verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
 			verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
 			verify(premisEventBuilder, times(5)).create();
+			
+			// think about how to test pids were assigned more directly
 		}
 	}
 	
 	@Test
 	public void testObjectAdded() throws Exception {
-		fail();
-		// check object has right type
+		Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+		job.run();
+		Model model = job.getReadOnlyModel();
+		Bag bag = model.getBag(depositPid.getURI());
+		NodeIterator childIt = bag.iterator();
+		RDFNode child = childIt.next();
+		assertTrue(child.asResource().hasProperty(RDF.type, Cdr.Work));
+		
 		// contains the file
 		// verify props get set, e.g., checksum
 		// verify correct acl

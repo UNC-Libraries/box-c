@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -24,11 +26,16 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 
 import com.hp.hpl.jena.query.Dataset;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 
+import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
@@ -62,7 +69,15 @@ public class AbstractDepositJobTest {
 	@Mock
 	protected DepositStatusFactory depositStatusFactory;
 	@Mock
+	protected PremisLoggerFactory premisLoggerFactory;
+	@Mock
+	protected PremisLogger premisLogger;
+	@Mock
+	protected PremisEventBuilder premisEventBuilder;
+	@Mock
 	protected ActivityMetricsClient metricsClient;
+	@Mock
+	protected Resource testResource;
 	
 	protected String jobUUID;
 	
@@ -77,6 +92,12 @@ public class AbstractDepositJobTest {
 		
 		PIDs.setRepository(repository);
 		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
+		when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+		.thenReturn(premisLogger);
+		when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.addSoftwareAgent(anyString())).thenReturn(premisEventBuilder);
+		when(premisEventBuilder.create()).thenReturn(testResource);
 		
 		tmpFolder.create();
 		depositsDirectory = tmpFolder.newFolder("deposits");

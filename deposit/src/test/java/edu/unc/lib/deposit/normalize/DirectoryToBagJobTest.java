@@ -76,6 +76,7 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
+		job.setPremisLoggerFactory(premisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
