@@ -17,9 +17,15 @@ package edu.unc.lib.cdr.thumbnail;
 
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -33,12 +39,11 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.blueprint.CamelBlueprintTestSupport;
 import org.apache.camel.test.spring.UseAdviceWith;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
@@ -123,14 +128,12 @@ public class ThumbnailRouterTest extends CamelBlueprintTestSupport {
 	private static Map<String, Object> createEvent(final String identifier, final String eventTypes) {
 
 		final Map<String, Object> headers = new HashMap<>();
-//		headers.put(JmsHeaders.BASE_URL, baseUri);
-//		headers.put(JmsHeaders.IDENTIFIER, identifier);
-//		headers.put(JmsHeaders.TIMESTAMP, timestamp);
-//		headers.put(JmsHeaders.USER, userID);
-//		headers.put(JmsHeaders.USER_AGENT, userAgent);
-//		headers.put(JmsHeaders.EVENT_TYPE, eventTypes);
-//		headers.put(FcrepoHeaders.FCREPO_IDENTIFIER, identifier);
-//		headers.put(FcrepoHeaders.FCREPO_BASE_URL, baseUri);
+		headers.put(FCREPO_URI, identifier);
+		headers.put(FCREPO_DATE_TIME, timestamp);
+		headers.put(FCREPO_AGENT, Arrays.asList(userID, userAgent));
+		headers.put(FCREPO_EVENT_TYPE, eventTypes);
+		headers.put(FCREPO_BASE_URL, baseUri);
+		
 		return headers;
 	}
 }

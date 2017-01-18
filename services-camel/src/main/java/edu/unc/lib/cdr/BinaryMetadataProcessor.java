@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.cdr;
 
-import static com.hp.hpl.jena.rdf.model.ModelFactory.createDefaultModel;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
+import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import java.io.InputStream;
 import java.util.StringJoiner;
@@ -25,11 +25,10 @@ import java.util.StringJoiner;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.cdr;
 
-import static com.hp.hpl.jena.rdf.model.ResourceFactory.createResource;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -29,14 +29,15 @@ import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -108,7 +109,7 @@ public class BinaryMetadataProcessorTest {
 
 	private void setMessageBody(Model model) throws Exception {
 		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			//RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
+			RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
 			when(message.getBody(eq(InputStream.class)))
 					.thenReturn(new ByteArrayInputStream(bos.toByteArray()));
 		}
