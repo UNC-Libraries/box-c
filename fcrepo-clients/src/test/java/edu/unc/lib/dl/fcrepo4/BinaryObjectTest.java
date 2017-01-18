@@ -15,15 +15,10 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -35,13 +30,19 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.URIUtil;
 
 public class BinaryObjectTest extends AbstractFedoraTest {
 	@Mock
@@ -60,7 +61,11 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 		byte[] buf = new byte[10];
 		stream = new ByteArrayInputStream(buf);
 		
-		when(mockPid.getRepositoryUri()).thenReturn(new URI(FEDORA_BASE));
+		URI repoUri = new URI(FEDORA_BASE);
+		when(mockPid.getRepositoryUri()).thenReturn(repoUri);
+		when(repository.getMetadataUri(any(PID.class))).thenReturn(
+				URI.create(URIUtil.join(repoUri, RepositoryPathConstants.FCR_METADATA)));
+		
 		binObj = new BinaryObject(mockPid, repository, dataLoader);
 		
 		when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);

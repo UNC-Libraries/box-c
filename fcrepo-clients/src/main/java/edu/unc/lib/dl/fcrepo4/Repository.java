@@ -26,16 +26,15 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
-import org.apache.jena.riot.Lang;
-import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoOperationFailedException;
-import org.fcrepo.client.FcrepoResponse;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
@@ -619,7 +618,7 @@ public class Repository {
 	 * @return
 	 */
 	public boolean objectExists(PID pid) {
-		URI metadataUri = URI.create(URIUtil.join(pid.getRepositoryPath(), "fcr:metadata"));
+		URI metadataUri = getMetadataUri(pid);
 		try (FcrepoResponse response = getClient().head(metadataUri)
 				.perform()) {
 			return true;
@@ -748,10 +747,22 @@ public class Repository {
 		this.repositoryFactory = repositoryObjectFactory;
 	}
 	
+	protected URI getMetadataUri(PID pid) {
+		String path = pid.getRepositoryPath();
+		if (!path.endsWith(RepositoryPathConstants.FCR_METADATA)) {
+			return URI.create(URIUtil.join(path,
+					RepositoryPathConstants.FCR_METADATA));
+		} else {
+			return pid.getRepositoryUri();
+		}
+	}
+	
 	private void persistTripleToFedora(PID subject, String sparqlUpdate) {
+		URI uri = getMetadataUri(subject);
+		
 		InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
 
-		try (FcrepoResponse response = getClient().patch(subject.getRepositoryUri())
+		try (FcrepoResponse response = getClient().patch(uri)
 				.body(sparqlStream)
 				.perform()) {
 		} catch (IOException e) {

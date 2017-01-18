@@ -26,7 +26,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * A binary resource object in the repository. Represents a single binary file
@@ -47,8 +46,7 @@ public class BinaryObject extends RepositoryObject {
 	protected BinaryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 		
-		metadataUri = URI.create(URIUtil.join(pid.getRepositoryUri(),
-				RepositoryPathConstants.FCR_METADATA));
+		metadataUri = repository.getMetadataUri(pid);
 	}
 
 	@Override

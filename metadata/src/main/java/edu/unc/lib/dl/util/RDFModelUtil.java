@@ -130,10 +130,14 @@ public class RDFModelUtil {
 	}
 	
 	public static String createSparqlInsert(String subjUri, Property property, Resource object) {
-		return createSparqlInsert(subjUri, property, "<" + object.getURI() + ">");
+		return buildSparqlInsert(subjUri, property, "<" + object.getURI() + ">");
+	}
+	
+	public static String createSparqlInsert(String subjUri, Property property, String value) {
+		return buildSparqlInsert(subjUri, property, "\"" + value + "\"");
 	}
 
-	public static String createSparqlInsert(String subjUri, Property property, String object) {
+	private static String buildSparqlInsert(String subjUri, Property property, String object) {
 		StringBuilder query = new StringBuilder();
 		query.append("INSERT {\n");
 

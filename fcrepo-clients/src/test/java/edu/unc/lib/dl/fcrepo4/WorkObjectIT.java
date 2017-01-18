@@ -20,21 +20,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.Before;
+import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -47,8 +43,6 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  *
  */
 public class WorkObjectIT extends AbstractFedoraIT {
-	@Autowired
-	private Repository repository;
 
 	private PID pid;
 

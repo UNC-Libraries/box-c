@@ -25,11 +25,9 @@ import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -40,9 +38,6 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  *
  */
 public class BinaryObjectIT extends AbstractFedoraIT {
-
-	@Autowired
-	private Repository repository;
 
 	@Test
 	public void createBinaryTest() throws Exception {
