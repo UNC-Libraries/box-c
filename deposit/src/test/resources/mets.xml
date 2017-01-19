@@ -20,7 +20,7 @@
     <rightsMD ID="_af478dbf-52bd-44fd-842a-ffb52ffaeed0">
       <mdWrap MDTYPE="OTHER">
         <xmlData>
-          <acl:accessControl xmlns:acl="http://cdr.unc.edu/definitions/acl" acl:embargo-until="2018" />
+          <acl:accessControl xmlns:acl="http://cdr.unc.edu/definitions/acl" acl:embargo-until="2018-01-19" />
         </xmlData>
       </mdWrap>
     </rightsMD>

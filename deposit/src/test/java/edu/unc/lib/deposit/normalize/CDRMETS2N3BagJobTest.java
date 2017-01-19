@@ -45,16 +45,15 @@ import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.rdf.model.Bag;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.event.PremisEventBuilder;
-import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrAcl;
+import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -147,8 +146,6 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 			verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
 			verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
 			verify(premisEventBuilder, times(5)).create();
-			
-			// think about how to test pids were assigned more directly
 		}
 	}
 	
@@ -159,14 +156,37 @@ public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
 		Model model = job.getReadOnlyModel();
 		Bag bag = model.getBag(depositPid.getURI());
 		NodeIterator childIt = bag.iterator();
-		RDFNode child = childIt.next();
-		assertTrue(child.asResource().hasProperty(RDF.type, Cdr.Work));
+		Resource child = (Resource) childIt.next();
+		// check that parent is a work and has acl set
+		assertTrue(child.hasProperty(RDF.type, Cdr.Work));
+		assertEquals(child.getProperty(CdrAcl.embargoUntil).getObject().toString(),
+				"2018-01-19T00:00:00^^http://www.w3.org/2001/XMLSchema#dateTime");
 		
-		// contains the file
-		// verify props get set, e.g., checksum
-		// verify correct acl
-		// test line 58 of job, that file was created
-		// maybe do another test case where only the object itself is present
+		// check that properties get set on child object of work
+		Bag childBag = model.getBag(child);
+		NodeIterator workIt = childBag.iterator();
+		Resource workChild = (Resource) workIt.next();
+		assertTrue(workChild.hasProperty(CdrDeposit.stagingLocation,
+				"data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
+		assertTrue(workChild.hasProperty(CdrDeposit.mimetype, "application/pdf"));
+		assertTrue(workChild.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
+		assertTrue(workChild.hasProperty(CdrDeposit.size, "43129"));
+	}
+	
+	@Test
+	public void testObjectOnlyAdded() throws Exception {
+		Files.copy(new File("src/test/resources/mets_object_only.xml"), new File(data, "mets.xml"));
+		job.run();
+		Model model = job.getReadOnlyModel();
+		Bag bag = model.getBag(depositPid.getURI());
+		NodeIterator childIt = bag.iterator();
+		Resource res = (Resource) childIt.next();
+		assertTrue(res.hasProperty(CdrDeposit.label, "David_Romani_response.pdf"));
+		assertTrue(res.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
+		assertTrue(res.hasProperty(CdrDeposit.mimetype, "application/pdf"));
+		assertTrue(res.hasProperty(CdrDeposit.stagingLocation,
+				"data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
+		assertTrue(res.hasProperty(CdrDeposit.size, "43129"));
 	}
 	
 }
