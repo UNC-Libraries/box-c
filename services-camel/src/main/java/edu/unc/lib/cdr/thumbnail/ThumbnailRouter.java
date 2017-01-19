@@ -18,11 +18,11 @@ package edu.unc.lib.cdr.thumbnail;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.xml.Namespaces;
+import org.fcrepo.camel.processor.EventProcessor;
 
 import edu.unc.lib.cdr.AddDerivativeProcessor;
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
-import edu.unc.lib.dl.rdf.Rdf;
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 
 
 /**
@@ -40,30 +40,26 @@ public class ThumbnailRouter extends RouteBuilder {
 	/**
 	 * Configure the thumbnail route workflow.
 	 */
-	public void configure() throws Exception {
-		final Namespaces ns = new Namespaces("rdf", Rdf.NS);
-		
+	public void configure() throws Exception {	
 		from("activemq:topic:fedora")
 		.routeId("CdrServiceEnhancements")
-		.log("Dean: ${headers}")
-		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED' && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
-			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=application/rdf+xml")
-			.filter()
-			.xpath("/rdf:RDF/rdf:Description/rdf:type[@rdf:resource='http://fedora.info/definitions/v4/repository#Binary']", ns)
-				.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
-				.process(mdProcessor).id("thumbBinaryMetadataProcessor")
-				.multicast()
-				.to("direct:small.thumbnail", "direct:large.thumbnail");
+		.process(new EventProcessor())
+		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED'"
+				+ " && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
+				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
+			.process(mdProcessor)
+			.multicast()
+			.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
-		.log(LoggingLevel.INFO, "Grand Creating/Updating Small Thumbnail ${headers[BaseURL]}")
-		.to("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64 ${headers[CheckSum]}-small&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}")
+		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64 ${headers[CheckSum]}-small&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"))
 		.bean(addDerivProcessor);
-	//	.bean(FileObject.class, new PID("${headers.org.fcrepo.jms.baseURL}/${headers.org.fcrepo.jms.identifier}"), *, *);
 		
 		from("direct:large.thumbnail")
-		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail")
-		.to("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128 ${headers[CheckSum]}-large&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}")
+		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128 ${headers[CheckSum]}-large&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"))
 		.bean(addDerivProcessor);
 	}
 }

@@ -49,7 +49,7 @@
 	</bean>
 
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
-		<constructor-arg value="/fake/path/fill/me/in"/>
+		<constructor-arg value="/var/lib/tomcat7/fcrepo4-data/fcrepo.binary.directory/"/>
 	</bean>
 
 	<bean id="addDerivativeProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
