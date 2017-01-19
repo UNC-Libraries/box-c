@@ -42,11 +42,11 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Bag;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.tdb.TDBFactory;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;

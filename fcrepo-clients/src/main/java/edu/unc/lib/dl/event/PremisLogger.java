@@ -18,7 +18,7 @@ package edu.unc.lib.dl.event;
 import java.util.Date;
 import java.util.List;
 
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fedora.PID;

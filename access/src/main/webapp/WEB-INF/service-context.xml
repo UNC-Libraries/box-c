@@ -71,6 +71,11 @@
 		<constructor-arg
 			value="${admin.base.url}" />
 	</bean>
+	
+	<bean id="formsBaseUrl" class="java.lang.String">
+		<constructor-arg
+			value="${forms.base.url}" />
+	</bean>
 
 	<!-- Properties objects -->
 	<util:properties id="externalContentProperties"
@@ -104,6 +109,7 @@
 				<value>accessGroupConstants</value>
 				<value>gaTrackingID</value>
 				<value>adminBaseUrl</value>
+				<value>formsBaseUrl</value>
 			</list>
 		</property>
 		<property name="viewClass"

@@ -27,12 +27,12 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Bag;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.rdf.CdrDeposit;

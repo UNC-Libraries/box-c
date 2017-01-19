@@ -36,12 +36,12 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Bag;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;

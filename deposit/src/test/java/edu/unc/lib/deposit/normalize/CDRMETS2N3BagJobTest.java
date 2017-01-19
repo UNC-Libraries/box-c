@@ -16,14 +16,15 @@
 package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.mockito.Matchers.anyString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,6 +35,13 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -41,13 +49,6 @@ import org.mockito.Mock;
 import org.xml.sax.SAXException;
 
 import com.google.common.io.Files;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Bag;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.NodeIterator;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;

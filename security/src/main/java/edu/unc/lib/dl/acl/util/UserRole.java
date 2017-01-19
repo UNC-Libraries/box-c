@@ -40,6 +40,7 @@ public enum UserRole {
 	patron("patron", new Permission[] {
 			Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
 	// Staff roles
+	administrator("administrator", new Permission[] {}),
 	canView("can-view", new Permission[] {
 			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
 	canIngest("can-ingest", new Permission[] {

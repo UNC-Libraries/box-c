@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,15 +28,14 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Content;
 import org.jdom2.Element;
 import org.jdom2.filter.Filters;
 import org.junit.Before;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;

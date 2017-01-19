@@ -42,7 +42,7 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 			return;
 
 		// public
-		Set<UserRole> publicRoles = acls.getRoles(PUBLIC);
+		Set<UserRole> publicRoles = acls.getRoles(new AccessGroupSet(PUBLIC));
 		if (publicRoles.contains(UserRole.patron)) {
 			record.addTag(new Tag("public", "patron"));
 		} else if (publicRoles.contains(UserRole.metadataPatron)) {
@@ -76,7 +76,7 @@ public class AccessRestrictionsTagProvider implements TagProvider {
 			Set<UserRole> myRoles = acls.getRoles(accessGroups);
 
 			// view only, meaning observer but no editing permissions
-			if (myRoles.contains(UserRole.observer)
+			if (myRoles.contains(UserRole.canView)
 					&& !acls.hasPermission(accessGroups, Permission.editDescription)) {
 				record.addTag(new Tag("view only"));
 			}

@@ -28,6 +28,7 @@ import org.apache.solr.client.solrj.beans.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -204,7 +205,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	@Override
 	public ObjectAccessControlsBean getAccessControlBean() {
 		if (this.accessControlBean == null && this.roleGroup != null) {
-			this.accessControlBean = new ObjectAccessControlsBean(pid, this.roleGroup);
+			this.accessControlBean = new ObjectAccessControlsBeanImpl(pid, this.roleGroup);
 		}
 		return this.accessControlBean;
 	}

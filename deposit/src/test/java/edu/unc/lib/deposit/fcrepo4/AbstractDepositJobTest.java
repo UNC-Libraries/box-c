@@ -23,15 +23,14 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.util.UUID;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -93,7 +92,7 @@ public class AbstractDepositJobTest {
 		PIDs.setRepository(repository);
 		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
 		when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
-		.thenReturn(premisLogger);
+				.thenReturn(premisLogger);
 		when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
 		when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);
 		when(premisEventBuilder.addSoftwareAgent(anyString())).thenReturn(premisEventBuilder);

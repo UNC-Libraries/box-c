@@ -1,9 +1,9 @@
 /**
  * Implements functionality and UI for the generic Ingest Package form
  */
-define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 
+define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStateChangeMonitor', 'ModalCreate',
 		'ModalLoadingOverlay', 'ConfirmationDialog', 'StringUtilities', 'ResultObject', 'AlertHandler'], 
-		function($, ui, _, RemoteStateChangeMonitor, ModalLoadingOverlay, ConfirmationDialog, StringUtilities, ResultObject) {
+		function($, ui, _, RemoteStateChangeMonitor, ModalCreate, ModalLoadingOverlay, ConfirmationDialog, StringUtilities, ResultObject) {
 	
 	var defaultOptions = {
 		iframeSelector : "#upload_file_frame",
@@ -19,30 +19,14 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 	};
 	
 	AbstractFileUploadForm.prototype.open = function(resultObject) {
-		var pid;
-		var metadata;
-		if (resultObject instanceof ResultObject) {
-			pid = resultObject.metadata.id;
-			metadata = resultObject.metadata;
-			this.resultObject = resultObject;
-		} else {
-			pid = resultObject;
-		}
+		var dialogBox = new ModalCreate(this.options);
+		var formContents = dialogBox.formContents(resultObject);
 		var self = this;
-		var formContents = this.options.createFormTemplate({pid : pid, metadata: metadata});
 		this.closed = false;
 		
 		this.dialog = $("<div class='containingDialog'>" + formContents + "</div>");
 		this.$form = this.dialog.first();
-		this.dialog.dialog({
-			autoOpen: true,
-			width: 'auto',
-			minWidth: '500',
-			height: 'auto',
-			modal: true,
-			title: self.options.title,
-			beforeClose: $.proxy(self.close, self)
-		});
+		this.dialog.dialog = dialogBox.modalDialog(this.dialog, self);
 		
 		$("input[type='file']", this.$form).change(function(){
 			self.ingestFile = this.files[0];

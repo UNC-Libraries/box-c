@@ -18,7 +18,7 @@ package edu.unc.lib.dl.fcrepo4;
 import java.io.InputStream;
 import java.net.URI;
 
-import com.hp.hpl.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.Statement;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
@@ -26,7 +26,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * A binary resource object in the repository. Represents a single binary file
@@ -47,8 +46,7 @@ public class BinaryObject extends RepositoryObject {
 	protected BinaryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
 		super(pid, repository, dataLoader);
 		
-		metadataUri = URI.create(URIUtil.join(pid.getRepositoryUri(),
-				RepositoryPathConstants.FCR_METADATA));
+		metadataUri = repository.getMetadataUri(pid);
 	}
 
 	@Override

@@ -24,9 +24,9 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.RDFModelUtil;

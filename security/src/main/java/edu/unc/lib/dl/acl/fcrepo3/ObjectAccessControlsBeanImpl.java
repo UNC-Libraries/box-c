@@ -142,7 +142,9 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
 	 * @param triples
 	 *           map of triples containing the access control of the new object
 	 */
-	public ObjectAccessControlsBeanImpl(ObjectAccessControlsBeanImpl baseAcls, PID pid, Map<String, List<String>> triples) {
+	public ObjectAccessControlsBeanImpl(ObjectAccessControlsBean baseAclsG, PID pid, Map<String, List<String>> triples) {
+		ObjectAccessControlsBeanImpl baseAcls = (ObjectAccessControlsBeanImpl) baseAclsG;
+		
 		this.object = pid;
 
 		List<String> inherit = triples.get(ContentModelHelper.CDRProperty.inheritPermissions.toString());

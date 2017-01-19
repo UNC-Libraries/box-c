@@ -7,8 +7,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.UUID;
 
-import net.greghaines.jesque.Job;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,8 +20,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.SpringJobFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SpringJobFactory;
+import net.greghaines.jesque.Job;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
