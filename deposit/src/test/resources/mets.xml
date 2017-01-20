@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets xmlns="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink" PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
+  <metsHdr CREATEDATE="2016-12-16T19:11:50.145Z">
+    <agent ROLE="CREATOR" TYPE="OTHER">
+      <name>CDR Forms</name>
+    </agent>
+  </metsHdr>
+  <dmdSec ID="_5c17cd6c-5dac-404e-8466-aab2041a4daa">
+    <mdWrap MDTYPE="MODS">
+      <xmlData>
+        <mods xmlns="http://www.loc.gov/mods/v3">
+          <name>
+            <namePart>Test User</namePart>
+          </name>
+        </mods>
+      </xmlData>
+    </mdWrap>
+  </dmdSec>
+  <amdSec>
+    <rightsMD ID="_af478dbf-52bd-44fd-842a-ffb52ffaeed0">
+      <mdWrap MDTYPE="OTHER">
+        <xmlData>
+          <acl:accessControl xmlns:acl="http://cdr.unc.edu/definitions/acl" acl:embargo-until="2018-01-19" />
+        </xmlData>
+      </mdWrap>
+    </rightsMD>
+  </amdSec>
+  <fileSec>
+    <fileGrp ID="OBJECTS">
+      <file CHECKSUM="4cc5eaafcad970174e44c5194b5afab9" CHECKSUMTYPE="MD5" ID="_c19064b2-983f-4b55-90f5-8d4b890055e4" MIMETYPE="application/pdf" SIZE="43129">
+        <FLocat xlink:href="_c19064b2-983f-4b55-90f5-8d4b890055e4" LOCTYPE="OTHER" USE="STAGE" />
+      </file>
+    </fileGrp>
+  </fileSec>
+  <structMap>
+    <div ID="_d58ea0e6-0aef-4981-87b2-33e8f0cebac0" TYPE="Aggregate Work" LABEL="Aggregate Work" DMDID="_5c17cd6c-5dac-404e-8466-aab2041a4daa" ADMID="_af478dbf-52bd-44fd-842a-ffb52ffaeed0" >
+      <div ID="_b0e9537d-2d4a-4b20-ac9e-75399cc013c5" TYPE="File" LABEL="David_Romani_response.pdf" >
+        <fptr FILEID="_c19064b2-983f-4b55-90f5-8d4b890055e4" />
+      </div>
+    </div>
+  </structMap>
+  <structLink>
+    <smLink xlink:arcrole="http://cdr.unc.edu/definitions/1.0/base-model.xml#defaultWebObject" xlink:from="#_d58ea0e6-0aef-4981-87b2-33e8f0cebac0" xlink:to="#_b0e9537d-2d4a-4b20-ac9e-75399cc013c5" />
+  </structLink>
+</mets>

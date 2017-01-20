@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,69 +28,40 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Content;
 import org.jdom2.Element;
 import org.jdom2.filter.Filters;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import edu.unc.lib.deposit.AbstractDepositJobTest;
+import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.util.DepositStatusFactory;
-import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * @author bbpennel
  * @date Jun 18, 2014
  */
-public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest{
-
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
-
-	@Mock
-	protected JobStatusFactory jobStatusFactory;
-	@Mock
-	protected DepositStatusFactory depositStatusFactory;
-
-	protected File depositsDirectory;
-
-	protected String jobUUID;
-	protected String depositUUID;
-	protected File depositDir;
+public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest {
 
 	@Before
-	public void initBase() throws Exception {
-		initMocks(this);
-		
+	public void initNorm() throws Exception {
 		String pidString =  UUID.randomUUID().toString();
 		PID premisEventPid = PIDs.get(pidString);
-		when(repo.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
+		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
 		Answer<PID> answer = new Answer<PID>() {
 			public PID answer(InvocationOnMock invocation) throws Throwable {
 				return PIDs.get(UUID.randomUUID().toString());
 			}
 		};
-		when(repo.mintContentPid()).thenAnswer(answer);
-
-		depositsDirectory = tmpFolder.newFolder("deposits");
-
-		jobUUID = UUID.randomUUID().toString();
-
-		depositUUID = UUID.randomUUID().toString();
-		depositDir = new File(depositsDirectory, depositUUID);
-		depositDir.mkdir();
+		when(repository.mintContentPid()).thenAnswer(answer);
 	}
 
 	protected File verifyStagingLocationExists(Resource resource, File depositDirectory,

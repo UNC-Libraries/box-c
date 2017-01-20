@@ -78,14 +78,14 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 		job = new VocabularyEnforcementJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
-		job.setRepository(repo);
+		job.setRepository(repository);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
 		setField(job, "vocabManager", vocabManager);
 		setField(job, "dataset", dataset);
 
-		PID depositPid = repo.mintContentPid();
+		PID depositPid = repository.mintContentPid();
 		depositStatus = new HashMap<>();
 		depositStatus.put(DepositField.containerId.name(), depositPid.toString());
 		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
@@ -94,7 +94,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
 		Model model = job.getWritableModel();
 		Bag depositBag = model.createBag(job.getDepositPID().getURI());
-		rescPid = repo.mintContentPid();
+		rescPid = repository.mintContentPid();
 		Resource mainResource = model.createResource(rescPid.getURI());
 		depositBag.add(mainResource);
 		job.closeModel();

@@ -35,6 +35,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
+
 public class CDRMETSGraphExtractor {
 	public static final Logger LOG = LoggerFactory.getLogger(CDRMETSGraphExtractor.class);
 	public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
@@ -89,7 +90,7 @@ public class CDRMETSGraphExtractor {
 		while (divs.hasNext()) {
 			Element div = divs.next();
 			String pid = METSHelper.getPIDURI(div);
-			Resource o = m.getResource(pid);
+			Resource o = m.createResource(pid);
 			if(div.getAttributeValue("LABEL") != null) {
 				m.add(o, CdrDeposit.label, div.getAttributeValue("LABEL"));
 			}

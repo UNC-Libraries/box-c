@@ -83,7 +83,8 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setMetsSipSchema(metsSipSchema);
 		job.setSchematronValidator(validator);
-		job.setRepository(repo);
+		job.setRepository(repository);
+		job.setPremisLoggerFactory(premisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "jobStatusFactory", jobStatusFactory);

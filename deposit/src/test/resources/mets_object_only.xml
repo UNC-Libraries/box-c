@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mets xmlns="http://www.loc.gov/METS/" xmlns:xlink="http://www.w3.org/1999/xlink" PROFILE="http://cdr.unc.edu/METS/profiles/Simple">
+  <metsHdr CREATEDATE="2016-12-16T19:11:50.145Z">
+    <agent ROLE="CREATOR" TYPE="OTHER">
+      <name>CDR Forms</name>
+    </agent>
+  </metsHdr>
+  <fileSec>
+    <fileGrp ID="OBJECTS">
+      <file CHECKSUM="4cc5eaafcad970174e44c5194b5afab9" CHECKSUMTYPE="MD5" ID="_c19064b2-983f-4b55-90f5-8d4b890055e4" MIMETYPE="application/pdf" SIZE="43129">
+        <FLocat xlink:href="_c19064b2-983f-4b55-90f5-8d4b890055e4" LOCTYPE="OTHER" USE="STAGE" />
+      </file>
+    </fileGrp>
+  </fileSec>
+  <structMap>
+    <div ID="_b0e9537d-2d4a-4b20-ac9e-75399cc013c5" TYPE="File Object" LABEL="David_Romani_response.pdf" >
+        <fptr FILEID="_c19064b2-983f-4b55-90f5-8d4b890055e4" />
+      </div>
+  </structMap>
+</mets>

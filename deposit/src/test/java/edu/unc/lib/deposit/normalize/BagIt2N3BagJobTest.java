@@ -22,8 +22,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -61,7 +59,6 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
 	@Before
 	public void setup() throws Exception {
-		initMocks(this);
 		status = new HashMap<String, String>();
 		when(depositStatusFactory.get(anyString())).thenReturn(status);
 		Dataset dataset = TDBFactory.createDataset();
