@@ -247,7 +247,7 @@ public abstract class AbstractDepositJob implements Runnable {
 			} 
 			return premisLoggerFactory.createPremisLogger(pid, file, repository);
 		} catch (Exception e) {
-			failJob(e, "Unexpected problem with deposit events file {0}.", new Object[] {file.getAbsoluteFile().toString()});
+			failJob(e, "Unexpected problem with deposit events file {0}.", file.getAbsoluteFile().toString());
 		}
 
 		return null;
@@ -303,7 +303,7 @@ public abstract class AbstractDepositJob implements Runnable {
 		try {
 			RDFModelUtil.serializeModel(objModel, propertiesFile);
 		} catch (IOException e) {
-			failJob(e, "Failed to serialize properties for object {} to {}",
+			failJob(e, "Failed to serialize properties for object {0} to {1}",
 					pid, propertiesFile.getAbsolutePath());
 		}
 	}

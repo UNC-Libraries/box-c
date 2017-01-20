@@ -58,7 +58,7 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
  * @date Jun 18, 2014
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/dspacemets-context.xml" })
+@ContextConfiguration({ "/dspacemets-context.xml" })
 public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
 	private static final Logger log = LoggerFactory.getLogger(BioMedToN3BagJobTest.class);
