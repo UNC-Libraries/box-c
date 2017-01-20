@@ -15,8 +15,18 @@
  */
 package edu.unc.lib.cdr;
 
+
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.component.exec.ExecResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.Repository;
 
@@ -27,6 +37,7 @@ import edu.unc.lib.dl.fcrepo4.Repository;
  *
  */
 public class AddDerivativeProcessor implements Processor {
+	private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
 	private final Repository repository;
 	
@@ -36,5 +47,12 @@ public class AddDerivativeProcessor implements Processor {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
+		String binaryUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+		
+		final ExecResult result = (ExecResult) exchange.getIn().getBody();
+		String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
+				.lines().collect(Collectors.joining("\n"));
+		
+		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
 	}
 }

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.cdr.thumbnail;
 
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -22,7 +24,6 @@ import org.fcrepo.camel.processor.EventProcessor;
 
 import edu.unc.lib.cdr.AddDerivativeProcessor;
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 
 
 /**
@@ -54,12 +55,14 @@ public class ThumbnailRouter extends RouteBuilder {
 
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 64 64 ${headers[CheckSum]}-small&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"))
+		//services.tempDirectory
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 /tmp/${headers[CheckSum]}-small"))
 		.bean(addDerivProcessor);
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[binaryPath]} PNG 128 128 ${headers[CheckSum]}-large&workingDir=/tmp&outFile=/tmp/${headers[CheckSum]}"))
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 /tmp/${headers[CheckSum]}-large"))
+		//.to("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 {{fcrepo.baseUri}}${headers[CheckSum]}-large")
 		.bean(addDerivProcessor);
 	}
 }

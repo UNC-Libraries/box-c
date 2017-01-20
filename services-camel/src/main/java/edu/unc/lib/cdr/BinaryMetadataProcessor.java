@@ -56,24 +56,28 @@ public class BinaryMetadataProcessor implements Processor {
 
 		Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
 		ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
-
-		if (resources.hasNext()) {
-			Resource resource = resources.next();
-			String mimeType = resource.getProperty(hasMimeType).getObject().toString();
-			String fcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
-			String[] fcrepoChecksumSplit = fcrepoChecksum.split(":");
-
-			String binaryPath = idToPath(fcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH);
-
-			String fullPath = new StringJoiner("")
-				.add(baseBinaryPath)
-				.add(binaryPath)
-				.add(fcrepoChecksumSplit[2])
-				.toString();
-
-			in.setHeader("Checksum", fcrepoChecksumSplit[2]);
-			in.setHeader("MimeType", mimeType);
-			in.setHeader("BinaryPath", fullPath);
+		
+		try {
+			if (resources.hasNext()) {
+				Resource resource = resources.next();
+				String mimeType = resource.getProperty(hasMimeType).getObject().toString();
+				String fcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
+				String[] fcrepoChecksumSplit = fcrepoChecksum.split(":");
+	
+				String binaryPath = idToPath(fcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH);
+	
+				String fullPath = new StringJoiner("")
+					.add(baseBinaryPath)
+					.add(binaryPath)
+					.add(fcrepoChecksumSplit[2])
+					.toString();
+	
+				in.setHeader("Checksum", fcrepoChecksumSplit[2]);
+				in.setHeader("MimeType", mimeType);
+				in.setHeader("BinaryPath", fullPath);
+			}
+		} finally {
+			resources.close();
 		}
 	}
 
