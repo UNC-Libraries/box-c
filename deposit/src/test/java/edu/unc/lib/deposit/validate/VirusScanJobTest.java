@@ -16,8 +16,6 @@
 package edu.unc.lib.deposit.validate;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -30,13 +28,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
@@ -44,23 +44,18 @@ import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import com.philvarner.clamavj.ClamScan;
 import com.philvarner.clamavj.ScanResult;
 import com.philvarner.clamavj.ScanResult.Status;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.DepositConstants;
-import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -90,6 +85,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
 		job.setClamScan(clamScan);
+		job.setPremisLoggerFactory(premisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -134,9 +130,10 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 		verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
 		verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
-		verifyPremisEvents(file1Pid);
-		verifyPremisEvents(file2Pid);
-		verifyPremisEvents(depositPid);
+		verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
+		verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
+		verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class), any(Repository.class));
+		verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class), any(Repository.class));
 	}
 
 	@Test
@@ -154,7 +151,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
 		PID file1Pid = addFileObject(depBag, pdfFile.getName());
-		PID file2Pid = addFileObject(depBag, textFile.getName());
+		addFileObject(depBag, textFile.getName());
 
 		job.closeModel();
 
@@ -167,9 +164,9 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 			verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
 			// Only the file that passed should have a premis log
-			verifyPremisEvents(file1Pid);
-			verifyPremisEventNotExist(file2Pid);
-			verifyPremisEventNotExist(depositPid);
+			verify(premisLogger).buildEvent(eq(Premis.VirusCheck));
+			verify(premisLoggerFactory).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
+			verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
 		}
 	}
 
@@ -198,8 +195,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 			verify(jobStatusFactory, never()).incrCompletion(anyString(), anyInt());
 
 			// No premis logs should have been created
-			verifyPremisEventNotExist(file1Pid);
-			verifyPremisEventNotExist(depositPid);
+			verify(premisLoggerFactory, never()).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
 		}
 	}
 
@@ -213,23 +209,6 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 		parent.add(fileResc);
 
 		return filePid;
-	}
-
-	private void verifyPremisEvents(PID pid) throws Exception {
-		File file = new File(job.getDepositDirectory(),
-				DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
-		assertTrue("Event file for " + pid + " not present", file.exists());
-
-		Model model = RDFModelUtil.createModel(new FileInputStream(file));
-		Resource resc = model.listResourcesWithProperty(Premis.hasEventType).nextResource();
-		assertTrue("Event type not assigned", resc.hasProperty(Premis.hasEventType,
-				Premis.VirusCheck));
-	}
-
-	private void verifyPremisEventNotExist(PID pid) {
-		File file = new File(job.getDepositDirectory(),
-				DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
-		assertFalse("Event file for " + pid + " should not be present", file.exists());
 	}
 
 	private class FileArgumentMatcher extends ArgumentMatcher<File> {

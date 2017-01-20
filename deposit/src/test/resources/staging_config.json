@@ -1,0 +1,12 @@
+[
+	{
+		"path":"staging_location1/",
+		"name":"Stage1",
+		"cleanupPolicy":"DELETE_INGESTED_FILES_EMPTY_FOLDERS"
+	},
+	{
+		"path":"staging_location2/",
+		"name":"Stage2",
+		"cleanupPolicy":"DO_NOTHING"
+	}
+]

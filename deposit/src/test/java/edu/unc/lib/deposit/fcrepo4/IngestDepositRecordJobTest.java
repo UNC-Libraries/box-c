@@ -25,7 +25,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -35,16 +34,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -75,6 +73,8 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 		PID eventPid = makePid("content");
 		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
 		when(depositRecord.addPremisEvents(anyListOf(PremisEventObject.class))).thenReturn(depositRecord);
+		
+		when(premisEventBuilder.addAuthorizingAgent(anyString())).thenReturn(premisEventBuilder);
 	}
 
 	private void initializeJob(String depositUUID, String packagePath, String n3File) throws Exception {
@@ -91,6 +91,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
+		job.setPremisLoggerFactory(premisLoggerFactory);
 		job.setRepository(repository);
 
 		job.init();
