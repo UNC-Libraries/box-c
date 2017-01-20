@@ -82,8 +82,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 	@Before
 	public void init() throws Exception {
-		initMocks(this);
-
 		Dataset dataset = TDBFactory.createDataset();
 
 		job = new IngestContentObjectsJob();

@@ -23,25 +23,23 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mock;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;
@@ -71,7 +69,6 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
 	@Before
 	public void init() throws Exception {
-		initMocks(this);
 
 		Dataset dataset = TDBFactory.createDataset();
 
@@ -175,7 +172,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 	@Test
 	public void badStagingLocation() {
 		exception.expect(JobFailedException.class);
-		exception.expectMessage("One staging area was invalid or unknown.");
+		exception.expectMessage("Deposit references invalid files");
 		when(policyManager.isValidStagingLocation(any(URI.class)))
 			.thenReturn(false);
 		Model model = job.getWritableModel();

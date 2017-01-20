@@ -60,7 +60,8 @@ public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 		job = new Simple2N3BagJob();
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
-		job.setRepository(repo);
+		job.setRepository(repository);
+		job.setPremisLoggerFactory(premisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);

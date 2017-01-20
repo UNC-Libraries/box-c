@@ -193,6 +193,14 @@ public abstract class AbstractDepositJob implements Runnable {
 	public void setRepository(Repository repository) {
 		this.repository = repository;
 	}
+	
+	public PremisLoggerFactory getPremisLoggerFactory() {
+		return premisLoggerFactory;
+	}
+	
+	public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+		this.premisLoggerFactory = premisLoggerFactory;
+	}
 
 	/**
 	 * Returns the manifest URIs for this deposit, or an empty list in case there are no manifests.
@@ -239,7 +247,7 @@ public abstract class AbstractDepositJob implements Runnable {
 			} 
 			return premisLoggerFactory.createPremisLogger(pid, file, repository);
 		} catch (Exception e) {
-			failJob(e, "Unexpected problem with deposit events file {}.", file.getAbsoluteFile());
+			failJob(e, "Unexpected problem with deposit events file {0}.", new Object[] {file.getAbsoluteFile().toString()});
 		}
 
 		return null;
