@@ -123,7 +123,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			
 			premisDepositLogger.writeEvent(premisDepositEvent);
 		} catch (IOException e) {
-			failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
+			failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
 		}
 		
 		model.add(mainResource, CdrDeposit.md5sum, checksum);
@@ -140,7 +140,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			model.add(mainResource, CdrDeposit.stagingLocation,
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			failJob(e, "Failed to add staging location for {} due to encoding issues", contentFile.getName());
+			failJob(e, "Failed to add staging location for {0} due to encoding issues", contentFile.getName());
 		}
 	}
 
