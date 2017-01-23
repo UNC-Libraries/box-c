@@ -41,7 +41,7 @@ public class ThumbnailRouter extends RouteBuilder {
 	/**
 	 * Configure the thumbnail route workflow.
 	 */
-	public void configure() throws Exception {	
+	public void configure() throws Exception {
 		from("activemq:topic:fedora")
 		.routeId("CdrServiceEnhancements")
 		.process(new EventProcessor())
@@ -56,13 +56,12 @@ public class ThumbnailRouter extends RouteBuilder {
 
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
-		//services.tempDirectory
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 /tmp/${headers[CheckSum]}-small"))
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
 		.bean(addDerivProcessor);
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 /tmp/${headers[CheckSum]}-large"))
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
 		.bean(addDerivProcessor);
 	}
 }
