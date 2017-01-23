@@ -50,8 +50,9 @@ public class ThumbnailRouter extends RouteBuilder {
 				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
-			.multicast()
-			.to("direct:small.thumbnail", "direct:large.thumbnail");
+			.filter(simple("${headers[mimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
+				.multicast()
+				.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
@@ -62,7 +63,6 @@ public class ThumbnailRouter extends RouteBuilder {
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 /tmp/${headers[CheckSum]}-large"))
-		//.to("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 {{fcrepo.baseUri}}${headers[CheckSum]}-large")
 		.bean(addDerivProcessor);
 	}
 }
