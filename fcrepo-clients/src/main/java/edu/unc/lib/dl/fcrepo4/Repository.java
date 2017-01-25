@@ -768,12 +768,11 @@ public class Repository {
 		}
 	}
 	
-	public URI startTransaction() throws FedoraException {
+	public FedoraTransaction startTransaction() throws FedoraException {
 		URI repoBase = URI.create(fedoraBase);
 		// appends suffix for creating transaction
 		URI createTxUri = repoBase.resolve(CREATE_TX_SUFFIX);
-		HttpClientBuilder builder = HttpClientBuilder.create();
-		CloseableHttpClient client = builder.build();
+		CloseableHttpClient client = HttpClientBuilder.create().build();
 		HttpUriRequest txRequest = new HttpPost(createTxUri);
 		URI txUri = null;
 		// attempts to create a transaction by making request to Fedora
@@ -785,7 +784,7 @@ public class Repository {
 			throw new FedoraException("Unable to create transaction", e);
 		}
 		
-		return txUri;
+		return new FedoraTransaction(txUri);
 	}
 	
 	private void persistTripleToFedora(PID subject, String sparqlUpdate) {
