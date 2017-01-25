@@ -44,6 +44,7 @@ import org.apache.jena.vocabulary.RDF;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -400,13 +401,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			Model model = ModelFactory.createDefaultModel();
 			Resource workResc = model.getResource(childPid.getRepositoryPath());
 			populateAIPProperties(childResc, workResc);
-
+			//TODO need to add transaction support around the following ----->
+			// use fcrepoclientwrapper and get the tx id from the uri it returns
+			// send txid along with uris for the following actions
 			// TODO add ACLs
 
 			obj = repository.createWorkObject(childPid, model);
 			parent.addMember(obj);
 			// TODO add description
-
+			// <------- end transaction support
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);
 			

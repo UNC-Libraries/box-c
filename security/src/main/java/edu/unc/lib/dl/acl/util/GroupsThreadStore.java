@@ -23,10 +23,10 @@ package edu.unc.lib.dl.acl.util;
  *
  */
 public class GroupsThreadStore {
-	private static ThreadLocal<AccessGroupSet> groups = new ThreadLocal<AccessGroupSet>(); // initial value is null
-	private static ThreadLocal<String> username = new ThreadLocal<String>();
-	private static ThreadLocal<String> groupString = new ThreadLocal<String>();
-	private static ThreadLocal<String> email = new ThreadLocal<String>();
+	private static ThreadLocal<AccessGroupSet> groups = new ThreadLocal<>(); // initial value is null
+	private static ThreadLocal<String> username = new ThreadLocal<>();
+	private static ThreadLocal<String> groupString = new ThreadLocal<>();
+	private static ThreadLocal<String> email = new ThreadLocal<>();
 	
 	/**
 	 * Adds groups for forwarding with subsequent invocation of fedora clients by the current thread.

@@ -26,6 +26,11 @@ import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -35,7 +40,10 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.modeshape.jcr.txn.Transactions.Transaction;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -51,6 +59,9 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class Repository {
+	
+	private static final String CREATE_TX_SUFFIX = "rest/fcr:tx";
+	
 	private String depositRecordBase;
 	private String vocabulariesBase;
 	private String contentBase;
@@ -755,6 +766,26 @@ public class Repository {
 		} else {
 			return pid.getRepositoryUri();
 		}
+	}
+	
+	public URI startTransaction() throws FedoraException {
+		URI repoBase = URI.create(fedoraBase);
+		// appends suffix for creating transaction
+		URI createTxUri = repoBase.resolve(CREATE_TX_SUFFIX);
+		HttpClientBuilder builder = HttpClientBuilder.create();
+		CloseableHttpClient client = builder.build();
+		HttpUriRequest txRequest = new HttpPost(createTxUri);
+		URI txUri = null;
+		// attempts to create a transaction by making request to Fedora
+		try (CloseableHttpResponse response = client.execute(txRequest)) {
+			// gets the full transaction uri from response header
+			txUri = URI.create(response.getFirstHeader("Location").toString());
+			FedoraTransaction.storeTxId(txUri);
+		} catch (IOException e) {
+			throw new FedoraException("Unable to create transaction", e);
+		}
+		
+		return txUri;
 	}
 	
 	private void persistTripleToFedora(PID subject, String sparqlUpdate) {
