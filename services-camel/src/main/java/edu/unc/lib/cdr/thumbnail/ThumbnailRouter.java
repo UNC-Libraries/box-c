@@ -50,7 +50,7 @@ public class ThumbnailRouter extends RouteBuilder {
 				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
-			.filter(simple("${headers[mimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
+			.filter(simple("${headers[MimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
 				.multicast()
 				.to("direct:small.thumbnail", "direct:large.thumbnail");
 
