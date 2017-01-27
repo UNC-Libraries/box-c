@@ -54,6 +54,7 @@
 
 	<bean id="addDerivativeProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
 		<constructor-arg ref="repository"/>
+		<constructor-arg value=”#{PcdmUse.thumbnail}" />
 	</bean>
 
 	<camel:camelContext id="CdrServiceEnhancements">
