@@ -15,16 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.io.IOException;
 import java.net.URI;
-
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-
-import edu.unc.lib.dl.fedora.FedoraException;
 
 /**
  * This class is responsible for storing a transaction id to a thread-local variable
