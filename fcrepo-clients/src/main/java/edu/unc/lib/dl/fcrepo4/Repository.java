@@ -61,6 +61,7 @@ import edu.unc.lib.dl.util.URIUtil;
 public class Repository {
 	
 	private static final String CREATE_TX_SUFFIX = "rest/fcr:tx";
+	private static final String COMMIT_SAVE_TX = "fcr:tx/fcr:commit";
 	
 	private String depositRecordBase;
 	private String vocabulariesBase;
@@ -779,12 +780,24 @@ public class Repository {
 		try (CloseableHttpResponse response = client.execute(txRequest)) {
 			// gets the full transaction uri from response header
 			txUri = URI.create(response.getFirstHeader("Location").toString());
-			FedoraTransaction.storeTxId(txUri);
 		} catch (IOException e) {
 			throw new FedoraException("Unable to create transaction", e);
 		}
 		
-		return new FedoraTransaction(txUri);
+		return new FedoraTransaction(txUri, this);
+	}
+	
+	public void commitTransaction(URI txUri) {
+		URI createTxUri = txUri.resolve(COMMIT_SAVE_TX);
+		CloseableHttpClient client = HttpClientBuilder.create().build();
+		HttpUriRequest txRequest = new HttpPost(createTxUri);
+		// attempts to commit/save a transaction by making request to Fedora
+		try (CloseableHttpResponse response = client.execute(txRequest)) {
+			// gets the full transaction uri from response header
+			URI.create(response.getFirstHeader("Location").toString());
+		} catch (IOException e) {
+			throw new FedoraException("Unable to commit transaction", e);
+		}
 	}
 	
 	private void persistTripleToFedora(PID subject, String sparqlUpdate) {

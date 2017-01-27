@@ -410,7 +410,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			obj = repository.createWorkObject(childPid, model);
 			parent.addMember(obj);
 			// TODO add description
-			tx.endTransaction();
+			repository.commitTransaction(tx.getTxUri());
 			// <------- end transaction support
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);

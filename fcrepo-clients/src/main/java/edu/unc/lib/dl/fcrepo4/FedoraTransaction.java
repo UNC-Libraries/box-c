@@ -31,47 +31,45 @@ import edu.unc.lib.dl.fedora.FedoraException;
  * @author harring
  *
  */
-public class FedoraTransaction {
+public class FedoraTransaction implements AutoCloseable {
 	
 	private static ThreadLocal<URI> txUriThread = new ThreadLocal<>(); // initial value == null
-	private static final String COMMIT_SAVE_TX = "fcr:tx/fcr:commit";
 	// is a transaction already underway on the current thread
-	private boolean isChild = false;
+	private boolean isChild = true;
 	private URI txUri;
+	private Repository repo;
 	
-	public FedoraTransaction(URI txUri) {
-		if (FedoraTransaction.hasTxId()) {
-			isChild = true;
+	public FedoraTransaction(URI txUri, Repository repo) {
+		if (!FedoraTransaction.hasTxId()) {
+			isChild = false;
+			FedoraTransaction.storeTxId(txUri);
 		}
 		this.txUri = txUri;
+		this.repo = repo;
 	}
 	
 	//stores txid to current thread
-	public static void storeTxId(URI uri) {
+	private static void storeTxId(URI uri) {
 		FedoraTransaction.txUriThread.set(uri);
+	}
+		
+	private static void clearTxId() {
+		FedoraTransaction.txUriThread.remove();
 	}
 	
 	public static boolean hasTxId() {
 		return FedoraTransaction.txUriThread.get() != null;
 	}
 	
-	public static void clearTxId() {
-		FedoraTransaction.txUriThread.remove();
+	public URI getTxUri() {
+		return txUri;
 	}
-	
-	public void endTransaction() {
-		URI createTxUri = txUri.resolve(COMMIT_SAVE_TX);
-		CloseableHttpClient client = HttpClientBuilder.create().build();
-		HttpUriRequest txRequest = new HttpPost(createTxUri);
-		// attempts to commit/save a transaction by making request to Fedora
-		try (CloseableHttpResponse response = client.execute(txRequest)) {
-			// gets the full transaction uri from response header
-			URI.create(response.getFirstHeader("Location").toString());
-			if (!isChild) {
-				FedoraTransaction.clearTxId();
-			}
-		} catch (IOException e) {
-			throw new FedoraException("Unable to commit transaction", e);
+
+	@Override
+	public void close() throws Exception {
+		if (!isChild) {
+			FedoraTransaction.clearTxId();
+			repo.commitTransaction(txUri);
 		}
 	}
 }
