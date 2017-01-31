@@ -53,7 +53,7 @@ public class RepositoryObjectFactory {
 
 	private LdpContainerFactory ldpFactory;
 
-	private TransactionalFcrepoClient client;
+	private FcrepoClient client;
 
 	/**
 	 * Creates a deposit record object structure at the given path with the
@@ -390,11 +390,11 @@ public class RepositoryObjectFactory {
 		}
 	}
 
-	public void setClient(TransactionalFcrepoClient client) {
+	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}
 
-	public TransactionalFcrepoClient getClient() {
+	public FcrepoClient getClient() {
 		return client;
 	}
 

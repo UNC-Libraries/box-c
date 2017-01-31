@@ -43,7 +43,7 @@ public class RepositoryInitializer {
 	
 	private RepositoryObjectFactory objFactory;
 	
-	private TransactionalFcrepoClient fcrepoClient;
+	private FcrepoClient fcrepoClient;
 	
 	public RepositoryInitializer() {
 	}
@@ -125,7 +125,7 @@ public class RepositoryInitializer {
 		this.objFactory = objFactory;
 	}
 
-	public void setFcrepoClient(TransactionalFcrepoClient fcrepoClient) {
+	public void setFcrepoClient(FcrepoClient fcrepoClient) {
 		this.fcrepoClient = fcrepoClient;
 	}
 }

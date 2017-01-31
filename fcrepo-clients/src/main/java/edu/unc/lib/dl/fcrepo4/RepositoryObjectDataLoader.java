@@ -55,7 +55,7 @@ public class RepositoryObjectDataLoader {
 
 	private AccessControlService aclService;
 
-	private TransactionalFcrepoClient client;
+	private FcrepoClient client;
 
 	/**
 	 * Loads and assigns the RDF types for the given object
@@ -178,11 +178,11 @@ public class RepositoryObjectDataLoader {
 		return aclService.getObjectAccessControls(obj.getPid());
 	}
 
-	public void setClient(TransactionalFcrepoClient client) {
+	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}
 
-	public TransactionalFcrepoClient getClient() {
+	public FcrepoClient getClient() {
 		return client;
 	}
 

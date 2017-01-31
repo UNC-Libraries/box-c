@@ -60,7 +60,7 @@ public class Repository {
 	private String agentsBase;
 	private String policiesBase;
 
-	private TransactionalFcrepoClient client;
+	private FcrepoClient client;
 
 	private String baseHost;
 
@@ -726,11 +726,11 @@ public class Repository {
 		this.authHost = authHost;
 	}
 
-	public void setClient(TransactionalFcrepoClient client) {
+	public void setClient(FcrepoClient client) {
 		this.client = client;
 	}
 
-	public TransactionalFcrepoClient getClient() {
+	public FcrepoClient getClient() {
 		return client;
 	}
 

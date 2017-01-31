@@ -32,8 +32,8 @@ public class FcrepoClientFactory {
 	 * @param password
 	 * @return
 	 */
-	public static TransactionalFcrepoClient makeAuthenticatedClient(String host, String user, String password) {
-		return (TransactionalFcrepoClient) TransactionalFcrepoClient.client()
+	public static FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
+		return TransactionalFcrepoClient.client()
 				.credentials(user, password)
 				.authScope(host)
 				.throwExceptionOnFailure()
@@ -45,7 +45,7 @@ public class FcrepoClientFactory {
 	 * 
 	 * @return
 	 */
-	public static TransactionalFcrepoClient makeClient() {
-		return (TransactionalFcrepoClient) TransactionalFcrepoClient.client().throwExceptionOnFailure().build();
+	public static FcrepoClient makeClient() {
+		return TransactionalFcrepoClient.client().throwExceptionOnFailure().build();
 	}
 }
