@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
@@ -38,7 +37,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
  */
 public class LdpContainerFactory {
 	
-	private FcrepoClient client;
+	private TransactionalFcrepoClient client;
 	
 	private static final String DIRECT_CONTAINER_TTL = 
 			"@prefix ldp: <http://www.w3.org/ns/ldp#>\n" +
@@ -162,11 +161,11 @@ public class LdpContainerFactory {
 		}
 	}
 
-	public FcrepoClient getClient() {
+	public TransactionalFcrepoClient getClient() {
 		return client;
 	}
 
-	public void setClient(FcrepoClient client) {
+	public void setClient(TransactionalFcrepoClient client) {
 		this.client = client;
 	}
 }

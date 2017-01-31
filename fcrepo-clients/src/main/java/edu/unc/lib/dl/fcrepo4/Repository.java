@@ -25,13 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpStatus;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -66,7 +60,7 @@ public class Repository {
 	private String agentsBase;
 	private String policiesBase;
 
-	private FcrepoClient client;
+	private TransactionalFcrepoClient client;
 
 	private String baseHost;
 
@@ -732,11 +726,11 @@ public class Repository {
 		this.authHost = authHost;
 	}
 
-	public void setClient(FcrepoClient client) {
+	public void setClient(TransactionalFcrepoClient client) {
 		this.client = client;
 	}
 
-	public FcrepoClient getClient() {
+	public TransactionalFcrepoClient getClient() {
 		return client;
 	}
 
