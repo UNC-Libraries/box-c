@@ -45,11 +45,13 @@ public class ThumbnailRouter extends RouteBuilder {
 		from("activemq:topic:fedora")
 		.routeId("CdrServiceEnhancements")
 		.process(new EventProcessor())
-		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED'"
-				+ " && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
+		.log("Headin: ${headers}")
+		.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
+				+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
 				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
+			.log("mimin: ${headers[MimeType]}")
 			.filter(simple("${headers[MimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
 				.multicast()
 				.to("direct:small.thumbnail", "direct:large.thumbnail");
@@ -57,11 +59,13 @@ public class ThumbnailRouter extends RouteBuilder {
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
-		.bean(addDerivProcessor);
+		.bean(addDerivProcessor)
+		.end();
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
-		.bean(addDerivProcessor);
+		.bean(addDerivProcessor)
+		.end();
 	}
 }

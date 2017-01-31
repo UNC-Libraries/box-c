@@ -19,16 +19,24 @@ package edu.unc.lib.cdr;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.exec.ExecResult;
+import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  * Adds a derivative file to an existing file object
@@ -40,19 +48,30 @@ public class AddDerivativeProcessor implements Processor {
 	private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
 	private final Repository repository;
+	//private final Resource resourceType;
 	
 	public AddDerivativeProcessor(Repository repository) {
 		this.repository = repository;
+		//this.resourceType = resourceType;
 	}
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String binaryUri = (String) exchange.getIn().getHeader(FCREPO_URI);
+		Message in = exchange.getIn();
+		String binaryUri = (String) in.getHeader(FCREPO_URI);
+		String mimeType = (String) in.getHeader("MimeType");
 		
-		final ExecResult result = (ExecResult) exchange.getIn().getBody();
+		final ExecResult result = (ExecResult) in.getBody();
 		String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
 				.lines().collect(Collectors.joining("\n"));
 		
+		InputStream binaryStream = new FileInputStream(derivativePath + ".PNG");
+		
+		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
+		FileObject parent = (FileObject) binary.getParent();
+		log.info("Found parent");
+		parent.addDerivative(null, binaryStream, derivativePath, mimeType, PcdmUse.ThumbnailImage); //PcdmUse.ThumbnailImage
+
 		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
 	}
 }
