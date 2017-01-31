@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>cdr</artifactId>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<version>4.0-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>services-camel</artifactId>
+	<version>1.0</version>
+	<packaging>war</packaging>
+
+	<name>thumbnail-enhancements</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<fcrepo-camel.version>4.5.0</fcrepo-camel.version>
+		<camel.version>2.17.3</camel.version>
+		<activemq.version>5.14.1</activemq.version>
+		<osgi.export.packages>edu.unc.lib.cdr.thumbnail;version=${project.version}</osgi.export.packages>
+		<osgi.import.packages>*</osgi.import.packages>
+	</properties>
+
+	<dependencies>
+
+	<!-- Camel -->
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-core</artifactId>
+		<version>${camel.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-spring</artifactId>
+		<version>${camel.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-exec</artifactId>
+		<version>${camel.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.activemq</groupId>
+		<artifactId>activemq-camel</artifactId>
+		<version>${activemq.version}</version>
+	</dependency>
+
+	<dependency>
+		<groupId>org.fcrepo.camel</groupId>
+		<artifactId>fcrepo-camel</artifactId>
+		<version>${fcrepo-camel.version}</version>
+		<exclusions>
+			<exclusion>
+				<artifactId>org.fcrepo.client</artifactId>
+				<groupId>fcrepo-java-client</groupId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+	<dependency>
+		<groupId>org.fcrepo.client</groupId>
+		<artifactId>fcrepo-java-client</artifactId>
+		<version>${fcrepo.client.version}</version>
+	</dependency>
+
+	<!-- <dependency>
+		<groupId>org.apache.activemq</groupId>
+		<artifactId>activemq-camel</artifactId>
+		<version>${activemq.version}</version>
+		<scope>test</scope>
+	</dependency> -->
+	
+	<dependency>
+		<groupId>org.apache.jena</groupId>
+		<artifactId>apache-jena-libs</artifactId>
+		<version>${jena.version}</version>
+		<type>pom</type>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-core</artifactId>
+		<version>${spring.version}</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>metadata</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>fcrepo-clients</artifactId>
+		<exclusions>
+			<exclusion>
+				<artifactId>org.osgi.core</artifactId>
+				<groupId>org.osgi</groupId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+
+	<!-- Testing -->
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-test-blueprint</artifactId>
+		<version>${camel.version}</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-test-spring</artifactId>
+		<version>${camel.version}</version>
+		<scope>test</scope>
+	</dependency>
+
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>metadata</artifactId>
+		<type>test-jar</type>
+		<scope>test</scope>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.mockito</groupId>
+		<artifactId>mockito-all</artifactId>
+		<scope>test</scope>
+	</dependency>
+
+	<!-- logging -->
+	<dependency>
+		<groupId>org.apache.logging.log4j</groupId>
+		<artifactId>log4j-api</artifactId>
+		<version>2.6.2</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.logging.log4j</groupId>
+		<artifactId>log4j-core</artifactId>
+		<version>2.6.2</version>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.logging.log4j</groupId>
+		<artifactId>log4j-slf4j-impl</artifactId>
+		<version>2.6.2</version>
+		<scope>test</scope>
+	</dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+
+      <!-- compiler plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+
+      <!-- to generate the MANIFEST.MF of the bundle -->
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
