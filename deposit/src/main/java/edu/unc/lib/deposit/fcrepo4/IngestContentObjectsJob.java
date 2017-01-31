@@ -410,7 +410,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			obj = repository.createWorkObject(childPid, model);
 			parent.addMember(obj);
 			// TODO add description
-			repository.commitTransaction(tx.getTxUri());
+			try {
+				tx.close();
+			} catch(Exception e) {
+				throw new DepositException("Unable to close transaction for " + tx.getTxUri().toString(), e);
+			}
 			// <------- end transaction support
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);

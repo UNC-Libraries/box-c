@@ -30,6 +30,8 @@ import org.fcrepo.client.FcrepoResponse;
  */
 public class TransactionalFcrepoClient extends FcrepoClient {
 	
+	private static final String REST = "/rest";
+	
 	protected TransactionalFcrepoClient(String username, String password, String host, Boolean throwExceptionOnFailure) {
 		super(username, password, host, throwExceptionOnFailure);
 	}
@@ -44,8 +46,12 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		return super.executeRequest(uri, request);
     }
 	
-	private URI rewriteUri(URI uri) {
-		return uri;
+	private URI rewriteUri(URI rescUri) {
+		URI txUri = FedoraTransaction.txUriThread.get();
+		String rescId = rescUri.toString();
+		int txIdIndex = rescId.indexOf(REST);
+		rescId = rescId.substring(txIdIndex + REST.length());
+		return txUri.resolve(rescId);
 	}
 	
 	private boolean hasTxId() {

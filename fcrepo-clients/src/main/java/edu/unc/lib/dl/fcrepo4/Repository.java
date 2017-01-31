@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -40,10 +41,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-import org.modeshape.jcr.txn.Transactions.Transaction;
-
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -773,29 +770,25 @@ public class Repository {
 		URI repoBase = URI.create(fedoraBase);
 		// appends suffix for creating transaction
 		URI createTxUri = repoBase.resolve(CREATE_TX_SUFFIX);
-		CloseableHttpClient client = HttpClientBuilder.create().build();
-		HttpUriRequest txRequest = new HttpPost(createTxUri);
 		URI txUri = null;
 		// attempts to create a transaction by making request to Fedora
-		try (CloseableHttpResponse response = client.execute(txRequest)) {
+		try (FcrepoResponse response = getClient().post(createTxUri).perform()) {
 			// gets the full transaction uri from response header
-			txUri = URI.create(response.getFirstHeader("Location").toString());
-		} catch (IOException e) {
+			txUri = response.getLocation();
+		} catch (IOException | FcrepoOperationFailedException e) {
 			throw new FedoraException("Unable to create transaction", e);
 		}
 		
 		return new FedoraTransaction(txUri, this);
 	}
 	
-	public void commitTransaction(URI txUri) {
-		URI createTxUri = txUri.resolve(COMMIT_SAVE_TX);
-		CloseableHttpClient client = HttpClientBuilder.create().build();
-		HttpUriRequest txRequest = new HttpPost(createTxUri);
+	protected void commitTransaction(URI txUri) {
+		URI commitTxUri = txUri.resolve(COMMIT_SAVE_TX);
 		// attempts to commit/save a transaction by making request to Fedora
-		try (CloseableHttpResponse response = client.execute(txRequest)) {
+		try (FcrepoResponse response = getClient().post(commitTxUri).perform()) {
 			// gets the full transaction uri from response header
-			URI.create(response.getFirstHeader("Location").toString());
-		} catch (IOException e) {
+			response.getLocation();
+		} catch (IOException | FcrepoOperationFailedException e) {
 			throw new FedoraException("Unable to commit transaction", e);
 		}
 	}

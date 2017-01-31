@@ -24,7 +24,7 @@ import java.net.URI;
  */
 public class FedoraTransaction implements AutoCloseable {
 	
-	private static ThreadLocal<URI> txUriThread = new ThreadLocal<>(); // initial value == null
+	protected static ThreadLocal<URI> txUriThread = new ThreadLocal<>(); // initial value == null
 	// is a transaction already underway on the current thread
 	private boolean isChild = true;
 	private URI txUri;
