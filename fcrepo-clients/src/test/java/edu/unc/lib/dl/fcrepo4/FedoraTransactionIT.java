@@ -15,8 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -52,12 +51,14 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		resc.addProperty(DcElements.title, "Folder Title");
 		FolderObject obj = repository.createFolderObject(pid, model);
 
+		assertTrue(FedoraTransaction.hasTxId());
 		assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
 		assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
 		assertEquals("Folder Title", obj.getResource()
 				.getProperty(DcElements.title).getString());
-		
 		tx.close();
+		assertFalse(FedoraTransaction.hasTxId());
+		assertNull(tx.getTxUri());
 	}
 
 }

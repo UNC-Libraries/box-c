@@ -61,6 +61,7 @@ public class FedoraTransaction implements AutoCloseable {
 		if (!isChild) {
 			FedoraTransaction.clearTxId();
 			repo.commitTransaction(txUri);
+			txUri = null;
 		}
 	}
 }

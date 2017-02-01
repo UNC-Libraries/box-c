@@ -404,7 +404,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			//TODO need to add transaction support around the following ----->
 			// use transactionalfcrepoclient and get the tx id from the uri it returns
 			// send txid along with uris for the following actions
-			FedoraTransaction tx =repository.startTransaction();
+			FedoraTransaction tx = repository.startTransaction();
 			// TODO add ACLs
 
 			obj = repository.createWorkObject(childPid, model);

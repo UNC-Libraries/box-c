@@ -51,8 +51,9 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class Repository {
 	
-	private static final String CREATE_TX_SUFFIX = "rest/fcr:tx";
-	private static final String COMMIT_SAVE_TX = "fcr:tx/fcr:commit";
+	private static final String CREATE_TX = "fcr:tx";
+	private static final String COMMIT_TX = "fcr:tx/fcr:commit";
+	private static final String ROLLBACK_TX = "fcr:tx/fcr:rollback";
 	
 	private String depositRecordBase;
 	private String vocabulariesBase;
@@ -763,7 +764,7 @@ public class Repository {
 	public FedoraTransaction startTransaction() throws FedoraException {
 		URI repoBase = URI.create(fedoraBase);
 		// appends suffix for creating transaction
-		URI createTxUri = repoBase.resolve(CREATE_TX_SUFFIX);
+		URI createTxUri = URI.create(URIUtil.join(repoBase, CREATE_TX));
 		URI txUri = null;
 		// attempts to create a transaction by making request to Fedora
 		try (FcrepoResponse response = getClient().post(createTxUri).perform()) {
@@ -777,11 +778,40 @@ public class Repository {
 	}
 	
 	protected void commitTransaction(URI txUri) {
-		URI commitTxUri = txUri.resolve(COMMIT_SAVE_TX);
+		URI commitTxUri = URI.create(URIUtil.join(txUri, COMMIT_TX));
 		// attempts to commit/save a transaction by making request to Fedora
 		try (FcrepoResponse response = getClient().post(commitTxUri).perform()) {
 			// gets the full transaction uri from response header
-			response.getLocation();
+			int statusCode = response.getStatusCode();
+			if (statusCode != HttpStatus.SC_NO_CONTENT) {
+				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
+			}
+		} catch (IOException | FcrepoOperationFailedException e) {
+			throw new FedoraException("Unable to commit transaction", e);
+		}
+	}
+	
+	protected void keepTransactionAlive(URI txUri) {
+		URI txUriAlive = URI.create(URIUtil.join(txUri, CREATE_TX));
+		// attempts to commit/save a transaction by making request to Fedora
+		try (FcrepoResponse response = getClient().post(txUriAlive).perform()) {
+			int statusCode = response.getStatusCode();
+			if (statusCode != HttpStatus.SC_NO_CONTENT) {
+				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
+			}
+		} catch (IOException | FcrepoOperationFailedException e) {
+			throw new FedoraException("Unable to commit transaction", e);
+		}
+	}
+	
+	protected void abortTransaction(URI txUri) {
+		URI txUriAbort = URI.create(URIUtil.join(txUri, ROLLBACK_TX));
+		// attempts to commit/save a transaction by making request to Fedora
+		try (FcrepoResponse response = getClient().post(txUriAbort).perform()) {
+			int statusCode = response.getStatusCode();
+			if (statusCode != HttpStatus.SC_NO_CONTENT) {
+				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
+			}
 		} catch (IOException | FcrepoOperationFailedException e) {
 			throw new FedoraException("Unable to commit transaction", e);
 		}

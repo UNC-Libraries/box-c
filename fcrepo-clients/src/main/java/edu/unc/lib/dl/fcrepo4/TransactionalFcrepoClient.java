@@ -36,6 +36,15 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		super(username, password, host, throwExceptionOnFailure);
 	}
 	
+	/**
+     * Build a TransactionalFcrepoClient
+     * 
+     * @return a client builder
+     */
+	public static FcrepoClientBuilder client() {
+        return new TransactionalFcrepoClientBuilder();
+    }
+	
 	@Override
 	public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
             throws FcrepoOperationFailedException {
@@ -56,5 +65,64 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 	
 	private boolean hasTxId() {
 		return FedoraTransaction.hasTxId();
+	}
+	
+	public static class TransactionalFcrepoClientBuilder extends FcrepoClientBuilder {
+		
+		private String authUser;
+
+        private String authPassword;
+
+        private String authHost;
+
+        private boolean throwExceptionOnFailure;
+
+        /**
+         * Add basic authentication credentials to this client
+         * 
+         * @param username username for authentication
+         * @param password password for authentication
+         * @return the client builder
+         */
+        @Override
+        public FcrepoClientBuilder credentials(final String username, final String password) {
+            this.authUser = username;
+            this.authPassword = password;
+            return this;
+        }
+
+        /**
+         * Add an authentication scope to this client
+         * 
+         * @param authHost authentication scope value
+         * @return this builder
+         */
+        @Override
+        public FcrepoClientBuilder authScope(final String authHost) {
+            this.authHost = authHost;
+
+            return this;
+        }
+
+        /**
+         * Client should throw exceptions when failures occur
+         * 
+         * @return this builder
+         */
+        @Override
+        public FcrepoClientBuilder throwExceptionOnFailure() {
+            this.throwExceptionOnFailure = true;
+            return this;
+        }
+
+        @Override
+		/**
+	     * Get the client
+	     * 
+	     * @return the client constructed by this builder
+	     */
+	    public FcrepoClient build() {
+	        return new TransactionalFcrepoClient(authUser, authPassword, authHost, throwExceptionOnFailure);
+	    }
 	}
 }
