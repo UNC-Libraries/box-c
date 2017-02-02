@@ -800,7 +800,7 @@ public class Repository {
 				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
 			}
 		} catch (IOException | FcrepoOperationFailedException e) {
-			throw new FedoraException("Unable to commit transaction", e);
+			throw new FedoraException("Unable to keep transaction alive", e);
 		}
 	}
 	
@@ -813,7 +813,7 @@ public class Repository {
 				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
 			}
 		} catch (IOException | FcrepoOperationFailedException e) {
-			throw new FedoraException("Unable to commit transaction", e);
+			throw new FedoraException("Unable to abort transaction", e);
 		}
 	}
 	

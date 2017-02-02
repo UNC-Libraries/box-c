@@ -25,27 +25,22 @@ import java.net.URI;
 public class FedoraTransaction implements AutoCloseable {
 	
 	protected static ThreadLocal<URI> txUriThread = new ThreadLocal<>(); // initial value == null
-	// is a transaction already underway on the current thread
+	protected static ThreadLocal<FedoraTransaction> rootTxThread = new ThreadLocal<>(); // keeps track of root tx
+	// whether tx is already underway on the current thread
 	private boolean isChild = true;
+	private boolean isAborted = false;
 	private URI txUri;
 	private Repository repo;
 	
 	public FedoraTransaction(URI txUri, Repository repo) {
-		if (!FedoraTransaction.hasTxId()) {
-			isChild = false;
+		// if tx is root
+		if (rootTxThread.get() != null) {
+			rootTxThread.set(this);
 			FedoraTransaction.storeTxId(txUri);
+			isChild = false;
 		}
 		this.txUri = txUri;
 		this.repo = repo;
-	}
-	
-	//stores txid to current thread
-	private static void storeTxId(URI uri) {
-		FedoraTransaction.txUriThread.set(uri);
-	}
-		
-	private static void clearTxId() {
-		FedoraTransaction.txUriThread.remove();
 	}
 	
 	public static boolean hasTxId() {
@@ -58,10 +53,37 @@ public class FedoraTransaction implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		if (!isChild) {
-			FedoraTransaction.clearTxId();
+		if (!isChild && !isAborted) {
 			repo.commitTransaction(txUri);
-			txUri = null;
+			clearTxId();
 		}
 	}
+	
+	public void keepAlive(URI txUri) {
+		//TODO implement clock to extend tx for ~ 1 hour?
+		repo.keepTransactionAlive(txUri);
+	}
+	
+	public void abort() {
+		if (isChild) {
+			// child defers to root
+			FedoraTransaction.rootTxThread.get().abort();
+		} else if (!isAborted) {
+			isAborted = true;
+			clearTxId();
+			repo.abortTransaction(txUri);
+		}
+		throw new TransactionAbortedException("The transaction with id " + txUri + " was rolled back");
+	}
+	
+	//stores txid to current thread
+	private static void storeTxId(URI uri) {
+		FedoraTransaction.txUriThread.set(uri);
+	}
+	//clears txid from current thread	
+	private static void clearTxId() {
+		FedoraTransaction.txUriThread.remove();
+	}
+	
+	
 }
