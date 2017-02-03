@@ -804,16 +804,16 @@ public class Repository {
 		}
 	}
 	
-	protected void abortTransaction(URI txUri) {
-		URI txUriAbort = URI.create(URIUtil.join(txUri, ROLLBACK_TX));
+	protected void cancelTransaction(URI txUri) {
+		URI txUriCancel = URI.create(URIUtil.join(txUri, ROLLBACK_TX));
 		// attempts to commit/save a transaction by making request to Fedora
-		try (FcrepoResponse response = getClient().post(txUriAbort).perform()) {
+		try (FcrepoResponse response = getClient().post(txUriCancel).perform()) {
 			int statusCode = response.getStatusCode();
 			if (statusCode != HttpStatus.SC_NO_CONTENT) {
 				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
 			}
 		} catch (IOException | FcrepoOperationFailedException e) {
-			throw new FedoraException("Unable to abort transaction", e);
+			throw new FedoraException("Unable to cancel transaction", e);
 		}
 	}
 	

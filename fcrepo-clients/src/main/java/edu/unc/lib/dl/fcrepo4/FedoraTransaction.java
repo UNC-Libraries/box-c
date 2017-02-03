@@ -27,17 +27,17 @@ public class FedoraTransaction implements AutoCloseable {
 	protected static ThreadLocal<URI> txUriThread = new ThreadLocal<>(); // initial value == null
 	protected static ThreadLocal<FedoraTransaction> rootTxThread = new ThreadLocal<>(); // keeps track of root tx
 	// whether tx is already underway on the current thread
-	private boolean isChild = true;
-	private boolean isAborted = false;
+	private boolean isSub = true;
+	private boolean isCancelled = false;
 	private URI txUri;
 	private Repository repo;
 	
 	public FedoraTransaction(URI txUri, Repository repo) {
 		// if tx is root
-		if (rootTxThread.get() != null) {
+		if (rootTxThread.get() == null) {
 			rootTxThread.set(this);
-			FedoraTransaction.storeTxId(txUri);
-			isChild = false;
+			storeTxId(txUri);
+			isSub = false;
 		}
 		this.txUri = txUri;
 		this.repo = repo;
@@ -53,9 +53,10 @@ public class FedoraTransaction implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		if (!isChild && !isAborted) {
+		if (!isSub && !isCancelled) {
 			repo.commitTransaction(txUri);
 			clearTxId();
+			txUri = null;
 		}
 	}
 	
@@ -64,16 +65,17 @@ public class FedoraTransaction implements AutoCloseable {
 		repo.keepTransactionAlive(txUri);
 	}
 	
-	public void abort() {
-		if (isChild) {
-			// child defers to root
-			FedoraTransaction.rootTxThread.get().abort();
-		} else if (!isAborted) {
-			isAborted = true;
+	public void cancel() {
+		if (isSub) {
+			// sub tx defers to root
+			FedoraTransaction.rootTxThread.get().cancel();
+		} else if (!isCancelled) {
+			isCancelled = true;
 			clearTxId();
-			repo.abortTransaction(txUri);
+			FedoraTransaction.rootTxThread.set(null);
+			repo.cancelTransaction(txUri);
 		}
-		throw new TransactionAbortedException("The transaction with id " + txUri + " was rolled back");
+		throw new TransactionCancelledException("The transaction with id " + txUri + " was rolled back");
 	}
 	
 	//stores txid to current thread

@@ -36,19 +36,21 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 public class FedoraTransactionIT extends AbstractFedoraIT {
 	
 	private PID pid;
+	private Model model;
 
 	@Before
 	public void init() {
 		pid = repository.mintContentPid();
+		
+		model = ModelFactory.createDefaultModel();
+		Resource resc = model.createResource(pid.getRepositoryPath());
+		resc.addProperty(DcElements.title, "Folder Title");
 	}
 	
 	@Test
-	public void createTransactionTest() throws Exception {
+	public void createTxTest() throws Exception {
 		FedoraTransaction tx = repository.startTransaction();
 		
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryPath());
-		resc.addProperty(DcElements.title, "Folder Title");
 		FolderObject obj = repository.createFolderObject(pid, model);
 
 		assertTrue(FedoraTransaction.hasTxId());
@@ -59,6 +61,16 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		tx.close();
 		assertFalse(FedoraTransaction.hasTxId());
 		assertNull(tx.getTxUri());
+	}
+	
+	@Test (expected = TransactionCancelledException.class)
+	public void createRollbackTxTest() {
+		FedoraTransaction tx = repository.startTransaction();
+		
+		repository.createFolderObject(pid, model);
+		
+		tx.cancel();
+		
 	}
 
 }
