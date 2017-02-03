@@ -48,11 +48,11 @@ public class AddDerivativeProcessor implements Processor {
 	private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
 	private final Repository repository;
-	//private final Resource resourceType;
+	private final String slug;
 	
-	public AddDerivativeProcessor(Repository repository) {
+	public AddDerivativeProcessor(Repository repository, String slug) {
 		this.repository = repository;
-		//this.resourceType = resourceType;
+		this.slug = slug;
 	}
 
 	@Override
@@ -69,9 +69,12 @@ public class AddDerivativeProcessor implements Processor {
 		
 		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
 		FileObject parent = (FileObject) binary.getParent();
-		log.info("Found parent");
-		parent.addDerivative(null, binaryStream, derivativePath, mimeType, PcdmUse.ThumbnailImage); //PcdmUse.ThumbnailImage
+		parent.addDerivative(slug, binaryStream, derivativePath, mimeType, PcdmUse.ThumbnailImage);
 
 		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
 	}
+	
+	/*public FileObject addDerivative(FileObject parent, ) {
+		return parent.addDerivative(slug, binaryStream, derivativePath, mimeType, PcdmUse.ThumbnailImage);
+	} */
 }

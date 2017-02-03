@@ -123,13 +123,12 @@ public class TripleStoreQueryServiceFusekiImpl implements
 		String queryString = String.format(
 				"select ?pid where { ?pid <%1$s> <%2$s> }",
 				relationship, child.getURI());
-
-		log.info("Queryez: " + queryString);
 		
 		Query query = QueryFactory.create(queryString);
 
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService("http://localhost:8080/fuseki/test/query", query)) { 
 			ResultSet results = qexec.execSelect();
+
 			for (; results.hasNext();) {
 				QuerySolution soln = results.nextSolution();
 				Resource res = soln.getResource("pid");
@@ -147,31 +146,6 @@ public class TripleStoreQueryServiceFusekiImpl implements
 	public PID fetchContainer(PID child) {
 		return fetchContainer(child, null);
 	}
-	
-	/**
-	 * Lookup a list of digital object ids. The query must return pairs of $pid
-	 * and $repositoryPath.
-	 *
-	 * @param query
-	 *            a query that returns resource values, one per row
-	 * @return a list of the URIs found
-	 * @throws RemoteException
-	 *             for communication failure
-	 */
-/*	private List<PID> lookupDigitalObjects(String query) {
-		List<PID> result = new ArrayList<PID>();
-		String response = this.sendTQL(query);
-		for (Element solution : getQuerySolutions(response)) {
-			Object o = solution.getContent(0);
-			if (o instanceof Element) {
-				String res = ((Element) o).getAttributeValue("resource");
-				if (res != null) {
-					result.add(new PID(res.substring(res.indexOf("/") + 1)));
-				}
-			}
-		}
-		return result;
-	} */
 
 	@Override
 	public boolean isOrphaned(PID key) {

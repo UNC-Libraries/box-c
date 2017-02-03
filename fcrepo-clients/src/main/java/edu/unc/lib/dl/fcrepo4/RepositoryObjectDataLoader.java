@@ -155,11 +155,9 @@ public class RepositoryObjectDataLoader {
 		} else if (model.containsResource(Fcrepo4Repository.Container)) {
 			resourceType = PcdmModels.hasMember;
 		}
-		 log.info("resourceType: " + resourceType.toString());
-		 log.info("PID: " + obj.getPid());
-		 
+
 		PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
-		
+
 		return repository.getContentObject(pid);
 	}
 

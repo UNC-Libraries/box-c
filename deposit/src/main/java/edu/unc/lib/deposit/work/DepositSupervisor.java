@@ -569,7 +569,7 @@ public class DepositSupervisor implements WorkerListener {
 			
 			if (conversion == null) {
 				String msg = MessageFormat
-						.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {}",
+						.format("Cannot convert deposit package to N3 BagIt. No converter for this packaging type(s): {0}",
 								packagingType);
 				throw new DepositFailedException(msg);
 			} else if (!successfulJobs.contains(conversion.getClassName())) {
