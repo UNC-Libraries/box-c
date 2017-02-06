@@ -72,5 +72,24 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		tx.cancel();
 		
 	}
+	
+	@Test
+	public void nestedTxTest() throws Exception {
+		FedoraTransaction parentTx = repository.startTransaction();
+		repository.createFolderObject(pid, model);
+		
+		FedoraTransaction subTx = repository.startTransaction();
+		PID workPid = repository.mintContentPid();
+		repository.createWorkObject(workPid);
+		subTx.close();
+		
+		assertNull(subTx.getTxUri());
+		assertNotNull((parentTx.getTxUri()));
+		assertTrue(FedoraTransaction.isStillAlive());
+		
+		parentTx.close();
+		assertNull(parentTx.getTxUri());
+		assertTrue(FedoraTransaction.isStillAlive());
+	}
 
 }

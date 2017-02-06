@@ -47,6 +47,10 @@ public class FedoraTransaction implements AutoCloseable {
 		return FedoraTransaction.txUriThread.get() != null;
 	}
 	
+	public static boolean isStillAlive() {
+		return FedoraTransaction.rootTxThread.get() != null;
+	}
+	
 	public URI getTxUri() {
 		return txUri;
 	}
@@ -56,11 +60,11 @@ public class FedoraTransaction implements AutoCloseable {
 		if (!isSub && !isCancelled) {
 			repo.commitTransaction(txUri);
 			clearTxId();
-			txUri = null;
 		}
+		txUri = null;
 	}
 	
-	public void keepAlive(URI txUri) {
+	public void keepAlive() {
 		//TODO implement clock to extend tx for ~ 1 hour?
 		repo.keepTransactionAlive(txUri);
 	}
@@ -72,7 +76,7 @@ public class FedoraTransaction implements AutoCloseable {
 		} else if (!isCancelled) {
 			isCancelled = true;
 			clearTxId();
-			FedoraTransaction.rootTxThread.set(null);
+			FedoraTransaction.rootTxThread.remove();
 			repo.cancelTransaction(txUri);
 		}
 		throw new TransactionCancelledException("The transaction with id " + txUri + " was rolled back");
