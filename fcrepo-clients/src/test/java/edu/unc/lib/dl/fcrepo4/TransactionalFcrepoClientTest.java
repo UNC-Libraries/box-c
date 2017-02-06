@@ -1,18 +1,25 @@
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.*;
+import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
 
 import java.net.URI;
-import org.apache.http.client.HttpClient;
+
+import org.apache.http.Header;
+import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 
 import edu.unc.lib.dl.fcrepo4.TransactionalFcrepoClient.TransactionalFcrepoClientBuilder;
 
@@ -25,7 +32,11 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 	@Mock
 	private HttpRequestBase request;
 	@Mock
-	private HttpClient httpClient;
+	private CloseableHttpClient httpClient;
+	@Mock
+	private StatusLine statusLine;
+	@Mock
+	private CloseableHttpResponse httpResponse;
 	
 	@Before
 	public void setup() throws Exception {
@@ -34,6 +45,11 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 		tx = new FedoraTransaction(uri, repository);
 		txClient = (TransactionalFcrepoClient) builder.build();
 		setField(txClient, "httpclient", httpClient);
+		
+		when(httpClient.execute(any(HttpRequestBase.class))).thenReturn(httpResponse);
+		when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
+		when(httpResponse.getStatusLine()).thenReturn(statusLine);
+		when(httpResponse.getAllHeaders()).thenReturn(new Header[]{});
 	}
 	
 	@Test
