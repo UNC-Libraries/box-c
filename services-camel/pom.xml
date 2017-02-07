@@ -44,6 +44,11 @@
 		<version>${camel.version}</version>
 	</dependency>
 	<dependency>
+	<groupId>org.apache.camel</groupId>
+		<artifactId>camel-http</artifactId>
+		<version>${camel.version}</version>
+	</dependency>
+	<dependency>
 		<groupId>org.apache.activemq</groupId>
 		<artifactId>activemq-camel</artifactId>
 		<version>${activemq.version}</version>
@@ -65,13 +70,6 @@
 		<artifactId>fcrepo-java-client</artifactId>
 		<version>${fcrepo.client.version}</version>
 	</dependency>
-
-	<!-- <dependency>
-		<groupId>org.apache.activemq</groupId>
-		<artifactId>activemq-camel</artifactId>
-		<version>${activemq.version}</version>
-		<scope>test</scope>
-	</dependency> -->
 	
 	<dependency>
 		<groupId>org.apache.jena</groupId>

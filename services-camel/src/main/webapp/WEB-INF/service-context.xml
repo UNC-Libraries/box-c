@@ -66,8 +66,19 @@
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).LARGE_THUMBNAIL}"/>
 	</bean>
+	
+	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
+		<property name="authUsername" value="${fcrepo.authUsername}"/>
+		<property name="authPassword" value="${fcrepo.authPassword}"/>
+		<property name="authHost" value="${fcrepo.authHost}"/>
+		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
+	</bean>
 
 	<camel:camelContext id="CdrServiceEnhancements">
 		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
+	</camel:camelContext>
+	
+	<camel:camelContext id="FcrepoTriplestoreRouter">
+		<camel:package>edu.unc.lib.cdr.indexing.triplestore</camel:package>
 	</camel:camelContext>
 </beans>

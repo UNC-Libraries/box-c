@@ -45,14 +45,20 @@ public class ThumbnailRouter extends RouteBuilder {
 	 * Configure the thumbnail route workflow.
 	 */
 	public void configure() throws Exception {
-		from("activemq:topic:fedora")
+		// See Triplestore Router routes for where this comes from
+		from("direct-vm:createThumbnail")
+		.log("hooray: ${headers[org.fcrepo.jms.eventType]}")
+	//	.log("${headers[org.fcrepo.jms.identifier]}")
+	//	.log("${headers[org.fcrepo.jms.resourceType]}")
 		.routeId("CdrServiceEnhancements")
-		.process(new EventProcessor())
+		//.process(new EventProcessor())
+		.log("Cooc: ${headers[org.fcrepo.jms.resourceType]}")
 		.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
 				+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
 				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
+			.log("Mooc: ${headers[MimeType]}")
 			.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
 			//.filter(simple("${headers[MimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
 				.multicast()
@@ -61,14 +67,14 @@ public class ThumbnailRouter extends RouteBuilder {
 		from("direct:small.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
-		.delay(1000)
+		//.delay(1000)
 		.bean(addSmallThumbnailProcessor)
 		.end();
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
-		.delay(1000)
+		//.delay(1000)
 		.bean(addLargeThumbProcessor)
 		.end();
 	}

@@ -28,7 +28,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.exec.ExecResult;
-import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,8 +72,4 @@ public class AddDerivativeProcessor implements Processor {
 
 		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
 	}
-	
-	/*public FileObject addDerivative(FileObject parent, ) {
-		return parent.addDerivative(slug, binaryStream, derivativePath, mimeType, PcdmUse.ThumbnailImage);
-	} */
 }
