@@ -103,9 +103,6 @@
 							</p>
 						</c:if>
 					</div>
-					<div class="halfwidth">
-						<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}" /></p> 
-					</div>
 					<c:if test="${not empty metadata.abstractText}">
 						<div class="clear"></div>
 						<p>${searchSettings.searchFieldLabels['ABSTRACT']}: 
