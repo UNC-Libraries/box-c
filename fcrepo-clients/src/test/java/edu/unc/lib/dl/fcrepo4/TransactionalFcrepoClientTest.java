@@ -1,8 +1,7 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
@@ -37,11 +36,13 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 	private StatusLine statusLine;
 	@Mock
 	private CloseableHttpResponse httpResponse;
+	@Mock
+	private Header header;
 	
 	@Before
 	public void setup() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		URI uri = URI.create(FEDORA_BASE);
+		URI uri = URI.create("http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38");
 		tx = new FedoraTransaction(uri, repository);
 		txClient = (TransactionalFcrepoClient) builder.build();
 		setField(txClient, "httpclient", httpClient);
@@ -49,22 +50,25 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 		when(httpClient.execute(any(HttpRequestBase.class))).thenReturn(httpResponse);
 		when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
-		when(httpResponse.getAllHeaders()).thenReturn(new Header[]{});
+		when(header.getName()).thenReturn("Location");
+		when(header.getValue()).thenReturn("http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38");
+		when(httpResponse.getAllHeaders()).thenReturn(new Header[]{header});
 	}
 	
 	@Test
 	public void executeRequestWithTxTest() throws Exception {
-		URI txUri = null;
-		try (FcrepoResponse response = txClient.executeRequest(tx.getTxUri(), request)) {
-			txUri = response.getLocation();
-		} catch (FcrepoOperationFailedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		tx.close();
+		URI  rescUri = URI.create("http://localhost:48085/rest/some/resource/id");
+		assertFalse(rescUri.toString().contains("tx:"));
 		
-		assertNotNull(txUri);
-		assertNotEquals(tx.getTxUri(), txUri);
+		try (FcrepoResponse response = txClient.executeRequest(rescUri, request)) {
+			rescUri = response.getLocation();
+		} finally {
+			tx.close();
+		}
+		
+		assertNotNull(rescUri);
+		assertNotEquals(tx.getTxUri(), rescUri);
+		assertTrue(rescUri.toString().contains("tx:"));
 	}
 
 }
