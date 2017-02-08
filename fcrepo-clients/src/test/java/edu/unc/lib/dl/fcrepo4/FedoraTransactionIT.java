@@ -41,10 +41,10 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 	@Before
 	public void init() {
 		pid = repository.mintContentPid();
-		
 		model = ModelFactory.createDefaultModel();
 		Resource resc = model.createResource(pid.getRepositoryPath());
 		resc.addProperty(DcElements.title, "Folder Title");
+		
 	}
 	
 	@Test
@@ -66,11 +66,8 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 	@Test (expected = TransactionCancelledException.class)
 	public void createRollbackTxTest() {
 		FedoraTransaction tx = repository.startTransaction();
-		
 		repository.createFolderObject(pid, model);
-		
 		tx.cancel();
-		
 	}
 	
 	@Test
@@ -89,7 +86,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		
 		parentTx.close();
 		assertNull(parentTx.getTxUri());
-		assertTrue(FedoraTransaction.isStillAlive());
+		assertFalse(FedoraTransaction.isStillAlive());
 	}
 
 }

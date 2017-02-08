@@ -19,6 +19,9 @@ import java.net.URI;
 
 /**
  * This class is responsible for storing a transaction id to a thread-local variable
+ * NB: care must be taken to close a transaction when it is no longer needed; otherwise the old
+ * txId will persist on the thread and may interfere with future transactions
+ * 
  * @author harring
  *
  */
@@ -36,7 +39,7 @@ public class FedoraTransaction implements AutoCloseable {
 		// if tx is root
 		if (rootTxThread.get() == null) {
 			rootTxThread.set(this);
-			storeTxId(txUri);
+			txUriThread.set(txUri);
 			isSub = false;
 		}
 		this.txUri = txUri;
@@ -44,11 +47,11 @@ public class FedoraTransaction implements AutoCloseable {
 	}
 	
 	public static boolean hasTxId() {
-		return FedoraTransaction.txUriThread.get() != null;
+		return txUriThread.get() != null;
 	}
 	
 	public static boolean isStillAlive() {
-		return FedoraTransaction.rootTxThread.get() != null;
+		return rootTxThread.get() != null;
 	}
 	
 	public URI getTxUri() {
@@ -59,7 +62,8 @@ public class FedoraTransaction implements AutoCloseable {
 	public void close() throws Exception {
 		if (!isSub && !isCancelled) {
 			repo.commitTransaction(txUri);
-			clearTxId();
+			txUriThread.remove();
+			rootTxThread.remove();
 		}
 		txUri = null;
 	}
@@ -75,21 +79,11 @@ public class FedoraTransaction implements AutoCloseable {
 			FedoraTransaction.rootTxThread.get().cancel();
 		} else if (!isCancelled) {
 			isCancelled = true;
-			clearTxId();
-			FedoraTransaction.rootTxThread.remove();
+			txUriThread.remove();
+			rootTxThread.remove();
 			repo.cancelTransaction(txUri);
 		}
 		throw new TransactionCancelledException("The transaction with id " + txUri + " was rolled back");
 	}
-	
-	//stores txid to current thread
-	private static void storeTxId(URI uri) {
-		FedoraTransaction.txUriThread.set(uri);
-	}
-	//clears txid from current thread	
-	private static void clearTxId() {
-		FedoraTransaction.txUriThread.remove();
-	}
-	
 	
 }
