@@ -13,7 +13,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,6 +22,11 @@ import org.mockito.MockitoAnnotations;
 import edu.unc.lib.dl.fcrepo4.TransactionalFcrepoClient.TransactionalFcrepoClientBuilder;
 
 public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
+	
+	private static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
+	private static final String RESC_URI = "http://localhost:48085/rest/some/resource/id";
+	private static final String REQUEST_URI =
+			"http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38/some/resource/id";
 	
 	private TransactionalFcrepoClientBuilder builder = (TransactionalFcrepoClientBuilder) TransactionalFcrepoClient.client();
 	private TransactionalFcrepoClient txClient;
@@ -42,7 +46,7 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 	@Before
 	public void setup() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		URI uri = URI.create("http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38");
+		URI uri = URI.create(TX_URI);
 		tx = new FedoraTransaction(uri, repository);
 		txClient = (TransactionalFcrepoClient) builder.build();
 		setField(txClient, "httpclient", httpClient);
@@ -51,14 +55,16 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 		when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
 		when(header.getName()).thenReturn("Location");
-		when(header.getValue()).thenReturn("http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38");
+		when(header.getValue())
+			.thenReturn(REQUEST_URI);
 		when(httpResponse.getAllHeaders()).thenReturn(new Header[]{header});
 	}
 	
 	@Test
 	public void executeRequestWithTxTest() throws Exception {
-		URI  rescUri = URI.create("http://localhost:48085/rest/some/resource/id");
+		URI  rescUri = URI.create(RESC_URI);
 		assertFalse(rescUri.toString().contains("tx:"));
+		assertNotEquals(rescUri.toString(), REQUEST_URI);
 		
 		try (FcrepoResponse response = txClient.executeRequest(rescUri, request)) {
 			rescUri = response.getLocation();
@@ -66,9 +72,8 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 			tx.close();
 		}
 		
-		assertNotNull(rescUri);
-		assertNotEquals(tx.getTxUri(), rescUri);
 		assertTrue(rescUri.toString().contains("tx:"));
+		assertEquals(rescUri.toString(), REQUEST_URI);
 	}
 
 }
