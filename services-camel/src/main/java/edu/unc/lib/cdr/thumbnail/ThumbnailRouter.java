@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.fcrepo.camel.processor.EventProcessor;
 
 import edu.unc.lib.cdr.AddDerivativeProcessor;
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
@@ -52,10 +51,11 @@ public class ThumbnailRouter extends RouteBuilder {
 	//	.log("${headers[org.fcrepo.jms.resourceType]}")
 		.routeId("CdrServiceEnhancements")
 		//.process(new EventProcessor())
-		.log("Cooc: ${headers[org.fcrepo.jms.resourceType]}")
+		.log("Cooc: ${headers}")
 		.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
 				+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
 				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+			.removeHeaders("CamelHttp*")
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
 			.log("Mooc: ${headers[MimeType]}")
