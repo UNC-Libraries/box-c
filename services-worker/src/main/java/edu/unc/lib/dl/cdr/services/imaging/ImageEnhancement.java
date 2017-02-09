@@ -91,7 +91,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 					LOG.debug("attempting to ingest conversion result: " + convertResultPath);
 
 					boolean exists = service.getManagementClient()
-							.getDatastream(pid, Datastream.IMAGE_JP2000.getName()) != null;
+							.dataStreamExists(pid, Datastream.IMAGE_JP2000.getName());
 					if (exists) {
 						LOG.debug("Replacing managed datastream for JP2");
 						String message = "Replacing derived JP2000 image datastream.";
