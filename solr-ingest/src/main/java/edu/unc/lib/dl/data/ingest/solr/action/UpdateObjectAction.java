@@ -15,8 +15,12 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 
 /**
@@ -26,6 +30,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
  * 
  */
 public class UpdateObjectAction extends AbstractIndexingAction {
+	private static final Logger log = LoggerFactory.getLogger(UpdateObjectAction.class);
 
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
@@ -36,12 +41,16 @@ public class UpdateObjectAction extends AbstractIndexingAction {
 			updateRequest.setDocumentIndexingPackage(dip);
 		}
 
-		pipeline.process(dip);
-		if (this.addDocumentMode) {
-			solrUpdateDriver.addDocument(dip.getDocument());
-		} else {
-			solrUpdateDriver.updateDocument("set", dip.getDocument());
+		try {
+			pipeline.process(dip);
+			if (this.addDocumentMode) {
+				solrUpdateDriver.addDocument(dip.getDocument());
+			} else {
+				solrUpdateDriver.updateDocument("set", dip.getDocument());
+			}
+		} catch (UnsupportedContentModelException e) {
+			log.debug("Skipping indexing of object {} because of invalid content model", 
+					dip.getPid().getPid(), e);
 		}
-		
 	}
 }
