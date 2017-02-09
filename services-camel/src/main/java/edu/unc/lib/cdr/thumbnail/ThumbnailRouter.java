@@ -68,14 +68,12 @@ public class ThumbnailRouter extends RouteBuilder {
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
 		//.delay(1000)
-		.bean(addSmallThumbnailProcessor)
-		.end();
+		.bean(addSmallThumbnailProcessor);
 		
 		from("direct:large.thumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
 		//.delay(1000)
-		.bean(addLargeThumbProcessor)
-		.end();
+		.bean(addLargeThumbProcessor);
 	}
 }

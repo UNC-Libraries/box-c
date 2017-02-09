@@ -21,16 +21,13 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.camel.builder.PredicateBuilder.in;
 import static org.apache.camel.builder.PredicateBuilder.not;
 import static org.apache.camel.builder.PredicateBuilder.or;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_NAMED_GRAPH;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_NAMED_GRAPH;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.fcrepo.camel.processor.ProcessorUtils.tokenizePropertyPlaceholder;
 import static org.slf4j.LoggerFactory.getLogger;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.Processor;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.xml.Namespaces;
 import org.apache.camel.builder.xml.XPathBuilder;
@@ -73,12 +70,12 @@ public class TriplestoreRouter extends RouteBuilder {
 		onException(Exception.class).maximumRedeliveries(
 			"{{error.maxRedeliveries}}").log(
 				"Index Routing Error: ${routeId}");
-
+		
 		/**
 		 * route a message to the proper queue, based on whether it is a DELETE
 		 * or UPDATE operation.
 		 */
-		from("{{input.stream}}")
+		from("direct-vm:index.start")
 			.routeId("FcrepoTriplestoreRouter")
 			.process(new EventProcessor())
 			.choice()
@@ -135,7 +132,6 @@ public class TriplestoreRouter extends RouteBuilder {
 			.process(new SparqlUpdateProcessor())
 			.log(LoggingLevel.INFO, LOGGER,
 				"Indexing Triplestore Object ${headers[CamelFcrepoUri]}")
-			.to("{{triplestore.baseUrl}}?useSystemProperties=true")
-			.to("direct-vm:createThumbnail");
+			.to("{{triplestore.baseUrl}}?useSystemProperties=true");
 	}
 }
