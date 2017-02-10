@@ -95,6 +95,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 	
 	private boolean needsBodyRewrite(HttpRequestBase request) {
 		org.apache.http.Header contentTypeHeader = request.getFirstHeader("Content-Type");
+		if (contentTypeHeader == null) {
+			return false;
+		}
 		String contentType = contentTypeHeader.getValue();
 		List<String> mimetypes = Arrays.asList(MIMETYPES);
 		// request method is POST, PUT, or PATCH AND has one of the whitelisted mimetypes
