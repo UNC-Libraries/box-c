@@ -347,6 +347,7 @@ public class ManagementClient extends WebServiceTemplate {
 		builder.pathSegment(pid.getPid());
 		builder.pathSegment("datastreams");
 		builder.pathSegment(dsID);
+		builder.pathSegment("content");
 
 		HttpHead method = new HttpHead(builder.build().encode().toUriString());
 
