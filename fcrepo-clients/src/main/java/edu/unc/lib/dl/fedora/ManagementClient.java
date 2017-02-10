@@ -360,6 +360,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 			return false;
 		} catch (Exception e) {
+			log.debug("HEAD request could not be completed", e);
 			return false;
 		}
 	}
