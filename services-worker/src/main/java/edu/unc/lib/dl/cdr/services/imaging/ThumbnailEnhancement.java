@@ -123,7 +123,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
 				{
 					String dsname = ContentModelHelper.Datastream.THUMB_LARGE.getName();
-					boolean exists = client.dataStreamExists(pid, dsname) != null;
+					boolean exists = client.dataStreamExists(pid, dsname);
 					createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
 				}
 			}
