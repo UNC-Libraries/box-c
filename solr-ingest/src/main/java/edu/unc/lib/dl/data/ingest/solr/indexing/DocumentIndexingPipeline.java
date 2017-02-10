@@ -33,7 +33,7 @@ public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
 			List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
 
 			if (contentModels == null || contentModels.size() == 0)
-				throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
+				throw new IndexingException("Could not index object " + dip.getPid().toString()
 						+ " due having no content models assigned.");
 
 			if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
