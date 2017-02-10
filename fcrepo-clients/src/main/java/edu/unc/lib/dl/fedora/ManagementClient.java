@@ -39,6 +39,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -338,6 +339,30 @@ public class ManagementClient extends WebServiceTemplate {
 		req.setAsOfDateTime(asOfDateTime);
 		GetDatastreamResponse resp = (GetDatastreamResponse) this.callService(req, Action.getDatastream);
 		return resp.getDatastream();
+	}
+	
+	public Boolean dataStreamExists(PID pid, String dsID) {
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.getFedoraContextUrl());
+		builder.pathSegment("objects");
+		builder.pathSegment(pid.getPid());
+		builder.pathSegment("datastreams");
+		builder.pathSegment(dsID);
+		builder.pathSegment("content");
+
+		HttpHead method = new HttpHead(builder.build().encode().toUriString());
+
+		try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
+			int statusCode = httpResp.getStatusLine().getStatusCode();
+
+			if (statusCode == 200) {
+				return true;
+			}
+
+			return false;
+		} catch (Exception e) {
+			log.debug("HEAD request could not be completed", e);
+			return false;
+		}
 	}
 
 	private Object callService(Object request, Action action) throws FedoraException {
