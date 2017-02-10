@@ -72,6 +72,9 @@
 				</c:forEach>
 			</p>
 		</c:if>
+		<c:if test="${metadata.resourceType != 'Collection' || metadata.resourceType != 'Folder'}">
+			<p>${searchSettings.searchFieldLabels['DATE_UPDATED']}: <fmt:formatDate pattern="yyyy-MM-dd" value="${metadata.dateUpdated}"/></p>
+		</c:if>
 		<p><c:out value="${metadata['abstractText']}"/></p>
 	</div>
 </div>
