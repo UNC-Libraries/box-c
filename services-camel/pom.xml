@@ -49,6 +49,11 @@
 		<version>${camel.version}</version>
 	</dependency>
 	<dependency>
+		<groupId>org.apache.camel</groupId>
+		<artifactId>camel-spring-javaconfig</artifactId>
+		<version>${camel.version}</version>
+	</dependency>
+	<dependency>
 		<groupId>org.apache.activemq</groupId>
 		<artifactId>activemq-camel</artifactId>
 		<version>${activemq.version}</version>
@@ -114,12 +119,6 @@
 	</dependency>
 
 	<!-- Testing -->
-	<dependency>
-		<groupId>org.apache.camel</groupId>
-		<artifactId>camel-test-blueprint</artifactId>
-		<version>${camel.version}</version>
-		<scope>test</scope>
-	</dependency>
 	<dependency>
 		<groupId>org.apache.camel</groupId>
 		<artifactId>camel-test-spring</artifactId>
