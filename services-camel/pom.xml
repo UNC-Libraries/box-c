@@ -75,6 +75,7 @@
 		<groupId>org.fcrepo.camel</groupId>
 		<artifactId>fcrepo-camel-toolbox</artifactId>
 		<version>4.6.1</version>
+		<type>pom</type>
 	</dependency>
 	
 	<dependency>

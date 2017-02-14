@@ -37,16 +37,11 @@ import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.component.properties.PropertiesComponent;
-import org.apache.camel.spring.javaconfig.SingleRouteCamelConfiguration;
-import org.apache.camel.test.junit4.CamelTestSupport;
-import org.apache.camel.test.spring.CamelSpringDelegatingTestContextLoader;
+import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.spring.CamelSpringJUnit4ClassRunner;
-import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.apache.camel.test.spring.CamelTestContextBootstrapper;
-import org.apache.camel.test.spring.MockEndpoints;
+import org.apache.camel.test.spring.UseAdviceWith;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -54,10 +49,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.AbstractApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.BootstrapWith;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -67,8 +58,9 @@ import edu.unc.lib.dl.fedora.PID;
 
 @RunWith(CamelSpringJUnit4ClassRunner.class)
 @BootstrapWith(CamelTestContextBootstrapper.class)
-@ContextConfiguration
-public class ThumbnailRouterTest   {
+@UseAdviceWith
+@ContextConfiguration({"/service-context.xml"})
+public class ThumbnailRouterTest {
 	private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
 	private static final long timestamp = 1428360320168L;
 	private static final String userID = "bypassAdmin";
@@ -76,7 +68,7 @@ public class ThumbnailRouterTest   {
 	private static final String fileID = "/file1";
 	
 	@Autowired
-    protected CamelContext context;
+	protected CamelContext context;
 	
 	@PropertyInject(value = "fcrepo.baseUri")
 	private static String baseUri;
@@ -85,32 +77,10 @@ public class ThumbnailRouterTest   {
 	protected MockEndpoint resultEndpoint;
 	
 	@Produce(uri = "direct:fcrepo")
-    protected ProducerTemplate template;
+	protected ProducerTemplate template;
 	
 	@BeanInject(value = "repository")
 	private Repository repo;
-	
-	public void setUp() throws Exception {
-		super.setUp();
-		
-		baseUri = context.resolvePropertyPlaceholders("${fcrepo.baseUri}");
-	}
-	
-	@Override
-	protected AbstractApplicationContext createApplicationContext() {
-		//return new ClassPathXmlApplicationContext(new String[] {});
-		return null;
-	}
-	
-	
-	/*protected CamelContext createCamelContext() throws Exception {
-		CamelContext context = super.createCamelContext();
-		context.addComponent("activemq", context.getComponent("seda"));
-		PropertiesComponent pc = context.getComponent("properties", PropertiesComponent.class);
-		pc.setLocation("classpath:config.properties");
-
-		return context;
-	} */
 	
 	@Before
 	public void init() {
@@ -122,9 +92,9 @@ public class ThumbnailRouterTest   {
 	public void testRoute() throws Exception {
 		final String eventTypes = EVENT_NS + "ResourceCreation";
 
-		//resultEndpoint.expectedMessageCount(1);
+		resultEndpoint.expectedMessageCount(1);
 
-		context.getRouteDefinitions().get(0).adviceWith(context, new AdviceWithRouteBuilder() {
+		context.getRouteDefinitions().get(0).adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
 			@Override
 			public void configure() throws Exception {
 				mockEndpointsAndSkip("fcrepo*");
@@ -147,7 +117,7 @@ public class ThumbnailRouterTest   {
 			body = new String(bos.toByteArray(), "UTF-8");
 		}
 		
-		template.sendBodyAndHeaders("activemq:topic:fedora2", body, createEvent(fileID, eventTypes));
+		template.sendBodyAndHeaders("direct-vm:createThumbnail", body, createEvent(fileID, eventTypes));
 
 		resultEndpoint.assertIsSatisfied();
 	}

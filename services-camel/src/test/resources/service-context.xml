@@ -17,33 +17,10 @@
 	
 	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
 		<property name="location" value="classpath:config.properties"/>
-	</bean
+	</bean>
 	
 	<bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
 		<property name="location" value="classpath:config.properties"/>
-	</bean>
-	
-	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory"
-		factory-method="makeClient">
-	</bean>
-
-	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
-		<property name="client" ref="fcrepoClient" />
-	</bean>
-
-	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
-		<property name="client" ref="fcrepoClient" />
-		<property name="ldpFactory" ref="ldpContainerFactory" />
-	</bean>
-
-	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
-		<property name="client" ref="fcrepoClient" />
-		<property name="repository" ref="repository" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-	</bean>
-	
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
-		
 	</bean>
 
 	<bean id="repository" class="org.mockito.Mockito" factory-method="mock">
@@ -53,38 +30,21 @@
 	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
 		<property name="repository" ref="repository" />
 	</bean>
-
-	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
-		<constructor-arg value="/var/lib/tomcat7/fcrepo4-data/fcrepo.binary.directory/"/>
-	</bean>
-
-	<bean id="addSmallThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
-		<constructor-arg ref="repository"/>
-		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).SMALL_THUMBNAIL}"/>
+	
+	<bean id="binaryMetadataProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.BinaryMetadataProcessor" />
 	</bean>
 	
-	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
-		<constructor-arg ref="repository"/>
-		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).LARGE_THUMBNAIL}"/>
+	<bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
 	</bean>
 	
-	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
-		<property name="authUsername" value="${fcrepo.authUsername}"/>
-		<property name="authPassword" value="${fcrepo.authPassword}"/>
-		<property name="authHost" value="${fcrepo.authHost}"/>
-		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
+	<bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
 	</bean>
-
-	<camel:camelContext id="MetaServicesRouter">
-		<camel:package>edu.unc.lib.cdr.routing</camel:package>
-	</camel:camelContext>
 
 	<camel:camelContext id="CdrServiceEnhancements">
 		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
-	</camel:camelContext>
-	
-	<camel:camelContext id="FcrepoTriplestoreRouter">
-		<camel:package>edu.unc.lib.cdr.indexing.triplestore</camel:package>
 	</camel:camelContext>
 	
 </beans>
