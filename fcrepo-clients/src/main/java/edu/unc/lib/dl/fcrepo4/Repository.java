@@ -65,7 +65,8 @@ public class Repository {
 
 	private String baseHost;
 
-	private String fedoraBase;
+	private String serverUri;
+	private String baseUri;
 
 	private String authUsername;
 
@@ -692,14 +693,25 @@ public class Repository {
 		this.baseHost = baseHost;
 	}
 
-	public String getFedoraBase() {
-		return fedoraBase;
+	public String getServerUri() {
+		return serverUri;
+	}
+	
+	public String getBaseUri() {
+		return baseUri;
 	}
 
-	public void setFedoraBase(String fedoraBase) {
-		this.fedoraBase = fedoraBase;
-		if (!fedoraBase.endsWith("/")) {
-			this.fedoraBase += "/";
+	public void setServerUri(String serverUri) {
+		this.serverUri = serverUri;
+		if (!serverUri.endsWith("/")) {
+			this.serverUri += "/";
+		}
+	}
+	
+	public void setBaseUri(String baseUri) {
+		this.baseUri = baseUri;
+		if (!baseUri.endsWith("/")) {
+			this.baseUri += "/";
 		}
 	}
 
@@ -762,7 +774,7 @@ public class Repository {
 	}
 	
 	public FedoraTransaction startTransaction() throws FedoraException {
-		URI repoBase = URI.create(fedoraBase);
+		URI repoBase = URI.create(baseUri);
 		// appends suffix for creating transaction
 		URI createTxUri = URI.create(URIUtil.join(repoBase, CREATE_TX));
 		URI txUri = null;

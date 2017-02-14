@@ -61,10 +61,10 @@ public class PIDs {
 		String componentPath;
 		String repositoryPath;
 
-		if (value.startsWith(repository.getFedoraBase())) {
+		if (value.startsWith(repository.getBaseUri())) {
 			// Given value was a fedora path. Remove the base and decompose
 			repositoryPath = value;
-			String path = value.substring(repository.getFedoraBase().length());
+			String path = value.substring(repository.getBaseUri().length());
 
 			Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
 			if (matcher.matches()) {
@@ -139,7 +139,7 @@ public class PIDs {
 	 * @return
 	 */
 	private static String getRepositoryPath(String id, String qualifier, String componentPath, boolean expand) {
-		StringBuilder builder = new StringBuilder(repository.getFedoraBase());
+		StringBuilder builder = new StringBuilder(repository.getBaseUri());
 		builder.append(qualifier).append('/');
 
 		if (expand) {

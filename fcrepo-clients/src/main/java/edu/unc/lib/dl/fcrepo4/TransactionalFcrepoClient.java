@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -43,19 +44,18 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class TransactionalFcrepoClient extends FcrepoClient {
 	
-	private static final String REST = "/rest";
-	
+	private static final String REST = "rest/";
 	private static final String[] MIMETYPES = {"application/sparql-update", "text/turtle", "text/rdf+n3",
 																	"application/n3", "text/n3", "application/rdf+xml",
 																	"application/n-triples", "text/html", "text/plain", "application/ld+json",
 																	"message/external-body"};
 	
-	private String fedoraBaseRest;
+	private String baseUri;
 	
 	protected TransactionalFcrepoClient(String username, String password, String host,
-															Boolean throwExceptionOnFailure, String fedoraBase) {
+															Boolean throwExceptionOnFailure, String baseUri) {
 		super(username, password, host, throwExceptionOnFailure);
-		this.fedoraBaseRest = fedoraBase + REST;
+		this.baseUri = baseUri;
 	}
 	
 	/**
@@ -63,8 +63,8 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 	 * 
 	 * @return a client builder
 	 */
-	public static FcrepoClientBuilder client() {
-		return new TransactionalFcrepoClientBuilder();
+	public static FcrepoClientBuilder client(String baseUri) {
+		return new TransactionalFcrepoClientBuilder(baseUri);
 	}
 	
 	@Override
@@ -74,9 +74,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			if (needsBodyRewrite(request)) {
 				rewriteRequestBodyUris(request);
 			}
-			URI txUri = rewriteUri(uri);
-			request.setURI(txUri);
-			return super.executeRequest(txUri, request);
+			URI rewrittenUri = rewriteUri(uri);
+			request.setURI(rewrittenUri);
+			return super.executeRequest(rewrittenUri, request);
 		}
 		return super.executeRequest(uri, request);
 	}
@@ -109,19 +109,32 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		if (requestBody != null) {
 			String bodyString = null;
 			try (InputStream stream = requestBody.getContent()) {
-				bodyString = stream.toString();
+				bodyString = streamToString(stream); 
 			} catch (IOException e) {
 				throw new FedoraException("Could not stream content from body of request", e);
 			}
-			String txId = FedoraTransaction.txUriThread.get().toString();
-			String replacementUri = URIUtil.join(URI.create(fedoraBaseRest), txId).toString();
-			String replacementBody = StringUtils.replace(bodyString, fedoraBaseRest, replacementUri);
+			String fullTxPath = FedoraTransaction.txUriThread.get().toString();
+			int txIdIndex = fullTxPath.indexOf("tx:");
+			String txId = fullTxPath.substring(txIdIndex);
+			String replacementUri = URIUtil.join(URI.create(baseUri), txId).toString();
+			// replace fedora base + rest with full txUri path
+			String replacementBody = StringUtils.replace(bodyString, baseUri, replacementUri);
 			InputStream replacementStream = new ByteArrayInputStream(replacementBody.getBytes());
 			InputStreamEntity replacementEntity = new InputStreamEntity(replacementStream);
 			((HttpEntityEnclosingRequestBase) request).setEntity(replacementEntity);
 			return request;
 		}
 		return null;
+	}
+	
+	private String streamToString(InputStream stream) throws IOException {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = stream.read(buffer)) != -1) {
+		    result.write(buffer, 0, length);
+		}
+		return result.toString("UTF-8");
 	}
 	
 	public static class TransactionalFcrepoClientBuilder extends FcrepoClientBuilder {
@@ -134,10 +147,10 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 
 		private boolean throwExceptionOnFailure;
 		
-		private String fedoraBase;
+		private String baseUri;
 		
-		public TransactionalFcrepoClientBuilder() {
-			// TODO Auto-generated constructor stub
+		public TransactionalFcrepoClientBuilder(String baseUri) {
+			this.baseUri = baseUri;
 		}
 
 		/**
@@ -178,13 +191,13 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		}
 		
 		/**
-		 * Add a fedora base + rest/ uri to this client
+		 * Add a fedora base uri to this client
 		 * 
-		 * @param fedoraBaseRest the base uri
+		 * @param baseUri the base uri including "/rest/"
 		 * @return this builder
 		 */
-		public FcrepoClientBuilder fedoraBase(final String fedoraBase) {
-			this.fedoraBase = fedoraBase;
+		public FcrepoClientBuilder baseUri(final String baseUri) {
+			this.baseUri = baseUri;
 			return this;
 		}
 
@@ -194,7 +207,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		 * @return the client constructed by this builder
 		 */
 		public FcrepoClient build() {
-			return new TransactionalFcrepoClient(authUser, authPassword, authHost, throwExceptionOnFailure, fedoraBase);
+			return new TransactionalFcrepoClient(authUser, authPassword, authHost, throwExceptionOnFailure, baseUri);
 		}
 	}
 }

@@ -78,7 +78,7 @@ public class RepositoryTest extends AbstractFedoraTest {
 		initMocks(this);
 
 		repository = new Repository();
-		repository.setFedoraBase(FEDORA_BASE);
+		repository.setServerUri(FEDORA_BASE);
 		repository.setRepositoryObjectDataLoader(dataLoader);
 		repository.setRepositoryObjectFactory(objFactory);
 		repository.setClient(fcrepoClient);

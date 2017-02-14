@@ -117,7 +117,7 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
 	}
 
 	private URI getContainerUri(String id) {
-		String containerString = URIUtil.join(repository.getFedoraBase(), id);
+		String containerString = URIUtil.join(repository.getBaseUri(), id);
 		return URI.create(containerString);
 	}
 }

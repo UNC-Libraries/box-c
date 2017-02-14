@@ -49,7 +49,7 @@ public class PIDsTest {
 	@Before
 	public void init() {
 		MockitoAnnotations.initMocks(this);
-		when(mockRepo.getFedoraBase()).thenReturn(FEDORA_BASE);
+		when(mockRepo.getBaseUri()).thenReturn(FEDORA_BASE);
 
 		PIDs.setRepository(mockRepo);
 	}

@@ -104,9 +104,11 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 	@Test
 	public void cannotAccessObjectOutsideTxTest() throws Exception {
 		FedoraTransaction tx = repository.startTransaction();
-		client.put(URI.create(URIUtil.join(serverAddress, "content"))).perform();
 		FolderObject folder = repository.createFolderObject(pid);
-		FcrepoClient nonTxClient = FcrepoClient.client().build();
+		URI txContentUri = URI.create(URIUtil.join(tx.getTxUri(), pid.toString()));
+		client.put(txContentUri).perform();
+		
+		FcrepoClient nonTxClient = FcrepoClientFactory.makeClient();
 		FcrepoResponse response = nonTxClient.get(folder.getUri()).perform();
 		assertEquals(404, response.getStatusCode());
 		tx.close();

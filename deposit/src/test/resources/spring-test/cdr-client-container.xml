@@ -11,6 +11,10 @@
 			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:8080}/rest/" />
 	</bean>
 	
+	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory">
+		<constructor-arg ref="serverAddress" />
+	</bean>
+	
 	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
 	</bean>
 	
