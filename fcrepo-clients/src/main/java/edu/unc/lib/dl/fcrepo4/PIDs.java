@@ -69,14 +69,15 @@ public class PIDs {
 			Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
 			if (matcher.matches()) {
 				// extract the qualifier/category portion of the path, ex: deposit, content, etc.
-				qualifier = matcher.group(1);
+				qualifier = matcher.group(2);
 				// store the trailing component path, which is everything after the object identifier
-				componentPath = matcher.group(7);
+				componentPath = matcher.group(8);
 				// store the identifier for the main object
-				id = matcher.group(4);
+				id = matcher.group(5);
 				if (id == null) {
-					id = matcher.group(5);
+					id = matcher.group(6);
 				}
+				repositoryPath = getRepositoryPath(id, qualifier, componentPath, true);
 			} else {
 				// Value was an invalid path within the repository
 				return null;

@@ -165,7 +165,10 @@ public class RepositoryObjectDataLoader {
 	 */
 	private static String parseEtag(FcrepoResponse response) {
 		String etag = response.getHeaderValue("ETag");
-		return etag.substring(1, etag.length() - 1);
+		if (etag != null) {
+			return etag.substring(1, etag.length() - 1);
+		}
+		return null;
 	}
 
 	/**

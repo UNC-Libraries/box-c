@@ -21,9 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -50,12 +51,16 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 																	"application/n-triples", "text/html", "text/plain", "application/ld+json",
 																	"message/external-body"};
 	
+	private static final String TX_ID_REGEX = "(/tx:[a-z0-9\\-]+)?";
+	
 	private String baseUri;
+	private Pattern pattern;
 	
 	protected TransactionalFcrepoClient(String username, String password, String host,
 															Boolean throwExceptionOnFailure, String baseUri) {
 		super(username, password, host, throwExceptionOnFailure);
 		this.baseUri = baseUri;
+		pattern = Pattern.compile(baseUri + TX_ID_REGEX);
 	}
 	
 	/**
@@ -74,9 +79,11 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			if (needsBodyRewrite(request)) {
 				rewriteRequestBodyUris(request);
 			}
-			URI rewrittenUri = rewriteUri(uri);
-			request.setURI(rewrittenUri);
-			return super.executeRequest(rewrittenUri, request);
+			if (!uri.toString().contains("tx:")) {
+				URI rewrittenUri = rewriteUri(uri);
+				request.setURI(rewrittenUri);
+				return super.executeRequest(rewrittenUri, request);
+			}
 		}
 		return super.executeRequest(uri, request);
 	}
@@ -117,8 +124,11 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			int txIdIndex = fullTxPath.indexOf("tx:");
 			String txId = fullTxPath.substring(txIdIndex);
 			String replacementUri = URIUtil.join(URI.create(baseUri), txId).toString();
-			// replace fedora base + rest with full txUri path
-			String replacementBody = StringUtils.replace(bodyString, baseUri, replacementUri);
+			if (!replacementUri.endsWith("/")) {
+				replacementUri += "/";
+			}
+			Matcher m = pattern.matcher(bodyString);
+			String replacementBody = m.replaceAll(replacementUri);
 			InputStream replacementStream = new ByteArrayInputStream(replacementBody.getBytes());
 			InputStreamEntity replacementEntity = new InputStreamEntity(replacementStream);
 			((HttpEntityEnclosingRequestBase) request).setEntity(replacementEntity);

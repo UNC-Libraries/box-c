@@ -59,7 +59,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		
 	}
 	
-	//@Test
+	@Test
 	public void createTxTest() throws Exception {
 		FedoraTransaction tx = repository.startTransaction();
 		
@@ -75,14 +75,14 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		assertNull(tx.getTxUri());
 	}
 	
-	//@Test (expected = TransactionCancelledException.class)
+	@Test (expected = TransactionCancelledException.class)
 	public void createRollbackTxTest() {
 		FedoraTransaction tx = repository.startTransaction();
 		repository.createFolderObject(pid, model);
 		tx.cancel();
 	}
 	
-	//@Test
+	@Test
 	public void nestedTxTest() throws Exception {
 		FedoraTransaction parentTx = repository.startTransaction();
 		repository.createFolderObject(pid, model);
@@ -108,8 +108,8 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		URI txContentUri = URI.create(URIUtil.join(tx.getTxUri(), pid.toString()));
 		client.put(txContentUri).perform();
 		
-		FcrepoClient nonTxClient = FcrepoClientFactory.makeClient();
-		FcrepoResponse response = nonTxClient.get(folder.getUri()).perform();
+		FcrepoClient nonTxClient = FcrepoClient.client().build();
+		FcrepoResponse response = nonTxClient.get(folder.getPid().getRepositoryUri()).perform();
 		assertEquals(404, response.getStatusCode());
 		tx.close();
 	}
