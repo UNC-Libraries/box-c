@@ -163,4 +163,16 @@
 			init-method="init">
 		<property name="configPath" value="#{stagesConfigFile.getAbsolutePath()}" />
 	</bean>
+	
+	<bean id="multiThreadedHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
+			destroy-method="shutdown">
+	</bean>
+	
+	<bean id="pooledHttpClientBuilder" class="org.apache.http.impl.client.HttpClients" factory-method="custom">
+		<property name="connectionManager" ref="multiThreadedHttpConnectionManager" />
+	</bean>
+	
+	<bean id="pooledHttpClient" class="org.apache.http.impl.client.CloseableHttpClient"
+			factory-bean="pooledHttpClientBuilder" factory-method="build">
+	</bean>
 </beans>
