@@ -52,17 +52,23 @@ public class ThumbnailRouter extends RouteBuilder {
 			.removeHeaders("CamelHttp*")
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
-			.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
+			.to("direct:images");
+			
+		from("direct:images")
+		.routeId("IsImage")
+		.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
 			//.filter(simple("${headers[MimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
-				.multicast()
-				.to("direct:small.thumbnail", "direct:large.thumbnail");
+			.multicast()
+			.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
+		.routeId("SmallThumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
 		.bean(addSmallThumbnailProcessor);
 		
 		from("direct:large.thumbnail")
+		.routeId("LargeThumbnail")
 		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
 		.bean(addLargeThumbProcessor);
