@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.cdr;
 
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -60,21 +63,21 @@ public class BinaryMetadataProcessor implements Processor {
 		try {
 			if (resources.hasNext()) {
 				Resource resource = resources.next();
-				String mimeType = resource.getProperty(hasMimeType).getObject().toString();
-				String fcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
-				String[] fcrepoChecksumSplit = fcrepoChecksum.split(":");
+				String binaryMimeType = resource.getProperty(hasMimeType).getObject().toString();
+				String binaryFcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
+				String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 	
-				String binaryPath = idToPath(fcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH);
+				String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH); 
 	
-				String fullPath = new StringJoiner("")
+				String binaryFullPath = new StringJoiner("")
 					.add(baseBinaryPath)
 					.add(binaryPath)
-					.add(fcrepoChecksumSplit[2])
+					.add(binaryFcrepoChecksumSplit[2])
 					.toString();
 	
-				in.setHeader("Checksum", fcrepoChecksumSplit[2]);
-				in.setHeader("MimeType", mimeType);
-				in.setHeader("BinaryPath", fullPath);
+				in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
+				in.setHeader(CdrBinaryMimeType, binaryMimeType);
+				in.setHeader(CdrBinaryPath, binaryFullPath);
 			}
 		} finally {
 			resources.close();

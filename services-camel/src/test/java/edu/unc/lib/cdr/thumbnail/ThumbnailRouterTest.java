@@ -15,9 +15,8 @@
  */
 package edu.unc.lib.cdr.thumbnail;
 
-import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
@@ -26,12 +25,9 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.EndpointInject;
@@ -42,9 +38,6 @@ import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -52,7 +45,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
-import edu.unc.lib.dl.fedora.PID;
 
 public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
@@ -64,6 +56,8 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	private static final String userAgent = "curl/7.37.1";
 	private static final String fileID = "/file1";
 	private final String eventTypes = EVENT_NS + "ResourceCreation";
+	private final String enhancementRoute = "CdrServiceEnhancements";
+	private final String isImageRoute = "IsImage"; 
 	
 	@PropertyInject(value = "fcrepo.baseUri")
 	private static String baseUri;
@@ -90,70 +84,61 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Test
 	public void testRouteStartSuccess() throws Exception {
-		getMockEndpoint("mock:fcrepo:{{fcrepo.baseUri}}").expectedMessageCount(1);
+		getMockEndpoint("mock:direct:images").expectedMessageCount(1);
 		
-		createContext();
+		createContext(enhancementRoute);
 		
-		String body = createBody();
-		template.sendBodyAndHeaders("direct-vm:createThumbnail", body, createEvent(fileID, eventTypes));
+		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
 
 		assertMockEndpointsSatisfied();
 	}
 	
 	@Test
 	public void testEventTypeFilter() throws Exception {
-		getMockEndpoint("mock:fcrepo:{{fcrepo.baseUri}}").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
 		
-		createContext();
+		createContext(enhancementRoute);
 		
-		String body = createBody();
 		Map<String, Object> headers = createEvent(fileID, eventTypes);
 		headers.put(EVENT_TYPE, "ResourceDeletion");
 		
-		template.sendBodyAndHeaders("direct-vm:createThumbnail", body, headers);
+		template.sendBodyAndHeaders("", headers);
 
 		assertMockEndpointsSatisfied();
 	}
 	
 	@Test
 	public void testIdentifierFilter() throws Exception {
-		getMockEndpoint("mock:fcrepo:{{fcrepo.baseUri}}").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
 		
-		createContext();
-		String body = createBody();
+		createContext(enhancementRoute);
+
 		Map<String, Object> headers = createEvent(fileID, eventTypes);
 		headers.put(IDENTIFIER, "container");
 		
-		template.sendBodyAndHeaders("direct-vm:createThumbnail", body, headers);
+		template.sendBodyAndHeaders("", headers);
 
 		assertMockEndpointsSatisfied();
 	}
 	
 	@Test
 	public void testResourceTypeFilter() throws Exception {
-		getMockEndpoint("mock:fcrepo:{{fcrepo.baseUri}}").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
 		
-		createContext();
-		
-		String body = createBody();
+		createContext(enhancementRoute);
+
 		Map<String, Object> headers = createEvent(fileID, eventTypes);
 		headers.put(RESOURCE_TYPE, createResource( "http://bad.info/definitions/v9/repository#Fake" ).getURI());
 		
-		template.sendBodyAndHeaders("direct-vm:createThumbnail", body, headers);
+		template.sendBodyAndHeaders("", headers);
 
 		assertMockEndpointsSatisfied();
 	}
 	
 	@Test
 	public void testRouteMulticastSuccess() throws Exception {
-		context.getRouteDefinition("IsImage").adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
-			@Override
-			public void configure() throws Exception {
-				replaceFromWith("direct:start");
-				mockEndpointsAndSkip("*");
-			}
-		});
-		context.start();
+		createContext(isImageRoute);
+		
 		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(1);
 		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
 		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
@@ -163,14 +148,8 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Test
 	public void testRouteMulticastFilter() throws Exception {
-		context.getRouteDefinition("IsImage").adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
-			@Override
-			public void configure() throws Exception {
-				replaceFromWith("direct:start");
-				mockEndpointsAndSkip("*");
-			}
-		});
-		context.start();
+		createContext(isImageRoute);
+		
 		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
 		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
 		
@@ -182,28 +161,12 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 		assertMockEndpointsSatisfied();
 	}
 	
-	private String createBody() throws IOException {
-		PID pid = PIDs.get(UUID.randomUUID().toString());
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryPath());
-		resc.addProperty(hasMimeType, "application/octet-stream");
-		resc.addProperty(hasMessageDigest, "123456789");
-		
-		// Serialize the object as a string so that the processor can receive it
-		String body = null;
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			body = new String(bos.toByteArray(), "UTF-8");
-		}
-		
-		return body;
-	}
-	
-	private void createContext() throws Exception {
-		context.getRouteDefinition("CdrServiceEnhancements").adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
+	private void createContext(String routeName) throws Exception {
+		context.getRouteDefinition(routeName).adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				mockEndpointsAndSkip("fcrepo*");
-				weaveById("simpleBinaryMetadataProcessor");
+				replaceFromWith("direct:start");
+				mockEndpointsAndSkip("*");
 			}
 		});
 		
@@ -220,7 +183,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 		headers.put(EVENT_TYPE, "ResourceCreation");
 		headers.put(IDENTIFIER, "original_file");
 		headers.put(RESOURCE_TYPE, Binary.getURI());
-		headers.put("MimeType", "application/octet-stream");
+		headers.put(CdrBinaryMimeType, "application/octet-stream");
 		
 		return headers;
 	}

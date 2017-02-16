@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.cdr;
 
-
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
@@ -48,27 +48,29 @@ public class AddDerivativeProcessor implements Processor {
 
 	private final Repository repository;
 	private final String slug;
+	private final String fileExtension;
 	
-	public AddDerivativeProcessor(Repository repository, String slug) {
+	public AddDerivativeProcessor(Repository repository, String slug, String fileExtension) {
 		this.repository = repository;
 		this.slug = slug;
+		this.fileExtension = fileExtension;
 	}
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		Message in = exchange.getIn();
 		String binaryUri = (String) in.getHeader(FCREPO_URI);
-		String mimeType = (String) in.getHeader("MimeType");
+		String binaryMimeType = (String) in.getHeader(CdrBinaryMimeType); 
 		
 		final ExecResult result = (ExecResult) in.getBody();
 		String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
 				.lines().collect(Collectors.joining("\n"));
 		
-		InputStream binaryStream = new FileInputStream(derivativePath + ".PNG");
+		InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
 		
 		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
 		FileObject parent = (FileObject) binary.getParent();
-		parent.addDerivative(slug, binaryStream, derivativePath, mimeType, PcdmUse.ThumbnailImage);
+		parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
 
 		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
 	}

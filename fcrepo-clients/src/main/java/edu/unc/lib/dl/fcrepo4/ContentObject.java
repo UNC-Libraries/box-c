@@ -96,7 +96,7 @@ public abstract class ContentObject extends RepositoryObject {
 	
 	@Override
 	public RepositoryObject getParent() {
-		return null;
+		return dataLoader.getParentObject(this);
 	}
 	
 	/**

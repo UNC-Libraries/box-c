@@ -14,10 +14,6 @@
 	<name>Fedora Clients</name>
 	<description>This project contains a Spring web services implementation of the Fedora Commons 3.0 API-M and API-A</description>
 	
-	<properties>
-		<osgi.export.packages>edu.unc.lib.dl.*;version=${project.version}</osgi.export.packages>
-	</properties>
-	
 	<build>
 		<testResources>
 			<testResource>
@@ -33,10 +29,6 @@
 		</testResources>
 
 		<plugins>
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>jaxb2-maven-plugin</artifactId>

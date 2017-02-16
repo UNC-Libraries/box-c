@@ -145,7 +145,7 @@ public class DepositRecord extends RepositoryObject {
 	
 	@Override
 	public RepositoryObject getParent() {
-		return null;
+		return dataLoader.getParentObject(this);
 	}
 
 	/**

@@ -41,7 +41,7 @@ public class PremisEventObject extends RepositoryObject implements Comparable<Pr
 	
 	@Override
 	public RepositoryObject getParent() {
-		return null;
+		return dataLoader.getParentObject(this);
 	}
 
 	/**

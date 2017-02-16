@@ -1,10 +1,6 @@
 package edu.unc.lib.dl.util;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,30 +15,19 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QueryFactory; 
 import org.apache.jena.query.QuerySolution; 
 import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.input.DOMBuilder;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.CDATASection;
-import org.w3c.dom.NodeList;
-
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class TripleStoreQueryServiceFusekiImpl implements
 		TripleStoreQueryService {
 	private static final Logger log = LoggerFactory.getLogger(TripleStoreQueryServiceFusekiImpl.class);
+	private static final String tripleStoreEndpoint = "http://localhost:8080/fuseki/test/query";
 	
 	private String fusekiEndpointURL;
 	private CloseableHttpClient httpClient;
@@ -126,7 +111,7 @@ public class TripleStoreQueryServiceFusekiImpl implements
 		
 		Query query = QueryFactory.create(queryString);
 
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService("http://localhost:8080/fuseki/test/query", query)) { 
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(tripleStoreEndpoint, query)) { 
 			ResultSet results = qexec.execSelect();
 
 			for (; results.hasNext();) {
