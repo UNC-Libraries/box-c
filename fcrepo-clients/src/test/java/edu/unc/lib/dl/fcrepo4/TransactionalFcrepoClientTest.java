@@ -13,22 +13,21 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.fcrepo.client.FcrepoClient.FcrepoClientBuilder;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import edu.unc.lib.dl.fcrepo4.TransactionalFcrepoClient.TransactionalFcrepoClientBuilder;
-
 public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 	
+	private static final String BASE_URI = "http://localhost:48085/rest/";
 	private static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
 	private static final String RESC_URI = "http://localhost:48085/rest/some/resource/id";
 	private static final String REQUEST_URI =
 			"http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38/some/resource/id";
 	
-	private TransactionalFcrepoClientBuilder builder = (TransactionalFcrepoClientBuilder) TransactionalFcrepoClient.client();
 	private TransactionalFcrepoClient txClient;
 	private FedoraTransaction tx;
 	
@@ -48,6 +47,7 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 		MockitoAnnotations.initMocks(this);
 		URI uri = URI.create(TX_URI);
 		tx = new FedoraTransaction(uri, repository);
+		FcrepoClientBuilder builder = TransactionalFcrepoClient.client(BASE_URI);
 		txClient = (TransactionalFcrepoClient) builder.build();
 		setField(txClient, "httpclient", httpClient);
 		

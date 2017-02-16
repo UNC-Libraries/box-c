@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.net.URI;
 
 import org.apache.http.client.methods.HttpRequestBase;
@@ -24,6 +25,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,8 +57,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		pid = repository.mintContentPid();
 		model = ModelFactory.createDefaultModel();
 		Resource resc = model.createResource(pid.getRepositoryPath());
-		resc.addProperty(DcElements.title, "Folder Title");
-		
+		resc.addProperty(DcElements.title, "Folder Title");	
 	}
 	
 	@Test
@@ -70,16 +71,22 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
 		assertEquals("Folder Title", obj.getResource()
 				.getProperty(DcElements.title).getString());
+		
 		tx.close();
 		assertFalse(FedoraTransaction.hasTxId());
 		assertNull(tx.getTxUri());
+		verifyNonTxStatusCode(obj.getPid(), 200);
 	}
 	
 	@Test (expected = TransactionCancelledException.class)
 	public void createRollbackTxTest() {
 		FedoraTransaction tx = repository.startTransaction();
-		repository.createFolderObject(pid, model);
+		FolderObject obj = repository.createFolderObject(pid, model);
 		tx.cancel();
+		assertNull(repository.getFolderObject(pid));
+		assertNull(obj.getUri());
+		assertFalse(FedoraTransaction.hasTxId());
+		assertFalse(FedoraTransaction.isStillAlive());
 	}
 	
 	@Test
@@ -93,12 +100,14 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		subTx.close();
 		
 		assertNull(subTx.getTxUri());
+		verifyNonTxStatusCode(workPid, 404);
 		assertNotNull((parentTx.getTxUri()));
 		assertTrue(FedoraTransaction.isStillAlive());
 		
 		parentTx.close();
 		assertNull(parentTx.getTxUri());
 		assertFalse(FedoraTransaction.isStillAlive());
+		verifyNonTxStatusCode(workPid, 200);
 	}
 	
 	@Test
@@ -108,10 +117,17 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 		URI txContentUri = URI.create(URIUtil.join(tx.getTxUri(), pid.toString()));
 		client.put(txContentUri).perform();
 		
-		FcrepoClient nonTxClient = FcrepoClient.client().build();
-		FcrepoResponse response = nonTxClient.get(folder.getPid().getRepositoryUri()).perform();
-		assertEquals(404, response.getStatusCode());
+		verifyNonTxStatusCode(folder.getPid(), 404);
 		tx.close();
+	}
+	
+	private void verifyNonTxStatusCode(PID pid, int statusCode) {
+		FcrepoClient nonTxClient = FcrepoClient.client().build();
+		try (FcrepoResponse response = nonTxClient.get(pid.getRepositoryUri()).perform()) {
+			assertEquals(statusCode, response.getStatusCode());
+		} catch (FcrepoOperationFailedException | IOException e) {
+			fail();
+		}
 	}
 
 }
