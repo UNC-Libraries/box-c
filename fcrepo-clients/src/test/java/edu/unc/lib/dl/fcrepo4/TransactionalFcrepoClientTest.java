@@ -1,7 +1,10 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 

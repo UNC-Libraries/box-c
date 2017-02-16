@@ -17,29 +17,25 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
@@ -108,13 +104,8 @@ public class RepositoryObjectDataLoader {
 
 			log.debug("Retrieving new model for {}", obj.getPid());
 			Model model = ModelFactory.createDefaultModel();
-			String bodyString = streamToString(response.getBody());
-			if (bodyString.contains("tx:")) {
-				InputStream nonTxStream = removeTxIdsFromBody(bodyString);
-				model.read(nonTxStream, null, Lang.TURTLE.getName());
-			} else {
-				model.read(response.getBody(), null, Lang.TURTLE.getName());
-			}
+			model.read(response.getBody(), null, Lang.TURTLE.getName());
+
 			// Store the fresh model
 			obj.storeModel(model);
 
@@ -215,22 +206,5 @@ public class RepositoryObjectDataLoader {
 
 	public void setAclService(AccessControlService aclService) {
 		this.aclService = aclService;
-	}
-	
-	private String streamToString(InputStream stream) throws IOException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		int length;
-		while ((length = stream.read(buffer)) != -1) {
-		    result.write(buffer, 0, length);
-		}
-		return result.toString("UTF-8");
-	}
-	
-	private InputStream removeTxIdsFromBody(String bodyString) {
-		String emptyString = "";
-		Matcher m = pattern.matcher(bodyString);
-		String replacementBody = m.replaceAll(emptyString);
-		return new ByteArrayInputStream(replacementBody.getBytes());
 	}
 }

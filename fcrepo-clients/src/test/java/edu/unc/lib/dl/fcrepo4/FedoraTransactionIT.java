@@ -15,7 +15,12 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.URI;
@@ -64,15 +69,19 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 	public void createTxTest() throws Exception {
 		FedoraTransaction tx = repository.startTransaction();
 		
-		FolderObject obj = repository.createFolderObject(pid, model);
-
-		assertTrue(FedoraTransaction.hasTxId());
-		assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
-		assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
-		assertEquals("Folder Title", obj.getResource()
-				.getProperty(DcElements.title).getString());
+		FolderObject obj = null;
+		try {
+			obj = repository.createFolderObject(pid, model);
+	
+			assertTrue(FedoraTransaction.hasTxId());
+			assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
+			assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
+			assertEquals("Folder Title", obj.getResource()
+					.getProperty(DcElements.title).getString());
+		} finally {
+			tx.close();
+		}
 		
-		tx.close();
 		assertFalse(FedoraTransaction.hasTxId());
 		assertNull(tx.getTxUri());
 		verifyNonTxStatusCode(obj.getPid(), 200);

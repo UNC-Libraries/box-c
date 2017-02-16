@@ -33,6 +33,10 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoResponse;
 import org.fcrepo.client.GetBuilder;
@@ -41,11 +45,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -78,7 +77,7 @@ public class RepositoryTest extends AbstractFedoraTest {
 		initMocks(this);
 
 		repository = new Repository();
-		repository.setServerUri(FEDORA_BASE);
+		repository.setBaseUri(FEDORA_BASE);
 		repository.setRepositoryObjectDataLoader(dataLoader);
 		repository.setRepositoryObjectFactory(objFactory);
 		repository.setClient(fcrepoClient);

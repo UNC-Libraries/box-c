@@ -16,15 +16,16 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Arrays;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -36,7 +37,6 @@ import org.fcrepo.client.FcrepoResponse;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.util.URIUtil;
 
-
 /**
  * This wrapper class rewrites uris to have a transaction id (txid) in them, if one is present on the current thread
  * If no txid is present, class behavior is identical to FcrepoClient
@@ -46,10 +46,9 @@ import edu.unc.lib.dl.util.URIUtil;
 public class TransactionalFcrepoClient extends FcrepoClient {
 	
 	private static final String REST = "rest/";
-	private static final String[] MIMETYPES = {"application/sparql-update", "text/turtle", "text/rdf+n3",
-																	"application/n3", "text/n3", "application/rdf+xml",
-																	"application/n-triples", "text/html", "text/plain", "application/ld+json",
-																	"message/external-body"};
+	private static final List<String> RDF_MIMETYPES = Arrays.asList(new String[] { 
+			"application/sparql-update", "text/turtle", "text/rdf+n3", "application/n3",
+			"text/n3", "application/rdf+xml", "application/n-triples", "application/ld+json"});
 	
 	private static final String TX_ID_REGEX = "(/tx:[a-z0-9\\-]+)?";
 	
@@ -76,16 +75,35 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 	public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
 			throws FcrepoOperationFailedException {
 		if (hasTxId()) {
-			if (needsBodyRewrite(request)) {
+			if (needsRequestBodyRewrite(request)) {
 				rewriteRequestBodyUris(request);
 			}
+			URI requestUri = uri;
 			if (!uri.toString().contains("tx:")) {
-				URI rewrittenUri = rewriteUri(uri);
-				request.setURI(rewrittenUri);
-				return super.executeRequest(rewrittenUri, request);
+				requestUri = rewriteUri(uri);
+				request.setURI(requestUri);
 			}
+			FcrepoResponse resp = super.executeRequest(requestUri, request);
+			return rewriteResponseBodyUris(resp);
 		}
 		return super.executeRequest(uri, request);
+	}
+	
+	private FcrepoResponse rewriteResponseBodyUris(FcrepoResponse resp) {
+		// Check that the response is RDF
+		if (!RDF_MIMETYPES.contains(resp.getContentType())) {
+			return resp;
+		}
+		
+		try {
+			String bodyString = IOUtils.toString(resp.getBody(), StandardCharsets.UTF_8);
+			Matcher m = pattern.matcher(bodyString);
+			String replacementBody = m.replaceAll("");
+			resp.setBody(new ByteArrayInputStream(replacementBody.getBytes()));
+			return resp;
+		} catch (IOException e) {
+			throw new FedoraException("Failed to read response from Fedora", e);
+		}
 	}
 	
 	private URI rewriteUri(URI rescUri) {
@@ -93,22 +111,21 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		String rescId = rescUri.toString();
 		int txIdIndex = rescId.indexOf(REST);
 		rescId = rescId.substring(txIdIndex + REST.length());
-		return URI.create(edu.unc.lib.dl.util.URIUtil.join(txUri, rescId));
+		return URI.create(URIUtil.join(txUri, rescId));
 	}
 	
 	private boolean hasTxId() {
 		return FedoraTransaction.hasTxId();
 	}
 	
-	private boolean needsBodyRewrite(HttpRequestBase request) {
+	private boolean needsRequestBodyRewrite(HttpRequestBase request) {
 		org.apache.http.Header contentTypeHeader = request.getFirstHeader("Content-Type");
 		if (contentTypeHeader == null) {
 			return false;
 		}
 		String contentType = contentTypeHeader.getValue();
-		List<String> mimetypes = Arrays.asList(MIMETYPES);
 		// request method is POST, PUT, or PATCH AND has one of the whitelisted mimetypes
-		return request.getMethod().startsWith("P") && mimetypes.contains(contentType);
+		return request.getMethod().startsWith("P") && RDF_MIMETYPES.contains(contentType);
 	}
  	
 	private HttpRequestBase rewriteRequestBodyUris(HttpRequestBase request) {
@@ -116,10 +133,11 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		if (requestBody != null) {
 			String bodyString = null;
 			try (InputStream stream = requestBody.getContent()) {
-				bodyString = streamToString(stream); 
+				bodyString = IOUtils.toString(stream, StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				throw new FedoraException("Could not stream content from body of request", e);
 			}
+			
 			String fullTxPath = FedoraTransaction.txUriThread.get().toString();
 			int txIdIndex = fullTxPath.indexOf("tx:");
 			String txId = fullTxPath.substring(txIdIndex);
@@ -135,16 +153,6 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			return request;
 		}
 		return null;
-	}
-	
-	private String streamToString(InputStream stream) throws IOException {
-		ByteArrayOutputStream result = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		int length;
-		while ((length = stream.read(buffer)) != -1) {
-		    result.write(buffer, 0, length);
-		}
-		return result.toString("UTF-8");
 	}
 	
 	public static class TransactionalFcrepoClientBuilder extends FcrepoClientBuilder {
