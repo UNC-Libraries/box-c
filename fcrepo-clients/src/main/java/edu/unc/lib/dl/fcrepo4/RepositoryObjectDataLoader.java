@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
@@ -50,15 +49,12 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class RepositoryObjectDataLoader {
 	private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
-	private static final String TX_ID_REGEX = "(tx:[a-z0-9\\-]+/)";
 
 	private Repository repository;
 
 	private AccessControlService aclService;
 
 	private FcrepoClient client;
-	
-	private Pattern pattern = Pattern.compile(TX_ID_REGEX);
 
 	/**
 	 * Loads and assigns the RDF types for the given object

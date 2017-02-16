@@ -51,15 +51,18 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			"text/n3", "application/rdf+xml", "application/n-triples", "application/ld+json"});
 	
 	private static final String TX_ID_REGEX = "(/tx:[a-z0-9\\-]+)?";
+	private static final String TX_RESPONSE_REGEX = "(tx:[a-z0-9\\-]+/)";
 	
 	private String baseUri;
-	private Pattern pattern;
+	private Pattern txBasePattern;
+	private Pattern txRemovePattern;
 	
 	protected TransactionalFcrepoClient(String username, String password, String host,
 															Boolean throwExceptionOnFailure, String baseUri) {
 		super(username, password, host, throwExceptionOnFailure);
 		this.baseUri = baseUri;
-		pattern = Pattern.compile(baseUri + TX_ID_REGEX);
+		txBasePattern = Pattern.compile(baseUri + TX_ID_REGEX);
+		txRemovePattern = Pattern.compile(TX_ID_REGEX);
 	}
 	
 	/**
@@ -97,7 +100,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		
 		try {
 			String bodyString = IOUtils.toString(resp.getBody(), StandardCharsets.UTF_8);
-			Matcher m = pattern.matcher(bodyString);
+			Matcher m = txRemovePattern.matcher(bodyString);
 			String replacementBody = m.replaceAll("");
 			resp.setBody(new ByteArrayInputStream(replacementBody.getBytes()));
 			return resp;
@@ -145,7 +148,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			if (!replacementUri.endsWith("/")) {
 				replacementUri += "/";
 			}
-			Matcher m = pattern.matcher(bodyString);
+			Matcher m = txBasePattern.matcher(bodyString);
 			String replacementBody = m.replaceAll(replacementUri);
 			InputStream replacementStream = new ByteArrayInputStream(replacementBody.getBytes());
 			InputStreamEntity replacementEntity = new InputStreamEntity(replacementStream);
