@@ -27,10 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -40,6 +36,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -413,7 +412,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			try {
 				tx.close();
 			} catch(Exception e) {
-				throw new DepositException("Unable to close transaction for " + tx.getTxUri().toString(), e);
+				// throw new DepositException("Unable to close transaction for " + tx.getTxUri().toString(), e);
 			}
 			// <------- end transaction support
 			// Increment the count of objects deposited prior to adding children
