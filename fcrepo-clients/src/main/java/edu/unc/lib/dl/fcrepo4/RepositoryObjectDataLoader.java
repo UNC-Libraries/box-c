@@ -17,11 +17,15 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.http.HttpStatus;
 import org.apache.jena.riot.Lang;
@@ -45,17 +49,20 @@ import edu.unc.lib.dl.fedora.PID;
 /**
  * Data loader which retrieves repository data for objects.
  * 
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class RepositoryObjectDataLoader {
 	private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
+	private static final String TX_ID_REGEX = "(tx:[a-z0-9\\-]+/)";
 
 	private Repository repository;
 
 	private AccessControlService aclService;
 
 	private FcrepoClient client;
+	
+	private Pattern pattern = Pattern.compile(TX_ID_REGEX);
 
 	/**
 	 * Loads and assigns the RDF types for the given object
@@ -101,8 +108,13 @@ public class RepositoryObjectDataLoader {
 
 			log.debug("Retrieving new model for {}", obj.getPid());
 			Model model = ModelFactory.createDefaultModel();
-			model.read(response.getBody(), null, Lang.TURTLE.getName());
-
+			String bodyString = streamToString(response.getBody());
+			if (bodyString.contains("tx:")) {
+				InputStream nonTxStream = removeTxIdsFromBody(bodyString);
+				model.read(nonTxStream, null, Lang.TURTLE.getName());
+			} else {
+				model.read(response.getBody(), null, Lang.TURTLE.getName());
+			}
 			// Store the fresh model
 			obj.storeModel(model);
 
@@ -203,5 +215,22 @@ public class RepositoryObjectDataLoader {
 
 	public void setAclService(AccessControlService aclService) {
 		this.aclService = aclService;
+	}
+	
+	private String streamToString(InputStream stream) throws IOException {
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = stream.read(buffer)) != -1) {
+		    result.write(buffer, 0, length);
+		}
+		return result.toString("UTF-8");
+	}
+	
+	private InputStream removeTxIdsFromBody(String bodyString) {
+		String emptyString = "";
+		Matcher m = pattern.matcher(bodyString);
+		String replacementBody = m.replaceAll(emptyString);
+		return new ByteArrayInputStream(replacementBody.getBytes());
 	}
 }
