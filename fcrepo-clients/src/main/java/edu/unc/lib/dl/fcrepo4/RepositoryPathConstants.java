@@ -62,7 +62,7 @@ public class RepositoryPathConstants {
 	// Regex pattern for decomposing a repository URI for an object or component of an object
 	public static final Pattern repositoryPathPattern = Pattern
 			.compile("/?(tx:[a-f0-9\\-]+/)?([a-zA-Z]+)/(([a-f0-9]{" + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
-					+ "([a-f0-9\\\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+					+ "([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 
 	// Regex pattern for decomposing an identifier for an object or component
 	public static final Pattern identifierPattern = Pattern

@@ -63,7 +63,6 @@ public class PIDs {
 
 		if (value.startsWith(repository.getBaseUri())) {
 			// Given value was a fedora path. Remove the base and decompose
-			repositoryPath = value;
 			String path = value.substring(repository.getBaseUri().length());
 
 			Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
@@ -77,7 +76,8 @@ public class PIDs {
 				if (id == null) {
 					id = matcher.group(6);
 				}
-				repositoryPath = getRepositoryPath(id, qualifier, componentPath, true);
+				// Reconstruct the repository path from wanted components (excluding things like tx ids)
+				repositoryPath = getRepositoryPath(matcher.group(3), qualifier, componentPath, false);
 			} else {
 				// Value was an invalid path within the repository
 				return null;

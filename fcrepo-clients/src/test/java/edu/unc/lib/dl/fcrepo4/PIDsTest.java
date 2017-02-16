@@ -40,7 +40,7 @@ public class PIDsTest {
 	@Mock
 	private Repository mockRepo;
 
-	private static final String FEDORA_BASE = "http://myrepo.example.com/fcrepo/";
+	private static final String FEDORA_BASE = "http://myrepo.example.com/fcrepo/rest/";
 
 	private static final String TEST_UUID = "95553b02-0256-4c73-b423-f12d070501e8";
 
@@ -230,5 +230,16 @@ public class PIDsTest {
 		PID pid = PIDs.get(path);
 
 		assertNull(pid);
+	}
+
+	@Test
+	public void getPidWithTxid() {
+		String txid = "tx:99b58d30-06f5-477b-a44c-d614a9049d38";
+		String path = FEDORA_BASE + txid + "/" + CONTENT_BASE + TEST_PATH + TEST_UUID;
+		
+		PID pid = PIDs.get(path);
+		
+		assertNotNull(pid);
+		assertEquals(FEDORA_BASE + CONTENT_BASE + TEST_PATH + TEST_UUID, pid.getRepositoryPath());
 	}
 }
