@@ -62,7 +62,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		super(username, password, host, throwExceptionOnFailure);
 		this.baseUri = baseUri;
 		txBasePattern = Pattern.compile(baseUri + TX_ID_REGEX);
-		txRemovePattern = Pattern.compile(TX_ID_REGEX);
+		txRemovePattern = Pattern.compile(TX_RESPONSE_REGEX);
 	}
 	
 	/**
