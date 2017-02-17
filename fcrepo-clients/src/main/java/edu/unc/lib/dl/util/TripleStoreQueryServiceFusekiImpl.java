@@ -27,9 +27,9 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
 public class TripleStoreQueryServiceFusekiImpl implements
 		TripleStoreQueryService {
 	private static final Logger log = LoggerFactory.getLogger(TripleStoreQueryServiceFusekiImpl.class);
-	private static final String tripleStoreEndpoint = "http://localhost:8080/fuseki/test/query";
 	
 	private String fusekiEndpointURL;
+	private String fusekiQueryURL;
 	private CloseableHttpClient httpClient;
 	private ObjectMapper mapper;
 	private PID collections;
@@ -111,7 +111,7 @@ public class TripleStoreQueryServiceFusekiImpl implements
 		
 		Query query = QueryFactory.create(queryString);
 
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(tripleStoreEndpoint, query)) { 
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(fusekiQueryURL, query)) { 
 			ResultSet results = qexec.execSelect();
 
 			for (; results.hasNext();) {
@@ -357,7 +357,19 @@ public class TripleStoreQueryServiceFusekiImpl implements
 		return null;
 	}
 	
+	public void setFusekiEndpointURL(String fusekiEndpointURL) {
+		this.fusekiEndpointURL = fusekiEndpointURL;
+	}
+	
 	public String getFusekiEndpointURL() {
 		return fusekiEndpointURL;
+	}
+	
+	public void setFusekiQueryURL(String fusekiQueryURL) {
+		this.fusekiQueryURL = fusekiQueryURL;
+	}
+	
+	public String getFusekiQueryURL() {
+		return fusekiQueryURL;
 	}
 }

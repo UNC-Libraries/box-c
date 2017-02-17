@@ -39,7 +39,8 @@
 	</bean>
 	
 	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
-		
+		<property name="fusekiEndpointURL" value="${triplestore.baseUrl}" />
+		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
 	</bean>
 
 	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
