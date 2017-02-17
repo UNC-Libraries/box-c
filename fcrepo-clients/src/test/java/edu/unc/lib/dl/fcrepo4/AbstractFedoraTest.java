@@ -35,7 +35,7 @@ public class AbstractFedoraTest {
 		initMocks(this);
 
 		PIDs.setRepository(repository);
-		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
+		when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
 
 		when(repository.getRepositoryObjectDataLoader()).thenReturn(dataLoader);
 	}

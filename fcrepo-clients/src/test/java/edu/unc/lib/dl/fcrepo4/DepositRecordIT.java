@@ -178,10 +178,10 @@ public class DepositRecordIT extends AbstractFedoraIT {
 		
 		URI obj1Uri;
 		URI obj2Uri;
-		try (FcrepoResponse response = client.post(URI.create(serverAddress)).perform()) {
+		try (FcrepoResponse response = client.post(URI.create(baseAddress)).perform()) {
 			obj1Uri = response.getLocation();
 		}
-		try (FcrepoResponse response = client.post(URI.create(serverAddress)).perform()) {
+		try (FcrepoResponse response = client.post(URI.create(baseAddress)).perform()) {
 			obj2Uri = response.getLocation();
 		}
 		Resource res1 = model.createResource(obj1Uri.toString());

@@ -65,7 +65,7 @@ public class RepositoryInitializer {
 	}
 	
 	private URI createContainer(String id, String title) {
-		String containerString = URIUtil.join(repository.getFedoraBase(), id);
+		String containerString = URIUtil.join(repository.getBaseUri(), id);
 		URI containerUri = URI.create(containerString);
 		
 		// Abort initialization of already present container

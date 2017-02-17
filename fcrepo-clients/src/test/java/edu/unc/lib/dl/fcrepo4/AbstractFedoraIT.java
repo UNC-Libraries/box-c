@@ -39,7 +39,7 @@ import edu.unc.lib.dl.util.URIUtil;
 public class AbstractFedoraIT {
 
 	@Autowired
-	protected String serverAddress;
+	protected String baseAddress;
 
 	@Autowired
 	protected FcrepoClient client;
@@ -53,7 +53,7 @@ public class AbstractFedoraIT {
 	}
 	
 	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(URIUtil.join(serverAddress, name));
+		URI baseUri = URI.create(URIUtil.join(baseAddress, name));
 		// Create a parent object to put the binary into
 		try (FcrepoResponse response = client.put(baseUri).perform()) {
 			return response.getLocation();

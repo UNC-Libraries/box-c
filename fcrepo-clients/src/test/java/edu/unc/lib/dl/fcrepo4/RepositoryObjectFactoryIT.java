@@ -57,7 +57,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
 	@Test
 	public void createDepositRecordTest() throws Exception {
-		String path = serverAddress + RepositoryPathConstants.DEPOSIT_RECORD_BASE
+		String path = baseAddress + RepositoryPathConstants.DEPOSIT_RECORD_BASE
 				+ "/" + UUID.randomUUID().toString();
 		URI uri = URI.create(path);
 
@@ -81,8 +81,8 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 	@Test
 	public void createBinaryTest() throws Exception {
 		String binarySlug = "binary_test";
-		String binaryPath = URIUtil.join(serverAddress, binarySlug);
-		URI serverUri = URI.create(serverAddress);
+		String binaryPath = URIUtil.join(baseAddress, binarySlug);
+		URI serverUri = URI.create(baseAddress);
 
 		Model model = ModelFactory.createDefaultModel();
 		Resource resc = model.createResource(binaryPath);
@@ -119,7 +119,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
 	@Test
 	public void createFileObjectTest() throws Exception {
-		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
 		URI uri = URI.create(objectPath);
 
 		URI resultUri = factory.createFileObject(uri, null);
@@ -143,7 +143,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
 	@Test
 	public void createWorkObjectTest() throws Exception {
-		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
 		URI uri = URI.create(objectPath);
 
 		URI resultUri = factory.createWorkObject(uri, null);
@@ -165,7 +165,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
 	@Test
 	public void createFolderObjectTest() throws Exception {
-		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
 		URI uri = URI.create(objectPath);
 
 		URI resultUri = factory.createFolderObject(uri, null);
@@ -187,7 +187,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 	
 	@Test
 	public void createAdminUnitTest() throws Exception {
-		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
 		URI uri = URI.create(objectPath);
 
 		URI resultUri = factory.createAdminUnit(uri, null);
@@ -209,7 +209,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 	
 	@Test
 	public void createCollectionObjectTest() throws Exception {
-		String objectPath = URIUtil.join(serverAddress, UUID.randomUUID().toString());
+		String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
 		URI uri = URI.create(objectPath);
 
 		URI resultUri = factory.createCollectionObject(uri, null);

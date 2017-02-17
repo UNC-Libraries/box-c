@@ -113,7 +113,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 					
 					premisDepositLogger.writeEvent(premisDepositEvent);
 				} catch (IOException e) {
-					failJob(e, "Unable to compute checksum. File not found at {}", fullPath);
+					failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
 				}
 
 				model.add(fileResource, RDF.type, Cdr.FileObject);

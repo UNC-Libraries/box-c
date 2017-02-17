@@ -20,6 +20,10 @@
 			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}" />
 	</bean>
 	
+	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory">
+		<constructor-arg ref="serverAddress" />
+	</bean>
+	
 	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
 	</bean>
 	
