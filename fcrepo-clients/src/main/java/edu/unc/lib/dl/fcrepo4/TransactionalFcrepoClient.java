@@ -53,14 +53,12 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 	private static final String TX_ID_REGEX = "(/tx:[a-z0-9\\-]+)?";
 	private static final String TX_RESPONSE_REGEX = "(tx:[a-z0-9\\-]+/)";
 	
-	private String baseUri;
 	private Pattern txBasePattern;
 	private Pattern txRemovePattern;
 	
 	protected TransactionalFcrepoClient(String username, String password, String host,
-															Boolean throwExceptionOnFailure, String baseUri) {
+				Boolean throwExceptionOnFailure, String baseUri) {
 		super(username, password, host, throwExceptionOnFailure);
-		this.baseUri = baseUri;
 		txBasePattern = Pattern.compile(baseUri + TX_ID_REGEX);
 		txRemovePattern = Pattern.compile(TX_RESPONSE_REGEX);
 	}
@@ -74,6 +72,14 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		return new TransactionalFcrepoClientBuilder(baseUri);
 	}
 	
+	/**
+     * Execute a HTTP request, and modify the request to handle a transaction, if one is currently open
+     * 
+     * @param url URI the request is made to
+     * @param request the request
+     * @return the repository response
+     * @throws FcrepoOperationFailedException when the underlying HTTP request results in an error
+     */
 	@Override
 	public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
 			throws FcrepoOperationFailedException {
@@ -92,6 +98,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		return super.executeRequest(uri, request);
 	}
 	
+	/**
+	 * Removes tx ids from the response body
+	 */
 	private FcrepoResponse rewriteResponseBodyUris(FcrepoResponse resp) {
 		// Check that the response is RDF
 		if (!RDF_MIMETYPES.contains(resp.getContentType())) {
@@ -109,6 +118,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		}
 	}
 	
+	/**
+	 * Rewrites a resource uri to include a tx id
+	 */
 	private URI rewriteUri(URI rescUri) {
 		URI txUri = FedoraTransaction.txUriThread.get();
 		String rescId = rescUri.toString();
@@ -121,6 +133,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		return FedoraTransaction.hasTxId();
 	}
 	
+	/**
+	 * Checks the request to see whether it is a PUT, POST, or PATCH and has an RDF mimetype
+	 */
 	private boolean needsRequestBodyRewrite(HttpRequestBase request) {
 		org.apache.http.Header contentTypeHeader = request.getFirstHeader("Content-Type");
 		if (contentTypeHeader == null) {
@@ -130,7 +145,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 		// request method is POST, PUT, or PATCH AND has one of the whitelisted mimetypes
 		return request.getMethod().startsWith("P") && RDF_MIMETYPES.contains(contentType);
 	}
- 	
+ 	/**
+ 	 * Replaces all uris in the request body with tx uris
+ 	 */
 	private HttpRequestBase rewriteRequestBodyUris(HttpRequestBase request) {
 		HttpEntity requestBody = ((HttpEntityEnclosingRequestBase) request).getEntity();
 		if (requestBody != null) {
@@ -142,14 +159,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			}
 			
 			String fullTxPath = FedoraTransaction.txUriThread.get().toString();
-			int txIdIndex = fullTxPath.indexOf("tx:");
-			String txId = fullTxPath.substring(txIdIndex);
-			String replacementUri = URIUtil.join(URI.create(baseUri), txId).toString();
-			if (!replacementUri.endsWith("/")) {
-				replacementUri += "/";
-			}
+			
 			Matcher m = txBasePattern.matcher(bodyString);
-			String replacementBody = m.replaceAll(replacementUri);
+			String replacementBody = m.replaceAll(fullTxPath);
 			InputStream replacementStream = new ByteArrayInputStream(replacementBody.getBytes());
 			InputStreamEntity replacementEntity = new InputStreamEntity(replacementStream);
 			((HttpEntityEnclosingRequestBase) request).setEntity(replacementEntity);
