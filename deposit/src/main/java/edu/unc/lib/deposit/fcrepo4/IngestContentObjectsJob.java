@@ -27,10 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -40,6 +36,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -47,6 +46,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -400,13 +400,21 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			Model model = ModelFactory.createDefaultModel();
 			Resource workResc = model.getResource(childPid.getRepositoryPath());
 			populateAIPProperties(childResc, workResc);
-
+			//TODO need to add transaction support around the following ----->
+			// use transactionalfcrepoclient and get the tx id from the uri it returns
+			// send txid along with uris for the following actions
+			FedoraTransaction tx = repository.startTransaction();
 			// TODO add ACLs
 
 			obj = repository.createWorkObject(childPid, model);
 			parent.addMember(obj);
 			// TODO add description
-
+			try {
+				tx.close();
+			} catch(Exception e) {
+				// throw new DepositException("Unable to close transaction for " + tx.getTxUri().toString(), e);
+			}
+			// <------- end transaction support
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);
 			

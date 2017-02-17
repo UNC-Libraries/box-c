@@ -51,7 +51,7 @@ import edu.unc.lib.dl.util.JobStatusFactory;
  */
 public class AbstractDepositJobTest {
 
-	protected static final String FEDORA_BASE = "http://example.com/";
+	protected static final String FEDORA_BASE = "http://example.com/rest/";
 	
 	@Mock
 	protected RepositoryObjectDataLoader dataLoader;
@@ -90,7 +90,7 @@ public class AbstractDepositJobTest {
 		initMocks(this);
 		
 		PIDs.setRepository(repository);
-		when(repository.getFedoraBase()).thenReturn(FEDORA_BASE);
+		when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
 		when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
 				.thenReturn(premisLogger);
 		when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);

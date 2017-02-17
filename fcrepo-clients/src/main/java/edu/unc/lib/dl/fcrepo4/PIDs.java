@@ -61,22 +61,23 @@ public class PIDs {
 		String componentPath;
 		String repositoryPath;
 
-		if (value.startsWith(repository.getFedoraBase())) {
+		if (value.startsWith(repository.getBaseUri())) {
 			// Given value was a fedora path. Remove the base and decompose
-			repositoryPath = value;
-			String path = value.substring(repository.getFedoraBase().length());
+			String path = value.substring(repository.getBaseUri().length());
 
 			Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
 			if (matcher.matches()) {
 				// extract the qualifier/category portion of the path, ex: deposit, content, etc.
-				qualifier = matcher.group(1);
+				qualifier = matcher.group(2);
 				// store the trailing component path, which is everything after the object identifier
-				componentPath = matcher.group(7);
+				componentPath = matcher.group(8);
 				// store the identifier for the main object
-				id = matcher.group(4);
+				id = matcher.group(5);
 				if (id == null) {
-					id = matcher.group(5);
+					id = matcher.group(6);
 				}
+				// Reconstruct the repository path from wanted components (excluding things like tx ids)
+				repositoryPath = getRepositoryPath(matcher.group(3), qualifier, componentPath, false);
 			} else {
 				// Value was an invalid path within the repository
 				return null;
@@ -139,7 +140,7 @@ public class PIDs {
 	 * @return
 	 */
 	private static String getRepositoryPath(String id, String qualifier, String componentPath, boolean expand) {
-		StringBuilder builder = new StringBuilder(repository.getFedoraBase());
+		StringBuilder builder = new StringBuilder(repository.getBaseUri());
 		builder.append(qualifier).append('/');
 
 		if (expand) {

@@ -38,7 +38,7 @@ public class FolderObject extends ContentContainerObject {
 	@Override
 	public FolderObject validateType() throws FedoraException {
 		if (!isType(Cdr.Folder.toString())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a Work object.");
+			throw new ObjectTypeMismatchException("Object " + pid + " is not a Folder object.");
 		}
 		return this;
 	}

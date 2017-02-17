@@ -45,7 +45,7 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 	public void createDirectContainerTest() throws Exception {
 		URI objUri;
 		// create the base object
-		try (FcrepoResponse resp = client.post(URI.create(serverAddress)).perform()) {
+		try (FcrepoResponse resp = client.post(URI.create(baseAddress)).perform()) {
 			objUri = resp.getLocation();
 		}
 
@@ -72,7 +72,7 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 	public void createIndirectContainerTest() throws Exception {
 		URI objUri;
 		// create the base object
-		try (FcrepoResponse resp = client.post(URI.create(serverAddress)).perform()) {
+		try (FcrepoResponse resp = client.post(URI.create(baseAddress)).perform()) {
 			objUri = resp.getLocation();
 		}
 		// Create the indirect container for the base object
@@ -80,7 +80,7 @@ public class LdpContainerFactoryIT extends AbstractFedoraIT {
 
 		// Create another object, which will later be added the base object
 		URI childUri;
-		try (FcrepoResponse resp = client.post(URI.create(serverAddress)).perform()) {
+		try (FcrepoResponse resp = client.post(URI.create(baseAddress)).perform()) {
 			childUri = resp.getLocation();
 		}
 

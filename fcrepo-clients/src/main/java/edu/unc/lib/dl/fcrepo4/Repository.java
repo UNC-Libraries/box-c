@@ -35,7 +35,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -51,6 +50,11 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class Repository {
+	
+	private static final String CREATE_TX = "fcr:tx";
+	private static final String COMMIT_TX = "fcr:tx/fcr:commit";
+	private static final String ROLLBACK_TX = "fcr:tx/fcr:rollback";
+	
 	private String depositRecordBase;
 	private String vocabulariesBase;
 	private String contentBase;
@@ -61,7 +65,8 @@ public class Repository {
 
 	private String baseHost;
 
-	private String fedoraBase;
+	private String serverUri;
+	private String baseUri;
 
 	private String authUsername;
 
@@ -688,14 +693,25 @@ public class Repository {
 		this.baseHost = baseHost;
 	}
 
-	public String getFedoraBase() {
-		return fedoraBase;
+	public String getServerUri() {
+		return serverUri;
+	}
+	
+	public String getBaseUri() {
+		return baseUri;
 	}
 
-	public void setFedoraBase(String fedoraBase) {
-		this.fedoraBase = fedoraBase;
-		if (!fedoraBase.endsWith("/")) {
-			this.fedoraBase += "/";
+	public void setServerUri(String serverUri) {
+		this.serverUri = serverUri;
+		if (!serverUri.endsWith("/")) {
+			this.serverUri += "/";
+		}
+	}
+	
+	public void setBaseUri(String baseUri) {
+		this.baseUri = baseUri;
+		if (!baseUri.endsWith("/")) {
+			this.baseUri += "/";
 		}
 	}
 
@@ -754,6 +770,62 @@ public class Repository {
 					RepositoryPathConstants.FCR_METADATA));
 		} else {
 			return pid.getRepositoryUri();
+		}
+	}
+	
+	public FedoraTransaction startTransaction() throws FedoraException {
+		URI repoBase = URI.create(baseUri);
+		// appends suffix for creating transaction
+		URI createTxUri = URI.create(URIUtil.join(repoBase, CREATE_TX));
+		URI txUri = null;
+		// attempts to create a transaction by making request to Fedora
+		try (FcrepoResponse response = getClient().post(createTxUri).perform()) {
+			// gets the full transaction uri from response header
+			txUri = response.getLocation();
+		} catch (IOException | FcrepoOperationFailedException e) {
+			throw new FedoraException("Unable to create transaction", e);
+		}
+		
+		return new FedoraTransaction(txUri, this);
+	}
+	
+	protected void commitTransaction(URI txUri) {
+		URI commitTxUri = URI.create(URIUtil.join(txUri, COMMIT_TX));
+		// attempts to commit/save a transaction by making request to Fedora
+		try (FcrepoResponse response = getClient().post(commitTxUri).perform()) {
+			// gets the full transaction uri from response header
+			int statusCode = response.getStatusCode();
+			if (statusCode != HttpStatus.SC_NO_CONTENT) {
+				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
+			}
+		} catch (IOException | FcrepoOperationFailedException e) {
+			throw new FedoraException("Unable to commit transaction", e);
+		}
+	}
+	
+	protected void keepTransactionAlive(URI txUri) {
+		URI txUriAlive = URI.create(URIUtil.join(txUri, CREATE_TX));
+		// attempts to commit/save a transaction by making request to Fedora
+		try (FcrepoResponse response = getClient().post(txUriAlive).perform()) {
+			int statusCode = response.getStatusCode();
+			if (statusCode != HttpStatus.SC_NO_CONTENT) {
+				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
+			}
+		} catch (IOException | FcrepoOperationFailedException e) {
+			throw new FedoraException("Unable to keep transaction alive", e);
+		}
+	}
+	
+	protected void cancelTransaction(URI txUri) {
+		URI txUriCancel = URI.create(URIUtil.join(txUri, ROLLBACK_TX));
+		// attempts to commit/save a transaction by making request to Fedora
+		try (FcrepoResponse response = getClient().post(txUriCancel).perform()) {
+			int statusCode = response.getStatusCode();
+			if (statusCode != HttpStatus.SC_NO_CONTENT) {
+				throw new FcrepoOperationFailedException(txUri, statusCode, response.getHeaderValues("Status").toString());
+			}
+		} catch (IOException | FcrepoOperationFailedException e) {
+			throw new FedoraException("Unable to cancel transaction", e);
 		}
 	}
 	

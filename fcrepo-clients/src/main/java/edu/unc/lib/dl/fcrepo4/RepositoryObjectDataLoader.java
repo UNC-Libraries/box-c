@@ -24,18 +24,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
@@ -45,7 +44,7 @@ import edu.unc.lib.dl.fedora.PID;
 /**
  * Data loader which retrieves repository data for objects.
  * 
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class RepositoryObjectDataLoader {
@@ -165,7 +164,10 @@ public class RepositoryObjectDataLoader {
 	 */
 	private static String parseEtag(FcrepoResponse response) {
 		String etag = response.getHeaderValue("ETag");
-		return etag.substring(1, etag.length() - 1);
+		if (etag != null) {
+			return etag.substring(1, etag.length() - 1);
+		}
+		return null;
 	}
 
 	/**
