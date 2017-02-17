@@ -42,6 +42,10 @@ public class RepositoryPathConstants {
 	public static final String MEMBER_CONTAINER = "member";
 
 	// Named objects
+	
+	public static final String SMALL_THUMBNAIL = "small_thumbnail";
+	
+	public static final String LARGE_THUMBNAIL = "large_thumbnail";
 
 	public static final String ORIGINAL_FILE = "original_file";
 

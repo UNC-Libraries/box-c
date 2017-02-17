@@ -40,6 +40,9 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * Data loader which retrieves repository data for objects.
@@ -55,6 +58,8 @@ public class RepositoryObjectDataLoader {
 	private AccessControlService aclService;
 
 	private FcrepoClient client;
+	
+	private TripleStoreQueryService tripleStoreQueryService;
 
 	/**
 	 * Loads and assigns the RDF types for the given object
@@ -133,6 +138,26 @@ public class RepositoryObjectDataLoader {
 			throw ClientFaultResolver.resolve(e);
 		}
 	}
+	
+	/**
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public RepositoryObject getParentObject(RepositoryObject obj) {
+		Resource resourceType = null;
+		final Model model = obj.getModel();
+
+		if (model.containsResource(Fcrepo4Repository.Binary)) {
+			resourceType = PcdmModels.hasFile;
+		} else if (model.containsResource(Fcrepo4Repository.Container)) {
+			resourceType = PcdmModels.hasMember;
+		}
+
+		PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
+
+		return repository.getContentObject(pid);
+	}
 
 	/**
 	 * Retrieves the etag for the provided object
@@ -202,5 +227,13 @@ public class RepositoryObjectDataLoader {
 
 	public void setAclService(AccessControlService aclService) {
 		this.aclService = aclService;
+	}
+	
+	public TripleStoreQueryService getTripleStoreQueryService() {
+		return tripleStoreQueryService;
+	}
+	
+	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+		this.tripleStoreQueryService = tripleStoreQueryService;
 	}
 }

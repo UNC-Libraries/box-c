@@ -94,6 +94,11 @@ public abstract class ContentObject extends RepositoryObject {
 		}
 	}
 	
+	@Override
+	public RepositoryObject getParent() {
+		return dataLoader.getParentObject(this);
+	}
+	
 	/**
 	 * Gets the BinaryObject with the MODS for this object
 	 * @return the BinaryObject

@@ -38,6 +38,11 @@ public class PremisEventObject extends RepositoryObject implements Comparable<Pr
 			return 0;
 		}
 	}
+	
+	@Override
+	public RepositoryObject getParent() {
+		return dataLoader.getParentObject(this);
+	}
 
 	/**
 	 * Override to assume that the remote version will not change after creation

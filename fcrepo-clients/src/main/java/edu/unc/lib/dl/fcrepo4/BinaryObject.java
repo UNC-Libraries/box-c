@@ -56,6 +56,11 @@ public class BinaryObject extends RepositoryObject {
 		}
 		return this;
 	}
+	
+	@Override
+	public RepositoryObject getParent() {
+		return dataLoader.getParentObject(this);
+	}
 
 	/**
 	 * Get an inputstream of the binary content
@@ -74,7 +79,6 @@ public class BinaryObject extends RepositoryObject {
 	public URI getMetadataUri() {
 		return metadataUri;
 	}
-	
 
 	/**
 	 * Get the filename of the binary content if it was provided.

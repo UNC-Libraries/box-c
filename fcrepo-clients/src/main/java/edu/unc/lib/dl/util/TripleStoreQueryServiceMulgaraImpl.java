@@ -54,6 +54,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.jena.rdf.model.Resource;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -1613,5 +1614,11 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 		}
 
 		return result;
+	}
+
+	@Override
+	public PID fetchContainer(PID child, Resource membershipRelation) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

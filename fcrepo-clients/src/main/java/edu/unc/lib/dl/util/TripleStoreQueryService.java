@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.jena.rdf.model.Resource;
+
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
@@ -149,6 +151,15 @@ public interface TripleStoreQueryService {
 	 * @return the parent container
 	 */
 	public abstract PID fetchContainer(PID key);
+	
+	/**
+	 * Retrieves the parent object or container that holds the specified object.
+	 * 
+	 * @param child
+	 * @param membershipRelation
+	 * @return
+	 */
+	public abstract PID fetchContainer(PID child, Resource membershipRelation);
 
 	/**
 	 * Returns whether the object's path can be traced back to the Collections object
