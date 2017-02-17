@@ -74,7 +74,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	@Before
 	public void init() {
 		PIDs.setRepository(repo);
-		when(repo.getFedoraBase()).thenReturn(baseUri);
+		when(repo.getBaseUri()).thenReturn(baseUri);
 	}
 	
 	@Override
