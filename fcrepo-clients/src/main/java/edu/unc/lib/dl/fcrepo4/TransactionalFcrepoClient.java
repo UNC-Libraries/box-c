@@ -159,6 +159,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			}
 			
 			String fullTxPath = FedoraTransaction.txUriThread.get().toString();
+			if (fullTxPath.lastIndexOf('/') != fullTxPath.length() - 1) {
+				fullTxPath += "/";
+			}
 			
 			Matcher m = txBasePattern.matcher(bodyString);
 			String replacementBody = m.replaceAll(fullTxPath);
