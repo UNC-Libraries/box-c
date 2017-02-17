@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:camel="http://camel.apache.org/schema/spring"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/util 
+		http://www.springframework.org/schema/util/spring-util.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://camel.apache.org/schema/spring
+		http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+	<context:annotation-config />
+	
+	<bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:config.properties"/>
+	</bean>
+	
+	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory"
+		factory-method="makeClient">
+	</bean>
+
+	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+		<property name="client" ref="fcrepoClient" />
+	</bean>
+
+	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+		<property name="client" ref="fcrepoClient" />
+		<property name="ldpFactory" ref="ldpContainerFactory" />
+	</bean>
+
+	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repository" ref="repository" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+	</bean>
+	
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
+		<property name="fusekiEndpointURL" value="${triplestore.baseUrl}" />
+		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
+	</bean>
+
+	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+		<property name="fedoraBase" value="${fcrepo.baseUrl}" />
+	</bean>
+
+	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
+		<property name="repository" ref="repository" />
+	</bean>
+
+	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
+		<constructor-arg value="${fcrepo.binaryBase}"/>
+	</bean>
+
+	<bean id="addSmallThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).SMALL_THUMBNAIL}"/>
+		<constructor-arg value="${cdr.enhancement.thumbnail}" />
+	</bean>
+	
+	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).LARGE_THUMBNAIL}"/>
+		<constructor-arg value="${cdr.enhancement.thumbnail}" />
+	</bean>
+	
+	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
+		<property name="authUsername" value="${fcrepo.authUsername}"/>
+		<property name="authPassword" value="${fcrepo.authPassword}"/>
+		<property name="authHost" value="${fcrepo.authHost}"/>
+		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
+	</bean>
+
+	<camel:camelContext id="MetaServicesRouter">
+		<camel:package>edu.unc.lib.cdr.routing</camel:package>
+	</camel:camelContext>
+
+	<camel:camelContext id="CdrServiceEnhancements">
+		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
+	</camel:camelContext>
+	
+	<camel:camelContext id="FcrepoTriplestoreRouter">
+		<camel:package>edu.unc.lib.cdr.indexing.triplestore</camel:package>
+	</camel:camelContext>
+	
+</beans>

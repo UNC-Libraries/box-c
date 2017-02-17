@@ -142,6 +142,11 @@ public class DepositRecord extends RepositoryObject {
 		}
 		return this;
 	}
+	
+	@Override
+	public RepositoryObject getParent() {
+		return dataLoader.getParentObject(this);
+	}
 
 	/**
 	 * Returns the URI for the container which holds manifests for this record

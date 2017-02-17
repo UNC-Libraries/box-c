@@ -74,9 +74,6 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 			} catch (URISyntaxException e) {
 				failJob(e, "Unable to parse manifest URI: {0}", href);
 			}
-			if (!policyManager.isValidStagingLocation(manifestURI)) {
-				badlyStagedFiles.add(manifestURI.toString());
-			}
 
 			if (manifestURI.getScheme() == null || manifestURI.getScheme().contains("file")) {
 				if (!manifestURI.isAbsolute()) {
@@ -89,6 +86,11 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 					failures.add(manifestURI.toString());
 				}
 			}
+			
+			if (!policyManager.isValidStagingLocation(manifestURI)) {
+				badlyStagedFiles.add(manifestURI.toString());
+			}
+			
 			addClicks(1);
 		}
 		

@@ -167,6 +167,12 @@ public abstract class RepositoryObject {
 	public void setPid(PID pid) {
 		this.pid = pid;
 	}
+	
+	/**
+	 * Get the parent of the current object
+	 * @return
+	 */
+	public abstract RepositoryObject getParent();
 
 	/**
 	 * Get the last modified date

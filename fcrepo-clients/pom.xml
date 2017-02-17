@@ -206,6 +206,12 @@
 			<groupId>org.fcrepo.client</groupId>
 			<artifactId>fcrepo-java-client</artifactId>
 			<version>${fcrepo.client.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>httpclient</groupId>
+					<artifactId>httpclient</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
