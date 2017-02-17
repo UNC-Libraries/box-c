@@ -25,7 +25,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.net.URI;
 
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -34,8 +33,6 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -52,13 +49,9 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 	
 	private PID pid;
 	private Model model;
-	
-	@Mock
-	private HttpRequestBase request;
 
 	@Before
 	public void init() {
-		MockitoAnnotations.initMocks(this);
 		pid = repository.mintContentPid();
 		model = ModelFactory.createDefaultModel();
 		Resource resc = model.createResource(pid.getRepositoryPath());
