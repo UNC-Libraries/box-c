@@ -409,6 +409,17 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		boolean skip = skipResumed(childResc);
 		if (skip) {
 			obj = repository.getWorkObject(childPid);
+			ingestChildren(obj, childResc);
+
+			// Avoid adding primaryObject relation for a resuming deposit if already present
+			if (!obj.getResource().hasProperty(Cdr.primaryObject)) {
+				// Set the primary object for this work if one was specified
+				Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
+				if (primaryStmt != null) {
+					String primaryPath = primaryStmt.getResource().getURI();
+					obj.setPrimaryObject(PIDs.get(primaryPath));
+				}
+			}
 		} else {
 			Model model = ModelFactory.createDefaultModel();
 			Resource workResc = model.getResource(childPid.getRepositoryPath());
@@ -420,24 +431,21 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				obj = repository.createWorkObject(childPid, model);
 				parent.addMember(obj);
 				// TODO add description
+		
+				// Increment the count of objects deposited prior to adding children
+				addClicks(1);
+				
+				log.info("Created work object {} for deposit {}", childPid, getDepositPID());
+				ingestChildren(obj, childResc);
+
+				// Set the primary object for this work if one was specified
+				Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
+				if (primaryStmt != null) {
+					String primaryPath = primaryStmt.getResource().getURI();
+					obj.setPrimaryObject(PIDs.get(primaryPath));
+				}
 			} finally {
 				tx.close();
-			}
-			// Increment the count of objects deposited prior to adding children
-			addClicks(1);
-			
-			log.info("Created work object {} for deposit {}", childPid, getDepositPID());
-		}
-
-		ingestChildren(obj, childResc);
-
-		// Avoid adding primaryObject relation for a resuming deposit if already present
-		if (!skip || !obj.getResource().hasProperty(Cdr.primaryObject)) {
-			// Set the primary object for this work if one was specified
-			Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
-			if (primaryStmt != null) {
-				String primaryPath = primaryStmt.getResource().getURI();
-				obj.setPrimaryObject(PIDs.get(primaryPath));
 			}
 		}
 	}
