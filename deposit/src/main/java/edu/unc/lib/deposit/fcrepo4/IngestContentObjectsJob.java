@@ -228,14 +228,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
-
-		FileObject obj = addFileToWork(work, childResc);
-		// TODO add description to file object
-
-		// Increment the count of objects deposited
-		addClicks(1);
-		
-		log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
+		FedoraTransaction tx = repository.startTransaction();
+		try {
+			FileObject obj = addFileToWork(work, childResc);
+			// TODO add description to file object
+	
+			// Increment the count of objects deposited
+			addClicks(1);
+			
+			log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
+		} finally {
+			tx.close();
+		}
 	}
 
 	/**
@@ -275,8 +279,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		}
 		Resource workResc = workModel.createResource(workPid.getRepositoryPath());
 		workResc.addProperty(DC.title, label);
-
-		WorkObject newWork = repository.createWorkObject(workPid, workModel);
+		FedoraTransaction tx = repository.startTransaction();
+		try {
+			WorkObject newWork = repository.createWorkObject(workPid, workModel);
+		
 		// TODO add the FileObject's description to the work instead
 
 		addFileToWork(newWork, childResc);
@@ -291,6 +297,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		
 		log.info("Created work {} for file object {} for deposit {}",
 				new Object[] {workPid, childPid, getDepositPID()});
+		} finally {
+			tx.close();
+		}
 	}
 
 	/**
@@ -362,15 +371,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			populateAIPProperties(childResc, folderResc);
 
 			// TODO add ACLs
-
-			obj = repository.createFolderObject(childPid, model);
-			parent.addMember(obj);
-			// TODO add description
-
-			// Increment the count of objects deposited prior to adding children
-			addClicks(1);
-			
-			log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
+			FedoraTransaction tx = repository.startTransaction();
+			try {
+				obj = repository.createFolderObject(childPid, model);
+				parent.addMember(obj);
+				// TODO add description
+	
+				// Increment the count of objects deposited prior to adding children
+				addClicks(1);
+				
+				log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
+			} finally {
+				tx.close();
+			}
 		}
 
 		// ingest all children of the folder
@@ -400,21 +413,16 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			Model model = ModelFactory.createDefaultModel();
 			Resource workResc = model.getResource(childPid.getRepositoryPath());
 			populateAIPProperties(childResc, workResc);
-			//TODO need to add transaction support around the following ----->
-			// use transactionalfcrepoclient and get the tx id from the uri it returns
 			// send txid along with uris for the following actions
 			FedoraTransaction tx = repository.startTransaction();
 			// TODO add ACLs
-
-			obj = repository.createWorkObject(childPid, model);
-			parent.addMember(obj);
-			// TODO add description
 			try {
+				obj = repository.createWorkObject(childPid, model);
+				parent.addMember(obj);
+				// TODO add description
+			} finally {
 				tx.close();
-			} catch(Exception e) {
-				// throw new DepositException("Unable to close transaction for " + tx.getTxUri().toString(), e);
 			}
-			// <------- end transaction support
 			// Increment the count of objects deposited prior to adding children
 			addClicks(1);
 			
