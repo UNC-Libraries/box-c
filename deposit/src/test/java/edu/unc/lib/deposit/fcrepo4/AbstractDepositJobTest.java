@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.net.URI;
 import java.util.UUID;
 
 import org.apache.jena.query.Dataset;
@@ -35,6 +36,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
@@ -52,6 +54,7 @@ import edu.unc.lib.dl.util.JobStatusFactory;
 public class AbstractDepositJobTest {
 
 	protected static final String FEDORA_BASE = "http://example.com/rest/";
+	protected static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
 	
 	@Mock
 	protected RepositoryObjectDataLoader dataLoader;
@@ -84,6 +87,8 @@ public class AbstractDepositJobTest {
 	protected PID depositPid;
 	
 	protected Dataset dataset;
+	
+	protected FedoraTransaction tx;
 
 	@Before
 	public void initBase() throws Exception {
@@ -109,6 +114,9 @@ public class AbstractDepositJobTest {
 		depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
 		
 		dataset = TDBFactory.createDataset();
+		
+		tx = new FedoraTransaction(URI.create(TX_URI), repository);
+		when(repository.startTransaction()).thenReturn(tx);
 	}
 
 	protected PID makePid(String qualifier) {
