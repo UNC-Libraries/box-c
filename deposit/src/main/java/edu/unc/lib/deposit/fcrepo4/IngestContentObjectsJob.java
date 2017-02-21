@@ -282,21 +282,21 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		FedoraTransaction tx = repository.startTransaction();
 		try {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
-		
-		// TODO add the FileObject's description to the work instead
-
-		addFileToWork(newWork, childResc);
-		// Set the file as the primary object for the generated work
-		newWork.setPrimaryObject(childPid);
-
-		// Add the newly created work to its parent
-		parent.addMember(newWork);
-
-		// Increment the count of objects deposited
-		addClicks(1);
-		
-		log.info("Created work {} for file object {} for deposit {}",
-				new Object[] {workPid, childPid, getDepositPID()});
+			
+			// TODO add the FileObject's description to the work instead
+	
+			addFileToWork(newWork, childResc);
+			// Set the file as the primary object for the generated work
+			newWork.setPrimaryObject(childPid);
+	
+			// Add the newly created work to its parent
+			parent.addMember(newWork);
+	
+			// Increment the count of objects deposited
+			addClicks(1);
+			
+			log.info("Created work {} for file object {} for deposit {}",
+					new Object[] {workPid, childPid, getDepositPID()});
 		} finally {
 			tx.close();
 		}
@@ -414,11 +414,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			// Avoid adding primaryObject relation for a resuming deposit if already present
 			if (!obj.getResource().hasProperty(Cdr.primaryObject)) {
 				// Set the primary object for this work if one was specified
-				Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
-				if (primaryStmt != null) {
-					String primaryPath = primaryStmt.getResource().getURI();
-					obj.setPrimaryObject(PIDs.get(primaryPath));
-				}
+				addPrimaryObject(obj, childResc);
 			}
 		} else {
 			Model model = ModelFactory.createDefaultModel();
@@ -439,14 +435,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				ingestChildren(obj, childResc);
 
 				// Set the primary object for this work if one was specified
-				Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
-				if (primaryStmt != null) {
-					String primaryPath = primaryStmt.getResource().getURI();
-					obj.setPrimaryObject(PIDs.get(primaryPath));
-				}
+				addPrimaryObject(obj, childResc);
 			} finally {
 				tx.close();
 			}
+		}
+	}
+	
+	private void addPrimaryObject(WorkObject obj, Resource childResc) {
+		Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
+		if (primaryStmt != null) {
+			String primaryPath = primaryStmt.getResource().getURI();
+			obj.setPrimaryObject(PIDs.get(primaryPath));
 		}
 	}
 
