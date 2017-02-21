@@ -17,13 +17,9 @@ package edu.unc.lib.deposit.validate;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -32,6 +28,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.philvarner.clamavj.ClamScan;
 import com.philvarner.clamavj.ScanResult;
 
@@ -45,9 +44,8 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
- * Scans all files mentioned in N3 manifest for viruses. If a Staging configuration
- * is supplied then staged files will be resolved. Otherwise files are resolved
- * with the bag directory as the base URI.
+ * Scans all staged files registered in the deposit for viruses.
+ * 
  * @author count0
  *
  */
@@ -57,10 +55,6 @@ public class VirusScanJob extends AbstractDepositJob {
 
 	private ClamScan clamScan;
 
-	public VirusScanJob() {
-		super();
-	}
-
 	public ClamScan getClamScan() {
 		return clamScan;
 	}
@@ -69,17 +63,13 @@ public class VirusScanJob extends AbstractDepositJob {
 		this.clamScan = clamScan;
 	}
 
-	public VirusScanJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
-
 	@Override
 	public void runJob() {
 		log.debug("Running virus checks on : {}", getDepositDirectory());
 
-		Map<PID, String> hrefs = new HashMap<PID, String>();
+		Map<PID, String> hrefs = new HashMap<>();
 
-		Map<String, String> failures = new HashMap<String, String>();
+		Map<String, String> failures = new HashMap<>();
 
 		Model model = getReadOnlyModel();
 		Property fileLocation = CdrDeposit.stagingLocation;
@@ -97,41 +87,31 @@ public class VirusScanJob extends AbstractDepositJob {
 		for (Entry<PID, String> href : hrefs.entrySet()) {
 			verifyRunning();
 
-			URI manifestURI = null;
-			try {
-				manifestURI = new URI(href.getValue());
-			} catch (URISyntaxException e) {
-				failJob(e, "Unable to parse manifest URI: {0}", href.getValue());
-			}
+			URI manifestURI = getStagedUri(href.getValue());
 
-			if (manifestURI.getScheme() == null
-					|| manifestURI.getScheme().contains("file")) {
-				if(!manifestURI.isAbsolute()) {
-					manifestURI = getDepositDirectory().toURI().resolve(manifestURI);
-				}
-				File file = new File(manifestURI.getPath());
-				ScanResult result = this.clamScan.scan(file);
+			File file = new File(manifestURI.getPath());
 
-				switch (result.getStatus()) {
-				case FAILED:
-					failures.put(manifestURI.toString(), result.getSignature());
-					break;
-				case ERROR:
-					throw new Error(
-							"Virus checks are producing errors: "
-									+ result.getException()
-											.getLocalizedMessage());
-				case PASSED:
-					PremisLogger premisLogger = getPremisLogger(href.getKey());
-					PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+			ScanResult result = clamScan.scan(file);
 
-					premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
-						.addEventDetail("File passed pre-ingest scan for viruses")
-						.write();
+			switch (result.getStatus()) {
+			case FAILED:
+				failures.put(manifestURI.toString(), result.getSignature());
+				break;
+			case ERROR:
+				throw new Error(
+						"Virus checks are producing errors: "
+								+ result.getException()
+										.getLocalizedMessage());
+			case PASSED:
+				PremisLogger premisLogger = getPremisLogger(href.getKey());
+				PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
-					scannedObjects++;
-					break;
-				}
+				premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+					.addEventDetail("File passed pre-ingest scan for viruses")
+					.write();
+
+				scannedObjects++;
+				break;
 			}
 			addClicks(1);
 		}

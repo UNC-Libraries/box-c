@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -320,10 +319,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		}
 		// Pull out file properties if they are present
 		String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
+		// TODO accomodate either sha1 or md5 checksums being provided
 		String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
 		String label = getPropertyValue(childResc, CdrDeposit.label);
 
-		File file = new File(URI.create(stagingPath));
+		File file = new File(getStagedUri(stagingPath));
 
 		String filename = label != null? label : file.getName();
 

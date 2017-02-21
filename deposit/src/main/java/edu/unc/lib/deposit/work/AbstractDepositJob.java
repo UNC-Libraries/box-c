@@ -4,6 +4,8 @@ import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
@@ -11,15 +13,15 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.staging.StagingException;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -210,6 +212,36 @@ public abstract class AbstractDepositJob implements Runnable {
 	public List<String> getManifestFileURIs() {
 		List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
 		return filePaths;
+	}
+
+	/**
+	 * Resolves a staged file href and returns a URI for that href.
+	 * 
+	 * @param href
+	 * @return
+	 * @throws StagingException
+	 *             thrown if the href is not a valid staging location uri
+	 */
+	protected URI getStagedUri(String href) throws StagingException {
+		URI manifestUri = null;
+		try {
+			manifestUri = new URI(href);
+		} catch (URISyntaxException e) {
+			throw new StagingException("Unable to parse manifest URI: " + href);
+		}
+
+		// Only supporting local file uris at this time
+		if (manifestUri.getScheme() == null || manifestUri.getScheme().contains("file")) {
+			// If the uri is relative, then resolve it against the deposit directory
+			if (!manifestUri.isAbsolute()) {
+				manifestUri = getDepositDirectory().toURI().resolve(manifestUri);
+			}
+
+			return manifestUri;
+		} else {
+			throw new StagingException(
+					"Unsupported uri scheme encountered while attempting to resolve staged file: " + href);
+		}
 	}
 
 	public void failJob(String message, String details) {

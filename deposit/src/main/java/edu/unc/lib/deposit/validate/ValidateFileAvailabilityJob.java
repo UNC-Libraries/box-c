@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.validate;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,7 +27,10 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.deposit.staging.StagingException;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -39,6 +41,8 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
  *
  */
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
+	private static final Logger log = LoggerFactory
+			.getLogger(ValidateFileAvailabilityJob.class);
 	
 	private StagingPolicyManager policyManager;
 	
@@ -68,27 +72,20 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 
 		// Iterate through local file hrefs and verify that each one exists
 		for (String href : hrefs) {
-			URI manifestURI = null;
 			try {
-				manifestURI = new URI(href);
-			} catch (URISyntaxException e) {
-				failJob(e, "Unable to parse manifest URI: {0}", href);
-			}
-
-			if (manifestURI.getScheme() == null || manifestURI.getScheme().contains("file")) {
-				if (!manifestURI.isAbsolute()) {
-					manifestURI = getDepositDirectory().toURI().resolve(manifestURI);
-				}
-
+				URI manifestURI = getStagedUri(href);
+				
 				File file = new File(manifestURI.getPath());
-
 				if (!file.exists()) {
 					failures.add(manifestURI.toString());
 				}
-			}
-			
-			if (!policyManager.isValidStagingLocation(manifestURI)) {
-				badlyStagedFiles.add(manifestURI.toString());
+				
+				if (!policyManager.isValidStagingLocation(manifestURI)) {
+					badlyStagedFiles.add(manifestURI.toString());
+				}
+			} catch (StagingException e) {
+				log.debug("Failed to get staged file in deposit {}", getDepositUUID(), e);
+				badlyStagedFiles.add(href);
 			}
 			
 			addClicks(1);
