@@ -228,18 +228,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
-		FedoraTransaction tx = repository.startTransaction();
-		try {
-			FileObject obj = addFileToWork(work, childResc);
-			// TODO add description to file object
-	
-			// Increment the count of objects deposited
-			addClicks(1);
-			
-			log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
-		} finally {
-			tx.close();
-		}
+		FileObject obj = addFileToWork(work, childResc);
+		// TODO add description to file object
+
+		// Increment the count of objects deposited
+		addClicks(1);
+		
+		log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
 	}
 
 	/**
