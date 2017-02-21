@@ -287,36 +287,34 @@
 
 /* collections */
 
-#front-collections table img {
-	width: 50px;
-	height: 50px;
+#front-collections .coll-container {
+  display: flex;
+  width: 430px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-top: 10px;
 }
 
-#front-collections table {
-	border-collapse: collapse;
-	border: hidden;
-	width: 430px;
-	margin-top: 10px;
+#front-collections .coll-item {
+  display: flex;
+  width: 210px;
+  height: 50px;
+  margin-bottom: 5px;
 }
 
-#front-collections table a {
-	display: block;
-	font-size: 80%;
-	margin: 0;
+#front-collections .coll-image {
+  height: 50px;
+  width: 50px;
+  margin-right: 5px;
 }
 
-#front-collections table img {
-	display: block;
-	margin: 0;
+#front-collections .coll-image img {
+  height: 50px;
+  width: 50px;
 }
 
-#front-collections table td {
-	border: 5px solid #fff;
-	padding: 0;
-	vertical-align: middle;
-}
-
-#front-collections table td.title {
-	width: 50%;
-	border-left-width: 8px;
+#front-collections .coll-title{
+  height: 50px;
+  width: 155px;
+  font-size: 80%;
 }
