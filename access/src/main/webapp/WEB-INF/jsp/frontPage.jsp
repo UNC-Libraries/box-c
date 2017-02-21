@@ -120,49 +120,49 @@
       <div class="coll-container">
         <a href="record/uuid:bded4944-f033-4015-af0f-3d39595f4d30">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/aapaa.jpg" alt="African American Performance Art Archive"></div>
+            <div class="coll-image"><img src="/static/front/aapaa.jpg" alt="African American Performance Art Archive thumbnail"></div>
             <div class="coll-title">African American Performance Art Archive</div>
           </div>
         </a>
         <a href="record/uuid:1add9fbc-f5c4-49a8-848e-96a52e3ade9c">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/azoria.jpg" alt="Azoria Project Archive"></div>
+            <div class="coll-image"><img src="/static/front/azoria.jpg" alt="Azoria Project Archive thumbnail"></div>
             <div class="coll-title">Azoria Project Archive</div>
           </div>
         </a>
         <a href="record/uuid:dfebbdf7-3361-4097-9fa4-7001ab6fcc11">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/bmc.png" alt="BioMed Central"></div>
+            <div class="coll-image"><img src="/static/front/bmc.png" alt="BioMed Central thumbnail"></div>
             <div class="coll-title">BioMed Central</div>
           </div>
         </a>
         <a href="record/uuid:cbbc2cc1-c538-4e28-b567-55db61b7942e">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/cpj.png" alt="Carolina Planning Journal"></div>
+            <div class="coll-image"><img src="/static/front/cpj.png" alt="Carolina Planning Journal thumbnail"></div>
             <div class="coll-title">Carolina Planning Journal</div>
           </div>
         </a>
         <a href="record/uuid:a012aad2-1ab1-43b2-b5ab-0e14740e5e07">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/etds.png" alt="Electronic Theses and Dissertations"></div>
+            <div class="coll-image"><img src="/static/front/etds.png" alt="Electronic Theses and Dissertations thumbnail"></div>
             <div class="coll-title">Electronic Theses and Dissertations</div>
           </div>
         </a>
         <a href="record/uuid:9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/popl.png" alt="Program on Public Life"></div>
+            <div class="coll-image"><img src="/static/front/popl.png" alt="Program on Public Life thumbnail"></div>
             <div class="coll-title">Program on Public Life</div>
           </div>
         </a>
         <a href="record/uuid:8ae56bbc-400e-496d-af4b-3c585e20dba1">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/rla.png" alt="Research Laboratories of Archaeology"></div>
+            <div class="coll-image"><img src="/static/front/rla.png" alt="Research Laboratories of Archaeology thumbnail"></div>
             <div class="coll-title">Research Laboratories of Archaeology</div>
           </div>
         </a>
         <a href="record/uuid:5e4b2719-bb71-45ec-be63-5d018b6f5aab">
           <div class="coll-item">
-            <div class="coll-image"><img src="/static/front/sfc.png" alt="Southern Folklife Collection Digital Files"></div>
+            <div class="coll-image"><img src="/static/front/sfc.png" alt="Southern Folklife Collection Digital Files thumbnail"></div>
             <div class="coll-title">Southern Folklife Collection Digital Files</div>
           </div>
         </a>
