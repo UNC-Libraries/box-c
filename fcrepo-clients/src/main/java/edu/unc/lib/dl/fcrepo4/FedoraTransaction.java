@@ -25,7 +25,7 @@ import java.net.URI;
  * @author harring
  *
  */
-public class FedoraTransaction implements AutoCloseable {
+public class FedoraTransaction {
 	
 	protected static ThreadLocal<URI> txUriThread = new ThreadLocal<>(); // initial value == null
 	protected static ThreadLocal<FedoraTransaction> rootTxThread = new ThreadLocal<>(); // keeps track of root tx
@@ -58,8 +58,7 @@ public class FedoraTransaction implements AutoCloseable {
 		return txUri;
 	}
 
-	@Override
-	public void close() throws Exception {
+	public void close() {
 		if (!isSub && !isCancelled) {
 			repo.commitTransaction(txUri);
 			txUriThread.remove();
@@ -73,7 +72,7 @@ public class FedoraTransaction implements AutoCloseable {
 		repo.keepTransactionAlive(txUri);
 	}
 	
-	public void cancel() {
+	public void cancel(Throwable t) {
 		if (isSub) {
 			// sub tx defers to root
 			FedoraTransaction.rootTxThread.get().cancel();
@@ -83,7 +82,15 @@ public class FedoraTransaction implements AutoCloseable {
 			rootTxThread.remove();
 			repo.cancelTransaction(txUri);
 		}
-		throw new TransactionCancelledException("The transaction with id " + txUri + " was rolled back");
+		if (t instanceof TransactionCancelledException) {
+			throw (TransactionCancelledException) t;
+		} else {
+			throw new TransactionCancelledException("The transaction with id " + txUri + " was rolled back", t);
+		}
+	}
+	
+	public void cancel() {
+		cancel(null);
 	}
 	
 }
