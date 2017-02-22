@@ -17,22 +17,21 @@ package edu.unc.lib.deposit.validate;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.SimpleSelector;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.staging.StagingException;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 
 /**
@@ -61,9 +60,9 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 
 		Model model = getReadOnlyModel();
 		// Construct a map of objects to file paths to verify
-		Set<String> hrefs = new HashSet<String>();
-		addLocations(hrefs, model, CdrDeposit.stagingLocation);
-		addLocations(hrefs, model, CdrDeposit.hasDatastream);
+		List<Entry<PID, String>> hrefs = new ArrayList<>();
+		hrefs.addAll(getPropertyPairList(model, CdrDeposit.stagingLocation));
+		hrefs.addAll(getPropertyPairList(model, CdrDeposit.hasDatastream));
 
 		setTotalClicks(hrefs.size());
 
@@ -71,7 +70,8 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 		verifyRunning();
 
 		// Iterate through local file hrefs and verify that each one exists
-		for (String href : hrefs) {
+		for (Entry<PID, String> entry : hrefs) {
+			String href = entry.getValue();
 			try {
 				URI manifestURI = getStagedUri(href);
 				
@@ -125,13 +125,8 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 		this.policyManager = policyManager;
 	}
 
-	private void addLocations(Set<String> hrefs, Model model, Property property) {
-		Property fileLocation = CdrDeposit.stagingLocation;
-		StmtIterator i = model.listStatements(new SimpleSelector((Resource) null, fileLocation, (RDFNode) null));
-		while (i.hasNext()) {
-			Statement s = i.nextStatement();
-			String href = s.getObject().asLiteral().getString();
-			hrefs.add(href);
-		}
+	private void addLocations(List<Entry<PID, String>> hrefs, Model model, Property property) {
+		List<Entry<PID, String>> additions = getPropertyPairList(model, property);
+		hrefs.addAll(additions);
 	}
 }

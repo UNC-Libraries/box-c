@@ -1,3 +1,18 @@
+/**
+ * Copyright 2017 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
@@ -7,9 +22,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
@@ -17,6 +35,13 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.query.ReadWrite;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Selector;
+import org.apache.jena.rdf.model.SimpleSelector;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -338,5 +363,28 @@ public abstract class AbstractDepositJob implements Runnable {
 			failJob(e, "Failed to serialize properties for object {0} to {1}",
 					pid, propertiesFile.getAbsolutePath());
 		}
+	}
+	
+	/**
+	 * Retrieve a list of PID to value pairs for the given property
+	 * 
+	 * @param model
+	 * @param property
+	 * @return
+	 */
+	protected List<Entry<PID, String>> getPropertyPairList(Model model, Property property) {
+		List<Entry<PID, String>> results = new ArrayList<>();
+
+		Selector stageSelector = new SimpleSelector((Resource) null, property, (RDFNode) null);
+		StmtIterator i = model.listStatements(stageSelector);
+		while (i.hasNext()) {
+			Statement s = i.nextStatement();
+			PID p = PIDs.get(s.getSubject().getURI());
+			String href = s.getObject().asLiteral().getString();
+			Entry<PID, String> entry = new SimpleEntry<>(p, href);
+			results.add(entry);
+		}
+
+		return results;
 	}
 }

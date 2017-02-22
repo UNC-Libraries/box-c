@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -41,13 +39,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Selector;
-import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -58,7 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -404,22 +396,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		} catch (IOException e) {
 			failJob(e, "Failed to persist premis report for object {0} to path {1}", objPid, reportFile);
 		}
-	}
-
-	protected List<Entry<PID, String>> getPropertyPairList(Model model, Property property) {
-		List<Entry<PID, String>> results = new ArrayList<>();
-
-		Selector stageSelector = new SimpleSelector((Resource) null, property, (RDFNode) null);
-		StmtIterator i = model.listStatements(stageSelector);
-		while (i.hasNext()) {
-			Statement s = i.nextStatement();
-			PID p = PIDs.get(s.getSubject().getURI());
-			String href = s.getObject().asLiteral().getString();
-			Entry<PID, String> entry = new SimpleEntry<>(p, href);
-			results.add(entry);
-		}
-
-		return results;
 	}
 
 	public void setHttpClient(CloseableHttpClient httpClient) {
