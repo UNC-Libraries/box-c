@@ -17,7 +17,9 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -41,6 +43,7 @@ import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
@@ -420,6 +423,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		job.closeModel();
 
 		job.run();
+		
+		assertFalse(FedoraTransaction.hasTxId());
+		assertFalse(FedoraTransaction.isStillAlive());
+		assertNull(repository.getWorkObject(workPid));
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,

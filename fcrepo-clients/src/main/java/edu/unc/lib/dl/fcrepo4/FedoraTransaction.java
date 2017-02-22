@@ -90,16 +90,7 @@ public class FedoraTransaction {
 	}
 	
 	public void cancel() {
-		if (isSub) {
-			// sub tx defers to root
-			FedoraTransaction.rootTxThread.get().cancel();
-		} else if (!isCancelled) {
-			isCancelled = true;
-			txUriThread.remove();
-			rootTxThread.remove();
-			repo.cancelTransaction(txUri);
-		}
-		throw new TransactionCancelledException("The transaction with id " + txUri + " was rolled back");
+		cancel(null);
 	}
 	
 }
