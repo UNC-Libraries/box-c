@@ -417,11 +417,13 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		job.closeModel();
 
-		job.run();
-		
-		assertFalse(FedoraTransaction.hasTxId());
-		assertFalse(FedoraTransaction.isStillAlive());
-		assertNull(repository.getWorkObject(workPid));
+		try {
+			job.run();
+		} finally {
+			assertFalse(FedoraTransaction.hasTxId());
+			assertFalse(FedoraTransaction.isStillAlive());
+			assertFalse(repository.objectExists(workPid));
+		}
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
