@@ -44,6 +44,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
+import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 
@@ -117,7 +118,7 @@ public class AbstractDepositJobTest {
 		dataset = TDBFactory.createDataset();
 		
 		when(repository.startTransaction()).thenReturn(tx);
-		doThrow(new TransactionCancelledException()).when(tx).cancel();
+		doThrow(new TransactionCancelledException()).when(tx).cancel(any(Exception.class));
 	}
 
 	protected PID makePid(String qualifier) {

@@ -54,6 +54,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -207,7 +208,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * Test that the deposit fails if a file object is specified but not given a
 	 * staging location
 	 */
-	@Test(expected = JobFailedException.class)
+	@Test(expected = TransactionCancelledException.class)
 	public void ingestWorkWithFileWithoutLocation() {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
@@ -229,7 +230,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	/**
 	 * Test that deposit fails if depositing a file path that doesn't exist
 	 */
-	@Test(expected = JobFailedException.class)
+	@Test(expected = TransactionCancelledException.class)
 	public void ingestWorkWithFileDoesNotExist() {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
