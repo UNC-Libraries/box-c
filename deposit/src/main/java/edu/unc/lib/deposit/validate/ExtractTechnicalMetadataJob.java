@@ -71,18 +71,18 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
-	
+
 	private final static String FITS_EXAMINE_PATH = "examine";
-	private final static String TECH_MD_PATH = "techmd";
-	
+	public final static String TECH_MD_PATH = "techmd";
+
 	private CloseableHttpClient httpClient;
-	
+
 	// http://localhost:8080/fits-1.1.3/examine?file=
 	private String baseFitsUri;
 	private URI fitsExamineUri;
-	
+
 	private File techmdDir;
-	
+
 	private XMLOutputter xmlOutputter;
 
 	public ExtractTechnicalMetadataJob(String uuid, String depositUUID) {
@@ -91,44 +91,47 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
 	public void init() {
 		fitsExamineUri = URI.create(URIUtil.join(baseFitsUri, FITS_EXAMINE_PATH));
-		
+
 		techmdDir = new File(getDepositDirectory(), TECH_MD_PATH);
-		
+
 		xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
 	}
-	
+
 	@Override
 	public void runJob() {
-		Model model = getReadOnlyModel();
-		
+		Model model = getWritableModel();
+
 		// Create the techmd report directory if it doesn't exist
 		techmdDir.mkdir();
-		
+
 		// Get the list of files that need processing
 		List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
-		
+
 		for (Entry<PID, String> stagedPair : stagingList) {
 			PID objPid = stagedPair.getKey();
 			String stagedPath = stagedPair.getValue();
-			
+
 			// Generate the FITS report as a document
 			Document fitsDoc = getFitsDocument(objPid, stagedPath);
-			
+
 			// Create the PREMIS report wrapper for the FITS results
 			Document premisDoc = generatePremisReport(objPid, fitsDoc);
-			
+			Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
+
 			Resource objResc = model.getResource(objPid.getRepositoryPath());
-			
+
 			// Record the format info for this file
-			addFileIdentification(objResc, fitsDoc, premisDoc);
-			
-			addChecksum(objResc, fitsDoc, premisDoc);
-			
+			addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
+
+			addFileinfoToReport(objResc, fitsDoc, premisObjCharsEl);
+
+			addFitsResults(premisDoc, fitsDoc);
+
 			// Store the premis report to file
 			writePremisReport(objPid, premisDoc);
 		}
 	}
-	
+
 	/**
 	 * Generate the FITS report for the given object/file and return it as an
 	 * XML document
@@ -147,7 +150,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		} catch (URISyntaxException e) {
 			failJob(e, "Failed to construct FITs report uri for {0}", objPid);
 		}
-		
+
 		HttpGet httpGet = new HttpGet(fitsUri);
 		try (CloseableHttpResponse resp = httpClient.execute(httpGet)) {
 			// Write the report response to file
@@ -159,7 +162,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Build a list of staging locations in this deposit which need to have FITS
 	 * reports generated for them. If a report has been previously generated in
@@ -170,13 +173,13 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	 */
 	private List<Entry<PID, String>> generateStagingLocationsToProcess(Model model) {
 		List<Entry<PID, String>> stagingList = getPropertyPairList(model, stagingLocation);
-		
+
 		// If the deposit was not resumed, then return list of all staging locations
 		boolean resumed = getDepositStatusFactory().isResumedDeposit(getDepositUUID());
 		if (!resumed) {
 			return stagingList;
 		}
-		
+
 		// Get the list of existing techmd reports from previous runs
 		File techmdDir = new File(getDepositDirectory(), TECH_MD_PATH);
 		String[] techmdFilenames = techmdDir.list(new FilenameFilter() {
@@ -185,11 +188,11 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 				return name.endsWith(".xml");
 			}
 		});
-		
+
 		// Remove the previously processed objects from the list of staging areas to work on
 		for (String existingFilename : techmdFilenames) {
-			String existingUuid = "uuid:" + existingFilename.substring(0,  existingFilename.lastIndexOf('.'));
-			
+			String existingUuid = existingFilename.substring(0,  existingFilename.lastIndexOf('.'));
+
 			Iterator<Entry<PID, String>> stagingIt = stagingList.iterator();
 			while (stagingIt.hasNext()) {
 				Entry<PID, String> entry = stagingIt.next();
@@ -198,20 +201,19 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 				}
 			}
 		}
-		
+
 		return stagingList;
 	}
-	
+
 	/**
 	 * Adds format and mimetype information for the give object, to both the
 	 * PREMIS report and the deposit model to be included as part of the ingest.
 	 * 
-	 * @param objPid
-	 * @param model
+	 * @param objResc
 	 * @param fitsDoc
-	 * @param objCharsEl
+	 * @param premisObjCharsEl
 	 */
-	private void addFileIdentification(Resource objResc, Document fitsDoc, Document premisDoc) {
+	private void addFileIdentification(Resource objResc, Document fitsDoc, Element premisObjCharsEl) {
 		// Retrieve the FITS generate mimetype if available
 		Element identity = getFitsIdentificationInformation(fitsDoc);
 
@@ -224,12 +226,18 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 			format = "Unknown";
 			log.warn("FITS unable to conclusively identify file: {}", objResc.getURI());
 		}
-		
-		addFormatToPremisReport(premisDoc, format);
-		
+
+		// Add format to the premis report
+		premisObjCharsEl.addContent(
+				new Element("format", PREMIS_V3_NS)
+					.addContent(new Element("formatDesignation", PREMIS_V3_NS)
+					.addContent(new Element("formatName", PREMIS_V3_NS)
+					.setText(format))));
+
+		// Replace the mimetype registered for this item in the deposit if necessary
 		overrideDepositMimetype(objResc, fitsMimetype);
 	}
-	
+
 	/**
 	 * Retrieves the file identification information from the FITS report,
 	 * resolving conflicts when necessary
@@ -243,6 +251,10 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		if (identification.getAttributeValue("status") == null) {
 			return identification.getChild("identity", FITS_NS);
 		} else {
+			if ("UNKNOWN".equals(identification.getAttributeValue("status"))) {
+				return null;
+			}
+			
 			// Conflicting identification from FITS, try to resolve
 			// Don't trust Exiftool if it detects a symlink, which is does not follow to the file.
 			// Trust any answer agreed on by multiple tools
@@ -254,29 +266,10 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
-	/**
-	 * Adds the format string to the premis report
-	 * 
-	 * @param premisDoc
-	 * @param format
-	 */
-	private void addFormatToPremisReport(Document premisDoc, String format) {
-		Element objCharsEl = premisDoc.getRootElement()
-				.getChild("object", PREMIS_V3_NS)
-				.getChild("objectCharacteristicsExtension", PREMIS_V3_NS);
-		
-		// Add format to premis entry
-		objCharsEl.addContent(
-				new Element("format", PREMIS_V3_NS)
-					.addContent(new Element("formatDesignation", PREMIS_V3_NS)
-					.addContent(new Element("formatName", PREMIS_V3_NS)
-					.setText(format))));
-	}
-	
+
 	/**
 	 * Overrides the mimetype for this object in the deposit model when the FITS
 	 * generated value is preferred.
@@ -295,14 +288,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 				return;
 			}
 		}
-		
+
 		// Not using a provided mimetype, so use the FITS mimetype
 		if (isMimetypeMeaningful(fitsMimetype)) {
-			objResc.removeAll(mimetype);
-			objResc.addProperty(mimetype, fitsMimetype);
+			objResc.removeAll(mimetype)
+					.addProperty(mimetype, fitsMimetype);
+		} else {
+			objResc.removeAll(mimetype)
+					.addProperty(mimetype, "application/octet-stream");
 		}
 	}
-	
+
 	/**
 	 * Determines if the given mimetype is a meaningful value, meaning not empty
 	 * or generic
@@ -314,29 +310,32 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		return mimetype != null && mimetype.trim().length() > 0
 				&& !mimetype.contains("octet-stream");
 	}
-	
+
+	private Element getObjectCharacteristics(Document premisDoc) {
+		return premisDoc.getRootElement()
+				.getChild("object", PREMIS_V3_NS)
+				.getChild("objectCharacteristics", PREMIS_V3_NS);
+	}
+
 	/**
-	 * Add the m5 checksum generated by FITS to the premis report and 
+	 * Add file info, including md5 checksum and filesize to the premis report and 
 	 * 
 	 * @param objResc
 	 * @param fitsDoc
 	 * @param premisDoc
 	 */
-	private void addChecksum(Resource objResc, Document fitsDoc, Document premisDoc) {
+	private void addFileinfoToReport(Resource objResc, Document fitsDoc, Element premisObjCharsEl) {
 		Element fileinfoEl = fitsDoc.getRootElement().getChild("fileinfo", FITS_NS);
-		
+
+		// Add file size and composition level
+		String filesize = fileinfoEl.getChildTextTrim("size", FITS_NS);
+		if (filesize != null) {
+			premisObjCharsEl.addContent(new Element("size", PREMIS_V3_NS).setText(filesize));
+		}
+
 		// Add md5 checksum
 		String md5Value = fileinfoEl.getChildTextTrim("md5checksum", FITS_NS);
-		
-		Element objCharsEl = premisDoc.getRootElement()
-				.getChild("object", PREMIS_V3_NS)
-				.getChild("objectCharacteristicsExtension", PREMIS_V3_NS);
-		
-		objCharsEl.addContent(
-				new Element("fixity", PREMIS_V3_NS).addContent(
-						new Element("messageDigestAlgorithm", PREMIS_V3_NS).setText("MD5"))
-						.addContent(new Element("messageDigest", PREMIS_V3_NS).setText(md5Value)));
-		
+
 		// Register the checksum with the deposit if not already set
 		Statement md5Stmt = objResc.getProperty(md5sum);
 		if (md5Stmt != null) {
@@ -350,11 +349,16 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		} else {
 			objResc.addProperty(md5sum, md5Value);
 		}
+
+		premisObjCharsEl.addContent(
+				new Element("fixity", PREMIS_V3_NS).addContent(
+						new Element("messageDigestAlgorithm", PREMIS_V3_NS).setText("MD5"))
+						.addContent(new Element("messageDigest", PREMIS_V3_NS).setText(md5Value)));
 	}
-	
+
 	/**
-	 * Constructs a PREMIS document with information about the given object to
-	 * contain the FITS report
+	 * Constructs a PREMIS document with basic information about the given
+	 * object
 	 * 
 	 * @param objPid
 	 * @param fitsDoc
@@ -364,40 +368,37 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		Document premisDoc = new Document();
 		Element premisEl = new Element("premis", PREMIS_V3_NS);
 		premisDoc.addContent(premisEl);
-		
+
 		Element premisObjEl = new Element("object", PREMIS_V3_NS)
 				.setAttribute("type", PREMIS_V3_NS.getPrefix() + ":file", XSI_NS);
 		premisEl.addContent(premisObjEl);
-		Element premisObjCharsEl = new Element("objectCharacteristics", PREMIS_V3_NS);
+		Element premisObjCharsEl = new Element("objectCharacteristics", PREMIS_V3_NS)
+				.addContent(new Element("compositionLevel", PREMIS_V3_NS).setText("0"));
 		premisObjEl.addContent(premisObjCharsEl);
-		
-		Element fileinfoEl = fitsDoc.getRootElement().getChild("fileinfo", FITS_NS);
-		
+
 		// Add object identifier referencing this objects repository uri
 		premisObjEl.addContent(new Element("objectIdentifier", PREMIS_V3_NS)
 				.addContent(new Element("objectIdentifierType", PREMIS_V3_NS)
 						.setText("Fedora Datastream PID"))
 				.addContent(new Element("objectIdentifierValue", PREMIS_V3_NS)
 						.setText(objPid.getRepositoryPath())));
-		
-		// Add file size and composition level
-		String filesize = fileinfoEl.getChildTextTrim("size", FITS_NS);
-		if (filesize != null) {
-			premisObjCharsEl.addContent(new Element("size", PREMIS_V3_NS).setText(filesize));
-		}
-		
-		// Attach the original report to the premis, and set its composition level.
-		premisObjCharsEl.addContent(new Element("compositionLevel", PREMIS_V3_NS).setText("0"))
-				.addContent(new Element("objectCharacteristicsExtension", PREMIS_V3_NS)
-						.addContent(fitsDoc.detachRootElement()));
-		
+
 		return premisDoc;
 	}
-	
+
+	private void addFitsResults(Document premisDoc, Document fitsDoc) {
+		Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
+
+		// Attach the original report to the premis, and set its composition level.
+		premisObjCharsEl
+				.addContent(new Element("objectCharacteristicsExtension", PREMIS_V3_NS)
+						.addContent(fitsDoc.detachRootElement()));
+	}
+
 	private void writePremisReport(PID objPid, Document premisDoc) {
 		String uuid = objPid.getUUID();
 		File reportFile = new File(techmdDir, uuid + ".xml");
-		
+
 		try(BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile))) {
 			xmlOutputter.output(premisDoc, writer);
 		} catch (IOException e) {
@@ -407,7 +408,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
 	protected List<Entry<PID, String>> getPropertyPairList(Model model, Property property) {
 		List<Entry<PID, String>> results = new ArrayList<>();
-		
+
 		Selector stageSelector = new SimpleSelector((Resource) null, property, (RDFNode) null);
 		StmtIterator i = model.listStatements(stageSelector);
 		while (i.hasNext()) {
@@ -417,7 +418,15 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 			Entry<PID, String> entry = new SimpleEntry<>(p, href);
 			results.add(entry);
 		}
-		
+
 		return results;
+	}
+
+	public void setHttpClient(CloseableHttpClient httpClient) {
+		this.httpClient = httpClient;
+	}
+
+	public void setBaseFitsUri(String baseFitsUri) {
+		this.baseFitsUri = baseFitsUri;
 	}
 }
