@@ -44,6 +44,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -237,7 +238,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	/**
 	 * Ensure that deposit fails on a checksum mismatch for a single file deposit
 	 */
-	@Test(expected = JobFailedException.class)
+	@Test(expected = TransactionCancelledException.class)
 	public void ingestFileObjectChecksumMismatch() {
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
@@ -390,6 +391,35 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_SIZE);
 
 		assertClickCount(nestingDepth + 1);
+	}
+	
+	@Test (expected = TransactionCancelledException.class)
+	public void transactionCancelledTest() {
+		String label = "testwork";
+
+		// Construct the deposit model with work object
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		PID workPid = repository.mintContentPid();
+		Bag workBag = model.createBag(workPid.getRepositoryPath());
+		
+		// Add incorrect resource type to bag, which causes a DepositException to be thrown
+		// and the tx to be cancelled
+		workBag.addProperty(RDF.type, Cdr.FileObject);
+		workBag.addProperty(CdrDeposit.label, label);
+
+		PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1);
+
+		depBag.add(workBag);
+
+		workBag.asResource().addProperty(Cdr.primaryObject,
+				model.getResource(mainPid.getRepositoryPath()));
+
+		job.closeModel();
+
+		job.run();
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,

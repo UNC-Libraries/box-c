@@ -293,7 +293,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			log.info("Created work {} for file object {} for deposit {}",
 					new Object[] {workPid, childPid, getDepositPID()});
 		} catch(Exception e) {
-			tx.cancel(e.getCause());
+			tx.cancel(e);
 		} finally {
 			tx.close();
 		}
@@ -379,7 +379,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				
 				log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
 			} catch(Exception e) {
-				tx.cancel(e.getCause());
+				tx.cancel(e);
 			} finally {
 				tx.close();
 			}
@@ -435,7 +435,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				// Set the primary object for this work if one was specified
 				addPrimaryObject(obj, childResc);
 			} catch(Exception e) {
-				tx.cancel(e.getCause());
+				tx.cancel(e);
 			} finally {
 				tx.close();
 			}
