@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.fcrepo4;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
@@ -40,6 +41,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -115,6 +117,7 @@ public class AbstractDepositJobTest {
 		dataset = TDBFactory.createDataset();
 		
 		when(repository.startTransaction()).thenReturn(tx);
+		doThrow(new TransactionCancelledException()).when(tx).cancel();
 	}
 
 	protected PID makePid(String qualifier) {
