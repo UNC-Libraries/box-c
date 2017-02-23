@@ -166,14 +166,15 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 		// Get additional information depending on the type of object since the user has access
 		if (!listAccess) {
-			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
-			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
+			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate) ||
+					briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
+			boolean retrieveFacets = briefObject.getResourceType().equals(searchSettings.resourceTypeCollection);
 
 			if (retrieveChildrenCount) {
 				briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
 			}
 
-			if (retrieveFacets && briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
+			if (retrieveFacets) {
 				List<String> facetsToRetrieve = null;
 				facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
 
