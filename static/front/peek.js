@@ -502,7 +502,7 @@ $(function() {
   var source = "<div class=\"item\"> \
     <a href=\"https://cdr.lib.unc.edu/record/<%= data.pid %>\"> \
       <div class=\"image\"> \
-        <img src=\"/shared/peek/thumbnails/<%= data.path %>\"> \
+        <img src=\"/shared/peek/thumbnails/<%= data.path %>\" alt=\"<%= data.title %> thumbnail\"> \
       </div> \
       <div class=\"description\"> \
         <div class=\"title\"><%= data.title %></div> \
@@ -520,10 +520,12 @@ $(function() {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
+      // document.getElementsByClassName("item").tabIndex = "0";
     });
 
     $("#peek-exit").on("click", function() {
       window.location.hash = "";
+      // document.getElementsByClassName("item").tabIndex = "-1";
     });
 
     $(window).on("hashchange", function() {
