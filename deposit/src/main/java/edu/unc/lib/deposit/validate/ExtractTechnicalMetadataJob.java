@@ -69,8 +69,9 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
 	private CloseableHttpClient httpClient;
 
-	// http://localhost:8080/fits-1.1.3/examine?file=
+	// server path of the FITS application
 	private String baseFitsUri;
+	// URI to the examine servlet in the FITS application
 	private URI fitsExamineUri;
 
 	private File techmdDir;
