@@ -52,6 +52,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.util.DepositConstants;
 
 /**
  * 
@@ -111,7 +112,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 		when(httpClient.execute(any(HttpGet.class))).thenReturn(httpResp);
 		when(httpResp.getEntity()).thenReturn(respEntity);
 		
-		techmdDir = new File(job.getDepositDirectory(), ExtractTechnicalMetadataJob.TECH_MD_PATH);
+		techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
 	}
 	
 	private void respondWithFile(String path) throws Exception {

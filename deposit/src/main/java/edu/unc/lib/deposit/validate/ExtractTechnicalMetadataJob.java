@@ -18,6 +18,7 @@ package edu.unc.lib.deposit.validate;
 import static edu.unc.lib.dl.rdf.CdrDeposit.md5sum;
 import static edu.unc.lib.dl.rdf.CdrDeposit.mimetype;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
+import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
@@ -65,7 +66,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
 
 	private final static String FITS_EXAMINE_PATH = "examine";
-	public final static String TECH_MD_PATH = "techmd";
 
 	private CloseableHttpClient httpClient;
 
@@ -84,7 +84,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	public void init() {
 		fitsExamineUri = URI.create(URIUtil.join(baseFitsUri, FITS_EXAMINE_PATH));
 
-		techmdDir = new File(getDepositDirectory(), TECH_MD_PATH);
+		techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
 
 		xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
 	}
@@ -173,7 +173,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		}
 
 		// Get the list of existing techmd reports from previous runs
-		File techmdDir = new File(getDepositDirectory(), TECH_MD_PATH);
+		File techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
 		String[] techmdFilenames = techmdDir.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {

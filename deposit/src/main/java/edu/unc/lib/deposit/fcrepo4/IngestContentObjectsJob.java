@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,6 +39,7 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +60,7 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -75,12 +82,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	@Autowired
 	private ActivityMetricsClient metricsClient;
 
+	private File techmdDir;
+
 	public IngestContentObjectsJob() {
 		super();
 	}
 
 	public IngestContentObjectsJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
+	}
+
+	public void init() {
+		techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
 	}
 
 	/**
@@ -232,7 +245,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 		// Increment the count of objects deposited
 		addClicks(1);
-		
+
 		log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
 	}
 
@@ -276,19 +289,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		FedoraTransaction tx = repository.startTransaction();
 		try {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
-			
+
 			// TODO add the FileObject's description to the work instead
-	
+
 			addFileToWork(newWork, childResc);
 			// Set the file as the primary object for the generated work
 			newWork.setPrimaryObject(childPid);
-	
+
 			// Add the newly created work to its parent
 			parent.addMember(newWork);
-	
+
 			// Increment the count of objects deposited
 			addClicks(1);
-			
+
 			log.info("Created work {} for file object {} for deposit {}",
 					new Object[] {workPid, childPid, getDepositPID()});
 		} catch(Exception e) {
@@ -321,26 +334,42 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
 		// TODO accomodate either sha1 or md5 checksums being provided
 		String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
+		// String md5 = getPropertyValue(childResc, CdrDeposit.md5sum);
 		String label = getPropertyValue(childResc, CdrDeposit.label);
 
 		File file = new File(getStagedUri(stagingPath));
 
 		String filename = label != null? label : file.getName();
 
+		FileObject fileObj;
 		try (InputStream fileStream = new FileInputStream(file)) {
 			// Add the file to the work as the datafile of its own FileObject
-			FileObject fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
+			fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
 			// Record the size of the file for throughput stats
 			metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
-			
+
 			log.info("Ingested file {} in {} for deposit {}", new Object[] {filename, childPid, getDepositPID()});
-			
-			return fileObj;
 		} catch (FileNotFoundException e) {
 			throw new DepositException("Data file missing for child (" + childPid.getQualifiedId()
 					+ ") of work ("  + work.getPid().getQualifiedId() + "): " + stagingPath, e);
 		} catch (IOException e) {
 			throw new DepositException("Unable to close inputstream for binary " + childPid.getQualifiedId(), e);
+		}
+
+		// Add the FITS report for this file
+		addFitsReport(fileObj);
+
+		return fileObj;
+	}
+
+	private void addFitsReport(FileObject fileObj) throws DepositException {
+		File fitsFile = new File(techmdDir, fileObj.getPid().getUUID() + ".xml");
+		try (InputStream fitsStream = new FileInputStream(fitsFile)) {
+			fileObj.addBinary(TECHNICAL_METADATA, fitsStream, fitsFile.getName(), "text/xml",
+					IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
+		} catch (IOException e) {
+			throw new DepositException("Unable to ingest technical metadata for "
+					+ fileObj.getPid().getQualifiedId(), e);
 		}
 	}
 
@@ -373,10 +402,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				obj = repository.createFolderObject(childPid, model);
 				parent.addMember(obj);
 				// TODO add description
-	
+
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
-				
+
 				log.info("Created folder object {} for deposit {}", childPid, getDepositPID());
 			} catch(Exception e) {
 				tx.cancel(e);
@@ -425,10 +454,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				obj = repository.createWorkObject(childPid, model);
 				parent.addMember(obj);
 				// TODO add description
-		
+
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
-				
+
 				log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 				ingestChildren(obj, childResc);
 
@@ -441,7 +470,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			}
 		}
 	}
-	
+
 	private void addPrimaryObject(WorkObject obj, Resource childResc) {
 		Statement primaryStmt = childResc.getProperty(Cdr.primaryObject);
 		if (primaryStmt != null) {
