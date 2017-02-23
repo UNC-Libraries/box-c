@@ -173,14 +173,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 				briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
 			}
 
-			if (retrieveFacets) {
+			if (retrieveFacets && briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
 				List<String> facetsToRetrieve = null;
-				if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
-					facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
-				} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-					facetsToRetrieve = new ArrayList<String>();
-					facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
-				}
+				facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
 
 				LOG.debug("Retrieving supplemental information for container at path " + briefObject.getPath().toString());
 				SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
