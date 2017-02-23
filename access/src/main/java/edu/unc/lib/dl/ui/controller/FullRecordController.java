@@ -166,8 +166,9 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 		// Get additional information depending on the type of object since the user has access
 		if (!listAccess) {
-			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
-			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
+			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate) ||
+					briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
+			boolean retrieveFacets = briefObject.getResourceType().equals(searchSettings.resourceTypeCollection);
 
 			if (retrieveChildrenCount) {
 				briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
@@ -175,12 +176,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 			if (retrieveFacets) {
 				List<String> facetsToRetrieve = null;
-				if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
-					facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
-				} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-					facetsToRetrieve = new ArrayList<String>();
-					facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
-				}
+				facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
 
 				LOG.debug("Retrieving supplemental information for container at path " + briefObject.getPath().toString());
 				SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),

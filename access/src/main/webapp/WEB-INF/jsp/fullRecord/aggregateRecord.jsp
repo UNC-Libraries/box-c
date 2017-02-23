@@ -159,37 +159,6 @@
 			</div>
 		</c:if>
 		<div class="metadata">
-			<table>
-				<tr>
-					<th>Contains</th>
-					<td>
-						<c:url var="contentsResultsUrl" scope="page" value='list/${briefObject.id}'></c:url>
-						<a href="<c:out value='${contentsResultsUrl}' />">${childCount} item<c:if test="${childCount != 1}">s</c:if></a>
-					</td>
-				</tr>
-				<c:if test="${not empty facetFields}">
-					<c:forEach items="${facetFields}" var="facetField">
-						<tr>
-							<th><c:out value="${searchSettings.searchFieldLabels[facetField.name]}" /></th>
-							<td>
-								<ul>
-									<c:forEach items="${facetField.values}" var="facetValue" varStatus="status">
-										<li>
-											<c:url var="facetActionUrl" scope="page" value='search'>
-												<c:param name="${searchSettings.searchStateParams['FACET_FIELDS']}" value="${searchSettings.searchFieldParams['ANCESTOR_PATH']}:${briefObject.path.searchValue},${briefObject.path.highestTier + 1}"/>
-												<c:param name="${searchSettings.searchStateParams['ACTIONS']}" value='${additionalLimitActions}${searchSettings.actions["SET_FACET"]}:${searchSettings.searchFieldParams[facetValue.fieldName]},"${facetValue.searchValue}"'/>
-											</c:url>
-											<a href="<c:out value="${facetActionUrl}"/>"><c:out value="${facetValue.displayValue}" /></a> (<c:out value="${facetValue.count}" />)
-										</li>
-									</c:forEach>
-								</ul>
-							</td>
-						</tr>
-					</c:forEach>
-				</c:if>
-			</table>
-		</div>
-		<div class="metadata">
 			${fullObjectView}
 		</div>
 	</div>
