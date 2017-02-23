@@ -53,11 +53,11 @@ public class ThumbnailRouter extends RouteBuilder {
 			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
 			.to("direct:images");
-			
+		
 		from("direct:images")
 		.routeId("IsImage")
-		.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
-			//.filter(simple("${headers[MimeType]} regex '^(image.*?$|application.*?(photoshop|psd)$)'"))
+		//.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
+			.filter(simple("${headers[MimeType]} regex '^(image.*$|application.*?(photoshop|psd)$)'"))
 			.multicast()
 			.to("direct:small.thumbnail", "direct:large.thumbnail");
 

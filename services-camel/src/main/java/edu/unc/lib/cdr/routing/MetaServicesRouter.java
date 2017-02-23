@@ -29,7 +29,7 @@ public class MetaServicesRouter extends RouteBuilder {
 	public void configure() throws Exception {
 		from("{{fcrepo.stream}}")
 		.routeId("MetaServicesRouter")
-		.routingSlip(new SimpleExpression("direct-vm:index.start,direct-vm:createThumbnail"));
+		.routingSlip(new SimpleExpression("direct-vm:index.start,direct-vm:createThumbnail,direct-vm:extractFulltext"));
 	}
 
 }

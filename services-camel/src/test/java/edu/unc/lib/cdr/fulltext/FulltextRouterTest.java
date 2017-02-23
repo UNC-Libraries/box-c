@@ -1,19 +1,4 @@
-/**
- * Copyright 2016 The University of North Carolina at Chapel Hill
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package edu.unc.lib.cdr.thumbnail;
+package edu.unc.lib.cdr.fulltext;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
@@ -46,7 +31,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
-public class ThumbnailRouterTest extends CamelSpringTestSupport {
+public class FulltextRouterTest extends CamelSpringTestSupport {
 	private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
 	private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
 	private static final String IDENTIFIER = "org.fcrepo.jms.identifier";
@@ -56,8 +41,8 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	private static final String userAgent = "curl/7.37.1";
 	private static final String fileID = "/file1";
 	private final String eventTypes = EVENT_NS + "ResourceCreation";
-	private final String enhancementRoute = "CdrServiceEnhancements";
-	private final String isImageRoute = "IsImage"; 
+	private final String enhancementRoute = "CdrServiceFulltextExtraction";
+	private final String extractionRoute = "HasFulltext"; 
 	
 	@PropertyInject(value = "fcrepo.baseUri")
 	private static String baseUri;
@@ -79,12 +64,12 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Override
 	protected AbstractApplicationContext createApplicationContext() {
-		return new ClassPathXmlApplicationContext("/service-context.xml", "/thumbnail-context.xml");
+		return new ClassPathXmlApplicationContext("/service-context.xml", "/fulltext-context.xml");
 	}
 	
 	@Test
-	public void testRouteStartSuccess() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(1);
+	public void testRouteStart() throws Exception {
+		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(1);
 		
 		createContext(enhancementRoute);
 		
@@ -95,7 +80,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Test
 	public void testEventTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(0);
 		
 		createContext(enhancementRoute);
 		
@@ -109,7 +94,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Test
 	public void testIdentifierFilter() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(0);
 		
 		createContext(enhancementRoute);
 
@@ -123,7 +108,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Test
 	public void testResourceTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(0);
 		
 		createContext(enhancementRoute);
 
@@ -136,25 +121,23 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	}
 	
 	@Test
-	public void testRouteMulticastSuccess() throws Exception {
-		createContext(isImageRoute);
+	public void testFullTextExtractionFilterValidMimeType() throws Exception {
+		getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
+		createContext(extractionRoute);
 		
-		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(1);
-		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
 		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
 		
 		assertMockEndpointsSatisfied();
 	}
 	
 	@Test
-	public void testRouteMulticastFilter() throws Exception {
-		createContext(isImageRoute);
+	public void testFullTextExtractionFilterInvalidMimeType() throws Exception {
+		getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(0);
 		
-		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
-		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
+		createContext(extractionRoute);
 		
 		Map<String, Object> headers = createEvent(fileID, eventTypes);
-		headers.put(CdrBinaryMimeType, "plain/text");
+		headers.put(CdrBinaryMimeType, "image/png");
 		
 		template.sendBodyAndHeaders("", headers);
 		
@@ -183,7 +166,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 		headers.put(EVENT_TYPE, "ResourceCreation");
 		headers.put(IDENTIFIER, "original_file");
 		headers.put(RESOURCE_TYPE, Binary.getURI());
-		headers.put(CdrBinaryMimeType, "image/png");
+		headers.put(CdrBinaryMimeType, "application/octet-stream");
 		
 		return headers;
 	}

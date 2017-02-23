@@ -47,7 +47,7 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="fedoraBase" value="${fcrepo.baseUrl}" />
+		<property name="baseUri" value="${fcrepo.baseUrl}" />
 	</bean>
 
 	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
@@ -70,6 +70,12 @@
 		<constructor-arg value="${cdr.enhancement.thumbnail}" />
 	</bean>
 	
+	<bean id="fulltextProcessor" class="edu.unc.lib.cdr.FulltextProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).FULLTEXT_EXTRACTION}"/>
+		<constructor-arg value="${cdr.enhancement.fulltext}" />
+	</bean>
+	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
 		<property name="authUsername" value="${fcrepo.authUsername}"/>
 		<property name="authPassword" value="${fcrepo.authPassword}"/>
@@ -85,8 +91,14 @@
 		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
 	</camel:camelContext>
 	
+	<camel:camelContext id="CdrServiceFulltextExtraction">
+		<camel:package>edu.unc.lib.cdr.fulltext</camel:package>
+	</camel:camelContext>
+	
+	
 	<camel:camelContext id="FcrepoTriplestoreRouter">
 		<camel:package>edu.unc.lib.cdr.indexing.triplestore</camel:package>
 	</camel:camelContext>
+	
 	
 </beans>
