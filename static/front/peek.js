@@ -520,16 +520,19 @@ $(function() {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
-      // document.getElementsByClassName("item").tabIndex = "0";
     });
 
     $("#peek-exit").on("click", function() {
       window.location.hash = "";
-      // document.getElementsByClassName("item").tabIndex = "-1";
     });
 
     $(window).on("hashchange", function() {
       $(document.body).toggleClass("peek", window.location.hash == "#p");
+      if ($(document.body).hasClass("peek")) {
+        $("#peek .item a").attr("tabindex", "0");
+      } else {
+        $("#peek .item a").attr("tabindex", "-1");
+      }
     });
 
     $(document).on("keydown", function(e) {
