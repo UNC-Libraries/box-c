@@ -8,14 +8,20 @@
 
 	<bean id="serverAddress" class="java.lang.String">
 		<constructor-arg
+			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:8080}/" />
+	</bean>
+	
+	<bean id="baseAddress" class="java.lang.String">
+		<constructor-arg
 			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:8080}/rest/" />
 	</bean>
 	
-	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory">
-		<constructor-arg ref="serverAddress" />
+	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+		<constructor-arg ref="baseAddress" />
 	</bean>
 	
-	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="makeClient">
+	<bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
+			factory-bean="fcrepoClientFactory" factory-method="makeClient">
 	</bean>
 	
 	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
@@ -43,7 +49,8 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="baseUri" ref="serverAddress" />
+		<property name="serverUri" ref="serverAddress" />
+		<property name="baseUri" ref="baseAddress" />
 	</bean>
 
 	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
