@@ -35,9 +35,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
@@ -73,6 +78,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	private String baseFitsUri;
 	// URI to the examine servlet in the FITS application
 	private URI fitsExamineUri;
+	
+	private boolean processFilesLocally;
 
 	private File techmdDir;
 
@@ -134,18 +141,33 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	 * @return
 	 */
 	private Document getFitsDocument(PID objPid, String stagedPath) {
-		// Make request to fits to get back report
-		URI fitsUri = null;
-		try {
-			URIBuilder builder = new URIBuilder(fitsExamineUri);
-			builder.addParameter("file", stagedPath);
-			fitsUri = builder.build();
-		} catch (URISyntaxException e) {
-			failJob(e, "Failed to construct FITs report uri for {0}", objPid);
+		HttpUriRequest request;
+		
+		if (processFilesLocally) {
+			// Files are available locally to FITS, so just pass along path
+			URI fitsUri = null;
+			try {
+				URIBuilder builder = new URIBuilder(fitsExamineUri);
+				builder.addParameter("file", stagedPath);
+				fitsUri = builder.build();
+			} catch (URISyntaxException e) {
+				failJob(e, "Failed to construct FITs report uri for {0}", objPid);
+			}
+
+			request = new HttpGet(fitsUri);
+		} else {
+			// Files are to be processed remotely, so upload them via a post request
+			File stagedFile = new File(URI.create(stagedPath));
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addPart("datafile", new FileBody(stagedFile))
+					.build();
+			
+			HttpPost postRequest = new HttpPost(fitsExamineUri);
+			postRequest.setEntity(entity);
+			request = postRequest;
 		}
 
-		HttpGet httpGet = new HttpGet(fitsUri);
-		try (CloseableHttpResponse resp = httpClient.execute(httpGet)) {
+		try (CloseableHttpResponse resp = httpClient.execute(request)) {
 			// Write the report response to file
 			InputStream respBodyStream = resp.getEntity().getContent();
 			return new SAXBuilder().build(respBodyStream);
@@ -405,5 +427,9 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
 	public void setBaseFitsUri(String baseFitsUri) {
 		this.baseFitsUri = baseFitsUri;
+	}
+
+	public void setProcessFilesLocally(boolean processFilesLocally) {
+		this.processFilesLocally = processFilesLocally;
 	}
 }

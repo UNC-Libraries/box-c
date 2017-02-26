@@ -197,6 +197,7 @@
 		scope="prototype" init-method="init">
 		<property name="baseFitsUri" value="${fits.baseUri}" />
 		<property name="httpClient" ref="pooledHttpClient" />
+		<property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
 	</bean>
 	
 	<bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"

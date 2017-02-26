@@ -49,12 +49,20 @@ public class VirusScanJob extends AbstractDepositJob {
 
 	private ClamScan clamScan;
 
+	public VirusScanJob() {
+		super();
+	}
+
 	public ClamScan getClamScan() {
 		return clamScan;
 	}
 
 	public void setClamScan(ClamScan clamScan) {
 		this.clamScan = clamScan;
+	}
+
+	public VirusScanJob(String uuid, String depositUUID) {
+		super(uuid, depositUUID);
 	}
 
 	@Override
