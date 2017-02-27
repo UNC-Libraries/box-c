@@ -95,9 +95,8 @@
 		<camel:package>edu.unc.lib.cdr.fulltext</camel:package>
 	</camel:camelContext>
 	
-	
-	<camel:camelContext id="FcrepoTriplestoreRouter">
-		<camel:package>edu.unc.lib.cdr.indexing.triplestore</camel:package>
+	<camel:camelContext id="FcrepoTriplestoreIndexer">
+		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
 	</camel:camelContext>
 	
 	

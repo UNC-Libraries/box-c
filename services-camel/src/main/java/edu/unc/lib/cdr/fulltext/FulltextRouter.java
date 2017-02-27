@@ -34,7 +34,7 @@ public class FulltextRouter extends RouteBuilder {
 		
 		from("direct:fulltext.filter")
 		.routeId("HasFulltext")
-		.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
+		.filter(simple("${headers[MimeType]} regex '" + mimetypePattern + "'"))
 			.to("direct:fulltext.extraction");
 		
 		from("direct:fulltext.extraction")
