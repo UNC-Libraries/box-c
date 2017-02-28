@@ -58,7 +58,11 @@
 					<c:when test="${isPath}">
 						<c:choose>
 							<c:when test="${param.limitToContainer == true}">
-								<c:url var="shiftFacetUrl" scope="page" value="list/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+								<c:choose>
+									<c:when test="${param.resourceType == 'Aggregate'}"></c:when>
+										<c:url var="shiftFacetUrl" scope="page" value="record/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
+									<c:otherwise><c:url var="shiftFacetUrl" scope="page" value="list/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url></c:otherwise>
+								</c:choose>
 							</c:when>
 							<c:otherwise>
 								<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${facetNode.searchKey}${shiftFacetUrlBase}"></c:url>
