@@ -44,7 +44,7 @@
 				</c:when>
 				<c:otherwise>
 					<c:choose>
-						<c:when test=${resourceType == "AggregateWork" }>
+						<c:when test="${pathEntry.resourceType == searchSettings.resourceTypeAggregate}"}>
 							<c:url var="shiftFacetUrl" scope="page" value="record/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
 						</c:when>
 						<c:otherwise>
