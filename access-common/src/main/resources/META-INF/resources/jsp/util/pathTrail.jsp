@@ -43,7 +43,14 @@
 					<c:out value="${pathEntry.name}" />
 				</c:when>
 				<c:otherwise>
-					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					<c:choose>
+						<c:when test=${resourceType == "AggregateWork" }>
+							<c:url var="shiftFacetUrl" scope="page" value="record/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+						</c:when>
+						<c:otherwise>
+							<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+						</c:otherwise>
+					</c:choose>
 					<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
 				</c:otherwise>
 			</c:choose>
