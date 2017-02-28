@@ -35,6 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -89,7 +91,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		super(uuid, depositUUID);
 	}
 
-	public void init() {
+	@PostConstruct
+	public void initJob() {
 		fitsExamineUri = URI.create(URIUtil.join(baseFitsUri, FITS_EXAMINE_PATH));
 
 		techmdDir = new File(getDepositDirectory(), TECHMD_DIR);

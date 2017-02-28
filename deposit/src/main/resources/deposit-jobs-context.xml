@@ -194,7 +194,7 @@
 	</bean>
 	
 	<bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob"
-		scope="prototype" init-method="init">
+		scope="prototype">
 		<property name="baseFitsUri" value="${fits.baseUri}" />
 		<property name="httpClient" ref="pooledHttpClient" />
 		<property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
