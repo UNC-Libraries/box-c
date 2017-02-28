@@ -23,12 +23,10 @@ public class ObjectPathEntry {
 
 	private String pid;
 	private String name;
-	private boolean isContainer;
 
 	public ObjectPathEntry(String pid, String name, boolean isContainer) {
 		this.pid = pid;
 		this.name = name;
-		this.isContainer = isContainer;
 	}
 
 	public String getPid() {
@@ -46,13 +44,4 @@ public class ObjectPathEntry {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public boolean isContainer() {
-		return isContainer;
-	}
-
-	public void setContainer(boolean isContainer) {
-		this.isContainer = isContainer;
-	}
-
 }
