@@ -112,13 +112,11 @@ public class ObjectPathFactory {
 
 		if (bom.getTitle() != null) {
 			String resType = bom.getResourceType();
-			// Refresh the cache for the object being looked up if it is a non-work container
-			if (isContainer(resType) && resType != "Work") {
-				try {
-					pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true, resType));
-				} catch (InvalidPathDataException e) {
-					log.debug("Did not cache path data for the provided object {}", bom.getId(), e);
-				}
+			// Refresh the cache for the object being looked up
+			try {
+				pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), isContainer(resType), resType));
+			} catch (InvalidPathDataException e) {
+				log.debug("Did not cache path data for the provided object {}", bom.getId(), e);
 			}
 
 			// Add the provided metadata object into the path as the last entry, if it had a title
