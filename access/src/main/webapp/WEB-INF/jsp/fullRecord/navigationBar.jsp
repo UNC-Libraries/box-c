@@ -26,7 +26,6 @@
 			<div id="full_record_trail" class="left">
 				<c:set var="objectPath" scope="request" value="${briefObject.objectPath}"/>
 				<c:import url="/jsp/util/pathTrail.jsp">
-					<c:param name="linkLast">false</c:param>
 					<c:param name="queryPath">list</c:param>
 				</c:import>
 			</div>

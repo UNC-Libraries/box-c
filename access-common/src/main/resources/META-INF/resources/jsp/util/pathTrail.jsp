@@ -35,12 +35,12 @@
 
 <span class="hierarchicalTrail">  
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
-		<c:if test="${!param.hideLast || !status.last}">
+		<c:if test="${!status.last}">
 			<c:if test="${!status.first}">
 				&gt; 
 			</c:if>
 			<c:choose>
-				<c:when test="${status.last && param.linkLast != true}">
+				<c:when test="${status.last}">
 					<c:out value="${pathEntry.name}" />
 				</c:when>
 				<c:otherwise>
