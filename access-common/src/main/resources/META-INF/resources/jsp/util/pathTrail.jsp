@@ -35,7 +35,6 @@
 
 <span class="hierarchicalTrail">  
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
-		<c:if test="${!status.last}">
 			<c:if test="${!status.first}">
 				&gt; 
 			</c:if>
@@ -48,6 +47,5 @@
 					<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
 				</c:otherwise>
 			</c:choose>
-		</c:if>
 	</c:forEach>
 </span>
