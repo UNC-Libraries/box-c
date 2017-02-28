@@ -24,7 +24,7 @@ public class ObjectPathEntry {
 	private String pid;
 	private String name;
 
-	public ObjectPathEntry(String pid, String name, boolean isContainer) {
+	public ObjectPathEntry(String pid, String name) {
 		this.pid = pid;
 		this.name = name;
 	}

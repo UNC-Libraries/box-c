@@ -34,7 +34,6 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
  * Factory for generating and retrieving hierarchical path information, including retrieving names of ancestors
@@ -106,7 +105,7 @@ public class ObjectPathFactory {
 			PathCacheData pathData = getPathData(pid);
 
 			if (pathData != null) {
-				entries.add(new ObjectPathEntry(pid, pathData.name);
+				entries.add(new ObjectPathEntry(pid, pathData.name));
 			}
 		}
 
@@ -120,7 +119,7 @@ public class ObjectPathFactory {
 			}
 
 			// Add the provided metadata object into the path as the last entry, if it had a title
-			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), true));
+			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle()));
 		}
 
 		return new ObjectPath(entries);
@@ -161,10 +160,6 @@ public class ObjectPathFactory {
 			log.error("Failed to get object path information for {}", pid, e);
 		}
 		return null;
-	}
-
-	private boolean isContainer(String resourceType) {
-		return !"File".equals(resourceType);
 	}
 
 	public void setCacheSize(int cacheSize) {
