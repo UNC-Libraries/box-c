@@ -50,7 +50,7 @@ public class ThumbnailRouter extends RouteBuilder {
 				+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
 				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
 			.removeHeaders("CamelHttp*")
-			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
+			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
 			.to("direct:images");
 			
