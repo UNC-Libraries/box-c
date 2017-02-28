@@ -34,6 +34,7 @@ import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
  * Factory for generating and retrieving hierarchical path information, including retrieving names of ancestors
@@ -110,10 +111,11 @@ public class ObjectPathFactory {
 		}
 
 		if (bom.getTitle() != null) {
-			// Refresh the cache for the object being looked up if it is a container
-			if (isContainer(bom.getResourceType())) {
+			String resType = bom.getResourceType();
+			// Refresh the cache for the object being looked up if it is a non-work container
+			if (isContainer(resType) && resType != "Work") {
 				try {
-					pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true));
+					pathCache.put(bom.getId(), new PathCacheData(bom.getTitle(), true, resType));
 				} catch (InvalidPathDataException e) {
 					log.debug("Did not cache path data for the provided object {}", bom.getId(), e);
 				}
@@ -148,9 +150,9 @@ public class ObjectPathFactory {
 				log.warn("Unable to retrieve solr record for object {}, it may not be present or indexed", pid);
 				return null;
 			}
-
+			String resType = (String) fields.get(typeFieldName);
 			PathCacheData pathData = new PathCacheData((String) fields.get(titleFieldName),
-					isContainer((String) fields.get(typeFieldName)));
+					isContainer(resType), resType);
 
 			// Cache the results for this entry
 			pathCache.put(pid, pathData);
@@ -189,14 +191,17 @@ public class ObjectPathFactory {
 		public String name;
 
 		public boolean isContainer;
+		
+		public String resourceType;
 
 		public long retrievedAt;
 
-		public PathCacheData(String name, boolean isContainer) throws InvalidPathDataException {
+		public PathCacheData(String name, boolean isContainer, String resourceType) throws InvalidPathDataException {
 			if (name == null)
 				throw new InvalidPathDataException("No name value provided");
 			this.name = name;
 			this.isContainer = isContainer;
+			this.resourceType = resourceType;
 			retrievedAt = System.currentTimeMillis();
 		}
 	}
