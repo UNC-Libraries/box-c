@@ -31,20 +31,19 @@
 							<hr>
 				<h3>Master's Paper</h3>
 				
-				<h4>Department</h4>
-				<form>
-				<select id="mp-dept">
-					<option value=""></option>
-					<option value="/forms/art-mfa">Art MFA</option>
-					<option value="/forms/sph_ese_technical_report">Gillings ESE Technical Report</option>
-					<option value="/forms/sph_hb_cap_submission">Gillings HB Capstone</option>
-					<option value="/forms/sph_hp">Gillings Health Policy Management</option>
-					<option value="/forms/sph_mch_masters_papers">Gillings MCH</option>
-					<option value="/forms/sph_nutrition">Gillings Department of Nutrition</option>
-					<option value="/forms/sph_phlp_masters_papers">Gillings PHLP</option>
-					<option value="/forms/silsmp">School of Information and Library Science</option>
-					</select>
-					</form>
+        <form>
+        				<label for="mp-dept">Department: </label><select id="mp-dept">
+        					<option value=""></option>
+        					<option value="/forms/art-mfa">Art MFA</option>
+        					<option value="/forms/sph_ese_technical_report">Gillings ESE Technical Report</option>
+        					<option value="/forms/sph_hb_cap_submission">Gillings HB Capstone</option>
+        					<option value="/forms/sph_hp">Gillings Health Policy Management</option>
+        					<option value="/forms/sph_mch_masters_papers">Gillings MCH</option>
+        					<option value="/forms/sph_nutrition">Gillings Department of Nutrition</option>
+        					<option value="/forms/sph_phlp_masters_papers">Gillings PHLP</option>
+        					<option value="/forms/silsmp">School of Information and Library Science</option>
+        					</select>
+        					</form>
 			</div>
 
 </div>
