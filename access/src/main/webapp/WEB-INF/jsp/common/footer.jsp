@@ -38,7 +38,7 @@
             </div>
 
             <div class="fourcol fluid-cap-right">
-		<div class="contentarea"><p class="left"><a href="http://www.unc.edu">UNC Home </a></p><a href="http://www.unc.edu"><img src="/static/images/uncwell.png" id="footer_uncwell"></a></div>
+		<div class="contentarea"><a href="http://www.unc.edu"><p class="left">UNC Home</p><img src="/static/images/uncwell.png" id="footer_uncwell" alt="Old Well icon"></a></div>
 	</div>
 </div>
           </div>
