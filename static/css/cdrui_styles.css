@@ -1331,3 +1331,9 @@ div.deposit-icons {
 #student-papers-options form {
 	margin: 32px 0;
 }
+
+#student-papers-options form label {
+	display: inline-block;
+	float: none;
+  font-size: 16px;
+}
