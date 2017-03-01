@@ -35,12 +35,12 @@ public class FulltextProcessor implements Processor {
 	private final String slug;
 	private final String fileSuffix;
 
-	protected FulltextProcessor(Repository repository, String slug, String fileSuffix) {
+	public FulltextProcessor(Repository repository, String slug, String fileSuffix) {
 		this.repository = repository;
 		this.slug = slug;
 		this.fileSuffix = fileSuffix;
 	}
-			
+
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		final Message in = exchange.getIn();
