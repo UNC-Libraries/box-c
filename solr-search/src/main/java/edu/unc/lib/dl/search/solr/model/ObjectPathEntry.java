@@ -23,10 +23,12 @@ public class ObjectPathEntry {
 
 	private String pid;
 	private String name;
+	private String resourceType;
 
-	public ObjectPathEntry(String pid, String name) {
+	public ObjectPathEntry(String pid, String name, String resourceType) {
 		this.pid = pid;
 		this.name = name;
+		this.resourceType = resourceType;
 	}
 
 	public String getPid() {
@@ -43,5 +45,13 @@ public class ObjectPathEntry {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public String getResourceType() {
+		return resourceType;
+	}
+	
+	public void setResourceType(String resourceType) {
+		this.resourceType = resourceType;
 	}
 }

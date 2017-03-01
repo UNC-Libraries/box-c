@@ -105,7 +105,7 @@ public class ObjectPathFactory {
 			PathCacheData pathData = getPathData(pid);
 
 			if (pathData != null) {
-				entries.add(new ObjectPathEntry(pid, pathData.name));
+				entries.add(new ObjectPathEntry(pid, pathData.name, pathData.resourceType));
 			}
 		}
 
@@ -119,7 +119,7 @@ public class ObjectPathFactory {
 			}
 
 			// Add the provided metadata object into the path as the last entry, if it had a title
-			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle()));
+			entries.add(new ObjectPathEntry(bom.getId(), bom.getTitle(), resType));
 		}
 
 		return new ObjectPath(entries);
