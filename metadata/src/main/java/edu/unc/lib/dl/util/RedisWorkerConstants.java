@@ -1,7 +1,6 @@
 package edu.unc.lib.dl.util;
 
 public class RedisWorkerConstants {
-	public static final String DEPOSIT_SET = "deposits";
 	public static final String DEPOSIT_STATUS_PREFIX = "deposit-status:";
 	public static final String DEPOSIT_METRICS_PREFIX = "deposit-metrics:";
 	public static final String DEPOSIT_MANIFEST_PREFIX = "deposit-manifest:";

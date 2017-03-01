@@ -58,9 +58,9 @@ public class DepositStatusFactory {
 	public Set<Map<String, String>> getAll() {
 		Set<Map<String, String>> result = new HashSet<>();
 		try (Jedis jedis = getJedisPool().getResource()) {
-			Set<String> keys = jedis.hkeys(DEPOSIT_STATUS_PREFIX +"*");
+			Set<String> keys = jedis.hkeys(DEPOSIT_STATUS_PREFIX + "*");
 			if (keys != null) {
-				for(String uuid : keys) {
+				for (String uuid : keys) {
 					result.add(jedis.hgetAll(DEPOSIT_STATUS_PREFIX + uuid));
 				}
 			}
