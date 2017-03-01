@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -92,7 +94,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		super(uuid, depositUUID);
 	}
 
-	public void init() {
+	@PostConstruct
+	public void initJob() {
 		techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
 	}
 
