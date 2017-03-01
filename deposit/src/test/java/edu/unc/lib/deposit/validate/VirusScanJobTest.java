@@ -182,7 +182,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
 		File pdfFile = new File(depositDir, "pdf.pdf");
-		PID file1Pid = addFileObject(depBag, pdfFile.getName());
+		addFileObject(depBag, pdfFile.getName());
 
 		job.closeModel();
 

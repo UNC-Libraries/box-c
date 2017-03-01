@@ -159,6 +159,16 @@ public final class NamespaceConstants {
     public static final String PREMIS_V2_URI = "info:lc/xmlns/premis-v2";
 
     /**
+     * The usual PREMIS (v3) namespace prefix.
+     */
+    public static final String PREMIS_V3_PREFIX = "premis3";
+    
+    /**
+     * The PREMIS v3 namespace URI.
+     */
+    public static final String PREMIS_V3_URI = "http://www.loc.gov/premis/v3";
+    
+    /**
      * The RDF namespace prefix.
      */
     public static final String RDF_PREFIX = "rdf";

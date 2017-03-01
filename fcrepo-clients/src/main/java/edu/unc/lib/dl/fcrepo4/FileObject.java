@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DATA_FILE_FILESET;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
@@ -113,24 +114,32 @@ public class FileObject extends ContentObject {
 	 * @param type
 	 * @return the created derivative as a binary object
 	 */
-	public BinaryObject addDerivative(String slug, InputStream contentStream, String filename, String mimetype, Resource type) {
+	public BinaryObject addDerivative(String slug, InputStream contentStream, String filename,
+			String mimetype, Resource type) {
+		return addBinary(slug, contentStream, filename, mimetype, IanaRelation.derivedfrom, RDF.type, type);
+	}
+
+	public BinaryObject addBinary(String slug, InputStream contentStream, String filename,
+			String mimetype, Property associationRelation, Property typeRelation, Resource type) {
 
 		String derivPath = URIUtil.join(fileSetPath, slug);
 
 		Model fileModel = null;
-		if (type != null) {
+		if (type != null && typeRelation != null) {
 			fileModel = ModelFactory.createDefaultModel();
 			Resource resc = fileModel.createResource(derivPath);
-			resc.addProperty(RDF.type, type);
+			resc.addProperty(typeRelation, type);
 		}
 
 		// Create the derivative binary object
 		BinaryObject derivObj = repository.createBinary(fileSetUri, slug, contentStream, filename,
 				mimetype, null, fileModel);
 
-		// Establish derived-from relation
-		repository.createRelationship(derivObj.getPid(),
-				IanaRelation.derivedfrom, createResource(constructOriginalFilePath()));
+		if (associationRelation != null) {
+			// Establish association with original file relation
+			repository.createRelationship(derivObj.getPid(),
+					associationRelation, createResource(constructOriginalFilePath()));
+		}
 
 		return derivObj;
 	}

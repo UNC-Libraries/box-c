@@ -16,10 +16,13 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
+import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -29,14 +32,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Test;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -73,6 +76,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	private static final String FILE2_MIMETYPE = "text/plain";
 	private static final long FILE2_SIZE = 4L;
 
+	private File techmdDir;
+
 	@Before
 	public void init() throws Exception {
 
@@ -93,6 +98,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		setupDestination();
 
 		FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
+
+		techmdDir = new File(depositDir, TECHMD_DIR);
+		techmdDir.mkdir();
 	}
 
 	private void setupDestination() {
@@ -150,7 +158,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	 * Test that work objects are created along with relationships to their children.
 	 */
 	@Test
-	public void ingestWorkObjectTest() {
+	public void ingestWorkObjectTest() throws Exception {
 		String label = "testwork";
 
 		// Construct the deposit model with work object
@@ -207,7 +215,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	 * generated work object along with the normal file object structure
 	 */
 	@Test
-	public void ingestFileObjectAsWorkTest() {
+	public void ingestFileObjectAsWorkTest() throws Exception {
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
@@ -234,6 +242,13 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 				filePid, primaryFile.getPid());
 		assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_SIZE);
 
+		List<BinaryObject> fileBinaries = primaryFile.getBinaryObjects();
+		assertEquals("Incorrect number of binaries for file", 2, fileBinaries.size());
+		BinaryObject fitsBinary = fileBinaries.stream()
+				.filter(p -> p.getResource().hasProperty(DCTerms.conformsTo, createResource(FITS_URI)))
+				.findAny().get();
+		assertNotNull("FITS report not present on binary", fitsBinary);
+
 		assertClickCount(1);
 	}
 
@@ -241,7 +256,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	 * Ensure that deposit fails on a checksum mismatch for a single file deposit
 	 */
 	@Test(expected = TransactionCancelledException.class)
-	public void ingestFileObjectChecksumMismatch() {
+	public void ingestFileObjectChecksumMismatch() throws Exception {
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
@@ -257,7 +272,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	 * Verify that resuming a completed deposit doesn't result in extra objects
 	 */
 	@Test
-	public void resumeCompletedWorkIngestTest() {
+	public void resumeCompletedWorkIngestTest() throws Exception {
 		ingestWorkObjectTest();
 
 		job.run();
@@ -277,7 +292,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	 * child and then attempts to resume
 	 */
 	@Test
-	public void resumeIngestFolderTest() {
+	public void resumeIngestFolderTest() throws Exception {
 		String label = "testfolder";
 
 		// Construct the deposit model, containing a deposit with one empty folder
@@ -357,7 +372,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	 * the tree
 	 */
 	@Test
-	public void ingestDeepHierarchy() {
+	public void ingestDeepHierarchy() throws Exception {
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
@@ -394,9 +409,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		assertClickCount(nestingDepth + 1);
 	}
-	
+
 	@Test (expected = TransactionCancelledException.class)
-	public void transactionCancelledTest() {
+	public void transactionCancelledTest() throws Exception {
 		String label = "testwork";
 
 		// Construct the deposit model with work object
@@ -406,7 +421,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Constructing the folder in the deposit model with a title
 		PID workPid = repository.mintContentPid();
 		Bag workBag = model.createBag(workPid.getRepositoryPath());
-		
+
 		// Add incorrect resource type to bag, which causes a DepositException to be thrown
 		// and the tx to be cancelled
 		workBag.addProperty(RDF.type, Cdr.FileObject);
@@ -448,7 +463,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertEquals(count, Integer.parseInt(jobStatus.get(JobField.num.name())));
 	}
 
-	private PID addFileObject(Bag parent, String stagingLocation, String mimetype, String sha1) {
+	private PID addFileObject(Bag parent, String stagingLocation,
+				String mimetype, String sha1) throws Exception {
 		PID filePid = repository.mintContentPid();
 
 		Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
@@ -463,6 +479,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		}
 
 		parent.add(fileResc);
+
+		// Create the accompanying fake premis report file
+		new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
 
 		return filePid;
 	}

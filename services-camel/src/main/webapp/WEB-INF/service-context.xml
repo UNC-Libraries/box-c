@@ -19,8 +19,12 @@
 		<property name="location" value="classpath:config.properties"/>
 	</bean>
 	
-	<bean id="fcrepoClient" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory"
-		factory-method="makeClient">
+	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+		<constructor-arg value="${fcrepo.baseUrl}" />
+	</bean>
+	
+	<bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
+			factory-bean="fcrepoClientFactory" factory-method="makeClient">
 	</bean>
 
 	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
@@ -47,7 +51,8 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="fedoraBase" value="${fcrepo.baseUrl}" />
+		<property name="baseUri" value="${fcrepo.baseUrl}" />
+		<property name="serverUri" value="${fcrepo.serverUri}" />
 	</bean>
 
 	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">

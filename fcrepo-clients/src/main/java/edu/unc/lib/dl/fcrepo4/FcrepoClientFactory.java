@@ -16,6 +16,8 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import org.fcrepo.client.FcrepoClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -23,11 +25,49 @@ import org.fcrepo.client.FcrepoClient;
  *
  */
 public class FcrepoClientFactory {
-	
-	private static String baseUri;
-	
-	public FcrepoClientFactory(String base) {
+	private static final Logger log = LoggerFactory.getLogger(FcrepoClientFactory.class);
+
+	private String baseUri;
+
+	private static FcrepoClientFactory instance;
+
+	private FcrepoClientFactory(String base) {
 		baseUri = base;
+	}
+
+	/**
+	 * Returns a FcrepoClientFactory with the given baseUri if the factory has
+	 * not been previously constructed, otherwise the existing factory will be
+	 * returned.
+	 * 
+	 * @param baseUri
+	 *            base uri for the repository. Required.
+	 * @return a new FcrepoClientFactory with the given baseUri or the
+	 *         previously constructed factory.
+	 */
+	public static FcrepoClientFactory factory(String baseUri) {
+		if (baseUri == null) {
+			throw new IllegalArgumentException("A base URI is required to construct a factory");
+		}
+
+		if (instance == null) {
+			instance = new FcrepoClientFactory(baseUri);
+		} else {
+			log.warn("Requested to construct a factory when a previous instance has "
+					+ "already been initialized (current base uri: {0}, requested {1}), ignoring.",
+					instance.baseUri, baseUri);
+		}
+		return instance;
+	}
+
+	/**
+	 * Returns the default factory. The factory must have been previously
+	 * constructed via the factory(baseUri) method.
+	 * 
+	 * @return the existing default FcrepoClientFactory
+	 */
+	public static FcrepoClientFactory defaultFactory() {
+		return instance;
 	}
 
 	/**
@@ -38,7 +78,7 @@ public class FcrepoClientFactory {
 	 * @param password
 	 * @return
 	 */
-	public static FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
+	public FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
 		return TransactionalFcrepoClient.client(baseUri)
 				.credentials(user, password)
 				.authScope(host)
@@ -51,7 +91,7 @@ public class FcrepoClientFactory {
 	 * 
 	 * @return
 	 */
-	public static FcrepoClient makeClient() {
+	public FcrepoClient makeClient() {
 		return TransactionalFcrepoClient.client(baseUri).throwExceptionOnFailure().build();
 	}
 }

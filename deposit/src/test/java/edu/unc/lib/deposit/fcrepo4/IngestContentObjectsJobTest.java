@@ -15,7 +15,9 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
+import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -25,6 +27,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Paths;
@@ -32,19 +35,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -79,6 +81,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	@Mock
 	private ObjectAccessControlsBean objAcls;
 
+	@Mock
+	private FileObject mockFileObj;
+
+	private File techmdDir;
+
 	@Before
 	public void init() throws Exception {
 		Dataset dataset = TDBFactory.createDataset();
@@ -100,6 +107,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		setupDestination();
 
 		FileUtils.copyDirectory(new File("src/test/resources/examples"), depositDir);
+
+		techmdDir = new File(depositDir, TECHMD_DIR);
+		techmdDir.mkdir();
 	}
 
 	private void setupDestination() {
@@ -165,7 +175,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * Test that a deposit involving a work containing two files is successful
 	 */
 	@Test
-	public void ingestWorkObjectTest() {
+	public void ingestWorkObjectTest() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
 		WorkObject work = mock(WorkObject.class);
@@ -183,13 +193,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		job.closeModel();
 
-		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString())).thenAnswer(new Answer<FileObject>() {
-			@Override
-			public FileObject answer(InvocationOnMock invocation) throws Throwable {
-				return mock(FileObject.class);
-			}
-		});
-		
+		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString()))
+				.thenReturn(mockFileObj);
+		when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
+
 		job.run();
 
 		verify(repository).createWorkObject(eq(workPid), any(Model.class));
@@ -202,6 +209,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		verify(work).setPrimaryObject(mainPid);
 
 		verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
+
+		verify(mockFileObj, times(2)).addBinary(eq(TECHNICAL_METADATA), any(InputStream.class),
+				anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
+				any(Resource.class));
 	}
 
 	/**
@@ -209,7 +220,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * staging location
 	 */
 	@Test(expected = TransactionCancelledException.class)
-	public void ingestWorkWithFileWithoutLocation() {
+	public void ingestWorkWithFileWithoutLocation() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
 		WorkObject work = mock(WorkObject.class);
@@ -231,7 +242,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * Test that deposit fails if depositing a file path that doesn't exist
 	 */
 	@Test(expected = TransactionCancelledException.class)
-	public void ingestWorkWithFileDoesNotExist() {
+	public void ingestWorkWithFileDoesNotExist() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
 		WorkObject work = mock(WorkObject.class);
@@ -248,14 +259,14 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * Test that deposit fails when no permission to write to destination
 	 */
 	@Test(expected = JobFailedException.class)
-	public void ingestFailNoPermissionsTest() {
+	public void ingestFailNoPermissionsTest() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
 		WorkObject work = mock(WorkObject.class);
 		Bag workBag = setupWork(workPid, work, model);
 
 		addFileObject(workBag, "pdf.pdf", "application/pdf");
-		
+
 		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
 				.thenReturn(false);
 
@@ -269,7 +280,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * a work successfully ingests as the child of a generated work object
 	 */
 	@Test
-	public void ingestFileObjectAsWorkTest() {
+	public void ingestFileObjectAsWorkTest() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		when(repository.mintContentPid()).thenReturn(workPid);
 		WorkObject work = mock(WorkObject.class);
@@ -285,6 +296,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		job.closeModel();
 
+		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString()))
+				.thenReturn(mockFileObj);
+		when(mockFileObj.getPid()).thenReturn(filePid);
 		job.run();
 
 		// Verify that a work object was generated and added to the destination
@@ -302,7 +316,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	}
 
 	@Test(expected = JobFailedException.class)
-	public void ingestfileObjectAsWorkNoStaging() {
+	public void ingestfileObjectAsWorkNoStaging() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		when(repository.mintContentPid()).thenReturn(workPid);
 		WorkObject work = mock(WorkObject.class);
@@ -329,7 +343,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * ingested
 	 */
 	@Test
-	public void resumeIngestWorkObjectTest() {
+	public void resumeIngestWorkObjectTest() throws Exception {
 		// Mark the deposit as resumed
 		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
 
@@ -356,15 +370,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		job.closeModel();
 
+		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString()))
+				.thenReturn(mockFileObj);
+		when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
+
 		when(repository.objectExists(eq(workPid))).thenReturn(true);
 		when(repository.objectExists(eq(mainPid))).thenReturn(true);
-		
-		when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString())).thenAnswer(new Answer<FileObject>() {
-			@Override
-			public FileObject answer(InvocationOnMock invocation) throws Throwable {
-				return mock(FileObject.class);
-			}
-		});
 
 		job.run();
 
@@ -393,7 +404,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	}
 
 	@Test
-	public void resumeIngestFileObjectAsWorkTest() {
+	public void resumeIngestFileObjectAsWorkTest() throws Exception {
 		// Mark the deposit as resumed
 		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
 
@@ -424,7 +435,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	 * work deposit due to resume being turned on
 	 */
 	@Test
-	public void resumeIngestNoCompleteTest() {
+	public void resumeIngestNoCompleteTest() throws Exception {
 		// Mark the deposit as resumed
 		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
 
@@ -434,7 +445,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(0));
 	}
 
-	private PID addFileObject(Bag parent, String stagingLocation, String mimetype) {
+	private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
 		PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
 		String absolutePath = Paths.get(depositDir.getAbsolutePath(), stagingLocation).toUri().toString();
@@ -444,6 +455,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		fileResc.addProperty(CdrDeposit.mimetype, mimetype);
 
 		parent.add(fileResc);
+
+		// Create the accompanying fake premis report file
+		new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
 
 		return filePid;
 	}
