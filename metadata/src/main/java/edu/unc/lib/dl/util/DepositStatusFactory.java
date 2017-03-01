@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_SET;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
@@ -59,9 +58,9 @@ public class DepositStatusFactory {
 	public Set<Map<String, String>> getAll() {
 		Set<Map<String, String>> result = new HashSet<>();
 		try (Jedis jedis = getJedisPool().getResource()) {
-			Set<String> deposits = jedis.smembers(DEPOSIT_SET);
-			if (deposits != null) {
-				for(String uuid : deposits) {
+			Set<String> keys = jedis.hkeys(DEPOSIT_STATUS_PREFIX +"*");
+			if (keys != null) {
+				for(String uuid : keys) {
 					result.add(jedis.hgetAll(DEPOSIT_STATUS_PREFIX + uuid));
 				}
 			}
@@ -89,7 +88,6 @@ public class DepositStatusFactory {
 	public void save(String depositUUID, Map<String, String> status) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			jedis.hmset(DEPOSIT_STATUS_PREFIX + depositUUID, status);
-			jedis.sadd(DEPOSIT_SET, depositUUID);
 		}
 	}
 
