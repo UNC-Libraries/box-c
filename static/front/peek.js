@@ -528,12 +528,6 @@ $(function() {
 
     $(window).on("hashchange", function() {
       $(document.body).toggleClass("peek", window.location.hash == "#p");
-      if ($(document.body).hasClass("peek")) {
-        $("#peek-exit .button a").attr("tabindex", "1");
-        $("#peek .item a").attr("tabindex", "2");
-      } else {
-        $("#peek .item a").attr("tabindex", "-1");
-      }
     });
 
     $(document).on("keydown", function(e) {
@@ -554,6 +548,15 @@ $(function() {
     
     peek.add(_.shuffle(items));
     peek.start();
+    
+    $(window).on("hashchange", function() {
+      if (!$(document.body).hasClass("peek")) {
+        $("#peek .item a").attr("tabindex", "-1");
+      } else {
+        $("#peek-exit .button a").attr("tabindex", "1");
+        $("#peek .item a").attr("tabindex", "2");
+      }
+    });
     
   });
 
