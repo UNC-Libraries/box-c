@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="1.0.5" timestamp="2/19/17 11:32 AM">
+  <identification status="CONFLICT">
+    <identity format="Waveform Audio" mimetype="audio/x-wave" toolname="FITS" toolversion="1.0.5">
+      <tool toolname="OIS Audio Information" toolversion="0.1" />
+      <tool toolname="Droid" toolversion="6.1.5" />
+      <tool toolname="file utility" toolversion="5.04" />
+      <tool toolname="Exiftool" toolversion="10.00" />
+      <externalIdentifier toolname="Droid" toolversion="6.1.5" type="puid">fmt/141</externalIdentifier>
+    </identity>
+    <identity format="WAVE" mimetype="audio/x-wave" toolname="FITS" toolversion="1.0.5">
+      <tool toolname="Jhove" toolversion="1.11" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="Jhove" toolversion="1.11">1049747456</size>
+    <filepath toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">/path/conflict.wav</filepath>
+    <filename toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">conflict.wav</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1d442d115b472b21437893000b79c97a</md5checksum>
+    <fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1459349575000</fslastmodified>
+  </fileinfo>
+  <filestatus />
+  <metadata>
+    <audio>
+      <numSamples toolname="OIS Audio Information" toolversion="0.1" status="SINGLE_RESULT">272022879</numSamples>
+      <sampleRate toolname="OIS Audio Information" toolversion="0.1">96000</sampleRate>
+      <audioDataEncoding toolname="OIS Audio Information" toolversion="0.1" status="CONFLICT">PCM</audioDataEncoding>
+      <audioDataEncoding toolname="Exiftool" toolversion="10.00" status="CONFLICT">Microsoft PCM</audioDataEncoding>
+      <blockAlign toolname="OIS Audio Information" toolversion="0.1" status="SINGLE_RESULT">6</blockAlign>
+      <channels toolname="OIS Audio Information" toolversion="0.1">2</channels>
+      <bitDepth toolname="OIS Audio Information" toolversion="0.1">24</bitDepth>
+      <wordSize toolname="OIS Audio Information" toolversion="0.1" status="SINGLE_RESULT">3</wordSize>
+      <offset toolname="OIS Audio Information" toolversion="0.1" status="SINGLE_RESULT">864</offset>
+      <duration toolname="Exiftool" toolversion="10.00" status="SINGLE_RESULT">0:30:22</duration>
+    </audio>
+  </metadata>
+</fits>

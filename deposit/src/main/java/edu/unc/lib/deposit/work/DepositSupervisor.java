@@ -31,6 +31,7 @@ import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.normalize.VocabularyEnforcementJob;
+import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
@@ -602,6 +603,11 @@ public class DepositSupervisor implements WorkerListener {
 		// Virus Scan
 		if (!successfulJobs.contains(VirusScanJob.class.getName())) {
 			return makeJob(VirusScanJob.class, depositUUID);
+		}
+
+		// Extract technical metadata
+		if (!successfulJobs.contains(ExtractTechnicalMetadataJob.class.getName())) {
+			return makeJob(ExtractTechnicalMetadataJob.class, depositUUID);
 		}
 
 		// Ingest all content objects to repository

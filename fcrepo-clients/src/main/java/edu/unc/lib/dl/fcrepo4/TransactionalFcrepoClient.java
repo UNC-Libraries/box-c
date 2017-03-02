@@ -50,7 +50,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 			"application/sparql-update", "text/turtle", "text/rdf+n3", "application/n3",
 			"text/n3", "application/rdf+xml", "application/n-triples", "application/ld+json"});
 	
-	private static final String TX_ID_REGEX = "(/tx:[a-z0-9\\-]+)?";
+	private static final String TX_ID_REGEX = "(tx:[a-z0-9\\-]+/)?";
 	private static final String TX_RESPONSE_REGEX = "(tx:[a-z0-9\\-]+/)";
 	
 	private Pattern txBasePattern;

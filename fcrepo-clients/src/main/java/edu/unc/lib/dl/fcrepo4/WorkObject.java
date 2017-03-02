@@ -137,7 +137,7 @@ public class WorkObject extends ContentContainerObject {
 
 		// Create the file object
 		FileObject fileObj = repository.createFileObject(childPid, null);
-		// Add the content to it as its original file
+		// Add the binary content to it as its original file
 		fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 
 		// Add the new file object as a member of this Work

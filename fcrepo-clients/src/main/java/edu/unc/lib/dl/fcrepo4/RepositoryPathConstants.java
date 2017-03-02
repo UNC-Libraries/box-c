@@ -50,6 +50,8 @@ public class RepositoryPathConstants {
 	public static final String FULLTEXT_EXTRACTION = "fulltext_extraction";
 
 	public static final String ORIGINAL_FILE = "original_file";
+	
+	public static final String TECHNICAL_METADATA = "techmd_fits";
 
 	public static final String CONTENT_ROOT_ID = "collections";
 

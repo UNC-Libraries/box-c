@@ -59,7 +59,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	private final String enhancementRoute = "CdrServiceEnhancements";
 	private final String isImageRoute = "IsImage"; 
 	
-	@PropertyInject(value = "fcrepo.baseUri")
+	@PropertyInject(value = "fcrepo.baseUrl")
 	private static String baseUri;
 	
 	@EndpointInject(uri = "mock:fcrepo")

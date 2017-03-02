@@ -43,6 +43,8 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.OAI_DC_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.OAI_DC_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.PREMIS_V2_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.PREMIS_V2_URI;
+import static edu.unc.lib.dl.xml.NamespaceConstants.PREMIS_V3_PREFIX;
+import static edu.unc.lib.dl.xml.NamespaceConstants.PREMIS_V3_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.RDF_PREFIX;
 import static edu.unc.lib.dl.xml.NamespaceConstants.RDF_URI;
 import static edu.unc.lib.dl.xml.NamespaceConstants.RELSEXT_PREFIX;
@@ -140,6 +142,8 @@ public class JDOMNamespaceUtil {
      * PREMIS v2 namespace with standard prefix.
      */
     public static final Namespace PREMIS_V2_NS = Namespace.getNamespace(PREMIS_V2_PREFIX, PREMIS_V2_URI);
+    
+    public static final Namespace PREMIS_V3_NS = Namespace.getNamespace(PREMIS_V3_PREFIX, PREMIS_V3_URI);
 
     /**
      * RDF namespace with standard prefix.

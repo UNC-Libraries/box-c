@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -31,14 +32,18 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -52,6 +57,7 @@ import edu.unc.lib.dl.util.JobStatusFactory;
 public class AbstractDepositJobTest {
 
 	protected static final String FEDORA_BASE = "http://example.com/rest/";
+	protected static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
 	
 	@Mock
 	protected RepositoryObjectDataLoader dataLoader;
@@ -84,6 +90,8 @@ public class AbstractDepositJobTest {
 	protected PID depositPid;
 	
 	protected Dataset dataset;
+	@Mock
+	protected FedoraTransaction tx;
 
 	@Before
 	public void initBase() throws Exception {
@@ -109,6 +117,15 @@ public class AbstractDepositJobTest {
 		depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
 		
 		dataset = TDBFactory.createDataset();
+		
+		when(repository.startTransaction()).thenReturn(tx);
+		doAnswer(new Answer<Void>() {
+			@Override
+			public Void answer(InvocationOnMock invocation) throws Throwable {
+				throw new TransactionCancelledException("Tx cancelled",
+						invocation.getArgumentAt(0, Exception.class));
+			}
+		}).when(tx).cancel(any(Exception.class));
 	}
 
 	protected PID makePid(String qualifier) {
