@@ -26,7 +26,7 @@ import edu.unc.lib.cdr.BinaryMetadataProcessor;
 import edu.unc.lib.cdr.FulltextProcessor; 
 
 /**
- * Routes ingests with full text availablethrough a pipeline to extract the full text and add it as an object in fedora.
+ * Routes ingests with full text available through a pipeline to extract the full text and add it as an object in fedora.
  * 
  * @author lfarrell
  *
