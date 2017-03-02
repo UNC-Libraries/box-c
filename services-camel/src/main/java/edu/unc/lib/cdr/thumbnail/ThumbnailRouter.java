@@ -56,7 +56,6 @@ public class ThumbnailRouter extends RouteBuilder {
 		
 		from("direct:images")
 		.routeId("IsImage")
-		//.filter(simple("${headers[MimeType]} regex '^application.*?$'"))
 			.filter(simple("${headers[MimeType]} regex '^(image.*$|application.*?(photoshop|psd)$)'"))
 			.multicast()
 			.to("direct:small.thumbnail", "direct:large.thumbnail");

@@ -166,7 +166,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		headers.put(EVENT_TYPE, "ResourceCreation");
 		headers.put(IDENTIFIER, "original_file");
 		headers.put(RESOURCE_TYPE, Binary.getURI());
-		headers.put(CdrBinaryMimeType, "application/octet-stream");
+		headers.put(CdrBinaryMimeType, "text/plain");
 		
 		return headers;
 	}
