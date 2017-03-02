@@ -73,8 +73,6 @@
 				<c:set var="facetNodes" scope="request" value="${briefObject.path.facetNodes}"/>
 				<span class="bold">Path:&nbsp;</span>
 				<c:import url="/jsp/util/pathTrail.jsp">
-					<c:param name="hideLast"><c:choose><c:when test="${briefObject.resourceType == searchSettings.resourceTypeFile}">true</c:when><c:otherwise>false</c:otherwise></c:choose></c:param>
-					<c:param name="linkLast">true</c:param>
 					<c:param name="queryPath">list</c:param>
 				</c:import>
 			</p>

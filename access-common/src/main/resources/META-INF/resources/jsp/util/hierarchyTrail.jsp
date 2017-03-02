@@ -50,7 +50,7 @@
 			&gt; 
 		</c:if>
 		<c:choose>
-			<c:when test="${status.last && param.linkLast != true}">
+			<c:when test="${status.last}">
 				<c:out value="${facetNode.displayValue}" />
 			</c:when>
 			<c:otherwise>
