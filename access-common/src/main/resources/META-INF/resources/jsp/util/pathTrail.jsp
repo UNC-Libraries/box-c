@@ -35,19 +35,24 @@
 
 <span class="hierarchicalTrail">  
 	<c:forEach items="${objectPath.entries}" var="pathEntry" varStatus="status">
-		<c:if test="${!param.hideLast || !status.last}">
-			<c:if test="${!status.first}">
-				&gt; 
-			</c:if>
-			<c:choose>
-				<c:when test="${status.last && param.linkLast != true}">
-					<c:out value="${pathEntry.name}" />
-				</c:when>
-				<c:otherwise>
-					<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
-					<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
-				</c:otherwise>
-			</c:choose>
+		<c:if test="${!status.first}">
+			&gt; 
 		</c:if>
+		<c:choose>
+			<c:when test="${status.last}">
+				<c:out value="${pathEntry.name}" />
+			</c:when>
+			<c:otherwise>
+				<c:choose>
+					<c:when test="${pathEntry.resourceType == searchSettings.resourceTypeAggregate}">
+						<c:url var="shiftFacetUrl" scope="page" value="record/${pathEntry.pid}"></c:url>
+					</c:when>
+					<c:otherwise>
+						<c:url var="shiftFacetUrl" scope="page" value="${queryPath}/${pathEntry.pid}${shiftFacetUrlBase}"></c:url>
+					</c:otherwise>
+				</c:choose>
+				<a href="<c:out value="${shiftFacetUrl}"/>"><c:out value="${pathEntry.name}" /></a>
+			</c:otherwise>
+		</c:choose>
 	</c:forEach>
 </span>

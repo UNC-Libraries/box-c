@@ -81,7 +81,6 @@
 								<c:set var="facetNodes" scope="request" value="${field.value.facetNodes}"/>
 								<c:import url="/jsp/util/hierarchyTrail.jsp">
 									<c:param name="fieldKey"><c:out value="${field.key}"/></c:param>
-									<c:param name="linkLast">false</c:param>
 									<c:param name="queryPath" value="${queryMethod}"/>
 									<c:param name="limitToContainer">true</c:param>
 									<c:param name="selectedContainer"><c:if test="${not empty resultResponse.selectedContainer}">${resultResponse.selectedContainer.id}</c:if></c:param>
