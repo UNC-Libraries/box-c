@@ -25,6 +25,12 @@ import org.apache.camel.builder.RouteBuilder;
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
 import edu.unc.lib.cdr.FulltextProcessor; 
 
+/**
+ * Routes ingests with full text availablethrough a pipeline to extract the full text and add it as an object in fedora.
+ * 
+ * @author lfarrell
+ *
+ */
 public class FulltextRouter extends RouteBuilder {
 	@BeanInject(value = "binaryMetadataProcessor")
 	private BinaryMetadataProcessor mdProcessor;
