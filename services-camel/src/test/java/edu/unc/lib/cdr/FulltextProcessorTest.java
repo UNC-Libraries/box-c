@@ -1,46 +1,56 @@
 package edu.unc.lib.cdr;
 
-import static org.junit.Assert.assertEquals;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
-import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.sax.BodyContentHandler;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fedora.PID;
 
 public class FulltextProcessorTest {
 	private FulltextProcessor processor;
 	private final String slug = "full_text";
 	private final String fileSuffix = "-full_text.txt";
 	private final String testText = "Test text, see if it can be extracted.";
-	private Repository repository;
 	private File file;
-	
+	private BinaryObject binary;
+	private FileObject parent;
 
+	@Mock
+	private Repository repository;
+	
 	@Mock
 	private Exchange exchange;
 	@Mock
 	private Message message;
 
 	@Before
-	public void setup() throws Exception {
+	public void init() throws Exception {
 		initMocks(this);
 		processor = new FulltextProcessor(this.repository, slug, fileSuffix);
 		file = File.createTempFile("testFile", "txt");
 		when(exchange.getIn()).thenReturn(message);
+		PIDs.setRepository(repository);
+		when(repository.getBaseUri()).thenReturn("http://fedora");
 	}
 	
 	@Test
@@ -49,20 +59,27 @@ public class FulltextProcessorTest {
 		writeFile.write(testText);
 		writeFile.close();
 		
-		String output;
+		String filePath = this.file.getAbsolutePath().toString();
 		
-		BodyContentHandler handler = new BodyContentHandler();
-
-		AutoDetectParser parser = new AutoDetectParser();
-		Metadata metadata = new Metadata();
-
-		try (InputStream stream = new FileInputStream(this.file)) {
-			parser.parse(stream, handler, metadata);
-			output = handler.toString();
-		}
+		when(message.getHeader(eq(FCREPO_URI)))
+		.thenReturn("http://fedora/test/original_file");
 		
+		when(message.getHeader(eq(CdrBinaryPath)))
+				.thenReturn(filePath);
+		
+		when(message.getHeader(eq(CdrBinaryMimeType)))
+		.thenReturn("plain/text");
+		
+		binary = mock(BinaryObject.class);
+		parent = mock(FileObject.class);
+
+		when(repository.getBinary(any(PID.class))).thenReturn(binary);
+		when(binary.getParent()).thenReturn(parent);
+
+		processor.process(exchange);
+
+		verify(message).equals(FileObject.class);
+
 		this.file.deleteOnExit();
-		
-		assertEquals(testText + "\n", output);
 	}
 }
