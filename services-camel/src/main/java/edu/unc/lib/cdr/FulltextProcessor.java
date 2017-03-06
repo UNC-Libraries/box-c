@@ -16,16 +16,18 @@
 
 package edu.unc.lib.cdr;
 
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -68,26 +70,39 @@ public class FulltextProcessor implements Processor {
 		final Message in = exchange.getIn();
 
 		String binaryUri = (String) in.getHeader(FCREPO_URI);
+		String binaryChecksum = (String) in.getHeader(CdrBinaryChecksum);
 		String binaryMimeType = (String) in.getHeader(CdrBinaryMimeType);
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
-		String derivativePath = binaryPath + fileSuffix;
+		String derivativeFilename = binaryChecksum + fileSuffix;
 
 		String text = extractText(binaryPath);
-		writeFile(derivativePath, text);
+		File tempFile = writeFile(derivativeFilename, text);
 		
-		InputStream binaryStream = new FileInputStream(derivativePath);
+		InputStream binaryStream = new FileInputStream(tempFile);
 		
 		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
 		FileObject parent = (FileObject) binary.getParent();
-		parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ExtractedText);
+		String derivative = tempFile.getName();
 		
-		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
+		parent.addDerivative(slug, binaryStream, derivative, binaryMimeType, PcdmUse.ExtractedText);
+		
+		log.info("Adding derivative for {} from {}", binaryUri, tempFile);
 	}
 	
-	private void writeFile(String filepath, String text) throws FileNotFoundException {
-		try (PrintWriter out = new PrintWriter(filepath)) {
-			out.println(text);
+	private File writeFile(String filename, String text) throws FileNotFoundException {
+		try {
+			File fulltext = File.createTempFile(filename, ".txt");
+
+			BufferedWriter writeFile = new BufferedWriter(new FileWriter(fulltext));
+			writeFile.write(text);
+			writeFile.close();
+			
+			return fulltext;
+		} catch (IOException e) {
+			log.warn("Unable to write out fulltext for {}", filename);
 		}
+		
+		return null;
 	}
 	
 	private String extractText(String filepath) throws IOException, SAXException, TikaException {

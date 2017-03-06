@@ -64,7 +64,6 @@ public class BinaryMetadataProcessor implements Processor {
 			if (resources.hasNext()) {
 				Resource resource = resources.next();
 				String binaryMimeType = resource.getProperty(hasMimeType).getObject().toString();
-				
 				String binaryFcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
 				String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 	
