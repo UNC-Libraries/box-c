@@ -67,6 +67,7 @@
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).SMALL_THUMBNAIL}"/>
 		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
+		<constructor-arg value="${cdr.enhancement.thumbnail}" />
 	</bean>
 	
 	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
