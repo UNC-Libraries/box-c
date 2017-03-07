@@ -99,7 +99,7 @@
 	</camel:camelContext>
 
 	<camel:camelContext id="CdrServiceEnhancements">
-		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
+		<camel:package>edu.unc.lib.cdr.images</camel:package>
 	</camel:camelContext>
 	
 	<camel:camelContext id="CdrServiceFulltextExtraction">

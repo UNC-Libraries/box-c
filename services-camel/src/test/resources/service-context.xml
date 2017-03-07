@@ -31,4 +31,7 @@
 		<property name="repository" ref="repository" />
 	</bean>
 
+	<camel:camelContext id="CdrServiceEnhancements">
+		<camel:package>edu.unc.lib.cdr.images</camel:package>
+	</camel:camelContext>
 </beans>
