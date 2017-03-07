@@ -43,8 +43,8 @@ public class ThumbnailRouter extends RouteBuilder {
 			.filter(simple("${headers[MimeType]} regex '^(image.*$|application.*?(photoshop|psd)$)'"))
 				.log(LoggingLevel.INFO, "Generating images for ${headers[org.fcrepo.jms.identifier]}"
 						+ " of type ${headers[MimeType]}")
-				.multicast()
-					.to("direct:small.thumbnail", "direct:large.thumbnail");
+			.multicast()
+			.to("direct:small.thumbnail", "direct:large.thumbnail", "direct:accessImage");
 
 		from("direct:small.thumbnail")
 			.routeId("SmallThumbnail")

@@ -81,6 +81,12 @@
 		<constructor-arg value="${cdr.enhancement.fulltext.fileName}" />
 	</bean>
 	
+	<bean id="addAccessCopyProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).JPEG_2000}"/>
+		<constructor-arg value="${cdr.enhancement.jp2}" />
+	</bean>
+	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
 		<property name="authUsername" value="${fcrepo.authUsername}"/>
 		<property name="authPassword" value="${fcrepo.authPassword}"/>
