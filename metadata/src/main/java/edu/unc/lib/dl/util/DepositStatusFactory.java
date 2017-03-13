@@ -104,7 +104,7 @@ public class DepositStatusFactory {
 	/**
 	 * Locks the given deposit for a designated supervisor. These
 	 * are short term locks and should be released after every
-	 * set of jobs are queued.
+	 * set of jobs is queued.
 	 * @param depositUUID identify of the deposit
 	 * @param owner identity of the supervisor
 	 * @return true if lock acquired

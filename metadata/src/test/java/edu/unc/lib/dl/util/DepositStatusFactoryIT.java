@@ -56,5 +56,16 @@ public class DepositStatusFactoryIT {
 		assertEquals(filename1, filenames.get(0));
 		assertEquals(filename2, filenames.get(1));
 	}
+	
+	@Test
+	public void testAddRemoveSpuervisorLock() {
+		final String uuid = Integer.toString(new Random().nextInt(99999));
+		String owner1 = "owner1";
+		String owner2 = "owner2";
+		assertTrue(factory.addSupervisorLock(uuid, owner1));
+		assertFalse(factory.addSupervisorLock(uuid, owner2));
+		factory.removeSupervisorLock(uuid);
+		assertTrue(factory.addSupervisorLock(uuid, owner2));
+	}
 
 }
