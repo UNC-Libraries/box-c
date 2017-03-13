@@ -21,18 +21,24 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import redis.clients.jedis.JedisPool;
 
-public class DepositStatusFactoryTest {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration({"/spring-test/cdr-client-container.xml"})
+public class DepositStatusFactoryIT {
 	
 	private DepositStatusFactory factory;
+	@Autowired
 	private JedisPool jedisPool;
 	
 	@Before
-	public void setup() {
+	public void init() {
 		factory = new DepositStatusFactory();
-		jedisPool = new JedisPool("localhost", 6379);
 		factory.setJedisPool(jedisPool);
 	}
 

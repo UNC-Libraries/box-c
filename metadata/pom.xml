@@ -54,6 +54,22 @@
 			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>edu.unc.lib.cdr</groupId>
+			<artifactId>fcrepo-clients</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>saxon</artifactId>
 			<version>8.7</version>
@@ -143,6 +159,12 @@
 			<artifactId>apache-jena-libs</artifactId>
 			<version>${jena.version}</version>
 			<type>pom</type>
+		</dependency>
+		<dependency>
+			<groupId>com.github.kstyrc</groupId>
+			<artifactId>embedded-redis</artifactId>
+			<version>0.6</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 </project>
