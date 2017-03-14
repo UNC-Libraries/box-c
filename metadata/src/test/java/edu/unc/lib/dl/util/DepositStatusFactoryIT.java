@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import redis.clients.jedis.JedisPool;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -58,7 +59,7 @@ public class DepositStatusFactoryIT {
 	}
 	
 	@Test
-	public void testAddRemoveSpuervisorLock() {
+	public void testAddRemoveSupervisorLock() {
 		final String uuid = Integer.toString(new Random().nextInt(99999));
 		String owner1 = "owner1";
 		String owner2 = "owner2";
@@ -66,6 +67,13 @@ public class DepositStatusFactoryIT {
 		assertFalse(factory.addSupervisorLock(uuid, owner2));
 		factory.removeSupervisorLock(uuid);
 		assertTrue(factory.addSupervisorLock(uuid, owner2));
+	}
+	
+	@Test
+	public void testSetStateGetState() {
+		final String uuid = Integer.toString(new Random().nextInt(99999));
+		factory.setState(uuid, DepositState.queued);
+		assertEquals(DepositState.queued, factory.getState(uuid));
 	}
 
 }
