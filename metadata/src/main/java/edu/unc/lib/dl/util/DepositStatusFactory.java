@@ -153,30 +153,6 @@ public class DepositStatusFactory {
 		}
 	}
 
-	public Set<String> getUnconfirmedUploads(String depositUUID) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			return jedis.sdiff(INGESTS_UPLOADED_PREFIX + depositUUID, INGESTS_CONFIRMED_PREFIX + depositUUID);
-		}
-	}
-
-	public Set<String> getConfirmedUploads(String depositUUID) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			return jedis.smembers(INGESTS_CONFIRMED_PREFIX + depositUUID);
-		}
-	}
-
-	public void addUploadedPID(String depositUUID, String pid) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			jedis.sadd(INGESTS_UPLOADED_PREFIX + depositUUID, pid);
-		}
-	}
-
-	public void addConfirmedPID(String depositUUID, String pid) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			jedis.sadd(INGESTS_CONFIRMED_PREFIX + depositUUID, pid);
-		}
-	}
-
 	public void setState(String depositUUID, DepositState state) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.state.name(),
@@ -187,12 +163,6 @@ public class DepositStatusFactory {
 	public void setActionRequest(String depositUUID, DepositAction action) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			jedis.hset(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.actionRequest.name(), action.name());
-		}
-	}
-
-	public void incrIngestedObjects(String depositUUID, int amount) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			jedis.hincrBy(DEPOSIT_STATUS_PREFIX + depositUUID, DepositField.ingestedObjects.name(), amount);
 		}
 	}
 
@@ -207,16 +177,6 @@ public class DepositStatusFactory {
 	
 	public void fail(String depositUUID) {
 		fail(depositUUID, null);
-	}
-
-	/**
-	 * Delete deposit status.
-	 * @param depositUUID
-	 */
-	public void delete(String depositUUID) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			jedis.del(DEPOSIT_STATUS_PREFIX + depositUUID);
-		}
 	}
 
 	public void deleteField(String depositUUID, DepositField field) {
