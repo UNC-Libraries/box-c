@@ -39,14 +39,6 @@ public class DepositStatusFactory {
 	
 	JedisPool jedisPool;
 
-	public JedisPool getJedisPool() {
-		return jedisPool;
-	}
-
-	public void setJedisPool(JedisPool jedisPool) {
-		this.jedisPool = jedisPool;
-	}
-
 	public DepositStatusFactory() {}
 
 	public Map<String, String> get(String depositUUID) {
@@ -209,5 +201,13 @@ public class DepositStatusFactory {
 			jedis.expire(INGESTS_CONFIRMED_PREFIX + depositUUID, seconds);
 			jedis.expire(INGESTS_UPLOADED_PREFIX + depositUUID, seconds);
 		}
+	}
+	
+	public void setJedisPool(JedisPool jedisPool) {
+		this.jedisPool = jedisPool;
+	}
+	
+	private JedisPool getJedisPool() {
+		return jedisPool;
 	}
 }
