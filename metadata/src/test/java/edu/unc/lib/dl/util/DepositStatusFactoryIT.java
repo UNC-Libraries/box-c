@@ -17,7 +17,7 @@ package edu.unc.lib.dl.util;
 
 import static org.junit.Assert.*;
 import java.util.List;
-import java.util.Random;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +45,7 @@ public class DepositStatusFactoryIT {
 
 	@Test
 	public void testAddThenGetManifest() {
-		final String uuid = Integer.toString(new Random().nextInt(99999));
+		final String uuid = UUID.randomUUID().toString();
 		final String filename1 = "bagit.txt";
 		final String filename2 = "manifest-md5.txt";
 		
@@ -60,7 +60,7 @@ public class DepositStatusFactoryIT {
 	
 	@Test
 	public void testAddRemoveSupervisorLock() {
-		final String uuid = Integer.toString(new Random().nextInt(99999));
+		final String uuid = UUID.randomUUID().toString();
 		String owner1 = "owner1";
 		String owner2 = "owner2";
 		assertTrue(factory.addSupervisorLock(uuid, owner1));
@@ -71,7 +71,7 @@ public class DepositStatusFactoryIT {
 	
 	@Test
 	public void testSetStateGetState() {
-		final String uuid = Integer.toString(new Random().nextInt(99999));
+		final String uuid = UUID.randomUUID().toString();
 		factory.setState(uuid, DepositState.queued);
 		assertEquals(DepositState.queued, factory.getState(uuid));
 	}

@@ -17,8 +17,6 @@ package edu.unc.lib.dl.util;
 
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_MANIFEST_PREFIX;
 import static edu.unc.lib.dl.util.RedisWorkerConstants.DEPOSIT_STATUS_PREFIX;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_CONFIRMED_PREFIX;
-import static edu.unc.lib.dl.util.RedisWorkerConstants.INGESTS_UPLOADED_PREFIX;
 
 import java.util.HashSet;
 import java.util.List;
@@ -198,8 +196,6 @@ public class DepositStatusFactory {
 	public void expireKeys(String depositUUID, int seconds) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			jedis.expire(DEPOSIT_STATUS_PREFIX + depositUUID, seconds);
-			jedis.expire(INGESTS_CONFIRMED_PREFIX + depositUUID, seconds);
-			jedis.expire(INGESTS_UPLOADED_PREFIX + depositUUID, seconds);
 		}
 	}
 	
