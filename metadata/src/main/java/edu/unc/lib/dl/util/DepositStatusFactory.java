@@ -174,6 +174,16 @@ public class DepositStatusFactory {
 			jedis.hdel(DEPOSIT_STATUS_PREFIX + depositUUID, field.name());
 		}
 	}
+	
+	/**	 
+	* Delete deposit status. For testing purposes only.
+	* @param depositUUID
+	*/
+	public void delete(String depositUUID) {
+		try (Jedis jedis = getJedisPool().getResource()) {
+			jedis.del(DEPOSIT_STATUS_PREFIX + depositUUID);
+		}
+	}
 
 	public void requestAction(String depositUUID, DepositAction action) {
 		try (Jedis jedis = getJedisPool().getResource()) {

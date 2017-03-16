@@ -17,6 +17,8 @@ package edu.unc.lib.dl.util;
 
 import static org.junit.Assert.*;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.Before;
@@ -26,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
+import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import redis.clients.jedis.JedisPool;
 
@@ -56,6 +60,8 @@ public class DepositStatusFactoryIT {
 		assertTrue(filenames.size() == 2);
 		assertEquals(filename1, filenames.get(0));
 		assertEquals(filename2, filenames.get(1));
+		
+		factory.delete(uuid);
 	}
 	
 	@Test
@@ -67,6 +73,8 @@ public class DepositStatusFactoryIT {
 		assertFalse(factory.addSupervisorLock(uuid, owner2));
 		factory.removeSupervisorLock(uuid);
 		assertTrue(factory.addSupervisorLock(uuid, owner2));
+		
+		factory.delete(uuid);
 	}
 	
 	@Test
@@ -74,6 +82,38 @@ public class DepositStatusFactoryIT {
 		final String uuid = UUID.randomUUID().toString();
 		factory.setState(uuid, DepositState.queued);
 		assertEquals(DepositState.queued, factory.getState(uuid));
+		
+		factory.delete(uuid);
+	}
+	
+	@Test
+	public void testSetGetStatus() {
+		final String uuid = UUID.randomUUID().toString();
+		factory.set(uuid, DepositField.contactName, "Boxy");
+		factory.set(uuid, DepositField.fileName, "boxys_file.txt");
+		
+		Map<String,String> status = factory.get(uuid);
+		assertTrue(status.size() == 2);
+		assertEquals("Boxy", status.get(DepositField.contactName.toString()));
+		assertEquals("boxys_file.txt", status.get(DepositField.fileName.toString()));
+		
+		Set<Map<String,String>> statuses = factory.getAll();
+		assertTrue(statuses.size() == 1);
+		
+		factory.delete(uuid);
+	}
+	
+	@Test
+	public void testRequestClearAction() {
+		final String uuid = UUID.randomUUID().toString();
+		factory.requestAction(uuid, DepositAction.pause);
+		Map<String,String> status = factory.get(uuid);
+		assertEquals(DepositAction.pause.toString(), status.get(DepositField.actionRequest.name()));
+		factory.clearActionRequest(uuid);
+		status = factory.get(uuid);
+		assertNull(status.get(DepositField.actionRequest.name()));
+		
+		factory.delete(uuid);
 	}
 
 }
