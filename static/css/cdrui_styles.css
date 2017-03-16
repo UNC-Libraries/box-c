@@ -523,6 +523,17 @@ ul.fpfeed_list li {
 	width: 300px;
 }
 
+#hsearch_inputwrap.search_label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	border: 0;
+}
+
 #hsearch_text {
 	border: none;
 	color: #666;
@@ -1330,4 +1341,10 @@ div.deposit-icons {
 
 #student-papers-options form {
 	margin: 32px 0;
+}
+
+#student-papers-options form label {
+	display: inline-block;
+	float: none;
+	font-size: 16px;
 }
