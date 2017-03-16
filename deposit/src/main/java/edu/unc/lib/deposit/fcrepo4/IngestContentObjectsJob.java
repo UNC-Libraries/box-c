@@ -33,6 +33,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -233,6 +234,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
@@ -245,7 +247,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
 		// TODO add description to file object
-
+		try(InputStream modsStream = FileUtils.openInputStream(getDescriptionDir())) {
+			obj.addDescription(modsStream);
+		} catch(IOException e) {
+			// just eat the exception, or do we want some exception handling here?
+		}
+		
 		// Increment the count of objects deposited
 		addClicks(1);
 
