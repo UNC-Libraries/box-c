@@ -20,6 +20,7 @@ import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -27,20 +28,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
-import java.util.List;
+import java.io.InputStreamReader;
+import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -51,11 +49,12 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.PcdmUse;
 
 public class FulltextProcessorTest {
 	private FulltextProcessor processor;
 	private final String slug = "full_text";
-	private final String fileSuffix = "-full_text.txt";
+	private final String fileName = "full_text.txt";
 	private final String testText = "Test text, see if it can be extracted.";
 	private File file;
 	private BinaryObject binary;
@@ -69,15 +68,12 @@ public class FulltextProcessorTest {
 	
 	@Mock
 	private Message message;
-	
-	@Mock
-	private FulltextProcessor fulltext;
 
 	@Before
 	public void init() throws Exception {
 		initMocks(this);
-		processor = new FulltextProcessor(this.repository, slug, fileSuffix);
-		file = File.createTempFile("testFile", "txt");
+		processor = new FulltextProcessor(repository, slug, fileName);
+		file = File.createTempFile(fileName, "txt");
 		file.deleteOnExit();
 		when(exchange.getIn()).thenReturn(message);
 		PIDs.setRepository(repository);
@@ -85,51 +81,41 @@ public class FulltextProcessorTest {
 	}
 	
 	@Test
-	public void validTest() throws Exception {
+	public void extractFulltextTest() throws Exception {
 		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			BufferedWriter writeFile = new BufferedWriter(new FileWriter(this.file));
+			BufferedWriter writeFile = new BufferedWriter(new FileWriter(file));
 			writeFile.write(testText);
 			writeFile.close();
-			
-			when(message.getBody(eq(InputStream.class)))
-					.thenReturn(new ByteArrayInputStream(bos.toByteArray()));
 		}
 		
-		String filePath = this.file.getAbsolutePath().toString();
+		String filePath = file.getAbsolutePath().toString();
 		
 		when(message.getHeader(eq(FCREPO_URI)))
 				.thenReturn("http://fedora/test/original_file");
-		
+
 		when(message.getHeader(eq(CdrBinaryChecksum)))
-		.thenReturn("1234");
+				.thenReturn("1234");
 		
 		when(message.getHeader(eq(CdrBinaryPath)))
 				.thenReturn(filePath);
 		
 		when(message.getHeader(eq(CdrBinaryMimeType)))
 				.thenReturn("plain/text");
-		
-	//	when(message.get)
-		
+
 		binary = mock(BinaryObject.class);
 		parent = mock(FileObject.class);
 
 		when(repository.getBinary(any(PID.class))).thenReturn(binary);
 		when(binary.getParent()).thenReturn(parent);
 		
-		
-
 		processor.process(exchange);
 		
-		ArgumentCaptor<FulltextProcessor> requestCaptor = ArgumentCaptor.forClass(FulltextProcessor.class);
-		verify(fulltext).process((Exchange) requestCaptor.capture());
-		List<FulltextProcessor> request = requestCaptor.getAllValues();
+		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
+		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(fileName), eq("plain/text"), eq(PcdmUse.ExtractedText));
+		InputStream request = requestCaptor.getValue();
+		String extractedText = new BufferedReader(new InputStreamReader(request))
+				.lines().collect(Collectors.joining("\n"));
 		
-	//	when(message.getHeader(eq(CdrBinaryPath))), eq())).thenReturn(true); 
-		
-	//	assertEquals("", requestCaptor.getValue().)
-//
-
-		verify(message).equals(FileObject.class);
+		assertEquals(testText, extractedText);
 	}
 }
