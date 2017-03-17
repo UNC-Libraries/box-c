@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class DepositStatusFactoryIT {
 		
 		factory.addManifest(uuid, filename1);
 		factory.addManifest(uuid,  filename2);
-		List<String >filenames = factory.getManifestURIs(uuid);
+		List<String> filenames = factory.getManifestURIs(uuid);
 		
 		assertEquals(filenames.size(), 2);
 		assertEquals(filename1, filenames.get(0));
