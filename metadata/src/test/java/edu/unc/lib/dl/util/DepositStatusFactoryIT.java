@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +32,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositAction;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -40,12 +42,19 @@ public class DepositStatusFactoryIT {
 	private DepositStatusFactory factory;
 	@Autowired
 	private JedisPool jedisPool;
+	private Jedis jedisResource;
 	
 	@Before
 	public void init() {
 		factory = new DepositStatusFactory();
 		factory.setJedisPool(jedisPool);
-		jedisPool.getResource().flushAll();
+		jedisResource = jedisPool.getResource();
+		jedisResource.flushAll();
+	}
+	
+	@After
+	public void cleanup() {
+		jedisPool.returnResourceObject(jedisResource);
 	}
 
 	@Test
