@@ -196,6 +196,7 @@ public class DepositStatusFactory {
 	public void expireKeys(String depositUUID, int seconds) {
 		try (Jedis jedis = getJedisPool().getResource()) {
 			jedis.expire(DEPOSIT_STATUS_PREFIX + depositUUID, seconds);
+			jedis.expire(DEPOSIT_MANIFEST_PREFIX + depositUUID, seconds);
 		}
 	}
 	

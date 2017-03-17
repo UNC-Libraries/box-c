@@ -35,6 +35,11 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+/**
+ * 
+ * @author harring
+ *
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/cdr-client-container.xml"})
 public class DepositStatusFactoryIT {
@@ -146,7 +151,6 @@ public class DepositStatusFactoryIT {
 		final String uuid = UUID.randomUUID().toString();
 		factory.setIngestInprogress(uuid, true);
 		assertTrue(factory.isResumedDeposit(uuid));
-		
 	}
 
 }
