@@ -58,7 +58,7 @@ public class DepositStatusFactoryIT {
 		factory.addManifest(uuid,  filename2);
 		List<String >filenames = factory.getManifestURIs(uuid);
 		
-		assertTrue(filenames.size() == 2);
+		assertEquals(filenames.size(), 2);
 		assertEquals(filename1, filenames.get(0));
 		assertEquals(filename2, filenames.get(1));
 	}
@@ -88,14 +88,14 @@ public class DepositStatusFactoryIT {
 		factory.set(uuid, DepositField.fileName, "boxys_file.txt");
 		
 		Map<String,String> status = factory.get(uuid);
-		assertTrue(status.size() == 2);
+		assertEquals(status.size(), 2);
 		assertEquals("Boxy", status.get(DepositField.contactName.toString()));
 		assertEquals("boxys_file.txt", status.get(DepositField.fileName.toString()));
 		
 		factory.deleteField(uuid, DepositField.fileName);
 		status = factory.get(uuid);
 		assertNull(status.get(DepositField.fileName.toString()));
-		assertTrue(status.size() == 1);
+		assertEquals(status.size(), 1);
 		
 		final String uuid2 = UUID.randomUUID().toString();
 		factory.set(uuid2, DepositField.depositorName, "FriendOfBoxy");
@@ -126,7 +126,7 @@ public class DepositStatusFactoryIT {
 		factory.expireKeys(uuid, 1);
 		Thread.sleep(1000);
 		Set<Map<String,String>> statuses = factory.getAll();
-		assertTrue(statuses.size() == 1);
+		assertEquals(statuses.size(), 1);
 		
 		factory.fail(uuid2, "Boxy is sad");
 		assertEquals("Boxy is sad", factory.get(uuid2).get(DepositField.errorMessage.name()));
