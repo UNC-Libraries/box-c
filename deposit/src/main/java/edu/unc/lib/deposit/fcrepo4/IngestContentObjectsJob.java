@@ -16,7 +16,6 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
-import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
@@ -30,8 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -84,19 +81,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	@Autowired
 	private ActivityMetricsClient metricsClient;
 
-	private File techmdDir;
-
 	public IngestContentObjectsJob() {
 		super();
 	}
 
 	public IngestContentObjectsJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
-	}
-
-	@PostConstruct
-	public void initJob() {
-		techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
 	}
 
 	/**
@@ -366,7 +356,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	}
 
 	private void addFitsReport(FileObject fileObj) throws DepositException {
-		File fitsFile = new File(techmdDir, fileObj.getPid().getUUID() + ".xml");
+		File fitsFile = new File(getTechMdDirectory(), fileObj.getPid().getUUID() + ".xml");
 		try (InputStream fitsStream = new FileInputStream(fitsFile)) {
 			fileObj.addBinary(TECHNICAL_METADATA, fitsStream, fitsFile.getName(), "text/xml",
 					IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));

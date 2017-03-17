@@ -105,7 +105,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
-		job.init();
+		job.initJob();
 
 		model = job.getWritableModel();
 		depositBag = model.createBag(depositPid.getRepositoryPath());
