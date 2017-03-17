@@ -72,10 +72,6 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>edu.unc.lib.cdr</groupId>
-			<artifactId>fcrepo-clients</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>saxon</artifactId>
 			<version>8.7</version>

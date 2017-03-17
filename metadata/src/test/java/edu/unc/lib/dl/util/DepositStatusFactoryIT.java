@@ -45,6 +45,7 @@ public class DepositStatusFactoryIT {
 	public void init() {
 		factory = new DepositStatusFactory();
 		factory.setJedisPool(jedisPool);
+		jedisPool.getResource().flushAll();
 	}
 
 	@Test
@@ -60,8 +61,6 @@ public class DepositStatusFactoryIT {
 		assertTrue(filenames.size() == 2);
 		assertEquals(filename1, filenames.get(0));
 		assertEquals(filename2, filenames.get(1));
-		
-		factory.delete(uuid);
 	}
 	
 	@Test
@@ -73,8 +72,6 @@ public class DepositStatusFactoryIT {
 		assertFalse(factory.addSupervisorLock(uuid, owner2));
 		factory.removeSupervisorLock(uuid);
 		assertTrue(factory.addSupervisorLock(uuid, owner2));
-		
-		factory.delete(uuid);
 	}
 	
 	@Test
@@ -82,12 +79,10 @@ public class DepositStatusFactoryIT {
 		final String uuid = UUID.randomUUID().toString();
 		factory.setState(uuid, DepositState.queued);
 		assertEquals(DepositState.queued, factory.getState(uuid));
-		
-		factory.delete(uuid);
 	}
 	
 	@Test
-	public void testSetGetDeleteExpireFail() throws InterruptedException {
+	public void testSetGetDeleteField() {
 		final String uuid = UUID.randomUUID().toString();
 		factory.set(uuid, DepositField.contactName, "Boxy");
 		factory.set(uuid, DepositField.fileName, "boxys_file.txt");
@@ -106,21 +101,7 @@ public class DepositStatusFactoryIT {
 		factory.set(uuid2, DepositField.depositorName, "FriendOfBoxy");
 		
 		Set<Map<String,String>> statuses = factory.getAll();
-		assertTrue(statuses.size() == 2);
-		
-		factory.expireKeys(uuid, 1);
-		Thread.sleep(1000);
-		
-		statuses = factory.getAll();
-		assertTrue(statuses.size() == 1);
-		
-		factory.setIngestInprogress(uuid2, true);
-		assertTrue(factory.isResumedDeposit(uuid2));
-		
-		factory.fail(uuid2, "Boxy is sad");
-		assertEquals("Boxy is sad", factory.get(uuid2).get(DepositField.errorMessage.name()));
-		
-		factory.delete(uuid2);
+		assertEquals(statuses.size(), 2);
 	}
 	
 	@Test
@@ -132,8 +113,31 @@ public class DepositStatusFactoryIT {
 		factory.clearActionRequest(uuid);
 		status = factory.get(uuid);
 		assertNull(status.get(DepositField.actionRequest.name()));
+	}
+	
+	@Test
+	public void testExpireFail() throws InterruptedException {
+		final String uuid = UUID.randomUUID().toString();
+		factory.set(uuid, DepositField.contactName, "Boxy");
+		final String uuid2 = UUID.randomUUID().toString();
+		factory.set(uuid2, DepositField.depositorName, "FriendOfBoxy");
 		
-		factory.delete(uuid);
+		//delete the uuid status by expiring its key
+		factory.expireKeys(uuid, 1);
+		Thread.sleep(1000);
+		Set<Map<String,String>> statuses = factory.getAll();
+		assertTrue(statuses.size() == 1);
+		
+		factory.fail(uuid2, "Boxy is sad");
+		assertEquals("Boxy is sad", factory.get(uuid2).get(DepositField.errorMessage.name()));
+	}
+	
+	@Test
+	public void testInProgressIsResumed() {
+		final String uuid = UUID.randomUUID().toString();
+		factory.setIngestInprogress(uuid, true);
+		assertTrue(factory.isResumedDeposit(uuid));
+		
 	}
 
 }
