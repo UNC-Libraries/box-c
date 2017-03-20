@@ -16,6 +16,7 @@
 package edu.unc.lib.deposit.work;
 
 import static edu.unc.lib.dl.util.DepositConstants.DESCRIPTION_DIR;
+import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 
 import java.io.File;
 import java.io.IOException;
@@ -104,6 +105,8 @@ public abstract class AbstractDepositJob implements Runnable {
 	// Directory containing PREMIS event files for individual objects in this
 	// deposit
 	private File eventsDirectory;
+	
+	private File techmdDir;
 
 	@Autowired
 	private Dataset dataset;
@@ -124,6 +127,8 @@ public abstract class AbstractDepositJob implements Runnable {
 				DepositConstants.DATA_DIR);
 		this.eventsDirectory = new File(depositDirectory,
 				DepositConstants.EVENTS_DIR);
+		
+		this.techmdDir = new File(depositDirectory, TECHMD_DIR);
 	}
 
 	@Override
@@ -199,6 +204,10 @@ public abstract class AbstractDepositJob implements Runnable {
 
 	public File getDepositDirectory() {
 		return depositDirectory;
+	}
+
+	public File getTechMdDirectory() {
+		return techmdDir;
 	}
 
 	public void setDepositDirectory(File depositDirectory) {

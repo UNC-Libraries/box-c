@@ -192,6 +192,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		String title = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not correctly set", label, title);
+		
+		assertNotNull(mWork.getDescription());
 
 		// Verify that the properties of the primary object were added
 		FileObject primaryObj = mWork.getPrimaryObject();

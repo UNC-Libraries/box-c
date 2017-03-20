@@ -18,7 +18,6 @@ package edu.unc.lib.deposit.validate;
 import static edu.unc.lib.dl.rdf.CdrDeposit.md5sum;
 import static edu.unc.lib.dl.rdf.CdrDeposit.mimetype;
 import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
-import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V3_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XSI_NS;
@@ -83,8 +82,6 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 	
 	private boolean processFilesLocally;
 
-	private File techmdDir;
-
 	private XMLOutputter xmlOutputter;
 
 	public ExtractTechnicalMetadataJob(String uuid, String depositUUID) {
@@ -93,9 +90,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
 	@PostConstruct
 	public void initJob() {
+		init();
 		fitsExamineUri = URI.create(URIUtil.join(baseFitsUri, FITS_EXAMINE_PATH));
-
-		techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
 
 		xmlOutputter = new XMLOutputter(Format.getPrettyFormat());
 	}
@@ -105,7 +101,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		Model model = getWritableModel();
 
 		// Create the techmd report directory if it doesn't exist
-		techmdDir.mkdir();
+		getTechMdDirectory().mkdir();
 
 		// Get the list of files that need processing
 		List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
@@ -199,7 +195,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 		}
 
 		// Get the list of existing techmd reports from previous runs
-		File techmdDir = new File(getDepositDirectory(), TECHMD_DIR);
+		File techmdDir = getTechMdDirectory();
 		String[] techmdFilenames = techmdDir.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
@@ -415,7 +411,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
 	private void writePremisReport(PID objPid, Document premisDoc) {
 		String uuid = objPid.getUUID();
-		File reportFile = new File(techmdDir, uuid + ".xml");
+		File reportFile = new File(getTechMdDirectory(), uuid + ".xml");
 
 		try(BufferedWriter writer = new BufferedWriter(new FileWriter(reportFile))) {
 			xmlOutputter.output(premisDoc, writer);
