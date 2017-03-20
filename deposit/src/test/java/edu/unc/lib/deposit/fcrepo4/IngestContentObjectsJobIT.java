@@ -192,6 +192,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		String title = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not correctly set", label, title);
+		
+		assertNotNull(mWork.getDescription());
 
 		// Verify that the properties of the primary object were added
 		FileObject primaryObj = mWork.getPrimaryObject();
@@ -233,6 +235,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertTrue("Wrapper object was not a work", mWork instanceof WorkObject);
 		String workTitle = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not set to filename", FILE1_LOC, workTitle);
+		
+		assertNotNull(mWork.getDescription());
 
 		List<ContentObject> workMembers = ((ContentContainerObject) mWork).getMembers();
 		assertEquals("Incorrect number of children on work", 1, workMembers.size());
