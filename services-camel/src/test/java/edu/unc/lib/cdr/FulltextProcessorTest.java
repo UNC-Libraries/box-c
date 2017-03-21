@@ -30,7 +30,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
@@ -82,10 +81,8 @@ public class FulltextProcessorTest {
 	
 	@Test
 	public void extractFulltextTest() throws Exception {
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			BufferedWriter writeFile = new BufferedWriter(new FileWriter(file));
+		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
 			writeFile.write(testText);
-			writeFile.close();
 		}
 		
 		String filePath = file.getAbsolutePath().toString();
