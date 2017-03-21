@@ -173,7 +173,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// Ingest objects included in this deposit into the destination object
 		try {
 			ingestChildren((ContentContainerObject) destObj, depositBag);
-		} catch (DepositException | FedoraException e) {
+		} catch (DepositException | FedoraException | IOException e) {
 			failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
 		}
 	}
@@ -184,8 +184,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param destObj the repository object which children objects will be added to.
 	 * @param parentResc the parent resource where children will listed from
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
-	private void ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException {
+	private void ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException, IOException {
 		NodeIterator iterator = getChildIterator(parentResc);
 		// No more children, nothing further to do in this tree
 		if (iterator == null) {
@@ -228,7 +229,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @throws IOException 
 	 */
 	private void ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
-			throws DepositException {
+			throws DepositException, IOException {
 
 		if (skipResumed(childResc)) {
 			return;
@@ -379,9 +380,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
-			throws DepositException {
+			throws DepositException, IOException {
 
 		PID childPid = PIDs.get(childResc.getURI());
 		FolderObject obj = null;
@@ -426,9 +428,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
-			throws DepositException {
+			throws DepositException, IOException {
 		PID childPid = PIDs.get(childResc.getURI());
 
 		WorkObject obj;
@@ -537,15 +540,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// TODO add access control properties
 	}
 	
-	private void addDescription(ContentObject obj) {
+	private void addDescription(ContentObject obj) throws IOException {
 		File modsFile = new File(getDescriptionDir(), obj.getPid().getUUID() + ".xml");
 		if (!modsFile.exists()) {
 			return;
 		}
-		try(InputStream modsStream = FileUtils.openInputStream(modsFile)) {
+		try (InputStream modsStream = FileUtils.openInputStream(modsFile)) {
 			obj.addDescription(modsStream);
-		} catch(IOException e) {
-			// just eat the exception, or do we want some exception handling here?
 		}
 	}
 }
