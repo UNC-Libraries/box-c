@@ -19,14 +19,8 @@ package edu.unc.lib.cdr.fulltext;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,15 +42,10 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
 public class FulltextRouterTest extends CamelSpringTestSupport {
-	private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
 	private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
 	private static final String IDENTIFIER = "org.fcrepo.jms.identifier";
 	private static final String RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
-	private static final long TIMESTAMP = 1428360320168L;
-	private static final String USER_ID = "bypassAdmin";
-	private static final String USER_AGENT = "curl/7.37.1";
 	private static final String FILE_ID = "/file1";
-	private static final String EVENT_TYPES = EVENT_NS + "ResourceCreation";
 	private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
 	private static final String EXTRACTION_ROUTE = "HasFulltext";
 	
@@ -89,7 +78,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		
 		createContext(ENHANCEMENT_ROUTE);
 		
-		template.sendBodyAndHeaders("", createEvent(FILE_ID, EVENT_TYPES));
+		template.sendBodyAndHeaders("", createEvent(FILE_ID));
 
 		assertMockEndpointsSatisfied();
 	}
@@ -100,7 +89,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		
 		createContext(ENHANCEMENT_ROUTE);
 		
-		Map<String, Object> headers = createEvent(FILE_ID, EVENT_TYPES);
+		Map<String, Object> headers = createEvent(FILE_ID);
 		headers.put(EVENT_TYPE, "ResourceDeletion");
 		
 		template.sendBodyAndHeaders("", headers);
@@ -114,7 +103,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		
 		createContext(ENHANCEMENT_ROUTE);
 
-		Map<String, Object> headers = createEvent(FILE_ID, EVENT_TYPES);
+		Map<String, Object> headers = createEvent(FILE_ID);
 		headers.put(IDENTIFIER, "container");
 		
 		template.sendBodyAndHeaders("", headers);
@@ -128,7 +117,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		
 		createContext(ENHANCEMENT_ROUTE);
 
-		Map<String, Object> headers = createEvent(FILE_ID, EVENT_TYPES);
+		Map<String, Object> headers = createEvent(FILE_ID);
 		headers.put(RESOURCE_TYPE, createResource( "http://bad.info/definitions/v9/repository#Fake" ).getURI());
 		
 		template.sendBodyAndHeaders("", headers);
@@ -141,7 +130,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
 		createContext(EXTRACTION_ROUTE);
 		
-		template.sendBodyAndHeaders("", createEvent(FILE_ID, EVENT_TYPES));
+		template.sendBodyAndHeaders("", createEvent(FILE_ID));
 		
 		assertMockEndpointsSatisfied();
 	}
@@ -152,7 +141,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		
 		createContext(EXTRACTION_ROUTE);
 		
-		Map<String, Object> headers = createEvent(FILE_ID, EVENT_TYPES);
+		Map<String, Object> headers = createEvent(FILE_ID);
 		headers.put(CdrBinaryMimeType, "image/png");
 		
 		template.sendBodyAndHeaders("", headers);
@@ -172,13 +161,8 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		context.start();
 	}
 	
-	private static Map<String, Object> createEvent(final String identifier, final String eventTypes) {
+	private static Map<String, Object> createEvent(final String identifier) {
 		final Map<String, Object> headers = new HashMap<>();
-		headers.put(FCREPO_URI, identifier);
-		headers.put(FCREPO_DATE_TIME, TIMESTAMP);
-		headers.put(FCREPO_AGENT, Arrays.asList(USER_ID, USER_AGENT));
-		headers.put(FCREPO_EVENT_TYPE, eventTypes);
-		headers.put(FCREPO_BASE_URL, baseUri);
 		headers.put(EVENT_TYPE, "ResourceCreation");
 		headers.put(IDENTIFIER, "original_file");
 		headers.put(RESOURCE_TYPE, Binary.getURI());
