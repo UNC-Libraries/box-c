@@ -66,13 +66,19 @@
 	<bean id="addSmallThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).SMALL_THUMBNAIL}"/>
-		<constructor-arg value="${cdr.enhancement.thumbnail}" />
+		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
 	</bean>
 	
 	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).LARGE_THUMBNAIL}"/>
-		<constructor-arg value="${cdr.enhancement.thumbnail}" />
+		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
+	</bean>
+	
+	<bean id="fulltextProcessor" class="edu.unc.lib.cdr.FulltextProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).FULLTEXT_EXTRACTION}"/>
+		<constructor-arg value="${cdr.enhancement.fulltext.fileName}" />
 	</bean>
 	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
@@ -90,8 +96,13 @@
 		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
 	</camel:camelContext>
 	
-	<camel:camelContext id="FcrepoTriplestoreRouter">
-		<camel:package>edu.unc.lib.cdr.indexing.triplestore</camel:package>
+	<camel:camelContext id="CdrServiceFulltextExtraction">
+		<camel:package>edu.unc.lib.cdr.fulltext</camel:package>
 	</camel:camelContext>
+	
+	<camel:camelContext id="FcrepoTriplestoreIndexer">
+		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
+	</camel:camelContext>
+	
 	
 </beans>

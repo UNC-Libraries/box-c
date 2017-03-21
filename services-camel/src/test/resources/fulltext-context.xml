@@ -12,27 +12,13 @@
 		http://www.springframework.org/schema/context/spring-context-4.3.xsd
 		http://camel.apache.org/schema/spring
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
-
-	<context:annotation-config />
 	
-	<bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-		<property name="location" value="classpath:config.properties"/>
+	<bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.FulltextProcessor" />
 	</bean>
+
+	<camel:camelContext id="CdrServiceFulltextExtraction">
+		<camel:package>edu.unc.lib.cdr.fulltext</camel:package>
+	</camel:camelContext>
 	
-	<bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:config.properties"/>
-	</bean>
-
-	<bean id="repository" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.fcrepo4.Repository"/>
-	</bean>
-
-	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
-		<property name="repository" ref="repository" />
-	</bean>
-	
-	<bean id="binaryMetadataProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.BinaryMetadataProcessor" />
-	</bean>
-
 </beans>

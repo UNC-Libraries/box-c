@@ -18,8 +18,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<fcrepo-camel.version>4.5.0</fcrepo-camel.version>
-		<camel.version>2.17.3</camel.version>
+		<camel.version>2.18.0</camel.version>
 		<activemq.version>5.14.1</activemq.version>
+		<tika.version>1.14</tika.version>
 	</properties>
 
 	<dependencies>
@@ -62,12 +63,13 @@
 		<version>${fcrepo-camel.version}</version>
 	</dependency>
 	
+	
+	
 	<dependency>
-		<groupId>org.fcrepo.camel</groupId>
-		<artifactId>fcrepo-camel-toolbox</artifactId>
-		<version>4.6.1</version>
-		<type>pom</type>
-	</dependency>
+        <groupId>org.fcrepo.camel</groupId>
+        <artifactId>fcrepo-indexing-triplestore</artifactId>
+        <version>4.7.1</version>
+    </dependency>
 	
 	<dependency>
 		<groupId>org.fcrepo.client</groupId>
@@ -92,6 +94,18 @@
 		<groupId>org.apache.httpcomponents</groupId>
 		<artifactId>httpclient</artifactId>
 		<version>4.5.2</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.apache.tika</groupId>
+		<artifactId>tika-core</artifactId>
+		<version>${tika.version}</version>
+	</dependency>
+	
+	<dependency>
+		<groupId>org.apache.tika</groupId>
+		<artifactId>tika-parsers</artifactId>
+		<version>${tika.version}</version>
 	</dependency>
 	
 	<dependency>
