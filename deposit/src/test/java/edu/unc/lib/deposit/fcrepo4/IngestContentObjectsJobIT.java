@@ -77,6 +77,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	private static final long FILE2_SIZE = 4L;
 
 	private File techmdDir;
+	private PID workPidForMods;
 
 	@Before
 	public void init() throws Exception {
@@ -101,6 +102,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		techmdDir = new File(depositDir, TECHMD_DIR);
 		techmdDir.mkdir();
+		
+		File modsFolder = job.getDescriptionDir();
+		modsFolder.mkdir();
+		workPidForMods = repository.mintContentPid();
+		File modsFile = new File(modsFolder, workPidForMods.getUUID() + ".xml");
+		modsFile.createNewFile();
 	}
 
 	private void setupDestination() {
@@ -166,8 +173,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
 		// Constructing the folder in the deposit model with a title
-		PID workPid = repository.mintContentPid();
-		Bag workBag = model.createBag(workPid.getRepositoryPath());
+		Bag workBag = model.createBag(workPidForMods.getRepositoryPath());
 		workBag.addProperty(RDF.type, Cdr.Work);
 		workBag.addProperty(CdrDeposit.label, label);
 
@@ -188,7 +194,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
 		// Make sure that the folder is present and is actually a folder
-		WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
+		WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPidForMods);
 
 		String title = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not correctly set", label, title);
@@ -235,8 +241,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertTrue("Wrapper object was not a work", mWork instanceof WorkObject);
 		String workTitle = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not set to filename", FILE1_LOC, workTitle);
-		
-		assertNotNull(mWork.getDescription());
 
 		List<ContentObject> workMembers = ((ContentContainerObject) mWork).getMembers();
 		assertEquals("Incorrect number of children on work", 1, workMembers.size());

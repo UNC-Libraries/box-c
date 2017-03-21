@@ -538,7 +538,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	}
 	
 	private void addDescription(ContentObject obj) {
-		try(InputStream modsStream = FileUtils.openInputStream(getDescriptionDir())) {
+		File modsFile = new File(getDescriptionDir(), obj.getPid().getUUID() + ".xml");
+		if (!modsFile.exists()) {
+			return;
+		}
+		try(InputStream modsStream = FileUtils.openInputStream(modsFile)) {
 			obj.addDescription(modsStream);
 		} catch(IOException e) {
 			// just eat the exception, or do we want some exception handling here?
