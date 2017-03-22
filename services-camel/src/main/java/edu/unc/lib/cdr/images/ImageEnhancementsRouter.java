@@ -68,7 +68,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 		from("direct:accessImage")
 		.routeId("AccessCopy")
 		.log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CheckSum]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh "
+		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertJp2.sh "
 				+ "${headers[BinaryPath]} PNG "
 				+ "${properties:services.tempDirectory}${headers[CheckSum]}-access"))
 		.bean(addAccessCopyProcessor);

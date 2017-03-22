@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.thumbnail;
+package edu.unc.lib.cdr.images;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
@@ -46,7 +46,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
-public class ThumbnailRouterTest extends CamelSpringTestSupport {
+public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 	private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
 	private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
 	private static final String IDENTIFIER = "org.fcrepo.jms.identifier";
@@ -141,6 +141,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 		
 		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(1);
 		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
+		getMockEndpoint("mock:direct:accessImage").expectedMessageCount(1);
 		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
 		
 		assertMockEndpointsSatisfied();
@@ -152,6 +153,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 		
 		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
 		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:accessImage").expectedMessageCount(0);
 		
 		Map<String, Object> headers = createEvent(fileID, eventTypes);
 		headers.put(CdrBinaryMimeType, "plain/text");

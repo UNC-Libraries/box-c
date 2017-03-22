@@ -20,9 +20,13 @@
 	<bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
 		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
 	</bean>
+	
+	<bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
+	</bean>
 
 	<camel:camelContext id="CdrServiceEnhancements">
-		<camel:package>edu.unc.lib.cdr.thumbnail</camel:package>
+		<camel:package>edu.unc.lib.cdr.images</camel:package>
 	</camel:camelContext>
 	
 </beans>
