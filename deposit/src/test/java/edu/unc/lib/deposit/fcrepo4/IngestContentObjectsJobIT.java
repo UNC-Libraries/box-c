@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -77,7 +78,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	private static final long FILE2_SIZE = 4L;
 
 	private File techmdDir;
-	private PID workPidForMods;
 
 	@Before
 	public void init() throws Exception {
@@ -102,12 +102,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		techmdDir = new File(depositDir, TECHMD_DIR);
 		techmdDir.mkdir();
-		
-		File modsFolder = job.getDescriptionDir();
-		modsFolder.mkdir();
-		workPidForMods = repository.mintContentPid();
-		File modsFile = new File(modsFolder, workPidForMods.getUUID() + ".xml");
-		modsFile.createNewFile();
 	}
 
 	private void setupDestination() {
@@ -172,8 +166,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-		// Constructing the folder in the deposit model with a title
-		Bag workBag = model.createBag(workPidForMods.getRepositoryPath());
+		// Constructing the work in the deposit model with a label
+		PID workPid = repository.mintContentPid();
+		Bag workBag = model.createBag(workPid.getRepositoryPath());
 		workBag.addProperty(RDF.type, Cdr.Work);
 		workBag.addProperty(CdrDeposit.label, label);
 
@@ -194,12 +189,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
 		// Make sure that the folder is present and is actually a folder
-		WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPidForMods);
+		WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
 
 		String title = mWork.getResource().getProperty(DC.title).getString();
 		assertEquals("Work title was not correctly set", label, title);
-		
-		assertNotNull(mWork.getDescription());
 
 		// Verify that the properties of the primary object were added
 		FileObject primaryObj = mWork.getPrimaryObject();
@@ -451,6 +444,43 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 			assertFalse(FedoraTransaction.isStillAlive());
 			assertFalse(repository.objectExists(workPid));
 		}
+	}
+	
+	@Test
+	public void addDescriptionTest() throws IOException {
+		PID folderPid = repository.mintContentPid();
+		File modsFolder = job.getDescriptionDir();
+		modsFolder.mkdir();
+		folderPid = repository.mintContentPid();
+		File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
+		modsFile.createNewFile();
+		
+		String label = "testfolder";
+
+		// Construct the deposit model, containing a deposit with one empty folder
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+		folderBag.addProperty(RDF.type, Cdr.Folder);
+		folderBag.addProperty(CdrDeposit.label, label);
+
+		depBag.add(folderBag);
+
+		job.closeModel();
+
+		job.run();
+		
+		ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
+		List<ContentObject> destMembers = destObj.getMembers();
+		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
+
+		// Make sure that the folder is present and is actually a folder
+		FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
+		
+		assertNotNull(folderObj.getDescription());
+		
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,

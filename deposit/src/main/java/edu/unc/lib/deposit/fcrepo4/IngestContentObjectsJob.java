@@ -238,7 +238,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
-		// TODO add description to file object
 		addDescription(work);
 		
 		// Increment the count of objects deposited
@@ -288,7 +287,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		try {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
 
-			// TODO add the FileObject's description to the work instead
 			addDescription(newWork);
 
 			addFileToWork(newWork, childResc);
@@ -401,7 +399,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			try {
 				obj = repository.createFolderObject(childPid, model);
 				parent.addMember(obj);
-				// TODO add description
+				
 				addDescription(obj);
 
 				// Increment the count of objects deposited prior to adding children
@@ -455,7 +453,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			try {
 				obj = repository.createWorkObject(childPid, model);
 				parent.addMember(obj);
-				// TODO add description
+				
 				addDescription(obj);
 
 				// Increment the count of objects deposited prior to adding children
