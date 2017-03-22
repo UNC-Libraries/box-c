@@ -22,10 +22,12 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
@@ -165,7 +167,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-		// Constructing the folder in the deposit model with a title
+		// Constructing the work in the deposit model with a label
 		PID workPid = repository.mintContentPid();
 		Bag workBag = model.createBag(workPid.getRepositoryPath());
 		workBag.addProperty(RDF.type, Cdr.Work);
@@ -443,6 +445,71 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 			assertFalse(FedoraTransaction.isStillAlive());
 			assertFalse(repository.objectExists(workPid));
 		}
+	}
+	
+	@Test
+	public void addDescriptionTest() throws IOException {
+		File modsFolder = job.getDescriptionDir();
+		modsFolder.mkdir();
+		
+		PID folderPid = repository.mintContentPid();
+		folderPid = repository.mintContentPid();
+		File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
+		modsFile.createNewFile();
+		
+		String label = "testfolder";
+
+		// Construct the deposit model, containing a deposit with one empty folder
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+		folderBag.addProperty(RDF.type, Cdr.Folder);
+		folderBag.addProperty(CdrDeposit.label, label);
+
+		depBag.add(folderBag);
+
+		job.closeModel();
+
+		job.run();
+		
+		ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
+		List<ContentObject> destMembers = destObj.getMembers();
+		// Make sure that the folder is present and is actually a folder
+		FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
+		
+		assertNotNull(folderObj.getDescription());
+	}
+	
+	@Test
+	public void noDescriptionAddedTest() {
+		PID folderPid = repository.mintContentPid();
+		folderPid = repository.mintContentPid();
+		
+		String label = "testfolder";
+
+		// Construct the deposit model, containing a deposit with one empty folder
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+		folderBag.addProperty(RDF.type, Cdr.Folder);
+		folderBag.addProperty(CdrDeposit.label, label);
+
+		depBag.add(folderBag);
+
+		job.closeModel();
+
+		job.run();
+		
+		ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
+		List<ContentObject> destMembers = destObj.getMembers();
+		// Make sure that the folder is present and is actually a folder
+		FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
+		
+		assertNull(folderObj.getDescription());
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,

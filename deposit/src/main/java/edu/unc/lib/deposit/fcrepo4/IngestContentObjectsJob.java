@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -171,7 +173,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// Ingest objects included in this deposit into the destination object
 		try {
 			ingestChildren((ContentContainerObject) destObj, depositBag);
-		} catch (DepositException | FedoraException e) {
+		} catch (DepositException | FedoraException | IOException e) {
 			failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
 		}
 	}
@@ -182,8 +184,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param destObj the repository object which children objects will be added to.
 	 * @param parentResc the parent resource where children will listed from
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
-	private void ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException {
+	private void ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException, IOException {
 		NodeIterator iterator = getChildIterator(parentResc);
 		// No more children, nothing further to do in this tree
 		if (iterator == null) {
@@ -223,9 +226,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
-			throws DepositException {
+			throws DepositException, IOException {
 
 		if (skipResumed(childResc)) {
 			return;
@@ -234,8 +238,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
-		// TODO add description to file object
-
+		addDescription(work);
+		
 		// Increment the count of objects deposited
 		addClicks(1);
 
@@ -283,7 +287,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		try {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
 
-			// TODO add the FileObject's description to the work instead
+			addDescription(newWork);
 
 			addFileToWork(newWork, childResc);
 			// Set the file as the primary object for the generated work
@@ -374,9 +378,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
-			throws DepositException {
+			throws DepositException, IOException {
 
 		PID childPid = PIDs.get(childResc.getURI());
 		FolderObject obj = null;
@@ -394,7 +399,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			try {
 				obj = repository.createFolderObject(childPid, model);
 				parent.addMember(obj);
-				// TODO add description
+				
+				addDescription(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -420,9 +426,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
-			throws DepositException {
+			throws DepositException, IOException {
 		PID childPid = PIDs.get(childResc.getURI());
 
 		WorkObject obj;
@@ -446,7 +453,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			try {
 				obj = repository.createWorkObject(childPid, model);
 				parent.addMember(obj);
-				// TODO add description
+				
+				addDescription(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -528,5 +536,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 	private void addAclProperties(Resource depositResc, Model aipModel) {
 		// TODO add access control properties
+	}
+	
+	private void addDescription(ContentObject obj) throws IOException {
+		File modsFile = new File(getDescriptionDir(), obj.getPid().getUUID() + ".xml");
+		if (!modsFile.exists()) {
+			return;
+		}
+		try (InputStream modsStream = FileUtils.openInputStream(modsFile)) {
+			obj.addDescription(modsStream);
+		}
 	}
 }
