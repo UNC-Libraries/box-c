@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
+
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -223,6 +225,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @param childResc
 	 * @return
 	 * @throws DepositException
+	 * @throws IOException 
 	 */
 	private void ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
@@ -235,7 +238,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
 		// TODO add description to file object
-
+		addDescription(work);
+		
 		// Increment the count of objects deposited
 		addClicks(1);
 
@@ -284,6 +288,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
 
 			// TODO add the FileObject's description to the work instead
+			addDescription(newWork);
 
 			addFileToWork(newWork, childResc);
 			// Set the file as the primary object for the generated work
@@ -395,6 +400,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				obj = repository.createFolderObject(childPid, model);
 				parent.addMember(obj);
 				// TODO add description
+				addDescription(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -447,6 +453,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				obj = repository.createWorkObject(childPid, model);
 				parent.addMember(obj);
 				// TODO add description
+				addDescription(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -528,5 +535,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 	private void addAclProperties(Resource depositResc, Model aipModel) {
 		// TODO add access control properties
+	}
+	
+	private void addDescription(ContentObject obj) {
+		try(InputStream modsStream = FileUtils.openInputStream(getDescriptionDir())) {
+			obj.addDescription(modsStream);
+		} catch(IOException e) {
+			// just eat the exception, or do we want some exception handling here?
+		}
 	}
 }
