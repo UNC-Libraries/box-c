@@ -138,13 +138,14 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		FolderObject folder = mock(FolderObject.class);
 		when(repository.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
-
+		
 		Model model = job.getWritableModel();
 		Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
 		PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Bag folderBag = model.createBag(folderPid.getRepositoryPath());
 		folderBag.addProperty(RDF.type, Cdr.Folder);
+		when(folder.getPid()).thenReturn(folderPid);
 
 		depBag.add(folderBag);
 
