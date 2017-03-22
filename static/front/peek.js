@@ -13,7 +13,13 @@ function Peek(element, template, columnWidth) {
   this.specs = [];
   this.items = [];
   this.inprogress = 0;
-  
+	
+}
+
+Peek.prototype.addTabIndexes = function(status) {
+	
+	return status;
+	
 }
 
 Peek.prototype.add = function(specs) {
@@ -115,7 +121,7 @@ Peek.prototype.loadItem = function(spec) {
   
   var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
-  
+	
   if (image) {
     
     image.on("load", _.bind(function() {
@@ -133,7 +139,13 @@ Peek.prototype.loadItem = function(spec) {
     
     throw "Couldn't retrieve image for evaluated item template";
     
-  }
+  };
+	
+	if (this.addTabIndexes(true)) {
+		
+		($element.find("a").eq(0)).attr("tabindex", "0");
+		
+	}
   
 }
 
@@ -502,7 +514,7 @@ $(function() {
   var source = "<div class=\"item\"> \
     <a href=\"https://cdr.lib.unc.edu/record/<%= data.pid %>\"> \
       <div class=\"image\"> \
-        <img src=\"/shared/peek/thumbnails/<%= data.path %>\" alt=\"<%= data.title %> thumbnail\"> \
+        <img src=\"/shared/peek/thumbnails/<%= data.path %>\"> \
       </div> \
       <div class=\"description\"> \
         <div class=\"title\"><%= data.title %></div> \
@@ -520,10 +532,12 @@ $(function() {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
+			peek.addTabIndexes(true);
     });
 
     $("#peek-exit").on("click", function() {
       window.location.hash = "";
+			peek.addTabIndexes(false);
     });
 
     $(window).on("hashchange", function() {
@@ -548,15 +562,6 @@ $(function() {
     
     peek.add(_.shuffle(items));
     peek.start();
-    
-    $(window).on("hashchange", function() {
-      if (!$(document.body).hasClass("peek")) {
-        $("#peek .item a").attr("tabindex", "-1");
-      } else {
-        $("#peek-exit .button a").attr("tabindex", "1");
-        $("#peek .item a").attr("tabindex", "2");
-      }
-    });
     
   });
 
