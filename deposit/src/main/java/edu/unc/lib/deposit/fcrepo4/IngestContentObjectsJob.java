@@ -22,11 +22,9 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +72,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  * Ingests all content objects in the deposit into the Fedora repository.
  * 
  * @author bbpennel
+ * @author harring
  *
  */
 public class IngestContentObjectsJob extends AbstractDepositJob {
@@ -243,6 +242,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
 		addDescription(work);
+		// add premis events to the file object
+		addPremisEvents(obj);
 		
 		// Increment the count of objects deposited
 		addClicks(1);
@@ -292,6 +293,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
 
 			addDescription(newWork);
+			// add premis events to the file object
+			addPremisEvents(repository.getFileObject(childPid));
 
 			addFileToWork(newWork, childResc);
 			// Set the file as the primary object for the generated work
@@ -405,6 +408,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				parent.addMember(obj);
 				
 				addDescription(obj);
+				// add premis events to the folder object
+				addPremisEvents(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -459,6 +464,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				parent.addMember(obj);
 				
 				addDescription(obj);
+				// add premis events to the work object
+				addPremisEvents(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
