@@ -22,9 +22,11 @@ import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,12 +52,14 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -546,5 +550,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		try (InputStream modsStream = FileUtils.openInputStream(modsFile)) {
 			obj.addDescription(modsStream);
 		}
+	}
+	
+	private void addPremisEvents(ContentObject obj) {
+		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".xml");
+		if (!premisFile.exists()) {
+			return;
+		}
+		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
+		List<PremisEventObject> events = premisLogger.getEvents();
+		obj.addPremisEvents(events);
 	}
 }
