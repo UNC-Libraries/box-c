@@ -60,9 +60,9 @@ public class FedoraTransaction {
 
 	public void close() {
 		if (!isSub && !isCancelled) {
-			repo.commitTransaction(txUri);
 			txUriThread.remove();
 			rootTxThread.remove();
+			repo.commitTransaction(txUri);
 		}
 		txUri = null;
 	}
