@@ -103,7 +103,16 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 	 */
 	private FcrepoResponse rewriteResponseBodyUris(FcrepoResponse resp) {
 		// Check that the response is RDF
-		if (!RDF_MIMETYPES.contains(resp.getContentType())) {
+		String contentType = resp.getContentType();
+		if (contentType == null) {
+			return resp;
+		}
+		// Trim off the encoding portion of the content type if present
+		int index = contentType.indexOf(';');
+		if (index != -1) {
+			contentType = contentType.substring(0, index);
+		}
+		if (!RDF_MIMETYPES.contains(contentType)) {
 			return resp;
 		}
 		
