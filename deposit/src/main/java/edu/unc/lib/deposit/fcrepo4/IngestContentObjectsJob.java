@@ -293,8 +293,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
 
 			addDescription(newWork);
-			// add premis events to the file object
-			addPremisEvents(repository.getFileObject(childPid));
 
 			addFileToWork(newWork, childResc);
 			// Set the file as the primary object for the generated work
@@ -305,6 +303,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 			// Increment the count of objects deposited
 			addClicks(1);
+			
+			addPremisEvents(newWork);
 
 			log.info("Created work {} for file object {} for deposit {}",
 					new Object[] {workPid, childPid, getDepositPID()});
