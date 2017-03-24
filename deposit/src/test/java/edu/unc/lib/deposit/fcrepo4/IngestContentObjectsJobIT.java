@@ -569,8 +569,36 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	}
 	
 	@Test
-	public void noPremisEventsAddedTest() {
+	public void noPremisEventsAddedTest() throws IOException {
+		File premisEventsDir = job.getEventsDirectory();
+		premisEventsDir.mkdir();
 		
+		PID folderObjPid = repository.mintContentPid();
+		folderObjPid = repository.mintContentPid();
+		
+		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
+		premisEventsFile.createNewFile();
+		
+		String label = "testfolder";
+
+		// Construct the deposit model, containing a deposit with one empty folder
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		Bag folderBag = model.createBag(folderObjPid.getRepositoryPath());
+		folderBag.addProperty(RDF.type, Cdr.Folder);
+		folderBag.addProperty(CdrDeposit.label, label);
+
+		depBag.add(folderBag);
+		
+		job.closeModel();
+
+		job.run();
+		
+		FolderObject folder = repository.getFolderObject(folderObjPid);
+		List<PremisEventObject> events = folder.getPremisLog().getEvents();
+		assertEquals(0, events.size());
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
