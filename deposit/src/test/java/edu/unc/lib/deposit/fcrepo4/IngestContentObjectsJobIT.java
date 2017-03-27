@@ -520,7 +520,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		premisEventsDir.mkdir();
 		
 		PID folderObjPid = repository.mintContentPid();
-		folderObjPid = repository.mintContentPid();
 		
 		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
 		premisEventsFile.createNewFile();
@@ -566,7 +565,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		premisEventsDir.mkdir();
 		
 		PID folderObjPid = repository.mintContentPid();
-		folderObjPid = repository.mintContentPid();
 		
 		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
 		premisEventsFile.createNewFile();
