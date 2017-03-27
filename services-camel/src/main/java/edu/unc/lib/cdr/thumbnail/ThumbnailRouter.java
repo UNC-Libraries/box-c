@@ -15,15 +15,11 @@
  */
 package edu.unc.lib.cdr.thumbnail;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.AddDerivativeProcessor;
-import edu.unc.lib.cdr.BinaryMetadataProcessor;
-
 
 /**
  * Router which triggers the creation of thumbnails when applicable binaries
@@ -31,45 +27,39 @@ import edu.unc.lib.cdr.BinaryMetadataProcessor;
  *
  */
 public class ThumbnailRouter extends RouteBuilder {
-	@BeanInject(value = "binaryMetadataProcessor")
-	private BinaryMetadataProcessor mdProcessor;
-	
 	@BeanInject(value = "addSmallThumbnailProcessor")
 	private AddDerivativeProcessor addSmallThumbnailProcessor;
-	
+
 	@BeanInject(value = "addLargeThumbnailProcessor")
 	private AddDerivativeProcessor addLargeThumbProcessor;
-	
+
 	/**
 	 * Configure the thumbnail route workflow.
 	 */
 	public void configure() throws Exception {
 		from("direct-vm:createThumbnail")
-		.routeId("CdrServiceEnhancements")
-		.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-				+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
-				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-			.removeHeaders("CamelHttp*")
-			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-			.process(mdProcessor)
-			.to("direct:images");
-		
-		from("direct:images")
-		.routeId("IsImage")
+			.routeId("CdrImageEnhancementRoute")
+			.log(LoggingLevel.DEBUG, "Calling image route for ${headers[org.fcrepo.jms.identifier]}")
 			.filter(simple("${headers[MimeType]} regex '^(image.*$|application.*?(photoshop|psd)$)'"))
-			.multicast()
-			.to("direct:small.thumbnail", "direct:large.thumbnail");
+				.log(LoggingLevel.INFO, "Generating images for ${headers[org.fcrepo.jms.identifier]}"
+						+ " of type ${headers[MimeType]}")
+				.multicast()
+					.to("direct:small.thumbnail", "direct:large.thumbnail");
 
 		from("direct:small.thumbnail")
-		.routeId("SmallThumbnail")
-		.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 64 64 ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
-		.bean(addSmallThumbnailProcessor);
-		
+			.routeId("SmallThumbnail")
+			.log(LoggingLevel.DEBUG, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
+			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh"
+					+ " ${headers[BinaryPath]} PNG 64 64"
+					+ " ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
+			.bean(addSmallThumbnailProcessor);
+
 		from("direct:large.thumbnail")
-		.routeId("LargeThumbnail")
-		.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CheckSum]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh ${headers[BinaryPath]} PNG 128 128 ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
-		.bean(addLargeThumbProcessor);
+			.routeId("LargeThumbnail")
+			.log(LoggingLevel.DEBUG, "Creating/Updating Large Thumbnail for ${headers[binaryPath]}")
+			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh"
+					+ " ${headers[BinaryPath]} PNG 128 128"
+					+ " ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
+			.bean(addLargeThumbProcessor);
 	}
 }
