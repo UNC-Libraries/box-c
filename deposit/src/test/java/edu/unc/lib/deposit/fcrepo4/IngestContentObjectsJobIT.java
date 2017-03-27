@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,20 +44,24 @@ import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * 
@@ -453,7 +457,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		modsFolder.mkdir();
 		
 		PID folderPid = repository.mintContentPid();
-		folderPid = repository.mintContentPid();
 		File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
 		modsFile.createNewFile();
 		
@@ -485,7 +488,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	@Test
 	public void noDescriptionAddedTest() {
 		PID folderPid = repository.mintContentPid();
-		folderPid = repository.mintContentPid();
 		
 		String label = "testfolder";
 
@@ -510,6 +512,83 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
 		
 		assertNull(folderObj.getDescription());
+	}
+	
+	@Test
+	public void addPremisEventsTest() throws IOException {
+		File premisEventsDir = job.getEventsDirectory();
+		premisEventsDir.mkdir();
+		
+		PID folderObjPid = repository.mintContentPid();
+		
+		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
+		premisEventsFile.createNewFile();
+		
+		String label = "testfolder";
+
+		// Construct the deposit model, containing a deposit with one empty folder
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		Bag folderBag = model.createBag(folderObjPid.getRepositoryPath());
+		folderBag.addProperty(RDF.type, Cdr.Folder);
+		folderBag.addProperty(CdrDeposit.label, label);
+
+		depBag.add(folderBag);
+		
+		FilePremisLogger premisLogger = new FilePremisLogger(folderObjPid, premisEventsFile, repository);
+		Resource event1 = premisLogger.buildEvent(Premis.Normalization)
+				.addEventDetail("Event 1")
+				.addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
+				.write();
+
+		Resource event2 = premisLogger.buildEvent(Premis.VirusCheck)
+				.addEventDetail("Event 2")
+				.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+				.write();
+		
+		job.closeModel();
+
+		job.run();
+		
+		FolderObject folder = repository.getFolderObject(folderObjPid);
+		List<PremisEventObject> events = folder.getPremisLog().getEvents();
+		assertEquals(2, events.size());
+		assertTrue(events.contains(findPremisEventByType(events, Premis.Normalization)));
+		assertTrue(events.contains(findPremisEventByType(events, Premis.VirusCheck)));
+	}
+	
+	@Test
+	public void noPremisEventsAddedTest() throws IOException {
+		File premisEventsDir = job.getEventsDirectory();
+		premisEventsDir.mkdir();
+		
+		PID folderObjPid = repository.mintContentPid();
+		
+		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
+		premisEventsFile.createNewFile();
+		
+		String label = "testfolder";
+
+		// Construct the deposit model, containing a deposit with one empty folder
+		Model model = job.getWritableModel();
+		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+		// Constructing the folder in the deposit model with a title
+		Bag folderBag = model.createBag(folderObjPid.getRepositoryPath());
+		folderBag.addProperty(RDF.type, Cdr.Folder);
+		folderBag.addProperty(CdrDeposit.label, label);
+
+		depBag.add(folderBag);
+		
+		job.closeModel();
+
+		job.run();
+		
+		FolderObject folder = repository.getFolderObject(folderObjPid);
+		List<PremisEventObject> events = folder.getPremisLog().getEvents();
+		assertEquals(0, events.size());
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
@@ -551,5 +630,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
 
 		return filePid;
+	}
+	
+	private PremisEventObject findPremisEventByType(List<PremisEventObject> objs, final Resource type) {
+		return objs.stream()
+				.filter(p -> p.getResource().getPropertyResourceValue(Premis.hasEventType).equals(type)).findAny().get();
 	}
 }

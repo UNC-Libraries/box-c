@@ -50,12 +50,14 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -70,6 +72,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  * Ingests all content objects in the deposit into the Fedora repository.
  * 
  * @author bbpennel
+ * @author harring
  *
  */
 public class IngestContentObjectsJob extends AbstractDepositJob {
@@ -239,6 +242,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
 		addDescription(work);
+		// add premis events to the file object
+		addPremisEvents(obj);
 		
 		// Increment the count of objects deposited
 		addClicks(1);
@@ -298,6 +303,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 			// Increment the count of objects deposited
 			addClicks(1);
+			
+			addPremisEvents(newWork);
 
 			log.info("Created work {} for file object {} for deposit {}",
 					new Object[] {workPid, childPid, getDepositPID()});
@@ -401,6 +408,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				parent.addMember(obj);
 				
 				addDescription(obj);
+				// add premis events to the folder object
+				addPremisEvents(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -455,6 +464,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				parent.addMember(obj);
 				
 				addDescription(obj);
+				// add premis events to the work object
+				addPremisEvents(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -546,5 +557,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		try (InputStream modsStream = FileUtils.openInputStream(modsFile)) {
 			obj.addDescription(modsStream);
 		}
+	}
+	
+	private void addPremisEvents(ContentObject obj) {
+		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".xml");
+		if (!premisFile.exists()) {
+			return;
+		}
+		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
+		List<PremisEventObject> events = premisLogger.getEvents();
+		obj.addPremisEvents(events);
 	}
 }
