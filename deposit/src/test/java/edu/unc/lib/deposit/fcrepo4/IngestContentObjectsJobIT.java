@@ -457,7 +457,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		modsFolder.mkdir();
 		
 		PID folderPid = repository.mintContentPid();
-		folderPid = repository.mintContentPid();
 		File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
 		modsFile.createNewFile();
 		
@@ -489,7 +488,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	@Test
 	public void noDescriptionAddedTest() {
 		PID folderPid = repository.mintContentPid();
-		folderPid = repository.mintContentPid();
 		
 		String label = "testfolder";
 
