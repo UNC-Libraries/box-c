@@ -168,8 +168,6 @@ Peek.prototype.loadItem = function(spec) {
   
 }
 
-Peek.prototype.
-
 Peek.prototype.load = function() {
   
   // If we have items, don't load any.
