@@ -40,36 +40,42 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 	 * Configure the thumbnail route workflow.
 	 */
 	public void configure() throws Exception {
+		errorHandler(defaultErrorHandler()
+				.redeliveryDelay(1000)
+				.maximumRedeliveries(2)
+				.backOffMultiplier(4)
+				.retryAttemptedLogLevel(LoggingLevel.WARN));
+		
 		from("direct-vm:imageEnhancements")
 			.routeId("CdrImageEnhancementRoute")
-			.log(LoggingLevel.DEBUG, "Calling image route for ${headers[org.fcrepo.jms.identifier]}")
+			.log(LoggingLevel.INFO, "Calling image route for ${headers[org.fcrepo.jms.identifier]}")
 			.filter(simple("${headers[MimeType]} regex '^(image.*$|application.*?(photoshop|psd)$)'"))
 				.log(LoggingLevel.INFO, "Generating images for ${headers[org.fcrepo.jms.identifier]}"
 						+ " of type ${headers[MimeType]}")
 				.multicast()
-				.to("direct:small.thumbnail", "direct:large.thumbnail", "direct:accessImage");
+				.to("direct:small.thumbnail", "direct:large.thumbnail", "direct:accessCopy");
 
 		from("direct:small.thumbnail")
 			.routeId("SmallThumbnail")
-			.log(LoggingLevel.DEBUG, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
-			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh"
-					+ " ${headers[BinaryPath]} PNG 64 64"
-					+ " ${properties:services.tempDirectory}${headers[CheckSum]}-small"))
+			.log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[binaryPath]}")
+			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh "
+					+ "${headers[BinaryPath]} PNG 64 64 "
+					+ "${properties:services.tempDirectory}${headers[CheckSum]}-small"))
 			.bean(addSmallThumbnailProcessor);
 
 		from("direct:large.thumbnail")
 			.routeId("LargeThumbnail")
-			.log(LoggingLevel.DEBUG, "Creating/Updating Large Thumbnail for ${headers[binaryPath]}")
-			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh"
-					+ " ${headers[BinaryPath]} PNG 128 128"
-					+ " ${properties:services.tempDirectory}${headers[CheckSum]}-large"))
+			.log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[binaryPath]}")
+			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertScaleStage.sh "
+					+ "${headers[BinaryPath]} PNG 128 128 "
+					+ "${properties:services.tempDirectory}${headers[CheckSum]}-large"))
 			.bean(addLargeThumbProcessor);
 		
-		from("direct:accessImage")
+		from("direct:accessCopy")
 		.routeId("AccessCopy")
-		.log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CheckSum]}")
+		.log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[binaryPath]}")
 		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertJp2.sh "
-				+ "${headers[BinaryPath]} PNG "
+				+ "${headers[BinaryPath]} JP2 "
 				+ "${properties:services.tempDirectory}${headers[CheckSum]}-access"))
 		.bean(addAccessCopyProcessor);
 	}

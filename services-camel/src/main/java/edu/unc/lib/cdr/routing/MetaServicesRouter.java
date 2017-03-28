@@ -35,7 +35,6 @@ public class MetaServicesRouter extends RouteBuilder {
 	
 	public void configure() throws Exception {
 		from("{{fcrepo.stream}}")
-<<<<<<< bc0c0182d53ed05f2576bc15a5518c43f04bedf4
 			.routeId("CdrMetaServicesRouter")
 			.to("direct-vm:index.start")
 			.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
@@ -50,15 +49,7 @@ public class MetaServicesRouter extends RouteBuilder {
 			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
 			.multicast()
-				.to("direct-vm:createThumbnail","direct-vm:extractFulltext");
-		
-		
-=======
-		.routeId("MetaServicesRouter")
-		.to("direct-vm:index.start")
-		.multicast()
-		.to("direct-vm:imageEnhancments","direct-vm:extractFulltext");
->>>>>>> Update router with latest fcrepo4 changes
+				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
 	}
 
 }
