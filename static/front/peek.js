@@ -16,9 +16,19 @@ function Peek(element, template, columnWidth) {
 	
 }
 
+// Stores value based on peek view or not
+
 Peek.prototype.addTabIndexes = function(status) {
 	
-	return status;
+	this.status = status;
+  
+  // For items already loaded on the page, add tabindex values
+  
+  if (this.status == true) {
+    $(#peek .item a).attr("tabindex", "1");
+  } else {
+    $(#peek .item a).attr("tabindex", "-1");
+  }
 	
 }
 
@@ -121,6 +131,8 @@ Peek.prototype.loadItem = function(spec) {
   
   var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
+  var imageLink = $element.find("a").eq(0);
+  var exitLink = $("a[target='#']");
 	
   if (image) {
     
@@ -140,14 +152,23 @@ Peek.prototype.loadItem = function(spec) {
     throw "Couldn't retrieve image for evaluated item template";
     
   };
+  
+  // If we're in peek view, new image links are reachable via keyboard navigation. If we're not in peek view, new image links are not reachable. 
 	
-	if (this.addTabIndexes(true)) {
+	if (this.status == true) {
 		
-		($element.find("a").eq(0)).attr("tabindex", "0");
+    exitLink.attr("tabindex", "0");
+		imageLink.attr("tabindex", "1");
 		
+	} else {
+	  
+    imageLink.attr("tabindex", "-1");
+    
 	}
   
 }
+
+Peek.prototype.
 
 Peek.prototype.load = function() {
   
