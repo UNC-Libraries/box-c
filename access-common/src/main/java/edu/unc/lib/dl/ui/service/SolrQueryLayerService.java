@@ -65,6 +65,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
@@ -710,7 +711,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 					this.generateSearch(filteredChildrenRequest));
 
 			this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
-					"contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
+					("(" + ResourceType.Collection.toString() + " " + ResourceType.Folder.toString() + ")"),
 					this.generateSearch(filteredChildrenRequest));
 
 			try {
