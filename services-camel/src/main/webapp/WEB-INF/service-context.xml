@@ -110,5 +110,4 @@
 		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
 	</camel:camelContext>
 	
-	
 </beans>

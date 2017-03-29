@@ -30,16 +30,5 @@
 	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
 		<property name="repository" ref="repository" />
 	</bean>
-<<<<<<< bc0c0182d53ed05f2576bc15a5518c43f04bedf4
-
-	<camel:camelContext id="CdrServiceEnhancements">
-		<camel:package>edu.unc.lib.cdr.images</camel:package>
-	</camel:camelContext>
-=======
 	
-	<bean id="binaryMetadataProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.BinaryMetadataProcessor" />
-	</bean>
-	
->>>>>>> Update router with latest fcrepo4 changes
 </beans>
