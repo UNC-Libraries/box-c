@@ -516,7 +516,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
 		// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
 		solrQuery.setFacetSort("index");
-		LOG.warn("This is the one you're looking for!" + solrQuery.toString());
 		
 		try {
 			startTime = System.currentTimeMillis();
@@ -712,7 +711,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 					this.generateSearch(filteredChildrenRequest));
 
 			this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
-					"resourceType:" + ("(" + ResourceType.Collection.toString() + " OR " + ResourceType.Folder.toString() + ")"),
+					"resourceType:" + "(" + ResourceType.Collection.toString() + " OR " + ResourceType.Folder.toString() + ")",
 					this.generateSearch(filteredChildrenRequest));
 
 			try {
