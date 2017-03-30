@@ -132,7 +132,7 @@ Peek.prototype.loadItem = function(spec) {
   var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
   var imageLink = $element.find("a").eq(0);
-  var exitLink = $("a[target='#']");
+  var exitLink = $("#peek-exit a");
 	
   if (image) {
     
