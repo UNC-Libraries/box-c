@@ -34,6 +34,12 @@ public class MetaServicesRouter extends RouteBuilder {
 	private BinaryMetadataProcessor mdProcessor;
 	
 	public void configure() throws Exception {
+		errorHandler(defaultErrorHandler()
+				.redeliveryDelay(1000)
+				.maximumRedeliveries(2)
+				.backOffMultiplier(4)
+				.retryAttemptedLogLevel(LoggingLevel.WARN));
+		
 		from("{{fcrepo.stream}}")
 			.routeId("CdrMetaServicesRouter")
 			.to("direct-vm:index.start")
