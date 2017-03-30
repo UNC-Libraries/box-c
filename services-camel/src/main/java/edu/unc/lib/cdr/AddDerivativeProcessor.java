@@ -20,8 +20,10 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
@@ -61,17 +63,38 @@ public class AddDerivativeProcessor implements Processor {
 		Message in = exchange.getIn();
 		String binaryUri = (String) in.getHeader(FCREPO_URI);
 		String binaryMimeType = (String) in.getHeader(CdrBinaryMimeType); 
+		int maxRetries = 3;
+		int retryAttempt = 0;
 		
 		final ExecResult result = (ExecResult) in.getBody();
+		
 		String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
 				.lines().collect(Collectors.joining("\n"));
 		
+		while (true) {
+			try {
+				ingestFile(binaryUri, binaryMimeType, derivativePath);
+				break;
+			} catch (Exception e) {
+				retryAttempt++;
+				log.info("Unable to add derivative for {} from {}. Retrying, attempt {}", binaryUri, derivativePath, retryAttempt);
+				TimeUnit.SECONDS.sleep(1);
+				ingestFile(binaryUri, binaryMimeType, derivativePath);
+				
+				if (retryAttempt == maxRetries) {
+					throw e;
+				}
+			}
+		}
+	}
+	
+	private void ingestFile(String binaryUri, String binaryMimeType, String derivativePath) throws FileNotFoundException {
 		InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
 		
 		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
 		FileObject parent = (FileObject) binary.getParent();
 		parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
-
+		
 		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
 	}
 }
