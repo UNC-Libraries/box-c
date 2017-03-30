@@ -31,6 +31,11 @@ import edu.unc.lib.dl.acl.util.UserRole;
  */
 public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
 
+	private final static String query = "SELECT  ?pid WHERE { " + 
+			"  ?pid  <http://pcdm.org/models#hasFile>|<http://pcdm.org/models#hasMember>* <http://localhost:8080/fcrepo/rest/content/c2/8c/73/7a/c28c737a-0120-4f3a-bdff-25ed6747bd5c> .\n" + 
+			"  \n" + 
+			"}";
+	
 	public ObjectAccessControlsBeanImpl() {
 		// TODO Auto-generated constructor stub
 	}
