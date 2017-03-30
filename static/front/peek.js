@@ -25,9 +25,9 @@ Peek.prototype.addTabIndexes = function(status) {
   // For items already loaded on the page, add tabindex values
   
   if (this.status == true) {
-    $(#peek .item a).attr("tabindex", "1");
+    $("#peek .item a").attr("tabindex", "1");
   } else {
-    $(#peek .item a).attr("tabindex", "-1");
+    $("#peek .item a").attr("tabindex", "-1");
   }
 	
 }
