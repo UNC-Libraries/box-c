@@ -30,7 +30,7 @@ define('containerRecord', ['module', 'jquery', 'StructureView', 'jquery-ui'], fu
 					showParentLink : false,
 					rootNode : data.root,
 					queryPath : 'list',
-					retrieveFiles : true
+					retrieveFiles : false
 				});
 			},
 			error: function(e){

@@ -37,7 +37,7 @@ define('StructureView', [ 'jquery', 'jquery-ui', 'StructureEntry'], function($, 
 			// Render the tree
 			this.rootEntry.render();
 			
-			// If specified, select the selecte entry
+			// If specified, select the selected entry
 			if (this.options.selectedId) {
 				var selectedEntry = this.rootEntry.findEntryById(this.options.selectedId);
 				if (selectedEntry)
