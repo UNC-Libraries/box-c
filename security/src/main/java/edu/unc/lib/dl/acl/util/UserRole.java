@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
  * These are the properties that the repository manages in the rels-ext datastream.
@@ -39,21 +39,25 @@ public enum UserRole {
 			Permission.viewMetadata, Permission.viewAccessCopies}),
 	patron("patron", new Permission[] {
 			Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	canView("canView", new Permission[] {
+			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
 	// Staff roles
 	administrator("administrator", new Permission[] {}),
-	canView("can-view", new Permission[] {
+	canDiscover("canDiscover", new Permission[] {
+			Permission.viewMetadata}),
+	canAccess("canAccess", new Permission[] {
 			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canIngest("can-ingest", new Permission[] {
+	canIngest("canIngest", new Permission[] {
 			Permission.ingest,
 			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canDescribe("can-describe", new Permission[] {
+	canDescribe("canDescribe", new Permission[] {
 			Permission.editDescription, Permission.bulkUpdateDescription,
 			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canManage("can-manage", new Permission[] {
+	canManage("canManage", new Permission[] {
 			Permission.ingest, Permission.editDescription, Permission.bulkUpdateDescription,
 			Permission.move, Permission.markForDeletion, Permission.changePatronAccess, Permission.editResourceType,
 			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	unitOwner("unit-owner", new Permission[] {
+	unitOwner("unitOwner", new Permission[] {
 			Permission.ingest, Permission.editDescription, Permission.bulkUpdateDescription,
 			Permission.move, Permission.markForDeletion, Permission.changePatronAccess, Permission.editResourceType,
 			Permission.destroy, Permission.createCollection, Permission.assignStaffRoles,
@@ -66,7 +70,7 @@ public enum UserRole {
 	UserRole(String predicate, Permission[] perms) {
 		try {
 			this.predicate = predicate;
-			this.uri = new URI(JDOMNamespaceUtil.CDR_ROLE_NS.getURI() + predicate);
+			this.uri = new URI(CdrAcl.getURI() + predicate);
 			HashSet<Permission> mypermissions = new HashSet<Permission>(perms.length);
 			Collections.addAll(mypermissions, perms);
 			this.permissions = Collections.unmodifiableSet(mypermissions);
