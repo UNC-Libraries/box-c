@@ -133,6 +133,7 @@ Peek.prototype.loadItem = function(spec) {
   var image = $element.find("img").eq(0);
   var imageLink = $element.find("a").eq(0);
   var exitLink = $("#peek-exit a");
+  var enterLink = $("#peek-enter a");
 	
   if (image) {
     
@@ -162,6 +163,7 @@ Peek.prototype.loadItem = function(spec) {
 		
 	} else {
 	  
+    enterLink.attr("tabindex", "0");
     imageLink.attr("tabindex", "-1");
     
 	}
