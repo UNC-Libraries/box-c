@@ -167,6 +167,7 @@ Peek.prototype.loadItem = function(spec) {
 	  
     enterLink.attr("tabindex", "0");
     imageLink.attr("tabindex", "-1");
+    depositButtonLink.attr("tabindex", "0");
     
 	}
   
