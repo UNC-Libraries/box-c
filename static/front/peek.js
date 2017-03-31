@@ -134,6 +134,7 @@ Peek.prototype.loadItem = function(spec) {
   var imageLink = $element.find("a").eq(0);
   var exitLink = $("#peek-exit a");
   var enterLink = $("#peek-enter a");
+  var depositButtonLink = $(".deposit-option a");
 	
   if (image) {
     
@@ -160,6 +161,7 @@ Peek.prototype.loadItem = function(spec) {
 		
     exitLink.attr("tabindex", "0");
 		imageLink.attr("tabindex", "1");
+    depositButtonLink.attr("tabindex", "-1");
 		
 	} else {
 	  
