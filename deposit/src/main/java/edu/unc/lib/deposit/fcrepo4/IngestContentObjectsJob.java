@@ -51,6 +51,7 @@ import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.FilePremisLogger;
+import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
@@ -64,6 +65,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.IanaRelation;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -241,6 +243,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
+		// add ingestion event for file object
+		addIngestionEvent(obj);
 		addDescription(work);
 		// add premis events to the file object
 		addPremisEvents(obj);
@@ -567,5 +571,19 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
 		List<PremisEventObject> events = premisLogger.getEvents();
 		obj.addPremisEvents(events);
+	}
+	
+	private void addIngestionEvent(ContentObject obj) {
+		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".xml");
+		if (!premisFile.exists()) {
+			return;
+		}
+		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
+		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
+		if (obj instanceof FileObject) {
+			builder.addEventDetail("ingested as PID: {}\n ingested as filename: {}",
+				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename());
+		}
+		
 	}
 }
