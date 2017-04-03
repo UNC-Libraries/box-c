@@ -583,6 +583,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		if (obj instanceof FileObject) {
 			builder.addEventDetail("ingested as PID: {}\n ingested as filename: {}",
 				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename());
+		} else if (obj instanceof ContentContainerObject) {
+			List<ContentObject> children = ((ContentContainerObject) obj).getMembers();
+			int numChildren = children.size();
+			if (numChildren == 1) {
+				builder.addEventDetail("added child object {} to this container", children.get(0).getPid().toString());
+			} else {
+				builder.addEventDetail("added {} child object(s) to this container", numChildren);
+			}
 		}
 		
 	}
