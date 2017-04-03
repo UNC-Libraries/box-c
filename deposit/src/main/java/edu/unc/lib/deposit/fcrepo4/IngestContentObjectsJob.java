@@ -580,23 +580,24 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		obj.addPremisEvents(events);
 	}
 	
-	private void addIngestionEvent(ContentObject obj) {
+	private void addIngestionEvent(ContentObject obj) throws IOException {
 		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".xml");
 		if (!premisFile.exists()) {
-			return;
+			premisFile.createNewFile();
 		}
 		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 		if (obj instanceof FileObject) {
 			builder.addEventDetail("ingested as PID: {}\n ingested as filename: {}",
-				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename());
+				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename()).write();
 		} else if (obj instanceof ContentContainerObject) {
 			List<ContentObject> children = ((ContentContainerObject) obj).getMembers();
 			int numChildren = children.size();
 			if (numChildren == 1) {
-				builder.addEventDetail("added child object {} to this container", children.get(0).getPid().toString());
+				builder.addEventDetail("added child object {} to this container",
+					children.get(0).getPid().toString()).write();
 			} else {
-				builder.addEventDetail("added {} child object(s) to this container", numChildren);
+				builder.addEventDetail("added {} child object(s) to this container", numChildren).write();
 			}
 		}
 		
