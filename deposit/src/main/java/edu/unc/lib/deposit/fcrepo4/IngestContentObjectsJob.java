@@ -245,6 +245,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		FileObject obj = addFileToWork(work, childResc);
 		// add ingestion event for file object
 		addIngestionEvent(obj);
+		// add MODS
 		addDescription(work);
 		// add premis events to the file object
 		addPremisEvents(obj);
@@ -299,6 +300,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			addDescription(newWork);
 
 			addFileToWork(newWork, childResc);
+			// add ingestion event for work object with single file
+			addIngestionEvent(newWork);
 			// Set the file as the primary object for the generated work
 			newWork.setPrimaryObject(childPid);
 
@@ -409,6 +412,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			FedoraTransaction tx = repository.startTransaction();
 			try {
 				obj = repository.createFolderObject(childPid, model);
+				// add ingestion event for the new folder
+				addIngestionEvent(obj);
 				parent.addMember(obj);
 				
 				addDescription(obj);
@@ -465,6 +470,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			// TODO add ACLs
 			try {
 				obj = repository.createWorkObject(childPid, model);
+				// add ingestion event for work
+				addIngestionEvent(obj);
 				parent.addMember(obj);
 				
 				addDescription(obj);
