@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -56,11 +57,16 @@ public class FulltextProcessor implements Processor {
 	private final Repository repository;
 	private final String slug;
 	private final String fileName;
+	
+	private final int maxRetries;
+	private final long retryDelay;
 
-	public FulltextProcessor(Repository repository, String slug, String fileName) {
+	public FulltextProcessor(Repository repository, String slug, String fileName, int maxRetries, long retryDelay) {
 		this.repository = repository;
 		this.slug = slug;
 		this.fileName = fileName;
+		this.maxRetries = maxRetries;
+		this.retryDelay = retryDelay;
 	}
 
 	@Override
@@ -71,15 +77,31 @@ public class FulltextProcessor implements Processor {
 		String binaryMimeType = (String) in.getHeader(CdrBinaryMimeType);
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
 		String text = extractText(binaryPath);
+		int retryAttempt = 0;
 		
 		InputStream binaryStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
 		
-		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
-		FileObject parent = (FileObject) binary.getParent();
-		
-		parent.addDerivative(slug, binaryStream, fileName, binaryMimeType, PcdmUse.ExtractedText);
-		
-		log.info("Adding derivative for {} from {}", binaryUri, fileName);
+		while (true) {
+			try {
+				BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
+				FileObject parent = (FileObject) binary.getParent();
+				
+				parent.addDerivative(slug, binaryStream, fileName, binaryMimeType, PcdmUse.ExtractedText);
+				
+				log.info("Adding derivative for {} from {}", binaryUri, fileName);
+				break;
+			} catch (Exception e) {
+				if (retryAttempt == maxRetries) {
+					throw e;
+				}
+				
+				retryAttempt++;
+				log.info("Unable to add derivative for {} from {}. Retrying, attempt {}",
+						binaryUri, binaryPath, retryAttempt);
+				TimeUnit.MILLISECONDS.sleep(retryDelay);
+				
+			}
+		}
 	}
 	
 	private String extractText(String filepath) throws IOException, SAXException, TikaException {

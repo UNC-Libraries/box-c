@@ -55,6 +55,8 @@ public class FulltextProcessorTest {
 	private final String slug = "full_text";
 	private final String fileName = "full_text.txt";
 	private final String testText = "Test text, see if it can be extracted.";
+	private int maxRetries = 3; 
+	private long retryDelay = 2000;
 	private File file;
 	private BinaryObject binary;
 	private FileObject parent;
@@ -71,7 +73,7 @@ public class FulltextProcessorTest {
 	@Before
 	public void init() throws Exception {
 		initMocks(this);
-		processor = new FulltextProcessor(repository, slug, fileName);
+		processor = new FulltextProcessor(repository, slug, fileName, maxRetries, retryDelay);
 		file = File.createTempFile(fileName, "txt");
 		file.deleteOnExit();
 		when(exchange.getIn()).thenReturn(message);

@@ -91,6 +91,8 @@
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).FULLTEXT_EXTRACTION}"/>
 		<constructor-arg value="${cdr.enhancement.fulltext.fileName}" />
+		<constructor-arg value="${error.maxRedeliveries}" />
+		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
