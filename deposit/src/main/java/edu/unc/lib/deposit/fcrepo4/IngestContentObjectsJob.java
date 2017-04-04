@@ -52,6 +52,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
@@ -298,9 +299,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			WorkObject newWork = repository.createWorkObject(workPid, workModel);
 
 			addDescription(newWork);
-
-			addFileToWork(newWork, childResc);
-			// add ingestion event for work object with single file
+			FileObject fileObj = addFileToWork(newWork, childResc);
+			// add ingestion event to file object
+			addIngestionEvent(fileObj);
+			// add ingestion event for work object
 			addIngestionEvent(newWork);
 			// Set the file as the primary object for the generated work
 			newWork.setPrimaryObject(childPid);
@@ -310,7 +312,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 			// Increment the count of objects deposited
 			addClicks(1);
-			
+			// write premis events for file object to fedora
+			addPremisEvents(fileObj);
+			// write premis events for work object to fedora
 			addPremisEvents(newWork);
 
 			log.info("Created work {} for file object {} for deposit {}",
@@ -417,7 +421,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				parent.addMember(obj);
 				
 				addDescription(obj);
-				// add premis events to the folder object
+				// write premis events for the folder object to fedora
 				addPremisEvents(obj);
 
 				// Increment the count of objects deposited prior to adding children
@@ -470,19 +474,20 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			// TODO add ACLs
 			try {
 				obj = repository.createWorkObject(childPid, model);
-				// add ingestion event for work
-				addIngestionEvent(obj);
+				
 				parent.addMember(obj);
 				
 				addDescription(obj);
-				// add premis events to the work object
-				addPremisEvents(obj);
-
+				
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
 
 				log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 				ingestChildren(obj, childResc);
+				// add ingestion event for work after children have been ingested
+				addIngestionEvent(obj);
+				// write premis events for the work to fedora
+				addPremisEvents(obj);
 
 				// Set the primary object for this work if one was specified
 				addPrimaryObject(obj, childResc);
@@ -571,33 +576,30 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	}
 	
 	private void addPremisEvents(ContentObject obj) {
-		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".xml");
+		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".ttl");
 		if (!premisFile.exists()) {
 			return;
 		}
-		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
+		PremisLogger premisLogger = getPremisLogger(obj.getPid());
 		List<PremisEventObject> events = premisLogger.getEvents();
+		// add premis events to fedora
 		obj.addPremisEvents(events);
 	}
 	
 	private void addIngestionEvent(ContentObject obj) throws IOException {
-		File premisFile = new File(getEventsDirectory(), obj.getPid().getUUID() + ".xml");
-		if (!premisFile.exists()) {
-			premisFile.createNewFile();
-		}
-		FilePremisLogger premisLogger = new FilePremisLogger(obj.getPid(), premisFile, repository);
+		PremisLogger premisLogger = getPremisLogger(obj.getPid());
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 		if (obj instanceof FileObject) {
-			builder.addEventDetail("ingested as PID: {}\n ingested as filename: {}",
+			builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
 				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename()).write();
 		} else if (obj instanceof ContentContainerObject) {
 			List<ContentObject> children = ((ContentContainerObject) obj).getMembers();
 			int numChildren = children.size();
 			if (numChildren == 1) {
-				builder.addEventDetail("added child object {} to this container",
+				builder.addEventDetail("added child object {0} to this container",
 					children.get(0).getPid().toString()).write();
 			} else {
-				builder.addEventDetail("added {} child object(s) to this container", numChildren).write();
+				builder.addEventDetail("added {0} child objects to this container", numChildren).write();
 			}
 		}
 		
