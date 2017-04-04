@@ -157,7 +157,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Verify that its title was set to the expected value
 		String title = folder.getResource().getProperty(DC.title).getString();
 		assertEquals("Folder title was not correctly set", label, title);
-		
+		// Verify that ingestion event gets added for folder
 		List<PremisEventObject> events = folder.getPremisLog().getEvents();
 		assertEquals(1, events.size());
 		assertEquals("added 0 child objects to this container", events.get(0).getResource()
@@ -217,12 +217,26 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		// Verify the properties and content of the supplemental file
 		assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, FILE2_SIZE);
-		
-		List<PremisEventObject> events = mWork.getPremisLog().getEvents();
-		assertEquals(1, events.size());
-		assertEquals("added 2 child objects to this container", events.get(0).getResource()
+		// Verify that ingestion event gets added for work
+		List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
+		assertEquals(1, eventsWork.size());
+		assertEquals("added 2 child objects to this container", eventsWork.get(0).getResource()
 			.getProperty(Premis.hasEventDetail).getString());
-
+		
+		// Verify that ingestion event gets added for primary object
+		List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
+		assertEquals(1, eventsPrimObj.size());
+		assertEquals("ingested as PID: " + primaryObj.getPid().toString() + "\n ingested as filename: "
+				+ primaryObj.getOriginalFile().getFilename(), eventsPrimObj.get(0).getResource()
+				.getProperty(Premis.hasEventDetail).getString());
+		
+		// Verify that ingestion event gets added for supplementary object
+		List<PremisEventObject> eventsSupObj = supObj.getPremisLog().getEvents();
+		assertEquals(1, eventsSupObj.size());
+		assertEquals("ingested as PID: " + supObj.getPid().toString() + "\n ingested as filename: "
+				+ supObj.getOriginalFile().getFilename(), eventsSupObj.get(0).getResource()
+				.getProperty(Premis.hasEventDetail).getString());
+		
 		assertClickCount(3);
 	}
 
