@@ -20,14 +20,26 @@ function Peek(element, template, columnWidth) {
 
 Peek.prototype.addTabIndexes = function(status) {
 	
+  var exitLink = $("#peek-exit a");
+  var enterLink = $("#peek-enter a");
+  var depositButtonLink = $(".deposit-option a");
+  
 	this.status = status;
   
-  // For items already loaded on the page, add tabindex values
+  // For items already loaded on the page, add tabindex values. Also add tabindex values for enter/exit links and deposit buttons
   
   if (this.status == true) {
+    
     $("#peek .item a").attr("tabindex", "2");
+    exitLink.attr("tabindex", "1");
+    depositButtonLink.attr("tabindex", "-1");
+    
   } else {
+    
     $("#peek .item a").attr("tabindex", "-1");
+    enterLink.attr("tabindex", "0");
+    depositButtonLink.attr("tabindex", "0");
+    
   }
 	
 }
@@ -132,9 +144,6 @@ Peek.prototype.loadItem = function(spec) {
   var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
   var imageLink = $element.find("a").eq(0);
-  var exitLink = $("#peek-exit a");
-  var enterLink = $("#peek-enter a");
-  var depositButtonLink = $(".deposit-option a");
 	
   if (image) {
     
@@ -159,15 +168,11 @@ Peek.prototype.loadItem = function(spec) {
 	
 	if (this.status == true) {
 		
-    exitLink.attr("tabindex", "1");
     imageLink.attr("tabindex", "2");
-    depositButtonLink.attr("tabindex", "-1");
 		
 	} else {
 	  
-    enterLink.attr("tabindex", "0");
     imageLink.attr("tabindex", "-1");
-    depositButtonLink.attr("tabindex", "0");
     
 	}
   
