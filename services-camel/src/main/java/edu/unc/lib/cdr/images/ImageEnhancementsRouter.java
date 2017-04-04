@@ -27,6 +27,9 @@ import edu.unc.lib.cdr.AddDerivativeProcessor;
  *
  */
 public class ImageEnhancementsRouter extends RouteBuilder {
+
+	private static final String MIMETYPE_PATTERN = "^(image.*$|application.*?(photoshop|psd)$)";
+
 	@BeanInject(value = "addSmallThumbnailProcessor")
 	private AddDerivativeProcessor addSmallThumbnailProcessor;
 
@@ -35,15 +38,21 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 
 	@BeanInject(value = "addAccessCopyProcessor")
 	private AddDerivativeProcessor addAccessCopyProcessor;
-	
+
 	/**
 	 * Configure the thumbnail route workflow.
 	 */
 	public void configure() throws Exception {
+		onException(Exception.class)
+			.redeliveryDelay("{{error.retryDelay}}")
+			.maximumRedeliveries("{{error.maxRedeliveries}}")
+			.backOffMultiplier(2)
+			.retryAttemptedLogLevel(LoggingLevel.WARN);
+
 		from("direct-vm:imageEnhancements")
 			.routeId("CdrImageEnhancementRoute")
 			.log(LoggingLevel.INFO, "Calling image route for ${headers[org.fcrepo.jms.identifier]}")
-			.filter(simple("${headers[MimeType]} regex '^(image.*$|application.*?(photoshop|psd)$)'"))
+			.filter(simple("${headers[MimeType]} regex '" + MIMETYPE_PATTERN + "'"))
 				.log(LoggingLevel.INFO, "Generating images for ${headers[org.fcrepo.jms.identifier]}"
 						+ " of type ${headers[MimeType]}")
 				.multicast()
@@ -64,13 +73,13 @@ public class ImageEnhancementsRouter extends RouteBuilder {
 					+ "${headers[BinaryPath]} PNG 128 128 "
 					+ "${properties:services.tempDirectory}${headers[CheckSum]}-large"))
 			.bean(addLargeThumbProcessor);
-		
+
 		from("direct:accessCopy")
-		.routeId("AccessCopy")
-		.log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[binaryPath]}")
-		.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertJp2.sh "
-				+ "${headers[BinaryPath]} JP2 "
-				+ "${properties:services.tempDirectory}${headers[CheckSum]}-access"))
-		.bean(addAccessCopyProcessor);
+			.routeId("AccessCopy")
+			.log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[binaryPath]}")
+			.recipientList(simple("exec:/bin/sh?args=/usr/local/bin/convertJp2.sh "
+					+ "${headers[BinaryPath]} JP2 "
+					+ "${properties:services.tempDirectory}${headers[CheckSum]}-access"))
+			.bean(addAccessCopyProcessor);
 	}
 }
