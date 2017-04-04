@@ -25,7 +25,7 @@ Peek.prototype.addTabIndexes = function(status) {
   // For items already loaded on the page, add tabindex values
   
   if (this.status == true) {
-    $("#peek .item a").attr("tabindex", "1");
+    $("#peek .item a").attr("tabindex", "2");
   } else {
     $("#peek .item a").attr("tabindex", "-1");
   }
@@ -159,8 +159,8 @@ Peek.prototype.loadItem = function(spec) {
 	
 	if (this.status == true) {
 		
-    exitLink.attr("tabindex", "0");
-		imageLink.attr("tabindex", "1");
+    exitLink.attr("tabindex", "1");
+    imageLink.attr("tabindex", "2");
     depositButtonLink.attr("tabindex", "-1");
 		
 	} else {
