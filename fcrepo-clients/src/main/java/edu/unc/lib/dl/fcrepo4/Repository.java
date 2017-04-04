@@ -160,7 +160,9 @@ public class Repository {
 				Resource resc = model.getResource(pid.getRepositoryPath());
 
 				String etag = response.getHeaderValue("ETag");
-				etag = etag.substring(1,  etag.length() - 1);
+				if (etag != null) {
+					etag = etag.substring(1,  etag.length() - 1);
+				}
 
 				if (resc.hasProperty(RDF.type, Cdr.Work)) {
 					return getWorkObject(pid, model, etag);
