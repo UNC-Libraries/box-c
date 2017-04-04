@@ -92,6 +92,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
+		job.setPremisLoggerFactory(premisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -156,6 +157,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Verify that its title was set to the expected value
 		String title = folder.getResource().getProperty(DC.title).getString();
 		assertEquals("Folder title was not correctly set", label, title);
+		
+		List<PremisEventObject> events = folder.getPremisLog().getEvents();
+		assertEquals(1, events.size());
+		assertEquals("added 0 child objects to this container", events.get(0).getResource()
+			.getProperty(Premis.hasEventDetail).getString());
 
 		assertClickCount(1);
 	}
@@ -193,7 +199,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		List<ContentObject> destMembers = destObj.getMembers();
 		assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
-		// Make sure that the folder is present and is actually a folder
+		// Make sure that the work is present and is actually a work
 		WorkObject mWork = (WorkObject) findContentObjectByPid(destMembers, workPid);
 
 		String title = mWork.getResource().getProperty(DC.title).getString();
@@ -211,6 +217,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
 		// Verify the properties and content of the supplemental file
 		assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, FILE2_SIZE);
+		
+		List<PremisEventObject> events = mWork.getPremisLog().getEvents();
+		assertEquals(1, events.size());
+		assertEquals("added 2 child objects to this container", events.get(0).getResource()
+			.getProperty(Premis.hasEventDetail).getString());
 
 		assertClickCount(3);
 	}
@@ -521,7 +532,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		
 		PID folderObjPid = repository.mintContentPid();
 		
-		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
+		File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".ttl");
 		premisEventsFile.createNewFile();
 		
 		String label = "testfolder";
@@ -554,13 +565,14 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		
 		FolderObject folder = repository.getFolderObject(folderObjPid);
 		List<PremisEventObject> events = folder.getPremisLog().getEvents();
-		assertEquals(2, events.size());
+		// there should be three events total: the ingestion event, plus the two added in the test
+		assertEquals(3, events.size());
 		assertTrue(events.contains(findPremisEventByType(events, Premis.Normalization)));
 		assertTrue(events.contains(findPremisEventByType(events, Premis.VirusCheck)));
 	}
 	
 	@Test
-	public void noPremisEventsAddedTest() throws IOException {
+	public void onlyIngestionEventAddedTest() throws IOException {
 		File premisEventsDir = job.getEventsDirectory();
 		premisEventsDir.mkdir();
 		
@@ -588,7 +600,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		
 		FolderObject folder = repository.getFolderObject(folderObjPid);
 		List<PremisEventObject> events = folder.getPremisLog().getEvents();
-		assertEquals(0, events.size());
+		assertEquals(1, events.size());
 	}
 
 	private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
