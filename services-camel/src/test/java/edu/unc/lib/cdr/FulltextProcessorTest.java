@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -42,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.exceptions.base.MockitoException;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -115,6 +117,49 @@ public class FulltextProcessorTest {
 		String extractedText = new BufferedReader(new InputStreamReader(request))
 				.lines().collect(Collectors.joining("\n"));
 		
+		assertEquals(testText, extractedText);
+	}
+	
+	@Test
+	public void extractFulltextRetryTest() throws Exception {
+		String errorText = "No file path given";
+		
+		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
+			writeFile.write(testText);
+		}
+		
+		String filePath = file.getAbsolutePath().toString();
+		
+		when(message.getHeader(eq(FCREPO_URI)))
+				.thenReturn("http://fedora/test/original_file");
+
+		when(message.getHeader(eq(CdrBinaryChecksum)))
+				.thenReturn("1234");
+		
+		when(message.getHeader(eq(CdrBinaryPath)))
+				.thenReturn(filePath);
+		
+		when(message.getHeader(eq(CdrBinaryMimeType)))
+				.thenReturn("plain/text");
+
+		binary = mock(BinaryObject.class);
+		parent = mock(FileObject.class);
+
+		when(repository.getBinary(any(PID.class))).thenReturn(binary);
+		when(binary.getParent())
+				.thenThrow(new MockitoException(errorText))
+				.thenReturn(parent);
+		
+		processor.process(exchange);
+		
+		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
+		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(fileName), eq("plain/text"), eq(PcdmUse.ExtractedText));
+		InputStream request = requestCaptor.getValue();
+		String extractedText = new BufferedReader(new InputStreamReader(request))
+				.lines().collect(Collectors.joining("\n"));
+		
+		// Throws error on first pass and then retries.
+		verify(binary, times(2)).getParent();
 		assertEquals(testText, extractedText);
 	}
 }
