@@ -160,7 +160,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Verify that ingestion event gets added for folder
 		List<PremisEventObject> events = folder.getPremisLog().getEvents();
 		assertEquals(1, events.size());
-		assertEquals("added 0 child objects to this container", events.get(0).getResource()
+		assertEquals("ingested as PID: " + folder.getPid().toString(), events.get(0).getResource()
 			.getProperty(Premis.hasEventDetail).getString());
 
 		assertClickCount(1);
