@@ -22,7 +22,6 @@ Peek.prototype.addTabIndexes = function(status) {
 	
   var exitLink = $("#peek-exit a");
   var enterLink = $("#peek-enter a");
-  var depositButtonLink = $(".deposit-option a");
   
 	this.status = status;
   
@@ -32,13 +31,11 @@ Peek.prototype.addTabIndexes = function(status) {
     
     $("#peek .item a").attr("tabindex", "2");
     exitLink.attr("tabindex", "1");
-    depositButtonLink.attr("tabindex", "-1");
     
   } else {
     
     $("#peek .item a").attr("tabindex", "-1");
     enterLink.attr("tabindex", "0");
-    depositButtonLink.attr("tabindex", "0");
     
   }
 	
@@ -556,6 +553,8 @@ $(function() {
   var template = _.template(source, null, { variable: "data" });
 
   var peek = new Peek("#peek", template, 195);
+	
+	var depositButtonLink = $(".deposit-option a");
 
   $.getJSON("/shared/peek/peek.json", function(items) {
 
@@ -581,12 +580,16 @@ $(function() {
 
     $(document.body).toggleClass("peek", window.location.hash == "#p");
     
-    if (!$(document.body).hasClass("peek")) {
-      peek.addTabIndexes(true);
-    } else {
-      peek.addTabIndexes(false);
-    }
-
+		$(window).on("hashchange", function() {
+	    if ($(document.body).hasClass("peek")) {
+	      peek.addTabIndexes(true);
+				depositButtonLink.attr("tabindex", "-1");
+	    } else {
+	      peek.addTabIndexes(false);
+				depositButtonLink.attr("tabindex", "0");
+	    }
+		});
+    
     $(window).scroll(function() {
       if (!$(document.body).hasClass("peek")) {
         $("#peek .peek-columns").css({
