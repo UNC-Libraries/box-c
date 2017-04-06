@@ -561,12 +561,12 @@ $(function() {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
-      // peek.addTabIndexes(true);
+      peek.addTabIndexes(true);
     });
 
     $("#peek-exit").on("click", function() {
       window.location.hash = "";
-      // peek.addTabIndexes(false);
+      peek.addTabIndexes(false);
     });
 
     $(window).on("hashchange", function() {
@@ -580,12 +580,6 @@ $(function() {
     });
 
     $(document.body).toggleClass("peek", window.location.hash == "#p");
-    
-    if (!$(document.body).hasClass("peek")) {
-      peek.addTabIndexes(true);
-    } else {
-      peek.addTabIndexes(false);
-    }
 
     $(window).scroll(function() {
       if (!$(document.body).hasClass("peek")) {
