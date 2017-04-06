@@ -13,17 +13,17 @@ function Peek(element, template, columnWidth) {
   this.specs = [];
   this.items = [];
   this.inprogress = 0;
-	
+
 }
 
 // Stores value based on peek view or not
 
 Peek.prototype.addTabIndexes = function(status) {
-	
+  
   var exitLink = $("#peek-exit a");
   var enterLink = $("#peek-enter a");
   
-	this.status = status;
+    this.status = status;
   
   // For items already loaded on the page, add tabindex values. Also add tabindex values for enter/exit links and deposit buttons
   
@@ -38,7 +38,7 @@ Peek.prototype.addTabIndexes = function(status) {
     enterLink.attr("tabindex", "0");
     
   }
-	
+  
 }
 
 Peek.prototype.add = function(specs) {
@@ -141,7 +141,7 @@ Peek.prototype.loadItem = function(spec) {
   var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
   var imageLink = $element.find("a").eq(0);
-	
+  
   if (image) {
     
     image.on("load", _.bind(function() {
@@ -162,16 +162,16 @@ Peek.prototype.loadItem = function(spec) {
   };
   
   // If we're in peek view, new image links are reachable via keyboard navigation. If we're not in peek view, new image links are not reachable. 
-	
-	if (this.status == true) {
-		
+  
+  if (this.status == true) {
+    
     imageLink.attr("tabindex", "2");
-		
-	} else {
-	  
+    
+  } else {
+    
     imageLink.attr("tabindex", "-1");
     
-	}
+  }
   
 }
 
@@ -553,8 +553,8 @@ $(function() {
   var template = _.template(source, null, { variable: "data" });
 
   var peek = new Peek("#peek", template, 195);
-	
-	var depositButtonLink = $(".deposit-option a");
+  
+  var depositButtonLink = $(".deposit-option a");
 
   $.getJSON("/shared/peek/peek.json", function(items) {
 
@@ -570,6 +570,13 @@ $(function() {
 
     $(window).on("hashchange", function() {
       $(document.body).toggleClass("peek", window.location.hash == "#p");
+      if ($(document.body).hasClass("peek")) {
+        peek.addTabIndexes(true);
+        depositButtonLink.attr("tabindex", "-1");
+      } else {
+        peek.addTabIndexes(false);
+        depositButtonLink.attr("tabindex", "0");
+      }
     });
 
     $(document).on("keydown", function(e) {
@@ -579,16 +586,6 @@ $(function() {
     });
 
     $(document.body).toggleClass("peek", window.location.hash == "#p");
-    
-		$(window).on("hashchange", function() {
-	    if ($(document.body).hasClass("peek")) {
-	      peek.addTabIndexes(true);
-				depositButtonLink.attr("tabindex", "-1");
-	    } else {
-	      peek.addTabIndexes(false);
-				depositButtonLink.attr("tabindex", "0");
-	    }
-		});
     
     $(window).scroll(function() {
       if (!$(document.body).hasClass("peek")) {
