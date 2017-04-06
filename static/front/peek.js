@@ -23,7 +23,7 @@ Peek.prototype.addTabIndexes = function(status) {
   var exitLink = $("#peek-exit a");
   var enterLink = $("#peek-enter a");
   
-    this.status = status;
+  this.status = status;
   
   // For items already loaded on the page, add tabindex values. Also add tabindex values for enter/exit links and deposit buttons
   
