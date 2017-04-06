@@ -138,6 +138,7 @@
 				<form class="right clear_on_submit_without_focus" method="get" action="basicSearch" id="hsearch_form">
 						<input name="queryType" type="hidden" value="${searchSettings.searchFieldParams['DEFAULT_INDEX']}">
 						<div id="hsearch_inputwrap">
+              <label class="search_label" for="hsearch_text">Search the CDR</label>
 						   <input name="query" type="text" id="hsearch_text" placeholder="Search all collections">
 						   <input type="submit" value="Go" id="hsearch_submit">
 						</div>

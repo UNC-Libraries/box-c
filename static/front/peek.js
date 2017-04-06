@@ -13,7 +13,35 @@ function Peek(element, template, columnWidth) {
   this.specs = [];
   this.items = [];
   this.inprogress = 0;
+	
+}
+
+// Stores value based on peek view or not
+
+Peek.prototype.addTabIndexes = function(status) {
+	
+  var exitLink = $("#peek-exit a");
+  var enterLink = $("#peek-enter a");
+  var depositButtonLink = $(".deposit-option a");
   
+	this.status = status;
+  
+  // For items already loaded on the page, add tabindex values. Also add tabindex values for enter/exit links and deposit buttons
+  
+  if (this.status == true) {
+    
+    $("#peek .item a").attr("tabindex", "2");
+    exitLink.attr("tabindex", "1");
+    depositButtonLink.attr("tabindex", "-1");
+    
+  } else {
+    
+    $("#peek .item a").attr("tabindex", "-1");
+    enterLink.attr("tabindex", "0");
+    depositButtonLink.attr("tabindex", "0");
+    
+  }
+	
 }
 
 Peek.prototype.add = function(specs) {
@@ -115,7 +143,8 @@ Peek.prototype.loadItem = function(spec) {
   
   var $element = $(this.template(spec).replace(new RegExp("^\\s*"), ""));
   var image = $element.find("img").eq(0);
-  
+  var imageLink = $element.find("a").eq(0);
+	
   if (image) {
     
     image.on("load", _.bind(function() {
@@ -133,7 +162,19 @@ Peek.prototype.loadItem = function(spec) {
     
     throw "Couldn't retrieve image for evaluated item template";
     
-  }
+  };
+  
+  // If we're in peek view, new image links are reachable via keyboard navigation. If we're not in peek view, new image links are not reachable. 
+	
+	if (this.status == true) {
+		
+    imageLink.attr("tabindex", "2");
+		
+	} else {
+	  
+    imageLink.attr("tabindex", "-1");
+    
+	}
   
 }
 
@@ -502,7 +543,7 @@ $(function() {
   var source = "<div class=\"item\"> \
     <a href=\"https://cdr.lib.unc.edu/record/<%= data.pid %>\"> \
       <div class=\"image\"> \
-        <img src=\"/shared/peek/thumbnails/<%= data.path %>\"> \
+         <img src=\"/shared/peek/thumbnails/<%= data.path %>\" alt=\"<%= data.title %> thumbnail\"> \
       </div> \
       <div class=\"description\"> \
         <div class=\"title\"><%= data.title %></div> \
@@ -520,10 +561,12 @@ $(function() {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
+      // peek.addTabIndexes(true);
     });
 
     $("#peek-exit").on("click", function() {
       window.location.hash = "";
+      // peek.addTabIndexes(false);
     });
 
     $(window).on("hashchange", function() {
@@ -537,6 +580,12 @@ $(function() {
     });
 
     $(document.body).toggleClass("peek", window.location.hash == "#p");
+    
+    if (!$(document.body).hasClass("peek")) {
+      peek.addTabIndexes(true);
+    } else {
+      peek.addTabIndexes(false);
+    }
 
     $(window).scroll(function() {
       if (!$(document.body).hasClass("peek")) {
