@@ -54,8 +54,7 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
 	private static final String FILE_ID = "/file1/original_file";
-	private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c\n" + 
-			"9cff8d28441";
+	private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
 
 	private static final String META_ROUTE = "CdrMetaServicesRouter";
 	private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
