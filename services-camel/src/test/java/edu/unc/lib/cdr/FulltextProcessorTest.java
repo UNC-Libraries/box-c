@@ -16,14 +16,11 @@
 
 package edu.unc.lib.cdr;
 
-import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
-import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,7 +40,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.exceptions.base.MockitoException;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -58,9 +54,13 @@ public class FulltextProcessorTest {
 	private final String fileName = "full_text.txt";
 	private final String testText = "Test text, see if it can be extracted.";
 	private int maxRetries = 3; 
-	private long retryDelay = 2000;
+	private long retryDelay = 10;
 	private File file;
+	private final static String MIMETYPE = "text/plain";
+	
+	@Mock
 	private BinaryObject binary;
+	@Mock
 	private FileObject parent;
 
 	@Mock
@@ -81,38 +81,31 @@ public class FulltextProcessorTest {
 		when(exchange.getIn()).thenReturn(message);
 		PIDs.setRepository(repository);
 		when(repository.getBaseUri()).thenReturn("http://fedora");
+		
+		when(repository.getBinary(any(PID.class))).thenReturn(binary);
+		
+		when(message.getHeader(eq(FCREPO_URI)))
+				.thenReturn("http://fedora/test/original_file");
+		
+		
+		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
+			writeFile.write(testText);
+		}
+		String filePath = file.getAbsolutePath().toString();
+		when(message.getHeader(eq(CdrBinaryPath)))
+				.thenReturn(filePath);
 	}
 	
 	@Test
 	public void extractFulltextTest() throws Exception {
-		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-			writeFile.write(testText);
-		}
-		
-		String filePath = file.getAbsolutePath().toString();
-		
-		when(message.getHeader(eq(FCREPO_URI)))
-				.thenReturn("http://fedora/test/original_file");
 
-		when(message.getHeader(eq(CdrBinaryChecksum)))
-				.thenReturn("1234");
-		
-		when(message.getHeader(eq(CdrBinaryPath)))
-				.thenReturn(filePath);
-		
-		when(message.getHeader(eq(CdrBinaryMimeType)))
-				.thenReturn("plain/text");
-
-		binary = mock(BinaryObject.class);
-		parent = mock(FileObject.class);
-
-		when(repository.getBinary(any(PID.class))).thenReturn(binary);
 		when(binary.getParent()).thenReturn(parent);
 		
 		processor.process(exchange);
 		
 		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(fileName), eq("plain/text"), eq(PcdmUse.ExtractedText));
+		verify(parent).addDerivative(eq(slug), requestCaptor.capture(),
+				eq(fileName), eq(MIMETYPE), eq(PcdmUse.ExtractedText));
 		InputStream request = requestCaptor.getValue();
 		String extractedText = new BufferedReader(new InputStreamReader(request))
 				.lines().collect(Collectors.joining("\n"));
@@ -122,38 +115,16 @@ public class FulltextProcessorTest {
 	
 	@Test
 	public void extractFulltextRetryTest() throws Exception {
-		String errorText = "No file path given";
-		
-		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-			writeFile.write(testText);
-		}
-		
-		String filePath = file.getAbsolutePath().toString();
-		
-		when(message.getHeader(eq(FCREPO_URI)))
-				.thenReturn("http://fedora/test/original_file");
 
-		when(message.getHeader(eq(CdrBinaryChecksum)))
-				.thenReturn("1234");
-		
-		when(message.getHeader(eq(CdrBinaryPath)))
-				.thenReturn(filePath);
-		
-		when(message.getHeader(eq(CdrBinaryMimeType)))
-				.thenReturn("plain/text");
-
-		binary = mock(BinaryObject.class);
-		parent = mock(FileObject.class);
-
-		when(repository.getBinary(any(PID.class))).thenReturn(binary);
 		when(binary.getParent())
-				.thenThrow(new MockitoException(errorText))
+				.thenThrow(new RuntimeException())
 				.thenReturn(parent);
 		
 		processor.process(exchange);
 		
 		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(fileName), eq("plain/text"), eq(PcdmUse.ExtractedText));
+		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(fileName),
+				eq(MIMETYPE), eq(PcdmUse.ExtractedText));
 		InputStream request = requestCaptor.getValue();
 		String extractedText = new BufferedReader(new InputStreamReader(request))
 				.lines().collect(Collectors.joining("\n"));
@@ -161,5 +132,17 @@ public class FulltextProcessorTest {
 		// Throws error on first pass and then retries.
 		verify(binary, times(2)).getParent();
 		assertEquals(testText, extractedText);
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void extractFulltextRetryFailTest() throws Exception {
+
+		when(binary.getParent()).thenThrow(new RuntimeException());
+		
+		try {
+			processor.process(exchange);
+		} finally {
+			verify(binary, times(maxRetries + 1)).getParent();
+		}
 	}
 }

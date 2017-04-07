@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.cdr;
 
-import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
@@ -51,24 +50,25 @@ public class AddDerivativeProcessor implements Processor {
 	private final Repository repository;
 	private final String slug;
 	private final String fileExtension;
+	private final String mimetype;
 
 	private final int maxRetries;
 	private final long retryDelay;
 
 	public AddDerivativeProcessor(Repository repository, String slug, String fileExtension,
-			int maxRetries, long retryDelay) {
+			String mimetype, int maxRetries, long retryDelay) {
 		this.repository = repository;
 		this.slug = slug;
 		this.fileExtension = fileExtension;
 		this.maxRetries = maxRetries;
 		this.retryDelay = retryDelay;
+		this.mimetype = mimetype;
 	}
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		Message in = exchange.getIn();
 		String binaryUri = (String) in.getHeader(FCREPO_URI);
-		String binaryMimeType = (String) in.getHeader(CdrBinaryMimeType); 
 		int retryAttempt = 0;
 
 		final ExecResult result = (ExecResult) in.getBody();
@@ -78,7 +78,7 @@ public class AddDerivativeProcessor implements Processor {
 
 		while (true) {
 			try {
-				ingestFile(binaryUri, binaryMimeType, derivativePath);
+				ingestFile(binaryUri, mimetype, derivativePath);
 				break;
 			} catch (Exception e) {
 				if (retryAttempt == maxRetries) {

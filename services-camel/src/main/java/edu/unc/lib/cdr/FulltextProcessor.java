@@ -16,7 +16,6 @@
 
 package edu.unc.lib.cdr;
 
-import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -60,6 +59,8 @@ public class FulltextProcessor implements Processor {
 	
 	private final int maxRetries;
 	private final long retryDelay;
+	
+	private final static String MIMETYPE = "text/plain";
 
 	public FulltextProcessor(Repository repository, String slug, String fileName, int maxRetries, long retryDelay) {
 		this.repository = repository;
@@ -74,7 +75,6 @@ public class FulltextProcessor implements Processor {
 		final Message in = exchange.getIn();
 
 		String binaryUri = (String) in.getHeader(FCREPO_URI);
-		String binaryMimeType = (String) in.getHeader(CdrBinaryMimeType);
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
 		String text = extractText(binaryPath);
 		int retryAttempt = 0;
@@ -86,7 +86,7 @@ public class FulltextProcessor implements Processor {
 				BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
 				FileObject parent = (FileObject) binary.getParent();
 				
-				parent.addDerivative(slug, binaryStream, fileName, binaryMimeType, PcdmUse.ExtractedText);
+				parent.addDerivative(slug, binaryStream, fileName, MIMETYPE, PcdmUse.ExtractedText);
 				
 				log.info("Adding derivative for {} from {}", binaryUri, fileName);
 				break;
