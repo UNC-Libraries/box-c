@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,6 +37,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
@@ -182,7 +183,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// Ingest objects included in this deposit into the destination object
 		try {
 			ingestChildren((ContentContainerObject) destObj, depositBag);
-			addIngestionEventForContainer((ContentContainerObject) destObj); 
+			addIngestionEventForContainer((ContentContainerObject) destObj, model); 
 		} catch (DepositException | FedoraException | IOException e) {
 			failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
 		}
@@ -310,7 +311,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			addDescription(newWork);
 			FileObject fileObj = addFileToWork(newWork, childResc);
 			// add ingestion event for work object
-			addIngestionEventForContainer(newWork);
+			addIngestionEventForContainer(newWork, workModel);
 			// Set the file as the primary object for the generated work
 			newWork.setPrimaryObject(childPid);
 			// Add the newly created work to its parent
@@ -441,7 +442,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// ingest all children of the folder
 		ingestChildren(obj, childResc);
 		// add ingestion event for the new folder
-		addIngestionEventForContainer(obj);
+		addIngestionEventForContainer(obj, childResc.getModel());
 		addPremisEvents(obj);
 		
 		return obj;
@@ -493,7 +494,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 				log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 				ingestChildren(obj, childResc);
-				addIngestionEventForContainer(obj);
+				addIngestionEventForContainer(obj, model);
 				// write premis events for the work to fedora
 				addPremisEvents(obj);
 
@@ -595,15 +596,23 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		obj.addPremisEvents(events);
 	}
 	
-	private void addIngestionEventForContainer(ContentContainerObject obj) throws IOException {
+	private void addIngestionEventForContainer(ContentContainerObject obj, Model model) throws IOException {
 		PremisLogger premisLogger = getPremisLogger(obj.getPid());
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 		builder.addEventDetail("ingested as PID: {0}", obj.getPid().toString());
-		List<ContentObject> children = ((ContentContainerObject) obj).getMembers();
-		int numChildren = children.size();
-		if (numChildren == 1) {
+		ResIterator childrenIt = model.listSubjects();
+		int numChildren = 0;
+		PID childPid = null;
+		while (childrenIt.hasNext()) {
+			// we need the pid only if there is exactly one child
+			if (numChildren < 1) {
+				childPid = PIDs.get(childrenIt.next().getURI());
+			}
+			numChildren++;
+		}
+		if (numChildren == 1 && childPid != null) {
 			builder.addEventDetail("added child object {0} to this container",
-				children.get(0).getPid().toString()).write();
+				childPid.toString()).write();
 		} else if (numChildren > 0) {
 			builder.addEventDetail("added {0} child objects to this container", numChildren).write();
 		}
