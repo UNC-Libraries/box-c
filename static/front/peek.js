@@ -159,18 +159,6 @@ Peek.prototype.loadItem = function(spec) {
     
     throw "Couldn't retrieve image for evaluated item template";
     
-  };
-  
-  // If we're in peek view, new image links are reachable via keyboard navigation. If we're not in peek view, new image links are not reachable. 
-  
-  if (this.status == true) {
-    
-    imageLink.attr("tabindex", "2");
-    
-  } else {
-    
-    imageLink.attr("tabindex", "-1");
-    
   }
   
 }
@@ -493,6 +481,19 @@ Column.prototype.push = function(item) {
     
   }
   
+  // If we're in peek view, new image links are reachable via keyboard navigation. If we're not in peek view, new image links are not reachable. 
+  
+  var imageLink = item.$element.find("a").eq(0);
+  if (this.delegate.status == true) {
+  
+    imageLink.attr("tabindex", "2");
+  
+  } else {
+  
+    imageLink.attr("tabindex", "-1");
+  
+  }
+  
 }
 
 Column.prototype.shift = function() {
@@ -560,12 +561,10 @@ $(function() {
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
-      // peek.addTabIndexes(true);
     });
 
     $("#peek-exit").on("click", function() {
       window.location.hash = "";
-      // peek.addTabIndexes(false);
     });
 
     $(window).on("hashchange", function() {
