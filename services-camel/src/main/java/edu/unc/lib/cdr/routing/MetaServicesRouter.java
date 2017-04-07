@@ -51,7 +51,6 @@ public class MetaServicesRouter extends RouteBuilder {
 				// Trigger binary processing after an asynchronously
 				.threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
 				.delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-				//.asyncDelayed()
 				.to("direct:process.binary.original");
 
 		from("direct:process.binary.original")
