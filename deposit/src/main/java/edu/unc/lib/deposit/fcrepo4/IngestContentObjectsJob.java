@@ -37,7 +37,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.DC;
@@ -51,7 +50,6 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
@@ -61,9 +59,6 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -183,6 +178,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// Ingest objects included in this deposit into the destination object
 		try {
 			ingestChildren((ContentContainerObject) destObj, depositBag);
+			// Add ingestion event for the parent container
 			addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource()); 
 		} catch (DepositException | FedoraException | IOException e) {
 			failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
@@ -197,12 +193,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @throws DepositException
 	 * @throws IOException 
 	 */
-	private int ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException, IOException {
+	private void ingestChildren(ContentContainerObject destObj, Resource parentResc) throws DepositException, IOException {
 		NodeIterator iterator = getChildIterator(parentResc);
-		int numChildren = 0;
 		// No more children, nothing further to do in this tree
 		if (iterator == null) {
-			return numChildren;
+			return;
 		}
 		
 		try {
@@ -223,12 +218,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 						ingestFileObjectAsWork(destObj, parentResc, childResc);
 					}
 				}
-				numChildren++;
 			}
 		} finally {
 			iterator.close();
 		}
-		return numChildren;
 	}
 
 	/**
@@ -252,6 +245,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		// TODO add ACLs
 		WorkObject work = (WorkObject) parent;
 		FileObject obj = addFileToWork(work, childResc);
+		// Add ingestion event for file object
+		addIngestionEventForChild(obj);
+		addPremisEvents(obj);
 		// add MODS
 		addDescription(work);
 		
@@ -437,11 +433,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				tx.close();
 			}
 		}
-		// ingest all children of the folder, if there are any
-		if (ingestChildren(obj, childResc) > 0) {
-			// add ingestion event for the new folder
-			addIngestionEventForContainer(obj, parentResc);
-		}
+		
+		// ingest children of the folder
+		ingestChildren(obj, childResc);
+		// add ingestion event for the new folder
+		addIngestionEventForContainer(obj, childResc);
+
 		addPremisEvents(obj);
 		
 		return obj;
@@ -483,7 +480,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			// TODO add ACLs
 			try {
 				obj = repository.createWorkObject(childPid, model);
-				
+				// Add ingestion event for the work itself
+				addIngestionEventForChild(obj);
 				parent.addMember(obj);
 				
 				addDescription(obj);
@@ -492,13 +490,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				addClicks(1);
 
 				log.info("Created work object {} for deposit {}", childPid, getDepositPID());
+				
 				ingestChildren(obj, childResc);
-				addIngestionEventForContainer(obj, parentResc);
-				// write premis events for the work to fedora
-				addPremisEvents(obj);
-
 				// Set the primary object for this work if one was specified
 				addPrimaryObject(obj, childResc);
+				// Add ingestion event for the work as container
+				addIngestionEventForContainer(obj, childResc);
+				// write premis events for the work to fedora
+				addPremisEvents(obj);
 			} catch(Exception e) {
 				tx.cancel(e);
 			} finally {
@@ -596,23 +595,27 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	}
 	
 	private void addIngestionEventForContainer(ContentContainerObject obj, Resource parentResc) throws IOException {
-		PremisLogger premisLogger = getPremisLogger(obj.getPid());
-		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 		NodeIterator childIt = getChildIterator(parentResc);
 		int numChildren = 0;
 		PID childPid = null;
 		while (childIt.hasNext()) {
+			Resource resc = (Resource) childIt.next();
 			// we need the pid only if there is exactly one child
 			if (numChildren < 1) {
-				childPid = PIDs.get(((Resource) childIt.next()).getURI());
+				childPid = PIDs.get(resc.getURI());
 			}
 			numChildren++;
 		}
-		if (numChildren == 1 && childPid != null) {
-			builder.addEventDetail("added child object {0} to this container",
-				childPid.toString()).write();
-		} else if (numChildren > 0) {
-			builder.addEventDetail("added {0} child objects to this container", numChildren).write();
+		// don't add event unless at least one child is ingested
+		if (numChildren > 0) {
+			PremisLogger premisLogger = getPremisLogger(obj.getPid());
+			PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
+			if (numChildren == 1 && childPid != null) {
+				builder.addEventDetail("added child object {0} to this container",
+					childPid.toString()).write();
+			} else {
+				builder.addEventDetail("added {0} child objects to this container", numChildren).write();
+			}
 		}
 	}
 	

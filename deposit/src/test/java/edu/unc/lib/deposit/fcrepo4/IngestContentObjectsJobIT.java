@@ -219,9 +219,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, FILE2_SIZE);
 		// Verify that ingestion event gets added for work
 		List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
-		assertEquals(1, eventsWork.size());
-		assertEquals("added 2 child objects to this container", eventsWork.get(0).getResource()
-			.getProperty(Premis.hasEventDetail).getString());
+		assertEquals(2, eventsWork.size());
+		
+		assertTrue(eventsWork.contains(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid())));
+		assertTrue(eventsWork.contains(findPremisEventByEventDetail(eventsWork, "added 2 child objects to this container")));
 		
 		// Verify that ingestion event gets added for primary object
 		List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
@@ -662,4 +663,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		return objs.stream()
 				.filter(p -> p.getResource().getPropertyResourceValue(Premis.hasEventType).equals(type)).findAny().get();
 	}
+	
+	private PremisEventObject findPremisEventByEventDetail(List<PremisEventObject> objs, final String message) {
+		return objs.stream()
+				.filter(p -> p.getResource().hasProperty(Premis.hasEventDetail, message)).findAny().get();
+	}
+
 }
