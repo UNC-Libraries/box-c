@@ -235,11 +235,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @throws DepositException
 	 * @throws IOException 
 	 */
-	private FileObject ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
+	private void ingestFileObject(ContentObject parent, Resource parentResc, Resource childResc)
 			throws DepositException, IOException {
 
 		if (skipResumed(childResc)) {
-			return null;
+			return;
 		}
 
 		// TODO add ACLs
@@ -249,14 +249,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		addIngestionEventForChild(obj);
 		addPremisEvents(obj);
 		// add MODS
-		addDescription(work);
+		addDescription(obj);
 		
 		// Increment the count of objects deposited
 		addClicks(1);
 
 		log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
-		
-		return obj;
 	}
 
 	/**
@@ -270,11 +268,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @return
 	 * @throws DepositException
 	 */
-	private WorkObject ingestFileObjectAsWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
+	private void ingestFileObjectAsWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
 			throws DepositException {
 
 		if (skipResumed(childResc)) {
-			return null;
+			return;
 		}
 
 		PID childPid = PIDs.get(childResc.getURI());
@@ -302,13 +300,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			newWork = repository.createWorkObject(workPid, workModel);
 
 			addDescription(newWork);
+			// Add the newly created work to its parent
+			parent.addMember(newWork);
 			FileObject fileObj = addFileToWork(newWork, childResc);
 			// add ingestion event for work object
 			addIngestionEventForContainer(newWork, parentResc);
 			// Set the file as the primary object for the generated work
 			newWork.setPrimaryObject(childPid);
-			// Add the newly created work to its parent
-			parent.addMember(newWork);
 			// Increment the count of objects deposited
 			addClicks(1);
 			// write premis events for file object to fedora
@@ -323,7 +321,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		} finally {
 			tx.close();
 		}
-		return newWork;
 	}
 
 	/**
@@ -398,7 +395,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @throws DepositException
 	 * @throws IOException 
 	 */
-	private FolderObject ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
+	private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
 			throws DepositException, IOException {
 
 		PID childPid = PIDs.get(childResc.getURI());
@@ -420,8 +417,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				parent.addMember(obj);
 				
 				addDescription(obj);
-				// write premis events for the folder object to fedora
-				//addPremisEvents(obj);
 
 				// Increment the count of objects deposited prior to adding children
 				addClicks(1);
@@ -440,8 +435,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		addIngestionEventForContainer(obj, childResc);
 
 		addPremisEvents(obj);
-		
-		return obj;
 	}
 
 	/**
@@ -456,7 +449,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	 * @throws DepositException
 	 * @throws IOException 
 	 */
-	private WorkObject ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
+	private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
 			throws DepositException, IOException {
 		PID childPid = PIDs.get(childResc.getURI());
 
@@ -504,7 +497,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 				tx.close();
 			}
 		}
-		return obj;
 	}
 
 	private void addPrimaryObject(WorkObject obj, Resource childResc) {

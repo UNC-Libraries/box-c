@@ -221,8 +221,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
 		assertEquals(2, eventsWork.size());
 		
-		assertTrue(eventsWork.contains(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid())));
-		assertTrue(eventsWork.contains(findPremisEventByEventDetail(eventsWork, "added 2 child objects to this container")));
+		assertNotNull(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid()));
+		assertNotNull(findPremisEventByEventDetail(eventsWork, "added 2 child objects to this container"));
 		
 		// Verify that ingestion event gets added for primary object
 		List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
