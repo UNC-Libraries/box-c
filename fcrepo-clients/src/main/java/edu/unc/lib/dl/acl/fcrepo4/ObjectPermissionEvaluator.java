@@ -16,11 +16,13 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
@@ -95,13 +97,13 @@ public class ObjectPermissionEvaluator {
 	 *            Permission requested by agent
 	 * @return
 	 */
-	public List<String> getPatronPrincipalsWithPermission(PID pid, Set<String> agentPrincipals,
+	public Set<String> getPatronPrincipalsWithPermission(PID pid, Set<String> agentPrincipals,
 			Permission permission) {
 		if (permission == null || pid == null || agentPrincipals == null) {
 			throw new IllegalArgumentException("Parameters must not be null");
 		}
 		if (agentPrincipals.size() == 0) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 
 		Map<String, List<String>> objectPrincipalRoles = aclFactory.getPrincipalRoles(pid);
@@ -113,7 +115,47 @@ public class ObjectPermissionEvaluator {
 					&& objectPrincipalRoles.get(p).stream()
 					.anyMatch(r -> patronRolesToPermissions.containsKey(r)
 							&& patronRolesToPermissions.get(r).contains(permission.name()));
-		}).collect(Collectors.toList());
+		}).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Returns true if the provided agents have patron level access to the
+	 * object represented by the given pid, and false if access is revoked
+	 * 
+	 * @param pid
+	 * @param agentPrincipals
+	 * @return
+	 */
+	public boolean hasPatronAccess(PID pid, Set<String> agentPrincipals) {
+		PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
+		if (PatronAccess.none.equals(patronAccess)) {
+			// patron access revoked
+			return false;
+		}
+
+		if (PatronAccess.authenticated.equals(patronAccess)) {
+			// Access reduced to authenticated users
+			if (!agentPrincipals.contains("authenticated")) {
+				// Roles no longer sufficient, deny access
+				return false;
+			}
+		}
+
+		// If marked for deletion then patron access is revoked
+		if (aclFactory.isMarkedForDeletion(pid)) {
+			return false;
+		}
+
+		// Check for an active embargo
+		Date embargoUntil = aclFactory.getEmbargoUntil(pid);
+		if (embargoUntil != null) {
+			Date currentDate = new Date();
+			if (currentDate.before(embargoUntil)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public void setAclFactory(ObjectACLFactory aclFactory) {

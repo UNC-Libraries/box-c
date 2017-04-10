@@ -22,7 +22,9 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.PID;
@@ -53,6 +56,7 @@ public class ObjectPermissionEvaluatorTest {
 
 	private final static String PRINC_GRP1 = "group1";
 	private final static String PRINC_GRP2 = "group2";
+	private final static String PRINC_AUTH = "authenticated";
 
 	private Set<String> principals;
 
@@ -123,7 +127,7 @@ public class ObjectPermissionEvaluatorTest {
 	public void getPatronPrincipalsWithPermissionTest() throws Exception {
 		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
 
-		List<String> permittedPrincipals = evaluator
+		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
 
 		assertEquals(1, permittedPrincipals.size());
@@ -136,7 +140,7 @@ public class ObjectPermissionEvaluatorTest {
 
 		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
 
-		List<String> permittedPrincipals = evaluator
+		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
 
 		assertEquals(1, permittedPrincipals.size());
@@ -151,7 +155,7 @@ public class ObjectPermissionEvaluatorTest {
 				UserRole.canViewMetadata.getPropertyString(), UserRole.canViewOriginals.getPropertyString()));
 		objPrincRoles.put(PRINC_GRP2, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
 
-		List<String> permittedPrincipals = evaluator
+		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
 
 		assertEquals(2, permittedPrincipals.size());
@@ -165,7 +169,7 @@ public class ObjectPermissionEvaluatorTest {
 
 		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
 
-		List<String> permittedPrincipals = evaluator
+		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
 
 		assertEquals(0, permittedPrincipals.size());
@@ -176,7 +180,7 @@ public class ObjectPermissionEvaluatorTest {
 		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canManage.getPropertyString()));
 		objPrincRoles.put(PRINC_GRP2, Arrays.asList(UserRole.canManage.getPropertyString()));
 
-		List<String> permittedPrincipals = evaluator
+		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
 
 		assertEquals(0, permittedPrincipals.size());
@@ -184,7 +188,7 @@ public class ObjectPermissionEvaluatorTest {
 
 	@Test
 	public void getPatronPrincipalsWithPermissionNoRolesTest() throws Exception {
-		List<String> permittedPrincipals = evaluator
+		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
 
 		assertEquals(0, permittedPrincipals.size());
@@ -193,5 +197,64 @@ public class ObjectPermissionEvaluatorTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void getPatronPrincipalsWithPermissionNoPidTest() throws Exception {
 		evaluator.getPatronPrincipalsWithPermission(null, principals, Permission.viewMetadata);
+	}
+
+	@Test
+	public void hasPatronAccessNoModificationsTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
+
+		assertTrue(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	@Test
+	public void hasPatronAccessNoneTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
+
+		assertFalse(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	@Test
+	public void hasPatronAccessUnauthenticatedTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
+
+		assertFalse(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	@Test
+	public void hasPatronAccessAuthenticatedTest() throws Exception {
+		principals = new HashSet<>(Arrays.asList(PRINC_AUTH));
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
+
+		assertTrue(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	@Test
+	public void hasPatronAccessDeletedTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
+		when(aclFactory.isMarkedForDeletion(any(PID.class))).thenReturn(true);
+
+		assertFalse(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	@Test
+	public void hasPatronAccessEmbargoedTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
+
+		// Set the embargo to tomorrow so that it will not be expired
+		Date tomorrow = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
+		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(tomorrow);
+
+		assertFalse(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	@Test
+	public void hasPatronAccessExpiredEmbargoTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
+
+		// Set the embargo to tomorrow so that it will not be expired
+		Date tomorrow = Date.from(ZonedDateTime.now().plusDays(-1).toInstant());
+		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(tomorrow);
+
+		assertTrue(evaluator.hasPatronAccess(pid, principals));
 	}
 }
