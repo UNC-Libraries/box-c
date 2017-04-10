@@ -16,9 +16,13 @@
 
 package edu.unc.lib.cdr.fulltext;
 
+import static edu.unc.lib.cdr.JmsHeaderConstants.EVENT_TYPE;
+import static edu.unc.lib.cdr.JmsHeaderConstants.IDENTIFIER;
+import static edu.unc.lib.cdr.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -26,6 +30,7 @@ import java.util.Map;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.EndpointInject;
+import org.apache.camel.Exchange;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
@@ -38,16 +43,13 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.cdr.FulltextProcessor;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
 public class FulltextRouterTest extends CamelSpringTestSupport {
-	private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
-	private static final String IDENTIFIER = "org.fcrepo.jms.identifier";
-	private static final String RESOURCE_TYPE = "org.fcrepo.jms.resourceType";
-	private static final String FILE_ID = "/file1";
 	private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
-	private static final String EXTRACTION_ROUTE = "HasFulltext";
+	private static final String EXTRACTION_ROUTE = "ExtractingText";
 	
 	@PropertyInject(value = "fcrepo.baseUri")
 	private static String baseUri;
@@ -57,6 +59,9 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 	
 	@BeanInject(value = "repository")
 	private Repository repo;
+	
+	@BeanInject(value = "fulltextProcessor")
+	private FulltextProcessor ftProcessor;
 	
 	@Produce(uri = "direct:start")
 	protected ProducerTemplate template;
@@ -73,64 +78,11 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 	}
 	
 	@Test
-	public void testRouteStart() throws Exception {
-		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(1);
-		
-		createContext(ENHANCEMENT_ROUTE);
-		
-		template.sendBodyAndHeaders("", createEvent(FILE_ID));
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
-	public void testEventTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(0);
-		
-		createContext(ENHANCEMENT_ROUTE);
-		
-		Map<String, Object> headers = createEvent(FILE_ID);
-		headers.put(EVENT_TYPE, "ResourceDeletion");
-		
-		template.sendBodyAndHeaders("", headers);
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
-	public void testIdentifierFilter() throws Exception {
-		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(0);
-		
-		createContext(ENHANCEMENT_ROUTE);
-
-		Map<String, Object> headers = createEvent(FILE_ID);
-		headers.put(IDENTIFIER, "container");
-		
-		template.sendBodyAndHeaders("", headers);
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
-	public void testResourceTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct:fulltext.filter").expectedMessageCount(0);
-		
-		createContext(ENHANCEMENT_ROUTE);
-
-		Map<String, Object> headers = createEvent(FILE_ID);
-		headers.put(RESOURCE_TYPE, createResource( "http://bad.info/definitions/v9/repository#Fake" ).getURI());
-		
-		template.sendBodyAndHeaders("", headers);
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
 	public void testFullTextExtractionFilterValidMimeType() throws Exception {
 		getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
-		createContext(EXTRACTION_ROUTE);
+		createContext(ENHANCEMENT_ROUTE);
 		
-		template.sendBodyAndHeaders("", createEvent(FILE_ID));
+		template.sendBodyAndHeaders("", createEvent());
 		
 		assertMockEndpointsSatisfied();
 	}
@@ -139,14 +91,24 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 	public void testFullTextExtractionFilterInvalidMimeType() throws Exception {
 		getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(0);
 		
-		createContext(EXTRACTION_ROUTE);
+		createContext(ENHANCEMENT_ROUTE);
 		
-		Map<String, Object> headers = createEvent(FILE_ID);
+		Map<String, Object> headers = createEvent();
 		headers.put(CdrBinaryMimeType, "image/png");
 		
 		template.sendBodyAndHeaders("", headers);
 		
 		assertMockEndpointsSatisfied();
+	}
+	
+	@Test
+	public void testTextExtraction() throws Exception {
+		createContext(EXTRACTION_ROUTE);
+		
+		Map<String, Object> headers = createEvent();
+		template.sendBodyAndHeaders("", headers);
+		
+		verify(ftProcessor).process(any(Exchange.class));
 	}
 	
 	private void createContext(String routeName) throws Exception {
@@ -161,7 +123,7 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 		context.start();
 	}
 	
-	private static Map<String, Object> createEvent(final String identifier) {
+	private static Map<String, Object> createEvent() {
 		final Map<String, Object> headers = new HashMap<>();
 		headers.put(EVENT_TYPE, "ResourceCreation");
 		headers.put(IDENTIFIER, "original_file");

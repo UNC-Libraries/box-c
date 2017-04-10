@@ -49,6 +49,8 @@ public class RepositoryPathConstants {
 	
 	public static final String FULLTEXT_EXTRACTION = "fulltext_extraction";
 
+	public static final String JPEG_2000 = "jp2_access_copy";
+
 	public static final String ORIGINAL_FILE = "original_file";
 	
 	public static final String TECHNICAL_METADATA = "techmd_fits";

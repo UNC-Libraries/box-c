@@ -16,13 +16,10 @@
 
 package edu.unc.lib.cdr.fulltext;
 
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.cdr.BinaryMetadataProcessor;
 import edu.unc.lib.cdr.FulltextProcessor; 
 
 /**
@@ -32,36 +29,32 @@ import edu.unc.lib.cdr.FulltextProcessor;
  *
  */
 public class FulltextRouter extends RouteBuilder {
-	@BeanInject(value = "binaryMetadataProcessor")
-	private BinaryMetadataProcessor mdProcessor;
-	
+
+	private static final String MIMETYPE_PATTERN = "^(text/|application/pdf|application/msword"
+			+ "|application/vnd\\.|application/rtf|application/powerpoint"
+			+ "|application/postscript).*$";
+
 	@BeanInject(value = "fulltextProcessor")
 	private FulltextProcessor ftProcessor;
-	
-	
+
 	public void configure() throws Exception {
-		String mimetypePattern = "^(text/|application/pdf|application/msword|application/vnd\\.|application/rtf|application/powerpoint|application/postscript).*$";
-		
+		onException(Exception.class)
+			.redeliveryDelay("{{error.retryDelay}}")
+			.maximumRedeliveries("{{error.maxRedeliveries}}")
+			.backOffMultiplier(2)
+			.retryAttemptedLogLevel(LoggingLevel.WARN);
+
 		from("direct-vm:extractFulltext")
-		.routeId("CdrServiceFulltextExtraction")
-		.filter(simple("${headers[org.fcrepo.jms.eventType]} not contains 'NODE_REMOVED'"
-				+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
-				+ " && ${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-				+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-			.removeHeaders("CamelHttp*")
-			.to("fcrepo:{{fcrepo.baseUri}}?preferInclude=ServerManaged&accept=text/turtle")
-			.process(mdProcessor)
-			.to("direct:fulltext.filter");
-		
-		from("direct:fulltext.filter")
-		.routeId("HasFulltext")
-		.filter(simple("${headers[MimeType]} regex '" + mimetypePattern + "'"))
-			.to("direct:fulltext.extraction");
-		
+			.routeId("CdrServiceFulltextExtraction")
+			.log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
+			.filter(simple("${headers[MimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+				.log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
+						+ " of type ${headers[MimeType]}")
+				.to("direct:fulltext.extraction");
+
 		from("direct:fulltext.extraction")
-		.routeId("ExtractingText")
-		.log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
-		.bean(ftProcessor);
+			.routeId("ExtractingText")
+			.log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
+			.bean(ftProcessor);
 	} 
 }
-

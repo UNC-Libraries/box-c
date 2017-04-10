@@ -13,12 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package edu.unc.lib.cdr;
 
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -26,20 +25,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.camel.component.exec.ExecResult;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.exceptions.base.MockitoException;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -48,97 +47,100 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
-public class FulltextProcessorTest {
-	private FulltextProcessor processor;
-	private final String slug = "full_text";
-	private final String fileName = "full_text.txt";
-	private final String testText = "Test text, see if it can be extracted.";
-	private int maxRetries = 3; 
+public class AddDerivativeProcessorTest {
+
+	private final String fileName = "small_thumb";
+	private final String slug = "small_thumbnail";
+	private final String fileExtension = "PNG";
+	private final String mimetype = "image/png";
+	private int maxRetries = 3;
 	private long retryDelay = 10;
 	private File file;
-	private final static String MIMETYPE = "text/plain";
-	
+
+	private AddDerivativeProcessor processor;
+
+	private String extensionlessPath;
+
 	@Mock
 	private BinaryObject binary;
 	@Mock
 	private FileObject parent;
+	@Mock
+	private ExecResult result;
 
 	@Mock
 	private Repository repository;
-	
+
 	@Mock
 	private Exchange exchange;
-	
+
 	@Mock
 	private Message message;
 
 	@Before
 	public void init() throws Exception {
 		initMocks(this);
-		processor = new FulltextProcessor(repository, slug, fileName, maxRetries, retryDelay);
-		file = File.createTempFile(fileName, "txt");
+		processor = new AddDerivativeProcessor(repository, slug, fileExtension, mimetype, maxRetries, retryDelay);
+		file = File.createTempFile(fileName, ".PNG");
 		file.deleteOnExit();
 		when(exchange.getIn()).thenReturn(message);
 		PIDs.setRepository(repository);
 		when(repository.getBaseUri()).thenReturn("http://fedora");
-		
+
 		when(repository.getBinary(any(PID.class))).thenReturn(binary);
-		
+
 		when(message.getHeader(eq(FCREPO_URI)))
 				.thenReturn("http://fedora/test/original_file");
-		
-		
-		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-			writeFile.write(testText);
-		}
-		String filePath = file.getAbsolutePath().toString();
-		when(message.getHeader(eq(CdrBinaryPath)))
-				.thenReturn(filePath);
-	}
-	
-	@Test
-	public void extractFulltextTest() throws Exception {
 
-		when(binary.getParent()).thenReturn(parent);
-		
-		processor.process(exchange);
-		
-		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-		verify(parent).addDerivative(eq(slug), requestCaptor.capture(),
-				eq(fileName), eq(MIMETYPE), eq(PcdmUse.ExtractedText));
-		InputStream request = requestCaptor.getValue();
-		String extractedText = new BufferedReader(new InputStreamReader(request))
-				.lines().collect(Collectors.joining("\n"));
-		
-		assertEquals(testText, extractedText);
+		when(message.getHeader(eq(CdrBinaryMimeType)))
+				.thenReturn("image/png");
+
+		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
+			writeFile.write("fake image");
+		}
+
+		extensionlessPath = file.getAbsolutePath().split("\\.")[0];
+		when(message.getHeader(eq(CdrBinaryPath)))
+				.thenReturn(extensionlessPath);
+
+		when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
+		when(message.getBody()).thenReturn(result);
 	}
-	
+
 	@Test
-	public void extractFulltextRetryTest() throws Exception {
+	public void createEnhancementTest() throws Exception {
+
+		when(repository.getBinary(any(PID.class))).thenReturn(binary);
+		when(binary.getParent()).thenReturn(parent);
+		when(message.getBody()).thenReturn(result);
+
+		processor.process(exchange);
+
+		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
+		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
+	}
+
+	@Test
+	public void createEnhancementRetryTest() throws Exception {
 
 		when(binary.getParent())
-				.thenThrow(new RuntimeException())
-				.thenReturn(parent);
-		
+				.thenThrow(new MockitoException("Can't add derivative"))
+				.thenReturn(parent);;
+
 		processor.process(exchange);
-		
+
 		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(fileName),
-				eq(MIMETYPE), eq(PcdmUse.ExtractedText));
-		InputStream request = requestCaptor.getValue();
-		String extractedText = new BufferedReader(new InputStreamReader(request))
-				.lines().collect(Collectors.joining("\n"));
-		
-		// Throws error on first pass and then retries.
+
 		verify(binary, times(2)).getParent();
-		assertEquals(testText, extractedText);
+		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
 	}
 
 	@Test(expected = RuntimeException.class)
-	public void extractFulltextRetryFailTest() throws Exception {
+	public void createEnhancementRetryFailTest() throws Exception {
 
-		when(binary.getParent()).thenThrow(new RuntimeException());
-		
+		when(binary.getParent())
+				.thenThrow(new RuntimeException());
+
 		try {
 			processor.process(exchange);
 		} finally {

@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.thumbnail;
+package edu.unc.lib.cdr.images;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_AGENT;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
@@ -46,7 +45,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
-public class ThumbnailRouterTest extends CamelSpringTestSupport {
+public class ImageEnhancementsRouterTest extends CamelSpringTestSupport {
 	private static final String EVENT_NS = "http://fedora.info/definitions/v4/event#";
 	private static final String EVENT_TYPE = "org.fcrepo.jms.eventType";
 	private static final String IDENTIFIER = "org.fcrepo.jms.identifier";
@@ -56,8 +55,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	private static final String userAgent = "curl/7.37.1";
 	private static final String fileID = "/file1";
 	private final String eventTypes = EVENT_NS + "ResourceCreation";
-	private final String enhancementRoute = "CdrServiceEnhancements";
-	private final String isImageRoute = "IsImage"; 
+	private final String enhancementRoute = "CdrImageEnhancementRoute";
 	
 	@PropertyInject(value = "fcrepo.baseUrl")
 	private static String baseUri;
@@ -68,7 +66,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	@BeanInject(value = "repository")
 	private Repository repo;
 	
-	@Produce(uri = "direct:start")
+	@Produce(uri = "direct:process.binary.original")
 	protected ProducerTemplate template;
 	
 	@Before
@@ -79,68 +77,16 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Override
 	protected AbstractApplicationContext createApplicationContext() {
-		return new ClassPathXmlApplicationContext("/service-context.xml", "/thumbnail-context.xml");
-	}
-	
-	@Test
-	public void testRouteStartSuccess() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(1);
-		
-		createContext(enhancementRoute);
-		
-		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
-	public void testEventTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
-		
-		createContext(enhancementRoute);
-		
-		Map<String, Object> headers = createEvent(fileID, eventTypes);
-		headers.put(EVENT_TYPE, "ResourceDeletion");
-		
-		template.sendBodyAndHeaders("", headers);
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
-	public void testIdentifierFilter() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
-		
-		createContext(enhancementRoute);
-
-		Map<String, Object> headers = createEvent(fileID, eventTypes);
-		headers.put(IDENTIFIER, "container");
-		
-		template.sendBodyAndHeaders("", headers);
-
-		assertMockEndpointsSatisfied();
-	}
-	
-	@Test
-	public void testResourceTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct:images").expectedMessageCount(0);
-		
-		createContext(enhancementRoute);
-
-		Map<String, Object> headers = createEvent(fileID, eventTypes);
-		headers.put(RESOURCE_TYPE, createResource( "http://bad.info/definitions/v9/repository#Fake" ).getURI());
-		
-		template.sendBodyAndHeaders("", headers);
-
-		assertMockEndpointsSatisfied();
+		return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
 	}
 	
 	@Test
 	public void testRouteMulticastSuccess() throws Exception {
-		createContext(isImageRoute);
+		createContext(enhancementRoute);
 		
 		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(1);
 		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(1);
+		getMockEndpoint("mock:direct:accessCopy").expectedMessageCount(1);
 		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
 		
 		assertMockEndpointsSatisfied();
@@ -148,10 +94,11 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 	
 	@Test
 	public void testRouteMulticastFilter() throws Exception {
-		createContext(isImageRoute);
+		createContext(enhancementRoute);
 		
 		getMockEndpoint("mock:direct:small.thumbnail").expectedMessageCount(0);
 		getMockEndpoint("mock:direct:large.thumbnail").expectedMessageCount(0);
+		getMockEndpoint("mock:direct:accessCopy").expectedMessageCount(0);
 		
 		Map<String, Object> headers = createEvent(fileID, eventTypes);
 		headers.put(CdrBinaryMimeType, "plain/text");
@@ -165,7 +112,7 @@ public class ThumbnailRouterTest extends CamelSpringTestSupport {
 		context.getRouteDefinition(routeName).adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
 			@Override
 			public void configure() throws Exception {
-				replaceFromWith("direct:start");
+				replaceFromWith("direct:process.binary.original");
 				mockEndpointsAndSkip("*");
 			}
 		});
