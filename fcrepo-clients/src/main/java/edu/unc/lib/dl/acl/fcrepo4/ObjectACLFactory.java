@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -89,24 +88,19 @@ public class ObjectACLFactory {
 	 * @return
 	 */
 	public Map<String, List<String>> getPrincipalRoles(PID pid) {
-		try {
-			String pidString = pid.getRepositoryPath();
-			List<Entry<String, String>> objAcls = objAclCache.get(pidString);
+		String pidString = pid.getRepositoryPath();
+		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
-			Map<String, List<String>> result = objAcls.stream()
-					// Filter to only role assignments
-					.filter(p -> roleUris.contains(p.getKey()))
-					// Group up roles by principal
-					.collect(Collectors.groupingBy(
-							Entry<String, String>::getValue,
-							Collectors.mapping(Entry<String, String>::getKey, Collectors.toList())
-						));
+		Map<String, List<String>> result = objAcls.stream()
+				// Filter to only role assignments
+				.filter(p -> roleUris.contains(p.getKey()))
+				// Group up roles by principal
+				.collect(Collectors.groupingBy(
+						Entry<String, String>::getValue,
+						Collectors.mapping(Entry<String, String>::getKey, Collectors.toList())
+					));
 
-			return result;
-		} catch (ExecutionException e) {
-			// TODO throw useful exception
-			return null;
-		}
+		return result;
 	}
 
 	/**
@@ -118,20 +112,15 @@ public class ObjectACLFactory {
 	 *         if specified, otherwise parent.
 	 */
 	public PatronAccess getPatronAccess(PID pid) {
-		try {
-			String pidString = pid.getRepositoryPath();
-			List<Entry<String, String>> objAcls = objAclCache.get(pidString);
+		String pidString = pid.getRepositoryPath();
+		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
-			String patronPropertyUri = CdrAcl.patronAccess.getURI();
-			return objAcls.stream()
-					.filter(p -> patronPropertyUri.equals(p.getKey()))
-					.findFirst()
-					.map(p -> PatronAccess.valueOf(p.getValue()))
-					.orElse(PatronAccess.parent);
-		} catch (ExecutionException e) {
-			// TODO throw useful exception
-			return null;
-		}
+		String patronPropertyUri = CdrAcl.patronAccess.getURI();
+		return objAcls.stream()
+				.filter(p -> patronPropertyUri.equals(p.getKey()))
+				.findFirst()
+				.map(p -> PatronAccess.valueOf(p.getValue()))
+				.orElse(PatronAccess.parent);
 	}
 
 	/**
@@ -141,28 +130,23 @@ public class ObjectACLFactory {
 	 * @return
 	 */
 	public Date getEmbargoUntil(PID pid) {
-		try {
-			String pidString = pid.getRepositoryPath();
-			List<Entry<String, String>> objAcls = objAclCache.get(pidString);
+		String pidString = pid.getRepositoryPath();
+		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
-			String embargoPropertyUri = CdrAcl.embargoUntil.getURI();
-			return objAcls.stream()
-					.filter(p -> embargoPropertyUri.equals(p.getKey()))
-					.findFirst()
-					.map(p -> {
-						try {
-							return DateTimeUtil.parseUTCToDate(p.getValue());
-						} catch (IllegalArgumentException | ParseException e) {
-							log.warn("Failed to parse embargo {} for {} while retrieving ACLs",
-									new Object[] {p.getValue(), pid}, e);
-							return null;
-						}
-					})
-					.orElse(null);
-		} catch (ExecutionException e) {
-			// TODO throw useful exception
-			return null;
-		}
+		String embargoPropertyUri = CdrAcl.embargoUntil.getURI();
+		return objAcls.stream()
+				.filter(p -> embargoPropertyUri.equals(p.getKey()))
+				.findFirst()
+				.map(p -> {
+					try {
+						return DateTimeUtil.parseUTCToDate(p.getValue());
+					} catch (IllegalArgumentException | ParseException e) {
+						log.warn("Failed to parse embargo {} for {} while retrieving ACLs",
+								new Object[] {p.getValue(), pid}, e);
+						return null;
+					}
+				})
+				.orElse(null);
 	}
 
 	/**
@@ -172,19 +156,14 @@ public class ObjectACLFactory {
 	 * @return
 	 */
 	public boolean isMarkedForDeletion(PID pid) {
-		try {
-			String pidString = pid.getRepositoryPath();
-			List<Entry<String, String>> objAcls = objAclCache.get(pidString);
+		String pidString = pid.getRepositoryPath();
+		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
-			String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
-			return objAcls.stream()
-					.filter(p -> deletedPropertyUri.equals(p.getKey()))
-					.findFirst()
-					.isPresent();
-		} catch (ExecutionException e) {
-			// TODO throw useful exception
-			return false;
-		}
+		String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
+		return objAcls.stream()
+				.filter(p -> deletedPropertyUri.equals(p.getKey()))
+				.findFirst()
+				.isPresent();
 	}
 
 	public long getCacheTimeToLive() {
