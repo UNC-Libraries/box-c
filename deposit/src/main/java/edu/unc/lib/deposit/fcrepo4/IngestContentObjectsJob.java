@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -605,16 +604,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 			if (numChildren == 1 && childPid != null) {
 				builder.addEventDetail("added child object {0} to this container",
-					childPid.toString())
-				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-				.addAuthorizingAgent(DepositField.depositorName.name())
-				.write();
+						childPid.toString());
 			} else {
-				builder.addEventDetail("added {0} child objects to this container", numChildren)
-				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-				.addAuthorizingAgent(DepositField.depositorName.name())
-				.write();
+				builder.addEventDetail("added {0} child objects to this container", numChildren);
 			}
+			builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+					.addAuthorizingAgent(DepositField.depositorName.name())
+					.write();
 		}
 	}
 	
@@ -623,16 +619,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 		if (obj instanceof FileObject) {
 			builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
-				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename())
-			.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-			.addAuthorizingAgent(DepositField.depositorName.name())
-			.write();
+					obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename());
 		} else if (obj instanceof ContentContainerObject) {
 			builder.addEventDetail("ingested as PID: {0}",
-					obj.getPid())
-			.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-			.addAuthorizingAgent(DepositField.depositorName.name())
-			.write();
+					obj.getPid());
 		}
+		builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+				.addAuthorizingAgent(DepositField.depositorName.name())
+				.write();
 	}
 }
