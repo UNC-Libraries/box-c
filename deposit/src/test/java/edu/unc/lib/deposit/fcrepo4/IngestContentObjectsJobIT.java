@@ -227,16 +227,14 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Verify that ingestion event gets added for primary object
 		List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
 		assertEquals(1, eventsPrimObj.size());
-		assertEquals("ingested as PID: " + primaryObj.getPid().toString() + "\n ingested as filename: "
-				+ primaryObj.getOriginalFile().getFilename(), eventsPrimObj.get(0).getResource()
-				.getProperty(Premis.hasEventDetail).getString());
+		assertNotNull(findPremisEventByEventDetail(eventsPrimObj, "ingested as PID: " + mainPid.toString()
+			+ "\n ingested as filename: " + FILE1_LOC));
 		
 		// Verify that ingestion event gets added for supplementary object
 		List<PremisEventObject> eventsSupObj = supObj.getPremisLog().getEvents();
 		assertEquals(1, eventsSupObj.size());
-		assertEquals("ingested as PID: " + supObj.getPid().toString() + "\n ingested as filename: "
-				+ supObj.getOriginalFile().getFilename(), eventsSupObj.get(0).getResource()
-				.getProperty(Premis.hasEventDetail).getString());
+		assertNotNull(findPremisEventByEventDetail(eventsSupObj, "ingested as PID: " + supPid.toString()
+			+ "\n ingested as filename: " + FILE2_LOC));
 		
 		assertClickCount(3);
 	}
@@ -564,12 +562,13 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		depBag.add(folderBag);
 		
 		FilePremisLogger premisLogger = new FilePremisLogger(folderObjPid, premisEventsFile, repository);
-		Resource event1 = premisLogger.buildEvent(Premis.Normalization)
+		// build event 1
+		premisLogger.buildEvent(Premis.Normalization)
 				.addEventDetail("Event 1")
 				.addAuthorizingAgent(SoftwareAgent.depositService.getFullname())
 				.write();
-
-		Resource event2 = premisLogger.buildEvent(Premis.VirusCheck)
+		// build event 2
+		premisLogger.buildEvent(Premis.VirusCheck)
 				.addEventDetail("Event 2")
 				.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
 				.write();
