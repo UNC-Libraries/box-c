@@ -69,6 +69,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Ingests all content objects in the deposit into the Fedora repository.
@@ -604,9 +605,15 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 			PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 			if (numChildren == 1 && childPid != null) {
 				builder.addEventDetail("added child object {0} to this container",
-					childPid.toString()).write();
+					childPid.toString())
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+				.addAuthorizingAgent(DepositField.depositorName.name())
+				.write();
 			} else {
-				builder.addEventDetail("added {0} child objects to this container", numChildren).write();
+				builder.addEventDetail("added {0} child objects to this container", numChildren)
+				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+				.addAuthorizingAgent(DepositField.depositorName.name())
+				.write();
 			}
 		}
 	}
@@ -616,10 +623,16 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
 		if (obj instanceof FileObject) {
 			builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
-				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename()).write();
+				obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename())
+			.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+			.addAuthorizingAgent(DepositField.depositorName.name())
+			.write();
 		} else if (obj instanceof ContentContainerObject) {
 			builder.addEventDetail("ingested as PID: {0}",
-					obj.getPid()).write();
+					obj.getPid())
+			.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+			.addAuthorizingAgent(DepositField.depositorName.name())
+			.write();
 		}
 	}
 }
