@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import org.apache.jena.query.Dataset;
 
+import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
@@ -61,6 +62,8 @@ public class AbstractFedoraDepositJobIT {
 	protected JobStatusFactory jobStatusFactory;
 	@Autowired
 	protected DepositStatusFactory depositStatusFactory;
+	@Autowired
+	protected PremisLoggerFactory premisLoggerFactory;
 	@Autowired
 	protected FcrepoClient client;
 	@Autowired

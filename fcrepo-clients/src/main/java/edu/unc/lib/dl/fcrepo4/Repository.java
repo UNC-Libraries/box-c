@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import javax.ws.rs.core.EntityTag;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -160,7 +161,9 @@ public class Repository {
 				Resource resc = model.getResource(pid.getRepositoryPath());
 
 				String etag = response.getHeaderValue("ETag");
-				etag = etag.substring(1,  etag.length() - 1);
+				if (etag != null) {
+					etag = EntityTag.valueOf(etag).getValue();
+				}
 
 				if (resc.hasProperty(RDF.type, Cdr.Work)) {
 					return getWorkObject(pid, model, etag);
