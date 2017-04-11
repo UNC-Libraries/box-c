@@ -558,6 +558,8 @@ $(function() {
   var depositButtonLink = $(".deposit-option a");
 
   $.getJSON("/shared/peek/peek.json", function(items) {
+    
+    var docBody = $(document.body);
 
     $("#peek-enter").on("click", function() {
       window.location.hash = "p";
@@ -568,8 +570,8 @@ $(function() {
     });
 
     $(window).on("hashchange", function() {
-      $(document.body).toggleClass("peek", window.location.hash == "#p");
-      if ($(document.body).hasClass("peek")) {
+      docBody.toggleClass("peek", window.location.hash == "#p");
+      if (docBody.hasClass("peek")) {
         peek.addTabIndexes(true);
         depositButtonLink.attr("tabindex", "-1");
       } else {
@@ -584,10 +586,10 @@ $(function() {
       }
     });
 
-    $(document.body).toggleClass("peek", window.location.hash == "#p");
+    docBody.toggleClass("peek", window.location.hash == "#p");
     
     $(window).scroll(function() {
-      if (!$(document.body).hasClass("peek")) {
+      if (!docBody.hasClass("peek")) {
         $("#peek .peek-columns").css({
           marginTop: ($(window).scrollTop() * 0.1) + "px"
         });
