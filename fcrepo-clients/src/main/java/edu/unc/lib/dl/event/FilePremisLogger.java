@@ -170,6 +170,38 @@ public class FilePremisLogger implements PremisLogger {
 
 			events.add(event);
 		}
+		
+		for (ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventRelatedAgentExecutor); eventIt.hasNext(); ) {
+			Resource eventResc = eventIt.nextResource();
+			PID eventPid = PIDs.get(eventResc.getURI());
+
+			// Construct a model for just this event
+			Model eventModel = ModelFactory.createDefaultModel();
+			eventModel.add(eventResc.listProperties());
+
+			// Construct the event object with a presupplied model
+			PremisEventObject event = new PremisEventObject(eventPid, repository,
+					repository.getRepositoryObjectDataLoader());
+			event.storeModel(eventModel);
+
+			events.add(event);
+		}
+		
+		for (ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventRelatedAgentAuthorizor); eventIt.hasNext(); ) {
+			Resource eventResc = eventIt.nextResource();
+			PID eventPid = PIDs.get(eventResc.getURI());
+
+			// Construct a model for just this event
+			Model eventModel = ModelFactory.createDefaultModel();
+			eventModel.add(eventResc.listProperties());
+
+			// Construct the event object with a presupplied model
+			PremisEventObject event = new PremisEventObject(eventPid, repository,
+					repository.getRepositoryObjectDataLoader());
+			event.storeModel(eventModel);
+
+			events.add(event);
+		}
 
 		log.debug("Retrieved {} events from file log for object {}",
 				events.size(), objectPid.getQualifiedId());
