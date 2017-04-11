@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +15,40 @@
  */
 package edu.unc.lib.dl.acl.util;
 
+import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
+import static edu.unc.lib.dl.acl.util.Permission.bulkUpdateDescription;
+import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
+import static edu.unc.lib.dl.acl.util.Permission.createCollection;
+import static edu.unc.lib.dl.acl.util.Permission.destroy;
+import static edu.unc.lib.dl.acl.util.Permission.editDescription;
+import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
+import static edu.unc.lib.dl.acl.util.Permission.ingest;
+import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
+import static edu.unc.lib.dl.acl.util.Permission.move;
+import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
+import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
+import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
+import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
- * These are the properties that the repository manages in the rels-ext datastream.
+ * Enumeration of the roles which can be assigned to user principals. Defines
+ * the properties of those roles as well as the permissions granted.
  *
- * @author count0
+ * @author bbpennel
  *
  */
 public enum UserRole {
-	// Patron roles
 	list("list", new Permission[] {}),
 	metadataPatron("metadata-patron", new Permission[] {
 			Permission.viewMetadata}),
@@ -41,32 +58,42 @@ public enum UserRole {
 			Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
 	canView("canView", new Permission[] {
 			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+	// Patron roles
+	canDiscover("canDiscover", false),
+	canViewMetadata("canViewMetadata", false, viewMetadata),
+	canViewAccessCopies("canViewAccessCopies", false, viewMetadata, viewAccessCopies),
+	canViewOriginals("canViewOriginals", false, viewMetadata, viewAccessCopies, viewOriginal),
 	// Staff roles
-	administrator("administrator", new Permission[] {}),
-	canDiscover("canDiscover", new Permission[] {
-			Permission.viewMetadata}),
-	canAccess("canAccess", new Permission[] {
-			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canIngest("canIngest", new Permission[] {
-			Permission.ingest,
-			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canDescribe("canDescribe", new Permission[] {
-			Permission.editDescription, Permission.bulkUpdateDescription,
-			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canManage("canManage", new Permission[] {
-			Permission.ingest, Permission.editDescription, Permission.bulkUpdateDescription,
-			Permission.move, Permission.markForDeletion, Permission.changePatronAccess, Permission.editResourceType,
-			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	unitOwner("unitOwner", new Permission[] {
-			Permission.ingest, Permission.editDescription, Permission.bulkUpdateDescription,
-			Permission.move, Permission.markForDeletion, Permission.changePatronAccess, Permission.editResourceType,
-			Permission.destroy, Permission.createCollection, Permission.assignStaffRoles,
-			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal});
+	canAccess("canAccess", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal),
+	canIngest("canIngest", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+			ingest),
+	canDescribe("canDescribe", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+			editDescription, bulkUpdateDescription),
+	canManage("canManage", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+			ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+			changePatronAccess, editResourceType),
+	unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+			ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+			changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
+	administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+			ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+			changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles);
 
 	private URI uri;
 	private String predicate;
+	private String propertyString;
 	private Set<Permission> permissions;
+	private Boolean isStaffRole;
 
+	UserRole(String predicate, boolean isStaffRole, Permission... perms) {
+		this.predicate = predicate;
+		this.propertyString = CdrAcl.getURI() + predicate;
+		this.uri = URI.create(propertyString);
+		this.isStaffRole = isStaffRole;
+		this.permissions = new HashSet<>(Arrays.asList(perms));
+	}
+	
+	@Deprecated
 	UserRole(String predicate, Permission[] perms) {
 		try {
 			this.predicate = predicate;
@@ -81,6 +108,7 @@ public enum UserRole {
 		}
 	}
 
+	@Deprecated
 	public static boolean matchesMemberURI(String test) {
 		for(UserRole r : UserRole.values()) {
 			if(r.getURI().toString().equals(test)) {
@@ -90,9 +118,10 @@ public enum UserRole {
 		return false;
 	}
 
+	@Deprecated
 	public static UserRole getUserRole(String roleUri) {
 		for(UserRole r : UserRole.values()) {
-			if(r.getURI().toString().equals(roleUri)) {
+			if(r.propertyString.equals(roleUri)) {
 				return r;
 			}
 		}
@@ -116,6 +145,37 @@ public enum UserRole {
 		return roles;
 	}
 
+	/**
+	 * Return a set of staff UserRoles
+	 * 
+	 * @return
+	 */
+	public static Set<UserRole> getStaffRoles() {
+		return Arrays.stream(UserRole.values())
+			.filter(p -> p.isStaffRole != null && p.isStaffRole)
+			.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Return a set of patron UserRoles
+	 * 
+	 * @return
+	 */
+	public static Set<UserRole> getPatronRoles() {
+		return Arrays.stream(UserRole.values())
+			.filter(p -> p.isStaffRole != null && !p.isStaffRole)
+			.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Return the URI of the property for this role as a string.
+	 * 
+	 * @return
+	 */
+	public String getPropertyString() {
+		return this.propertyString;
+	}
+
 	public URI getURI() {
 		return this.uri;
 	}
@@ -128,12 +188,20 @@ public enum UserRole {
 		return predicate;
 	}
 
+	public boolean isStaffRole() {
+		return this.isStaffRole;
+	}
+
+	public boolean isPatronRole() {
+		return !this.isStaffRole;
+	}
+
 	public boolean equals(String value){
-		return this.uri.toString().equals(value);
+		return propertyString.equals(value);
 	}
 
 	@Override
 	public String toString() {
-		return this.uri.toString();
+		return this.propertyString;
 	}
 }
