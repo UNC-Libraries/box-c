@@ -523,7 +523,7 @@ ul.fpfeed_list li {
 	width: 300px;
 }
 
-#hsearch_inputwrap.search_label {
+#hsearch_inputwrap label.search_label {
 	position: absolute;
 	width: 1px;
 	height: 1px;

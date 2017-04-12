@@ -109,10 +109,6 @@
   line-height: 1;
 }
 
-#peek-enter .button {
-  display: none;
-}
-
 #peek-enter:hover .button {
   display: inherit;
 }
