@@ -65,6 +65,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
@@ -515,7 +516,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
 		// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
 		solrQuery.setFacetSort("index");
-
+		
 		try {
 			startTime = System.currentTimeMillis();
 			QueryResponse queryResponse = this.executeQuery(solrQuery);
@@ -710,7 +711,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 					this.generateSearch(filteredChildrenRequest));
 
 			this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
-					"contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
+					"resourceType:" + "(" + ResourceType.Collection.toString() + " OR " + ResourceType.Folder.toString() + ")",
 					this.generateSearch(filteredChildrenRequest));
 
 			try {
