@@ -192,12 +192,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>3.0-alpha-1</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>edu.unc.lib.cdr</groupId>
 			<artifactId>security</artifactId>
 			<version>${cdr.version}</version>
@@ -305,6 +299,10 @@
 			<artifactId>fcrepo-auth-common</artifactId>
 			<version>${fcrepo4.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-fuseki-embedded</artifactId>
 		</dependency>
 	</dependencies>
 </project>

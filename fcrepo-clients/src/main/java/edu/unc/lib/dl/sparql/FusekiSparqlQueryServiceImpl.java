@@ -35,14 +35,14 @@ public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
 	private String fusekiQueryURL;
 	private CloseableHttpClient httpClient;
 	private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
-	
+
 	public FusekiSparqlQueryServiceImpl() {
 		this.multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
 		this.httpClient = HttpClients.custom()
 				.setConnectionManager(multiThreadedHttpConnectionManager)
 				.build();
 	}
-	
+
 	public void destroy() {
 		this.httpClient = null;
 		this.multiThreadedHttpConnectionManager.shutdown();
@@ -51,7 +51,11 @@ public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
 	@Override
 	public QueryExecution executeQuery(String queryString) {
 		Query query = QueryFactory.create(queryString);
-		
+
 		return QueryExecutionFactory.sparqlService(fusekiQueryURL, query, httpClient);
+	}
+
+	public void setFusekiQueryURL(String fusekiQueryURL) {
+		this.fusekiQueryURL = fusekiQueryURL;
 	}
 }

@@ -90,6 +90,7 @@
 		<mock.server.version>3.10.2</mock.server.version>
 		<commons-io.version>2.4</commons-io.version>
 		<jena.version>3.1.1</jena.version>
+		<jena.fuseki.version>2.4.1</jena.fuseki.version>
 	</properties>
 
 	<distributionManagement>
@@ -513,6 +514,22 @@
 				<groupId>org.jdom</groupId>
 				<artifactId>jdom</artifactId>
 				<version>2.0.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-fuseki-embedded</artifactId>
+				<version>${jena.fuseki.version}</version>
+				<scope>test</scope>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>log4j</groupId>
+						<artifactId>log4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

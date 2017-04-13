@@ -252,8 +252,8 @@ public class ObjectPermissionEvaluatorTest {
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
 
 		// Set the embargo to tomorrow so that it will not be expired
-		Date tomorrow = Date.from(ZonedDateTime.now().plusDays(-1).toInstant());
-		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(tomorrow);
+		Date yesterday = Date.from(ZonedDateTime.now().plusDays(-1).toInstant());
+		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(yesterday);
 
 		assertTrue(evaluator.hasPatronAccess(pid, principals));
 	}

@@ -40,6 +40,21 @@ public class CdrAcl {
      */
     public static final Property canDiscover = createProperty( "http://cdr.unc.edu/definitions/acl#canDiscover" );
     
+    /** Grants the specified group or user permission to view metadata records for 
+     *  this object and all of its children. Applies to cdr:Collection objects. Repeatable.
+     */
+    public static final Property canViewMetadata = createProperty( "http://cdr.unc.edu/definitions/acl#canViewMetadata" );
+    
+    /** Grants the specified group or user permission to view metadata and access copies
+     *  for this object and all of its children. Applies to cdr:Collection objects. Repeatable.
+     */
+    public static final Property canViewAccessCopies = createProperty( "http://cdr.unc.edu/definitions/acl#canViewAccessCopies" );
+    
+    /** Grants the specified group or user permission to view metadata, access copies and originals
+     *  for this object and all of its children. Applies to cdr:Collection objects. Repeatable.
+     */
+    public static final Property canViewOriginals = createProperty( "http://cdr.unc.edu/definitions/acl#canViewOriginals" );
+    
     /** Grants the specified group or user permission ingest new objects into this 
      *  object and any children containers. Also has all of the rights granted by 
      *  the canDescribe role. Applies to cdr:Collection and cdr:AdminUnit objects. 
