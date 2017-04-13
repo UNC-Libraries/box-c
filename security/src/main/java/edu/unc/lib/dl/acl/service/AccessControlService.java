@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.service;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -44,4 +45,16 @@ public interface AccessControlService {
 	 * @return
 	 */
 	public boolean hasAccess(PID pid, AccessGroupSet groups, Permission permission);
+	
+	/**
+	 * Throws an AccessRestrictionException if the given groups do not have the
+	 * specified permission on the object pid
+	 * 
+	 * @param pid
+	 * @param groups
+	 * @param permission
+	 * @throws AccessRestrictionException
+	 */
+	public void assertAccess(PID pid, AccessGroupSet groups, Permission permission)
+			throws AccessRestrictionException;
 }

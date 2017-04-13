@@ -126,6 +126,11 @@ public class GlobalPermissionEvaluatorTest {
 		Set<String> principals2 = new HashSet<>(Arrays.asList(PRINC_GRP2));
 		assertTrue(evaluator.hasGlobalPermission(principals2, Permission.editDescription));
 		assertFalse(evaluator.hasGlobalPermission(principals2, Permission.markForDeletion));
+
+		// Check that if multiple globals present the higher one wins
+		Set<String> principalsCombined = new HashSet<>(Arrays.asList(PRINC_GRP2, PRINC_GRP1));
+		assertTrue(evaluator.hasGlobalPermission(principalsCombined, Permission.editDescription));
+		assertTrue(evaluator.hasGlobalPermission(principalsCombined, Permission.markForDeletion));
 	}
 
 	private void addGlobalAssignment(UserRole role, String principal) {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
@@ -22,15 +23,17 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Implementation of the service to evaluate and retrieve CDR access controls in
+ * a fcrepo4 repository.
  * 
  * @author bbpennel
  *
  */
 public class AccessControlServiceImpl implements AccessControlService {
 
-	public AccessControlServiceImpl() {
-		// TODO Auto-generated constructor stub
-	}
+	private InheritedPermissionEvaluator permissionEvaluator;
+
+	private GlobalPermissionEvaluator globalPermissionEvaluator;
 
 	@Override
 	public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
@@ -39,9 +42,29 @@ public class AccessControlServiceImpl implements AccessControlService {
 	}
 
 	@Override
-	public boolean hasAccess(PID pid, AccessGroupSet groups, Permission permission) {
-		// TODO Auto-generated method stub
-		return true;
+	public boolean hasAccess(PID pid, AccessGroupSet principals, Permission permission) {
+		// Check if there are any global agents, if so evaluate immediately against requested permission
+		if (globalPermissionEvaluator.hasGlobalPermission(principals, permission)) {
+			return true;
+		}
+
+		return permissionEvaluator.hasPermission(pid, principals, permission);
+	}
+
+	@Override
+	public void assertAccess(PID pid, AccessGroupSet groups, Permission permission)
+			throws AccessRestrictionException {
+		if (!hasAccess(pid, groups, permission)) {
+			throw new AccessRestrictionException();
+		}
+	}
+
+	public void setPermissionEvaluator(InheritedPermissionEvaluator permissionEvaluator) {
+		this.permissionEvaluator = permissionEvaluator;
+	}
+
+	public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
+		this.globalPermissionEvaluator = globalPermissionEvaluator;
 	}
 
 }

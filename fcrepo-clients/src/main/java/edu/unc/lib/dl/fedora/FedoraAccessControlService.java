@@ -34,6 +34,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -142,5 +143,11 @@ public class FedoraAccessControlService implements AccessControlService {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	@Override
+	public void assertAccess(PID pid, AccessGroupSet groups, Permission permission) throws AccessRestrictionException {
+		// TODO Auto-generated method stub
+		
 	}
 }
