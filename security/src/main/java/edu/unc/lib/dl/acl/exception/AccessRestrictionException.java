@@ -21,7 +21,7 @@ package edu.unc.lib.dl.acl.exception;
  * 
  * @author bbpennel
  */
-public class AccessRestrictionException extends Exception {
+public class AccessRestrictionException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
 	public AccessRestrictionException() {
