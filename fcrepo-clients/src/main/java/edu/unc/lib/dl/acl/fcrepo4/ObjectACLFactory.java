@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -87,17 +88,17 @@ public class ObjectACLFactory {
 	 * @param pid
 	 * @return
 	 */
-	public Map<String, List<String>> getPrincipalRoles(PID pid) {
+	public Map<String, Set<String>> getPrincipalRoles(PID pid) {
 		String pidString = pid.getRepositoryPath();
 		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
-		Map<String, List<String>> result = objAcls.stream()
+		Map<String, Set<String>> result = objAcls.stream()
 				// Filter to only role assignments
 				.filter(p -> roleUris.contains(p.getKey()))
 				// Group up roles by principal
 				.collect(Collectors.groupingBy(
 						Entry<String, String>::getValue,
-						Collectors.mapping(Entry<String, String>::getKey, Collectors.toList())
+						Collectors.mapping(Entry<String, String>::getKey, Collectors.toSet())
 					));
 
 		return result;

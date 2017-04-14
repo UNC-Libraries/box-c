@@ -27,9 +27,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class ObjectPermissionEvaluatorTest {
 
 	private Set<String> principals;
 
-	private Map<String, List<String>> objPrincRoles;
+	private Map<String, Set<String>> objPrincRoles;
 
 	@Before
 	public void init() {
@@ -76,7 +76,7 @@ public class ObjectPermissionEvaluatorTest {
 
 	@Test
 	public void hasStaffPermissionTest() throws Exception {
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canManage.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canManage));
 
 		assertTrue(evaluator
 				.hasStaffPermission(pid, principals, Permission.markForDeletion));
@@ -86,7 +86,7 @@ public class ObjectPermissionEvaluatorTest {
 	public void hasStaffPermissionMultiplePrincipalsTest() throws Exception {
 		principals.add(PRINC_GRP2);
 
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canManage.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canManage));
 
 		assertTrue(evaluator
 				.hasStaffPermission(pid, principals, Permission.editDescription));
@@ -103,7 +103,7 @@ public class ObjectPermissionEvaluatorTest {
 	public void hasStaffPermissionDeniedTest() throws Exception {
 		principals.add(PRINC_GRP2);
 
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canManage.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canManage));
 
 		assertFalse(evaluator
 				.hasStaffPermission(pid, principals, Permission.destroy));
@@ -111,8 +111,8 @@ public class ObjectPermissionEvaluatorTest {
 
 	@Test
 	public void hasStaffPermissionMultipleRolesTest() throws Exception {
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canView.getPropertyString(),
-				UserRole.canManage.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canView,
+				UserRole.canManage));
 
 		assertTrue(evaluator
 				.hasStaffPermission(pid, principals, Permission.editDescription));
@@ -125,7 +125,7 @@ public class ObjectPermissionEvaluatorTest {
 
 	@Test
 	public void getPatronPrincipalsWithPermissionTest() throws Exception {
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canViewMetadata));
 
 		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
@@ -138,7 +138,7 @@ public class ObjectPermissionEvaluatorTest {
 	public void getMultiplePatronPrincipalsWithPermissionTest() throws Exception {
 		principals.add(PRINC_GRP2);
 
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canViewMetadata));
 
 		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
@@ -151,9 +151,9 @@ public class ObjectPermissionEvaluatorTest {
 	public void getPatronPrincipalsWithPermissionMultipleRolesTest() throws Exception {
 		principals.add(PRINC_GRP2);
 
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(
-				UserRole.canViewMetadata.getPropertyString(), UserRole.canViewOriginals.getPropertyString()));
-		objPrincRoles.put(PRINC_GRP2, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(
+				UserRole.canViewMetadata, UserRole.canViewOriginals));
+		objPrincRoles.put(PRINC_GRP2, roleSet(UserRole.canViewMetadata));
 
 		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
@@ -167,7 +167,7 @@ public class ObjectPermissionEvaluatorTest {
 	public void getNoPatronPrincipalsWithPermissionTest() throws Exception {
 		principals = new HashSet<>();
 
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canViewMetadata.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canViewMetadata));
 
 		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
@@ -177,8 +177,8 @@ public class ObjectPermissionEvaluatorTest {
 
 	@Test
 	public void getPatronPrincipalsWithPermissionNoPatronRolesTest() throws Exception {
-		objPrincRoles.put(PRINC_GRP1, Arrays.asList(UserRole.canManage.getPropertyString()));
-		objPrincRoles.put(PRINC_GRP2, Arrays.asList(UserRole.canManage.getPropertyString()));
+		objPrincRoles.put(PRINC_GRP1, roleSet(UserRole.canManage));
+		objPrincRoles.put(PRINC_GRP2, roleSet(UserRole.canManage));
 
 		Set<String> permittedPrincipals = evaluator
 				.getPatronPrincipalsWithPermission(pid, principals, Permission.viewMetadata);
@@ -256,5 +256,11 @@ public class ObjectPermissionEvaluatorTest {
 		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(yesterday);
 
 		assertTrue(evaluator.hasPatronAccess(pid, principals));
+	}
+
+	private static Set<String> roleSet(UserRole... roles) {
+		return Arrays.stream(roles)
+				.map(p -> p.getPropertyString())
+				.collect(Collectors.toSet());
 	}
 }

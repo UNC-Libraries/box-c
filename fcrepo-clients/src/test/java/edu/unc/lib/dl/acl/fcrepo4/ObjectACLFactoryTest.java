@@ -30,8 +30,8 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.jena.query.QueryExecution;
@@ -112,20 +112,20 @@ public class ObjectACLFactoryTest {
 				.thenReturn(CdrAcl.canManage, CdrAcl.embargoUntil);
 		when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP, "2050");
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
 		assertEquals("Incorrect number of principals returned", 1, results.size());
-		List<String> roles = results.get(MANAGE_GRP);
+		Set<String> roles = results.get(MANAGE_GRP);
 		assertNotNull(roles);
 		assertEquals("Incorrect number of roles for principal", 1, roles.size());
-		assertEquals(CdrAcl.canManage.toString(), roles.get(0));
+		assertTrue(roles.contains(CdrAcl.canManage.toString()));
 	}
 
 	@Test
 	public void getPrincipalRoleNoPropertiesTest() throws Exception {
 		when(mockResultSet.hasNext()).thenReturn(false);
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
 		assertEquals("No principals should be returned", 0, results.size());
 	}
@@ -136,7 +136,7 @@ public class ObjectACLFactoryTest {
 				.thenReturn(CdrAcl.embargoUntil);
 		when(mockObjLiteral.getLexicalForm()).thenReturn("2050");
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
 		assertEquals("No principals should be returned", 0, results.size());
 	}
@@ -149,18 +149,18 @@ public class ObjectACLFactoryTest {
 		when(mockObjLiteral.getLexicalForm())
 				.thenReturn(MANAGE_GRP, PATRON_GRP, USER_PRINC);
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
 		assertEquals("Incorrect number of principals returned", 3, results.size());
-		List<String> roles = results.get(MANAGE_GRP);
+		Set<String> roles = results.get(MANAGE_GRP);
 		assertEquals("Incorrect number of roles for manager grp", 1, roles.size());
 		assertTrue(roles.contains(CdrAcl.canManage.toString()));
 
-		List<String> roles2 = results.get(PATRON_GRP);
+		Set<String> roles2 = results.get(PATRON_GRP);
 		assertEquals("Incorrect number of roles for patron grp", 1, roles2.size());
 		assertTrue(roles2.contains(CdrAcl.canDiscover.toString()));
 
-		List<String> roles3 = results.get(USER_PRINC);
+		Set<String> roles3 = results.get(USER_PRINC);
 		assertEquals("Incorrect number of roles for user", 1, roles3.size());
 		assertTrue(roles3.contains(CdrAcl.unitOwner.toString()));
 	}
@@ -172,10 +172,10 @@ public class ObjectACLFactoryTest {
 				.thenReturn(CdrAcl.canManage, CdrAcl.canDescribe);
 		when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 
 		assertEquals("Incorrect number of principals returned", 1, results.size());
-		List<String> roles = results.get(MANAGE_GRP);
+		Set<String> roles = results.get(MANAGE_GRP);
 		assertNotNull(roles);
 		assertEquals("Incorrect number of roles for principal", 2, roles.size());
 		assertTrue(roles.contains(CdrAcl.canManage.toString()));
@@ -269,7 +269,7 @@ public class ObjectACLFactoryTest {
 				.thenReturn(CdrAcl.canManage);
 		when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 		assertEquals("Incorrect number of principals returned", 1, results.size());
 
 		verify(queryService).executeQuery(anyString());
@@ -280,9 +280,9 @@ public class ObjectACLFactoryTest {
 		verify(queryService).executeQuery(anyString());
 
 		assertEquals("Incorrect number of principals on second run", 1, results.size());
-		List<String> roles = results.get(MANAGE_GRP);
+		Set<String> roles = results.get(MANAGE_GRP);
 		assertEquals("Incorrect number of roles for principal on second run", 1, roles.size());
-		assertEquals(CdrAcl.canManage.toString(), roles.get(0));
+		assertTrue(roles.contains(CdrAcl.canManage.toString()));
 	}
 
 	@Test
@@ -292,7 +292,7 @@ public class ObjectACLFactoryTest {
 				.thenReturn(CdrAcl.canManage);
 		when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP);
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 		verify(queryService).executeQuery(anyString());
 		assertEquals("Incorrect number of principals returned", 1, results.size());
 
@@ -313,11 +313,11 @@ public class ObjectACLFactoryTest {
 				.thenReturn(CdrAcl.canManage, CdrAcl.canAccess, CdrAcl.canIngest);
 		when(mockObjLiteral.getLexicalForm()).thenReturn(MANAGE_GRP, PATRON_GRP, USER_PRINC);
 
-		Map<String, List<String>> results = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> results = aclFactory.getPrincipalRoles(pid);
 		assertEquals("Incorrect number of principals returned for pid1", 1, results.size());
-		List<String> roles = results.get(MANAGE_GRP);
+		Set<String> roles = results.get(MANAGE_GRP);
 		assertEquals("Incorrect number of roles for principal for pid1", 1, roles.size());
-		assertEquals(CdrAcl.canManage.toString(), roles.get(0));
+		assertTrue(roles.contains(CdrAcl.canManage.toString()));
 
 		PID pid2 = makePid();
 

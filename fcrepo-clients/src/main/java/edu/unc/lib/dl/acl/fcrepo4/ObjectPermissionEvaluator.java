@@ -17,7 +17,6 @@ package edu.unc.lib.dl.acl.fcrepo4;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -74,7 +73,7 @@ public class ObjectPermissionEvaluator {
 			return false;
 		}
 
-		Map<String, List<String>> objectPrincipalRoles = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> objectPrincipalRoles = aclFactory.getPrincipalRoles(pid);
 
 		// Check staff principals against permissions granted by roles assigned to the object
 		return agentPrincipals.stream().anyMatch(p -> {
@@ -106,7 +105,7 @@ public class ObjectPermissionEvaluator {
 			return Collections.emptySet();
 		}
 
-		Map<String, List<String>> objectPrincipalRoles = aclFactory.getPrincipalRoles(pid);
+		Map<String, Set<String>> objectPrincipalRoles = aclFactory.getPrincipalRoles(pid);
 
 		// Get a list of patron principals which are granted the requested permission
 		return agentPrincipals.stream().filter(p -> {

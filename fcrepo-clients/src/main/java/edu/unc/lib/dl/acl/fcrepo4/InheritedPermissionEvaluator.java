@@ -41,6 +41,8 @@ public class InheritedPermissionEvaluator {
 	private ContentPathFactory pathFactory;
 
 	private ObjectPermissionEvaluator objectPermissionEvaluator;
+	
+	private ObjectACLFactory aclFactory;
 
 	/**
 	 * Returns true if the given principals are granted the specified permission
@@ -68,11 +70,8 @@ public class InheritedPermissionEvaluator {
 
 		boolean requestingPatronPermission = isPatronPermission(permission);
 
-		// Retrieve the path of ancestors leading up to the target
-		List<PID> path = new ArrayList<>(pathFactory.getAncestorPids(target));
-		// TODO prevent further processing if the object was an orphan
-		// Add the target to the end of the path so it will be evaluated too
-		path.add(target);
+		// Retrieve the path of objects up to and including the target
+		List<PID> path = getObjectPath(target);
 
 		Set<String> permittedPatronPrincipals = null;
 		// Start on the second entry in the path, the first real object
@@ -111,6 +110,15 @@ public class InheritedPermissionEvaluator {
 		return requestingPatronPermission;
 	}
 
+	private List<PID> getObjectPath(PID pid) {
+		List<PID> path = new ArrayList<>(pathFactory.getAncestorPids(pid));
+		// TODO prevent further processing if the object was an orphan
+		// Add the target to the end of the path so it will be evaluated too
+		path.add(pid);
+		
+		return path;
+	}
+	
 	private boolean isPatronPermission(Permission permission) {
 		return permission.equals(Permission.viewMetadata)
 				|| permission.equals(Permission.viewAccessCopies)
