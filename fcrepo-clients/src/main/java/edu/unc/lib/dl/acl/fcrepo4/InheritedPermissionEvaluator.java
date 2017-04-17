@@ -15,12 +15,12 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.PrincipalClassifier.classifyPrincipals;
+
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
@@ -35,14 +35,9 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class InheritedPermissionEvaluator {
 
-	private final Pattern PATRON_AGENT_PATTERN
-			= Pattern.compile("(everyone|authenticated|cdr:ip4:.*|cdr:ip6:.*)");
-
 	private ContentPathFactory pathFactory;
 
 	private ObjectPermissionEvaluator objectPermissionEvaluator;
-	
-	private ObjectACLFactory aclFactory;
 
 	/**
 	 * Returns true if the given principals are granted the specified permission
@@ -123,18 +118,6 @@ public class InheritedPermissionEvaluator {
 		return permission.equals(Permission.viewMetadata)
 				|| permission.equals(Permission.viewAccessCopies)
 				|| permission.equals(Permission.viewOriginal);
-	}
-
-	private void classifyPrincipals(Set<String> agentSet, Set<String> patronAgents, Set<String> staffAgents) {
-		Iterator<String> agentIt = agentSet.iterator();
-		for (; agentIt.hasNext(); ) {
-			String agent = agentIt.next();
-			if (PATRON_AGENT_PATTERN.matcher(agent).matches()) {
-				patronAgents.add(agent);
-			} else {
-				staffAgents.add(agent);
-			}
-		}
 	}
 
 	public void setPathFactory(ContentPathFactory pathFactory) {
