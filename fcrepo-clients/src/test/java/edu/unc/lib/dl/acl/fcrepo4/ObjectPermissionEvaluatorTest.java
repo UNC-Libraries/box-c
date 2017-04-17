@@ -48,7 +48,7 @@ import edu.unc.lib.dl.fedora.PID;
 public class ObjectPermissionEvaluatorTest {
 
 	@Mock
-	private ObjectACLFactory aclFactory;
+	private ObjectAclFactory aclFactory;
 	@Mock
 	private PID pid;
 

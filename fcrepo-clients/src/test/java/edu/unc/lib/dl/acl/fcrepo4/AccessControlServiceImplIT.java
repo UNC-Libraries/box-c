@@ -96,7 +96,7 @@ public class AccessControlServiceImplIT {
 
 	private ContentPathFactory pathFactory;
 
-	private ObjectACLFactory aclFactory;
+	private ObjectAclFactory aclFactory;
 
 	private ObjectPermissionEvaluator objectPermissionEvaluator;
 
@@ -150,7 +150,7 @@ public class AccessControlServiceImplIT {
 		pathFactory.setQueryService(sparqlService);
 		pathFactory.init();
 
-		aclFactory = new ObjectACLFactory();
+		aclFactory = new ObjectAclFactory();
 		aclFactory.setQueryService(sparqlService);
 		aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
 		aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);

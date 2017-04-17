@@ -73,7 +73,7 @@ public class ObjectPermissionEvaluatorIT {
 
 	private Repository repository;
 
-	private ObjectACLFactory aclFactory;
+	private ObjectAclFactory aclFactory;
 
 	private FusekiEmbeddedServer server;
 
@@ -101,7 +101,7 @@ public class ObjectPermissionEvaluatorIT {
 		sparqlService = new FusekiSparqlQueryServiceImpl();
 		((FusekiSparqlQueryServiceImpl) sparqlService).setFusekiQueryURL(FUSEKI_BASE_URI);
 
-		aclFactory = new ObjectACLFactory();
+		aclFactory = new ObjectAclFactory();
 		aclFactory.setQueryService(sparqlService);
 		aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
 		aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);

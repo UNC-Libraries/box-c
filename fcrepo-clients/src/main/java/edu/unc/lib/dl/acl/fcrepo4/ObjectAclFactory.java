@@ -53,9 +53,9 @@ import edu.unc.lib.dl.util.DateTimeUtil;
  * @author bbpennel
  *
  */
-public class ObjectACLFactory {
+public class ObjectAclFactory implements AclFactory {
 
-	private static final Logger log = LoggerFactory.getLogger(ObjectACLFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(ObjectAclFactory.class);
 
 	private LoadingCache<String, List<Entry<String, String>>> objAclCache;
 	private long cacheTimeToLive;
@@ -65,7 +65,7 @@ public class ObjectACLFactory {
 
 	private final List<String> roleUris;
 
-	public ObjectACLFactory() {
+	public ObjectAclFactory() {
 		List<String> roleUris = new ArrayList<>(UserRole.values().length);
 
 		for (UserRole role : UserRole.values()) {
@@ -82,12 +82,7 @@ public class ObjectACLFactory {
 				.build(new ObjectAclCacheLoader());
 	}
 
-	/**
-	 * Returns a map of principals to a list of all roles which they are granted for the given pid
-	 * 
-	 * @param pid
-	 * @return
-	 */
+	@Override
 	public Map<String, Set<String>> getPrincipalRoles(PID pid) {
 		String pidString = pid.getRepositoryPath();
 		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
@@ -104,14 +99,7 @@ public class ObjectACLFactory {
 		return result;
 	}
 
-	/**
-	 * Returns the patron access setting for this object if specified, otherwise
-	 * inherit from parent is returned
-	 * 
-	 * @param pid
-	 * @return PatronAccess enumeration value for this object's access setting
-	 *         if specified, otherwise parent.
-	 */
+	@Override
 	public PatronAccess getPatronAccess(PID pid) {
 		String pidString = pid.getRepositoryPath();
 		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
@@ -124,12 +112,7 @@ public class ObjectACLFactory {
 				.orElse(PatronAccess.parent);
 	}
 
-	/**
-	 * Returns the first embargo specified on the specified object, or null
-	 * 
-	 * @param pid
-	 * @return
-	 */
+	@Override
 	public Date getEmbargoUntil(PID pid) {
 		String pidString = pid.getRepositoryPath();
 		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
@@ -150,12 +133,7 @@ public class ObjectACLFactory {
 				.orElse(null);
 	}
 
-	/**
-	 * Returns true if the object specified is directly marked for deletion.
-	 * 
-	 * @param pid
-	 * @return
-	 */
+	@Override
 	public boolean isMarkedForDeletion(PID pid) {
 		String pidString = pid.getRepositoryPath();
 		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);

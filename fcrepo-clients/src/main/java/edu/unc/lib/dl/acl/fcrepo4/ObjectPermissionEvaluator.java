@@ -34,7 +34,7 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class ObjectPermissionEvaluator {
 
-	private ObjectACLFactory aclFactory;
+	private ObjectAclFactory aclFactory;
 
 	private final Map<String, Set<String>> staffRolesToPermissions;
 
@@ -157,7 +157,7 @@ public class ObjectPermissionEvaluator {
 		return true;
 	}
 
-	public void setAclFactory(ObjectACLFactory aclFactory) {
+	public void setAclFactory(ObjectAclFactory aclFactory) {
 		this.aclFactory = aclFactory;
 	}
 }

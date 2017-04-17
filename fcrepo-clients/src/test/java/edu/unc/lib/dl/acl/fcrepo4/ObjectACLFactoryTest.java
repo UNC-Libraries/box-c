@@ -64,7 +64,7 @@ public class ObjectACLFactoryTest {
 
 	private static final String PID_BASE_URI = "http://example.com/content/";
 
-	private ObjectACLFactory aclFactory;
+	private ObjectAclFactory aclFactory;
 
 	@Mock
 	private SparqlQueryService queryService;
@@ -86,7 +86,7 @@ public class ObjectACLFactoryTest {
 	public void init() {
 		initMocks(this);
 
-		aclFactory = new ObjectACLFactory();
+		aclFactory = new ObjectAclFactory();
 		aclFactory.setQueryService(queryService);
 		aclFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
 		aclFactory.setCacheMaxSize(CACHE_MAX_SIZE);
