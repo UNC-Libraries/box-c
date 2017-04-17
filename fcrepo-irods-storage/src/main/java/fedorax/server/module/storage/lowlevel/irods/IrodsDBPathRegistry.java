@@ -65,7 +65,7 @@ public class IrodsDBPathRegistry extends DBPathRegistry {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IrodsDBPathRegistry.class);
 
-	public IrodsDBPathRegistry(IRODSFileSystem irodsFileSystem, IRODSAccount account, Map<String, Object> configuration) {
+	public IrodsDBPathRegistry(IRODSFileSystem irodsFileSystem, IRODSAccount account, Map<String, Object> configuration) throws LowlevelStorageException {
 		super(configuration);
 		this.irodsFileSystem = irodsFileSystem;
 		this.account = account;
