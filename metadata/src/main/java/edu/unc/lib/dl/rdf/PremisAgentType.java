@@ -24,11 +24,11 @@ public class PremisAgentType {
      * A high-level characterization of the type of agent. See http://id.loc.gov/vocabulary/preservation/agentType/collection_PREMIS
      */
     
-    public static final Resource HARDWARE = createResource("http://id.loc.gov/vocabulary/preservation/agentType/har");
+    public static final Resource Hardware = createResource("http://id.loc.gov/vocabulary/preservation/agentType/har");
     
-    public static final Resource ORGANIZATION = createResource("http://id.loc.gov/vocabulary/preservation/agentType/org");
+    public static final Resource Organization = createResource("http://id.loc.gov/vocabulary/preservation/agentType/org");
     
-    public static final Resource PERSON = createResource("http://id.loc.gov/vocabulary/preservation/agentType/per");
+    public static final Resource Person = createResource("http://id.loc.gov/vocabulary/preservation/agentType/per");
     
-    public static final Resource SOFTWARE = createResource("http://id.loc.gov/vocabulary/preservation/agentType/sof");
+    public static final Resource Software = createResource("http://id.loc.gov/vocabulary/preservation/agentType/sof");
 }
