@@ -60,7 +60,7 @@ public class MetaServicesRouter extends RouteBuilder {
 			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
 			.multicast()
-				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext", "direct-vm:replication");
 	}
 
 }
