@@ -69,7 +69,7 @@ public class ObjectAclFactory implements AclFactory {
 		List<String> roleUris = new ArrayList<>(UserRole.values().length);
 
 		for (UserRole role : UserRole.values()) {
-			roleUris.add(role.getURI().toString());
+			roleUris.add(role.getPropertyString());
 		}
 
 		this.roleUris = Collections.unmodifiableList(roleUris);

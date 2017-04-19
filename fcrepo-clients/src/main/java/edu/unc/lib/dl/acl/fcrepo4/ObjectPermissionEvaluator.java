@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -118,6 +120,18 @@ public class ObjectPermissionEvaluator {
 	}
 
 	/**
+	 * Returns true if the provided principal has patron level access to the
+	 * object represented by the given pid, and false if access is revoked
+	 * 
+	 * @param pid
+	 * @param agentPrincipal
+	 * @return
+	 */
+	public boolean hasPatronAccess(PID pid, String agentPrincipal) {
+		return hasPatronAccess(pid, Arrays.asList(agentPrincipal));
+	}
+
+	/**
 	 * Returns true if the provided agents have patron level access to the
 	 * object represented by the given pid, and false if access is revoked
 	 * 
@@ -125,7 +139,7 @@ public class ObjectPermissionEvaluator {
 	 * @param agentPrincipals
 	 * @return
 	 */
-	public boolean hasPatronAccess(PID pid, Set<String> agentPrincipals) {
+	public boolean hasPatronAccess(PID pid, Collection<String> agentPrincipals) {
 		PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
 		if (PatronAccess.none.equals(patronAccess)) {
 			// patron access revoked
