@@ -30,6 +30,7 @@ import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
@@ -122,9 +123,7 @@ public class PremisEventBuilder {
 	 * @return this event builder
 	 */
 	public PremisEventBuilder addSoftwareAgent(String agent) {
-		Model modelAgent = ModelFactory.createDefaultModel();
-		Resource softwareAgent = modelAgent.createResource(Premis.hasEventRelatedAgentExecutor);
-		addAgent(Premis.hasEventRelatedAgentExecutor, softwareAgent, "#softwareAgent", agent);
+		addAgent(Premis.hasEventRelatedAgentExecutor, PremisAgentType.SOFTWARE, "#softwareAgent", agent);
 
 		return this;
 	}
@@ -136,9 +135,7 @@ public class PremisEventBuilder {
 	 * @return this event builder
 	 */
 	public PremisEventBuilder addAuthorizingAgent(String agent) {
-		Model modelAgent = ModelFactory.createDefaultModel();
-		Resource authorizingAgent = modelAgent.createResource(Premis.hasEventRelatedAgentAuthorizor);
-		addAgent(Premis.hasEventRelatedAgentAuthorizor, authorizingAgent, "#authorizingAgent", agent);
+		addAgent(Premis.hasEventRelatedAgentAuthorizor, PremisAgentType.PERSON, "#authorizingAgent", agent);
 
 		return this;
 	}
