@@ -52,10 +52,16 @@ public class AccessControlServiceImpl implements AccessControlService {
 	}
 
 	@Override
-	public void assertAccess(PID pid, AccessGroupSet groups, Permission permission)
+	public void assertHasAccess(PID pid, AccessGroupSet principals, Permission permission)
 			throws AccessRestrictionException {
-		if (!hasAccess(pid, groups, permission)) {
-			throw new AccessRestrictionException();
+		assertHasAccess(null, pid, principals, permission);
+	}
+	
+	@Override
+	public void assertHasAccess(String message, PID pid, AccessGroupSet principals, Permission permission)
+			throws AccessRestrictionException {
+		if (!hasAccess(pid, principals, permission)) {
+			throw new AccessRestrictionException(message);
 		}
 	}
 

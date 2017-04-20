@@ -238,7 +238,7 @@ public class AccessControlServiceImplIT {
 		final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
 		PID pid = PIDs.get(COLL_1_WORK_1_PATH);
 
-		aclService.assertAccess(pid, principals, Permission.viewOriginal);
+		aclService.assertHasAccess(null, pid, principals, Permission.viewOriginal);
 	}
 
 	@Test(expected = AccessRestrictionException.class)
@@ -246,7 +246,7 @@ public class AccessControlServiceImplIT {
 		final AccessGroupSet principals = new AccessGroupSet(EVERYONE_PRINC);
 		PID pid = PIDs.get(COLL_1_WORK_2_PATH);
 
-		aclService.assertAccess(pid, principals, Permission.viewOriginal);
+		aclService.assertHasAccess(null, pid, principals, Permission.viewOriginal);
 	}
 
 	@Test

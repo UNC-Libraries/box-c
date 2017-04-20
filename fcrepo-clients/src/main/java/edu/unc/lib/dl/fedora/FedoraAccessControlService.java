@@ -146,8 +146,14 @@ public class FedoraAccessControlService implements AccessControlService {
 	}
 
 	@Override
-	public void assertAccess(PID pid, AccessGroupSet groups, Permission permission) throws AccessRestrictionException {
+	public void assertHasAccess(String message, PID pid, AccessGroupSet groups, Permission permission) throws AccessRestrictionException {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	@Override
+	public void assertHasAccess(PID pid, AccessGroupSet principals, Permission permission)
+			throws AccessRestrictionException {
+		assertHasAccess(null, pid, principals, permission);
 	}
 }
