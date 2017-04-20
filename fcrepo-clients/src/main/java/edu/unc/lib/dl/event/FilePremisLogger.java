@@ -28,11 +28,12 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.FileManager;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -153,58 +154,48 @@ public class FilePremisLogger implements PremisLogger {
 	@Override
 	public List<PremisEventObject> getEvents() {
 		List<PremisEventObject> events = new ArrayList<>();
-
+		ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventType);
 		// Find all of the events and construct a list of PremisEventObjects from them.
-		for (ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
-			Resource eventResc = eventIt.nextResource();
-			PID eventPid = PIDs.get(eventResc.getURI());
-
-			// Construct a model for just this event
-			Model eventModel = ModelFactory.createDefaultModel();
-			eventModel.add(eventResc.listProperties());
-
-			// Construct the event object with a presupplied model
-			PremisEventObject event = new PremisEventObject(eventPid, repository,
-					repository.getRepositoryObjectDataLoader());
-			event.storeModel(eventModel);
-
-			events.add(event);
+		try {
+			gatherAllObjectsForEvents(eventIt, events);
+		} finally {
+			eventIt.close();
 		}
 		
-		for (ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventRelatedAgentExecutor); eventIt.hasNext(); ) {
-			Resource eventResc = eventIt.nextResource();
-			PID eventPid = PIDs.get(eventResc.getURI());
-
-			// Construct a model for just this event
-			Model eventModel = ModelFactory.createDefaultModel();
-			eventModel.add(eventResc.listProperties());
-
-			// Construct the event object with a presupplied model
-			PremisEventObject event = new PremisEventObject(eventPid, repository,
-					repository.getRepositoryObjectDataLoader());
-			event.storeModel(eventModel);
-
-			events.add(event);
-		}
-		
-		for (ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventRelatedAgentAuthorizor); eventIt.hasNext(); ) {
-			Resource eventResc = eventIt.nextResource();
-			PID eventPid = PIDs.get(eventResc.getURI());
-
-			// Construct a model for just this event
-			Model eventModel = ModelFactory.createDefaultModel();
-			eventModel.add(eventResc.listProperties());
-
-			// Construct the event object with a presupplied model
-			PremisEventObject event = new PremisEventObject(eventPid, repository,
-					repository.getRepositoryObjectDataLoader());
-			event.storeModel(eventModel);
-
-			events.add(event);
-		}
-
 		log.debug("Retrieved {} events from file log for object {}",
 				events.size(), objectPid.getQualifiedId());
 		return events;
+	}
+	
+	private void gatherAllObjectsForEvents(ResIterator eventIt, List<PremisEventObject> events) {
+			while (eventIt.hasNext()) {
+				Resource eventResc = eventIt.nextResource();
+				PID eventPid = PIDs.get(eventResc.getURI());
+				// Construct a model for just this event
+				Model eventModel = ModelFactory.createDefaultModel();
+				StmtIterator stmtIt = eventResc.listProperties();
+				// Add all statements with this resc as subject to the model
+				eventModel.add(eventResc.listProperties());
+				stmtIt.close();
+				// Get a fresh iterator to check all objects of all the triples for properties
+				stmtIt = eventResc.listProperties();
+				while (stmtIt.hasNext()) {
+					RDFNode objNode = stmtIt.next().getObject();
+					if (objNode.isResource()) {
+						StmtIterator objIt = objNode.asResource().listProperties();
+						// Add statements to the event's model for any objects that have properties
+						if (objIt != null) {
+							eventModel.add(objIt);
+						}
+					}
+				}
+				stmtIt.close();
+				// Construct the event object with a presupplied model
+				PremisEventObject event = new PremisEventObject(eventPid, repository,
+						repository.getRepositoryObjectDataLoader());
+				event.storeModel(eventModel);
+
+				events.add(event);
+		} 
 	}
 }
