@@ -123,7 +123,7 @@ public class PremisEventBuilder {
 	 * @return this event builder
 	 */
 	public PremisEventBuilder addSoftwareAgent(String agent) {
-		addAgent(Premis.hasEventRelatedAgentExecutor, PremisAgentType.SOFTWARE, "#softwareAgent", agent);
+		addAgent(Premis.hasEventRelatedAgentExecutor, PremisAgentType.Software, "#softwareAgent", agent);
 
 		return this;
 	}
@@ -135,7 +135,7 @@ public class PremisEventBuilder {
 	 * @return this event builder
 	 */
 	public PremisEventBuilder addAuthorizingAgent(String agent) {
-		addAgent(Premis.hasEventRelatedAgentAuthorizor, PremisAgentType.PERSON, "#authorizingAgent", agent);
+		addAgent(Premis.hasEventRelatedAgentAuthorizor, PremisAgentType.Person, "#authorizingAgent", agent);
 
 		return this;
 	}
