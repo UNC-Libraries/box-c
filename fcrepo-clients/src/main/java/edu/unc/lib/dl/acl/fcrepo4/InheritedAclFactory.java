@@ -18,6 +18,7 @@ package edu.unc.lib.dl.acl.fcrepo4;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,22 +51,21 @@ public class InheritedAclFactory implements AclFactory {
 	public Map<String, Set<String>> getPrincipalRoles(PID target) {
 
 		// Retrieve the path of objects up to and including the target
-		List<PID> path = new ArrayList<>(pathFactory.getAncestorPids(target));
-		path.add(target);
+		List<PID> path = getPidPath(target);
 
 		Map<String, Set<String>> inheritedPrincRoles = new HashMap<>();
 		Set<String> patronPrincipals = null;
 
 		// Iterate through each step in the path except for the root content node
-		int depth = 1;
+		int depth = 0;
 		for (; depth < path.size(); depth++) {
 			PID pathPid = path.get(depth);
 
 			// For the first two objects (unit, collection), staff roles should be considered
-			if (depth < 3) {
+			if (depth < 2) {
 
 				Map<String, Set<String>> objectPrincipalRoles = objectAclFactory.getPrincipalRoles(pathPid);
-				
+
 				// Add this object's principals/roles to the result
 				mergePrincipalRoles(inheritedPrincRoles, objectPrincipalRoles);
 
@@ -84,23 +84,12 @@ public class InheritedAclFactory implements AclFactory {
 				}
 
 				// Evaluate remaining inherited patron roles
-				cleanPatronRoles(pathPid, inheritedPrincRoles, patronPrincipals);
-				// Check each remaining patron principal to see if it still has patron access
-				Iterator<String> patronIt = patronPrincipals.iterator();
-				while (patronIt.hasNext()) {
-					String patronPrinc = patronIt.next();
-
-					// Patron access revoked for this principal, so remove it from inherited roles
-					if (!objectPermissionEvaluator.hasPatronAccess(pathPid, patronPrinc)) {
-						patronIt.remove();
-						inheritedPrincRoles.remove(patronPrinc);
-					}
-				}
+				removeRevokedPatronRoles(pathPid, inheritedPrincRoles, patronPrincipals);
 			}
 		}
 
 		// Units cannot be assigned patron roles, but have an assumed non-inheritable everyone permission
-		if (depth == 2) {
+		if (depth == 1) {
 			Set<String> roles = new HashSet<>();
 			roles.add(UserRole.canViewOriginals.getPropertyString());
 			inheritedPrincRoles.put("everyone", roles);
@@ -125,7 +114,7 @@ public class InheritedAclFactory implements AclFactory {
 		}
 	}
 
-	private void cleanPatronRoles(PID pid, Map<String, Set<String>> princRoles, Set<String> patronPrincipals) {
+	private void removeRevokedPatronRoles(PID pid, Map<String, Set<String>> princRoles, Set<String> patronPrincipals) {
 		// Check each remaining patron principal to see if it still has patron access
 		Iterator<String> patronIt = patronPrincipals.iterator();
 		while (patronIt.hasNext()) {
@@ -140,18 +129,50 @@ public class InheritedAclFactory implements AclFactory {
 	}
 
 	@Override
-	public PatronAccess getPatronAccess(PID pid) {
-		return null;
+	public PatronAccess getPatronAccess(PID target) {
+		List<PID> pidPath = getPidPath(target);
+		if (pidPath.size() < 3) {
+			return null;
+		}
+
+		PatronAccess computedAccess = PatronAccess.parent;
+		for (int i = 2; i < pidPath.size(); i++) {
+			PID pathPid = pidPath.get(i);
+
+			PatronAccess access = objectAclFactory.getPatronAccess(pathPid);
+			if (PatronAccess.none.equals(access)) {
+				return PatronAccess.none;
+			}
+
+			if (PatronAccess.authenticated.equals(access)) {
+				computedAccess = access;
+			}
+		}
+
+		return computedAccess;
 	}
 
 	@Override
-	public Date getEmbargoUntil(PID pid) {
-		return null;
+	public Date getEmbargoUntil(PID target) {
+		return getPidPath(target).stream()
+				.map(p -> objectAclFactory.getEmbargoUntil(p))
+				.filter(p -> p != null)
+				.max(Comparator.naturalOrder())
+				.orElse(null);
 	}
 
 	@Override
-	public boolean isMarkedForDeletion(PID pid) {
-		return false;
+	public boolean isMarkedForDeletion(PID target) {
+		return getPidPath(target).stream()
+				.anyMatch(p -> objectAclFactory.isMarkedForDeletion(p));
+	}
+
+	private List<PID> getPidPath(PID pid) {
+		List<PID> path = pathFactory.getAncestorPids(pid);
+		path = new ArrayList<>(path.subList(1, path.size()));
+		path.add(pid);
+
+		return path;
 	}
 
 	public void setObjectAclFactory(ObjectAclFactory objectAclFactory) {
