@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,15 +52,21 @@ import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.test.SelfReturningAnswer;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
@@ -79,10 +85,21 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	private FolderObject destinationObj;
 
 	@Mock
-	private ObjectAccessControlsBean objAcls;
+	private PremisLoggerFactory mockPremisLoggerFactory;
+	
+	@Mock
+	private PremisLogger mockPremisLogger;
+	
+	private PremisEventBuilder mockPremisEventBuilder;
+	
+	@Mock
+	private ObjectAccessControlsBean mockObjAcls;
 
 	@Mock
 	private FileObject mockFileObj;
+	
+	@Mock
+	private BinaryObject mockBinaryObj;
 
 	private File techmdDir;
 
@@ -95,6 +112,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
+		setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -110,6 +128,14 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		techmdDir = new File(depositDir, TECHMD_DIR);
 		techmdDir.mkdir();
+		
+		// Setup logging dependencies
+		mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+		when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+				.thenReturn(mockPremisLogger);
+		when(mockPremisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);
+
+		when(mockFileObj.getOriginalFile()).thenReturn(mockBinaryObj);
 	}
 
 	private void setupDestination() {
@@ -125,8 +151,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		destinationObj = mock(FolderObject.class);
 		when(destinationObj.getPid()).thenReturn(destinationPid);
 		when(repository.getContentObject(eq(destinationPid))).thenReturn(destinationObj);
-		when(destinationObj.getAccessControls()).thenReturn(objAcls);
-		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
+		when(destinationObj.getAccessControls()).thenReturn(mockObjAcls);
+		when(mockObjAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
 				.thenReturn(true);
 	}
 
@@ -268,7 +294,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		addFileObject(workBag, "pdf.pdf", "application/pdf");
 
-		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
+		when(mockObjAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
 				.thenReturn(false);
 
 		job.closeModel();
@@ -457,7 +483,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		parent.add(fileResc);
 
-		// Create the accompanying fake premis report file
+		// Create the accompanying fake FITS report file
 		new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
 
 		return filePid;
