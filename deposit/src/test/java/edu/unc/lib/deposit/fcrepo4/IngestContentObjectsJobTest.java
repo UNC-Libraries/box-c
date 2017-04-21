@@ -85,15 +85,15 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	private FolderObject destinationObj;
 
 	@Mock
-	private PremisLoggerFactory premisLoggerFactory;
+	private PremisLoggerFactory mockPremisLoggerFactory;
 	
 	@Mock
-	private PremisLogger premisLogger;
+	private PremisLogger mockPremisLogger;
 	
 	private PremisEventBuilder mockPremisEventBuilder;
 	
 	@Mock
-	private ObjectAccessControlsBean objAcls;
+	private ObjectAccessControlsBean mockObjAcls;
 
 	@Mock
 	private FileObject mockFileObj;
@@ -112,7 +112,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		job.setDepositUUID(depositUUID);
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
-		setField(job, "premisLoggerFactory", premisLoggerFactory);
+		setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -131,9 +131,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		
 		// Setup logging dependencies
 		mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
-		when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
-				.thenReturn(premisLogger);
-		when(premisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);
+		when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+				.thenReturn(mockPremisLogger);
+		when(mockPremisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);
 
 		when(mockFileObj.getOriginalFile()).thenReturn(mockBinaryObj);
 	}
@@ -151,8 +151,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		destinationObj = mock(FolderObject.class);
 		when(destinationObj.getPid()).thenReturn(destinationPid);
 		when(repository.getContentObject(eq(destinationPid))).thenReturn(destinationObj);
-		when(destinationObj.getAccessControls()).thenReturn(objAcls);
-		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
+		when(destinationObj.getAccessControls()).thenReturn(mockObjAcls);
+		when(mockObjAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
 				.thenReturn(true);
 	}
 
@@ -294,7 +294,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		addFileObject(workBag, "pdf.pdf", "application/pdf");
 
-		when(objAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
+		when(mockObjAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
 				.thenReturn(false);
 
 		job.closeModel();
