@@ -24,7 +24,7 @@ import org.mockito.stubbing.Answer;
  * Mockito answer which returns the mocked object for all unstubbed method calls.
  *
  */
-public class SelfReturningAnswer implements Answer<Object>{
+public class SelfReturningAnswer implements Answer<Object> {
 
 	public Object answer(InvocationOnMock invocation) throws Throwable {
 		Object mock = invocation.getMock();
