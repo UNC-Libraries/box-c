@@ -175,7 +175,7 @@ public class FilePremisLogger implements PremisLogger {
 				Model eventModel = ModelFactory.createDefaultModel();
 				StmtIterator stmtIt = eventResc.listProperties();
 				// Add all statements with this resc as subject to the model
-				eventModel.add(eventResc.listProperties());
+				eventModel.add(stmtIt);
 				stmtIt.close();
 				// Get a fresh iterator to check all objects of all the triples for properties
 				stmtIt = eventResc.listProperties();
@@ -187,6 +187,7 @@ public class FilePremisLogger implements PremisLogger {
 						if (objIt != null) {
 							eventModel.add(objIt);
 						}
+						objIt.close();
 					}
 				}
 				stmtIt.close();
