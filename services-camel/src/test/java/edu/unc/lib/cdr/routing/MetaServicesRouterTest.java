@@ -155,6 +155,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 	public void testProcessBinaryOriginal() throws Exception {
 		getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
 		getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
+		getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
 
 		createContext(ORIGINAL_BINARY_ROUTE);
 
