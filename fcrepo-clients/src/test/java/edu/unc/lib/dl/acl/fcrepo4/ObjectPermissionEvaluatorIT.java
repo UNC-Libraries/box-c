@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static java.lang.Integer.parseInt;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.junit.Assert.assertEquals;
@@ -66,7 +67,6 @@ public class ObjectPermissionEvaluatorIT {
 
 	private final static String PRINC_GRP1 = "group1";
 	private final static String PRINC_GRP2 = "group2";
-	private final static String PRINC_AUTH = "authenticated";
 
 	private static final long CACHE_MAX_SIZE = 100l;
 	private static final long CACHE_TIME_TO_LIVE = 100l;
@@ -180,7 +180,7 @@ public class ObjectPermissionEvaluatorIT {
 
 	@Test
 	public void hasPatronAccessAuthenticatedTest() throws Exception {
-		Set<String> principals = new HashSet<>(Arrays.asList(PRINC_AUTH));
+		Set<String> principals = new HashSet<>(Arrays.asList(AUTHENTICATED_PRINC));
 
 		createObject(pid).addLiteral(CdrAcl.patronAccess, PatronAccess.authenticated.name());
 

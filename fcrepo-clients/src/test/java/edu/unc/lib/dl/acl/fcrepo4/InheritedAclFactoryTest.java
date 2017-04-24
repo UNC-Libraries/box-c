@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
@@ -233,28 +234,26 @@ public class InheritedAclFactoryTest {
 
 	@Test
 	public void contentReducePermissionsTest() {
-		String authPrinc = "authenticated";
-
 		addPidToAncestors();
 		PID collectionPid = addPidToAncestors();
 
 		Map<String, Set<String>> collPrincRoles = new HashMap<>();
 		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
-		addPrincipalRoles(collPrincRoles, authPrinc, canViewOriginals);
+		addPrincipalRoles(collPrincRoles, AUTHENTICATED_PRINC, canViewOriginals);
 		when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
 				.thenReturn(collPrincRoles);
 
 		// revoke one patron but not the other
 		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC)))
 				.thenReturn(false);
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(authPrinc)))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(AUTHENTICATED_PRINC)))
 				.thenReturn(true);
 
 		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
 		assertEquals("Only one patron principal should be present", 1, princRoles.size());
 		assertPrincipalHasRoles("Authenticated principal should still be assigned",
-				princRoles, authPrinc, canViewOriginals);
+				princRoles, AUTHENTICATED_PRINC, canViewOriginals);
 	}
 
 	@Test

@@ -1,5 +1,7 @@
 package edu.unc.lib.dl.acl.util;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.classifyPrincipals;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
 import static org.junit.Assert.assertEquals;
@@ -13,13 +15,11 @@ import org.junit.Test;
 
 public class PrincipalClassifierTest {
 
-	private static final String EVERYONE_PRINC = "everyone";
-	private static final String AUTHENTICATED_PRINC = "authenticated";
 	private static final String STAFF_PRINC = "staff";
 
 	@Test
 	public void classifyPrincipalsTest() {
-		Set<String> principals = new HashSet<>(Arrays.asList(EVERYONE_PRINC,
+		Set<String> principals = new HashSet<>(Arrays.asList(PUBLIC_PRINC,
 				AUTHENTICATED_PRINC, STAFF_PRINC));
 
 		Set<String> patronPrincipals = new HashSet<>();
@@ -27,7 +27,7 @@ public class PrincipalClassifierTest {
 		classifyPrincipals(principals, patronPrincipals, staffPrincipals);
 
 		assertEquals(2, patronPrincipals.size());
-		assertTrue(patronPrincipals.contains(EVERYONE_PRINC));
+		assertTrue(patronPrincipals.contains(PUBLIC_PRINC));
 		assertTrue(patronPrincipals.contains(AUTHENTICATED_PRINC));
 
 		assertEquals(1, staffPrincipals.size());
@@ -50,13 +50,13 @@ public class PrincipalClassifierTest {
 
 	@Test
 	public void getPatronPrincipalsTest() {
-		Set<String> principals = new HashSet<>(Arrays.asList(EVERYONE_PRINC,
+		Set<String> principals = new HashSet<>(Arrays.asList(PUBLIC_PRINC,
 				AUTHENTICATED_PRINC, STAFF_PRINC));
 
 		Set<String> patronPrincipals = getPatronPrincipals(principals);
 
 		assertEquals(2, patronPrincipals.size());
-		assertTrue(patronPrincipals.contains(EVERYONE_PRINC));
+		assertTrue(patronPrincipals.contains(PUBLIC_PRINC));
 		assertTrue(patronPrincipals.contains(AUTHENTICATED_PRINC));
 	}
 

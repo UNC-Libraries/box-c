@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -56,7 +57,6 @@ public class ObjectPermissionEvaluatorTest {
 
 	private final static String PRINC_GRP1 = "group1";
 	private final static String PRINC_GRP2 = "group2";
-	private final static String PRINC_AUTH = "authenticated";
 
 	private Set<String> principals;
 
@@ -222,7 +222,7 @@ public class ObjectPermissionEvaluatorTest {
 
 	@Test
 	public void hasPatronAccessAuthenticatedTest() throws Exception {
-		principals = new HashSet<>(Arrays.asList(PRINC_AUTH));
+		principals = new HashSet<>(Arrays.asList(AUTHENTICATED_PRINC));
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
 
 		assertTrue(evaluator.hasPatronAccess(pid, principals));

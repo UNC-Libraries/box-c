@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -148,7 +150,7 @@ public class ObjectPermissionEvaluator {
 
 		if (PatronAccess.authenticated.equals(patronAccess)) {
 			// Access reduced to authenticated users
-			if (!agentPrincipals.contains("authenticated")) {
+			if (!agentPrincipals.contains(AUTHENTICATED_PRINC)) {
 				// Roles no longer sufficient, deny access
 				return false;
 			}
