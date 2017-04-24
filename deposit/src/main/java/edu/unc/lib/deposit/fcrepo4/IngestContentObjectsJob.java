@@ -619,12 +619,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	private void addIngestionEventForChild(ContentObject obj) throws IOException {
 		PremisLogger premisLogger = getPremisLogger(obj.getPid());
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
+		
 		if (obj instanceof FileObject) {
 			builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
-					obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename());
+					obj.getPid().getQualifiedId(), ((FileObject) obj).getOriginalFile().getFilename());
 		} else if (obj instanceof ContentContainerObject) {
 			builder.addEventDetail("ingested as PID: {0}",
-					obj.getPid());
+					obj.getPid().getQualifiedId());
 		}
 		builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.addAuthorizingAgent(DepositField.depositorName.name())

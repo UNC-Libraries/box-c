@@ -42,8 +42,10 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
@@ -51,13 +53,16 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
@@ -70,6 +75,8 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
+	private static final String INGESTOR_PRINC = "ingestor";
+	
 	private IngestContentObjectsJob job;
 
 	private PID destinationPid;
@@ -83,6 +90,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	private static final long FILE2_SIZE = 4L;
 
 	private File techmdDir;
+	
+	@Autowired
+	private AccessControlService aclService;
+	
+	@Autowired
+	private Model queryServiceModel;
 
 	@Before
 	public void init() throws Exception {
@@ -93,6 +106,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
 		job.setPremisLoggerFactory(premisLoggerFactory);
+		setField(job, "aclService", aclService);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -111,12 +125,22 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 	}
 
 	private void setupDestination() {
+		PID contentPid = PIDs.get(RepositoryPathConstants.CONTENT_ROOT_ID);
+		Resource contentResc = createResource(contentPid.getRepositoryPath());
+		PID unitPid = repository.mintContentPid();
+		Resource unitResc = createResource(unitPid.getRepositoryPath());
 		destinationPid = repository.mintContentPid();
+		Resource destResc = createResource(destinationPid.getRepositoryPath());
+		
+		queryServiceModel.add(contentResc, PcdmModels.hasMember, unitResc);
+		queryServiceModel.add(unitResc, PcdmModels.hasMember, destResc);
+		queryServiceModel.add(destResc, CdrAcl.canIngest, INGESTOR_PRINC);
+		
 		repository.createFolderObject(destinationPid);
 
 		Map<String, String> status = new HashMap<>();
 		status.put(DepositField.containerId.name(), destinationPid.getRepositoryPath());
-		status.put(DepositField.permissionGroups.name(), "depositor");
+		status.put(DepositField.permissionGroups.name(), INGESTOR_PRINC);
 		depositStatusFactory.save(depositUUID, status);
 	}
 
@@ -160,7 +184,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		// Verify that ingestion event gets added for folder
 		List<PremisEventObject> events = folder.getPremisLog().getEvents();
 		assertEquals(1, events.size());
-		assertEquals("ingested as PID: " + folder.getPid().toString(), events.get(0).getResource()
+		assertEquals("ingested as PID: " + folder.getPid().getQualifiedId(), events.get(0).getResource()
 			.getProperty(Premis.hasEventDetail).getString());
 
 		assertClickCount(1);
@@ -221,19 +245,19 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 		List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
 		assertEquals(2, eventsWork.size());
 		
-		assertNotNull(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid()));
+		assertNotNull(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid().getQualifiedId()));
 		assertNotNull(findPremisEventByEventDetail(eventsWork, "added 2 child objects to this container"));
 		
 		// Verify that ingestion event gets added for primary object
 		List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
 		assertEquals(1, eventsPrimObj.size());
-		assertNotNull(findPremisEventByEventDetail(eventsPrimObj, "ingested as PID: " + mainPid.toString()
+		assertNotNull(findPremisEventByEventDetail(eventsPrimObj, "ingested as PID: " + mainPid.getQualifiedId()
 			+ "\n ingested as filename: " + FILE1_LOC));
 		
 		// Verify that ingestion event gets added for supplementary object
 		List<PremisEventObject> eventsSupObj = supObj.getPremisLog().getEvents();
 		assertEquals(1, eventsSupObj.size());
-		assertNotNull(findPremisEventByEventDetail(eventsSupObj, "ingested as PID: " + supPid.toString()
+		assertNotNull(findPremisEventByEventDetail(eventsSupObj, "ingested as PID: " + supPid.getQualifiedId()
 			+ "\n ingested as filename: " + FILE2_LOC));
 		
 		assertClickCount(3);
