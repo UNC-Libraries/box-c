@@ -4,8 +4,10 @@ import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
@@ -14,8 +16,16 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 public class ReplicationProcessor implements Processor {
 	private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
@@ -44,20 +54,22 @@ public class ReplicationProcessor implements Processor {
 		String binaryUri = (String) in.getHeader(FCREPO_URI);
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
 		String binaryChecksum = (String) in.getHeader(CdrBinaryChecksum);
-	/*	final Model model = createDefaultModel();
-
-		Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
+		final Model model = ModelFactory.createDefaultModel();
+		
+		String msgBody = (String) in.getBody();
+		InputStream stream = new ByteArrayInputStream(msgBody.getBytes());
+		Model values = model.read(stream, null, "Turtle");
 		ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
 		
 		try {
 			if (resources.hasNext()) {
 				Resource resource = resources.next();
-				String binaryFilePath = resource.getProperty(hasMimeType).getObject().toString();
-				binaryFilePaths.add(binaryFilePath);
+				String binaryFilePath = resource.getProperty(CdrDeposit.mimetype).getObject().toString();
+				//binaryFilePaths.add(binaryFilePath);
 			}
 		} finally {
 			resources.close();
-		} */
+		}
 		
 		int retryAttempt = 0;
 		
