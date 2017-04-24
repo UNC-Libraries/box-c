@@ -2,32 +2,23 @@ package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
-import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
-import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ResIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-
 public class ReplicationProcessor implements Processor {
-	private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
+	private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
 	
 	private final String replicationLocations;
 	private final int maxRetries;
@@ -87,12 +78,11 @@ public class ReplicationProcessor implements Processor {
 	
 	private boolean checkReplicationLocations(String[] replicationLocations) {
 		for (String path : replicationLocations) {
-			if (Files.exists(Paths.get(path))) {
-				return true;
+			if (!Files.exists(Paths.get(path))) {
+				return false;
 			}
 		}
-		
-		return false;
+		return true;
 	}
 	
 	private boolean verifyChecksums(String originalFileChecksum, String replicatedFilePath) {
