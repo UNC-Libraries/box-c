@@ -1,4 +1,4 @@
-package edu.unc.lib.cdr;
+package edu.unc.lib.cdr.replication;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
@@ -7,7 +7,6 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -64,20 +63,16 @@ public class ReplicationRouterTest extends CamelSpringTestSupport  {
 	
 	@Override
 	protected AbstractApplicationContext createApplicationContext() {
-		return new ClassPathXmlApplicationContext("/service-context.xml", "/images-context.xml");
+		return new ClassPathXmlApplicationContext("/service-context.xml", "/replication-context.xml");
 	}
 	
 	@Test
 	public void testRoute() throws Exception {
 		createContext(replicationRoute);
 		
-		getMockEndpoint("direct-vm:replication").expectedMessageCount(1);
-		
-		Map<String, Object> headers = createEvent(fileID, eventTypes);
-		headers.put(CdrBinaryMimeType, "plain/text");
-		
-		template.sendBodyAndHeaders("", headers);
-		
+		getMockEndpoint("mock:direct:file.replication").expectedMessageCount(1);
+		template.sendBodyAndHeaders("", createEvent(fileID, eventTypes));
+
 		assertMockEndpointsSatisfied();
 	}
 	
