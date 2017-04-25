@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import javax.ws.rs.core.EntityTag;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
@@ -36,10 +35,12 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.util.EntityTag;
 import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -162,7 +163,7 @@ public class Repository {
 
 				String etag = response.getHeaderValue("ETag");
 				if (etag != null) {
-					etag = EntityTag.valueOf(etag).getValue();
+					etag = new EntityTag(etag).getValue();
 				}
 
 				if (resc.hasProperty(RDF.type, Cdr.Work)) {
