@@ -23,18 +23,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.RDFFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.util.FileManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
@@ -186,8 +186,8 @@ public class FilePremisLogger implements PremisLogger {
 						// Add statements to the event's model for any objects that have properties
 						if (objIt != null) {
 							eventModel.add(objIt);
+							objIt.close();
 						}
-						objIt.close();
 					}
 				}
 				stmtIt.close();
