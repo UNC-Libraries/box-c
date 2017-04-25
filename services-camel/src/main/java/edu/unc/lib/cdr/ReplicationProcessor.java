@@ -1,8 +1,11 @@
 package edu.unc.lib.cdr;
 
-import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
+
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -26,21 +29,17 @@ public class ReplicationProcessor implements Processor {
 		this.replicationLocations = replicationLocations;
 		this.maxRetries = maxRetries;
 		this.retryDelay = retryDelay;
+		
+		checkReplicationLocations(splitReplicationLocations(replicationLocations));
 	}
 	
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		String[] replicationPaths = replicationLocations.split(";");
-		boolean pathsExist = checkReplicationLocations(replicationPaths);
-		
-		if (!pathsExist) {
-			throw new Exception();
-		}
-
 		final Message in = exchange.getIn();
 		
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
 		String binaryChecksum = (String) in.getHeader(CdrBinaryChecksum);
+		String[] replicationPaths = splitReplicationLocations(replicationLocations);
 		
 		int retryAttempt = 0;
 		
@@ -59,43 +58,77 @@ public class ReplicationProcessor implements Processor {
 		}
 	}
 	
-	private boolean checkReplicationLocations(String[] replicationLocations) {
-		for (String path : replicationLocations) {
-			if (!Files.exists(Paths.get(path))) {
-				return false;
+	private String[] splitReplicationLocations(String replicationLocations) {
+		return replicationLocations.split(";");
+	}
+	
+	private boolean checkReplicationLocations(String[] replicationPaths) {
+		for (String replicationPath : replicationPaths) {
+			if (!Files.exists(Paths.get(replicationPath))) {
+				throw new ReplicationDestinationUnavailableException("Unable to find replication destination {}", replicationPath);
 			}
 		}
+		
 		return true;
 	}
 	
-	private boolean verifyChecksums(String originalFileChecksum, String replicatedFilePath) {
+	private String createRemoteSubDirectory(String baseDirectory) {
+		String basePath = null;
+		String checksum = getFileChecksum(baseDirectory);
+		
+		basePath = Paths.get(baseDirectory, checksum).toString();
+		
+		if (!Files.exists(Paths.get(basePath))) {
+			new File(basePath).mkdir();
+		}
+
+		return basePath;
+	}
+	
+	private String getFileChecksum(String filePath) {
+		String checksum = null;
 		try {
-			String remoteChecksum = DigestUtils.sha1Hex(new FileInputStream(replicatedFilePath));
-			
-			if (originalFileChecksum.equals(remoteChecksum)) {
-				log.info("Local and remote checksums match for {}", replicatedFilePath);
-				return true;
-			} else {
-				throw new Exception("Local and remote checksums did not match");
-			}
-		} catch (Exception e) {
-			log.error("Unable to compute checksum for {}", replicatedFilePath);
+			checksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
+		} catch (FileNotFoundException e) {
+			log.error("Unable to compute checksum for {}", filePath);
+		} catch (IOException e) {
+			log.error("Unable to compute checksum for {}", filePath);
 		}
 		
-		return false;
+		return checksum;
+	}
+	
+	private String getFilename(String binaryPath) {
+		String[] parts = binaryPath.split("/");
+		return parts[parts.length - 1];
+	}
+	
+	private boolean verifyChecksums(String originalFileChecksum, String replicatedFilePath) {
+		String remoteChecksum = getFileChecksum(replicatedFilePath);
+			
+		if (originalFileChecksum.equals(remoteChecksum)) {
+			log.info("Local and remote checksums match for {}", replicatedFilePath);
+			return true;
+		} else {
+			throw new ReplicationException("Local and remote checksums did not match {} {}", originalFileChecksum, remoteChecksum);
+		}
 	}
 	
 	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations) {
 		try {
 			for (String location : replicationLocations) {
-				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", binaryPath, location};
-				Runtime.getRuntime().exec(cmd);
+				String fullPath = Paths.get(createRemoteSubDirectory(location), getFilename(binaryPath)).toString();
+				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", binaryPath, fullPath};
+				Process returnCode = Runtime.getRuntime().exec(cmd);
 				
-				verifyChecksums(originalFileChecksum, location);
+				if (returnCode.exitValue() != 0) {
+					throw new ReplicationException("Error replicating {} to {}", binaryPath, fullPath);
+				}
+				
+				verifyChecksums(originalFileChecksum, fullPath);
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unable to find file to replicate {}", e);
 		}
 	}
-
 }
