@@ -77,8 +77,11 @@ public class ReplicationProcessor implements Processor {
 	}
 	
 	private String createFilePath(String basePath, String originalFileChecksum) {
+		String[] binaryFcrepoChecksumSplit = originalFileChecksum.split(":");
+		String checksum = binaryFcrepoChecksumSplit[2];
+		
 		String[] tokens = Iterables.toArray
-				(Splitter.fixedLength(2).split(originalFileChecksum), 
+				(Splitter.fixedLength(2).split(checksum), 
 						String.class);
 		
 		String remotePath = new StringJoiner("/")
@@ -86,7 +89,7 @@ public class ReplicationProcessor implements Processor {
 			.add(tokens[0])
 			.add(tokens[1])
 			.add(tokens[2])
-			.add(originalFileChecksum)
+			.add(checksum)
 			.toString();
 		
 		return remotePath;
@@ -96,7 +99,7 @@ public class ReplicationProcessor implements Processor {
 		String replicationPath = createFilePath(baseDirectory, binaryChecksum);
 		
 		if (!Files.exists(Paths.get(replicationPath))) {
-			new File(replicationPath).mkdir();
+			new File(replicationPath).mkdirs();
 		}
 
 		return replicationPath;
