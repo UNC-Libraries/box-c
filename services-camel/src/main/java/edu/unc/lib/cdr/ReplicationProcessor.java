@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
@@ -17,6 +18,9 @@ import org.apache.camel.Processor;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
 
 public class ReplicationProcessor implements Processor {
 	private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
@@ -72,17 +76,30 @@ public class ReplicationProcessor implements Processor {
 		return true;
 	}
 	
-	private String createRemoteSubDirectory(String baseDirectory) {
-		String basePath = null;
-		String checksum = getFileChecksum(baseDirectory);
+	private String createFilePath(String basePath, String originalFileChecksum) {
+		String[] tokens = Iterables.toArray
+				(Splitter.fixedLength(2).split(originalFileChecksum), 
+						String.class);
 		
-		basePath = Paths.get(baseDirectory, checksum).toString();
+		String remotePath = new StringJoiner("/")
+			.add(basePath)
+			.add(tokens[0])
+			.add(tokens[1])
+			.add(tokens[2])
+			.add(originalFileChecksum)
+			.toString();
 		
-		if (!Files.exists(Paths.get(basePath))) {
-			new File(basePath).mkdir();
+		return remotePath;
+	}
+	
+	private String createRemoteSubDirectory(String baseDirectory, String binaryChecksum) {
+		String replicationPath = createFilePath(baseDirectory, binaryChecksum);
+		
+		if (!Files.exists(Paths.get(replicationPath))) {
+			new File(replicationPath).mkdir();
 		}
 
-		return basePath;
+		return replicationPath;
 	}
 	
 	private String getFileChecksum(String filePath) {
@@ -117,7 +134,7 @@ public class ReplicationProcessor implements Processor {
 	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations) {
 		try {
 			for (String location : replicationLocations) {
-				String fullPath = Paths.get(createRemoteSubDirectory(location), getFilename(binaryPath)).toString();
+				String fullPath = Paths.get(createRemoteSubDirectory(location, originalFileChecksum), getFilename(binaryPath)).toString();
 				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", binaryPath, fullPath};
 				Process returnCode = Runtime.getRuntime().exec(cmd);
 				
