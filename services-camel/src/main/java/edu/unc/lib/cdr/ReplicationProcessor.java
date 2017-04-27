@@ -130,7 +130,7 @@ public class ReplicationProcessor implements Processor {
 		try {
 			checksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
 		} catch (IOException e) {
-			throw new ReplicationException(String.format("Unable to compute checksum for %s", filePath));
+			throw new ReplicationException(String.format("Unable to compute checksum for %s", filePath, e));
 		}
 		
 		return checksum;
@@ -165,7 +165,7 @@ public class ReplicationProcessor implements Processor {
 				verifyChecksums(originalFileChecksum, fullPath);
 			}
 		} catch (IOException e) {
-			throw new ReplicationException(String.format("Unable to replicate %s", binaryPath));
+			throw new ReplicationException(String.format("Unable to replicate %s", binaryPath, e));
 		}
 	}
 }

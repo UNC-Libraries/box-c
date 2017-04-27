@@ -21,4 +21,8 @@ public class ReplicationException extends RuntimeException {
 	public ReplicationException(String message) {
 		super(message);
 	}
+	
+	public ReplicationException(String message, Exception e) {
+		super(message, e);
+	}
 }
