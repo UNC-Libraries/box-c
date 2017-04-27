@@ -23,7 +23,7 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
-
+//techmd_fits
 /**
  * Meta router which sequences all service routes to run on events.
  * 
@@ -41,26 +41,37 @@ public class MetaServicesRouter extends RouteBuilder {
 		from("{{fcrepo.stream}}")
 			.routeId("CdrMetaServicesRouter")
 			.to("direct-vm:index.start")
-			.to("direct:process.enhancement");
+			.to("direct:process.ingest");
 
-		from("direct:process.enhancement")
-			.routeId("ProcessEnhancement")
+		from("direct:process.ingest")
+			.routeId("ProcessIngest")
 			.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-					+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
+					+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
 					+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
 				// Trigger binary processing after an asynchronously
 				.threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
 				.delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-				.to("direct:process.binary.original");
+				.to("direct:process.creation");
 
-		from("direct:process.binary.original")
-			.routeId("ProcessOriginalBinary")
+		from("direct:process.creation")
+			.routeId("ProcessCreationEvent")
 			.log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
 			.removeHeaders("CamelHttp*")
 			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
+			.choice()
+				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
+					.to("direct-vm:replication")
+				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
+					.to("direct:process.enhancements")
+				.otherwise()
+					.log(LoggingLevel.WARN, "Unable to process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+			.end();
+		
+		from("direct:process.enhancement")
+			.routeId("ProcessEnhancements")
 			.multicast()
-				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext", "direct-vm:replication");
+				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext","direct-vm:replication");
 	}
 
 }

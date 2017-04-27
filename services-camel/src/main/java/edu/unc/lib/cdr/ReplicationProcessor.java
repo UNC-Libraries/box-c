@@ -1,3 +1,18 @@
+/**
+ * Copyright 2017 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
@@ -5,7 +20,6 @@ import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -22,19 +36,26 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
+/**
+ * Replicates binary files ingested into fedora to a series of one or more remote storage locations.
+ * It checksums the remote file to make sure it's the same file that was originally ingested.
+ * 
+ * @author lfarrell
+ *
+ */
 public class ReplicationProcessor implements Processor {
 	private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
 	
-	private final String replicationLocations;
+	private final String[] replicationLocations;
 	private final int maxRetries;
 	private final long retryDelay;
 	
 	public ReplicationProcessor(String replicationLocations, int maxRetries, long retryDelay) {
-		this.replicationLocations = replicationLocations;
+		this.replicationLocations = splitReplicationLocations(replicationLocations);
 		this.maxRetries = maxRetries;
 		this.retryDelay = retryDelay;
 		
-		checkReplicationLocations(splitReplicationLocations(replicationLocations));
+		checkReplicationLocations(this.replicationLocations);
 	}
 	
 	@Override
@@ -43,13 +64,12 @@ public class ReplicationProcessor implements Processor {
 		
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
 		String binaryChecksum = (String) in.getHeader(CdrBinaryChecksum);
-		String[] replicationPaths = splitReplicationLocations(replicationLocations);
 		
 		int retryAttempt = 0;
 		
 		while (true) {
 			try {
-				replicate(binaryPath, binaryChecksum, replicationPaths);
+				replicate(binaryPath, binaryChecksum, replicationLocations);
 				break;
 			} catch (Exception e) {
 				if (retryAttempt == maxRetries) {
@@ -69,7 +89,7 @@ public class ReplicationProcessor implements Processor {
 	private boolean checkReplicationLocations(String[] replicationPaths) {
 		for (String replicationPath : replicationPaths) {
 			if (!Files.exists(Paths.get(replicationPath))) {
-				throw new ReplicationDestinationUnavailableException("Unable to find replication destination {}", replicationPath);
+				throw new ReplicationDestinationUnavailableException(String.format("Unable to find replication destination %s", replicationPath));
 			}
 		}
 		
@@ -109,28 +129,25 @@ public class ReplicationProcessor implements Processor {
 		String checksum = null;
 		try {
 			checksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
-		} catch (FileNotFoundException e) {
-			log.error("Unable to compute checksum for {}", filePath);
 		} catch (IOException e) {
-			log.error("Unable to compute checksum for {}", filePath);
+			throw new ReplicationException(String.format("Unable to compute checksum for %s", filePath));
 		}
 		
 		return checksum;
 	}
 	
 	private String getFilename(String binaryPath) {
-		String[] parts = binaryPath.split("/");
-		return parts[parts.length - 1];
+		String[] filepathParts = binaryPath.split("/");
+		return filepathParts[filepathParts.length - 1];
 	}
 	
-	private boolean verifyChecksums(String originalFileChecksum, String replicatedFilePath) {
+	private void verifyChecksums(String originalFileChecksum, String replicatedFilePath) {
 		String remoteChecksum = getFileChecksum(replicatedFilePath);
-			
+
 		if (originalFileChecksum.equals(remoteChecksum)) {
 			log.info("Local and remote checksums match for {}", replicatedFilePath);
-			return true;
 		} else {
-			throw new ReplicationException("Local and remote checksums did not match {} {}", originalFileChecksum, remoteChecksum);
+			throw new ReplicationException(String.format("Local and remote checksums did not match %s %s", originalFileChecksum, remoteChecksum));
 		}
 	}
 	
@@ -139,16 +156,16 @@ public class ReplicationProcessor implements Processor {
 			for (String location : replicationLocations) {
 				String fullPath = Paths.get(createRemoteSubDirectory(location, originalFileChecksum), getFilename(binaryPath)).toString();
 				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", binaryPath, fullPath};
-				Process returnCode = Runtime.getRuntime().exec(cmd);
-				
-				if (returnCode.exitValue() != 0) {
-					throw new ReplicationException("Error replicating {} to {}", binaryPath, fullPath);
+				int exitCode = Runtime.getRuntime().exec(cmd).exitValue();
+
+				if (exitCode != 0) {
+					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d", binaryPath, fullPath, exitCode));
 				}
 				
 				verifyChecksums(originalFileChecksum, fullPath);
 			}
 		} catch (IOException e) {
-			log.error("Unable to find file to replicate {}", e);
+			throw new ReplicationException(String.format("Unable to replicate %s", binaryPath));
 		}
 	}
 }
