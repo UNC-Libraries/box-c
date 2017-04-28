@@ -183,15 +183,15 @@
 	<!-- Initialize access control dependencies -->
 	<bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
 			init-method="init">
-		<property name="cacheMaxSize" value="100" />
-		<property name="cacheTimeToLive" value="100" />
+		<property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
+		<property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
 		<property name="queryService" ref="sparqlQueryService" />
 	</bean>
 	
 	<bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
 			init-method="init">
-		<property name="cacheMaxSize" value="100" />
-		<property name="cacheTimeToLive" value="100" />
+		<property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
+		<property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
 		<property name="queryService" ref="sparqlQueryService" />
 	</bean>
 	
