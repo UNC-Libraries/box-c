@@ -52,7 +52,7 @@ public class GlobalPermissionEvaluator {
 					String roleString = p.getValue().substring(GLOBAL_PROP_PREFIX.length());
 					UserRole role = UserRole.valueOf(roleString);
 					// Role must be valid and not a patron
-					if (role == null) {
+					if (role == null || role.isPatronRole()) {
 						throw new IllegalArgumentException(
 								"Invalid global role " + p.getValue() +
 								" defined for " + p.getKey());

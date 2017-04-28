@@ -151,7 +151,6 @@
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
         fedora:hasParent       <http://example.com/fcrepo/rest/content/> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/9c/a5/46/23/9ca54623-9ad4-42c6-8a0c-4e445d716aca/members> ;
         pcdm:hasMember        <http://example.com/fcrepo/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1> .
 
 <http://example.com/fcrepo/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812>

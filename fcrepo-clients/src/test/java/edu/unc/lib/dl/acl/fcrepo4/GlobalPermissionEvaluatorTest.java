@@ -68,9 +68,16 @@ public class GlobalPermissionEvaluatorTest {
 		evaluator = new GlobalPermissionEvaluator(configProperties);
 	}
 
+	@Test(expected = IllegalArgumentException.class)
+	public void illegalPatronRoleTest() {
+		addGlobalAssignment(UserRole.canViewOriginals, PRINC_GRP1);
+
+		evaluator = new GlobalPermissionEvaluator(configProperties);
+	}
+
 	@Test
 	public void noPermissionTest() {
-		addGlobalAssignment(UserRole.canView, PRINC_GRP1);
+		addGlobalAssignment(UserRole.canAccess, PRINC_GRP1);
 
 		evaluator = new GlobalPermissionEvaluator(configProperties);
 

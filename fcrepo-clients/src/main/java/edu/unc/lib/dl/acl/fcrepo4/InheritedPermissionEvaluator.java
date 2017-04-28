@@ -35,6 +35,10 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class InheritedPermissionEvaluator {
 
+	private final static int UNIT_PATH_DEPTH = 1;
+	private final static int COLLECTION_PATH_DEPTH = 2;
+	private final static int CONTENT_STARTING_DEPTH = 3;
+
 	private ContentPathFactory pathFactory;
 
 	private ObjectPermissionEvaluator objectPermissionEvaluator;
@@ -70,18 +74,18 @@ public class InheritedPermissionEvaluator {
 
 		Set<String> permittedPatronPrincipals = null;
 		// Start on the second entry in the path, the first real object
-		for (int depth = 1; depth < path.size(); depth++) {
+		for (int depth = UNIT_PATH_DEPTH; depth < path.size(); depth++) {
 			PID pathPid = path.get(depth);
 
 			// For the first two objects (unit, collection), staff roles should be considered
-			if (depth < 3) {
+			if (depth < CONTENT_STARTING_DEPTH) {
 				if (objectPermissionEvaluator.hasStaffPermission(pathPid, agentStaffPrincipals, permission)) {
 					// Staff permission granted, evaluation complete.
 					return true;
 				}
 
 				// For collections, evaluate assigned patron permissions
-				if (depth == 2 && requestingPatronPermission) {
+				if (depth == COLLECTION_PATH_DEPTH && requestingPatronPermission) {
 					permittedPatronPrincipals = objectPermissionEvaluator.getPatronPrincipalsWithPermission(
 							pathPid, agentPatronPrincipals, permission);
 

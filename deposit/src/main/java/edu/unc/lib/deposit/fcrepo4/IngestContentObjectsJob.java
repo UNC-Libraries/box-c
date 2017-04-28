@@ -155,18 +155,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 					+ " was not a valid repository path");
 		}
 
-		ContentObject destObj = repository.getContentObject(PIDs.get(
-				depositStatus.get(DepositField.containerId.name())));
+		PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
+		ContentObject destObj = repository.getContentObject(destPid);
 		if (!(destObj instanceof ContentContainerObject)) {
-			failJob("Cannot add children to destination", "Cannot deposit to destination " + destObj.getPid().getRepositoryPath()
+			failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
 					+ ", types does not support children");
 		}
 		String groups = depositStatus.get(DepositField.permissionGroups.name());
 		
 		// Verify that the depositor is allow to ingest to the given destination
 		aclService.assertHasAccess(
-				"Depositor does not have permissions to ingest to destination " + destObj.getPid(),
-				destObj.getPid(), new AccessGroupSet(groups), Permission.ingest);
+				"Depositor does not have permissions to ingest to destination " + destPid,
+				destPid, new AccessGroupSet(groups), Permission.ingest);
 
 		Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 

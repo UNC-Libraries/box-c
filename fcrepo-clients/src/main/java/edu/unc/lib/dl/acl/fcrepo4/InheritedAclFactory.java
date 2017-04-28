@@ -42,6 +42,9 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class InheritedAclFactory implements AclFactory {
 
+	private final static int UNIT_PATH_DEPTH = 0;
+	private final static int CONTENT_STARTING_DEPTH = 2;
+	
 	private ObjectAclFactory objectAclFactory;
 
 	private ContentPathFactory pathFactory;
@@ -63,7 +66,7 @@ public class InheritedAclFactory implements AclFactory {
 			PID pathPid = path.get(depth);
 
 			// For the first two objects (unit, collection), staff roles should be considered
-			if (depth < 2) {
+			if (depth < CONTENT_STARTING_DEPTH) {
 
 				Map<String, Set<String>> objectPrincipalRoles = objectAclFactory.getPrincipalRoles(pathPid);
 
@@ -90,7 +93,8 @@ public class InheritedAclFactory implements AclFactory {
 		}
 
 		// Units cannot be assigned patron roles, but have an assumed non-inheritable everyone permission
-		if (depth == 1) {
+		// Checking for unit depth + 1 since the counter will be one past the object checked
+		if (depth == UNIT_PATH_DEPTH + 1) {
 			Set<String> roles = new HashSet<>();
 			roles.add(UserRole.canViewOriginals.getPropertyString());
 			inheritedPrincRoles.put("everyone", roles);
@@ -144,7 +148,7 @@ public class InheritedAclFactory implements AclFactory {
 		}
 
 		PatronAccess computedAccess = PatronAccess.parent;
-		for (int i = 2; i < pidPath.size(); i++) {
+		for (int i = CONTENT_STARTING_DEPTH; i < pidPath.size(); i++) {
 			PID pathPid = pidPath.get(i);
 
 			PatronAccess access = objectAclFactory.getPatronAccess(pathPid);
