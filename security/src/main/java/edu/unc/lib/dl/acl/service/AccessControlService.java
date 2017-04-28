@@ -34,6 +34,7 @@ public interface AccessControlService {
 	 * @param pid
 	 * @return
 	 */
+	@Deprecated
 	public ObjectAccessControlsBean getObjectAccessControls(PID pid);
 	
 	/**

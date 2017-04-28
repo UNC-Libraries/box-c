@@ -35,6 +35,7 @@ public class AccessControlServiceImpl implements AccessControlService {
 
 	private GlobalPermissionEvaluator globalPermissionEvaluator;
 
+	@Deprecated
 	@Override
 	public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
 		// TODO stub
