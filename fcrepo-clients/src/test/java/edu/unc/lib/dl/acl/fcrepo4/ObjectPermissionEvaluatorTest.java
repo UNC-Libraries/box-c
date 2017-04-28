@@ -203,21 +203,21 @@ public class ObjectPermissionEvaluatorTest {
 	public void hasPatronAccessNoModificationsTest() throws Exception {
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
 
-		assertTrue(evaluator.hasPatronAccess(pid, principals));
+		assertTrue(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
 	public void hasPatronAccessNoneTest() throws Exception {
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
 
-		assertFalse(evaluator.hasPatronAccess(pid, principals));
+		assertFalse(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
 	public void hasPatronAccessUnauthenticatedTest() throws Exception {
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
 
-		assertFalse(evaluator.hasPatronAccess(pid, principals));
+		assertFalse(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -225,7 +225,7 @@ public class ObjectPermissionEvaluatorTest {
 		principals = new HashSet<>(Arrays.asList(AUTHENTICATED_PRINC));
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
 
-		assertTrue(evaluator.hasPatronAccess(pid, principals));
+		assertTrue(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -233,7 +233,7 @@ public class ObjectPermissionEvaluatorTest {
 		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
 		when(aclFactory.isMarkedForDeletion(any(PID.class))).thenReturn(true);
 
-		assertFalse(evaluator.hasPatronAccess(pid, principals));
+		assertFalse(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -244,7 +244,18 @@ public class ObjectPermissionEvaluatorTest {
 		Date tomorrow = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
 		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(tomorrow);
 
-		assertFalse(evaluator.hasPatronAccess(pid, principals));
+		assertFalse(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
+	}
+
+	@Test
+	public void hasPatronAccessMetadataEmbargoedTest() throws Exception {
+		when(aclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
+
+		// Set the embargo to tomorrow so that it will not be expired
+		Date tomorrow = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
+		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(tomorrow);
+
+		assertTrue(evaluator.hasPatronAccess(pid, principals, Permission.viewMetadata));
 	}
 
 	@Test
@@ -255,7 +266,7 @@ public class ObjectPermissionEvaluatorTest {
 		Date yesterday = Date.from(ZonedDateTime.now().plusDays(-1).toInstant());
 		when(aclFactory.getEmbargoUntil(any(PID.class))).thenReturn(yesterday);
 
-		assertTrue(evaluator.hasPatronAccess(pid, principals));
+		assertTrue(evaluator.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	private static Set<String> roleSet(UserRole... roles) {

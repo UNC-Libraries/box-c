@@ -49,6 +49,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
@@ -199,7 +200,7 @@ public class InheritedAclFactoryTest {
 		when(objectAclFactory.getPrincipalRoles(eq(collPid)))
 				.thenReturn(collPrincRoles);
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC)))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
 				.thenReturn(true);
 
 		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
@@ -224,7 +225,7 @@ public class InheritedAclFactoryTest {
 		when(objectAclFactory.getPrincipalRoles(eq(collPid)))
 				.thenReturn(collPrincRoles);
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), anyString()))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), anyString(), any(Permission.class)))
 				.thenReturn(false);
 
 		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
@@ -244,9 +245,9 @@ public class InheritedAclFactoryTest {
 				.thenReturn(collPrincRoles);
 
 		// revoke one patron but not the other
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC)))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
 				.thenReturn(false);
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(AUTHENTICATED_PRINC)))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(AUTHENTICATED_PRINC), any(Permission.class)))
 				.thenReturn(true);
 
 		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
@@ -254,6 +255,28 @@ public class InheritedAclFactoryTest {
 		assertEquals("Only one patron principal should be present", 1, princRoles.size());
 		assertPrincipalHasRoles("Authenticated principal should still be assigned",
 				princRoles, AUTHENTICATED_PRINC, canViewOriginals);
+	}
+
+	@Test
+	public void embargoReducedRoleTest() {
+		addPidToAncestors();
+		PID collectionPid = addPidToAncestors();
+		
+		Map<String, Set<String>> collPrincRoles = new HashMap<>();
+		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewOriginals);
+		when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
+				.thenReturn(collPrincRoles);
+		
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewMetadata)))
+				.thenReturn(true);
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewOriginal)))
+				.thenReturn(false);
+		
+		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+		assertEquals("Only one patron principal should be present", 1, princRoles.size());
+		assertPrincipalHasRoles("Patron should be reduced to have view metadata role",
+				princRoles, PATRON_PRINC, canViewMetadata);
 	}
 
 	@Test

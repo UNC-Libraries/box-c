@@ -93,7 +93,8 @@ public class InheritedPermissionEvaluator {
 			} else {
 				// Finished evaluating staff roles, evaluate patron rights
 				if (!requestingPatronPermission
-						|| !objectPermissionEvaluator.hasPatronAccess(pathPid, permittedPatronPrincipals)) {
+						|| !objectPermissionEvaluator.hasPatronAccess(
+								pathPid, permittedPatronPrincipals, permission)) {
 					// Patron access revoked or permission requested is a staff permission
 					return false;
 				}

@@ -129,8 +129,8 @@ public class ObjectPermissionEvaluator {
 	 * @param agentPrincipal
 	 * @return
 	 */
-	public boolean hasPatronAccess(PID pid, String agentPrincipal) {
-		return hasPatronAccess(pid, Arrays.asList(agentPrincipal));
+	public boolean hasPatronAccess(PID pid, String agentPrincipal, Permission permission) {
+		return hasPatronAccess(pid, Arrays.asList(agentPrincipal), permission);
 	}
 
 	/**
@@ -139,9 +139,11 @@ public class ObjectPermissionEvaluator {
 	 * 
 	 * @param pid
 	 * @param agentPrincipals
+	 * @param permission
 	 * @return
 	 */
-	public boolean hasPatronAccess(PID pid, Collection<String> agentPrincipals) {
+	public boolean hasPatronAccess(PID pid, Collection<String> agentPrincipals,
+			Permission permission) {
 		PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
 		if (PatronAccess.none.equals(patronAccess)) {
 			// patron access revoked
@@ -161,12 +163,15 @@ public class ObjectPermissionEvaluator {
 			return false;
 		}
 
-		// Check for an active embargo
-		Date embargoUntil = aclFactory.getEmbargoUntil(pid);
-		if (embargoUntil != null) {
-			Date currentDate = new Date();
-			if (currentDate.before(embargoUntil)) {
-				return false;
+		// Check for embargoes if the permission being requested is beyond metadata
+		if (!Permission.viewMetadata.equals(permission)) {
+			// Check for an active embargo
+			Date embargoUntil = aclFactory.getEmbargoUntil(pid);
+			if (embargoUntil != null) {
+				Date currentDate = new Date();
+				if (currentDate.before(embargoUntil)) {
+					return false;
+				}
 			}
 		}
 

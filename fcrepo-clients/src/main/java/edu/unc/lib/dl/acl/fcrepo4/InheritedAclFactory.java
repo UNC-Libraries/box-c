@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
@@ -84,7 +85,7 @@ public class InheritedAclFactory implements AclFactory {
 				}
 
 				// Evaluate remaining inherited patron roles
-				removeRevokedPatronRoles(pathPid, inheritedPrincRoles, patronPrincipals);
+				revokedPatronRoles(pathPid, inheritedPrincRoles, patronPrincipals);
 			}
 		}
 
@@ -114,16 +115,23 @@ public class InheritedAclFactory implements AclFactory {
 		}
 	}
 
-	private void removeRevokedPatronRoles(PID pid, Map<String, Set<String>> princRoles, Set<String> patronPrincipals) {
+	private void revokedPatronRoles(PID pid, Map<String, Set<String>> princRoles,
+			Set<String> patronPrincipals) {
 		// Check each remaining patron principal to see if it still has patron access
 		Iterator<String> patronIt = patronPrincipals.iterator();
 		while (patronIt.hasNext()) {
 			String patronPrinc = patronIt.next();
-
+			Set<String> roles = princRoles.get(patronPrinc);
+			
 			// Patron access revoked for this principal, so remove it from inherited roles
-			if (!objectPermissionEvaluator.hasPatronAccess(pid, patronPrinc)) {
+			if (!objectPermissionEvaluator.hasPatronAccess(pid, patronPrinc, Permission.viewMetadata)) {
 				patronIt.remove();
 				princRoles.remove(patronPrinc);
+			} else if (!roles.contains(UserRole.canViewMetadata.getPropertyString())
+						&& !objectPermissionEvaluator.hasPatronAccess(pid, patronPrinc, Permission.viewOriginal)) {
+				// Has metadata but not original permission, so downgrading
+				roles.clear();
+				roles.add(UserRole.canViewMetadata.getPropertyString());
 			}
 		}
 	}

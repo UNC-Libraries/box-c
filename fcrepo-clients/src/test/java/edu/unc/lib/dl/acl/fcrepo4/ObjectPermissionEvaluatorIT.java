@@ -166,7 +166,8 @@ public class ObjectPermissionEvaluatorIT {
 	public void hasPatronAccessNoModificationsTest() throws Exception {
 		Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
 
-		assertTrue(objectPermissionEvaluator.hasPatronAccess(pid, principals));
+		assertTrue(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -175,7 +176,8 @@ public class ObjectPermissionEvaluatorIT {
 
 		createObject(pid).addLiteral(CdrAcl.patronAccess, PatronAccess.none.name());
 
-		assertFalse(objectPermissionEvaluator.hasPatronAccess(pid, principals));
+		assertFalse(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -184,7 +186,8 @@ public class ObjectPermissionEvaluatorIT {
 
 		createObject(pid).addLiteral(CdrAcl.patronAccess, PatronAccess.authenticated.name());
 
-		assertTrue(objectPermissionEvaluator.hasPatronAccess(pid, principals));
+		assertTrue(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -193,7 +196,8 @@ public class ObjectPermissionEvaluatorIT {
 
 		createObject(pid).addLiteral(CdrAcl.markedForDeletion, true);
 
-		assertFalse(objectPermissionEvaluator.hasPatronAccess(pid, principals));
+		assertFalse(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	@Test
@@ -204,7 +208,20 @@ public class ObjectPermissionEvaluatorIT {
 		GregorianCalendar tomorrow = GregorianCalendar.from(ZonedDateTime.now().plusDays(1));
 		createObject(pid).addLiteral(CdrAcl.embargoUntil, tomorrow);
 
-		assertFalse(objectPermissionEvaluator.hasPatronAccess(pid, principals));
+		assertFalse(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewOriginal));
+	}
+
+	@Test
+	public void hasPatronAccessToMetadataEmbargoedTest() throws Exception {
+		Set<String> principals = new HashSet<>(Arrays.asList(PRINC_GRP1));
+
+		// Set the embargo to tomorrow (via a calendar) so that it will not be expired
+		GregorianCalendar tomorrow = GregorianCalendar.from(ZonedDateTime.now().plusDays(1));
+		createObject(pid).addLiteral(CdrAcl.embargoUntil, tomorrow);
+
+		assertTrue(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewMetadata));
 	}
 
 	@Test
@@ -215,7 +232,8 @@ public class ObjectPermissionEvaluatorIT {
 		GregorianCalendar yesterday = GregorianCalendar.from(ZonedDateTime.now().plusDays(-1));
 		createObject(pid).addLiteral(CdrAcl.embargoUntil, yesterday);
 
-		assertTrue(objectPermissionEvaluator.hasPatronAccess(pid, principals));
+		assertTrue(objectPermissionEvaluator
+				.hasPatronAccess(pid, principals, Permission.viewOriginal));
 	}
 
 	private Resource createObject(PID pid) {

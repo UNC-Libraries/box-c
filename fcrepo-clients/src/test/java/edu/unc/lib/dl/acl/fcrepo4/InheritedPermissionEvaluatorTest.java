@@ -187,7 +187,7 @@ public class InheritedPermissionEvaluatorTest {
 				eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
 				.thenReturn(principals);
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet()))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
 				.thenReturn(true);
 
 		assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
@@ -204,7 +204,7 @@ public class InheritedPermissionEvaluatorTest {
 				eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
 				.thenReturn(Collections.emptySet());
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet()))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
 				.thenReturn(true);
 
 		assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
@@ -219,7 +219,7 @@ public class InheritedPermissionEvaluatorTest {
 				eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
 				.thenReturn(principals);
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet()))
+		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
 				.thenReturn(false);
 
 		assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
