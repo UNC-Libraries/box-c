@@ -84,10 +84,8 @@ public class ObjectAclFactory implements AclFactory {
 
 	@Override
 	public Map<String, Set<String>> getPrincipalRoles(PID pid) {
-		String pidString = pid.getRepositoryPath();
-		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
-		Map<String, Set<String>> result = objAcls.stream()
+		Map<String, Set<String>> result = getObjectAcls(pid).stream()
 				// Filter to only role assignments
 				.filter(p -> roleUris.contains(p.getKey()))
 				// Group up roles by principal
@@ -101,11 +99,9 @@ public class ObjectAclFactory implements AclFactory {
 
 	@Override
 	public PatronAccess getPatronAccess(PID pid) {
-		String pidString = pid.getRepositoryPath();
-		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
 		String patronPropertyUri = CdrAcl.patronAccess.getURI();
-		return objAcls.stream()
+		return getObjectAcls(pid).stream()
 				.filter(p -> patronPropertyUri.equals(p.getKey()))
 				.findFirst()
 				.map(p -> PatronAccess.valueOf(p.getValue()))
@@ -114,11 +110,9 @@ public class ObjectAclFactory implements AclFactory {
 
 	@Override
 	public Date getEmbargoUntil(PID pid) {
-		String pidString = pid.getRepositoryPath();
-		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
 		String embargoPropertyUri = CdrAcl.embargoUntil.getURI();
-		return objAcls.stream()
+		return getObjectAcls(pid).stream()
 				.filter(p -> embargoPropertyUri.equals(p.getKey()))
 				.findFirst()
 				.map(p -> {
@@ -135,14 +129,17 @@ public class ObjectAclFactory implements AclFactory {
 
 	@Override
 	public boolean isMarkedForDeletion(PID pid) {
-		String pidString = pid.getRepositoryPath();
-		List<Entry<String, String>> objAcls = objAclCache.getUnchecked(pidString);
 
 		String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
-		return objAcls.stream()
+		return getObjectAcls(pid).stream()
 				.filter(p -> deletedPropertyUri.equals(p.getKey()))
 				.findFirst()
 				.isPresent();
+	}
+
+	private List<Entry<String, String>> getObjectAcls(PID pid) {
+		String pidString = pid.getRepositoryPath();
+		return objAclCache.getUnchecked(pidString);
 	}
 
 	public long getCacheTimeToLive() {

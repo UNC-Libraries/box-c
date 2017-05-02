@@ -143,7 +143,7 @@ public class InheritedAclFactory implements AclFactory {
 	@Override
 	public PatronAccess getPatronAccess(PID target) {
 		List<PID> pidPath = getPidPath(target);
-		if (pidPath.size() < 3) {
+		if (pidPath.size() <= CONTENT_STARTING_DEPTH) {
 			return null;
 		}
 
@@ -181,6 +181,7 @@ public class InheritedAclFactory implements AclFactory {
 
 	private List<PID> getPidPath(PID pid) {
 		List<PID> path = pathFactory.getAncestorPids(pid);
+		// Trim off the root object from the beginning of the path
 		path = new ArrayList<>(path.subList(1, path.size()));
 		path.add(pid);
 
