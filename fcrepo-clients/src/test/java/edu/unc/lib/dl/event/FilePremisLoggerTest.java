@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -162,11 +163,11 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 	@Test
 	public void getEventsTest() {
 		Resource event1 = premis.buildEvent(Premis.Normalization, date)
-				.addEventDetail("Event 1")
+				.addEventDetail("Event 1").addSoftwareAgent("Agent 1")
 				.write();
 
 		Resource event2 = premis.buildEvent(Premis.VirusCheck, date)
-				.addEventDetail("Event 2")
+				.addEventDetail("Event 2").addAuthorizingAgent("Agent 2")
 				.write();
 
 		List<PremisEventObject> events = premis.getEvents();
@@ -179,11 +180,23 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 				eventObj1.getResource().getProperty(Premis.hasEventType).getObject());
 		assertEquals("Event detail not written to file", "Event 1",
 				eventObj1.getResource().getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Software agent not written to file", PremisAgentType.Software,
+				eventObj1.getResource().getProperty(Premis.hasEventRelatedAgentExecutor).getResource()
+				.getProperty(Premis.hasAgentType).getObject());
+		assertEquals("Software agent name not written to file", "Agent 1",
+				eventObj1.getResource().getProperty(Premis.hasEventRelatedAgentExecutor).getResource()
+				.getProperty(Premis.hasAgentName).getObject().toString());
 
 		assertEquals("VirusCheck type not written to file", Premis.VirusCheck,
 				eventObj2.getResource().getProperty(Premis.hasEventType).getObject());
 		assertEquals("Event detail not written to file", "Event 2",
 				eventObj2.getResource().getProperty(Premis.hasEventDetail).getObject().toString());
+		assertEquals("Authorizing agent not written to file", PremisAgentType.Person,
+				eventObj2.getResource().getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource()
+				.getProperty(Premis.hasAgentType).getObject());
+		assertEquals("Authorizing agent name not written to file", "Agent 2",
+				eventObj2.getResource().getProperty(Premis.hasEventRelatedAgentAuthorizor).getResource()
+				.getProperty(Premis.hasAgentName).getObject().toString());
 	}
 
 	protected PremisEventObject findEventByPid(List<PremisEventObject> events, PID pid) {
