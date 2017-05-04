@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
@@ -87,6 +88,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
 	@Autowired
 	private ActivityMetricsClient metricsClient;
+	
+	@Autowired
+	private AccessControlService aclService;
 
 	public IngestContentObjectsJob() {
 		super();
@@ -151,20 +155,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 					+ " was not a valid repository path");
 		}
 
-		ContentObject destObj = repository.getContentObject(PIDs.get(
-				depositStatus.get(DepositField.containerId.name())));
+		PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
+		ContentObject destObj = repository.getContentObject(destPid);
 		if (!(destObj instanceof ContentContainerObject)) {
-			failJob("Cannot add children to destination", "Cannot deposit to destination " + destObj.getPid().getRepositoryPath()
+			failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
 					+ ", types does not support children");
 		}
 		String groups = depositStatus.get(DepositField.permissionGroups.name());
-		AccessGroupSet groupSet = new AccessGroupSet(groups);
+		
 		// Verify that the depositor is allow to ingest to the given destination
-		if (!destObj.getAccessControls().hasPermission(groupSet, Permission.ingest)) {
-			failJob("Cannot add children to destination",
-					"Depositor does not have permissions to ingest to destination "
-							+ destObj.getPid().getRepositoryPath());
-		}
+		aclService.assertHasAccess(
+				"Depositor does not have permissions to ingest to destination " + destPid,
+				destPid, new AccessGroupSet(groups), Permission.ingest);
 
 		Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
@@ -617,12 +619,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 	private void addIngestionEventForChild(ContentObject obj) throws IOException {
 		PremisLogger premisLogger = getPremisLogger(obj.getPid());
 		PremisEventBuilder builder = premisLogger.buildEvent(Premis.Ingestion);
+		
 		if (obj instanceof FileObject) {
 			builder.addEventDetail("ingested as PID: {0}\n ingested as filename: {1}",
-					obj.getPid(), ((FileObject) obj).getOriginalFile().getFilename());
+					obj.getPid().getQualifiedId(), ((FileObject) obj).getOriginalFile().getFilename());
 		} else if (obj instanceof ContentContainerObject) {
 			builder.addEventDetail("ingested as PID: {0}",
-					obj.getPid());
+					obj.getPid().getQualifiedId());
 		}
 		builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
 				.addAuthorizingAgent(DepositField.depositorName.name())

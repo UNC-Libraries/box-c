@@ -1,11 +1,11 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,21 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package edu.unc.lib.dl.acl.util;
 
-package edu.unc.lib.dl.acl.exception;
+public class AccessPrincipalConstants {
 
-/**
- * Access restriction exceptions.
- * 
- * @author bbpennel
- */
-public class AccessRestrictionException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+	public final static String PUBLIC_PRINC = "everyone";
+	public final static String AUTHENTICATED_PRINC = "authenticated";
 
-	public AccessRestrictionException() {
-	}
-
-	public AccessRestrictionException(String msg) {
-		super(msg);
-	}
 }

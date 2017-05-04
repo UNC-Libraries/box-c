@@ -142,7 +142,7 @@ public class FedoraPID extends PID {
 
 	@Override
 	public String toString() {
-		return getQualifiedId();
+		return getRepositoryPath();
 	}
 	
 	@Override

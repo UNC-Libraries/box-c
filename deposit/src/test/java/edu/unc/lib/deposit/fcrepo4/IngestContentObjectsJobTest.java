@@ -22,6 +22,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -49,8 +50,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -91,9 +93,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	private PremisLogger mockPremisLogger;
 	
 	private PremisEventBuilder mockPremisEventBuilder;
-	
+
 	@Mock
-	private ObjectAccessControlsBean mockObjAcls;
+	private AccessControlService aclService;
 
 	@Mock
 	private FileObject mockFileObj;
@@ -113,6 +115,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		job.setDepositDirectory(depositDir);
 		job.setRepository(repository);
 		setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
+		setField(job, "aclService", aclService);
 		setField(job, "dataset", dataset);
 		setField(job, "depositsDirectory", depositsDirectory);
 		setField(job, "depositStatusFactory", depositStatusFactory);
@@ -151,9 +154,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		destinationObj = mock(FolderObject.class);
 		when(destinationObj.getPid()).thenReturn(destinationPid);
 		when(repository.getContentObject(eq(destinationPid))).thenReturn(destinationObj);
-		when(destinationObj.getAccessControls()).thenReturn(mockObjAcls);
-		when(mockObjAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
-				.thenReturn(true);
 	}
 
 	/**
@@ -285,7 +285,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 	/**
 	 * Test that deposit fails when no permission to write to destination
 	 */
-	@Test(expected = JobFailedException.class)
+	@Test(expected = AccessRestrictionException.class)
 	public void ingestFailNoPermissionsTest() throws Exception {
 		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
 		Model model = job.getWritableModel();
@@ -294,8 +294,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
 		addFileObject(workBag, "pdf.pdf", "application/pdf");
 
-		when(mockObjAcls.hasPermission(any(AccessGroupSet.class), eq(Permission.ingest)))
-				.thenReturn(false);
+		doThrow(new AccessRestrictionException()).when(aclService)
+				.assertHasAccess(anyString(), eq(destinationPid),
+						any(AccessGroupSet.class), eq(Permission.ingest));
 
 		job.closeModel();
 
@@ -471,7 +472,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 		// No preprocessing ticks
 		verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(0));
 	}
-
+	
 	private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
 		PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
