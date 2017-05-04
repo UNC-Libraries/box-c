@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,10 +37,9 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
  * @author bbpennel
  *
  */
-public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
+public class SetContentStatusFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetContentStatusFilter.class);
 
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 

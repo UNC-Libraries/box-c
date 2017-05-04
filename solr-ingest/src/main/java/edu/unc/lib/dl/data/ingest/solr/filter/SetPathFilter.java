@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * @author bbpennel
  *
  */
-public class SetPathFilter extends AbstractIndexDocumentFilter {
+public class SetPathFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
 	private TripleStoreQueryService tsqs;
@@ -61,7 +62,6 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		if (dip.hasParentDocument()) {
 			DocumentIndexingPackage parentDIP = dip.getParentDocument();
@@ -288,6 +288,10 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	public void setTsqs(TripleStoreQueryService tsqs) {
 		this.tsqs = tsqs;
+	}
+	
+	private String readFileAsString(String filePath) throws java.io.IOException {
+		return IOUtils.toString(this.getClass().getResourceAsStream(filePath));
 	}
 
 	private static class PathNode {

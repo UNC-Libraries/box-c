@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -40,13 +41,12 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
+public class SetAccessControlFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetAccessControlFilter.class);
 
 	/**
 	 * Requires dip to contain RELS-EXT
 	 */
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 
@@ -96,7 +96,7 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 			status.add("Not Inheriting Roles");
 		}
 
-		String embargo = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.embargoUntil.toString());
+		String embargo = getFirstTripleValue(triples, CdrAcl.embargoUntil.toString());
 		if (embargo != null) {
 			try {
 				Date embargoDate = DateTimeUtil.parseUTCToDate(embargo);
@@ -180,5 +180,12 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 
 		// Store computed activity state in the dip for future generations to reference
 		dip.setIsDeleted(!aclBean.isActive());
+	}
+	
+	private String getFirstTripleValue(Map<String, List<String>> triples, String property) {
+		List<String> values = triples.get(property);
+		if (values == null || values.size() == 0)
+			return null;
+		return values.get(0);
 	}
 }

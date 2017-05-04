@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	private static final String CONTEXT_1_LABEL = "Context";
 	private static final String CONTEXT_1_FIELD = "rla_context_1_d";
 	
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		Element mods = dip.getMods();

@@ -19,7 +19,6 @@ import java.text.ParseException;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
@@ -30,20 +29,14 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  * @author bbpennel
  *
  */
-public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
+public class SetRecordDatesFilter {
 	
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		try {
 			dip.getDocument().setDateAdded(dip.getFirstTriple(Fcrepo4Repository.created.toString()));
-		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
-		}
-		
-		try {
 			dip.getDocument().setDateUpdated(dip.getFirstTriple(Fcrepo4Repository.lastModified.toString()));
 		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
+			throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
 		}
 	}
 }
