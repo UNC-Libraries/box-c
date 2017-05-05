@@ -60,18 +60,21 @@ public class MetaServicesRouter extends RouteBuilder {
 			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
 			.process(mdProcessor)
 			.choice()
+				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
+					.log("deanf7")
+					.to("direct-vm:replication")
+					.log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
+					.to("direct:process.enhancements")
 				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
 					.to("direct-vm:replication")
-				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
-					.to("direct:process.enhancements")
 				.otherwise()
 					.log(LoggingLevel.WARN, "Unable to process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
 			.end();
 		
-		from("direct:process.enhancement")
+		from("direct:process.enhancements")
 			.routeId("ProcessEnhancements")
 			.multicast()
-				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext","direct-vm:replication");
+				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
 	}
 
 }

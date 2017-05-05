@@ -18,10 +18,13 @@ package edu.unc.lib.cdr;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +73,8 @@ public class ReplicationProcessor implements Processor {
 		while (true) {
 			try {
 				replicate(binaryPath, binaryChecksum, replicationLocations);
+				// Pass mime type and checksum headers along to enhancements
+				exchange.getOut().setHeaders(in.getHeaders()); 
 				break;
 			} catch (Exception e) {
 				if (retryAttempt == maxRetries) {
@@ -97,11 +102,8 @@ public class ReplicationProcessor implements Processor {
 	}
 	
 	private String createFilePath(String basePath, String originalFileChecksum) {
-		String[] binaryFcrepoChecksumSplit = originalFileChecksum.split(":");
-		String checksum = binaryFcrepoChecksumSplit[2];
-		
 		String[] tokens = Iterables.toArray
-				(Splitter.fixedLength(2).split(checksum), 
+				(Splitter.fixedLength(2).split( originalFileChecksum), 
 						String.class);
 		
 		String remotePath = new StringJoiner("/")
@@ -109,7 +111,6 @@ public class ReplicationProcessor implements Processor {
 			.add(tokens[0])
 			.add(tokens[1])
 			.add(tokens[2])
-			.add(checksum)
 			.toString();
 		
 		return remotePath;
@@ -117,8 +118,9 @@ public class ReplicationProcessor implements Processor {
 	
 	private String createRemoteSubDirectory(String baseDirectory, String binaryChecksum) {
 		String replicationPath = createFilePath(baseDirectory, binaryChecksum);
+		Path fullPath = Paths.get(replicationPath);
 		
-		if (!Files.exists(Paths.get(replicationPath))) {
+		if (!Files.exists(fullPath)) {
 			new File(replicationPath).mkdirs();
 		}
 
@@ -130,15 +132,10 @@ public class ReplicationProcessor implements Processor {
 		try {
 			checksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
 		} catch (IOException e) {
-			throw new ReplicationException(String.format("Unable to compute checksum for %s", filePath, e));
+			throw new ReplicationException(String.format("Unable to compute checksum for %s", filePath), e);
 		}
 		
 		return checksum;
-	}
-	
-	private String getFilename(String binaryPath) {
-		String[] filepathParts = binaryPath.split("/");
-		return filepathParts[filepathParts.length - 1];
 	}
 	
 	private void verifyChecksums(String originalFileChecksum, String replicatedFilePath) {
@@ -151,21 +148,31 @@ public class ReplicationProcessor implements Processor {
 		}
 	}
 	
-	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations) {
+	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations) throws InterruptedException {
 		try {
 			for (String location : replicationLocations) {
-				String fullPath = Paths.get(createRemoteSubDirectory(location, originalFileChecksum), getFilename(binaryPath)).toString();
-				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", binaryPath, fullPath};
-				int exitCode = Runtime.getRuntime().exec(cmd).exitValue();
-
-				if (exitCode != 0) {
-					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d", binaryPath, fullPath, exitCode));
+				if (!Files.isDirectory(Paths.get(binaryPath))) {
+					log.warn("Binary directory does not exist for {}", binaryPath);
+					continue;
 				}
 				
-				verifyChecksums(originalFileChecksum, fullPath);
+				String fullPath = createRemoteSubDirectory(location, originalFileChecksum);
+				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", "--recursive", binaryPath, fullPath};
+				Process runCmd = Runtime.getRuntime().exec(cmd);
+				int exitCode = runCmd.waitFor();
+
+				if (exitCode != 0) {
+					BufferedReader errInput = new BufferedReader(new InputStreamReader(
+							runCmd.getErrorStream()));
+					
+					String message = errInput.readLine();
+					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", binaryPath, fullPath, exitCode, message));
+				}
+				
+				verifyChecksums(originalFileChecksum, fullPath + "/" + originalFileChecksum);
 			}
 		} catch (IOException e) {
-			throw new ReplicationException(String.format("Unable to replicate %s", binaryPath, e));
+			throw new ReplicationException(String.format("Unable to replicate %s", binaryPath), e);
 		}
 	}
 }
