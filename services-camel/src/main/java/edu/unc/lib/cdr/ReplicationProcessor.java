@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
@@ -148,25 +149,27 @@ public class ReplicationProcessor implements Processor {
 		}
 	}
 	
+	private String getPath(String binaryPath) {
+		String[] filepathParts = binaryPath.split("/");
+		String[] filenameRemoved = Arrays.copyOf(filepathParts, filepathParts.length-1);
+		
+		return String.join("/", filenameRemoved);
+	}
+	
 	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations) throws InterruptedException {
 		try {
 			for (String location : replicationLocations) {
-				if (!Files.isDirectory(Paths.get(binaryPath))) {
-					log.warn("Binary directory does not exist for {}", binaryPath);
-					continue;
-				}
-				
 				String fullPath = createRemoteSubDirectory(location, originalFileChecksum);
-				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", "--recursive", binaryPath, fullPath};
+				
+				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", "--recursive", getPath(binaryPath), getPath(fullPath)};
 				Process runCmd = Runtime.getRuntime().exec(cmd);
 				int exitCode = runCmd.waitFor();
 
 				if (exitCode != 0) {
 					BufferedReader errInput = new BufferedReader(new InputStreamReader(
 							runCmd.getErrorStream()));
-					
 					String message = errInput.readLine();
-					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", binaryPath, fullPath, exitCode, message));
+					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", getPath(binaryPath), fullPath, exitCode, message));
 				}
 				
 				verifyChecksums(originalFileChecksum, fullPath + "/" + originalFileChecksum);

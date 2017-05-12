@@ -48,6 +48,7 @@ public class MetaServicesRouter extends RouteBuilder {
 			.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
 					+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
 					+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+					
 				// Trigger binary processing after an asynchronously
 				.threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
 				.delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
@@ -61,12 +62,12 @@ public class MetaServicesRouter extends RouteBuilder {
 			.process(mdProcessor)
 			.choice()
 				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
-					.log("deanf7")
 					.to("direct-vm:replication")
 					.log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
 					.to("direct:process.enhancements")
 				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
 					.to("direct-vm:replication")
+					.log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
 				.otherwise()
 					.log(LoggingLevel.WARN, "Unable to process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
 			.end();
