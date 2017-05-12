@@ -169,7 +169,7 @@ public class ReplicationProcessor implements Processor {
 					BufferedReader errInput = new BufferedReader(new InputStreamReader(
 							runCmd.getErrorStream()));
 					String message = errInput.readLine();
-					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", getPath(binaryPath), getPath(fullPath), exitCode, message));
+					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", getPath(binaryPath), fullPath, exitCode, message));
 				}
 				
 				verifyChecksums(originalFileChecksum, fullPath + "/" + originalFileChecksum);
