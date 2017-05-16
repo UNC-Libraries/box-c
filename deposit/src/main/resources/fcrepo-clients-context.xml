@@ -48,9 +48,6 @@
 		<property name="aclService" ref="aclService" />
 	</bean>
 	
-	<bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
-	</bean>
-	
 	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />

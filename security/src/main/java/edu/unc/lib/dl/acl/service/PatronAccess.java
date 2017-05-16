@@ -1,11 +1,11 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package edu.unc.lib.dl.acl.exception;
+package edu.unc.lib.dl.acl.service;
 
 /**
- * Access restriction exceptions.
+ * Allowed patron access values for the cdr-acl:patronAccess property which
+ * designate modifications to patron group access levels
  * 
  * @author bbpennel
+ *
  */
-public class AccessRestrictionException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
-
-	public AccessRestrictionException() {
-	}
-
-	public AccessRestrictionException(String msg) {
-		super(msg);
-	}
+public enum PatronAccess {
+	parent,
+	none,
+	everyone,
+	authenticated
 }

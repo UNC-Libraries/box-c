@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.net.URI;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -38,7 +37,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * 
@@ -116,8 +114,6 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 	public void cannotAccessObjectOutsideTxTest() throws Exception {
 		FedoraTransaction tx = repository.startTransaction();
 		FolderObject folder = repository.createFolderObject(pid);
-		URI txContentUri = URI.create(URIUtil.join(tx.getTxUri(), pid.toString()));
-		client.put(txContentUri).perform();
 		
 		verifyNonTxStatusCode(folder.getPid(), 404);
 		tx.close();
