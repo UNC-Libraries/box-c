@@ -15,18 +15,26 @@
  */
 package edu.unc.lib.cdr;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
@@ -68,12 +76,14 @@ public class ReplicationProcessor implements Processor {
 		
 		String binaryPath = (String) in.getHeader(CdrBinaryPath);
 		String binaryChecksum = (String) in.getHeader(CdrBinaryChecksum);
+		String binaryMimetype = (String) in.getHeader(CdrBinaryMimeType);
+		String binaryUri = (String) in.getHeader(CdrBinaryUri);
 		
 		int retryAttempt = 0;
 		
 		while (true) {
 			try {
-				replicate(binaryPath, binaryChecksum, replicationLocations);
+				replicate(binaryPath, binaryChecksum, replicationLocations, binaryMimetype, binaryUri);
 				// Pass mime type and checksum headers along to enhancements
 				exchange.getOut().setHeaders(in.getHeaders()); 
 				break;
@@ -128,6 +138,29 @@ public class ReplicationProcessor implements Processor {
 		return replicationPath;
 	}
 	
+	private String dbFilePath(String uri, String BinaryChecksum) {
+		String filePath = "/tmp/" + BinaryChecksum;
+		InputStream response = null;
+		
+		try {
+			URLConnection connection = new URL(uri).openConnection();
+			connection.setRequestProperty("Accept-Charset", UTF_8.toString());
+			response = connection.getInputStream();
+			
+			byte[] buffer = new byte[response.available()];
+			response.read(buffer);
+		 
+			File targetFile = new File(filePath);
+			try(OutputStream outStream = new FileOutputStream(targetFile)) {
+				outStream.write(buffer);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return filePath;
+	}
+	
 	private String getFileChecksum(String filePath) {
 		String checksum = null;
 		try {
@@ -149,19 +182,22 @@ public class ReplicationProcessor implements Processor {
 		}
 	}
 	
-	private String getPath(String binaryPath) {
-		String[] filepathParts = binaryPath.split("/");
-		String[] filenameRemoved = Arrays.copyOf(filepathParts, filepathParts.length-1);
+	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations, String binaryMimeType, String binaryUri) throws InterruptedException {
+		String remoteFile = null;
+		String localBinary = null;
 		
-		return String.join("/", filenameRemoved);
-	}
-	
-	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations) throws InterruptedException {
 		try {
 			for (String location : replicationLocations) {
 				String fullPath = createRemoteSubDirectory(location, originalFileChecksum);
 				
-				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", "--recursive", getPath(binaryPath), getPath(fullPath)};
+				if (Files.exists(Paths.get(binaryPath))) {
+					localBinary = binaryPath;
+				} else {
+					localBinary = dbFilePath(binaryUri, originalFileChecksum);
+				}
+				
+				remoteFile = fullPath + "/" + originalFileChecksum;
+				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", localBinary, remoteFile};
 				Process runCmd = Runtime.getRuntime().exec(cmd);
 				int exitCode = runCmd.waitFor();
 
@@ -169,10 +205,11 @@ public class ReplicationProcessor implements Processor {
 					BufferedReader errInput = new BufferedReader(new InputStreamReader(
 							runCmd.getErrorStream()));
 					String message = errInput.readLine();
-					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", getPath(binaryPath), fullPath, exitCode, message));
+					throw new ReplicationException(String.format("Error replicating %s to %s with error code %d and message %s", binaryPath, remoteFile, exitCode, message));
 				}
+					
+				verifyChecksums(originalFileChecksum, remoteFile);
 				
-				verifyChecksums(originalFileChecksum, fullPath + "/" + originalFileChecksum);
 			}
 		} catch (IOException e) {
 			throw new ReplicationException(String.format("Unable to replicate %s", binaryPath), e);

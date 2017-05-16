@@ -18,6 +18,7 @@ package edu.unc.lib.cdr;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
@@ -56,6 +57,8 @@ public class BinaryMetadataProcessor implements Processor {
 	public void process(final Exchange exchange) throws Exception {
 		final Message in = exchange.getIn();
 		final Model model = createDefaultModel();
+		
+		String fcrepoBinaryUri = (String) in.getHeader("CamelFcrepoUri");
 
 		Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
 		ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
@@ -65,6 +68,7 @@ public class BinaryMetadataProcessor implements Processor {
 				Resource resource = resources.next();
 				String binaryMimeType = resource.getProperty(hasMimeType).getObject().toString();
 				String binaryFcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
+
 				String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 	
 				String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH); 
@@ -78,6 +82,7 @@ public class BinaryMetadataProcessor implements Processor {
 				in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
 				in.setHeader(CdrBinaryMimeType, binaryMimeType);
 				in.setHeader(CdrBinaryPath, binaryFullPath);
+				in.setHeader(CdrBinaryUri, fcrepoBinaryUri);
 			}
 		} finally {
 			resources.close();
