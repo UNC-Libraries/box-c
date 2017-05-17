@@ -136,7 +136,7 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 					{
 						filename: 'archives.xml',
 						title: "Archival Folder",
-						description: 'UARMS MODS template with common fields',
+						description: 'Wilson MODS template with common fields',
 						icon_class: 'fa fa-file-text-o'
 					},
 					{
