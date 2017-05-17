@@ -134,6 +134,12 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						icon_class: 'fa fa-file-text-o'
 					},
 					{
+						filename: 'archives.xml',
+						title: "UARMS",
+						description: 'UARMS MODS template with common fields',
+						icon_class: 'fa fa-file-text-o'
+					},
+					{
 						filename: 'student_papers.xml',
 						title: "Student Paper",
 						description: 'Standard fields for student paper descriptions',
