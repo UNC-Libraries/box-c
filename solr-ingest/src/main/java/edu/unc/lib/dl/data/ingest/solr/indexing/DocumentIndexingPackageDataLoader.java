@@ -21,13 +21,25 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -40,8 +52,8 @@ import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -61,11 +73,99 @@ public class DocumentIndexingPackageDataLoader {
 	private ManagementClient managementClient ;
 	private AccessClient accessClient;
 	private TripleStoreQueryService tsqs;
+	private SparqlQueryService queryService;
 	private AccessControlService accessControlService;
 	private DocumentIndexingPackageFactory factory;
 	
 	private int maxRetries = 2;
 	private long retryDelay = 1000L;
+	
+	private LoadingCache<String, List<Entry<String, String>>> objCache;
+	private long cacheTimeToLive;
+	private long cacheMaxSize;
+	
+	public void init() {
+		objCache = CacheBuilder.newBuilder()
+				.maximumSize(cacheMaxSize)
+				.expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
+				.build(new ObjectCacheLoader());
+	}
+	
+	private List<Entry<String, String>> getObjectProperties(PID pid) {
+		String pidString = pid.getRepositoryPath();
+		return objCache.getUnchecked(pidString);
+	}
+
+	public long getCacheTimeToLive() {
+		return cacheTimeToLive;
+	}
+
+	public void setCacheTimeToLive(long cacheTimeToLive) {
+		this.cacheTimeToLive = cacheTimeToLive;
+	}
+
+	public long getCacheMaxSize() {
+		return cacheMaxSize;
+	}
+
+	public void setCacheMaxSize(long cacheMaxSize) {
+		this.cacheMaxSize = cacheMaxSize;
+	}
+
+	public SparqlQueryService getQueryService() {
+		return queryService;
+	}
+
+	public void setQueryService(SparqlQueryService queryService) {
+		this.queryService = queryService;
+	}
+	
+	/**
+	 * Loader for cache of information about individual objects. Retrieves
+	 * properties from a SPARQL endpoint which are directly present on
+	 * objects
+	 * 
+	 * @author bbpennel
+	 *
+	 */
+	private class ObjectCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
+		
+		// query string for returning all of an object's triples
+		private static final String OBJ_QUERY = "SELECT ?pred ?obj"
+				+ " WHERE { <%1$s> ?pred ?obj . }";
+
+		public List<Entry<String, String>> load(String key) {
+
+			String query = String.format(OBJ_QUERY, key);
+
+			try (QueryExecution qExecution = queryService.executeQuery(query)) {
+				ResultSet resultSet = qExecution.execSelect();
+				List<Entry<String, String>> valueResults = new ArrayList<>();
+
+				// Read all results into a list of predicate object pairs
+				for (; resultSet.hasNext() ;) {
+					QuerySolution soln = resultSet.nextSolution();
+					Resource predicateRes = soln.getResource("pred");
+					RDFNode valueNode = soln.get("obj");
+
+					if (predicateRes != null && valueNode != null) {
+						String predicateString = predicateRes.getURI();
+						String valueString;
+						if (valueNode.isLiteral()) {
+							valueString = valueNode.asLiteral().getLexicalForm();
+						} else {
+							valueString = valueNode.asResource().getURI();
+						}
+
+						valueResults.add(new SimpleEntry<String, String>
+								(predicateString, valueString));
+					}
+				}
+
+				return valueResults;
+			}
+		}
+	}
 
 	@Deprecated
 	public Document loadFOXML(DocumentIndexingPackage dip) throws IndexingException {

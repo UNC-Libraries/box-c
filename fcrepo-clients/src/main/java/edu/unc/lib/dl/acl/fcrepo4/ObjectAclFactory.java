@@ -166,10 +166,6 @@ public class ObjectAclFactory implements AclFactory {
 		this.queryService = queryService;
 	}
 
-	private static final String ACL_QUERY = "SELECT ?pred ?obj"
-			+ " WHERE { <%1$s> ?pred ?obj ."
-			+ "   filter(strstarts(str(?pred), \"http://cdr.unc.edu/definitions/acl#\")) . }";
-
 	/**
 	 * Loader for cache of ACL information about individual objects. Retrieves
 	 * ACL properties from a SPARQL endpoint which are directly present on
@@ -179,6 +175,10 @@ public class ObjectAclFactory implements AclFactory {
 	 *
 	 */
 	private class ObjectAclCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
+		
+		private static final String ACL_QUERY = "SELECT ?pred ?obj"
+				+ " WHERE { <%1$s> ?pred ?obj ."
+				+ "   filter(strstarts(str(?pred), \"http://cdr.unc.edu/definitions/acl#\")) . }";
 
 		public List<Entry<String, String>> load(String key) {
 
@@ -189,7 +189,7 @@ public class ObjectAclFactory implements AclFactory {
 				List<Entry<String, String>> valueResults = new ArrayList<>();
 
 				// Read all results into a list of predicate object pairs
-				for (; resultSet.hasNext();) {
+				for (; resultSet.hasNext() ;) {
 					QuerySolution soln = resultSet.nextSolution();
 					Resource predicateRes = soln.getResource("pred");
 					RDFNode valueNode = soln.get("obj");
