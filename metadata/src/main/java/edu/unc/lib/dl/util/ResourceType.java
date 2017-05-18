@@ -15,10 +15,14 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.ADMIN_UNIT;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTENT_ROOT;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.DEPOSIT_RECORD;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.WORK;
+
 
 import java.util.List;
 
@@ -26,10 +30,18 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public enum ResourceType {
+	AdminUnit(1, Cdr.AdminUnit.getURI()),
 	Collection(1, Cdr.Collection.getURI()),
-			Aggregate(3, Cdr.Work.getURI()),
-			Folder(2, Cdr.Folder.getURI()),
-			File(3,  Cdr.FileObject.getURI());
+	Folder(2, Cdr.Folder.getURI()),
+	Work(3, Cdr.Work.getURI()),
+	File(3, Cdr.FileObject.getURI()),
+	DepositRecord(4, Cdr.DepositRecord.getURI()),
+	ContentRoot(4, Cdr.ContentRoot.getURI());
+	
+
+/*FileObject
+ContentRoot
+DepositRecord*/
 	
 	private int displayOrder;
 	private String uri;
@@ -62,17 +74,27 @@ public enum ResourceType {
 	}
 
 	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
+		if (contentModels.contains(ADMIN_UNIT.getPID().getURI())) {
+			return AdminUnit;
+		}
 		if (contentModels.contains(COLLECTION.getPID().getURI())) {
 			return Collection;
 		}
-		if (contentModels.contains(AGGREGATE_WORK.getPID().getURI())) {
-			return Aggregate;
+		if (contentModels.contains(WORK.getPID().getURI())) {
+			return Work;
 		}
 		if (contentModels.contains(CONTAINER.getPID().getURI())) {
 			return Folder;
 		}
 		if (contentModels.contains(SIMPLE.getPID().getURI())) {
 			return File;
+		}
+		if (contentModels.contains(DEPOSIT_RECORD.getPID().getURI())) {
+			return DepositRecord;
+		}
+		
+		if (contentModels.contains(CONTENT_ROOT.getPID().getURI())) {
+			return ContentRoot;
 		}
 		return null;
 	}
