@@ -16,7 +16,7 @@
 	</module>
 	<!-- Checks that there are no tab characters ('\t') in the source code. -->
 	<module name="FileTabCharacter">
-		<property name="eachLine" value="true" />
+		<property name="eachLine" value="false" />
 		<property name="fileExtensions" value="java,css,js,xml" />
 	</module>
 	<!-- License Header module disabled in favor of license-maven-plugin -->
@@ -56,8 +56,12 @@
 		</module>
 		<!-- K&R style braces -->
 		<module name="NeedBraces" />
-		<module name="LeftCurly" />
-		<module name="RightCurly" />
+		<module name="LeftCurly">
+			<property name="option" value="eol" />
+		</module>
+		<module name="RightCurly"> 
+			<property name="option" value="same"/>
+		</module>
 		<module name="WhitespaceAround">
 			<property name="tokens"
 				value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND" />
