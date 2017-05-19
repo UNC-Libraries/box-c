@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 
-public class SetCollectionSupplementalInformationFilter extends AbstractIndexDocumentFilter {
+public class SetCollectionSupplementalInformationFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetCollectionSupplementalInformationFilter.class);
 	
 	// Map of filters for specific collections.  Key is the pid of the parent collection
@@ -39,7 +39,6 @@ public class SetCollectionSupplementalInformationFilter extends AbstractIndexDoc
 		collectionFilters = new HashMap<String, IndexDocumentFilter>();
 	}
 	
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		String parentCollection = dip.getDocument().getParentCollection();
 		if (parentCollection == null)

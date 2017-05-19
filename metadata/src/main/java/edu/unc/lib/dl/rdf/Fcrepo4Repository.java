@@ -84,4 +84,8 @@ public class Fcrepo4Repository {
     
     public static final Resource Version = createResource( "http://fedora.info/definitions/v4/repository#Version" );
     
+    public static final Property created = createProperty( "http://fedora.info/definitions/v4/repository#created" );
+    
+    public static final Property lastModified = createProperty( "http://fedora.info/definitions/v4/repository#lastModified" );
+    
 }

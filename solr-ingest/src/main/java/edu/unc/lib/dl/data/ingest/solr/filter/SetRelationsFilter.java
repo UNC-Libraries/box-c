@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,10 +35,9 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
  * @author bbpennel
  *
  */
-public class SetRelationsFilter extends AbstractIndexDocumentFilter {
+public class SetRelationsFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
 
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		log.debug("Applying setRelationsFilter");
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
+public class SetDatastreamContentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDatastreamContentFilter.class);
 
 	private Pattern extensionRegex;
@@ -74,7 +74,6 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Document foxml = dip.getFoxml();
 		if (foxml == null)

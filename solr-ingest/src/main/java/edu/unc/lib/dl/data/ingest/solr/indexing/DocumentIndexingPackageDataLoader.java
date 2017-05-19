@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,27 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -41,16 +52,14 @@ import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
  * Loads data to populate fields in a DocumentIndexingPackage
@@ -61,18 +70,104 @@ import edu.unc.lib.dl.xml.NamespaceConstants;
 public class DocumentIndexingPackageDataLoader {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackageDataLoader.class);
 	
-	private static final String OBJECT_STATE_RELATION = ContentModelHelper.FedoraProperty.state.toString();
-	
 	private ManagementClient managementClient ;
 	private AccessClient accessClient;
 	private TripleStoreQueryService tsqs;
+	private SparqlQueryService queryService;
 	private AccessControlService accessControlService;
 	private DocumentIndexingPackageFactory factory;
 	
 	private int maxRetries = 2;
 	private long retryDelay = 1000L;
-
 	
+	private LoadingCache<String, List<Entry<String, String>>> objCache;
+	private long cacheTimeToLive;
+	private long cacheMaxSize;
+	
+	public void init() {
+		objCache = CacheBuilder.newBuilder()
+				.maximumSize(cacheMaxSize)
+				.expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
+				.build(new ObjectCacheLoader());
+	}
+	
+	private List<Entry<String, String>> getObjectProperties(PID pid) {
+		String pidString = pid.getRepositoryPath();
+		return objCache.getUnchecked(pidString);
+	}
+
+	public long getCacheTimeToLive() {
+		return cacheTimeToLive;
+	}
+
+	public void setCacheTimeToLive(long cacheTimeToLive) {
+		this.cacheTimeToLive = cacheTimeToLive;
+	}
+
+	public long getCacheMaxSize() {
+		return cacheMaxSize;
+	}
+
+	public void setCacheMaxSize(long cacheMaxSize) {
+		this.cacheMaxSize = cacheMaxSize;
+	}
+
+	public SparqlQueryService getQueryService() {
+		return queryService;
+	}
+
+	public void setQueryService(SparqlQueryService queryService) {
+		this.queryService = queryService;
+	}
+	
+	/**
+	 * Loader for cache of information about individual objects. Retrieves
+	 * properties from a SPARQL endpoint which are directly present on
+	 * objects
+	 * 
+	 * @author bbpennel
+	 *
+	 */
+	private class ObjectCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
+		
+		// query string for returning all of an object's triples
+		private static final String OBJ_QUERY = "SELECT ?pred ?obj"
+				+ " WHERE { <%1$s> ?pred ?obj . }";
+
+		public List<Entry<String, String>> load(String key) {
+
+			String query = String.format(OBJ_QUERY, key);
+
+			try (QueryExecution qExecution = queryService.executeQuery(query)) {
+				ResultSet resultSet = qExecution.execSelect();
+				List<Entry<String, String>> valueResults = new ArrayList<>();
+
+				// Read all results into a list of predicate object pairs
+				for (; resultSet.hasNext() ;) {
+					QuerySolution soln = resultSet.nextSolution();
+					Resource predicateRes = soln.getResource("pred");
+					RDFNode valueNode = soln.get("obj");
+
+					if (predicateRes != null && valueNode != null) {
+						String predicateString = predicateRes.getURI();
+						String valueString;
+						if (valueNode.isLiteral()) {
+							valueString = valueNode.asLiteral().getLexicalForm();
+						} else {
+							valueString = valueNode.asResource().getURI();
+						}
+
+						valueResults.add(new SimpleEntry<String, String>
+								(predicateString, valueString));
+					}
+				}
+
+				return valueResults;
+			}
+		}
+	}
+
+	@Deprecated
 	public Document loadFOXML(DocumentIndexingPackage dip) throws IndexingException {
 		PID pid = dip.getPid();
 		try {
@@ -111,7 +206,7 @@ public class DocumentIndexingPackageDataLoader {
 			throw new IndexingException("Interrupted while waiting to retry FOXML retrieval for " + pid.getPid(), e);
 		}
 	}
-	
+	@Deprecated
 	public ObjectAccessControlsBean loadAccessControlBean(DocumentIndexingPackage dip) throws IndexingException {
 		if (!dip.hasParentDocument() || !dip.getParentDocument().hasAclBean()) {
 			// No parent object, ask fedora for access control
@@ -119,7 +214,7 @@ public class DocumentIndexingPackageDataLoader {
 		}
 		return new ObjectAccessControlsBeanImpl(dip.getParentDocument().getAclBean(), dip.getPid(), dip.getTriples());
 	}
-	
+	@Deprecated
 	public List<PID> loadChildren(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 		
@@ -136,73 +231,16 @@ public class DocumentIndexingPackageDataLoader {
 
 		return children;
 	}
-	
+	@Deprecated
 	public Map<String, List<String>> loadTriples(DocumentIndexingPackage dip) throws IndexingException {
-		if (dip.hasFoxml()) {
-			return this.extractTriples(dip);
-		}
 		return tsqs.fetchAllTriples(dip.getPid());
 	}
-	
-	private Map<String, List<String>> extractTriples(DocumentIndexingPackage dip) throws IndexingException {
-		PID pid = dip.getPid();
-		
-		Element objectProperties = FOXMLJDOMUtil.getObjectProperties(dip.getFoxml());
-		Element relsExt = getDatastream(dip, Datastream.RELS_EXT);
-		Map<String, Element> datastreams = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
-
-		Map<String, List<String>> triples = new HashMap<String, List<String>>();
-		if (relsExt != null) {
-			List<?> tripleEls = relsExt.getChild("Description", JDOMNamespaceUtil.RDF_NS).getChildren();
-			for (Object tripleObject : tripleEls) {
-				Element tripleEl = (Element) tripleObject;
-				String predicate = tripleEl.getNamespaceURI() + tripleEl.getName();
-				String value = tripleEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
-				if (value == null)
-					value = tripleEl.getText();
-				List<String> predicateTriples = triples.get(predicate);
-				if (predicateTriples == null) {
-					predicateTriples = new ArrayList<String>();
-					triples.put(predicate, predicateTriples);
-				}
-				predicateTriples.add(value);
-			}
-		}
-
-		if (objectProperties != null) {
-			List<?> tripleEls = objectProperties.getChildren();
-			for (Object tripleObject : tripleEls) {
-				Element tripleEl = (Element) tripleObject;
-				String predicate = tripleEl.getAttributeValue("NAME");
-				String value = tripleEl.getAttributeValue("VALUE");
-				// Fedora prefixes the state value into a URI in the triple store, so add in prefix
-				if (OBJECT_STATE_RELATION.equals(predicate))
-					value = NamespaceConstants.FEDORA_MODEL_URI + value;
-				List<String> predicateTriples = triples.get(predicate);
-				if (predicateTriples == null) {
-					predicateTriples = new ArrayList<String>();
-					triples.put(predicate, predicateTriples);
-				}
-				predicateTriples.add(value);
-			}
-		}
-
-		if (datastreams.size() > 0) {
-			List<String> predicateTriples = new ArrayList<String>();
-			triples.put(ContentModelHelper.FedoraProperty.disseminates.toString(), predicateTriples);
-			for (String datastream : datastreams.keySet()) {
-				predicateTriples.add(pid.getURI() + "/" + datastream);
-			}
-		}
-		
-		return triples;
-	}
-
+	@Deprecated
 	public DocumentIndexingPackage loadParentDip(DocumentIndexingPackage dip) throws IndexingException {
 		PID parentPid = dip.getParentPid();
 		return factory.createDip(parentPid);
 	}
-
+	@Deprecated
 	public PID loadParentPid(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		PID parentPID = null;
@@ -225,7 +263,7 @@ public class DocumentIndexingPackageDataLoader {
 		
 		return parentPID;
 	}
-
+	@Deprecated
 	public DocumentIndexingPackage loadDefaultWebObject(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 		
@@ -237,7 +275,7 @@ public class DocumentIndexingPackageDataLoader {
 		
 		return null;
 	}
-	
+	@Deprecated
 	public String loadDefaultWebData(DocumentIndexingPackage dip) throws IndexingException {
 		String defaultWebData = dip.getFirstTriple(CDRProperty.defaultWebData.toString());
 		// If this object does not have a defaultWebData but its defaultWebObject does, then use that instead.
@@ -247,15 +285,15 @@ public class DocumentIndexingPackageDataLoader {
 		
 		return defaultWebData;
 	}
-	
+	@Deprecated
 	public Element loadMDDescriptive(DocumentIndexingPackage dip) throws IndexingException {
 		return loadDatastream(dip, Datastream.MD_DESCRIPTIVE, true);
 	}
-	
+	@Deprecated
 	public Element loadMDContents(DocumentIndexingPackage dip) throws IndexingException {
 		return loadDatastream(dip, Datastream.MD_CONTENTS, true);
 	}
-	
+	@Deprecated
 	private Element getDatastream(DocumentIndexingPackage dip, Datastream ds) throws IndexingException {
 		Element dsEl = null;
 		if (dip.hasFoxml()) {
@@ -263,7 +301,7 @@ public class DocumentIndexingPackageDataLoader {
 		}
 		return dsEl;
 	}
-	
+	@Deprecated
 	private Element loadDatastream(DocumentIndexingPackage dip, Datastream ds, boolean checkFoxml) throws IndexingException {
 		PID pid = dip.getPid();
 		String datastreamName = ds.getName();
@@ -309,31 +347,31 @@ public class DocumentIndexingPackageDataLoader {
 			throw new IndexingException("Failed to get datastream " + datastreamName + " for object " + pid, e);
 		}
 	}
-
+	@Deprecated
 	public void setManagementClient(ManagementClient managementClient) {
 		this.managementClient = managementClient;
 	}
-
+	@Deprecated
 	public void setAccessClient(AccessClient accessClient) {
 		this.accessClient = accessClient;
 	}
-
+	@Deprecated
 	public void setTsqs(TripleStoreQueryService tsqs) {
 		this.tsqs = tsqs;
 	}
-
+	@Deprecated
 	public void setAccessControlService(AccessControlService accessControlService) {
 		this.accessControlService = accessControlService;
 	}
-
+	@Deprecated
 	public void setMaxRetries(int maxRetries) {
 		this.maxRetries = maxRetries;
 	}
-
+	@Deprecated
 	public void setRetryDelay(long retryDelay) {
 		this.retryDelay = retryDelay;
 	}
-
+	@Deprecated
 	public void setFactory(DocumentIndexingPackageFactory factory) {
 		this.factory = factory;
 	}

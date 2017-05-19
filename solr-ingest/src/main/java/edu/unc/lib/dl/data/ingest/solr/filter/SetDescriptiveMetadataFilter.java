@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
  * @author bbpennel
  *
  */
-public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
+public class SetDescriptiveMetadataFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
 	private final Properties languageCodeMap;
@@ -61,7 +61,6 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		Element mods = dip.getMods();

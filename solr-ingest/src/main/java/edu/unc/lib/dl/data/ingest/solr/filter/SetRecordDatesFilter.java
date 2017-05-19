@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.text.ParseException;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  * Indexing filter which extracts Fedora generated dates about the creation and modification state of the object
@@ -29,20 +29,14 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
  * @author bbpennel
  *
  */
-public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
+public class SetRecordDatesFilter {
 	
-	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		try {
-			dip.getDocument().setDateAdded(dip.getFirstTriple(FedoraProperty.createdDate.toString()));
+			dip.getDocument().setDateAdded(dip.getFirstTriple(Fcrepo4Repository.created.toString()));
+			dip.getDocument().setDateUpdated(dip.getFirstTriple(Fcrepo4Repository.lastModified.toString()));
 		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
-		}
-		
-		try {
-			dip.getDocument().setDateUpdated(dip.getFirstTriple(FedoraProperty.lastModifiedDate.toString()));
-		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
+			throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
 		}
 	}
 }
