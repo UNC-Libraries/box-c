@@ -99,7 +99,7 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 					String textURL = service.getManagementClient().upload(text);
 					
 					boolean exists = service.getManagementClient()
-							.getDatastream(pid, MD_FULL_TEXT.getName()) != null;
+							.dataStreamExists(pid, MD_FULL_TEXT.getName());
 					if (exists) {
 						String message = "Replacing full text metadata extracted by Apache Tika";
 						client.modifyDatastreamByReference(pid,
