@@ -186,23 +186,27 @@ public class ReplicationProcessor implements Processor {
 	private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations, String binaryMimeType, String binaryUri) throws InterruptedException {
 		String remoteFile = null;
 		String localBinary = null;
+		File fcrepoBinary = null;
+		
+		/*
+		 * Checks to see if binary has been persisted to disk.
+		 * If file is below a certain size it is saved directly into fedora 
+		 * and must be retrieved through a rest request to fedora.
+		 */
+		if (Files.exists(Paths.get(binaryPath))) {
+			localBinary = binaryPath;
+		} else {
+			try {
+				fcrepoBinary = fcrepoBinaryDownload(binaryUri, originalFileChecksum);
+			} catch (IOException e) {
+				throw new ReplicationException(String.format("Unable to replicate %s", binaryPath), e);
+			}
+			localBinary = fcrepoBinary.getAbsolutePath();
+		}
 		
 		try {
 			for (String location : replicationLocations) {
 				String fullPath = createRemoteSubDirectory(location, originalFileChecksum);
-				File fcrepoBinary = null;
-				
-				/*
-				 * Checks to see if binary has been persisted to disk.
-				 * If file is below a certain size it is saved directly into fedora 
-				 * and must be retrieved through a rest request to fedora.
-				 */
-				if (Files.exists(Paths.get(binaryPath))) {
-					localBinary = binaryPath;
-				} else {
-					fcrepoBinary = fcrepoBinaryDownload(binaryUri, originalFileChecksum);
-					localBinary = fcrepoBinary.getAbsolutePath();
-				}
 				
 				remoteFile = fullPath + "/" + originalFileChecksum;
 				String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose", localBinary, remoteFile};
