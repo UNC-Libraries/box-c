@@ -23,7 +23,7 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
-//techmd_fits
+
 /**
  * Meta router which sequences all service routes to run on events.
  * 

@@ -99,6 +99,8 @@
 	</bean>
 	
 	<bean id="replicationProcessor" class="edu.unc.lib.cdr.ReplicationProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg ref="repositoryObjectDataLoader"/>
 		<constructor-arg value="${cdr.replication.locations}" />
 		<constructor-arg value="${error.maxRedeliveries}" />
 		<constructor-arg value="${error.retryDelay}" />

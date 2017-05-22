@@ -21,6 +21,12 @@ import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.ReplicationProcessor;
 
+/**
+ * Routes binary files for replication to remote storage devices
+ * 
+ * @author lfarrell
+ *
+ */
 public class ReplicationRouter extends RouteBuilder {
 	@BeanInject(value = "replicationProcessor")
 	private ReplicationProcessor replicationProcessor;
