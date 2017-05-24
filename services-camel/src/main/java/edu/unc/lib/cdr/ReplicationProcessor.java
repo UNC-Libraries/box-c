@@ -214,6 +214,7 @@ public class ReplicationProcessor implements Processor {
 
 				verifyChecksums(originalFileChecksum, destinationFullPath);
 				
+				// Delete temp file on disk if the binary came directly from fedora
 				if (fcrepoBinary != null) {
 					fcrepoBinary.delete();
 				}
