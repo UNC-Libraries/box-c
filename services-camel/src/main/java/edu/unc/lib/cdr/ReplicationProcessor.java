@@ -182,7 +182,7 @@ public class ReplicationProcessor implements Processor {
 		/*
 		 * Checks to see if binary has been persisted to disk.
 		 * If file is below a certain size it is saved directly into fedora 
-		 * and must be retrieved through a rest request to fedora.
+		 * and must be retrieved through a REST request to fedora.
 		 */
 		if (Files.exists(Paths.get(binaryPath))) { 
 			localBinary = binaryPath;
