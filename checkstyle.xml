@@ -29,8 +29,8 @@
 	
 	<!-- Checks that there are no tab characters ('\t') in the source code. -->
 	<module name="FileTabCharacter">
-		<property name="eachLine" value="false" />
-		<property name="fileExtensions" value="java,css,js,xml" />
+		<property name="eachLine" value="true" />
+		<property name="fileExtensions" value="css,java,js,jsp,xml,xsl" />
 	</module>
 	
 	<!-- License Header module disabled in favor of license-maven-plugin -->
@@ -125,12 +125,6 @@
 		<module name="SuppressWarningsHolder" />
 		
 		<!--
-			Checks that local variables that never have their values changed are declared final
-			http://checkstyle.sourceforge.net/config_coding.html#FinalLocalVariable
-			-->
-		<module name="FinalLocalVariable" />
-		
-		<!--
 			Check that parameters for methods, constructors, and catch blocks are final
 			http://checkstyle.sourceforge.net/config_misc.html#FinalParameters
 		-->
@@ -160,7 +154,7 @@
 	<module name="RegexpSingleline">
 		<property name="format" value="(?&lt;!\*)\s+$|\*\s\s+$" />
 		<property name="message" value="Trailing whitespace" />
-		<property name="fileExtensions" value="java,css,js,xml" />
+		<property name="fileExtensions" value="css,java,js,jsp,xml,xsl" />
 	</module>
 	
 	<!-- 
