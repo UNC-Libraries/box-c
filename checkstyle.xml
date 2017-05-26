@@ -47,7 +47,7 @@
 		
 		<!-- Checks for long lines. -->
 		<module name="LineLength">
-			<property name="max" value="120" />
+			<property name="max" value="120"/>
 		</module>
 		
 		<!-- Write Javadocs for public methods and classes. Keep it short and to 
