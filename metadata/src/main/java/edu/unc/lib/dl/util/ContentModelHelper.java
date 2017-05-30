@@ -227,9 +227,9 @@ public class ContentModelHelper {
 	 *
 	 */
 	public static enum Model {
-		COLLECTION("Collection"), CONTAINER("Container"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
+		ADMIN_UNIT("AdminUnit"), COLLECTION("Collection"), CONTAINER("Container"), CONTENT_ROOT("ContentRoot"), GROUPAGENT("GroupAgent"), PERSONAGENT("PersonAgent"), SIMPLE(
 				"Simple"), SOFTWAREAGENT("SoftwareAgent"), PRESERVEDOBJECT("PreservedObject"),
-				AGGREGATE_WORK("AggregateWork"), DEPOSIT_RECORD("DepositRecord"), VOCABULARY("Vocabulary");
+				WORK("Work"), DEPOSIT_RECORD("DepositRecord"), VOCABULARY("Vocabulary");
 
 		private URI uri;
 		private PID pid;
