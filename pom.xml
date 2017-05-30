@@ -134,7 +134,6 @@
 		<module>deposit</module>
 		<module>clamavj</module>
 		<module>spoof</module>
-    <module>citrus-core</module>
   </modules>
 
 	<reporting>
