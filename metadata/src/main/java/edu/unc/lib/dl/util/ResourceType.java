@@ -31,18 +31,13 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public enum ResourceType {
 	AdminUnit(1, Cdr.AdminUnit.getURI()),
-	Collection(1, Cdr.Collection.getURI()),
-	Folder(2, Cdr.Folder.getURI()),
-	Work(3, Cdr.Work.getURI()),
-	File(3, Cdr.FileObject.getURI()),
-	DepositRecord(4, Cdr.DepositRecord.getURI()),
-	ContentRoot(4, Cdr.ContentRoot.getURI());
-	
+	Collection(2, Cdr.Collection.getURI()),
+	Folder(3, Cdr.Folder.getURI()),
+	Work(4, Cdr.Work.getURI()),
+	File(4, Cdr.FileObject.getURI()),
+	DepositRecord(5, Cdr.DepositRecord.getURI()),
+	ContentRoot(5, Cdr.ContentRoot.getURI());
 
-/*FileObject
-ContentRoot
-DepositRecord*/
-	
 	private int displayOrder;
 	private String uri;
 	private List<Model> contentModels;
