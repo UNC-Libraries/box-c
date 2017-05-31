@@ -43,7 +43,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -193,7 +192,18 @@ public class SetDescriptiveMetadataFilterTest {
 	
 	@Test
 	public void testMultipleCreators() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/multipleCreators.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 		
+		filter.filter(dip);
+		
+		verify(idb).setCreator(listCaptor.capture());
+		assertTrue(listCaptor.getValue().contains("Test, Creator1"));
+		verify(idb).setCreatorSort("Test, Creator1");
+		assertTrue(listCaptor.getValue().contains("Test, Creator2"));
+
 	}
 	
 	@Test
