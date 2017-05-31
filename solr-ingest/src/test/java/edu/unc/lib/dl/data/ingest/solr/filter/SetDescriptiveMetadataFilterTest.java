@@ -150,9 +150,40 @@ public class SetDescriptiveMetadataFilterTest {
 		verify(idb).setCitation(eq("citation text"));
 	}
 	
+	/*
+	 * Covers case when there is not a dateCreated, but there are both dateIssued and dateCaptured fields
+	 */
 	@Test
-	public void testDateCreatedPreference() throws Exception {
+	public void testDateIssuedPreference() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/dateIssued.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 		
+		filter.filter(dip);
+		
+		verify(idb).setDateCreated(dateCaptor.capture());
+		Date dateIssued = dateCaptor.getValue();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+		assertEquals("2006-05", dateFormat.format(dateIssued));
+	}
+	
+	/*
+	 * Covers case when there is only a dateCaptured field
+	 */
+	@Test
+	public void testDateCapturedPreference() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/dateCaptured.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
+		
+		filter.filter(dip);
+		
+		verify(idb).setDateCreated(dateCaptor.capture());
+		Date dateCaptured = dateCaptor.getValue();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
+		assertEquals("2006-03", dateFormat.format(dateCaptured));
 	}
 	
 	@Test
@@ -228,7 +259,7 @@ public class SetDescriptiveMetadataFilterTest {
 //		assertEquals(1, idb.getSubject().size());
 //	}
 
-	@Test
+	//@Test
 	public void noMODS() throws Exception {
 		DocumentIndexingPackage dip = factory.createDip("uuid:item");
 

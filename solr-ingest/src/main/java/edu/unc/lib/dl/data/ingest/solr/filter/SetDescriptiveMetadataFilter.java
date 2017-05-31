@@ -284,7 +284,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 				
 				if (dateIssued == null && dateCaptured == null) {
 					dateCaptured = JDOMQueryUtil
-							.parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
+							.parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
 				}
 			}
 			
