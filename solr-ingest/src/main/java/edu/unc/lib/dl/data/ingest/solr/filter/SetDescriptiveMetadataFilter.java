@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,20 +67,16 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
 		idb.setKeyword(new ArrayList<String>());
 		if (mods != null) {
-			try {
-				this.extractTitles(mods, idb);
-				this.extractNamesAndAffiliations(mods, idb, true);
-				this.extractAbstract(mods, idb);
-				this.extractLanguages(mods, idb);
-				this.extractSubjects(mods, idb);
-				this.extractDateCreated(mods, idb);
-				this.extractIdentifiers(mods, idb);
-				this.extractCitation(mods, idb);
-				this.extractKeywords(mods, idb);
+			this.extractTitles(mods, idb);
+			this.extractNamesAndAffiliations(mods, idb, true);
+			this.extractAbstract(mods, idb);
+			this.extractLanguages(mods, idb);
+			this.extractSubjects(mods, idb);
+			this.extractDateCreated(mods, idb);
+			this.extractIdentifiers(mods, idb);
+			this.extractCitation(mods, idb);
+			this.extractKeywords(mods, idb);
 
-			} catch (JDOMException e) {
-				throw new IndexingException("Failed to extract MODS data", e);
-			}
 		} else {
 			// TODO basic DC mappings
 		}
@@ -92,7 +87,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 		idb.getKeyword().add(dip.getPid().getPid());
 	}
 
-	private void extractTitles(Element mods, IndexDocumentBean idb) throws JDOMException {
+	private void extractTitles(Element mods, IndexDocumentBean idb) {
 		List<?> titles = mods.getChildren("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
 		String mainTitle = null;
 		List<String> otherTitles = new ArrayList<String>();
@@ -112,8 +107,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 			idb.setOtherTitle(otherTitles);
 	}
 
-	private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments)
-			throws JDOMException {
+	private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments) {
 		List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
 		List<String> creators = new ArrayList<String>();
 		List<String> contributors = new ArrayList<String>();
@@ -211,7 +205,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 		}
 	}
 
-	private void extractAbstract(Element mods, IndexDocumentBean idb) throws JDOMException {
+	private void extractAbstract(Element mods, IndexDocumentBean idb) {
 		String abstractText = mods.getChildText("abstract", JDOMNamespaceUtil.MODS_V3_NS);
 		if (abstractText != null)
 			idb.setAbstractText(abstractText.trim());

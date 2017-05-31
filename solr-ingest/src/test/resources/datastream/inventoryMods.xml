@@ -40,6 +40,9 @@
   <mods:language>
     <mods:languageTerm authority="iso639-2b" type="code">eng</mods:languageTerm>
   </mods:language>
+  <mods:language>
+    <mods:languageTerm authority="iso639-2b" type="code">chr</mods:languageTerm>
+  </mods:language>
   <mods:abstract>Abstract text</mods:abstract>
   <mods:accessCondition type="access">Open access</mods:accessCondition>
   <mods:identifier type="uri">http://example.com</mods:identifier>

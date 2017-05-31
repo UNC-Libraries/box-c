@@ -53,7 +53,7 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 /**
  * 
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class SetDescriptiveMetadataFilterTest {
@@ -203,17 +203,28 @@ public class SetDescriptiveMetadataFilterTest {
 	
 	@Test
 	public void testInvalidLanguageCode() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/invalidLanguage.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 		
+		filter.filter(dip);
+		
+		verify(idb, never()).setLanguage(anyListOf(String.class));
 	}
 	
 	@Test
 	public void testMultipleLanguages() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/inventoryMods.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 		
-	}
-	
-	@Test(expected = IndexingException.class)
-	public void testParsingThrowsException() throws Exception {
+		filter.filter(dip);
 		
+		verify(idb).setLanguage(listCaptor.capture());
+		assertTrue(listCaptor.getValue().contains("English"));
+		assertTrue(listCaptor.getValue().contains("Cherokee"));
 	}
 	
 //	@Test
