@@ -42,7 +42,7 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
  * @author bbpennel
  *
  */
-public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
+public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
 	private final Properties languageCodeMap;
@@ -102,8 +102,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				Element titleEl = (Element) titleObj;
 				if (mainTitle == null && "title".equalsIgnoreCase(titleEl.getName())) {
 					mainTitle = titleEl.getValue();
+				} else {
+					otherTitles.add(titleEl.getValue());
 				}
-				otherTitles.add(titleEl.getValue());
 			}
 		}
 		idb.setTitle(mainTitle);
@@ -254,28 +255,48 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
+	/**
+	 * Get the preferred date to use as the date created. Order of preference is
+	 * the first date created found, then the first date issued, then the first
+	 * date captured.
+	 * 
+	 * @param mods
+	 * @param idb
+	 */
 	private void extractDateCreated(Element mods, IndexDocumentBean idb){
 		List<?> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
 		Date dateCreated = null;
+		Date dateIssued = null;
+		Date dateCaptured = null;
 		if (originInfoEls.size() > 0) {
 			for (Object originInfoObj: originInfoEls) {
 				Element originInfoEl = (Element) originInfoObj;
-				dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
-				if (dateCreated == null) {
-					dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
-				}
-				if (dateCreated == null) {
-					dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
-				}
+				dateCreated = JDOMQueryUtil
+						.parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
 				if (dateCreated != null) {
-					idb.setDateCreated(dateCreated);
-					return;
+					break;
 				}
+				
+				if (dateIssued == null) {
+					dateIssued = JDOMQueryUtil
+							.parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
+				}
+				
+				if (dateIssued == null && dateCaptured == null) {
+					dateCaptured = JDOMQueryUtil
+							.parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
+				}
+			}
+			
+			if (dateCreated != null) {
+				idb.setDateCreated(dateCreated);
+			} else if (dateIssued != null) {
+				idb.setDateCreated(dateIssued);
+			} else if (dateCaptured != null) {
+				idb.setDateCreated(dateCaptured);
 			}
 		}
 	}
-
-
 
 	private void extractIdentifiers(Element mods, IndexDocumentBean idb){
 		List<?> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
