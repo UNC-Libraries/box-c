@@ -176,7 +176,7 @@ public class SearchController extends AbstractSearchController {
 	@RequestMapping(value = "list", method = RequestMethod.GET, produces = "application/json")
 	public @ResponseBody
 	Map<String, Object> listJSON(HttpServletRequest request, HttpServletResponse response) {
-		SearchResultResponse resultResponse = getSearchResults(getListRequest(collectionsPid.getPid(), request));
+		SearchResultResponse resultResponse = getSearchResults(getListRequest(collectionsPid.getPidAsString(), request));
 		return getResults(resultResponse, "list", request);
 	}
 

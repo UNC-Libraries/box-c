@@ -38,12 +38,12 @@ public class SetDisplayOrderFilter extends AbstractIndexDocumentFilter {
 		DocumentIndexingPackage parentDIP = dip.getParentDocument();
 
 		try {
-			Long order = parentDIP.getDisplayOrder(dip.getPid().getPid());
+			Long order = parentDIP.getDisplayOrder(dip.getPid().getPidAsString());
 			idb.setDisplayOrder(order);
 			if (order == null)
 				log.debug("No parent MD contents, display order is null");
 		} catch (NumberFormatException e) {
-			throw new IndexingException("Unable to parse order number for " + dip.getPid().getPid(), e);
+			throw new IndexingException("Unable to parse order number for " + dip.getPid().getPidAsString(), e);
 		}
 	}
 }

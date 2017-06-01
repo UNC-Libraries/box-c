@@ -148,7 +148,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				.append("LAST KNOWN GOOD TIME: ").append(lastKnownGoodTime.toString()).append("\n").append(pids.size())
 				.append(" FEDORA PIDS CREATED OR MODIFIED:\n");
 		for (PID p : pids) {
-			sb.append(p.getPid()).append("\n");
+			sb.append(p.getPidAsString()).append("\n");
 		}
 		log.error(sb.toString());
 	}
@@ -414,7 +414,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 					this.getManagementClient().purgeObject(obj, message, false);
 					deleted.add(obj);
 				} catch (NotFoundException e) {
-					log.error("Delete set referenced an object that didn't exist: " + pid.getPid(), e);
+					log.error("Delete set referenced an object that didn't exist: " + pid.getPidAsString(), e);
 				}
 			}
 			// Send message to message queue informing it of the deletion(s)
@@ -422,11 +422,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				this.getOperationsMessageSender().sendRemoveOperation(user, container, removed, null);
 			}
 		} catch (FedoraException fault) {
-			log.error("Fedora threw an unexpected fault while deleting " + pid.getPid(), fault);
+			log.error("Fedora threw an unexpected fault while deleting " + pid.getPidAsString(), fault);
 			thrown = fault;
 		} catch (RuntimeException e) {
 			this.setAvailable(false);
-			log.error("Fedora threw an unexpected runtime exception while deleting " + pid.getPid(), e);
+			log.error("Fedora threw an unexpected runtime exception while deleting " + pid.getPidAsString(), e);
 			thrown = e;
 		} finally {
 			if (thrown != null && toDelete.size() > deleted.size()) {
@@ -434,8 +434,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				List<PID> missed = new ArrayList<PID>();
 				missed.addAll(toDelete);
 				missed.removeAll(deleted);
-				this.dumpRollbackInfo(transactionStart, missed, "Could not complete delete of " + pid.getPid()
-						+ ", please purge objects and check container " + container.getPid() + ".");
+				this.dumpRollbackInfo(transactionStart, missed, "Could not complete delete of " + pid.getPidAsString()
+						+ ", please purge objects and check container " + container.getPidAsString() + ".");
 			}
 		}
 		if (thrown != null) {
@@ -500,7 +500,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				return null;
 			throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
 		}
-		log.debug("removeFromContainer called on PID: " + parent.getPid());
+		log.debug("removeFromContainer called on PID: " + parent.getPidAsString());
 		try {
 			// remove ir:contains statement to RELS-EXT
 			relsextDone = this.getManagementClient().purgeObjectRelationship(parent,
@@ -528,7 +528,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			}
 		} catch (JDOMException e) {
 			IllegalRepositoryStateException irs = new IllegalRepositoryStateException(
-					"Invalid XML for container MD_CONTENTS: " + parent.getPid(), parent, e);
+					"Invalid XML for container MD_CONTENTS: " + parent.getPidAsString(), parent, e);
 			log.error("Failed to parse XML", irs);
 			throw irs;
 		} catch (IOException e) {
@@ -685,7 +685,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			try {
 				this.getManagementClient().modifyObject(pid, label, "", State.ACTIVE, message);
 			} catch (FedoraException e) {
-				throw new IngestException("Could not update label for " + pid.getPid(), e);
+				throw new IngestException("Could not update label for " + pid.getPidAsString(), e);
 			}
 		}
 
@@ -698,16 +698,16 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			String msg = "Metadata Object Description Schema (MODS) data transformed into Dublin Core (DC).";
 			logger.logDerivationEvent(PremisEventLogger.Type.NORMALIZATION, msg, pid, "MD_DESCRIPTIVE", "DC");
 		} catch (TransformerException e) {
-			log.error("Cannot cross walk MODS to Dublin Core on update of " + pid.getPid(), e);
+			log.error("Cannot cross walk MODS to Dublin Core on update of " + pid.getPidAsString(), e);
 		} catch (FedoraException e) {
-			log.error("Cannot cross walk MODS to Dublin Core on update of " + pid.getPid(), e);
+			log.error("Cannot cross walk MODS to Dublin Core on update of " + pid.getPidAsString(), e);
 		}
 
 		// update PREMIS log
 		try {
 			this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, pid);
 		} catch (FedoraException e) {
-			log.error("Cannot log PREMIS events for " + pid.getPid(), e);
+			log.error("Cannot log PREMIS events for " + pid.getPidAsString(), e);
 		}
 		return result;
 	}
@@ -754,7 +754,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 				}
 			}
 		} catch (FedoraException | IOException e) {
-			throw new UpdateException("Failed to modify datastream " + datastream.getName() + " for " + pid.getPid(), e);
+			throw new UpdateException("Failed to modify datastream " + datastream.getName() + " for " + pid.getPidAsString(), e);
 		}
 		return null;
 	}
@@ -774,7 +774,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 		// Verify the destination is a container
 		List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(destination);
 		if (!cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-			throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPid());
+			throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPidAsString());
 		}
 
 		// Check that none of the items being moved are the destination or one of its ancestors
@@ -1172,7 +1172,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 			String user, byte[] mods) throws IngestException {
 		
 		PID containerPid = new PID("uuid:"+UUID.randomUUID());
-		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPid());
+		Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPidAsString());
 		FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, name);
 		PremisEventLogger logger = new PremisEventLogger(user);
 

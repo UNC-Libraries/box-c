@@ -44,7 +44,7 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 					+ updateRequest.getClass().getName());
 		ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
 
-		log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
+		log.debug("Starting update tree of {}", updateRequest.getPid().getPidAsString());
 
 		// Generate the DIP for the new destination, but don't index it
 		DocumentIndexingPackage dip = getParentDIP(childSetRequest);
@@ -62,7 +62,7 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 
 		if (log.isDebugEnabled())
 			log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
-					updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
+					updateRequest.getPid().getPidAsString(), updateRequest.getChildrenPending(),
 					(System.currentTimeMillis() - updateRequest.getTimeStarted()) });
 	}
 

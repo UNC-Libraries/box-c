@@ -160,7 +160,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 					public DocumentIndexingPackage answer(InvocationOnMock invocation) throws Throwable {
 						Object[] args = invocation.getArguments();
 						PID pid = (PID) args[0];
-						return tree.get(pid.getPid());
+						return tree.get(pid.getPidAsString());
 					}
 				});
 
@@ -174,10 +174,10 @@ public class RecursiveTreeIndexerTest extends Assert {
 		List<PID> pidOrder = pidArgs.getAllValues();
 		assertEquals("Incorrect number of pids used to retrieved indexing packages", 4, pidOrder.size());
 
-		assertEquals("Processing order incorrect", "c0", pidOrder.get(0).getPid());
-		assertEquals("Processing order incorrect", "c1", pidOrder.get(1).getPid());
-		assertEquals("Processing order incorrect", "c3", pidOrder.get(2).getPid());
-		assertEquals("Processing order incorrect", "c2", pidOrder.get(3).getPid());
+		assertEquals("Processing order incorrect", "c0", pidOrder.get(0).getPidAsString());
+		assertEquals("Processing order incorrect", "c1", pidOrder.get(1).getPidAsString());
+		assertEquals("Processing order incorrect", "c3", pidOrder.get(2).getPidAsString());
+		assertEquals("Processing order incorrect", "c2", pidOrder.get(3).getPidAsString());
 
 	}
 

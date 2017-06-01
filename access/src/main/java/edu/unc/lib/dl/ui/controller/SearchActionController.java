@@ -90,7 +90,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 	@RequestMapping("/list")
 	public String list(Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(collectionsPid.getPid());
+		searchRequest.setRootPid(collectionsPid.getPidAsString());
 		searchRequest.setApplyCutoffs(true);
 		model.addAttribute("queryMethod", "list");
 		model.addAttribute("facetQueryMethod", "search");
@@ -111,7 +111,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 	
 	@RequestMapping("/listContents")
 	public String listContents(Model model, HttpServletRequest request) {
-		return listContents(collectionsPid.getPid(), model, request);
+		return listContents(collectionsPid.getPidAsString(), model, request);
 	}
 	
 	@RequestMapping("/collections")

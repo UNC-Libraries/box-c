@@ -102,11 +102,11 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 					
 					validationPipeline.processUIP(singleUIP);
 				} catch (XMLStreamException | JDOMException e) {
-					failed.put(bulkUIP.getCurrentPid().getPid(),
+					failed.put(bulkUIP.getCurrentPid().getPidAsString(),
 							"Could not parse XML:   " + e.getMessage());
 					break;
 				} catch (UIPException e) {
-					failed.put(bulkUIP.getCurrentPid().getPid(),
+					failed.put(bulkUIP.getCurrentPid().getPidAsString(),
 							"Invalid update:  " + e.getMessage());
 				}
 			} while (true);
@@ -158,7 +158,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 								digitalObjectManager.addOrReplaceDatastream(singleUIP.getPID(),
 										Datastream.getDatastream(entry.getKey()), contentFile, "text/xml",
 										uip.getUser(), uip.getMessage());
-								updated.add(singleUIP.getPID().getPid());
+								updated.add(singleUIP.getPID().getPidAsString());
 							} finally {
 								contentFile.delete();
 							}
@@ -178,21 +178,21 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 									managementClient.modifyDatastream(singleUIP.getPID(), entry.getKey(), null,
 											singleUIP.getLastModified(),
 											rawOutputter.outputString(entry.getValue()).getBytes("UTF-8"));
-									updated.add(singleUIP.getPID().getPid());
+									updated.add(singleUIP.getPID().getPidAsString());
 								} catch (OptimisticLockException e) {
 									// Datastream on the server more recent than submitted copy, reject it
-									outdated.add(singleUIP.getPID().getPid());
+									outdated.add(singleUIP.getPID().getPidAsString());
 								}
 								log.info("Updated {} for object {} during bulk update",
-										new Object[] { entry.getKey(), singleUIP.getPID().getPid()});
+										new Object[] { entry.getKey(), singleUIP.getPID().getPidAsString()});
 							} else {
 								log.debug("Skipping update of {} because the content has not changed.");
-								skipped.add(singleUIP.getPID().getPid());
+								skipped.add(singleUIP.getPID().getPidAsString());
 							}
 						}
 					} catch (UIPException | FedoraException e) {
 						log.error("Failed to perform update to {} as part of bulk update", singleUIP.getPID(), e);
-						failed.put(singleUIP.getPID().getPid(), e.getMessage());
+						failed.put(singleUIP.getPID().getPidAsString(), e.getMessage());
 					}
 
 					// Store information about the last update completed so we can resume if interrupted
@@ -217,9 +217,9 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	private void updateResumptionPoint(PID uipPID, BulkMetadataDatastreamUIP singleUIP) {
 		try (Jedis jedis = jedisPool.getResource()) {
 			Map<String, String> values = new HashMap<>();
-			values.put("lastPid", singleUIP.getPID().getPid());
+			values.put("lastPid", singleUIP.getPID().getPidAsString());
 			values.put("lastDatastream", singleUIP.getDatastream());
-			jedis.hmset(RedisWorkerConstants.BULK_RESUME_PREFIX + uipPID.getPid(), values);
+			jedis.hmset(RedisWorkerConstants.BULK_RESUME_PREFIX + uipPID.getPidAsString(), values);
 		}
 	}
 	
@@ -231,7 +231,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 			values.put("groups", uip.getGroups().joinAccessGroups(" ", null, false));
 			values.put("filePath", uip.getImportFile().getAbsolutePath());
 			values.put("originalFilename", uip.getOriginalFilename());
-			jedis.hmset(RedisWorkerConstants.BULK_UPDATE_PREFIX + uip.getPID().getPid(), values);
+			jedis.hmset(RedisWorkerConstants.BULK_UPDATE_PREFIX + uip.getPID().getPidAsString(), values);
 		}
 	}
 	
@@ -245,7 +245,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	 */
 	private void resume(BulkMetadataUIP uip) throws UpdateException {
 		try (Jedis jedis = jedisPool.getResource()) {
-			Map<String, String> resumeValues = jedis.hgetAll(RedisWorkerConstants.BULK_RESUME_PREFIX + uip.getPID().getPid());
+			Map<String, String> resumeValues = jedis.hgetAll(RedisWorkerConstants.BULK_RESUME_PREFIX + uip.getPID().getPidAsString());
 			if (resumeValues == null) {
 				// No resumption info, so store update info just in case
 				storeUpdateInformation(uip);
@@ -273,7 +273,7 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
 	 * @param uip
 	 */
 	private void cleanup(BulkMetadataUIP uip) {
-		String pid = uip.getPID().getPid();
+		String pid = uip.getPID().getPidAsString();
 		
 		try (Jedis jedis = jedisPool.getResource()) {
 			jedis.del(RedisWorkerConstants.BULK_UPDATE_PREFIX + pid);

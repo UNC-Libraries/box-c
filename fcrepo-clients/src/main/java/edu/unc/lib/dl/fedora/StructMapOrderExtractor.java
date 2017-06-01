@@ -39,7 +39,7 @@ public class StructMapOrderExtractor extends DefaultHandler {
 	super.startElement(uri, localName, qName, attributes);
 	if ("div".equals(localName)) {
 	    String id = attributes.getValue("ID");
-	    if (pid.getPid().equals(id)) {
+	    if (pid.getPidAsString().equals(id)) {
 		this.order = attributes.getValue("ORDER");
 	    }
 	}

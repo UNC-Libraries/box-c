@@ -77,7 +77,7 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 				
 				if (newestSourceDS == null)
 					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
-							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
+							+ this.pid.getPidAsString() + " is most likely invalid", Severity.UNRECOVERABLE);
 
 				String dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
 						.getAttributeValue("REF");
@@ -113,7 +113,7 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 					}
 
 					// Add full text relation
-					PID textPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_FULL_TEXT.getName());
+					PID textPID = new PID(pid.getPidAsString() + "/" + ContentModelHelper.Datastream.MD_FULL_TEXT.getName());
 					client.setExclusiveTripleRelation(pid, CDRProperty.fullText.getPredicate(),
 							CDRProperty.fullText.getNamespace(), textPID);
 				}

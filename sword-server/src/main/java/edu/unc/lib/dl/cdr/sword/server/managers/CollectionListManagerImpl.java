@@ -87,20 +87,20 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 		// Verify access control
 		if (!hasAccess(auth, containerPID, Permission.viewDescription, configImpl)) {
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to view the collection list for " + containerPID.getPid());
+					"Insufficient privileges to view the collection list for " + containerPID.getPidAsString());
 		}
 
 		Feed feed = abdera.getFactory().newFeed();
-		feed.setId(containerPID.getPid());
+		feed.setId(containerPID.getPidAsString());
 		// add in the next page link
-		feed.addLink(configImpl.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + containerPID.getPid()
+		feed.addLink(configImpl.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + containerPID.getPidAsString()
 				+ "/" + (startPage + 1), "next");
 
 		try {
 			this.getImmediateChildren(containerPID, startPage, feed, auth, configImpl);
 		} catch (IOException e) {
 			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500, "Failed to retrieve children for "
-					+ containerPID.getPid(), e);
+					+ containerPID.getPidAsString(), e);
 		}
 
 		return feed;
@@ -120,9 +120,9 @@ public class CollectionListManagerImpl extends AbstractFedoraManager implements 
 
 			if (hasAccess(auth, childPID, Permission.viewDescription, config)) {
 				Entry entry = feed.addEntry();
-				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid()
+				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPidAsString()
 						+ ".atom", "edit");
-				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid(),
+				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPidAsString(),
 						"edit-media");
 				entry.setId(childPID.getURI());
 				entry.setTitle(slug);

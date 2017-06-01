@@ -61,7 +61,7 @@ public class RecursiveTreeIndexer {
 			// Get the DIP for the next object being indexed
 			dip = this.action.getDocumentIndexingPackage(pid, parent);
 			if (dip == null)
-				throw new IndexingException("No document indexing package was retrieved for " + pid.getPid());
+				throw new IndexingException("No document indexing package was retrieved for " + pid.getPidAsString());
 
 			// Perform document populating pipeline
 			this.action.getPipeline().process(dip);
@@ -76,18 +76,18 @@ public class RecursiveTreeIndexer {
 			this.updateRequest.incrementChildrenProcessed();
 
 		} catch (InterruptedException e) {
-			log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
+			log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPidAsString());
 			return;
 		} catch (UnsupportedContentModelException e) {
-			log.info("Invalid content model on object {}, skipping its children", pid.getPid(), e);
+			log.info("Invalid content model on object {}, skipping its children", pid.getPidAsString(), e);
 			return;
 		} catch (OrphanedObjectException e) {
-			log.info("Object {} was orphaned, skipping its children", pid.getPid(), e);
+			log.info("Object {} was orphaned, skipping its children", pid.getPidAsString(), e);
 			return;
 		} catch (IndexingException e) {
-			log.warn("Failed to index {}", pid.getPid(), e);
+			log.warn("Failed to index {}", pid.getPidAsString(), e);
 		} catch (Exception e) {
-			log.error("An unexpected exception occurred while indexing {}, skipping its children", pid.getPid(), e);
+			log.error("An unexpected exception occurred while indexing {}, skipping its children", pid.getPidAsString(), e);
 			return;
 		} finally {
 			// Clear parent bond to allow memory cleanup

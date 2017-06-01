@@ -42,7 +42,7 @@ public class SimpleObjectDepositHandler extends AbstractDepositHandler {
 			PackagingType type, Priority priority, SwordConfiguration config,
 			String depositor, String owner) throws Exception {
 		log.debug("Preparing to perform a Simple Object deposit to "
-				+ destination.getPid());
+				+ destination.getPidAsString());
 
 		PID depositPID = null;
 		UUID depositUUID = UUID.randomUUID();

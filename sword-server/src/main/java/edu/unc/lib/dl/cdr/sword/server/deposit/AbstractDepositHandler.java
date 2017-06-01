@@ -118,7 +118,7 @@ public abstract class AbstractDepositHandler implements DepositHandler {
 		status.put(DepositField.fileMimetype.name(), deposit.getMimeType());
 		status.put(DepositField.depositorName.name(), owner);
 		status.put(DepositField.depositorEmail.name(), GroupsThreadStore.getEmail());
-		status.put(DepositField.containerId.name(), destination.getPid());
+		status.put(DepositField.containerId.name(), destination.getPidAsString());
 		status.put(DepositField.depositMethod.name(), DepositMethod.SWORD13.getLabel());
 		status.put(DepositField.packagingType.name(), type.getUri());
 		status.put(DepositField.depositMd5.name(), deposit.getMd5());

@@ -135,7 +135,7 @@ public class ExportXMLController {
 			objects.add(0, container);
 
 			for (BriefObjectMetadata object : objects) {
-				pids.add(object.getPid().getPid());
+				pids.add(object.getPid().getPidAsString());
 			}
 		}
 
@@ -246,7 +246,7 @@ public class ExportXMLController {
 						try{
 							Document objectDoc = new Document();
 							Element objectEl = new Element("object");
-							objectEl.setAttribute("pid", pid.getPid());
+							objectEl.setAttribute("pid", pid.getPidAsString());
 							objectDoc.addContent(objectEl);
 
 							DatastreamDocument modsDS = managementClient

@@ -52,8 +52,8 @@ public class MoveObjectsAction extends UpdateChildSetAction {
 
 		// For the top level children that were just moved we need to check for display order
 		if (parent.getMdContents() != null) {
-			log.debug("Updating display order for top level moved object {}", pid.getPid());
-			dip.getDocument().setDisplayOrder(parent.getDisplayOrder(pid.getPid()));
+			log.debug("Updating display order for top level moved object {}", pid.getPidAsString());
+			dip.getDocument().setDisplayOrder(parent.getDisplayOrder(pid.getPidAsString()));
 		}
 		return dip;
 	}

@@ -102,7 +102,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
 			if (newestSourceDS == null)
 				throw new EnhancementException("Specified source or surrogate datastream " + surrogateDsUri
-						+ " was not found, the object " + this.pid.getPid() + " is most likely invalid",
+						+ " was not found, the object " + this.pid.getPidAsString() + " is most likely invalid",
 						Severity.UNRECOVERABLE);
 
 			dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS).getAttributeValue("REF");
@@ -134,10 +134,10 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 		} catch (NotFoundException e) {
 			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		} catch (FedoraException e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPid()
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPidAsString()
 					+ " surrogateDS: " + surrogateDsId, e, Severity.RECOVERABLE);
 		} catch (Exception e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid " + pid.getPid()
+			throw new EnhancementException("Thumbnail Enhancement failed to process, pid " + pid.getPidAsString()
 					+ " surrogateDS: " + surrogateDsId, e, Severity.UNRECOVERABLE);
 		}
 
@@ -157,7 +157,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			client.modifyDatastreamByReference(pid, dsname, false, message,
 					new ArrayList<String>(), "Thumbnail Image", "image/png", null, null, resultURI);
 		}
-		PID newDSPID = new PID(pid.getPid() + "/" + dsname);
+		PID newDSPID = new PID(pid.getPidAsString() + "/" + dsname);
 		if (thumbRels == null || !thumbRels.contains(newDSPID.getURI())) {
 			client.setExclusiveTripleRelation(pid, CDRProperty.thumb.getPredicate(),
 					CDRProperty.thumb.getNamespace(), newDSPID);

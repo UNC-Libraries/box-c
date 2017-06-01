@@ -108,7 +108,7 @@ public class SolrUpdateDriver {
 	}
 
 	public void delete(PID pid) throws IndexingException {
-		this.delete(pid.getPid());
+		this.delete(pid.getPidAsString());
 	}
 
 	public void delete(String pid) throws IndexingException {

@@ -75,14 +75,14 @@ public class DepositReportingUtil {
 			for (String dissemination : values) {
 				if (dissemination.endsWith("/" + Datastream.DATA_MANIFEST.getName())) {
 					return new OriginalDepositPair(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/"
-							+ depositPID.getPid() + "/" + Datastream.DATA_MANIFEST.getName(), "text/xml");
+							+ depositPID.getPidAsString() + "/" + Datastream.DATA_MANIFEST.getName(), "text/xml");
 				}
 			}
 		}
 
 		// Use the objects datafile as its original deposit URI if there was no manifest
 		return new OriginalDepositPair(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/"
-				+ pid.getPid() + "/" + Datastream.DATA_FILE.getName(), tripleStoreQueryService.lookupSourceMimeType(pid));
+				+ pid.getPidAsString() + "/" + Datastream.DATA_FILE.getName(), tripleStoreQueryService.lookupSourceMimeType(pid));
 	}
 
 	public List<OriginalDeposit> getOriginalDeposits(PID pid, SwordConfigurationImpl config) {
@@ -108,7 +108,7 @@ public class DepositReportingUtil {
 				for (String dissemination : values) {
 					if (dissemination.endsWith("/" + Datastream.DATA_MANIFEST.getName())) {
 						originalDepositURI = config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/"
-								+ depositPID.getPid() + "/" + Datastream.DATA_MANIFEST.getName();
+								+ depositPID.getPidAsString() + "/" + Datastream.DATA_MANIFEST.getName();
 						mimetype = "text/xml";
 						break;
 					}
@@ -117,7 +117,7 @@ public class DepositReportingUtil {
 
 			// Use the objects datafile as its original deposit URI if there was no manifest
 			if (originalDepositURI == null) {
-				originalDepositURI = config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + pid.getPid()
+				originalDepositURI = config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + pid.getPidAsString()
 						+ "/" + Datastream.DATA_FILE.getName();
 				mimetype = tripleStoreQueryService.lookupSourceMimeType(pid);
 			}
@@ -187,11 +187,11 @@ public class DepositReportingUtil {
 	 * @return
 	 */
 	public DepositReceipt retrieveDepositReceipt(DepositReceipt receipt, PID targetPID, SwordConfigurationImpl config) {
-		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_PATH + "/" + targetPID.getPid());
+		IRI editIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_PATH + "/" + targetPID.getPidAsString());
 		receipt.setEditIRI(editIRI);
-		IRI swordEditIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_PATH + "/" + targetPID.getPid());
+		IRI swordEditIRI = new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_PATH + "/" + targetPID.getPidAsString());
 		receipt.setSwordEditIRI(swordEditIRI);
-		receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + targetPID.getPid()));
+		receipt.addEditMediaIRI(new IRI(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + targetPID.getPidAsString()));
 		
 		//Add in original deposit
 		OriginalDepositPair originalDeposit = getOriginalDeposit(targetPID, config);
@@ -202,12 +202,12 @@ public class DepositReportingUtil {
 		Map<String,String> disseminators = tripleStoreQueryService.fetchDisseminatorMimetypes(targetPID);
 		for (Map.Entry<String,String> disseminator: disseminators.entrySet()){
 			PID disseminatorPID = new PID(disseminator.getKey());
-			receipt.addDerivedResource(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + disseminatorPID.getPid(), disseminator.getValue());
+			receipt.addDerivedResource(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + disseminatorPID.getPidAsString(), disseminator.getValue());
 		}
 		
-		receipt.setSplashUri(config.getBasePath() + "record?id=" + targetPID.getPid());
+		receipt.setSplashUri(config.getBasePath() + "record?id=" + targetPID.getPidAsString());
 		
-		receipt.setStatementURI("application/atom+xml;type=feed", config.getSwordPath() + SwordConfigurationImpl.STATE_PATH + "/" + targetPID.getPid());
+		receipt.setStatementURI("application/atom+xml;type=feed", config.getSwordPath() + SwordConfigurationImpl.STATE_PATH + "/" + targetPID.getPidAsString());
 		
 		try {
 			MIMETypedStream metadataStream = null;
@@ -241,7 +241,7 @@ public class DepositReportingUtil {
 				receipt.getWrappedEntry().addExtension(entryDoc.getRoot());
 			}
 		} catch (FedoraException e) {
-			log.error("Error retrieving MD_DESCRIPTIVE for object " + targetPID.getPid(), e);
+			log.error("Error retrieving MD_DESCRIPTIVE for object " + targetPID.getPidAsString(), e);
 		}
 		
 		return receipt;

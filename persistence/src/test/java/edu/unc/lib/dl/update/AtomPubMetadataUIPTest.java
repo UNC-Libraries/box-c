@@ -56,7 +56,7 @@ public class AtomPubMetadataUIPTest extends Assert {
 		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.REPLACE, entry);
 		uip.storeOriginalDatastreams(accessClient);
 		
-		assertTrue(uip.getPID().getPid().equals(pid.getPid()));
+		assertTrue(uip.getPID().getPidAsString().equals(pid.getPidAsString()));
 		assertTrue(uip.getUser().equals("testuser"));
 		assertTrue(uip.getMessage().equals("Creating collection"));
 		
@@ -88,7 +88,7 @@ public class AtomPubMetadataUIPTest extends Assert {
 		assertEquals(0, uip.getOriginalData().size());
 		uip.storeOriginalDatastreams(accessClient);
 		
-		assertTrue(uip.getPID().getPid().equals(pid.getPid()));
+		assertTrue(uip.getPID().getPidAsString().equals(pid.getPidAsString()));
 		assertTrue(uip.getMessage().equals("Creating collection"));
 		
 		assertEquals(1, uip.getOriginalData().size());

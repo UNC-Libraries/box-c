@@ -99,18 +99,18 @@ public class MetadataUIP extends FedoraObjectUIP {
 			} catch (FedoraException e) { 
 				if (e instanceof FileSystemException || e instanceof AuthorizationException)
 					throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-							+ pid.getPid(), e);
+							+ pid.getPidAsString(), e);
 				// Fedora isn't correctly identifying NotFoundExceptions in 3.6.2's soap client, so identify it by process of elimination
 			} catch (Exception e) {
 				throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-						+ pid.getPid(), e);
+						+ pid.getPidAsString(), e);
 			} finally {
 				if (inputStream != null)
 					try {
 						inputStream.close();
 					} catch (IOException e) {
 						throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-								+ pid.getPid(), e);
+								+ pid.getPidAsString(), e);
 					}
 			}
 		}

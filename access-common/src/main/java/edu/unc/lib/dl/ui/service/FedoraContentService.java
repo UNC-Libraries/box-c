@@ -189,7 +189,7 @@ public class FedoraContentService {
 					if (filename != null) {
 						filename = StringFormatUtil.makeToken(filename, "_");
 					} else {
-						filename = pid.getPid();
+						filename = pid.getPidAsString();
 					}
 
 					// For metadata types files, append the datastream name

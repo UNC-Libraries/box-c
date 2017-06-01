@@ -48,25 +48,25 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 		// Retrieve the default web datastream
 		String defaultWebData = dip.getDefaultWebData();
 		if (defaultWebData != null)
-			relations.add(CDRProperty.defaultWebData.getPredicate() + "|" + new PID(defaultWebData).getPid());
+			relations.add(CDRProperty.defaultWebData.getPredicate() + "|" + new PID(defaultWebData).getPidAsString());
 
 		// Retrieve the default web object, from the cached version if possible.
 		DocumentIndexingPackage defaultWebObjectPackage = dip.getDefaultWebObject();
 		String defaultWebObject = null;
 		if (defaultWebObjectPackage != null) {
-			defaultWebObject = defaultWebObjectPackage.getPid().getPid();
+			defaultWebObject = defaultWebObjectPackage.getPid().getPidAsString();
 		} else {
 			List<String> defaultWebObjectTriples = triples.get(CDRProperty.defaultWebObject.toString());
 			if (defaultWebObjectTriples != null)
 				defaultWebObject = defaultWebObjectTriples.get(0);
 		}
 		if (defaultWebObject != null)
-			relations.add(CDRProperty.defaultWebObject.getPredicate() + "|" + (new PID(defaultWebObject)).getPid());
+			relations.add(CDRProperty.defaultWebObject.getPredicate() + "|" + (new PID(defaultWebObject)).getPidAsString());
 
 		// Retrieve original content datastream name for items with a main content payload
 		List<String> sourceData = triples.get(CDRProperty.sourceData.toString());
 		if (sourceData != null)
-			relations.add(CDRProperty.sourceData.getPredicate() + "|" + ((new PID(sourceData.get(0)).getPid())));
+			relations.add(CDRProperty.sourceData.getPredicate() + "|" + ((new PID(sourceData.get(0)).getPidAsString())));
 
 		// Retrieve and store label
 		List<String> label = triples.get(FedoraProperty.label.toString());

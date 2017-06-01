@@ -49,9 +49,9 @@ public class SetFullTextFilter extends AbstractIndexDocumentFilter{
 			MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(), ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
 			dip.getDocument().setFullText(new String(stream.getStream()));
 		} catch (FedoraException e) {
-			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPidAsString(), e);
 		} catch (ServiceException e) {
-			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPidAsString(), e);
 		}
 	}
 

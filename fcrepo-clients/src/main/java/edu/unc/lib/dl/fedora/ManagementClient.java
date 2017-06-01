@@ -210,7 +210,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public String addManagedDatastream(PID pid, String dsid, boolean force, String message, List<String> altids,
 			String label, boolean versionable, String mimetype, String locationURI) throws FedoraException {
 		AddDatastream req = new AddDatastream();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsid);
 		req.setLogMessage(message);
 		req.setDsState(State.ACTIVE.id);
@@ -245,7 +245,7 @@ public class ManagementClient extends WebServiceTemplate {
 		location = this.upload(contentFile);
 		contentFile.delete();
 		AddDatastream req = new AddDatastream();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsid);
 		req.setLogMessage(message);
 		req.setDsState(State.ACTIVE.id);
@@ -308,7 +308,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public String setDatastreamVersionable(PID pid, String dsid, boolean versionable, String message)
 			throws FedoraException {
 		SetDatastreamVersionable req = new SetDatastreamVersionable();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsid);
 		req.setVersionable(versionable);
 		req.setLogMessage(message);
@@ -324,7 +324,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public Datastream getDatastream(PID pid, String dsID) throws FedoraException {
 		GetDatastream req = new GetDatastream();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsID);
 		req.setAsOfDateTime("");
 		GetDatastreamResponse resp = (GetDatastreamResponse) this.callService(req, Action.getDatastream);
@@ -333,7 +333,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public Datastream getDatastream(PID pid, String dsID, String asOfDateTime) throws FedoraException {
 		GetDatastream req = new GetDatastream();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsID);
 		req.setAsOfDateTime(asOfDateTime);
 		GetDatastreamResponse resp = (GetDatastreamResponse) this.callService(req, Action.getDatastream);
@@ -423,7 +423,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public Document getObjectXML(PID pid) throws FedoraException {
 		GetObjectXML req = new GetObjectXML();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		GetObjectXMLResponse resp = (GetObjectXMLResponse) this.callService(req, Action.getObjectXML);
 		try {
 			return ClientUtils.parseXML(resp.getObjectXML());
@@ -518,7 +518,7 @@ public class ManagementClient extends WebServiceTemplate {
 			throws FedoraException {
 		// TODO: add checksum calculation
 		ModifyDatastreamByValue req = new ModifyDatastreamByValue();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsid);
 		req.setForce(force);
 		req.setLogMessage(message);
@@ -557,7 +557,7 @@ public class ManagementClient extends WebServiceTemplate {
 			throws FedoraException {
 		// TODO: add checksum calculation
 		ModifyDatastreamByReference req = new ModifyDatastreamByReference();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsid);
 		req.setForce(force);
 		req.setLogMessage(message);
@@ -613,7 +613,7 @@ public class ManagementClient extends WebServiceTemplate {
 		
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(this.getFedoraContextUrl());
 		builder.pathSegment("objects");
-		builder.pathSegment(pid.getPid());
+		builder.pathSegment(pid.getPidAsString());
 		builder.pathSegment("datastreams");
 		builder.pathSegment(dsid);
 
@@ -655,7 +655,7 @@ public class ManagementClient extends WebServiceTemplate {
 		req.setLabel(label);
 		req.setLogMessage(message);
 		req.setOwnerId(ownerid);
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setState(state == null ? null : state.id);
 		ModifyObjectResponse resp = (ModifyObjectResponse) this.callService(req, Action.modifyObject);
 		return resp.getModifiedDate();
@@ -664,7 +664,7 @@ public class ManagementClient extends WebServiceTemplate {
 	public List<String> purgeDatastream(PID pid, String dsid, String message, boolean force, String start, String end)
 			throws FedoraException {
 		PurgeDatastream req = new PurgeDatastream();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setDsID(dsid);
 		req.setForce(force);
 		req.setLogMessage(message);
@@ -683,7 +683,7 @@ public class ManagementClient extends WebServiceTemplate {
 
 	public String purgeObject(PID pid, String message, boolean force) throws FedoraException {
 		PurgeObject req = new PurgeObject();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		req.setLogMessage(message);
 		req.setForce(force);
 		PurgeObjectResponse resp = (PurgeObjectResponse) this.callService(req, Action.purgeObject);

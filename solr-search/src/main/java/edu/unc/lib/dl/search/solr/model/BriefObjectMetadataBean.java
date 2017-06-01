@@ -145,7 +145,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		}
 
 		for (Datastream datastream: this.datastreamObjects) {
-			if (datastream.equals(datastreamName) && (pid == null || pid.equals(datastream.getOwner().getPid())))
+			if (datastream.equals(datastreamName) && (pid == null || pid.equals(datastream.getOwner().getPidAsString())))
 				return datastream;
 		}
 		return null;

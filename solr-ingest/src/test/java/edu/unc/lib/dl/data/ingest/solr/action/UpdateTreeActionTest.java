@@ -80,10 +80,10 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 				Object[] args = invocation.getArguments();
 				PID pid = ((DocumentIndexingPackage) args[0]).getPid();
 				
-				if (pid.getPid().equals("uuid:doesnotexist"))
+				if (pid.getPidAsString().equals("uuid:doesnotexist"))
 					throw new IndexingException("");
 				
-				return children.get(pid.getPid());
+				return children.get(pid.getPidAsString());
 			}
 		});
 

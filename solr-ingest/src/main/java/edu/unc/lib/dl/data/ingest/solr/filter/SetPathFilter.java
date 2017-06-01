@@ -79,7 +79,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 	private void buildFromQuery(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		// Parent documents are not already cached, so query for the full path
-		log.debug("Retrieving path information for " + dip.getPid().getPid() + " from triple store.");
+		log.debug("Retrieving path information for " + dip.getPid().getPidAsString() + " from triple store.");
 		String query = String.format(ancestorInfoQuery, tsqs.getResourceIndexModelUri(), dip.getPid().getURI());
 		List<List<String>> results = tsqs.queryResourceIndex(query);
 		// Abandon ship if we couldn't get a path for this object.
@@ -104,11 +104,11 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 				pathNodes.add(currentNode);
 			}
 		}
-		if (orphaned && !collectionsPid.getPid().equals(dip.getPid()))
+		if (orphaned && !collectionsPid.getPidAsString().equals(dip.getPid()))
 			throw new OrphanedObjectException("Object " + dip.getPid() + " is orphaned");
 
 		// Sort the path nodes since they aren't guaranteed to be in order
-		this.sortPathNodes(dip.getPid().getPid(), pathNodes);
+		this.sortPathNodes(dip.getPid().getPidAsString(), pathNodes);
 		// Move the currentNode pointer to the last item in the sorted list
 		currentNode = pathNodes.get(pathNodes.size() - 1);
 
@@ -148,7 +148,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 		// If this item is in an aggregate object then it should rollup as part of its parent
 		if (firstAggregate != null && !firstAggregate.pid.equals(idb.getPid())) {
-			idb.setRollup(firstAggregate.pid.getPid());
+			idb.setRollup(firstAggregate.pid.getPidAsString());
 			idb.setIsPart(Boolean.TRUE);
 			log.debug("From query, parent is in an aggregate: " + idb.getRollup());
 		} else {
@@ -161,7 +161,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		if (nearestCollection == null) {
 			idb.setParentCollection(null);
 		} else {
-			idb.setParentCollection(nearestCollection.pid.getPid());
+			idb.setParentCollection(nearestCollection.pid.getPidAsString());
 		}
 
 		// Since we have already generated the content models and resource type for this item, store them as side effects
@@ -182,7 +182,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		for (int i = pathNodes.size() - 1; i > 0; i--) {
 			// Seek the node containing the next end id (either the previous parent or the starting id)
 			for (int j = i; j >= 0; j--) {
-				if (pathNodes.get(j).pid.getPid().equals(endPID)) {
+				if (pathNodes.get(j).pid.getPidAsString().equals(endPID)) {
 					PathNode swap = pathNodes.get(j);
 					// If the node isn't already where it belongs, swap it into place
 					if (j != i) {
@@ -190,7 +190,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 						pathNodes.set(i, swap);
 					}
 					// Get the next end node id
-					endPID = swap.parentPID.getPid();
+					endPID = swap.parentPID.getPidAsString();
 					break;
 				}
 			}
@@ -202,8 +202,8 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 		DocumentIndexingPackage parentDIP= dip.getParentDocument();
 		if (parentDIP.getDocument().getAncestorPath().size() == 0 && !collectionsPid.equals(parentDIP.getPid())) {
-			throw new IndexingException("Parent document " + parentDIP.getPid().getPid()
-					+ " did not contain ancestor information for object " + dip.getPid().getPid());
+			throw new IndexingException("Parent document " + parentDIP.getPid().getPidAsString()
+					+ " did not contain ancestor information for object " + dip.getPid().getPidAsString());
 		}
 
 		Map<String, List<String>> triples = dip.getTriples();
@@ -219,7 +219,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		// Store the resourceType for this object
 		ResourceType resourceType = ResourceType.getResourceTypeByContentModels(idb.getContentModel());
 		if (resourceType == null)
-			throw new UnsupportedContentModelException("Cannot build path for object " + dip.getPid().getPid()
+			throw new UnsupportedContentModelException("Cannot build path for object " + dip.getPid().getPidAsString()
 					+ " because it did not have a valid content model assigned.");
 		idb.setResourceType(resourceType.name());
 		dip.setResourceType(resourceType);
@@ -235,12 +235,12 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		StringBuilder ancestorIds = new StringBuilder(parentDIP.getDocument().getAncestorIds());
 		// If this object isn't an item, then add itself to its ancestorNames
 		if (!ResourceType.File.equals(resourceType)) {
-			ancestorIds.append('/').append(dip.getPid().getPid());
+			ancestorIds.append('/').append(dip.getPid().getPidAsString());
 		}
 		idb.setAncestorIds(ancestorIds.toString());
 
 		// If the parent has a rollup other than its own id, that means it is nested inside an aggregate, so it inherits
-		if (!parentDIP.getPid().getPid().equals(parentDIP.getDocument().getRollup())) {
+		if (!parentDIP.getPid().getPidAsString().equals(parentDIP.getDocument().getRollup())) {
 			if (parentDIP.getDocument().getRollup() == null) {
 				idb.setRollup(idb.getId());
 				idb.setIsPart(Boolean.FALSE);
@@ -253,7 +253,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 		} else {
 			// If the immediate parent was an aggregate, use its ID as this items rollup
 			if (ResourceType.Aggregate.equals(parentDIP.getResourceType())) {
-				idb.setRollup(parentDIP.getPid().getPid());
+				idb.setRollup(parentDIP.getPid().getPidAsString());
 				idb.setIsPart(Boolean.TRUE);
 				log.debug("From parent, parent is an aggregate: " + idb.getRollup());
 			} else {
@@ -265,7 +265,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 		// If the parent is a collection, then use it as this items parent collection
 		if (ResourceType.Collection.equals(parentDIP.getResourceType())) {
-			idb.setParentCollection(parentDIP.getPid().getPid());
+			idb.setParentCollection(parentDIP.getPid().getPidAsString());
 		} else {
 			// Otherwise, use whatever the parent had set as its collection
 			idb.setParentCollection(parentDIP.getDocument().getParentCollection());
@@ -274,7 +274,7 @@ public class SetPathFilter extends AbstractIndexDocumentFilter {
 
 	private String buildTier(int depth, PID pid) {
 		StringBuilder ancestorTier = new StringBuilder();
-		ancestorTier.append(depth).append(',').append(pid.getPid().replaceAll(",", "\\\\,"));
+		ancestorTier.append(depth).append(',').append(pid.getPidAsString().replaceAll(",", "\\\\,"));
 		return ancestorTier.toString();
 	}
 

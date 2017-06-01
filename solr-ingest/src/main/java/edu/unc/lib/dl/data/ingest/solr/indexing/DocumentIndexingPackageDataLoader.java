@@ -175,7 +175,7 @@ public class DocumentIndexingPackageDataLoader {
 	public Document loadFOXML(DocumentIndexingPackage dip) throws IndexingException {
 		PID pid = dip.getPid();
 		try {
-			log.debug("Retrieving FOXML for {}", pid.getPid());
+			log.debug("Retrieving FOXML for {}", pid.getPidAsString());
 
 			Document foxml = null;
 			int tries = maxRetries;
@@ -195,19 +195,19 @@ public class DocumentIndexingPackageDataLoader {
 				} catch (ServiceException | NotFoundException e) {
 					// If there are retries left, retry on service exception
 					if (tries > 1) {
-						log.warn("Failed to retrieve FOXML for " + pid.getPid() + ", retrying.", e);
+						log.warn("Failed to retrieve FOXML for " + pid.getPidAsString() + ", retrying.", e);
 					} else {
-						throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid() + " after " + maxRetries
+						throw new IndexingException("Failed to retrieve FOXML for " + pid.getPidAsString() + " after " + maxRetries
 								+ " tries.", e);
 					}
 				}
 			} while (--tries > 0);
 
-			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid());
+			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPidAsString());
 		} catch (FedoraException e) {
-			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid(), e);
+			throw new IndexingException("Failed to retrieve FOXML for " + pid.getPidAsString(), e);
 		} catch (InterruptedException e) {
-			throw new IndexingException("Interrupted while waiting to retry FOXML retrieval for " + pid.getPid(), e);
+			throw new IndexingException("Interrupted while waiting to retry FOXML retrieval for " + pid.getPidAsString(), e);
 		}
 	}
 	@Deprecated
@@ -258,10 +258,10 @@ public class DocumentIndexingPackageDataLoader {
 			parentPID = new PID(ancestor);
 		} else {
 			try {
-				log.debug("Retrieving parent pid for " + dip.getPid().getPid());
+				log.debug("Retrieving parent pid for " + dip.getPid().getPidAsString());
 				parentPID = tsqs.fetchByPredicateAndLiteral(ContentModelHelper.Relationship.contains.toString(), dip.getPid()).get(0);
 			} catch (IndexOutOfBoundsException e) {
-				throw new OrphanedObjectException("Could not retrieve parent pid for " + dip.getPid().getPid());
+				throw new OrphanedObjectException("Could not retrieve parent pid for " + dip.getPid().getPidAsString());
 			}
 		}
 		

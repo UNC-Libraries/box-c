@@ -50,7 +50,7 @@ public class RunEnhancementsTreeJob implements Runnable {
 			
 			for (PID pid : allChildren) {
 				jesqueClient.enqueue(runEnhancementTreeQueue,
-						new Job(ApplyEnhancementServicesJob.class.getName(), pid.getPid(), force));
+						new Job(ApplyEnhancementServicesJob.class.getName(), pid.getPidAsString(), force));
 			}
 		}
 	}

@@ -165,7 +165,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 			return -1;
 		for (int i = 0; i < rootNode.getChildren().size(); i++) {
 			ResultNode childNode = rootNode.getChildren().get(i);
-			if (childNode.getMetadata().getPid().getPid().equals(pid))
+			if (childNode.getMetadata().getPid().getPidAsString().equals(pid))
 				return i;
 		}
 		return -1;
@@ -176,7 +176,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 	}
 	
 	private ResultNode findNode(String pid, ResultNode node) {
-		if (node.getMetadata().getPid().getPid().equals(pid))
+		if (node.getMetadata().getPid().getPidAsString().equals(pid))
 			return node;
 		for (ResultNode childNode: node.getChildren()) {
 			ResultNode found = findNode(pid, childNode);

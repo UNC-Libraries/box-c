@@ -165,7 +165,7 @@ public class AccessClient extends WebServiceTemplate {
 	public MIMETypedStream getDatastreamDissemination(PID pid, String dsid, String timestamp) throws FedoraException,
 			ServiceException {
 		GetDatastreamDissemination req = new GetDatastreamDissemination();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		// TODO: test that NotFoundException is throw for non-existant datastreams
 		req.setDsID(dsid);
 		if (timestamp != null) {
@@ -178,7 +178,7 @@ public class AccessClient extends WebServiceTemplate {
 
 	public ObjectProfile getObjectProfile(PID pid, String timestamp) throws FedoraException, ServiceException {
 		GetObjectProfile req = new GetObjectProfile();
-		req.setPid(pid.getPid());
+		req.setPid(pid.getPidAsString());
 		if (timestamp != null) {
 			req.setAsOfDateTime(timestamp);
 		}

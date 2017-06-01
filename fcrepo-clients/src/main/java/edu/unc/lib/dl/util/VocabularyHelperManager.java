@@ -234,7 +234,7 @@ public class VocabularyHelperManager {
 					}
 				}
 			} catch (JDOMException e) {
-				log.error("Failed to extract invalid terms from {}", pid.getPid(), e);
+				log.error("Failed to extract invalid terms from {}", pid.getPidAsString(), e);
 				continue;
 			}
 		}
@@ -443,7 +443,7 @@ public class VocabularyHelperManager {
 					results.put(helper.getVocabularyURI(), terms);
 			} catch (JDOMException e) {
 				log.error("Failed to get authoritative forms for vocabulary {} on object {}",
-						new Object[] { helper.getVocabularyURI(), pid.getPid(), e });
+						new Object[] { helper.getVocabularyURI(), pid.getPidAsString(), e });
 			}
 		}
 

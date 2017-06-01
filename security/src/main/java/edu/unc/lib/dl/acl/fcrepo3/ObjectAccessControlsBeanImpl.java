@@ -313,7 +313,7 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
 	@Override
 	public String toString() {
 		StringBuilder result = new StringBuilder();
-		result.append("Object Access Controls (").append(object.getPid()).append(")")
+		result.append("Object Access Controls (").append(object.getPidAsString()).append(")")
 				.append("\nRoles granted to groups:\n");
 		for (UserRole r : baseRoleGroups.keySet()) {
 			result.append(r.getPredicate()).append("\n");

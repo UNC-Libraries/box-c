@@ -195,7 +195,7 @@ public class DigitalObjectManagerMoveTest {
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
 		when(tripleStoreQueryService.queryResourceIndex(anyString()))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())));
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())));
 
 		digitalMan.move(moving, destPID, "user", "");
 
@@ -265,7 +265,7 @@ public class DigitalObjectManagerMoveTest {
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
 		when(tripleStoreQueryService.queryResourceIndex(anyString()))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())));
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())));
 
 		digitalMan.move(moving, destPID, "user", "");
 
@@ -316,8 +316,8 @@ public class DigitalObjectManagerMoveTest {
 		makeMatcherPair("/fedora/containerRELSEXT3.xml", source2PID);
 
 		when(tripleStoreQueryService.queryResourceIndex(anyString()))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
-				.thenReturn(Arrays.asList(Arrays.asList(source2PID.getPid())));
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())))
+				.thenReturn(Arrays.asList(Arrays.asList(source2PID.getPidAsString())));
 
 		digitalMan.move(moving, destPID, "user", "");
 
@@ -359,8 +359,8 @@ public class DigitalObjectManagerMoveTest {
 				.thenReturn(null).thenReturn(null);
 		
 		when(tripleStoreQueryService.queryResourceIndex(anyString()))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())))
 				.thenReturn(null).thenReturn(null);
 		
 		when(managementClient.getRELSEXTWithRetries(eq(destPID))).thenReturn(null);
@@ -412,10 +412,10 @@ public class DigitalObjectManagerMoveTest {
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"), new PID("uuid:child5"));
 
 		when(tripleStoreQueryService.queryResourceIndex(anyString()))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid())))
-				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPid())))
-				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPid())));
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())))
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString())))
+				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPidAsString())))
+				.thenReturn(Arrays.asList(Arrays.asList(destPID.getPidAsString())));
 		
 		// Second attempt to get the source RELS-EXT will return null to trigger rollback
 		when (managementClient.getRELSEXTWithRetries(eq(source1PID)))
@@ -476,8 +476,8 @@ public class DigitalObjectManagerMoveTest {
 		List<PID> moving = Arrays.asList(new PID("uuid:child1"));
 
 		when(tripleStoreQueryService.queryResourceIndex(anyString()))
-				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPid()),
-						Arrays.asList(source2PID.getPid())));
+				.thenReturn(Arrays.asList(Arrays.asList(source1PID.getPidAsString()),
+						Arrays.asList(source2PID.getPidAsString())));
 
 		digitalMan.move(moving, destPID, "user", "");
 

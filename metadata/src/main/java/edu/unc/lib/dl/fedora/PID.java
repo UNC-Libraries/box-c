@@ -53,15 +53,15 @@ public class PID implements Serializable {
     public boolean equals(Object obj) {
 	if (obj instanceof PID) {
 	    PID input = (PID) obj;
-	    String pid = getPid();
+	    String pid = getPidAsString();
 	    if (pid != null) {
-		return pid.equals(input.getPid());
+		return pid.equals(input.getPidAsString());
 	    }
 	}
 	return false;
     }
 
-    public String getPid() {
+    public String getPidAsString() {
 	return pid;
     }
 

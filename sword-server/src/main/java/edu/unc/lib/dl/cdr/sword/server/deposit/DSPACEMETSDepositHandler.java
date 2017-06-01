@@ -43,7 +43,7 @@ public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
 			SwordConfiguration config, String depositor, String owner) throws SwordError {
 		if (log.isDebugEnabled()) {
-			log.debug("Preparing to perform a DSPACE METS deposit to " + destination.getPid());
+			log.debug("Preparing to perform a DSPACE METS deposit to " + destination.getPidAsString());
 			log.debug("Working with temporary file: "+ deposit.getFile().getAbsolutePath());
 		}
 		
@@ -66,7 +66,7 @@ public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
 			data.mkdir();
 			FileUtils.moveFile(deposit.getFile(), new File(data, deposit.getFilename()));
 		} catch (IOException e) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPidAsString(), e);
 		}
 
 		// METS specific fields

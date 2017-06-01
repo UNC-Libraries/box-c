@@ -52,7 +52,7 @@ public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
 			PackagingType type, Priority priority, SwordConfiguration config,
 			String depositor, String owner) throws SwordError {
 		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to "
-				+ destination.getPid());
+				+ destination.getPidAsString());
 
 		if (deposit.getSwordEntry() == null
 				|| deposit.getSwordEntry().getEntry() == null)

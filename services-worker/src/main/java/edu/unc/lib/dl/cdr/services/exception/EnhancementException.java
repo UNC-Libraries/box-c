@@ -46,11 +46,11 @@ public class EnhancementException extends Exception {
 	}
 
 	public EnhancementException(PID pid, String message) {
-		super("Enhancement failed for "+pid.getPid()+":\t"+message);
+		super("Enhancement failed for "+pid.getPidAsString()+":\t"+message);
 	}
 	
 	public EnhancementException(PID pid, String message, Throwable cause, Severity severity) {
-		super(severity + ": " + "Enhancement failed for "+pid.getPid()+":\t"+message, cause);
+		super(severity + ": " + "Enhancement failed for "+pid.getPidAsString()+":\t"+message, cause);
 		this.severity = severity;
 	}
 

@@ -115,7 +115,7 @@ public class BinCollectorController {
 
 			PID destPID = new PID(config.getDestination());
 
-			SimpleIdRequest entryRequest = new SimpleIdRequest(destPID.getPid(), resultsFieldList, groups);
+			SimpleIdRequest entryRequest = new SimpleIdRequest(destPID.getPidAsString(), resultsFieldList, groups);
 			BriefObjectMetadata entryBean = queryLayer.getObjectById(entryRequest);
 
 			// Only select collectors where the user can ingest to the destination container
@@ -142,7 +142,7 @@ public class BinCollectorController {
 
 			Datastream thumbDS = entryBean.getDatastreamObject(THUMB_LARGE.getName());
 			if (thumbDS != null) {
-				String thumbPID = thumbDS.getOwner() == null ? entryBean.getId() : thumbDS.getOwner().getPid();
+				String thumbPID = thumbDS.getOwner() == null ? entryBean.getId() : thumbDS.getOwner().getPidAsString();
 
 				collectorEntry.put("collectionThumb", thumbPID);
 			}

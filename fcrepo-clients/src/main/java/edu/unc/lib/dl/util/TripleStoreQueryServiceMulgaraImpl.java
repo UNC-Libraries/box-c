@@ -1449,7 +1449,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 			}
 		}
 		log.debug("found " + result.size()
-				+ " source/surrogate datastreams for " + pid.getPid());
+				+ " source/surrogate datastreams for " + pid.getPidAsString());
 		return result;
 	}
 
@@ -1474,7 +1474,7 @@ public class TripleStoreQueryServiceMulgaraImpl implements
 			}
 		}
 		log.debug("found " + result.size()
-				+ " pid that have this one as a surrogate: " + pid.getPid());
+				+ " pid that have this one as a surrogate: " + pid.getPidAsString());
 		return result;
 	}
 

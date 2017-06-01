@@ -22,7 +22,7 @@ public class EnhancementConductor implements MessageConductor {
 		EnhancementMessage message = (EnhancementMessage) actionMessage;
 		
 		// TODO? proper JSON serialization of enhancement messages so we just pass the message.
-		Job job = new Job(ApplyEnhancementServicesJob.class.getName(),  message.getPid().getPid(), message.getNamespace(), message.getAction(), message.getServiceName(), message.getFilteredServices());
+		Job job = new Job(ApplyEnhancementServicesJob.class.getName(),  message.getPid().getPidAsString(), message.getNamespace(), message.getAction(), message.getServiceName(), message.getFilteredServices());
 		jesqueClient.enqueue(queueName, job);
 	}
 

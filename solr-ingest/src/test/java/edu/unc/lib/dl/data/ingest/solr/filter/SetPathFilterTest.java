@@ -428,7 +428,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setRollup("uuid:folder");
 		parentFolder.setResourceType(ResourceType.Folder);
 		parentFolder.setParentDocument(parentCollection);
-		parentFolder.getDocument().setParentCollection(parentCollection.getPid().getPid());
+		parentFolder.getDocument().setParentCollection(parentCollection.getPid().getPidAsString());
 		parentFolder.setLabel("folder");
 		parentFolder.getDocument().setAncestorIds("/uuid:Collections/uuid:collection/uuid:folder");
 		parentFolder.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections", "2,uuid:collection"));
@@ -538,7 +538,7 @@ public class SetPathFilterTest extends Assert {
 		parentFolder.getDocument().setRollup("uuid:aggregate");
 		parentFolder.setResourceType(ResourceType.Aggregate);
 		parentFolder.setParentDocument(parentCollection);
-		parentFolder.getDocument().setParentCollection(parentCollection.getPid().getPid());
+		parentFolder.getDocument().setParentCollection(parentCollection.getPid().getPidAsString());
 		parentFolder.setLabel("aggregate");
 		parentFolder.getDocument().setAncestorIds("/uuid:Collections/uuid:collection/uuid:aggregate");
 		parentFolder.getDocument().setAncestorPath(Arrays.asList("1,uuid:Collections", "2,uuid:collection"));
