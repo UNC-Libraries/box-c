@@ -84,7 +84,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 		if (dip.getDocument().getTitle() == null) {
 			idb.setTitle(dip.getLabel());
 		}
-		idb.getKeyword().add(dip.getPid().getPid());
+		idb.getKeyword().add(dip.getPid().getPidAsString());
 	}
 
 	private void extractTitles(Element mods, IndexDocumentBean idb) {
@@ -191,16 +191,13 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 		if (authTerms != null) {
 			List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
 
-			if (affiliationTerms != null) {
+			if (affiliationTerms != null && affiliationTerms.size() > 0) {
 			// Make the departments for the whole document into a form solr can take
 				List<String> flattened = new ArrayList<String>();
 				for (List<String> path : affiliationTerms) {
 					flattened.addAll(path);
 				}
-
-				if (affiliationTerms != null && affiliationTerms.size() > 0) {
-					idb.setDepartment(flattened);
-				}
+				idb.setDepartment(flattened);
 			}
 		}
 	}
