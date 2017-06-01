@@ -76,7 +76,7 @@ public class AddContainerController {
 
 			PID containerPid = digitalObjectManager.createContainer(name, parent, extraModel, user, mods);
 			response.setStatus(201);
-			return "{\"pid\": \"" + containerPid.getPidAsString() + "\"}";
+			return "{\"pid\": \"" + containerPid.getPid() + "\"}";
 		} catch (IOException e) {
 			log.error("Unexpected IO exception", e);
 		} catch (IngestException e) {

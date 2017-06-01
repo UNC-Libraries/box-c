@@ -74,7 +74,7 @@ public class UserAccessUtil {
 			answer = true;
 		} else {
 			// Determine what permission we are looking for
-			String[] idParts = pid.getPidAsString().split("/");
+			String[] idParts = pid.getPid().split("/");
 			Permission permission = null;
 			Datastream datastream = null;
 			if (idParts.length > 1) {
@@ -103,7 +103,7 @@ public class UserAccessUtil {
 
 		if (user2Access == null) {
 			user2Access = new HashMap<String, Boolean>();
-			this.pids2User2Access.put(pid.getPidAsString(), user2Access);
+			this.pids2User2Access.put(pid.getPid(), user2Access);
 		}
 
 		user2Access.put(user, answer);

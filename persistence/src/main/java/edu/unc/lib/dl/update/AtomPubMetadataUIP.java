@@ -39,9 +39,9 @@ public class AtomPubMetadataUIP extends MetadataUIP {
 		try { 
 			incomingData = (HashMap<String, ?>) AtomPubMetadataParserUtil.extractDatastreams(entry, pid);
 		} catch (IOException e) {
-			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPidAsString(), e);
+			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPid(), e);
 		} catch (JDOMException e) {
-			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPidAsString(), e);
+			throw new UIPException("Unable to extract datastreams from submitted metadata for " + pid.getPid(), e);
 		}
 		// If there are DC fields in the root entry document but no MODS, then add a null MODS stub for future population
 		if (incomingData.containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM)

@@ -74,7 +74,7 @@ public class PublishRestController {
 
 	private ResponseEntity<Object> publishObject(PID pid, boolean publish, String username) {
 		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("pid", pid.getPidAsString());
+		result.put("pid", pid.getPid());
 		result.put("action", (publish) ? "publish" : "unpublish");
 		log.debug("Publishing object " + pid);
 
@@ -91,7 +91,7 @@ public class PublishRestController {
 			String messageId = messageSender.sendPublishOperation(username, Arrays.asList(pid), true);
 			result.put("messageId", messageId);
 		} catch (AuthorizationException e) {
-			result.put("error", "Insufficient privileges to publish object " + pid.getPidAsString());
+			result.put("error", "Insufficient privileges to publish object " + pid.getPid());
 			return new ResponseEntity<Object>(result, HttpStatus.FORBIDDEN);
 		} catch (FedoraException e) {
 			log.error("Failed to update relation on " + pid, e);

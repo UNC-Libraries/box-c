@@ -63,7 +63,7 @@ public class VocabularyController extends AbstractSearchController {
 	public @ResponseBody
 	Map<String, Object> getInvalidVocab(HttpServletRequest request, HttpServletResponse response) {
 		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(collectionsPid.getPidAsString());
+		searchRequest.setRootPid(collectionsPid.getPid());
 
 		return getInvalidVocab(searchRequest);
 	}

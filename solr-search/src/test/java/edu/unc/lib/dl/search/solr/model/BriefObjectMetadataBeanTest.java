@@ -43,7 +43,7 @@ public class BriefObjectMetadataBeanTest extends Assert {
 		assertEquals("jpg", ds.getExtension());
 		assertEquals(30459, ds.getFilesize().longValue());
 		assertEquals("dc93eff50ca7dbd688971716e55e0084", ds.getChecksum());
-		assertEquals("uuid:73247248-e351-49dc-9b27-fe44df3884e7", ds.getOwner().getPidAsString());
+		assertEquals("uuid:73247248-e351-49dc-9b27-fe44df3884e7", ds.getOwner().getPid());
 	}
 	
 	@Test
@@ -67,7 +67,7 @@ public class BriefObjectMetadataBeanTest extends Assert {
 		assertEquals("xml", ds.getExtension());
 		assertEquals(30459, ds.getFilesize().longValue());
 		assertNull(ds.getChecksum());
-		assertEquals("uuid:73247248-e351-49dc-9b27-fe44df3884e7", ds.getOwner().getPidAsString());
+		assertEquals("uuid:73247248-e351-49dc-9b27-fe44df3884e7", ds.getOwner().getPid());
 	}
 	
 	@Test

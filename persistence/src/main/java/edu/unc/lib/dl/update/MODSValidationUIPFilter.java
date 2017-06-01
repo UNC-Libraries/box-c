@@ -83,7 +83,7 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
 
 		MetadataUIP metadataUIP = (MetadataUIP) uip;
 
-		log.debug("Performing MODS filter operation " + uip.getOperation().name() + " on " + uip.getPID().getPidAsString());
+		log.debug("Performing MODS filter operation " + uip.getOperation().name() + " on " + uip.getPID().getPid());
 
 		Element newModified = null;
 

@@ -56,13 +56,13 @@ public class UpdateTreeAction extends AbstractIndexingAction {
 
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		log.debug("Starting update tree of {}", updateRequest.getPid().getPidAsString());
+		log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
 
 		// Perform updates
 		index(updateRequest);
 
 		if (log.isDebugEnabled())
-			log.debug("Finished updating tree of " + updateRequest.getPid().getPidAsString() + ".  "
+			log.debug("Finished updating tree of " + updateRequest.getPid().getPid() + ".  "
 					+ updateRequest.getChildrenPending() + " objects updated in "
 					+ (System.currentTimeMillis() - updateRequest.getTimeStarted()) + " ms");
 	}

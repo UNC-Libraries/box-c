@@ -644,7 +644,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (rootNode == null) {
 			rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
 			if (rootPath == null) {
-				rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPidAsString());
+				rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
 				browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
 			}
 
@@ -843,7 +843,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		StringBuilder query = new StringBuilder();
 
 		PID pid = new PID(idRequest.getId());
-		String id = pid.getPidAsString();
+		String id = pid.getPid();
 		String[] idParts = id.split("/");
 		String datastream = null;
 		if (idParts.length > 1) {

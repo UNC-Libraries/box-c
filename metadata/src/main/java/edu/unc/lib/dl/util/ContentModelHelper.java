@@ -262,7 +262,7 @@ public class ContentModelHelper {
 		}
 
 		public boolean equalsPID(String value) {
-			return this.pid.getPidAsString().equals(value);
+			return this.pid.getPid().equals(value);
 		}
 
 		@Override

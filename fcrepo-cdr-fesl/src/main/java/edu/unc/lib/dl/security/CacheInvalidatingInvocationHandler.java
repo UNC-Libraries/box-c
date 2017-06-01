@@ -141,7 +141,7 @@ public class CacheInvalidatingInvocationHandler extends
 			PID pid = new PID(fm.getPID().toURI());
 			
 			if (log.isDebugEnabled())
-				log.debug("Checking for cache invalidation on object {} triggered by {}", pid.getPidAsString(), methodName);
+				log.debug("Checking for cache invalidation on object {} triggered by {}", pid.getPid(), methodName);
 			
 			if("purgeObject".equals(methodName)) {
 				// does not invalidate active embargoes

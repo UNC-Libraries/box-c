@@ -131,7 +131,7 @@ public class EnhancementMessage implements ActionMessage {
 
 	@Override
 	public String getTargetID() {
-		return this.pid.getPidAsString();
+		return this.pid.getPid();
 	}
 	
 	@Override
@@ -219,6 +219,6 @@ public class EnhancementMessage implements ActionMessage {
 
 	@Override
 	public String toString(){
-		return pid.getPidAsString() + ":" + action;
+		return pid.getPid() + ":" + action;
 	}
 }

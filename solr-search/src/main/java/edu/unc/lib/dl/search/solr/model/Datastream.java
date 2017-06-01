@@ -99,7 +99,7 @@ public class Datastream {
 		}
 		sb.append('|');
 		if (owner != null) {
-			sb.append(owner.getPidAsString());
+			sb.append(owner.getPid());
 		}
 		return sb.toString();
 	}
@@ -134,7 +134,7 @@ public class Datastream {
 	public String getDatastreamIdentifier() {
 		if (owner == null)
 			return name;
-		return owner.getPidAsString() + "/" + name;
+		return owner.getPid() + "/" + name;
 	}
 
 	public String getName() {

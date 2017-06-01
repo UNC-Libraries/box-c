@@ -115,7 +115,7 @@ public class ImageEnhancementServiceITCase {
 			String uploadURI = this.getManagementClient().upload(dataFile);
 			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Image Enhancement Test",
 					Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
-			PID dataFilePID = new PID(pid.getPidAsString() + "/DATA_FILE");
+			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
 			this.getManagementClient().addObjectRelationship(pid,
 					CDRProperty.sourceData.getPredicate(), CDRProperty.sourceData.getNamespace(), dataFilePID);
 			this.getManagementClient().addLiteralStatement(pid, CDRProperty.hasSourceMimeType.getPredicate(),
@@ -189,7 +189,7 @@ public class ImageEnhancementServiceITCase {
 				.getImageEnhancementService().isApplicable(pidTIFF));
 
 		LOG.debug("Adding JP2 relationship again for kicks");
-		PID newDSPID = new PID(pidTIFF.getPid().getPidAsString()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+		PID newDSPID = new PID(pidTIFF.getPid().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
 		this.getManagementClient().addObjectRelationship(pidTIFF.getPid(), CDRProperty.derivedJP2.getPredicate(),
 				CDRProperty.derivedJP2.getNamespace(), newDSPID);
 	}

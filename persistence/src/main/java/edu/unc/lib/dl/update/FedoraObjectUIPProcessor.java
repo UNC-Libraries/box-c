@@ -54,7 +54,7 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 					+ FedoraObjectUIP.class.getName());
 		}
 		log.debug("Preparing to process Fedora Object UIP for operation " + uip.getOperation() + " on "
-				+ uip.getPID().getPidAsString());
+				+ uip.getPID().getPid());
 
 		FedoraObjectUIP fuip = (FedoraObjectUIP) uip;
 		
@@ -74,7 +74,7 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 				for (Entry<String, File> modifiedFile : modifiedFiles.entrySet()) {
 					Datastream datastream = Datastream.getDatastream(modifiedFile.getKey());
 					if (datastream != null && modifiedFile.getValue() != null) {
-						log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID().getPidAsString());
+						log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID().getPid());
 						digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
 								uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
 					}
@@ -112,7 +112,7 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 	}
 
 	private Datastream getTargetedDatastream(FedoraObjectUIP fuip) {
-		String pid = fuip.getPID().getPidAsString();
+		String pid = fuip.getPID().getPid();
 		int index = pid.indexOf('/');
 		if (index == -1 || index == pid.length() - 1)
 			return null;

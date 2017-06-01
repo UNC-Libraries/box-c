@@ -842,7 +842,7 @@ public class Repository {
 				.body(sparqlStream)
 				.perform()) {
 		} catch (IOException e) {
-			throw new FedoraException("Unable to add relationship to object " + subject.getPidAsString(), e);
+			throw new FedoraException("Unable to add relationship to object " + subject.getPid(), e);
 		} catch (FcrepoOperationFailedException e) {
 			throw ClientFaultResolver.resolve(e);
 		}

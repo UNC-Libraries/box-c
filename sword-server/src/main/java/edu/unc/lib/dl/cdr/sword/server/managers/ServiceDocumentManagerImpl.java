@@ -78,9 +78,9 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		}
 
 		if (!hasAccess(auth, pid, Permission.viewDescription, configImpl)) {
-			LOG.debug("Insufficient privileges to access the service document for " + pid.getPidAsString());
+			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to access the service document for " + pid.getPidAsString());
+					"Insufficient privileges to access the service document for " + pid.getPid());
 		}
 
 		LOG.debug("Retrieving service document for " + pid);
@@ -129,7 +129,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 			// Check that the user has curator access to this collection
 			if (hasAccess(auth, containerPID, Permission.addRemoveContents, config)) {
 				collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
-						+ containerPID.getPidAsString());
+						+ containerPID.getPid());
 				collection.setTitle(slug);
 				collection.addAccepts("application/zip");
 				collection.addAccepts("text/xml");
@@ -140,7 +140,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 				collection.setMediation(true);
 				//
 				IRI iri = new IRI(config.getSwordPath() + SwordConfigurationImpl.SERVICE_DOCUMENT_PATH + "/"
-						+ containerPID.getPidAsString());
+						+ containerPID.getPid());
 				collection.addSubService(iri);
 				result.add(collection);
 			}

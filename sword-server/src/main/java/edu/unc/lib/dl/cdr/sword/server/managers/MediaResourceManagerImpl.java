@@ -82,7 +82,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(fedoraHost, accessClient.getUsername(),
 				accessClient.getPassword());
 		
-		String url = fedoraPath + "/objects/" + targetPID.getPidAsString()
+		String url = fedoraPath + "/objects/" + targetPID.getPid()
 				+ "/datastreams/" + datastream.getName() + "/content";
 		HttpGet method = new HttpGet(url);
 		
@@ -119,7 +119,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 						inputStream = new ByteArrayInputStream(outputter.outputString(accessElement).getBytes());
 					} catch (Exception e) {
 						log.debug("Failed to parse response from " + targetPID.getDatastreamURI() + " into ACL format", e);
-						throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPidAsString());
+						throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
 					}
 				}
 				
@@ -136,13 +136,13 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 				return resource;
 			} else if (statusCode >= 500) {
 				throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, statusCode,
-						"Failed to retrieve " + targetPID.getPidAsString() + ": " + httpResp.getStatusLine());
+						"Failed to retrieve " + targetPID.getPid() + ": " + httpResp.getStatusLine());
 			} else if (statusCode == HttpStatus.SC_NOT_FOUND) {
-				throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "Object " + targetPID.getPidAsString()
+				throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "Object " + targetPID.getPid()
 						+ " could not be found.");
 			}
 		} catch (IOException e) {
-			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPidAsString());
+			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, "An exception occurred while attempting to retrieve " + targetPID.getPid());
 		}
 		return null;
 	}

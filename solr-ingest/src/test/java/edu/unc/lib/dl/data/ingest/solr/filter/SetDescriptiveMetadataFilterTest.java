@@ -91,7 +91,7 @@ public class SetDescriptiveMetadataFilterTest {
 	public void setup() throws Exception {
 		initMocks(this);
 
-		when(pid.getPidAsString()).thenReturn(PID_STRING);
+		when(pid.getPid()).thenReturn(PID_STRING);
 		
 		when(dip.getDocument()).thenReturn(idb);
 		when(dip.getPid()).thenReturn(pid);

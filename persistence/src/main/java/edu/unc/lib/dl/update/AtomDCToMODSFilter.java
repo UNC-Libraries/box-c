@@ -45,7 +45,7 @@ public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
 		
 		MetadataUIP metadataUIP = (MetadataUIP) uip;
 		
-		log.debug("Performing AtomDCToMODSFilter on " + uip.getPID().getPidAsString());
+		log.debug("Performing AtomDCToMODSFilter on " + uip.getPID().getPid());
 
 		try {
 			Element atomDCTerms = metadataUIP.getIncomingData().get(datastreamName);

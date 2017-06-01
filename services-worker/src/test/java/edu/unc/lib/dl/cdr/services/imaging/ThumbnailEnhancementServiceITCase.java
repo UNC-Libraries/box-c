@@ -112,7 +112,7 @@ public class ThumbnailEnhancementServiceITCase {
 			String uploadURI = this.getManagementClient().upload(dataFile);
 			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Thumbnail Test",
 					Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
-			PID dataFilePID = new PID(pid.getPidAsString() + "/DATA_FILE");
+			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
 			this.getManagementClient().addObjectRelationship(pid, CDRProperty.sourceData.getPredicate(),
 					CDRProperty.sourceData.getNamespace(), dataFilePID);
 			this.getManagementClient().addLiteralStatement(pid,

@@ -96,7 +96,7 @@ public class ContainerManagerTest extends Assert {
 		containerManager.setAccessClient(accessClient);
 		containerManager.setAclService(aclService);
 		
-		String editIRI = "http://localhost"  + SwordConfigurationImpl.EDIT_PATH + "/" + pid.getPidAsString();
+		String editIRI = "http://localhost"  + SwordConfigurationImpl.EDIT_PATH + "/" + pid.getPid();
 		
 		AuthCredentials auth = new AuthCredentials("testuser", "", null);
 		

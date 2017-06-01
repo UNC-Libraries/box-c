@@ -42,7 +42,7 @@ public class SolrUpdateConductor implements MessageConductor {
 	}
 
 	public void offer(SolrUpdateRequest ingestRequest) {
-		String pid = ingestRequest.getPid().getPidAsString();
+		String pid = ingestRequest.getPid().getPid();
 		String action = ingestRequest.getUpdateAction().toString();
 		
 		List<String> children = null;
@@ -50,7 +50,7 @@ public class SolrUpdateConductor implements MessageConductor {
 		if (ingestRequest instanceof ChildSetRequest) {
 			children = new ArrayList<>();
 			for (PID p : ((ChildSetRequest) ingestRequest).getChildren()) {
-				children.add(p.getPidAsString());
+				children.add(p.getPid());
 			}
 		}
 		

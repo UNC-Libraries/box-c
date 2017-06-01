@@ -62,10 +62,10 @@ public class GroupRolesFactory {
 	 * @return the set of all the roles
 	 * */
 	public Set<String> getGroupsInRole(PID pid, String role) throws ObjectNotFoundException {
-		if (!pids2Roles2Groups.containsKey(pid.getPidAsString())) {
-			updateCache(pid.getPidAsString());
+		if (!pids2Roles2Groups.containsKey(pid.getPid())) {
+			updateCache(pid.getPid());
 		}
-		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid.getPidAsString());
+		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid.getPid());
 		if (roles2Groups != null) {
 			return roles2Groups.get(role);
 		} else {
@@ -80,10 +80,10 @@ public class GroupRolesFactory {
 	 * @return the map of all roles and groups assigned
 	 * */
 	public Map<String, Set<String>> getAllRolesAndGroups(PID pid) throws ObjectNotFoundException {
-		if (!pids2Roles2Groups.containsKey(pid.getPidAsString())) {
-			updateCache(pid.getPidAsString());
+		if (!pids2Roles2Groups.containsKey(pid.getPid())) {
+			updateCache(pid.getPid());
 		}
-		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid.getPidAsString());
+		Map<String, Set<String>> roles2Groups = pids2Roles2Groups.get(pid.getPid());
 		return roles2Groups;
 	}
 
@@ -93,7 +93,7 @@ public class GroupRolesFactory {
 	 * @param pid
 	 */
 	public void invalidate(PID pid) {
-		pids2Roles2Groups.remove(pid.getPidAsString());
+		pids2Roles2Groups.remove(pid.getPid());
 	}
 
 	private void updateCache(String pid) throws ObjectNotFoundException {

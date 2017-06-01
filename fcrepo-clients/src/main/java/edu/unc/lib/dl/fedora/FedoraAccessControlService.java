@@ -86,7 +86,7 @@ public class FedoraAccessControlService implements AccessControlService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
-		HttpGet method = new HttpGet(this.aclEndpointUrl + pid.getPidAsString() + "/getAccess");
+		HttpGet method = new HttpGet(this.aclEndpointUrl + pid.getPid() + "/getAccess");
 		
 		try (CloseableHttpResponse httpResp = httpClient.execute(method)) {
 			int statusCode = httpResp.getStatusLine().getStatusCode();
@@ -113,7 +113,7 @@ public class FedoraAccessControlService implements AccessControlService {
 		params.add(new BasicNameValuePair("groups", groups.joinAccessGroups(";")));
 		
 		StringBuilder url = new StringBuilder();
-		url.append(this.aclEndpointUrl).append(pid.getPidAsString())
+		url.append(this.aclEndpointUrl).append(pid.getPid())
 			.append("/hasAccess/").append(permission.name())
 			.append('?').append(URLEncodedUtils.format(params, "UTF-8"));
 		

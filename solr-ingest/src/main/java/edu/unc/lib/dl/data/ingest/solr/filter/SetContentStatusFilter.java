@@ -49,7 +49,7 @@ public class SetContentStatusFilter extends AbstractIndexDocumentFilter {
 
 		dip.getDocument().setContentStatus(contentStatus);
 
-		log.debug("Content status for {} set to {}", dip.getPid().getPidAsString(), contentStatus);
+		log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
 	}
 
 	private void setContentStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status)

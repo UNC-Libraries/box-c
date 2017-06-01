@@ -39,7 +39,7 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
 			return uip;
 
 		MetadataUIP metadataUIP = (MetadataUIP) uip;
-		log.debug("Checking " + datastreamName + " filter on " + uip.getPID().getPidAsString());
+		log.debug("Checking " + datastreamName + " filter on " + uip.getPID().getPid());
 
 		Object incomingObject = uip.getIncomingData().get(datastreamName);
 		// Do not apply filter unless the rels-ext ds is being targeted.
@@ -52,7 +52,7 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
 			String incomingDatastream) throws UIPException {
 		if (log.isDebugEnabled()) {
 			log.debug("Performing ACL " + incomingDatastream + " filter operation " + uip.getOperation().name() + " on "
-					+ uip.getPID().getPidAsString());
+					+ uip.getPID().getPid());
 			try {
 				System.out.println("Incoming datastreams for " + incomingDatastream);
 				this.outputDatastreams(uip.getIncomingData());

@@ -34,9 +34,9 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
 
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		log.debug("Starting clean indexing of {}", updateRequest.getPid().getPidAsString());
+		log.debug("Starting clean indexing of {}", updateRequest.getPid().getPid());
 
-		SolrUpdateRequest deleteRequest = new SolrUpdateRequest(updateRequest.getPid().getPidAsString(),
+		SolrUpdateRequest deleteRequest = new SolrUpdateRequest(updateRequest.getPid().getPid(),
 				IndexingActionType.DELETE_SOLR_TREE);
 		deleteAction.performAction(deleteRequest);
 
@@ -48,7 +48,7 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
 
 		if (log.isDebugEnabled())
 			log.debug(String.format("Finished clean indexing of {}.  {} objects updated in {}ms", updateRequest.getPid()
-					.getPidAsString(), updateRequest.getChildrenPending(),
+					.getPid(), updateRequest.getChildrenPending(),
 					System.currentTimeMillis() - updateRequest.getTimeStarted()));
 	}
 

@@ -123,7 +123,7 @@ public class TechnicalMetadataEnhancementServiceITCase {
 			String uploadURI = this.getManagementClient().upload(dataFile);
 			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Thumbnail Test",
 					altIDs, dataFilename, true, mimetype, uploadURI);
-			PID dataFilePID = new PID(pid.getPidAsString() + "/DATA_FILE");
+			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
 			this.getManagementClient().addObjectRelationship(pid, CDRProperty.sourceData.getPredicate(),
 					CDRProperty.sourceData.getNamespace(), dataFilePID);
 		}

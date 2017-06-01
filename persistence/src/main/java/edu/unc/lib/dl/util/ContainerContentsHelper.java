@@ -178,7 +178,7 @@ public class ContainerContentsHelper {
 			int ord = li.nextIndex();
 			PID pid = li.next();
 			if (pid != null) {
-				Element el = new Element("div", parentDiv.getNamespace()).setAttribute("ID", pid.getPidAsString()).setAttribute(
+				Element el = new Element("div", parentDiv.getNamespace()).setAttribute("ID", pid.getPid()).setAttribute(
 						"ORDER", String.valueOf(ord));
 				parentDiv.addContent(el);
 			}
@@ -192,7 +192,7 @@ public class ContainerContentsHelper {
 		Element remove = null;
 		for (Element child : childDivs) {
 			String p = child.getAttributeValue("ID");
-			if (pid.getPidAsString().equals(p)) {
+			if (pid.getPid().equals(p)) {
 				remove = child;
 				break;
 			}
@@ -309,7 +309,7 @@ public class ContainerContentsHelper {
 			int ord = li.nextIndex();
 			PID pid = li.next();
 			if (pid != null) {
-				Element el = new Element("div", parentDiv.getNamespace()).setAttribute("ID", pid.getPidAsString()).setAttribute(
+				Element el = new Element("div", parentDiv.getNamespace()).setAttribute("ID", pid.getPid()).setAttribute(
 						"ORDER", String.valueOf(ord));
 				parentDiv.addContent(el);
 			}

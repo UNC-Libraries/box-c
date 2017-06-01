@@ -54,7 +54,7 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		LOG.debug("Called Solr update service for {}", pid.getPidAsString());
+		LOG.debug("Called Solr update service for {}", pid.getPid());
 
 		IndexingActionType action = ADD;
 
@@ -74,8 +74,8 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 						defaultWebObject.toString(), pid);
 				if (dwoFor != null && dwoFor.size() > 0) {
 					for (PID dwoPID : dwoFor) {
-						if (searchService.exists(dwoPID.getPidAsString())) {
-							service.getMessageDirector().direct(new SolrUpdateRequest(dwoPID.getPidAsString(), UPDATE_DATASTREAMS));
+						if (searchService.exists(dwoPID.getPid())) {
+							service.getMessageDirector().direct(new SolrUpdateRequest(dwoPID.getPid(), UPDATE_DATASTREAMS));
 						}
 					}
 				}
@@ -83,16 +83,16 @@ public class SolrUpdateEnhancement extends Enhancement<Element> {
 
 			long start = System.currentTimeMillis();
 			// Make sure the record is in solr before trying to do a partial update
-			if (!action.equals(ADD) && !searchService.exists(pid.getPidAsString())) {
-				LOG.debug("Partial update for {} is not applicable, reverting to full update", pid.getPidAsString());
+			if (!action.equals(ADD) && !searchService.exists(pid.getPid())) {
+				LOG.debug("Partial update for {} is not applicable, reverting to full update", pid.getPid());
 				action = ADD;
 			}
 			LOG.info("Checked for record in {}", (System.currentTimeMillis() - start));
 		} catch (SolrServerException e) {
-			LOG.error("Failed to check for the existense of {}", pid.getPidAsString(), e);
+			LOG.error("Failed to check for the existense of {}", pid.getPid(), e);
 		}
 
-		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPidAsString(), action);
+		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
 		service.getMessageDirector().direct(updateRequest);
 
 		return result;

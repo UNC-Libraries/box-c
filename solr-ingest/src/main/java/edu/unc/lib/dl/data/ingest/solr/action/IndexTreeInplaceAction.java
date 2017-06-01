@@ -36,7 +36,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
 	@Override
 	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		log.debug("Starting inplace indexing of {}", updateRequest.getPid().getPidAsString());
+		log.debug("Starting inplace indexing of {}", updateRequest.getPid().getPid());
 
 		super.performAction(updateRequest);
 
@@ -47,7 +47,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
 		if (log.isDebugEnabled())
 			log.debug(String.format("Finished inplace indexing of {}.  {} objects updated in {}ms", updateRequest.getPid()
-					.getPidAsString(), updateRequest.getChildrenPending(),
+					.getPid(), updateRequest.getChildrenPending(),
 					System.currentTimeMillis() - updateRequest.getTimeStarted()));
 	}
 

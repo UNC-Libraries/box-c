@@ -109,7 +109,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					}
 				} else {
 					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
-							+ this.pid.getPidAsString() + " is most likely invalid", Severity.UNRECOVERABLE);
+							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
 				}
 
 				// get logical iRODS path for datastream version
@@ -254,7 +254,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			}
 
 			LOG.debug("Adding techData relationship");
-			PID newDSPID = new PID(pid.getPidAsString() + "/" + ContentModelHelper.Datastream.MD_TECHNICAL.getName());
+			PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_TECHNICAL.getName());
 			Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
 
 			List<String> techrel = rels.get(ContentModelHelper.CDRProperty.techData.toString());
@@ -263,7 +263,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						CDRProperty.techData.getNamespace(), newDSPID);
 			}
 
-			LOG.debug("Finished MD_TECHNICAL updating for {}", pid.getPidAsString());
+			LOG.debug("Finished MD_TECHNICAL updating for {}", pid.getPid());
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (NotFoundException e) {

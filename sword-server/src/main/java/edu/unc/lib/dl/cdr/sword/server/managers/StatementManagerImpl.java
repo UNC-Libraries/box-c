@@ -55,7 +55,7 @@ public class StatementManagerImpl extends AbstractFedoraManager implements State
 
 		if (!hasAccess(auth, targetPID, Permission.viewDescription, configImpl)) {
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to retrieve statement for " + targetPID.getPidAsString());
+					"Insufficient privileges to retrieve statement for " + targetPID.getPid());
 		}
 
 		String label = tripleStoreQueryService.lookupLabel(targetPID);

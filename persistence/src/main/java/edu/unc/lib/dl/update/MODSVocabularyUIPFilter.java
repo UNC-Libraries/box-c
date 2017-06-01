@@ -46,7 +46,7 @@ public class MODSVocabularyUIPFilter extends MetadataUIPFilter {
 
 		MetadataUIP metadataUIP = (MetadataUIP) uip;
 
-		log.debug("Performing vocabulary update filter on " + uip.getPID().getPidAsString());
+		log.debug("Performing vocabulary update filter on " + uip.getPID().getPid());
 
 		try {
 			vocabManager.updateInvalidTermsRelations(uip.getPID(), metadataUIP.getIncomingData().get(datastreamName));

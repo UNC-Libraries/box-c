@@ -69,7 +69,7 @@ public class ContentUIP extends FedoraObjectUIP {
 			} catch (Exception e) {
 				throw new UIPException(
 						"Exception occurred while attempting to store datastream "
-								+ datastream + " for " + pid.getPidAsString(), e);
+								+ datastream + " for " + pid.getPid(), e);
 			}
 		}
 

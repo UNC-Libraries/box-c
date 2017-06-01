@@ -84,7 +84,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 		if (dip.getDocument().getTitle() == null) {
 			idb.setTitle(dip.getLabel());
 		}
-		idb.getKeyword().add(dip.getPid().getPidAsString());
+		idb.getKeyword().add(dip.getPid().getPid());
 	}
 
 	private void extractTitles(Element mods, IndexDocumentBean idb) {

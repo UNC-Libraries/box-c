@@ -69,7 +69,7 @@ public class CollectionDepositManagerImpl extends AbstractFedoraManager implemen
 
 		if (!hasAccess(auth, containerPID, Permission.addRemoveContents, configImpl)) {
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to deposit to container " + containerPID.getPidAsString());
+					"Insufficient privileges to deposit to container " + containerPID.getPid());
 		}
 
 		// Get the enum for the provided packaging type. Null can be a legitimate type

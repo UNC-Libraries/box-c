@@ -71,7 +71,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 				
 				if (newestSourceDS == null)
 					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
-							+ this.pid.getPidAsString() + " is most likely invalid", Severity.UNRECOVERABLE);
+							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
 
 				String dsLocation = null;
 				String dsIrodsPath = null;
@@ -108,7 +108,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 
 					// Add DATA_JP2, cdr-base:derivedJP2 relation triple
 					LOG.debug("Adding JP2 relationship");
-					PID newDSPID = new PID(pid.getPidAsString() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+					PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
 					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
 
 					List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());

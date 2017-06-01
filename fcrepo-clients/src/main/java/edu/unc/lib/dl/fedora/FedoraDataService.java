@@ -190,20 +190,20 @@ public class FedoraDataService {
 					inputs.addContent(results);
 				}
 			} catch (InterruptedException e){
-				LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPidAsString(), e);
+				LOG.warn("Attempt to get asynchronous results was interrupted for " + pid.getPid(), e);
 				return;
 			} catch (ExecutionException e) {
 				if (failOnException) {
 					if (e.getCause() instanceof FedoraException)
 						throw (FedoraException) e.getCause();
-					throw new ServiceException("Failed to get asynchronous results for " + pid.getPidAsString(), e);
+					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
 				}
-				LOG.warn("Failed to get asynchronous results for " + pid.getPidAsString() + ", continuing.", e);
+				LOG.warn("Failed to get asynchronous results for " + pid.getPid() + ", continuing.", e);
 			} catch (TimeoutException e) {
 				if (failOnException) {
-					throw new ServiceException("Failed to get asynchronous results for " + pid.getPidAsString(), e);
+					throw new ServiceException("Failed to get asynchronous results for " + pid.getPid(), e);
 				}
-				LOG.warn("Request for asynchronous results timed out for " + pid.getPidAsString() + ", continuing.", e);
+				LOG.warn("Request for asynchronous results timed out for " + pid.getPid() + ", continuing.", e);
 			}
 		}
 	}
@@ -281,7 +281,7 @@ public class FedoraDataService {
 		public Content call() throws FedoraException {
 			try {
 				this.storeGroupsOnCurrentThread();
-				LOG.debug("HERE Get FOXML for pid " + pid.getPidAsString());
+				LOG.debug("HERE Get FOXML for pid " + pid.getPid());
 
 				// add foxml
 				Document foxml;
@@ -308,16 +308,16 @@ public class FedoraDataService {
 
 		@Override
 		public Content call() {
-			LOG.debug("Get path info for " + pid.getPidAsString());
+			LOG.debug("Get path info for " + pid.getPid());
 			// add path info
 			List<PathInfo> path = tripleStoreQueryService.lookupRepositoryPathInfo(pid);
 			if (path == null || path.size() == 0)
-				throw new ServiceException("No path information was returned for " + pid.getPidAsString());
+				throw new ServiceException("No path information was returned for " + pid.getPid());
 			Element pathEl = new Element("path");
 			for (PathInfo i : path) {
 				Element p = new Element("object");
 				p.setAttribute("label", i.getLabel());
-				p.setAttribute("pid", i.getPid().getPidAsString());
+				p.setAttribute("pid", i.getPid().getPid());
 				p.setAttribute("slug", i.getSlug());
 				pathEl.addContent(p);
 			}
@@ -341,7 +341,7 @@ public class FedoraDataService {
 			// add MODS
 			try {
 				this.storeGroupsOnCurrentThread();
-				LOG.debug("Get mods for " + pid.getPidAsString());
+				LOG.debug("Get mods for " + pid.getPid());
 				byte[] modsBytes = getAccessClient().getDatastreamDissemination(pid, "MD_DESCRIPTIVE", null).getStream();
 				Document mods = edu.unc.lib.dl.fedora.ClientUtils.parseXML(modsBytes);
 				return mods.getRootElement().detach();
@@ -365,12 +365,12 @@ public class FedoraDataService {
 
 		@Override
 		public Content call() {
-			LOG.debug("Get parent collection for " + pid.getPidAsString());
+			LOG.debug("Get parent collection for " + pid.getPid());
 			PID parentCollection = tripleStoreQueryService.fetchParentCollection(pid);
 			if (parentCollection == null)
 				return null;
 			Element parentColEl = new Element("parentCollection");
-			parentColEl.setText(parentCollection.getPidAsString());
+			parentColEl.setText(parentCollection.getPid());
 			return parentColEl;
 		}
 	}
@@ -391,7 +391,7 @@ public class FedoraDataService {
 		public Content call() {
 			try {
 				this.storeGroupsOnCurrentThread();
-				LOG.debug("Get Order within Parent for " + pid.getPidAsString());
+				LOG.debug("Get Order within Parent for " + pid.getPid());
 				PID container = tripleStoreQueryService.fetchContainer(pid);
 				byte[] structMapBytes = getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS", null)
 						.getStream();

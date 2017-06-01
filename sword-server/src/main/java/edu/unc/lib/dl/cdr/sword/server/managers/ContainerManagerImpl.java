@@ -64,14 +64,14 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		if (!hasAccess(auth, targetPID, Permission.editDescription, configImpl)) {
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to update metadata for " + targetPID.getPidAsString());
+					"Insufficient privileges to update metadata for " + targetPID.getPid());
 		}
 
 		AtomPubMetadataUIP uip;
 		try {
 			uip = new AtomPubMetadataUIP(targetPID, auth.getUsername(), operation, deposit.getSwordEntry().getEntry());
 		} catch (UIPException e) {
-			log.warn("An exception occurred while attempting to create metadata UIP for " + targetPID.getPidAsString(), e);
+			log.warn("An exception occurred while attempting to create metadata UIP for " + targetPID.getPid(), e);
 			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
 					"An exception occurred while attempting to create metadata UIP for " + editIRI, e);
 		}
@@ -84,9 +84,9 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 						"Failed to authorize update metadata operation", e);
 			}
 			throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500,
-					"An exception occurred while attempting to update object " + targetPID.getPidAsString(), e);
+					"An exception occurred while attempting to update object " + targetPID.getPid(), e);
 		} catch (UIPException e) {
-			log.warn("Failed to process UIP for " + targetPID.getPidAsString(), e);
+			log.warn("Failed to process UIP for " + targetPID.getPid(), e);
 			throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500,
 					"A problem occurred while attempting to perform the requested update operation on " + editIRI, e);
 		}
@@ -145,18 +145,18 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 		PID targetPID = extractPID(editIRI, SwordConfigurationImpl.EDIT_PATH + "/");
 
 		if (!hasAccess(auth, targetPID, Permission.moveToTrash, configImpl)) {
-			log.debug("Insufficient privileges to delete object " + targetPID.getPidAsString());
+			log.debug("Insufficient privileges to delete object " + targetPID.getPid());
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to delete object " + targetPID.getPidAsString());
+					"Insufficient privileges to delete object " + targetPID.getPid());
 		}
 
 		try {
 			this.digitalObjectManager.delete(targetPID, auth.getUsername(), "Deleted by " + auth.getUsername());
 		} catch (NotFoundException e) {
-			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "Unable to delete the object " + targetPID.getPidAsString()
+			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "Unable to delete the object " + targetPID.getPid()
 					+ ".  The object was not found in the repository.");
 		} catch (IngestException e) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Failed to delete object " + targetPID.getPidAsString(), e);
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Failed to delete object " + targetPID.getPid(), e);
 		}
 	}
 
@@ -176,7 +176,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		if (!hasAccess(auth, targetPID, Permission.editAccessControl, configImpl)) {
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to update object headers " + targetPID.getPidAsString());
+					"Insufficient privileges to update object headers " + targetPID.getPid());
 		}
 
 		this.setInProgress(targetPID, deposit, receipt);
@@ -208,7 +208,7 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
 		if (!hasAccess(auth, targetPID, Permission.viewDescription, config)) {
 			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to get deposit receipt " + targetPID.getPidAsString());
+					"Insufficient privileges to get deposit receipt " + targetPID.getPid());
 		}
 
 		DepositReceipt receipt = depositReportingUtil.retrieveDepositReceipt(targetPID, config);
@@ -223,11 +223,11 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 				log.debug("Updating active state of in-progress item");
 				managementClient.addLiteralStatement(targetPID, FedoraProperty.Active.getFragment(),
 						FedoraProperty.Active.getNamespace(), "Active", null);
-				receipt.setVerboseDescription(targetPID.getPidAsString() + " is " + ((deposit.isInProgress()) ? "" : "not")
+				receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress()) ? "" : "not")
 						+ " in-progress");
 			} catch (FedoraException e) {
 				throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500, "Failed to update active state for "
-						+ targetPID.getPidAsString());
+						+ targetPID.getPid());
 			}
 		}
 	}

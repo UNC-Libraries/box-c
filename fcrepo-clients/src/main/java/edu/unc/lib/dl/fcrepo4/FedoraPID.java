@@ -124,7 +124,7 @@ public class FedoraPID extends PID {
 	 * Get the persistent identifier for this object
 	 */
 	@Override
-	public String getPidAsString() {
+	public String getPid() {
 		// Special case for content paths for legacy purposes
 		if (RepositoryPathConstants.CONTENT_BASE.equals(qualifier)) {
 			if (componentPath == null) {

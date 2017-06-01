@@ -43,7 +43,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
 	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
 			SwordConfiguration config, String depositor, String owner) throws SwordError {
 		if (log.isDebugEnabled()) {
-			log.debug("Preparing to perform a CDR METS deposit to " + destination.getPidAsString());
+			log.debug("Preparing to perform a CDR METS deposit to " + destination.getPid());
 			log.debug("Working with temporary file: "+ deposit.getFile().getAbsolutePath());
 		}
 		
@@ -68,7 +68,7 @@ public class CDRMETSDepositHandler extends AbstractDepositHandler {
 			data.mkdir();
 			FileUtils.moveFile(deposit.getFile(), new File(data, deposit.getFilename()));
 		} catch (IOException e) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPidAsString(), e);
+			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
 		}
 		
 		// METS specific fields

@@ -63,7 +63,7 @@ public class PatronAccessFactory {
 	}
 
 	public Boolean isPublished(PID pid) throws ObjectNotFoundException {
-		String pidString = pid.getPidAsString();
+		String pidString = pid.getPid();
 		if (!this.pid2Publish.containsKey(pidString)) {
 			updateCache(pid);
 		}
@@ -71,7 +71,7 @@ public class PatronAccessFactory {
 	}
 
 	public Boolean isStateActive(PID pid) throws ObjectNotFoundException {
-		String pidString = pid.getPidAsString();
+		String pidString = pid.getPid();
 		if (!this.pid2StateActive.containsKey(pidString)) {
 			updateCache(pid);
 		}
@@ -85,14 +85,14 @@ public class PatronAccessFactory {
 		List<List<String>> results = tripleStoreQueryService.queryResourceIndex(query);
 
 		if (log.isDebugEnabled())
-			log.debug("Update cache for {} found {}", pid.getPidAsString(), results);
+			log.debug("Update cache for {} found {}", pid.getPid(), results);
 
 		// Object was not found
 		if (results.size() == 0)
-			throw new ObjectNotFoundException("Failed to find object " + pid.getPidAsString());
+			throw new ObjectNotFoundException("Failed to find object " + pid.getPid());
 
 		// Since published may or may not be present, we may receive multiple entries for it
-		String pidString = pid.getPidAsString();
+		String pidString = pid.getPid();
 		boolean published = true;
 		for (List<String> entry : results) {
 			if ("no".equals(entry.get(0))) {
@@ -115,7 +115,7 @@ public class PatronAccessFactory {
 	}
 
 	public void invalidate(PID pid) {
-		String pidString = pid.getPidAsString();
+		String pidString = pid.getPid();
 		log.debug("Invalidating patron access information for {}", pidString);
 		this.pid2Publish.remove(pidString);
 		this.pid2StateActive.remove(pidString);

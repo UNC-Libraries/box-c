@@ -36,13 +36,13 @@ public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
 		try {
 			dip.getDocument().setDateAdded(dip.getFirstTriple(FedoraProperty.createdDate.toString()));
 		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPidAsString(), e);
+			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
 		}
 		
 		try {
 			dip.getDocument().setDateUpdated(dip.getFirstTriple(FedoraProperty.lastModifiedDate.toString()));
 		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPidAsString(), e);
+			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
 		}
 	}
 }
