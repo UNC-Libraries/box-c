@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -36,12 +37,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.jdom2.Document;
+import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+
+
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
@@ -69,8 +73,6 @@ public class SetDescriptiveMetadataFilterTest {
 	@Mock
 	private PID pid;
 	
-	private DocumentIndexingPackageFactory factory;
-	
 	@Mock
 	private VocabularyHelperManager vocabManager;
 
@@ -82,13 +84,14 @@ public class SetDescriptiveMetadataFilterTest {
 	@Captor
 	private ArgumentCaptor<Date> dateCaptor;
 	
-	Map<String, List<String>> triples;
+	@Captor
+	private ArgumentCaptor<String> stringCaptor;
 
 	@Before
 	public void setup() throws Exception {
 		initMocks(this);
 
-		when(pid.getPid()).thenReturn(PID_STRING);
+		when(pid.getPidAsString()).thenReturn(PID_STRING);
 		
 		when(dip.getDocument()).thenReturn(idb);
 		when(dip.getPid()).thenReturn(pid);
@@ -208,7 +211,16 @@ public class SetDescriptiveMetadataFilterTest {
 	
 	@Test
 	public void testAffiliationVocabTerm() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/inventoryMods.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
+		when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(value);
 		
+		filter.filter(dip);
+		
+		verify(idb).setDepartment(listCaptor.capture());
+		assertTrue(listCaptor.getValue().contains("Music"));
 	}
 	
 	@Test
@@ -236,66 +248,26 @@ public class SetDescriptiveMetadataFilterTest {
 		assertTrue(listCaptor.getValue().contains("English"));
 		assertTrue(listCaptor.getValue().contains("Cherokee"));
 	}
-	
-//	@Test
-//	public void extractMODS() throws Exception {
-//		DocumentIndexingPackage dip = factory.createDip("uuid:aggregate");
-//		SAXBuilder builder = new SAXBuilder();
-//		Document foxml = builder.build(new FileInputStream(new File(
-//				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
-//		Element mods = FOXMLJDOMUtil.getDatastreamContent(Datastream.MD_DESCRIPTIVE, foxml);
-//		when(loader.loadMDDescriptive(any(DocumentIndexingPackage.class))).thenReturn(mods);
-//
-//		Map<String, List<List<String>>> terms = new HashMap<>();
-//		terms.put(AFFIL_URI, Arrays.asList(Arrays.asList("Department of Biostatistics")));
-//		when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(terms);
-//
-//		filter.filter(dip);
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertEquals("Judson, Richard", idb.getCreatorSort());
-//		assertEquals(4, idb.getCreator().size());
-//		assertEquals(5, idb.getContributor().size());
-//		assertEquals(1, idb.getDepartment().size());
-//		assertEquals("Department of Biostatistics", idb.getDepartment().get(0));
-//
-//		assertNotNull(idb.getAbstractText());
-//		assertEquals(
-//				"A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model",
-//				idb.getTitle());
-//		assertEquals(1, idb.getOtherTitle().size());
-//
-//		assertEquals("BMC Bioinformatics. 2008 May 19;9(1):241", idb.getCitation());
-//
-//		assertEquals("English", idb.getLanguage().get(0));
-//		assertEquals(DateTimeUtil.parseUTCToDate("2008-05-19T00:00:00.000"), idb.getDateCreated());
-//		assertTrue(idb.getIdentifier().contains("pmpid|18489778"));
-//		assertTrue(idb.getIdentifier().contains("doi|10.1186/1471-2105-9-241"));
-//
-//		assertTrue(idb.getKeyword().contains("text"));
-//		assertTrue(idb.getKeyword().contains("Peer Reviewed"));
-//		assertTrue(idb.getKeyword().contains("2008"));
-//
-//		assertTrue(idb.getSubject().contains("Machine Learning"));
-//		assertEquals(1, idb.getSubject().size());
-//	}
 
-	//@Test
+	@Test
 	public void noMODS() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("uuid:item");
+		when(idb.getTitle()).thenReturn(null);
+		when(dip.getLabel()).thenReturn("test label");
+		when(idb.getKeyword()).thenReturn(new ArrayList<String>());
 
 		filter.filter(dip);
-		IndexDocumentBean idb = dip.getDocument();
-
-		assertNull(idb.getCreator());
-		assertNull(idb.getContributor());
-		assertNull(idb.getDepartment());
-		assertNull(idb.getSubject());
-		assertNull(idb.getIdentifier());
-		assertNull(idb.getAbstractText());
-
-		assertEquals(idb.getId(), dip.getPid().getPid());
-		assertEquals("Label", idb.getTitle());
+		
+		verify(idb, never()).setAbstractText(any(String.class));
+		verify(idb, never()).setLanguage(anyListOf(String.class));
+		verify(idb, never()).setSubject(anyListOf(String.class));
+		verify(idb, never()).setDateCreated(any(Date.class));
+		verify(idb, never()).setCitation(any(String.class));
+		verify(idb, never()).setIdentifier(anyListOf(String.class));
+		verify(idb).setTitle(stringCaptor.capture());
+		// check that title and keyword still get set in spite of no mods
+		assertEquals("test label", stringCaptor.getValue());
+		assertTrue(idb.getKeyword().contains(PID_STRING));
+		
 	}
 
 }
