@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.jdom2.Document;
@@ -79,32 +79,39 @@ public class DocumentIndexingPackageDataLoader {
 	private int maxRetries = 2;
 	private long retryDelay = 1000L;
 	
-	private LoadingCache<String, List<Entry<String, String>>> objCache;
+	private LoadingCache<PID, ContentObject> contentObjCache;
 	private long cacheTimeToLive;
 	private long cacheMaxSize;
 	
 	public void init() {
-		objCache = CacheBuilder.newBuilder()
+		contentObjCache = CacheBuilder.newBuilder()
 				.maximumSize(cacheMaxSize)
 				.expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
-				.build(new ObjectCacheLoader());
+				.build(new ContentObjectCacheLoader());
 	}
 	
 	public Element loadMods(DocumentIndexingPackage dip) throws IndexingException {
-		ContentObject contentObj = repository.getContentObject(dip.getPid());
+		ContentObject contentObj = getContentObject(dip);
 		BinaryObject modsBinary = contentObj.getMODS();
+		
+		if (modsBinary == null) {
+			return null;
+		}
 		
 		try (InputStream modsStream = modsBinary.getBinaryStream()) {
 			Document dsDoc = new SAXBuilder().build(modsStream);
 			return dsDoc.detachRootElement();
 		} catch (JDOMException | IOException e) {
-			throw new ServiceException("Failed to parse MODS stream for object " + dip.getPid(), e);
+			throw new IndexingException("Failed to parse MODS stream for object " + dip.getPid(), e);
 		}
 	}
 	
-	private List<Entry<String, String>> getObjectProperties(PID pid) {
-		String pidString = pid.getRepositoryPath();
-		return objCache.getUnchecked(pidString);
+	private ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
+		try {
+			return contentObjCache.get(dip.getPid());
+		} catch (ExecutionException e) {
+			throw new IndexingException("Failed to load content object " + dip.getPid(), e.getCause());
+		}
 	}
 
 	public long getCacheTimeToLive() {
@@ -124,51 +131,19 @@ public class DocumentIndexingPackageDataLoader {
 	}
 	
 	/**
-	 * Loader for cache of information about individual objects. Retrieves
-	 * properties from a SPARQL endpoint which are directly present on
-	 * objects
+	 * Loader for cache content objects for reuse in indexing tasks
 	 * 
 	 * @author bbpennel
 	 *
 	 */
-	private class ObjectCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
-		
-		// query string for returning all of an object's triples
-		private static final String OBJ_QUERY = "SELECT ?pred ?obj"
-				+ " WHERE { <%1$s> ?pred ?obj . }";
-
-		public List<Entry<String, String>> load(String key) {
-			return null;
-
-//			String query = String.format(OBJ_QUERY, key);
-//
-//			try (QueryExecution qExecution = queryService.executeQuery(query)) {
-//				ResultSet resultSet = qExecution.execSelect();
-//				List<Entry<String, String>> valueResults = new ArrayList<>();
-//
-//				// Read all results into a list of predicate object pairs
-//				for (; resultSet.hasNext() ;) {
-//					QuerySolution soln = resultSet.nextSolution();
-//					Resource predicateRes = soln.getResource("pred");
-//					RDFNode valueNode = soln.get("obj");
-//
-//					if (predicateRes != null && valueNode != null) {
-//						String predicateString = predicateRes.getURI();
-//						String valueString;
-//						if (valueNode.isLiteral()) {
-//							valueString = valueNode.asLiteral().getLexicalForm();
-//						} else {
-//							valueString = valueNode.asResource().getURI();
-//						}
-//
-//						valueResults.add(new SimpleEntry<String, String>
-//								(predicateString, valueString));
-//					}
-//				}
-//
-//				return valueResults;
-//			}
+	private class ContentObjectCacheLoader extends CacheLoader<PID, ContentObject> {
+		public ContentObject load(PID pid) {
+			return repository.getContentObject(pid);
 		}
+	}
+
+	public void setRepository(Repository repository) {
+		this.repository = repository;
 	}
 
 	@Deprecated
