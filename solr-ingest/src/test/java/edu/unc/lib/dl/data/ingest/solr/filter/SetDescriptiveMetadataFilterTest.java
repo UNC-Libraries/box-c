@@ -191,7 +191,19 @@ public class SetDescriptiveMetadataFilterTest {
 	
 	@Test
 	public void testNamePartConcatenation() throws Exception {
+		SAXBuilder builder = new SAXBuilder();
+		Document modsDoc = builder.build(new FileInputStream(new File(
+				"src/test/resources/datastream/nameParts.xml")));
+		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 		
+		filter.filter(dip);
+		
+		verify(idb).setCreator(listCaptor.capture());
+		assertTrue(listCaptor.getValue().contains("Repo, Boxy"));
+		verify(idb).setContributor(listCaptor.capture());
+		assertTrue(listCaptor.getValue().contains("Boxy"));
+		verify(idb).setCreatorSort(stringCaptor.capture());
+		assertEquals("Repo, Boxy", stringCaptor.getValue());
 	}
 	
 	@Test
@@ -205,8 +217,8 @@ public class SetDescriptiveMetadataFilterTest {
 		
 		verify(idb).setCreator(listCaptor.capture());
 		assertTrue(listCaptor.getValue().contains("Test, Creator1"));
-		verify(idb).setCreatorSort("Test, Creator1");
 		assertTrue(listCaptor.getValue().contains("Test, Creator2"));
+		verify(idb).setCreatorSort("Test, Creator1");
 
 	}
 	

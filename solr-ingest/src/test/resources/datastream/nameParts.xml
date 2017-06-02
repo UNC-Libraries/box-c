@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title>Paper title</mods:title>
+  </mods:titleInfo>
+  <mods:name type="personal">
+  	<mods:namePart type="given">Boxy</mods:namePart>
+	<mods:namePart type="family">Repo</mods:namePart>
+	<mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="personal">
+    <mods:namePart type="given">Boxy</mods:namePart>
+  </mods:name>
+  </mods:mods>
