@@ -33,6 +33,7 @@ import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -215,7 +216,13 @@ public class SetDescriptiveMetadataFilterTest {
 		Document modsDoc = builder.build(new FileInputStream(new File(
 				"src/test/resources/datastream/inventoryMods.xml")));
 		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
-		when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(value);
+		Map<String, List<List<String>>> authTerms = new HashMap<String, List<List<String>>>();
+		List<List<String>> terms = new ArrayList<List<String>>();
+		List<String> depts = new ArrayList<String>();
+		depts.add("Music");
+		terms.add(depts);
+		authTerms.put("http://cdr.unc.edu/vocabulary/Affiliation", terms);
+		when(vocabManager.getAuthoritativeForms(any(PID.class), any(Element.class))).thenReturn(authTerms);
 		
 		filter.filter(dip);
 		
