@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,7 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
  * @author bbpennel
  *
  */
-public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
+public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
 	private final Properties languageCodeMap;
@@ -68,20 +67,16 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 
 		idb.setKeyword(new ArrayList<String>());
 		if (mods != null) {
-			try {
-				this.extractTitles(mods, idb);
-				this.extractNamesAndAffiliations(mods, idb, true);
-				this.extractAbstract(mods, idb);
-				this.extractLanguages(mods, idb);
-				this.extractSubjects(mods, idb);
-				this.extractDateCreated(mods, idb);
-				this.extractIdentifiers(mods, idb);
-				this.extractCitation(mods, idb);
-				this.extractKeywords(mods, idb);
+			this.extractTitles(mods, idb);
+			this.extractNamesAndAffiliations(mods, idb, true);
+			this.extractAbstract(mods, idb);
+			this.extractLanguages(mods, idb);
+			this.extractSubjects(mods, idb);
+			this.extractDateCreated(mods, idb);
+			this.extractIdentifiers(mods, idb);
+			this.extractCitation(mods, idb);
+			this.extractKeywords(mods, idb);
 
-			} catch (JDOMException e) {
-				throw new IndexingException("Failed to extract MODS data", e);
-			}
 		} else {
 			// TODO basic DC mappings
 		}
@@ -92,7 +87,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		idb.getKeyword().add(dip.getPid().getPid());
 	}
 
-	private void extractTitles(Element mods, IndexDocumentBean idb) throws JDOMException {
+	private void extractTitles(Element mods, IndexDocumentBean idb) {
 		List<?> titles = mods.getChildren("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
 		String mainTitle = null;
 		List<String> otherTitles = new ArrayList<String>();
@@ -102,8 +97,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 				Element titleEl = (Element) titleObj;
 				if (mainTitle == null && "title".equalsIgnoreCase(titleEl.getName())) {
 					mainTitle = titleEl.getValue();
+				} else {
+					otherTitles.add(titleEl.getValue());
 				}
-				otherTitles.add(titleEl.getValue());
 			}
 		}
 		idb.setTitle(mainTitle);
@@ -111,8 +107,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			idb.setOtherTitle(otherTitles);
 	}
 
-	private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments)
-			throws JDOMException {
+	private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments) {
 		List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
 		List<String> creators = new ArrayList<String>();
 		List<String> contributors = new ArrayList<String>();
@@ -196,21 +191,18 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		if (authTerms != null) {
 			List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
 
-			if (affiliationTerms != null) {
+			if (affiliationTerms != null && affiliationTerms.size() > 0) {
 			// Make the departments for the whole document into a form solr can take
 				List<String> flattened = new ArrayList<String>();
 				for (List<String> path : affiliationTerms) {
 					flattened.addAll(path);
 				}
-
-				if (affiliationTerms != null && affiliationTerms.size() > 0) {
-					idb.setDepartment(flattened);
-				}
+				idb.setDepartment(flattened);
 			}
 		}
 	}
 
-	private void extractAbstract(Element mods, IndexDocumentBean idb) throws JDOMException {
+	private void extractAbstract(Element mods, IndexDocumentBean idb) {
 		String abstractText = mods.getChildText("abstract", JDOMNamespaceUtil.MODS_V3_NS);
 		if (abstractText != null)
 			idb.setAbstractText(abstractText.trim());
@@ -254,28 +246,48 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 	}
 
+	/**
+	 * Get the preferred date to use as the date created. Order of preference is
+	 * the first date created found, then the first date issued, then the first
+	 * date captured.
+	 * 
+	 * @param mods
+	 * @param idb
+	 */
 	private void extractDateCreated(Element mods, IndexDocumentBean idb){
 		List<?> originInfoEls = mods.getChildren("originInfo", JDOMNamespaceUtil.MODS_V3_NS);
 		Date dateCreated = null;
+		Date dateIssued = null;
+		Date dateCaptured = null;
 		if (originInfoEls.size() > 0) {
 			for (Object originInfoObj: originInfoEls) {
 				Element originInfoEl = (Element) originInfoObj;
-				dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
-				if (dateCreated == null) {
-					dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
-				}
-				if (dateCreated == null) {
-					dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
-				}
+				dateCreated = JDOMQueryUtil
+						.parseISO6392bDateChild(originInfoEl, "dateCreated", JDOMNamespaceUtil.MODS_V3_NS);
 				if (dateCreated != null) {
-					idb.setDateCreated(dateCreated);
-					return;
+					break;
 				}
+				
+				if (dateIssued == null) {
+					dateIssued = JDOMQueryUtil
+							.parseISO6392bDateChild(originInfoEl, "dateIssued", JDOMNamespaceUtil.MODS_V3_NS);
+				}
+				
+				if (dateIssued == null && dateCaptured == null) {
+					dateCaptured = JDOMQueryUtil
+							.parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
+				}
+			}
+			
+			if (dateCreated != null) {
+				idb.setDateCreated(dateCreated);
+			} else if (dateIssued != null) {
+				idb.setDateCreated(dateIssued);
+			} else if (dateCaptured != null) {
+				idb.setDateCreated(dateCaptured);
 			}
 		}
 	}
-
-
 
 	private void extractIdentifiers(Element mods, IndexDocumentBean idb){
 		List<?> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);

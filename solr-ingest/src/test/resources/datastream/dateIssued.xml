@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title>Paper title</mods:title>
+  </mods:titleInfo>
+  <mods:genre>Dissertation</mods:genre>
+  <mods:subject>
+    <mods:topic>Test resource</mods:topic>
+  </mods:subject>
+  <mods:originInfo>
+    <mods:dateIssued encoding="iso8601" keyDate="yes">2006-05</mods:dateIssued>
+  </mods:originInfo>
+  <mods:originInfo>
+    <mods:dateCaptured encoding="iso8601">2006-03</mods:dateCaptured>
+  </mods:originInfo>
+  </mods:mods>

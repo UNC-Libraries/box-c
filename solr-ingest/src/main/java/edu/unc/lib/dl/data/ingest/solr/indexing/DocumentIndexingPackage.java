@@ -152,7 +152,7 @@ public class DocumentIndexingPackage {
 
 	public Element getMods() throws IndexingException {
 		if (mods == null) {
-			mods = loader.loadMDDescriptive(this);
+			mods = loader.loadMods(this);
 		}
 		return mods;
 	}
