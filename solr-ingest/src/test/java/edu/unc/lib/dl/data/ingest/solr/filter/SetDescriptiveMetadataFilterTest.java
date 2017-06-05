@@ -44,6 +44,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.fedora.PID;
@@ -223,9 +224,9 @@ public class SetDescriptiveMetadataFilterTest {
 		Document modsDoc = builder.build(new FileInputStream(new File(
 				"src/test/resources/datastream/inventoryMods.xml")));
 		when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
-		Map<String, List<List<String>>> authTerms = new HashMap<String, List<List<String>>>();
-		List<List<String>> terms = new ArrayList<List<String>>();
-		List<String> depts = new ArrayList<String>();
+		Map<String, List<List<String>>> authTerms = new HashMap<>();
+		List<List<String>> terms = new ArrayList<>();
+		List<String> depts = new ArrayList<>();
 		depts.add("Music");
 		terms.add(depts);
 		authTerms.put("http://cdr.unc.edu/vocabulary/Affiliation", terms);
