@@ -16,25 +16,28 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.text.ParseException;
-
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
- * Indexing filter which extracts Fedora generated dates about the creation and modification state of the object
+ * Indexing filter that extracts Fedora-generated dates about the creation and modification state of an object
  * being indexed.
  * 
  * Sets: dateAdded, dateUpdated
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class SetRecordDatesFilter {
 	
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
+		ContentObject obj = dip.getContentObject();
+		String dateAdded = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.created).toString();
+		String dateUpdated = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.lastModified).toString();
 		try {
-			dip.getDocument().setDateAdded(dip.getFirstTriple(Fcrepo4Repository.created.toString()));
-			dip.getDocument().setDateUpdated(dip.getFirstTriple(Fcrepo4Repository.lastModified.toString()));
+			dip.getDocument().setDateAdded(dateAdded);
+			dip.getDocument().setDateUpdated(dateUpdated);
 		} catch (ParseException e) {
 			throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
 		}
