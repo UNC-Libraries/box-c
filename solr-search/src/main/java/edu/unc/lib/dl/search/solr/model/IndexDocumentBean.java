@@ -31,6 +31,7 @@ public class IndexDocumentBean {
 	protected List<String> ancestorPath;
 	protected String ancestorIds;
 	protected String parentCollection;
+	protected String parentUnit;
 	protected String label;
 
 	protected List<String> scope;
@@ -129,7 +130,16 @@ public class IndexDocumentBean {
 		this.parentCollection = parentCollection;
 	}
 
-	public String getLabel() {
+	public String getParentUnit() {
+        return parentUnit;
+    }
+
+	@Field
+    public void setParentUnit(String parentUnit) {
+        this.parentUnit = parentUnit;
+    }
+
+    public String getLabel() {
 		return label;
 	}
 
