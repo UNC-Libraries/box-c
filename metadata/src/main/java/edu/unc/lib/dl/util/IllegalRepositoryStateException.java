@@ -22,8 +22,10 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * This is a runtime exception that can be throw whenever some code encounters
- * bad state in the repository.  These bad states might include duplicate guids, repository
- * paths.  They might include an object having multiple parents or collections.
+ * bad state in the repository. These bad states might include duplicate guids,
+ * repository paths. They might include an object having multiple parents or
+ * collections.
+ * 
  * @author count0
  *
  */
@@ -34,50 +36,52 @@ public class IllegalRepositoryStateException extends IllegalStateException {
     List<PID> invalidObjects = null;
 
     public IllegalRepositoryStateException(String message) {
-	super(message);
+        super(message);
     }
 
     public IllegalRepositoryStateException(String message, Throwable e) {
-	super(message, e);
+        super(message, e);
     }
 
-    public IllegalRepositoryStateException(String message, List<PID> invalidObjects) {
-	super(message);
-	this.invalidObjects = invalidObjects;
+    public IllegalRepositoryStateException(String message,
+            List<PID> invalidObjects) {
+        super(message);
+        this.invalidObjects = invalidObjects;
     }
 
-    public IllegalRepositoryStateException(String message, List<PID> invalidObjects, Throwable e) {
-	super(message, e);
-	this.invalidObjects = invalidObjects;
+    public IllegalRepositoryStateException(String message,
+            List<PID> invalidObjects, Throwable e) {
+        super(message, e);
+        this.invalidObjects = invalidObjects;
     }
 
     public IllegalRepositoryStateException(String message, PID invalidObject) {
-	super(message);
-	this.invalidObjects = new ArrayList<PID>();
-	this.invalidObjects.add(invalidObject);
+        super(message);
+        this.invalidObjects = new ArrayList<PID>();
+        this.invalidObjects.add(invalidObject);
     }
 
-    public IllegalRepositoryStateException(String message, PID invalidObject, Throwable e) {
-	super(message, e);
-	this.invalidObjects = new ArrayList<PID>();
-	this.invalidObjects.add(invalidObject);
+    public IllegalRepositoryStateException(String message, PID invalidObject,
+            Throwable e) {
+        super(message, e);
+        this.invalidObjects = new ArrayList<PID>();
+        this.invalidObjects.add(invalidObject);
     }
 
     @Override
     public String getMessage() {
-	String result = null;
-	if(this.invalidObjects != null && invalidObjects.size() > 0) {
-	    StringBuffer sb = new StringBuffer(super.getMessage());
-	    sb.append("\nObjects with illegal state:\n");
-	    for( PID d : this.invalidObjects ) {
-		sb.append(d).append("\t");
-	    }
-	} else {
-	    result = super.getMessage();
-	}
+        String result = null;
+        if (this.invalidObjects != null && invalidObjects.size() > 0) {
+            StringBuffer sb = new StringBuffer(super.getMessage());
+            sb.append("\nObjects with illegal state:\n");
+            for (PID d : this.invalidObjects) {
+                sb.append(d).append("\t");
+            }
+        } else {
+            result = super.getMessage();
+        }
 
-	return result;
+        return result;
     }
-
 
 }

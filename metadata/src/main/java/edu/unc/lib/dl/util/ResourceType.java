@@ -26,54 +26,53 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public enum ResourceType {
-	Collection(1, Cdr.Collection.getURI()),
-			Aggregate(3, Cdr.Work.getURI()),
-			Folder(2, Cdr.Folder.getURI()),
-			File(3,  Cdr.FileObject.getURI());
-	
-	private int displayOrder;
-	private String uri;
-	private List<Model> contentModels;
-	
-	ResourceType(int displayOrder, String uri) {
-		this.displayOrder = displayOrder;
-		this.uri = uri;
-	}
-	
-	public int getDisplayOrder(){
-		return this.displayOrder;
-	}
-	
-	public boolean equals(String name) {
-		return this.name().equals(name);
-	}
-	
-	public List<Model> getContentModels() {
-		return contentModels;
-	}
-	
-	public static ResourceType getResourceTypeByUri(String uri) {
-		for (ResourceType type : values()) {
-			if (type.uri.equals(uri)) {
-				return type;
-			}
-		}
-		return null;
-	}
+    Collection(1, Cdr.Collection.getURI()), Aggregate(3, Cdr.Work.getURI()), Folder(
+            2, Cdr.Folder.getURI()), File(3, Cdr.FileObject.getURI());
 
-	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
-		if (contentModels.contains(COLLECTION.getPID().getURI())) {
-			return Collection;
-		}
-		if (contentModels.contains(AGGREGATE_WORK.getPID().getURI())) {
-			return Aggregate;
-		}
-		if (contentModels.contains(CONTAINER.getPID().getURI())) {
-			return Folder;
-		}
-		if (contentModels.contains(SIMPLE.getPID().getURI())) {
-			return File;
-		}
-		return null;
-	}
+    private int displayOrder;
+    private String uri;
+    private List<Model> contentModels;
+
+    ResourceType(int displayOrder, String uri) {
+        this.displayOrder = displayOrder;
+        this.uri = uri;
+    }
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public boolean equals(String name) {
+        return this.name().equals(name);
+    }
+
+    public List<Model> getContentModels() {
+        return contentModels;
+    }
+
+    public static ResourceType getResourceTypeByUri(String uri) {
+        for (ResourceType type : values()) {
+            if (type.uri.equals(uri)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    public static ResourceType getResourceTypeByContentModels(
+            List<String> contentModels) {
+        if (contentModels.contains(COLLECTION.getPID().getURI())) {
+            return Collection;
+        }
+        if (contentModels.contains(AGGREGATE_WORK.getPID().getURI())) {
+            return Aggregate;
+        }
+        if (contentModels.contains(CONTAINER.getPID().getURI())) {
+            return Folder;
+        }
+        if (contentModels.contains(SIMPLE.getPID().getURI())) {
+            return File;
+        }
+        return null;
+    }
 }

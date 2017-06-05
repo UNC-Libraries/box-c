@@ -18,12 +18,12 @@ package edu.unc.lib.dl.util;
 import edu.unc.lib.dl.fedora.PID;
 
 public class ParentBond {
-	/**
-	 * The PID of the subject's parent
-	 */
-	public PID parentPid = null;
-	/**
-	 * Whether or not the subject inherits roles from this parent.
-	 */
-	public boolean inheritsRoles = true;
+    /**
+     * The PID of the subject's parent
+     */
+    public PID parentPid = null;
+    /**
+     * Whether or not the subject inherits roles from this parent.
+     */
+    public boolean inheritsRoles = true;
 }

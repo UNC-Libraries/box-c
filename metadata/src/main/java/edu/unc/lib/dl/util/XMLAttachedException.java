@@ -23,6 +23,6 @@ import org.jdom2.Element;
  */
 public interface XMLAttachedException {
 
-	public abstract Element getErrorXML();
+    public abstract Element getErrorXML();
 
 }

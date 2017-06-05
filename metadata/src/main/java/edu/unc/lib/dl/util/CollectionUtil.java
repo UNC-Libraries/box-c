@@ -77,7 +77,7 @@ public final class CollectionUtil {
      * @return a new parametrized <code>ArrayList</code>
      */
     public static <E> ArrayList<E> newArrayList() {
-	return new ArrayList<E>();
+        return new ArrayList<E>();
     }
 
     /**
@@ -91,7 +91,7 @@ public final class CollectionUtil {
      * @return a new parameterized <code>ArrayList</code>.
      **/
     public static <E> ArrayList<E> newArrayList(final int capacity) {
-	return new ArrayList<E>(capacity);
+        return new ArrayList<E>(capacity);
     }
 
     /**
@@ -104,7 +104,7 @@ public final class CollectionUtil {
      * @return a new parameterized HashMap instance.
      */
     public static <K, V> HashMap<K, V> newHashMap() {
-	return new HashMap<K, V>();
+        return new HashMap<K, V>();
     }
 
     /**
@@ -119,7 +119,7 @@ public final class CollectionUtil {
      *         capacity.
      */
     public static <K, V> HashMap<K, V> newHashMap(final int initCapacity) {
-	return new HashMap<K, V>(initCapacity);
+        return new HashMap<K, V>(initCapacity);
     }
 
     /**
@@ -132,7 +132,7 @@ public final class CollectionUtil {
      * @return a new parameterized <code>ConcurrentHashMap</code> instance.
      */
     public static <K, V> ConcurrentHashMap<K, V> newConcurrentHashMap() {
-	return new ConcurrentHashMap<K, V>();
+        return new ConcurrentHashMap<K, V>();
     }
 
 }

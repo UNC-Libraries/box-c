@@ -16,24 +16,24 @@
 package edu.unc.lib.dl.xml;
 
 public enum METSProfile {
-	CDR_SIMPLE("http://cdr.unc.edu/METS/profiles/Simple"),
-	DSPACE_SIP("DSpace METS SIP Profile 1.0");
-	
-	private String name;
-	
-	METSProfile(String name){
-		this.name = name;
-	}
-	
-	public String getName(){
-		return name;
-	}
-	
-	public boolean equals(String name){
-		return this.name.equals(name);
-	}
-	
-	public String toString(){
-		return name;
-	}
+    CDR_SIMPLE("http://cdr.unc.edu/METS/profiles/Simple"), DSPACE_SIP(
+            "DSpace METS SIP Profile 1.0");
+
+    private String name;
+
+    METSProfile(final String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean equals(final String name) {
+        return this.name.equals(name);
+    }
+
+    public String toString() {
+        return name;
+    }
 }

@@ -32,27 +32,32 @@ import org.joda.time.format.ISODateTimeFormat;
  *
  */
 public class DateTimeUtil {
+    private DateTimeUtil() {
+    }
 
-	public final static DateTimeFormatter utcFormatter = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-			.withZone(DateTimeZone.UTC);
-	public final static DateTimeFormatter utcYMDFormatter = DateTimeFormat.forPattern("yyyy-MM-dd").withZone(
-			DateTimeZone.UTC);
+    public final static DateTimeFormatter utcFormatter = DateTimeFormat
+            .forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(
+                    DateTimeZone.UTC);
+    public final static DateTimeFormatter utcYMDFormatter = DateTimeFormat
+            .forPattern("yyyy-MM-dd").withZone(DateTimeZone.UTC);
 
-	public static Date parseUTCDateToDate(String utcDate) throws ParseException {
-		return ISODateTimeFormat.dateParser().parseDateTime(utcDate).toDate();
-	}
+    public static Date parseUTCDateToDate(String utcDate) throws ParseException {
+        return ISODateTimeFormat.dateParser().parseDateTime(utcDate).toDate();
+    }
 
-	public static Date parseUTCToDate(String utcDate) throws ParseException {
-		return parseUTCToDateTime(utcDate).toDate();
-	}
+    public static Date parseUTCToDate(String utcDate) throws ParseException {
+        return parseUTCToDateTime(utcDate).toDate();
+    }
 
-	public static DateTime parseUTCToDateTime(String utcDate) throws IllegalArgumentException {
-		DateTime isoDT = ISODateTimeFormat.dateTimeParser().withOffsetParsed().parseDateTime(utcDate);
-		return isoDT.withZone(DateTimeZone.forID("UTC"));
-	}
+    public static DateTime parseUTCToDateTime(String utcDate)
+            throws IllegalArgumentException {
+        DateTime isoDT = ISODateTimeFormat.dateTimeParser().withOffsetParsed()
+                .parseDateTime(utcDate);
+        return isoDT.withZone(DateTimeZone.forID("UTC"));
+    }
 
-	public static String formatDateToUTC(Date date) throws ParseException {
-		DateTime dateTime = new DateTime(date);
-		return utcFormatter.print(dateTime);
-	}
+    public static String formatDateToUTC(Date date) throws ParseException {
+        DateTime dateTime = new DateTime(date);
+        return utcFormatter.print(dateTime);
+    }
 }

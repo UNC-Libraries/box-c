@@ -31,33 +31,36 @@ import javax.xml.transform.stream.StreamResult;
 //import org.apache.commons.logging.LogFactory;
 
 public class SOAPUtil {
-    //private static final Log log = LogFactory.getLog(SOAPUtil.class);
+    // private static final Log log = LogFactory.getLog(SOAPUtil.class);
+    private SOAPUtil() {
+    }
 
     public static void print(SOAPMessage msg, OutputStream out) {
-	StreamResult result = new StreamResult(out);
-	print(msg, result);
+        StreamResult result = new StreamResult(out);
+        print(msg, result);
     }
-    
+
     public static String getString(SOAPMessage msg) {
-	StringWriter w = new StringWriter();
-	StreamResult result = new StreamResult(w);
-	print(msg, result);
-	w.flush();
-	return w.toString();
+        StringWriter w = new StringWriter();
+        StreamResult result = new StreamResult(w);
+        print(msg, result);
+        w.flush();
+        return w.toString();
     }
-    
+
     private static void print(SOAPMessage msg, StreamResult result) {
-	try {
-	    TransformerFactory transformerFactory = TransformerFactory.newInstance();
-	    Transformer transformer = transformerFactory.newTransformer();
-	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	    Source sourceContent = msg.getSOAPPart().getContent();
-	    //StreamResult result = new StreamResult(out);
-	    transformer.transform(sourceContent, result);
-	} catch (TransformerException e) {
-	    throw new RuntimeException(e);
-	} catch (SOAPException e) {
-	    throw new RuntimeException(e);
-	}
+        try {
+            TransformerFactory transformerFactory = TransformerFactory
+                    .newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            Source sourceContent = msg.getSOAPPart().getContent();
+            // StreamResult result = new StreamResult(out);
+            transformer.transform(sourceContent, result);
+        } catch (TransformerException e) {
+            throw new RuntimeException(e);
+        } catch (SOAPException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

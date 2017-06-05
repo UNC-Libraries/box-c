@@ -33,446 +33,526 @@ import org.jdom2.xpath.XPath;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class FOXMLJDOMUtil {
-	public static enum ObjectProperty {
-		createdDate(JDOMNamespaceUtil.FEDORA_MODEL_NS, "createdDate"), label(JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), ownerId(
-				JDOMNamespaceUtil.FEDORA_MODEL_NS, "ownerId"), state(JDOMNamespaceUtil.FEDORA_MODEL_NS, "state");
-		private URI uri;
+    private FOXMLJDOMUtil() {
+    }
 
-		ObjectProperty(Namespace ns, String suffix) {
-			try {
-				this.uri = new URI(ns.getURI() + suffix);
-			} catch (URISyntaxException e) {
-				Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
-				x.initCause(e);
-				throw x;
-			}
-		}
+    public static enum ObjectProperty {
+        createdDate(JDOMNamespaceUtil.FEDORA_MODEL_NS, "createdDate"), label(
+                JDOMNamespaceUtil.FEDORA_MODEL_NS, "label"), ownerId(
+                JDOMNamespaceUtil.FEDORA_MODEL_NS, "ownerId"), state(
+                JDOMNamespaceUtil.FEDORA_MODEL_NS, "state");
+        private URI uri;
 
-		public URI getURI() {
-			return this.uri;
-		}
+        ObjectProperty(final Namespace ns, final String suffix) {
+            try {
+                this.uri = new URI(ns.getURI() + suffix);
+            } catch (URISyntaxException e) {
+                Error x = new ExceptionInInitializerError(
+                        "Cannot initialize ContentModelHelper");
+                x.initCause(e);
+                throw x;
+            }
+        }
 
-		@Override
-		public String toString() {
-			return this.uri.toString();
-		}
-	}
+        public URI getURI() {
+            return this.uri;
+        }
 
-	private static final String __foxmlXpathPrefix = "f";
-	private static XPath _fileLocatorXpath;
-	private static final Namespace _foxmlXpathNamespace = Namespace.getNamespace(__foxmlXpathPrefix,
-			JDOMNamespaceUtil.FOXML_NS.getURI());
-	private static XPath _getAllDatastreamsXpath;
-	private static XPath _labelXPath;
-	private static XPath _pidXPath;
-	private static final String datastreamXmlContentXpath = "/f:digitalObject/f:datastream[@ID='%DSID%']/f:datastreamVersion/f:xmlContent";
-	private static final String fileLocatorXpath = "//f:contentLocation";
-	private static final String getAllDatastreamsXpath = "/f:digitalObject/f:datastream";
-	private static final String getDatastreamXpath = "/f:digitalObject/f:datastream[@ID='%DSID%']";
-	private static final String labelXpath = "/f:digitalObject/f:objectProperties/f:property[@NAME='info:fedora/fedora-system:def/model#label']/@VALUE";
-	private static Logger log = Logger.getLogger(FOXMLJDOMUtil.class);
+        @Override
+        public String toString() {
+            return this.uri.toString();
+        }
+    }
 
-	private static final String pidXpath = "/f:digitalObject/@PID";
+    private static final String __foxmlXpathPrefix = "f";
+    private static XPath _fileLocatorXpath;
+    private static final Namespace _foxmlXpathNamespace = Namespace
+            .getNamespace(__foxmlXpathPrefix,
+                    JDOMNamespaceUtil.FOXML_NS.getURI());
+    private static XPath _getAllDatastreamsXpath;
+    private static XPath _labelXPath;
+    private static XPath _pidXPath;
+    private static final String datastreamXmlContentXpath =
+            "/f:digitalObject/f:datastream[@ID='%DSID%']/f:datastreamVersion/f:xmlContent";
+    private static final String fileLocatorXpath = "//f:contentLocation";
+    private static final String getAllDatastreamsXpath = "/f:digitalObject/f:datastream";
+    private static final String getDatastreamXpath = "/f:digitalObject/f:datastream[@ID='%DSID%']";
+    private static final String labelXpath =
+            "/f:digitalObject/f:objectProperties/f:property[@NAME='info:fedora/fedora-system:def/model#label']/@VALUE";
+    private static Logger log = Logger.getLogger(FOXMLJDOMUtil.class);
 
-	static {
-		try {
-			_pidXPath = XPath.newInstance(pidXpath);
-			_pidXPath.addNamespace(_foxmlXpathNamespace);
-			_labelXPath = XPath.newInstance(labelXpath);
-			_labelXPath.addNamespace(_foxmlXpathNamespace);
-			_fileLocatorXpath = XPath.newInstance(fileLocatorXpath);
-			_fileLocatorXpath.addNamespace(_foxmlXpathNamespace);
-			_getAllDatastreamsXpath = XPath.newInstance(getAllDatastreamsXpath);
-			_getAllDatastreamsXpath.addNamespace(_foxmlXpathNamespace);
-		} catch (JDOMException e) {
-			log.error("Bad Configuration for FOXMLJDOMUtil", e);
-			throw new IllegalArgumentException("Bad Configuration for FOXMLJDOMUtil", e);
-		}
-	}
+    private static final String pidXpath = "/f:digitalObject/@PID";
 
-	public static List<Element> getAllDatastreams(Document foxml) {
-		List<Element> result = null;
-		try {
-			result = extracted(_getAllDatastreamsXpath.selectNodes(foxml));
-		} catch (JDOMException e) {
-			log.warn("JDOMException trying to setDatastreamXmlContent", e);
-		}
-		return result;
-	}
+    static {
+        try {
+            _pidXPath = XPath.newInstance(pidXpath);
+            _pidXPath.addNamespace(_foxmlXpathNamespace);
+            _labelXPath = XPath.newInstance(labelXpath);
+            _labelXPath.addNamespace(_foxmlXpathNamespace);
+            _fileLocatorXpath = XPath.newInstance(fileLocatorXpath);
+            _fileLocatorXpath.addNamespace(_foxmlXpathNamespace);
+            _getAllDatastreamsXpath = XPath.newInstance(getAllDatastreamsXpath);
+            _getAllDatastreamsXpath.addNamespace(_foxmlXpathNamespace);
+        } catch (JDOMException e) {
+            log.error("Bad Configuration for FOXMLJDOMUtil", e);
+            throw new IllegalArgumentException(
+                    "Bad Configuration for FOXMLJDOMUtil", e);
+        }
+    }
 
-	@SuppressWarnings("unchecked")
-	private static List<Element> extracted(@SuppressWarnings("rawtypes") List selectNodes) {
-		return selectNodes;
-	}
+    public static List<Element> getAllDatastreams(final Document foxml) {
+        List<Element> result = null;
+        try {
+            result = extracted(_getAllDatastreamsXpath.selectNodes(foxml));
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to setDatastreamXmlContent", e);
+        }
+        return result;
+    }
 
-	public static Element getDatastream(Document foxml, String id) {
-		Element result = null;
-		try {
-			XPath _getDatastreamXpath = XPath.newInstance(getDatastreamXpath.replaceFirst("%DSID%", id));
-			_getDatastreamXpath.addNamespace(_foxmlXpathNamespace);
-			Object o = _getDatastreamXpath.selectSingleNode(foxml);
-			if (o != null && o instanceof Element) {
-				result = (Element) o;
-			}
-		} catch (JDOMException e) {
-			log.warn("JDOMException trying to setDatastreamXmlContent", e);
-		}
-		return result;
-	}
+    @SuppressWarnings("unchecked")
+    private static List<Element> extracted(
+            @SuppressWarnings("rawtypes") final List selectNodes) {
+        return selectNodes;
+    }
 
-	public static List<Element> getFileLocators(Document foxml) {
-		List<Element> result = new ArrayList<Element>();
-		try {
-			result = extracted(_fileLocatorXpath.selectNodes(foxml));
-		} catch (JDOMException e) {
-			log.warn("JDOMException trying to get label property from foxml", e);
-		} catch (ClassCastException e) {
-			log.error("programmer error", e);
-			throw new Error("programmer error", e);
-		}
-		return result;
-	}
+    public static Element getDatastream(final Document foxml, final String id) {
+        Element result = null;
+        try {
+            XPath _getDatastreamXpath = XPath.newInstance(getDatastreamXpath
+                    .replaceFirst("%DSID%", id));
+            _getDatastreamXpath.addNamespace(_foxmlXpathNamespace);
+            Object o = _getDatastreamXpath.selectSingleNode(foxml);
+            if (o != null && o instanceof Element) {
+                result = (Element) o;
+            }
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to setDatastreamXmlContent", e);
+        }
+        return result;
+    }
 
-	public static String getLabel(Document foxml) {
-		String result = null;
-		try {
-			result = _labelXPath.valueOf(foxml);
-		} catch (JDOMException e) {
-			log.warn("JDOMException trying to get label property from foxml", e);
-		}
-		if (result != null && "".equals(result.trim())) {
-			result = null;
-		}
-		return result;
-	}
+    public static List<Element> getFileLocators(final Document foxml) {
+        List<Element> result = new ArrayList<Element>();
+        try {
+            result = extracted(_fileLocatorXpath.selectNodes(foxml));
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to get label property from foxml", e);
+        } catch (ClassCastException e) {
+            log.error("programmer error", e);
+            throw new Error("programmer error", e);
+        }
+        return result;
+    }
 
-	public static String getPID(Document foxml) {
-		String result = null;
-		try {
-			result = _pidXPath.valueOf(foxml).trim();
-		} catch (JDOMException e) {
-			log.warn("JDOMException trying to get path in collection from foxml", e);
-		}
-		if ("".equals(result)) {
-			result = null;
-		}
-		return result;
-	}
+    public static String getLabel(final Document foxml) {
+        String result = null;
+        try {
+            result = _labelXPath.valueOf(foxml);
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to get label property from foxml", e);
+        }
+        if (result != null && "".equals(result.trim())) {
+            result = null;
+        }
+        return result;
+    }
 
-	public static Document makeFOXMLDocument(String pid) {
-		Document result = new Document();
-		Element rootElement = new Element("digitalObject", JDOMNamespaceUtil.FOXML_NS);
-		rootElement.addNamespaceDeclaration(JDOMNamespaceUtil.XSI_NS);
-		rootElement.setAttribute("VERSION", "1.1");
-		rootElement.setAttribute("schemaLocation", JDOMNamespaceUtil.FOXML_NS.getURI()
-				+ " http://www.fedora.info/definitions/1/0/foxml1-1.xsd", JDOMNamespaceUtil.XSI_NS);
-		if (pid != null) {
-			rootElement.setAttribute("PID", pid);
-		}
-		rootElement.addContent(new Element("objectProperties", JDOMNamespaceUtil.FOXML_NS));
-		result.setRootElement(rootElement);
-		return result;
-	}
+    public static String getPID(final Document foxml) {
+        String result = null;
+        try {
+            result = _pidXPath.valueOf(foxml).trim();
+        } catch (JDOMException e) {
+            log.warn(
+                    "JDOMException trying to get path in collection from foxml",
+                    e);
+        }
+        if ("".equals(result)) {
+            result = null;
+        }
+        return result;
+    }
 
-	/**
-	 * Creates a FOXML locator element.
-	 *
-	 * @param id
-	 * @param ctrlGroup
-	 * @param locator
-	 * @param mimeType
-	 * @param locatorType
-	 * @param label
-	 * @return
-	 */
-	// public static Element makeLocatorDatastream(String id, String ctrlGroup, String locator, String mimeType,
-	// String locatorType, String label, boolean versionable) {
-	// Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
-	// dcDS.setAttribute("ID", id);
-	// dcDS.setAttribute("CONTROL_GROUP", ctrlGroup);
-	// dcDS.setAttribute("STATE", "A");
-	// dcDS.setAttribute("VERSIONABLE", versionable ? "true" : "false" );
-	// Element dcDSV = new Element("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-	// dcDS.addContent(dcDSV);
-	// dcDSV.setAttribute("ID", id + ".0");
-	// dcDSV.setAttribute("MIMETYPE", mimeType);
-	// dcDSV.setAttribute("LABEL", label);
-	// Element contentDigest = new Element("contentDigest", JDOMNamespaceUtil.FOXML_NS);
-	// contentDigest.setAttribute("TYPE", "MD5");
-	// contentDigest.setAttribute("DIGEST", "none");
-	// dcDSV.addContent(contentDigest);
-	// Element contentLocation = new Element("contentLocation", JDOMNamespaceUtil.FOXML_NS);
-	// contentLocation.setAttribute("REF", locator);
-	// contentLocation.setAttribute("TYPE", locatorType);
-	// dcDSV.addContent(contentLocation);
-	// return dcDS;
-	// }
+    public static Document makeFOXMLDocument(final String pid) {
+        Document result = new Document();
+        Element rootElement = new Element("digitalObject",
+                JDOMNamespaceUtil.FOXML_NS);
+        rootElement.addNamespaceDeclaration(JDOMNamespaceUtil.XSI_NS);
+        rootElement.setAttribute("VERSION", "1.1");
+        rootElement
+                .setAttribute(
+                        "schemaLocation",
+                        JDOMNamespaceUtil.FOXML_NS.getURI()
+                                + " http://www.fedora.info/definitions/1/0/foxml1-1.xsd",
+                        JDOMNamespaceUtil.XSI_NS);
+        if (pid != null) {
+            rootElement.setAttribute("PID", pid);
+        }
+        rootElement.addContent(new Element("objectProperties",
+                JDOMNamespaceUtil.FOXML_NS));
+        result.setRootElement(rootElement);
+        return result;
+    }
 
-	public static Element makeLocatorDatastream(String id, String ctrlGroup, String locator, String mimeType,
-			String locatorType, String label, boolean versionable, String md5checksum) {
-		Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
-		dcDS.setAttribute("ID", id);
-		dcDS.setAttribute("CONTROL_GROUP", ctrlGroup);
-		dcDS.setAttribute("STATE", "A");
-		dcDS.setAttribute("VERSIONABLE", versionable ? "true" : "false");
-		Element dcDSV = new Element("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-		dcDS.addContent(dcDSV);
-		dcDSV.setAttribute("ID", id + ".0");
-		if (mimeType != null)
-			dcDSV.setAttribute("MIMETYPE", mimeType);
-		if (label != null)
-			dcDSV.setAttribute("LABEL", label);
-		Element contentDigest = new Element("contentDigest", JDOMNamespaceUtil.FOXML_NS);
-		contentDigest.setAttribute("TYPE", "MD5");
-		if (md5checksum != null) {
-			contentDigest.setAttribute("DIGEST", md5checksum);
-		} else {
-			contentDigest.setAttribute("DIGEST", "none");
-		}
-		dcDSV.addContent(contentDigest);
-		Element contentLocation = new Element("contentLocation", JDOMNamespaceUtil.FOXML_NS);
-		contentLocation.setAttribute("REF", locator);
-		contentLocation.setAttribute("TYPE", locatorType);
-		dcDSV.addContent(contentLocation);
-		return dcDS;
-	}
+    /**
+     * Creates a FOXML locator element.
+     *
+     * @param id
+     * @param ctrlGroup
+     * @param locator
+     * @param mimeType
+     * @param locatorType
+     * @param label
+     * @return
+     */
+    // public static Element makeLocatorDatastream(String id, String ctrlGroup,
+    // String locator, String mimeType,
+    // String locatorType, String label, boolean versionable) {
+    // Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
+    // dcDS.setAttribute("ID", id);
+    // dcDS.setAttribute("CONTROL_GROUP", ctrlGroup);
+    // dcDS.setAttribute("STATE", "A");
+    // dcDS.setAttribute("VERSIONABLE", versionable ? "true" : "false" );
+    // Element dcDSV = new Element("datastreamVersion",
+    // JDOMNamespaceUtil.FOXML_NS);
+    // dcDS.addContent(dcDSV);
+    // dcDSV.setAttribute("ID", id + ".0");
+    // dcDSV.setAttribute("MIMETYPE", mimeType);
+    // dcDSV.setAttribute("LABEL", label);
+    // Element contentDigest = new Element("contentDigest",
+    // JDOMNamespaceUtil.FOXML_NS);
+    // contentDigest.setAttribute("TYPE", "MD5");
+    // contentDigest.setAttribute("DIGEST", "none");
+    // dcDSV.addContent(contentDigest);
+    // Element contentLocation = new Element("contentLocation",
+    // JDOMNamespaceUtil.FOXML_NS);
+    // contentLocation.setAttribute("REF", locator);
+    // contentLocation.setAttribute("TYPE", locatorType);
+    // dcDSV.addContent(contentLocation);
+    // return dcDS;
+    // }
 
-	public static Element makeInlineXMLDatastreamElement(String id, String label, Element xmlData, boolean versioned) {
-		return makeInlineXMLDatastreamElement(id, label, id + "1.0", xmlData, versioned);
-	}
+    public static Element makeLocatorDatastream(final String id, final String ctrlGroup,
+            final String locator, final String mimeType, final String locatorType, final String label,
+            final boolean versionable, final String md5checksum) {
+        Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
+        dcDS.setAttribute("ID", id);
+        dcDS.setAttribute("CONTROL_GROUP", ctrlGroup);
+        dcDS.setAttribute("STATE", "A");
+        dcDS.setAttribute("VERSIONABLE", versionable ? "true" : "false");
+        Element dcDSV = new Element("datastreamVersion",
+                JDOMNamespaceUtil.FOXML_NS);
+        dcDS.addContent(dcDSV);
+        dcDSV.setAttribute("ID", id + ".0");
 
-	public static Element makeInlineXMLDatastreamElement(String id, String label, String versionId, Element xmlData,
-			boolean versioned) {
-		Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
-		dcDS.setAttribute("ID", id);
-		dcDS.setAttribute("CONTROL_GROUP", "X");
-		dcDS.setAttribute("STATE", "A");
-		dcDS.setAttribute("VERSIONABLE", versioned ? "true" : "false");
-		Element dcDSV = new Element("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-		dcDS.addContent(dcDSV);
-		dcDSV.setAttribute("ID", versionId);
-		dcDSV.setAttribute("MIMETYPE", "text/xml");
-		dcDSV.setAttribute("LABEL", label);
-		Element contentDigest = new Element("contentDigest", JDOMNamespaceUtil.FOXML_NS);
-		contentDigest.setAttribute("TYPE", "MD5");
-		contentDigest.setAttribute("DIGEST", "none");
-		dcDSV.addContent(contentDigest);
-		Element xmlContent = new Element("xmlContent", JDOMNamespaceUtil.FOXML_NS);
-		dcDSV.addContent(xmlContent);
-		xmlContent.addContent(xmlData);
-		return dcDS;
-	}
+        if (mimeType != null) {
+            dcDSV.setAttribute("MIMETYPE", mimeType);
+        }
 
-	/**
-	 * Sets the content of the datastream, creating it if it doesn't exist.
-	 *
-	 * @param foxml
-	 *           the FOXML Document
-	 * @param datastreamId
-	 *           the ID of the datastream
-	 * @param label
-	 *           the label for the datastreamVersion (ignored if datastream exists)
-	 * @param newContent
-	 *           the new Element content of the datastream (within xmlContent)
-	 */
-	public static void setInlineXMLDatastreamContent(Document foxml, String datastreamId, String label, Element newContent,
-			boolean versioned) {
-		try {
-			XPath _datastreamXmlContentXpath = XPath.newInstance(datastreamXmlContentXpath.replaceFirst("%DSID%",
-					datastreamId));
-			_datastreamXmlContentXpath.addNamespace(_foxmlXpathNamespace);
-			Object o = _datastreamXmlContentXpath.selectSingleNode(foxml);
-			Element xmlContent = null;
-			if (o == null) { // there's no datastream w/ID, so make one and
-				// add it!
-				Element dsContent = makeInlineXMLDatastreamElement(datastreamId, label, newContent, versioned);
-				foxml.getRootElement().addContent(dsContent);
-			} else if (o instanceof Element) {
-				xmlContent = (Element) o;
-				xmlContent.setContent(newContent);
-			}
-		} catch (JDOMException e) {
-			log.warn("JDOMException trying to setDatastreamXmlContent", e);
-		}
-	}
+        if (label != null) {
+            dcDSV.setAttribute("LABEL", label);
+        }
 
-	public static void setProperty(Document doc, ObjectProperty prop, String value) {
-		Element props = doc.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS);
-		if (props == null) {
-			props = new Element("objectProperties", JDOMNamespaceUtil.FOXML_NS);
-			doc.getRootElement().addContent(1, props);
-		} else {
-			Iterator<Element> childIt = props.getChildren().iterator();
-			while (childIt.hasNext()){
-				Element el = childIt.next();
-				if (prop.toString().equals(el.getAttributeValue("NAME"))){
-					childIt.remove();
-				}
-			}
-		}
-		Element newProp = new Element("property", JDOMNamespaceUtil.FOXML_NS);
-		newProp.setAttribute("NAME", prop.toString());
-		newProp.setAttribute("VALUE", value);
-		props.addContent(newProp);
-		return;
-	}
-	
-	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Document foxml) {
-		return getDatastreamContent(datastream, foxml.getRootElement());
-	}
-	
-	/**
-	 * Returns the content of an internal datastream from the given foxml. If the datastream is versionable, then the
-	 * most recent version of the datastream is returned.
-	 * 
-	 * @param datastream
-	 * @param foxml
-	 * @return
-	 */
-	public static Element getDatastreamContent(ContentModelHelper.Datastream datastream, Element foxml) {
-		Element dsVersion;
-		Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml, "datastream",
-				JDOMNamespaceUtil.FOXML_NS, "ID", datastream.getName());
-		
-		if (datastreamEl == null) {
-			return null;
-		}
+        Element contentDigest = new Element("contentDigest",
+                JDOMNamespaceUtil.FOXML_NS);
+        contentDigest.setAttribute("TYPE", "MD5");
+        if (md5checksum != null) {
+            contentDigest.setAttribute("DIGEST", md5checksum);
+        } else {
+            contentDigest.setAttribute("DIGEST", "none");
+        }
+        dcDSV.addContent(contentDigest);
+        Element contentLocation = new Element("contentLocation",
+                JDOMNamespaceUtil.FOXML_NS);
+        contentLocation.setAttribute("REF", locator);
+        contentLocation.setAttribute("TYPE", locatorType);
+        dcDSV.addContent(contentLocation);
+        return dcDS;
+    }
 
-		if (datastream.isVersionable()) {
-			dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
-					JDOMNamespaceUtil.FOXML_NS));
-		} else {
-			dsVersion = datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-		}
+    public static Element makeInlineXMLDatastreamElement(final String id,
+            final String label, final Element xmlData, final boolean versioned) {
+        return makeInlineXMLDatastreamElement(id, label, id + "1.0", xmlData,
+                versioned);
+    }
 
-		return dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS).getChildren().get(0);
-	}
+    public static Element makeInlineXMLDatastreamElement(final String id,
+            final String label, final String versionId, final Element xmlData, final boolean versioned) {
+        Element dcDS = new Element("datastream", JDOMNamespaceUtil.FOXML_NS);
+        dcDS.setAttribute("ID", id);
+        dcDS.setAttribute("CONTROL_GROUP", "X");
+        dcDS.setAttribute("STATE", "A");
+        dcDS.setAttribute("VERSIONABLE", versioned ? "true" : "false");
+        Element dcDSV = new Element("datastreamVersion",
+                JDOMNamespaceUtil.FOXML_NS);
+        dcDS.addContent(dcDSV);
+        dcDSV.setAttribute("ID", versionId);
+        dcDSV.setAttribute("MIMETYPE", "text/xml");
+        dcDSV.setAttribute("LABEL", label);
+        Element contentDigest = new Element("contentDigest",
+                JDOMNamespaceUtil.FOXML_NS);
+        contentDigest.setAttribute("TYPE", "MD5");
+        contentDigest.setAttribute("DIGEST", "none");
+        dcDSV.addContent(contentDigest);
+        Element xmlContent = new Element("xmlContent",
+                JDOMNamespaceUtil.FOXML_NS);
+        dcDSV.addContent(xmlContent);
+        xmlContent.addContent(xmlData);
+        return dcDS;
+    }
 
-	/**
-	 * Returns a map of all of the most recent versions of datastreams listed in the given FOXML document
-	 * 
-	 * @param foxml
-	 * @return
-	 */
-	public static Map<String, Element> getMostRecentDatastreamMap(Document foxml) {
-		Map<String, Element> datastreams = new HashMap<String, Element>();
-		List<?> datastreamList = foxml.getRootElement().getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
-		for (Object datastreamObject : datastreamList) {
-			Element datastreamEl = (Element) datastreamObject;
-			String datastreamName = datastreamEl.getAttributeValue("ID");
-			if (datastreamName != null) {
-				ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream.getDatastream(datastreamName);
-				if (datastreamClass == null)
-					continue;
-				
-				Element dsVersion;
-				if (datastreamClass.isVersionable()) {
-					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
-							JDOMNamespaceUtil.FOXML_NS));
-				} else {
-					dsVersion = datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-				}
-				datastreams.put(datastreamName, dsVersion);
-			}
-		}
+    /**
+     * Sets the content of the datastream, creating it if it doesn't exist.
+     *
+     * @param foxml
+     *            the FOXML Document
+     * @param datastreamId
+     *            the ID of the datastream
+     * @param label
+     *            the label for the datastreamVersion (ignored if datastream
+     *            exists)
+     * @param newContent
+     *            the new Element content of the datastream (within xmlContent)
+     */
+    public static void setInlineXMLDatastreamContent(final Document foxml,
+            final String datastreamId, final String label, final Element newContent,
+            final boolean versioned) {
+        try {
+            XPath _datastreamXmlContentXpath = XPath
+                    .newInstance(datastreamXmlContentXpath.replaceFirst(
+                            "%DSID%", datastreamId));
+            _datastreamXmlContentXpath.addNamespace(_foxmlXpathNamespace);
+            Object o = _datastreamXmlContentXpath.selectSingleNode(foxml);
+            Element xmlContent = null;
+            if (o == null) { // there's no datastream w/ID, so make one and
+                // add it!
+                Element dsContent = makeInlineXMLDatastreamElement(
+                        datastreamId, label, newContent, versioned);
+                foxml.getRootElement().addContent(dsContent);
+            } else if (o instanceof Element) {
+                xmlContent = (Element) o;
+                xmlContent.setContent(newContent);
+            }
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to setDatastreamXmlContent", e);
+        }
+    }
 
-		return datastreams;
-	}
-	
-	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Document foxml) {
-		return getMostRecentDatastream(datastream, foxml.getRootElement());
-	}
-	
-	public static Element getMostRecentDatastream(ContentModelHelper.Datastream datastream, Element foxml) {
-		List<?> datastreamList = foxml.getChildren("datastream", JDOMNamespaceUtil.FOXML_NS);
-		
-		for (Object datastreamObject : datastreamList) {
-			Element datastreamEl = (Element) datastreamObject;
-			String datastreamName = datastreamEl.getAttributeValue("ID");
-			if (datastreamName != null && datastreamName.equals(datastream.getName())) {
-				Element dsVersion;
-				if (datastream.isVersionable()) {
-					dsVersion = FOXMLJDOMUtil.getMostRecentDatastreamVersion(datastreamEl.getChildren("datastreamVersion",
-							JDOMNamespaceUtil.FOXML_NS));
-				} else {
-					dsVersion = datastreamEl.getChild("datastreamVersion", JDOMNamespaceUtil.FOXML_NS);
-				}
-				return dsVersion;
-			}
-		}
-		
-		return null;
-	}
+    public static void setProperty(final Document doc, final ObjectProperty prop,
+            final String value) {
+        Element props = doc.getRootElement().getChild("objectProperties",
+                JDOMNamespaceUtil.FOXML_NS);
+        if (props == null) {
+            props = new Element("objectProperties", JDOMNamespaceUtil.FOXML_NS);
+            doc.getRootElement().addContent(1, props);
+        } else {
+            Iterator<Element> childIt = props.getChildren().iterator();
+            while (childIt.hasNext()) {
+                Element el = childIt.next();
+                if (prop.toString().equals(el.getAttributeValue("NAME"))) {
+                    childIt.remove();
+                }
+            }
+        }
+        Element newProp = new Element("property", JDOMNamespaceUtil.FOXML_NS);
+        newProp.setAttribute("NAME", prop.toString());
+        newProp.setAttribute("VALUE", value);
+        props.addContent(newProp);
+        return;
+    }
 
-	/**
-	 * Returns the most recent version of a datastream from the given set of datastream elements
-	 * 
-	 * @param elements
-	 * @return
-	 */
-	public static Element getMostRecentDatastreamVersion(List<?> elements) {
-		if (elements == null || elements.size() == 0)
-			return null;
-		if (elements.size() == 1)
-			return (Element) elements.get(0);
+    public static Element getDatastreamContent(
+            final ContentModelHelper.Datastream datastream, final Document foxml) {
+        return getDatastreamContent(datastream, foxml.getRootElement());
+    }
 
-		String mostRecentDate = "";
-		Element mostRecent = null;
-		for (Object datastreamVersionObj : elements) {
-			Element datastreamVersion = (Element) datastreamVersionObj;
-			String created = datastreamVersion.getAttributeValue("CREATED");
-			if (mostRecentDate.compareTo(created) < 0) {
-				mostRecentDate = created;
-				mostRecent = datastreamVersion;
-			}
-		}
-		if (mostRecent != null)
-			return mostRecent;
-		return (Element) elements.get(0);
-	}
+    /**
+     * Returns the content of an internal datastream from the given foxml. If
+     * the datastream is versionable, then the most recent version of the
+     * datastream is returned.
+     * 
+     * @param datastream
+     * @param foxml
+     * @return
+     */
+    public static Element getDatastreamContent(
+            final ContentModelHelper.Datastream datastream, final Element foxml) {
+        Element dsVersion;
+        Element datastreamEl = JDOMQueryUtil.getChildByAttribute(foxml,
+                "datastream", JDOMNamespaceUtil.FOXML_NS, "ID",
+                datastream.getName());
 
-	/**
-	 * Returns the object of the relationship specified from the provided RELS-EXT datastream. Only returns the first
-	 * value if the relation occurs multiple times
-	 * 
-	 * @param relationName
-	 * @param relationNS
-	 * @param relsExt
-	 * @return
-	 */
-	public static String getRelationValue(String relationName, Namespace relationNS, Element relsExt) {
-		Element relationEl = relsExt.getChild(relationName, relationNS);
-		if (relationEl != null) {
-			String value = relationEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS);
-			if (value == null)
-				value = relationEl.getText();
-			return value;
-		}
-		return null;
-	}
+        if (datastreamEl == null) {
+            return null;
+        }
 
-	public static List<String> getRelationValues(String relationName, Namespace relationNS, Element relsExt) {
-		List<?> relationEls = relsExt.getChildren(relationName, relationNS);
-		if (relationEls != null) {
-			List<String> values = new ArrayList<String>(relationEls.size());
-			for (Object relationObj : relationEls) {
-				values.add(((Element) relationObj).getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS));
-			}
-			return values;
-		}
-		return null;
-	}
+        if (datastream.isVersionable()) {
+            dsVersion = FOXMLJDOMUtil
+                    .getMostRecentDatastreamVersion(datastreamEl.getChildren(
+                            "datastreamVersion", JDOMNamespaceUtil.FOXML_NS));
+        } else {
+            dsVersion = datastreamEl.getChild("datastreamVersion",
+                    JDOMNamespaceUtil.FOXML_NS);
+        }
 
-	public static Element getObjectProperties(Document foxml) {
-		// /foxml:digitalObject/foxml:objectProperties
-		return foxml.getRootElement().getChild("objectProperties", JDOMNamespaceUtil.FOXML_NS);
-	}
+        return dsVersion.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS)
+                .getChildren().get(0);
+    }
 
-	public static Element getRelsExt(Document foxml) {
-		Element relsExt = getDatastreamContent(ContentModelHelper.Datastream.RELS_EXT, foxml);
-		if ("RDF".equals(relsExt.getName()) && JDOMNamespaceUtil.RDF_NS.equals(relsExt.getNamespace())) {
-			return relsExt.getChildren().get(0);
-		}
-		return relsExt;
-	}
+    /**
+     * Returns a map of all of the most recent versions of datastreams listed in
+     * the given FOXML document
+     * 
+     * @param foxml
+     * @return
+     */
+    public static Map<String, Element> getMostRecentDatastreamMap(final Document foxml) {
+        Map<String, Element> datastreams = new HashMap<String, Element>();
+        List<?> datastreamList = foxml.getRootElement().getChildren(
+                "datastream", JDOMNamespaceUtil.FOXML_NS);
+        for (Object datastreamObject : datastreamList) {
+            Element datastreamEl = (Element) datastreamObject;
+            String datastreamName = datastreamEl.getAttributeValue("ID");
+            if (datastreamName != null) {
+                ContentModelHelper.Datastream datastreamClass = ContentModelHelper.Datastream
+                        .getDatastream(datastreamName);
+                if (datastreamClass == null) {
+                    continue;
+                }
+
+                Element dsVersion;
+                if (datastreamClass.isVersionable()) {
+                    dsVersion = FOXMLJDOMUtil
+                            .getMostRecentDatastreamVersion(datastreamEl
+                                    .getChildren("datastreamVersion",
+                                            JDOMNamespaceUtil.FOXML_NS));
+                } else {
+                    dsVersion = datastreamEl.getChild("datastreamVersion",
+                            JDOMNamespaceUtil.FOXML_NS);
+                }
+                datastreams.put(datastreamName, dsVersion);
+            }
+        }
+
+        return datastreams;
+    }
+
+    public static Element getMostRecentDatastream(
+            final ContentModelHelper.Datastream datastream, final Document foxml) {
+        return getMostRecentDatastream(datastream, foxml.getRootElement());
+    }
+
+    public static Element getMostRecentDatastream(
+            final ContentModelHelper.Datastream datastream, final Element foxml) {
+        List<?> datastreamList = foxml.getChildren("datastream",
+                JDOMNamespaceUtil.FOXML_NS);
+
+        for (Object datastreamObject : datastreamList) {
+            Element datastreamEl = (Element) datastreamObject;
+            String datastreamName = datastreamEl.getAttributeValue("ID");
+            if (datastreamName != null
+                    && datastreamName.equals(datastream.getName())) {
+                Element dsVersion;
+                if (datastream.isVersionable()) {
+                    dsVersion = FOXMLJDOMUtil
+                            .getMostRecentDatastreamVersion(datastreamEl
+                                    .getChildren("datastreamVersion",
+                                            JDOMNamespaceUtil.FOXML_NS));
+                } else {
+                    dsVersion = datastreamEl.getChild("datastreamVersion",
+                            JDOMNamespaceUtil.FOXML_NS);
+                }
+                return dsVersion;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the most recent version of a datastream from the given set of
+     * datastream elements
+     * 
+     * @param elements
+     * @return
+     */
+    public static Element getMostRecentDatastreamVersion(final List<?> elements) {
+        if (elements == null || elements.size() == 0) {
+            return null;
+        }
+
+        if (elements.size() == 1) {
+            return (Element) elements.get(0);
+        }
+
+        String mostRecentDate = "";
+        Element mostRecent = null;
+        for (Object datastreamVersionObj : elements) {
+            Element datastreamVersion = (Element) datastreamVersionObj;
+            String created = datastreamVersion.getAttributeValue("CREATED");
+            if (mostRecentDate.compareTo(created) < 0) {
+                mostRecentDate = created;
+                mostRecent = datastreamVersion;
+            }
+        }
+        if (mostRecent != null) {
+            return mostRecent;
+        }
+
+        return (Element) elements.get(0);
+    }
+
+    /**
+     * Returns the object of the relationship specified from the provided
+     * RELS-EXT datastream. Only returns the first value if the relation occurs
+     * multiple times
+     * 
+     * @param relationName
+     * @param relationNS
+     * @param relsExt
+     * @return
+     */
+    public static String getRelationValue(final String relationName,
+            final Namespace relationNS, final Element relsExt) {
+        Element relationEl = relsExt.getChild(relationName, relationNS);
+        if (relationEl != null) {
+            String value = relationEl.getAttributeValue("resource",
+                    JDOMNamespaceUtil.RDF_NS);
+            if (value == null) {
+                value = relationEl.getText();
+            }
+            return value;
+        }
+        return null;
+    }
+
+    public static List<String> getRelationValues(final String relationName,
+            final Namespace relationNS, final Element relsExt) {
+        List<?> relationEls = relsExt.getChildren(relationName, relationNS);
+        if (relationEls != null) {
+            List<String> values = new ArrayList<String>(relationEls.size());
+            for (Object relationObj : relationEls) {
+                values.add(((Element) relationObj).getAttributeValue(
+                        "resource", JDOMNamespaceUtil.RDF_NS));
+            }
+            return values;
+        }
+        return null;
+    }
+
+    public static Element getObjectProperties(final Document foxml) {
+        // /foxml:digitalObject/foxml:objectProperties
+        return foxml.getRootElement().getChild("objectProperties",
+                JDOMNamespaceUtil.FOXML_NS);
+    }
+
+    public static Element getRelsExt(final Document foxml) {
+        Element relsExt = getDatastreamContent(
+                ContentModelHelper.Datastream.RELS_EXT, foxml);
+        if ("RDF".equals(relsExt.getName())
+                && JDOMNamespaceUtil.RDF_NS.equals(relsExt.getNamespace())) {
+            return relsExt.getChildren().get(0);
+        }
+        return relsExt;
+    }
 }

@@ -18,8 +18,8 @@ package edu.unc.lib.dl.log;
 import org.apache.log4j.PatternLayout;
 
 public class NoStackTracePatternLayout extends PatternLayout {
-	@Override
-	public boolean ignoresThrowable() {
-		return false;
-	}
+    @Override
+    public boolean ignoresThrowable() {
+        return false;
+    }
 }

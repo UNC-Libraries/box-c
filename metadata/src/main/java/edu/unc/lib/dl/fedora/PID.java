@@ -22,15 +22,15 @@ import java.util.List;
 
 public class PID implements Serializable {
     /**
-	 *
-	 */
-	private static final long serialVersionUID = 6597515249960543107L;
-	protected static final String uriPrefix = "info:fedora/";
+     *
+     */
+    private static final long serialVersionUID = 6597515249960543107L;
+    protected static final String uriPrefix = "info:fedora/";
     protected String pid;
 
     public PID() {
     }
-    
+
     /**
      * Construct an immutable digital object ID from a PID or a PID URI string.
      *
@@ -39,130 +39,130 @@ public class PID implements Serializable {
      * @throws IllegalArgumentException
      */
     public PID(String pid) {
-	if (pid == null) {
-	    throw new IllegalArgumentException("A non-null PID is required to create a Digital Object ID");
-	} else if (pid.startsWith(uriPrefix)) {
-	    this.pid = pid.substring(uriPrefix.length());
-	} else {
-	    this.pid = pid;
-	}
+        if (pid == null) {
+            throw new IllegalArgumentException("A non-null PID is required to create a Digital Object ID");
+        } else if (pid.startsWith(uriPrefix)) {
+            this.pid = pid.substring(uriPrefix.length());
+        } else {
+            this.pid = pid;
+        }
 
     }
 
     @Override
-    public boolean equals(Object obj) {
-	if (obj instanceof PID) {
-	    PID input = (PID) obj;
-	    String pid = getPid();
-	    if (pid != null) {
-		return pid.equals(input.getPid());
-	    }
-	}
-	return false;
+        public boolean equals(Object obj) {
+        if (obj instanceof PID) {
+            PID input = (PID) obj;
+            String pid = getPid();
+            if (pid != null) {
+            return pid.equals(input.getPid());
+            }
+        }
+        return false;
     }
 
     public String getPid() {
-	return pid;
+        return pid;
     }
 
     public String getURI() {
-	return uriPrefix + this.pid;
+    return uriPrefix + this.pid;
     }
-    
+
     public String getPath() {
-   	 return pid.replace(":", "/");
+        return pid.replace(":", "/");
     }
-    
+
     public String getUUID() throws UnsupportedOperationException {
-    	if(pid.startsWith("uuid:")) {
-    		return pid.substring(5);
-    	} else {
-    		throw new UnsupportedOperationException("PID is not a UUID PID");
-    	}
+        if (pid.startsWith("uuid:")) {
+            return pid.substring(5);
+        } else {
+            throw new UnsupportedOperationException("PID is not a UUID PID");
+        }
     }
 
     @Override
     public int hashCode() {
-	return pid.hashCode();
+        return pid.hashCode();
     }
 
     @Override
     public String toString() {
-	return this.pid;
+    return this.pid;
     }
-    
-	public static List<PID> toPIDList(List<String> pidStrings) {
-		List<PID> pids = new ArrayList<>(pidStrings.size());
-		for (String pidString : pidStrings) {
-			pids.add(new PID(pidString));
-		}
-		return pids;
-	}
 
-	/**
-	 * Get the unique identifier for this object.
-	 * 
-	 * @return the unique identifier for this object
-	 */
-	public String getId() {
-		return pid;
-	}
-	
-	/**
-	 * Get the object type path qualifier for this object.
-	 * 
-	 * @return the object type path qualifier for this object.
-	 */
-	public String getQualifier() {
-		return pid;
-	}
-	
-	/**
-	 * Get the qualified unique identifier for this object, containing the
-	 * formatted qualifier and id.
-	 * 
-	 * @return the qualified id
-	 */
-	public String getQualifiedId() {
-		return pid;
-	}
-	
-	/**
-	 * Get the component path, which is the portion of the repository path identifying 
-	 * a specific component of the digital object
-	 * 
-	 * @return the component path
-	 */
-	public String getComponentPath() {
-		return pid;
-	}
+    public static List<PID> toPIDList(List<String> pidStrings) {
+        List<PID> pids = new ArrayList<>(pidStrings.size());
+        for (String pidString : pidStrings) {
+            pids.add(new PID(pidString));
+        }
+        return pids;
+    }
 
-	/**
-	 * Returns true if the provided pid is a component of the this pid
-	 * 
-	 * @param pid
-	 * @return
-	 */
-	public boolean containsComponent(PID pid) {
-		return false;
-	}
+    /**
+     * Get the unique identifier for this object.
+     *
+     * @return the unique identifier for this object
+     */
+    public String getId() {
+        return pid;
+    }
 
-	/**
-	 * Returns the full repository uri for this object or component.
-	 * 
-	 * @return
-	 */
-	public URI getRepositoryUri() {
-		return URI.create(this.getURI());
-	}
+    /**
+     * Get the object type path qualifier for this object.
+     *
+     * @return the object type path qualifier for this object.
+     */
+    public String getQualifier() {
+        return pid;
+    }
 
-	/**
-	 * Returns the repository URI for this pid as a string
-	 * 
-	 * @return
-	 */
-	public String getRepositoryPath() {
-		return this.getURI();
-	}
+    /**
+     * Get the qualified unique identifier for this object, containing the
+     * formatted qualifier and id.
+     *
+     * @return the qualified id
+     */
+    public String getQualifiedId() {
+        return pid;
+    }
+
+    /**
+     * Get the component path, which is the portion of the repository path identifying
+     * a specific component of the digital object
+     *
+     * @return the component path
+     */
+    public String getComponentPath() {
+        return pid;
+    }
+
+    /**
+     * Returns true if the provided pid is a component of the this pid
+     *
+     * @param pid
+     * @return
+     */
+    public boolean containsComponent(PID pid) {
+        return false;
+    }
+
+    /**
+     * Returns the full repository uri for this object or component.
+     *
+     * @return
+     */
+    public URI getRepositoryUri() {
+        return URI.create(this.getURI());
+    }
+
+    /**
+     * Returns the repository URI for this pid as a string
+     *
+     * @return
+     */
+    public String getRepositoryPath() {
+        return this.getURI();
+    }
 }
 
