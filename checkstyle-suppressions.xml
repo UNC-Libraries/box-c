@@ -3,10 +3,10 @@
      "-//Puppy Crawl//DTD Suppressions 1.1//EN"
      "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
 <suppressions>
-	<suppress checks="JavadocMethod" files="src[/\\]test[/\\]java" />
-	<suppress checks="JavadocPackage" files="src[/\\]test[/\\]java" />
-	<suppress checks="JavadocVariable" files="src[/\\]test[/\\]java" />
-	<suppress checks="JavadocType" files="src[/\\]test[/\\]java" />
-	<suppress checks="JavadocStyleCheck" files="src[/\\]test[/\\]java" />
+	<suppress checks="JavadocMethod" files=".*\.java$" />
+	<suppress checks="JavadocPackage" files=".*\.java$" />
+	<suppress checks="JavadocVariable" files=".*\.java$" />
+	<suppress checks="JavadocType" files=".*\.java$" />
+	<suppress checks="JavadocStyleCheck" files=".*\.java$" />
 	<suppress checks="IndentationCheck" files=".*\.java$" />
 </suppressions>
