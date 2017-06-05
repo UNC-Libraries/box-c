@@ -1,0 +1,16 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title></mods:title>
+  </mods:titleInfo>
+  <mods:identifier displayLabel="Accession Number" type="local"></mods:identifier>
+  <mods:identifier displayLabel="Digital Folder Number" type="local"></mods:identifier>
+  <mods:relatedItem type="original">
+    <mods:identifier displayLabel="Source Media Identifier"></mods:identifier>
+  </mods:relatedItem>
+  <mods:relatedItem type="isReferencedBy">
+    <mods:location>
+      <mods:url displayLabel="Link to finding aid"></mods:url>
+    </mods:location>
+  </mods:relatedItem>
+</mods:mods>
