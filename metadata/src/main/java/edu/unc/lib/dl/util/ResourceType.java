@@ -23,7 +23,6 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.DEPOSIT_RECORD;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import static edu.unc.lib.dl.util.ContentModelHelper.Model.WORK;
 
-
 import java.util.List;
 
 import edu.unc.lib.dl.rdf.Cdr;
@@ -68,6 +67,23 @@ public enum ResourceType {
 		return null;
 	}
 
+	/**
+	 * Gets the resourceType for rdf type uris
+	 * 
+	 * @param uris
+	 * @return
+	 */
+	public static ResourceType getResourceTypeForUris(List<String> uris) {
+		for (String uri : uris) {
+			ResourceType type = getResourceTypeByUri(uri);
+			if (type != null) {
+				return type;
+			}
+		}
+		return null;
+	}
+	
+	@Deprecated
 	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
 		if (contentModels.contains(ADMIN_UNIT.getPID().getURI())) {
 			return AdminUnit;
