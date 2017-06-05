@@ -30,6 +30,11 @@ import javax.xml.transform.stream.StreamResult;
 //import org.apache.commons.logging.Log;
 //import org.apache.commons.logging.LogFactory;
 
+/**
+ * Convenience methods for working with SOAP
+ * @author count0
+ *
+ */
 public class SOAPUtil {
     // private static final Log log = LogFactory.getLog(SOAPUtil.class);
     private SOAPUtil() {

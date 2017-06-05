@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.util;
 
+/**
+ * ErrorURIRegistry
+ * @author bbpennel
+ *
+ */
 public class ErrorURIRegistry {
     public static final String INVALID_INGEST_PACKAGE = "http://cdr.lib.unc.edu/sword/error/InvalidIngestPackage";
     public static final String INGEST_EXCEPTION = "http://cdr.lib.unc.edu/sword/error/IngestException";
@@ -25,6 +30,5 @@ public class ErrorURIRegistry {
     public static final String RESOURCE_NOT_FOUND = "http://cdr.lib.unc.edu/sword/error/ResourceNotFound";
 
     private ErrorURIRegistry() {
-
     }
 }

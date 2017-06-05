@@ -28,6 +28,11 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
+/**
+ * Convenience methods for working with JDOM
+ * @author bbpennel
+ *
+ */
 public class JDOMQueryUtil {
     private JDOMQueryUtil() {
 

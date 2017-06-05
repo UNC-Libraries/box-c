@@ -17,6 +17,11 @@ package edu.unc.lib.dl.message;
 
 import java.io.Serializable;
 
+/**
+ * Action Messages
+ * @author bbpennel
+ *
+ */
 public interface ActionMessage extends Serializable {
     /**
      * Returns the identifier for this message

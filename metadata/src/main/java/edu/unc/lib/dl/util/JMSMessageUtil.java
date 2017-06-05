@@ -24,6 +24,11 @@ import org.jdom2.Element;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * Convenience methods for working with JMS messages
+ * @author count0
+ *
+ */
 public class JMSMessageUtil {
     public static final String fedoraMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS
             .getURI() + "/fedora";

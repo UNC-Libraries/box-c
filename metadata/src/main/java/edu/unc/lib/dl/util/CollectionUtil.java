@@ -62,6 +62,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * </pre>
  * 
  * </p>
+ * 
+ * @author count0
  */
 public final class CollectionUtil {
 

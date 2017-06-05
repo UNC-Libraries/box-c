@@ -15,6 +15,7 @@
  */
 /**
  * Contains utility classes that have applications in many types of tasks.
+ * @author count0
  */
 package edu.unc.lib.dl.util;
 

@@ -29,6 +29,11 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.springframework.core.io.ClassPathResource;
 
+/**
+ * LOC6392BExtractor
+ * @author count0
+ *
+ */
 public class LOC6392BExtractor {
 
     private LOC6392BExtractor() {

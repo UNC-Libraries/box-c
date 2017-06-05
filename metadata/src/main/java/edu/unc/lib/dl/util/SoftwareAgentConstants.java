@@ -1,5 +1,11 @@
 package edu.unc.lib.dl.util;
 
+
+/**
+ * Software Agents
+ * @author bbpennel
+ *
+ */
 public class SoftwareAgentConstants {
     private static String cdrVersion;
 

@@ -2,6 +2,11 @@ package edu.unc.lib.dl.util;
 
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * Deposit Constants
+ * @author count0
+ *
+ */
 public class DepositConstants {
     public static final String DESCRIPTION_DIR = "description";
     public static final String JENA_TDB_DIR = "jena-tdb-model";

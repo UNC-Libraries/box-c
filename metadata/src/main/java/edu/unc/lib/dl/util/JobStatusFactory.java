@@ -14,6 +14,11 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.JobStatus;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+/**
+ * Work with job statuses
+ * @author bbpennel
+ *
+ */
 public class JobStatusFactory {
 
     private JedisPool jedisPool;

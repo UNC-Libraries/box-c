@@ -12,6 +12,11 @@ import javax.xml.transform.stream.StreamSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Resolve path URIs
+ * @author count0
+ *
+ */
 public class ClasspathURIResolver implements URIResolver {
     private static Logger log = LoggerFactory
             .getLogger(ClasspathURIResolver.class);

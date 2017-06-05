@@ -40,6 +40,8 @@ import org.apache.http.protocol.HttpCoreContext;
 
 /**
  * Utitlity class for common <code>HttpClient</code> operations.
+ * 
+ * @author count0
  */
 public class HttpClientUtil {
     public static final String SHIBBOLETH_GROUPS_HEADER = "isMemberOf";

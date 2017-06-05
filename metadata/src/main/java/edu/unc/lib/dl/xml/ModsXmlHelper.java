@@ -33,6 +33,11 @@ import org.jdom2.Element;
 import org.jdom2.transform.JDOMResult;
 import org.jdom2.transform.JDOMSource;
 
+/**
+ * Process MODS
+ * @author count0
+ *
+ */
 public class ModsXmlHelper {
     private static final String _stylesheetPackage = "/edu/unc/lib/dl/schematron/";
     private static final Log log = LogFactory.getLog(ModsXmlHelper.class);

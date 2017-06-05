@@ -32,6 +32,7 @@ import org.apache.commons.codec.binary.Hex;
  * java.security.MessageDigest). Then one can repeatedly call the various
  * "getChecksumFrom..." methods to get checksums.
  * 
+ * @author count0
  */
 public class Checksum {
     private String algorithm = "MD5";

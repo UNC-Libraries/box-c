@@ -20,6 +20,11 @@ import java.net.URISyntaxException;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * Indexing actions
+ * @author count0
+ *
+ */
 public enum IndexingActionType {
     ADD("Add/Update", "Adds or updates the entry for the specified object"),
     UPDATE_DESCRIPTION("Update description", "Updates the descriptive metadata for the specified object"),

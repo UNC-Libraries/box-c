@@ -18,6 +18,11 @@ package edu.unc.lib.dl.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+/**
+ * Packaging Types
+ * @author bbpennel
+ *
+ */
 public enum PackagingType {
     METS_CDR("http://cdr.unc.edu/METS/profiles/Simple"),
     SIMPLE_OBJECT("http://cdr.unc.edu/model/Simple"),

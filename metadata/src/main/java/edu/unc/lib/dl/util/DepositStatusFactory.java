@@ -32,6 +32,11 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
+/**
+ * Deposit/redis interactions
+ * @author bbpennel
+ *
+ */
 public class DepositStatusFactory {
     private static final Logger log = LoggerFactory
             .getLogger(DepositStatusFactory.class);

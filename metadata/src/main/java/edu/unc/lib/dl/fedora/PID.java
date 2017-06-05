@@ -20,6 +20,11 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Work with PIDS
+ * @author bbpennel
+ *
+ */
 public class PID implements Serializable {
     /**
      *

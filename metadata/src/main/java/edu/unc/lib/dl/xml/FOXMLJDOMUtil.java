@@ -32,6 +32,11 @@ import org.jdom2.xpath.XPath;
 
 import edu.unc.lib.dl.util.ContentModelHelper;
 
+/**
+ * Convenience methods for working with FoxML JDOM
+ * @author count0
+ *
+ */
 public class FOXMLJDOMUtil {
     private FOXMLJDOMUtil() {
     }

@@ -25,6 +25,11 @@ import java.util.List;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
+/**
+ * Resource Types
+ * @author bbpennel
+ *
+ */
 public enum ResourceType {
     Collection(1, Cdr.Collection.getURI()), Aggregate(3, Cdr.Work.getURI()), Folder(
             2, Cdr.Folder.getURI()), File(3, Cdr.FileObject.getURI());

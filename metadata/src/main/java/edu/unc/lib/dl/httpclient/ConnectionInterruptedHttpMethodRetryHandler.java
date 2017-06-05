@@ -9,6 +9,11 @@ import org.apache.http.protocol.HttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Retry http request
+ * @author count0
+ *
+ */
 public class ConnectionInterruptedHttpMethodRetryHandler implements
         HttpRequestRetryHandler {
     private static final Logger log = LoggerFactory

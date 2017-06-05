@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.xml;
 
+/**
+ * METS Profile
+ * @author bbpennel
+ *
+ */
 public enum METSProfile {
     CDR_SIMPLE("http://cdr.unc.edu/METS/profiles/Simple"), DSPACE_SIP(
             "DSpace METS SIP Profile 1.0");

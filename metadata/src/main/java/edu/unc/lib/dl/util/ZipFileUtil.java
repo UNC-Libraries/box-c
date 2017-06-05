@@ -28,6 +28,11 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Process zip files
+ * @author count0
+ *
+ */
 public class ZipFileUtil {
     private static final Log log = LogFactory.getLog(ZipFileUtil.class);
 
