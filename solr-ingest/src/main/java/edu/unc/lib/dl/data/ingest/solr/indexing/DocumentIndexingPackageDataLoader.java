@@ -106,7 +106,7 @@ public class DocumentIndexingPackageDataLoader {
 		}
 	}
 	
-	private ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
+	public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
 		try {
 			return contentObjCache.get(dip.getPid());
 		} catch (ExecutionException e) {

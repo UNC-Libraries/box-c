@@ -23,6 +23,7 @@ import org.jdom2.Element;
 
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -70,6 +71,10 @@ public class DocumentIndexingPackage {
 
 	public void setPid(PID pid) {
 		this.pid = pid;
+	}
+	
+	public ContentObject getContentObject() throws IndexingException {
+		return loader.getContentObject(this);
 	}
 
 	public DocumentIndexingPackage getParentDocument() throws IndexingException {
@@ -231,10 +236,12 @@ public class DocumentIndexingPackage {
 		this.label = label;
 	}
 
+	@Deprecated
 	public ResourceType getResourceType() {
 		return resourceType;
 	}
 
+	@Deprecated
 	public void setResourceType(ResourceType resourceType) {
 		this.resourceType = resourceType;
 	}
