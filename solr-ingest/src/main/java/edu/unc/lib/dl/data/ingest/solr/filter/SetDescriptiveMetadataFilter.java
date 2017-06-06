@@ -59,7 +59,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 			log.error("Failed to load code language mappings", e);
 		}
 	}
-
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
