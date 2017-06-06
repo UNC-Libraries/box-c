@@ -17,6 +17,7 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,8 +25,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
-import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -37,10 +36,14 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -49,10 +52,10 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 
@@ -66,10 +69,10 @@ public class DocumentIndexingPackageDataLoader {
 	private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackageDataLoader.class);
 	
 	private Repository repository;
+	
 	private ManagementClient managementClient ;
 	private AccessClient accessClient;
 	private TripleStoreQueryService tsqs;
-	private SparqlQueryService queryService;
 	private AccessControlService accessControlService;
 	private DocumentIndexingPackageFactory factory;
 	
@@ -80,15 +83,27 @@ public class DocumentIndexingPackageDataLoader {
 	private long cacheTimeToLive;
 	private long cacheMaxSize;
 	
-	protected Repository getRepository() {
-		return repository;
-	}
-	
 	public void init() {
 		contentObjCache = CacheBuilder.newBuilder()
 				.maximumSize(cacheMaxSize)
 				.expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
-				.build((new ObjectCacheLoader()));
+				.build(new ContentObjectCacheLoader());
+	}
+	
+	public Element loadMods(DocumentIndexingPackage dip) throws IndexingException {
+		ContentObject contentObj = getContentObject(dip);
+		BinaryObject modsBinary = contentObj.getMODS();
+		
+		if (modsBinary == null) {
+			return null;
+		}
+		
+		try (InputStream modsStream = modsBinary.getBinaryStream()) {
+			Document dsDoc = new SAXBuilder().build(modsStream);
+			return dsDoc.detachRootElement();
+		} catch (JDOMException | IOException e) {
+			throw new IndexingException("Failed to parse MODS stream for object " + dip.getPid(), e);
+		}
 	}
 	
 	public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
@@ -114,26 +129,21 @@ public class DocumentIndexingPackageDataLoader {
 	public void setCacheMaxSize(long cacheMaxSize) {
 		this.cacheMaxSize = cacheMaxSize;
 	}
-
-	public SparqlQueryService getQueryService() {
-		return queryService;
-	}
-
-	public void setQueryService(SparqlQueryService queryService) {
-		this.queryService = queryService;
-	}
 	
 	/**
-	 * Loader for cache of information about individual ContentObjects.
+	 * Loader for cache content objects for reuse in indexing tasks
 	 * 
 	 * @author bbpennel
 	 *
 	 */
-	private class ObjectCacheLoader extends CacheLoader<PID, ContentObject> {
-
+	private class ContentObjectCacheLoader extends CacheLoader<PID, ContentObject> {
 		public ContentObject load(PID pid) {
 			return repository.getContentObject(pid);
 		}
+	}
+
+	public void setRepository(Repository repository) {
+		this.repository = repository;
 	}
 
 	@Deprecated
@@ -181,14 +191,13 @@ public class DocumentIndexingPackageDataLoader {
 			// No parent object, ask fedora for access control
 			return accessControlService.getObjectAccessControls(dip.getPid());
 		}
-		return null;
+		return new ObjectAccessControlsBeanImpl(dip.getParentDocument().getAclBean(), dip.getPid(), dip.getTriples());
 	}
-	@SuppressWarnings("unused")
 	@Deprecated
 	public List<PID> loadChildren(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 		
-		List<String> childrenRelations = null;
+		List<String> childrenRelations = triples.get(Relationship.contains.toString());
 		
 		if (childrenRelations == null) {
 			return Collections.<PID>emptyList();
@@ -233,10 +242,9 @@ public class DocumentIndexingPackageDataLoader {
 		
 		return parentPID;
 	}
-	@SuppressWarnings("null")
 	@Deprecated
 	public DocumentIndexingPackage loadDefaultWebObject(DocumentIndexingPackage dip) throws IndexingException {
-		Map<String, List<String>> triples = null;
+		Map<String, List<String>> triples = dip.getTriples();
 		
 		List<String> defaultWebObject = triples.get(CDRProperty.defaultWebObject.getURI().toString());
 		
