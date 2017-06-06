@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -47,6 +48,7 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 	private static final String CONTEXT_1_LABEL = "Context";
 	private static final String CONTEXT_1_FIELD = "rla_context_1_d";
 	
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		Element mods = dip.getMods();
