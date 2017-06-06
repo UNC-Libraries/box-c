@@ -35,9 +35,9 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
  * @author bbpennel
  *
  */
-public class SetRelationsFilter {
+public class SetRelationsFilter implements IndexDocumentFilter{
 	private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		log.debug("Applying setRelationsFilter");
 

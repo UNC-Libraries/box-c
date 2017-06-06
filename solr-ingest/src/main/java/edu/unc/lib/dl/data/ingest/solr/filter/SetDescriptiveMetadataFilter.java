@@ -42,7 +42,7 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
  * @author bbpennel
  *
  */
-public class SetDescriptiveMetadataFilter {
+public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDescriptiveMetadataFilter.class);
 
 	private final Properties languageCodeMap;
@@ -60,7 +60,7 @@ public class SetDescriptiveMetadataFilter {
 			log.error("Failed to load code language mappings", e);
 		}
 	}
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 		Element mods = dip.getMods();

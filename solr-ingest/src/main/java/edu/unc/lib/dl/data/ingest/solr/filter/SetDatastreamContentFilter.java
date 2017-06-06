@@ -51,7 +51,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class SetDatastreamContentFilter {
+public class SetDatastreamContentFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDatastreamContentFilter.class);
 
 	private Pattern extensionRegex;
@@ -73,7 +73,7 @@ public class SetDatastreamContentFilter {
 			log.error("Failed to load mimetype mappings", e);
 		}
 	}
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Document foxml = dip.getFoxml();
 		if (foxml == null)

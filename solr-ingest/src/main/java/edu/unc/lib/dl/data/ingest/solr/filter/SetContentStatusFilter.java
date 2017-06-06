@@ -37,9 +37,9 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
  * @author bbpennel
  *
  */
-public class SetContentStatusFilter {
+public class SetContentStatusFilter implements IndexDocumentFilter{
 	private static final Logger log = LoggerFactory.getLogger(SetContentStatusFilter.class);
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 

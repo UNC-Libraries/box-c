@@ -41,12 +41,13 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  *
  */
-public class SetAccessControlFilter {
+public class SetAccessControlFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetAccessControlFilter.class);
 
 	/**
 	 * Requires dip to contain RELS-EXT
 	 */
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		Map<String, List<String>> triples = dip.getTriples();
 

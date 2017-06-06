@@ -45,7 +45,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * @author bbpennel
  *
  */
-public class SetPathFilter {
+public class SetPathFilter implements IndexDocumentFilter {
 	protected static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
 	private TripleStoreQueryService tsqs;
@@ -61,7 +61,7 @@ public class SetPathFilter {
 			log.error("Unable to find query file", e);
 		}
 	}
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		if (dip.hasParentDocument()) {
 			DocumentIndexingPackage parentDIP = dip.getParentDocument();

@@ -28,9 +28,9 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  * @author bbpennel
  * 
  */
-public class SetDisplayOrderFilter {
+public class SetDisplayOrderFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDisplayOrderFilter.class);
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();
 

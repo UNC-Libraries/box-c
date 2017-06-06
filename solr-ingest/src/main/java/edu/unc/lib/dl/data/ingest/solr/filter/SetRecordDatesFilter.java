@@ -29,8 +29,8 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  * @author bbpennel, harring
  *
  */
-public class SetRecordDatesFilter {
-	
+public class SetRecordDatesFilter implements IndexDocumentFilter {
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		ContentObject obj = dip.getContentObject();
 		String dateAdded = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.created).toString();

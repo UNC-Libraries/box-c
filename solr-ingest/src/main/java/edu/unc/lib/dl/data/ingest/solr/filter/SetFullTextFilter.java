@@ -32,11 +32,11 @@ import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
  * @author bbpennel
  *
  */
-public class SetFullTextFilter {
+public class SetFullTextFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
 
 	private AccessClient accessClient = null;
-
+	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 
 		String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
