@@ -30,31 +30,31 @@ import edu.unc.lib.cdr.FulltextProcessor;
  */
 public class FulltextRouter extends RouteBuilder {
 
-	private static final String MIMETYPE_PATTERN = "^(text/|application/pdf|application/msword"
-			+ "|application/vnd\\.|application/rtf|application/powerpoint"
-			+ "|application/postscript).*$";
+    private static final String MIMETYPE_PATTERN = "^(text/|application/pdf|application/msword"
+            + "|application/vnd\\.|application/rtf|application/powerpoint"
+            + "|application/postscript).*$";
 
-	@BeanInject(value = "fulltextProcessor")
-	private FulltextProcessor ftProcessor;
+    @BeanInject(value = "fulltextProcessor")
+    private FulltextProcessor ftProcessor;
 
-	public void configure() throws Exception {
-		onException(Exception.class)
-			.redeliveryDelay("{{error.retryDelay}}")
-			.maximumRedeliveries("{{error.maxRedeliveries}}")
-			.backOffMultiplier(2)
-			.retryAttemptedLogLevel(LoggingLevel.WARN);
+    public void configure() throws Exception {
+        onException(Exception.class)
+            .redeliveryDelay("{{error.retryDelay}}")
+            .maximumRedeliveries("{{error.maxRedeliveries}}")
+            .backOffMultiplier(2)
+            .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-		from("direct-vm:extractFulltext")
-			.routeId("CdrServiceFulltextExtraction")
-			.log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
-			.filter(simple("${headers[MimeType]} regex '" + MIMETYPE_PATTERN + "'"))
-				.log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
-						+ " of type ${headers[MimeType]}")
-				.to("direct:fulltext.extraction");
+        from("direct-vm:extractFulltext")
+            .routeId("CdrServiceFulltextExtraction")
+            .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
+            .filter(simple("${headers[MimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+                .log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
+                        + " of type ${headers[MimeType]}")
+                .to("direct:fulltext.extraction");
 
-		from("direct:fulltext.extraction")
-			.routeId("ExtractingText")
-			.log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
-			.bean(ftProcessor);
-	} 
+        from("direct:fulltext.extraction")
+            .routeId("ExtractingText")
+            .log(LoggingLevel.INFO, "Extracting full text for ${headers[binaryPath]}")
+            .bean(ftProcessor);
+    }
 }
