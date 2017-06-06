@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
-import org.apache.jena.rdf.model.Model;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -76,7 +76,7 @@ public class DocumentIndexingPackageDataLoader {
 	private int maxRetries = 2;
 	private long retryDelay = 1000L;
 	
-	private LoadingCache<PID, ContentObject> objCache;
+	private LoadingCache<PID, ContentObject> contentObjCache;
 	private long cacheTimeToLive;
 	private long cacheMaxSize;
 	
@@ -85,14 +85,18 @@ public class DocumentIndexingPackageDataLoader {
 	}
 	
 	public void init() {
-		objCache = CacheBuilder.newBuilder()
+		contentObjCache = CacheBuilder.newBuilder()
 				.maximumSize(cacheMaxSize)
 				.expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
 				.build((new ObjectCacheLoader()));
 	}
 	
-	private ContentObject getContentObject(PID pid) {
-		return objCache.getUnchecked(pid);
+	public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
+		try {
+			return contentObjCache.get(dip.getPid());
+		} catch (ExecutionException e) {
+			throw new IndexingException("Failed to load content object " + dip.getPid(), e.getCause());
+		}
 	}
 
 	public long getCacheTimeToLive() {
@@ -182,7 +186,7 @@ public class DocumentIndexingPackageDataLoader {
 	@SuppressWarnings("unused")
 	@Deprecated
 	public List<PID> loadChildren(DocumentIndexingPackage dip) throws IndexingException {
-		Model triples = dip.getTriples(null);
+		Map<String, List<String>> triples = dip.getTriples();
 		
 		List<String> childrenRelations = null;
 		

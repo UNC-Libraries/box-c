@@ -18,13 +18,12 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Model;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -50,7 +49,7 @@ public class DocumentIndexingPackage {
 	private String label;
 	private ResourceType resourceType;
 	private List<PID> children;
-	private Model triples;
+	private Map<String, List<String>> triples;
 	private ObjectAccessControlsBean aclBean;
 
 	public DocumentIndexingPackage(PID pid, DocumentIndexingPackage parentDip,
@@ -72,6 +71,10 @@ public class DocumentIndexingPackage {
 
 	public void setPid(PID pid) {
 		this.pid = pid;
+	}
+	
+	public ContentObject getContentObject() throws IndexingException {
+		return loader.getContentObject(this);
 	}
 
 	public DocumentIndexingPackage getParentDocument() throws IndexingException {
@@ -207,19 +210,17 @@ public class DocumentIndexingPackage {
 		this.children = children;
 	}
 
-	public Model getTriples(String path) throws IndexingException {
+	public Map<String, List<String>> getTriples() throws IndexingException {
 		if (triples == null) {
-			triples = loader.getRepository().getContentObject(path).getModel();
+			triples = loader.loadTriples(this);
 		}
 		return triples;
 	}
 	
 	public String getFirstTriple(String uri) throws IndexingException {
-		triples = getTriples(uri);
-		// figure out how to write a lambda for this
-		List<String> tripleList = triples.stream()
-		.filter(p -> patronPropertyUri.equals(p.getKey()))
-		.findFirst();
+		Map<String, List<String>> triples = getTriples();
+		
+		List<String> tripleList = triples.get(uri);
 		
 		if (tripleList == null || tripleList.size() == 0)
 			return null;
@@ -227,7 +228,7 @@ public class DocumentIndexingPackage {
 		return tripleList.get(0);
 	}
 
-	public void setTriples(Model triples) {
+	public void setTriples(Map<String, List<String>> triples) {
 		this.triples = triples;
 	}
 
