@@ -43,63 +43,63 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  */
 public class BinaryMetadataProcessor implements Processor {
 
-	private final int BINARY_PATH_DEPTH = 3;
-	private final int BINARY_PATH_LENGTH = 2;
+    private final int BINARY_PATH_DEPTH = 3;
+    private final int BINARY_PATH_LENGTH = 2;
 
-	private final String baseBinaryPath;
+    private final String baseBinaryPath;
 
-	protected BinaryMetadataProcessor(String baseBinaryPath) {
-		this.baseBinaryPath = baseBinaryPath;
-	}
+    protected BinaryMetadataProcessor(String baseBinaryPath) {
+        this.baseBinaryPath = baseBinaryPath;
+    }
 
-	@Override
-	public void process(final Exchange exchange) throws Exception {
-		final Message in = exchange.getIn();
-		final Model model = createDefaultModel();
+    @Override
+    public void process(final Exchange exchange) throws Exception {
+        final Message in = exchange.getIn();
+        final Model model = createDefaultModel();
 
-		Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
-		ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
-		
-		try {
-			if (resources.hasNext()) {
-				Resource resource = resources.next();
-				String binaryMimeType = resource.getProperty(hasMimeType).getObject().toString();
-				String binaryFcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
-				String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
-	
-				String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH); 
-	
-				String binaryFullPath = new StringJoiner("")
-					.add(baseBinaryPath)
-					.add(binaryPath)
-					.add(binaryFcrepoChecksumSplit[2])
-					.toString();
-	
-				in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
-				in.setHeader(CdrBinaryMimeType, binaryMimeType);
-				in.setHeader(CdrBinaryPath, binaryFullPath);
-			}
-		} finally {
-			resources.close();
-		}
-	}
+        Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
+        ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
 
-	/**
-	 * Prepend id with defined levels of hashed containers based on the values.
-	 * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
-	 *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
-	 * 
-	 * @param id
-	 * @return
-	 */
-	private String idToPath(String id, int pathDepth, int length) {
-		StringBuilder sb = new StringBuilder();
+        try {
+            if (resources.hasNext()) {
+                Resource resource = resources.next();
+                String binaryMimeType = resource.getProperty(hasMimeType).getObject().toString();
+                String binaryFcrepoChecksum = resource.getProperty(hasMessageDigest).getObject().toString();
+                String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 
-		for (int i = 0; i < pathDepth; i++) {
-			sb.append(id.substring(i * length, i * length + length))
-					.append('/');
-		}
+                String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH);
 
-		return sb.toString();
-	}
+                String binaryFullPath = new StringJoiner("")
+                    .add(baseBinaryPath)
+                    .add(binaryPath)
+                    .add(binaryFcrepoChecksumSplit[2])
+                    .toString();
+
+                in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
+                in.setHeader(CdrBinaryMimeType, binaryMimeType);
+                in.setHeader(CdrBinaryPath, binaryFullPath);
+            }
+        } finally {
+            resources.close();
+        }
+    }
+
+    /**
+     * Prepend id with defined levels of hashed containers based on the values.
+     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
+     *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
+     * 
+     * @param id
+     * @return
+     */
+    private String idToPath(String id, int pathDepth, int length) {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < pathDepth; i++) {
+            sb.append(id.substring(i * length, i * length + length))
+                    .append('/');
+        }
+
+        return sb.toString();
+    }
 }
