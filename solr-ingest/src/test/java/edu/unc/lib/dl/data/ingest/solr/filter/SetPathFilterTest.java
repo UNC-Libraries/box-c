@@ -72,86 +72,107 @@ public class SetPathFilterTest {
 
     private int WORK_OBJECT_DEPTH = 4;
 
-	@Before
-	public void setUp() throws Exception {
-		initMocks(this);
-		
-		when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
+    @Before
+    public void setUp() throws Exception {
+        initMocks(this);
+        
+        when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
         
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObject);
         when(contentObject.getPid()).thenReturn(pid);
-		
-		filter = new SetPathFilter();
-		filter.setPathFactory(pathFactory);
-	}
-	
-	@Test
-	public void testUnitPath() throws Exception {
-	    // Assert that the parent unit and collection are not set
-	    List<PID> pids = makePidList(1);
+        
+        filter = new SetPathFilter();
+        filter.setPathFactory(pathFactory);
+    }
+
+    @Test
+    public void testUnitPath() throws Exception {
+        // Assert that the parent unit and collection are not set
+        List<PID> pids = makePidList(1);
         when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
         filter.filter(dip);
+
+        verify(idb).setAncestorPath(listCaptor.capture());
+        List<String> ancestorPath = listCaptor.getValue();
+        ancestorPathCheck(ancestorPath, pids);
+        assertEquals(1, ancestorPath.size());
+        
         verify(idb, never()).setParentUnit(anyString());
         verify(idb, never()).setParentCollection(anyString());
-	}
-	
-	@Test
-	public void testCollectionPath() throws Exception {
-	    List<PID> pids = makePidList(2);
+    }
+
+    @Test
+    public void testCollectionPath() throws Exception {
+        List<PID> pids = makePidList(2);
 
         when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
         filter.filter(dip);
-        
+
         verify(idb).setAncestorPath(listCaptor.capture());
-        
         List<String> ancestorPath = listCaptor.getValue();
-        assertTrue(ancestorPath.get(0).startsWith("1," + pids.get(0).getId()));
-        assertTrue(ancestorPath.get(1).startsWith("2," + pids.get(1).getId()));
+        ancestorPathCheck(ancestorPath, pids);
         assertEquals(2, ancestorPath.size());
+
         verify(idb).setParentUnit(eq(pids.get(1).getId()));
         verify(idb, never()).setParentCollection(anyString());
 
-	}
+    }
 
-	@Test
-	public void testWorkPath() throws Exception {
-	    // Assert that the rollup is the id of the work itself
-	    List<PID> pids = makePidList(4);
+    @Test
+    public void testWorkPath() throws Exception {
+        // Assert that the rollup is the id of the work itself
+        List<PID> pids = makePidList(4);
         when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
-	    filter.filter(dip);
-	    
-	    verify(idb).setRollup(eq(contentObject.getPid().getId()));
-	}
-
-	@Test
-	public void testFileObjectPath() throws Exception {
-	    // Assert that the rollup is the id of the parent work
-	    List<PID> pids = makePidList(5);
-	    when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
-	    when(dip.getContentObject()).thenReturn(fileObject);
         filter.filter(dip);
 
+        verify(idb).setAncestorPath(listCaptor.capture());
+        List<String> ancestorPath = listCaptor.getValue();
+        ancestorPathCheck(ancestorPath, pids);
+        assertEquals(4, ancestorPath.size());
+
+        verify(idb).setRollup(eq(contentObject.getPid().getId()));
+    }
+
+    @Test
+    public void testFileObjectPath() throws Exception {
+        // Assert that the rollup is the id of the parent work
+        List<PID> pids = makePidList(5);
+        when(pathFactory.getAncestorPids(pid)).thenReturn(pids);
+        when(dip.getContentObject()).thenReturn(fileObject);
+        filter.filter(dip);
+
+        verify(idb).setAncestorPath(listCaptor.capture());
+        List<String> ancestorPath = listCaptor.getValue();
+        ancestorPathCheck(ancestorPath, pids);
+        assertEquals(5, ancestorPath.size());
+
         verify(idb).setRollup(eq(pids.get(WORK_OBJECT_DEPTH).getId()));
-	}
-	
-	@Test(expected = IndexingException.class)
-	public void testNoAncestors() throws Exception {
-	    when(pathFactory.getAncestorPids(pid)).thenReturn(Collections.emptyList());
-	    filter.filter(dip);
-	}
-	
-	private List<PID> makePidList(int numPids) {
-	    List<PID> pids = new ArrayList<PID>();
-	    int i = 0;
-	    while(i < numPids) {
-	        PID pidMock = mock(PID.class);
-	        when(pidMock.getId()).thenReturn("uuid:" + UUID.randomUUID().toString());
-	        pids.add(pidMock);
-	        i++;
-	    }
-	    
-	    return pids;
-	}
+    }
+
+    @Test(expected = IndexingException.class)
+    public void testNoAncestors() throws Exception {
+        when(pathFactory.getAncestorPids(pid)).thenReturn(Collections.emptyList());
+        filter.filter(dip);
+    }
+
+    private List<PID> makePidList(int numPids) {
+        List<PID> pids = new ArrayList<>();
+        int i = 0;
+        while(i < numPids) {
+            PID pidMock = mock(PID.class);
+            when(pidMock.getId()).thenReturn("uuid:" + UUID.randomUUID().toString());
+            pids.add(pidMock);
+            i++;
+        }
+
+        return pids;
+    }
+
+    private void ancestorPathCheck(List<String> ancestorPath, List<PID> pids) {
+        for(int i=0; i<ancestorPath.size(); i++) {
+            assertTrue(ancestorPath.get(i).startsWith(i + 1 + "," + pids.get(i).getId()));
+        }
+    }
 }
