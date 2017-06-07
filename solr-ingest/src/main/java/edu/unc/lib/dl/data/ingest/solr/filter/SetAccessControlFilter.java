@@ -41,13 +41,13 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
 
     private InheritedAclFactory aclFactory;
 
-    private final Set<String> staffRoles;
+    private final Set<String> staffRoleNames;
 
     /**
      * Construct an access control filter
      */
     public SetAccessControlFilter() {
-        staffRoles = UserRole.getStaffRoles().stream()
+        staffRoleNames = UserRole.getStaffRoles().stream()
                 .map(r -> r.name())
                 .collect(Collectors.toSet());
     }
@@ -79,7 +79,7 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
 
             // Populate list of principals with staff permissions
             if (roles.stream()
-                    .filter(r -> staffRoles.contains(r))
+                    .filter(r -> staffRoleNames.contains(r))
                     .findAny().isPresent()) {
                 staffPrincipals.add(principal);
             }
