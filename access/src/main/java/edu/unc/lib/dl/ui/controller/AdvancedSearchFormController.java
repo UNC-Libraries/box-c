@@ -30,41 +30,42 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 /**
  * Handles requests to the advanced search page, sending users to the form if there are no
- * query string parameters set, or constructing a search state and sending the user to 
+ * query string parameters set, or constructing a search state and sending the user to
  * get results if they have populated the form.
  * @author bbpennel
  */
 @Controller
 @RequestMapping("/advancedSearch")
 public class AdvancedSearchFormController extends AbstractSolrSearchController {
-	
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request){
-		//If the user is coming to this servlet without any parameters set then send them to form.
-		if (request.getQueryString() == null || request.getQueryString().length() == 0){
-			//Populate the list of collections for the advanced search page drop down
-			AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-			
-			SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
-			model.addAttribute("collectionList", collectionResultResponse.getResultList());
-			
-			SearchResultResponse departmentFieldObject = queryLayer.getDepartmentList(accessGroups, null);
-			model.addAttribute("departmentList", departmentFieldObject.getFacetFields().get(0));
-			
-			model.addAttribute("pageSubtitle", "Advanced Search");
-			
-			model.addAttribute("formatMap", LookupMappingsSettings.getMapping("advancedFormats"));
-			return "advancedSearch";
-		}
-		
-		//If the user has submitted the search form, then generate a search state and forward them to the search servlet.
-		SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
-		String container = request.getParameter("container");
-		
-		request.getSession().setAttribute("searchState", searchState);
-		
-		model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
 
-		return "redirect:/search" + ((container != null && container.length() > 0)? '/' + container : "");
-	}
+    @RequestMapping(method = RequestMethod.GET)
+    public String handleRequest(Model model, HttpServletRequest request) {
+        //If the user is coming to this servlet without any parameters set then send them to form.
+        if (request.getQueryString() == null || request.getQueryString().length() == 0) {
+            //Populate the list of collections for the advanced search page drop down
+            AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+
+            SearchResultResponse collectionResultResponse = queryLayer.getCollectionList(accessGroups);
+            model.addAttribute("collectionList", collectionResultResponse.getResultList());
+
+            SearchResultResponse departmentFieldObject = queryLayer.getDepartmentList(accessGroups, null);
+            model.addAttribute("departmentList", departmentFieldObject.getFacetFields().get(0));
+
+            model.addAttribute("pageSubtitle", "Advanced Search");
+
+            model.addAttribute("formatMap", LookupMappingsSettings.getMapping("advancedFormats"));
+            return "advancedSearch";
+        }
+
+        // If the user has submitted the search form, then generate a search state
+        // and forward them to the search servlet.
+        SearchState searchState = searchStateFactory.createSearchStateAdvancedSearch(request.getParameterMap());
+        String container = request.getParameter("container");
+
+        request.getSession().setAttribute("searchState", searchState);
+
+        model.addAllAttributes(SearchStateUtil.generateStateParameters(searchState));
+
+        return "redirect:/search" + ((container != null && container.length() > 0) ? '/' + container : "");
+    }
 }

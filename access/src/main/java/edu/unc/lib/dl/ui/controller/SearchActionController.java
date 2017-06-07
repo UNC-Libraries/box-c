@@ -44,134 +44,135 @@ import edu.unc.lib.dl.util.ResourceType;
  */
 @Controller
 public class SearchActionController extends AbstractSolrSearchController {
-	@Autowired(required=true)
-	protected PID collectionsPid;
-	private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
+    @Autowired(required = true)
+    protected PID collectionsPid;
+    private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
 
-	@RequestMapping("/search/{pid}")
-	public String search(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(pid);
-		searchRequest.setApplyCutoffs(false);
-		model.addAttribute("queryMethod", "search");
-		return search(searchRequest, model, request);
-	}
-	
-	@RequestMapping("/search")
-	public String search(Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		// Backwards compability with the previous search url
-		if (!extractOldPathSyntax(request, searchRequest)) {
-			searchRequest.setApplyCutoffs(false);
-		}
-		model.addAttribute("queryMethod", "search");
-		return search(searchRequest, model, request);
-	}
-	
-	private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
-		SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
-		
-		model.addAttribute("resultType", "searchResults");
-		model.addAttribute("pageSubtitle", "Search Results");
-		
-		return "searchResults";
-	}
-	
-	@RequestMapping("/list/{pid}")
-	public String list(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(pid);
-		searchRequest.setApplyCutoffs(true);
-		model.addAttribute("queryMethod", "list");
-		model.addAttribute("facetQueryMethod", "search");
-		return search(searchRequest, model, request);
-	}
-	
-	@RequestMapping("/list")
-	public String list(Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(collectionsPid.getPid());
-		searchRequest.setApplyCutoffs(true);
-		model.addAttribute("queryMethod", "list");
-		model.addAttribute("facetQueryMethod", "search");
-		return search(searchRequest, model, request);
-	}
-	
-	@RequestMapping("/listContents/{pid}")
-	public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.getSearchState().setResourceTypes(
-				Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
-		searchRequest.setRootPid(pid);
-		searchRequest.setApplyCutoffs(false);
-		searchRequest.getSearchState().setRollup(true);
-		model.addAttribute("queryMethod", "listContents");
-		return search(searchRequest, model, request);
-	}
-	
-	@RequestMapping("/listContents")
-	public String listContents(Model model, HttpServletRequest request) {
-		return listContents(collectionsPid.getPid(), model, request);
-	}
-	
-	@RequestMapping("/collections")
-	public String browseCollections(Model model, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
-		searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
-		searchRequest.setApplyCutoffs(true);
-		SearchState searchState = searchRequest.getSearchState();
-		searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
-		searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
-		searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
-		
-		SearchResultResponse result = doSearch(searchRequest, model, request);
-		result.setSelectedContainer(null);
-		
-		model.addAttribute("queryMethod", "collections");
-		model.addAttribute("facetQueryMethod", "search");
-		model.addAttribute("menuId", "browse");
-		model.addAttribute("resultType", "collectionBrowse");
-		model.addAttribute("pageSubtitle", "Browse Collections");
-		return "collectionBrowse";
-	}
-	
-	protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
-		LOG.debug("In handle search actions");
-		searchRequest.setRetrieveFacets(true);
+    @RequestMapping("/search/{pid}")
+    public String search(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(false);
+        model.addAttribute("queryMethod", "search");
+        return search(searchRequest, model, request);
+    }
 
-		// Request object for the search
-		SearchState searchState = searchRequest.getSearchState();
-		
-		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-		
-		if (resultResponse != null) {
-			if (searchRequest.isRetrieveFacets()) {
-				SearchRequest facetRequest = new SearchRequest(searchState, true);
-				facetRequest.setApplyCutoffs(false);
-				if (resultResponse.getSelectedContainer() != null) {
-					SearchState facetState = (SearchState) searchState.clone();
-					facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), resultResponse.getSelectedContainer().getPath());
-					facetRequest.setSearchState(facetState);
-				}
-				
-				// Retrieve the facet result set
-				SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
-				resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
-			}
-			
-			queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
-		}
-		
-		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
-		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
-		model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
-		model.addAttribute("resultResponse", resultResponse);
-		
-		return resultResponse;
-	}
+    @RequestMapping("/search")
+    public String search(Model model, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        // Backwards compability with the previous search url
+        if (!extractOldPathSyntax(request, searchRequest)) {
+            searchRequest.setApplyCutoffs(false);
+        }
+        model.addAttribute("queryMethod", "search");
+        return search(searchRequest, model, request);
+    }
 
-	public void setCollectionsPid(PID collectionsPid) {
-		this.collectionsPid = collectionsPid;
-	}
+    private String search(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+        SearchResultResponse resultResponse = doSearch(searchRequest, model, request);
+
+        model.addAttribute("resultType", "searchResults");
+        model.addAttribute("pageSubtitle", "Search Results");
+
+        return "searchResults";
+    }
+
+    @RequestMapping("/list/{pid}")
+    public String list(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(true);
+        model.addAttribute("queryMethod", "list");
+        model.addAttribute("facetQueryMethod", "search");
+        return search(searchRequest, model, request);
+    }
+
+    @RequestMapping("/list")
+    public String list(Model model, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(collectionsPid.getPid());
+        searchRequest.setApplyCutoffs(true);
+        model.addAttribute("queryMethod", "list");
+        model.addAttribute("facetQueryMethod", "search");
+        return search(searchRequest, model, request);
+    }
+
+    @RequestMapping("/listContents/{pid}")
+    public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.getSearchState().setResourceTypes(
+                Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+        searchRequest.setRootPid(pid);
+        searchRequest.setApplyCutoffs(false);
+        searchRequest.getSearchState().setRollup(true);
+        model.addAttribute("queryMethod", "listContents");
+        return search(searchRequest, model, request);
+    }
+
+    @RequestMapping("/listContents")
+    public String listContents(Model model, HttpServletRequest request) {
+        return listContents(collectionsPid.getPid(), model, request);
+    }
+
+    @RequestMapping("/collections")
+    public String browseCollections(Model model, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        CutoffFacet cutoff = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*!2");
+        searchRequest.getSearchState().getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), cutoff);
+        searchRequest.setApplyCutoffs(true);
+        SearchState searchState = searchRequest.getSearchState();
+        searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeCollection));
+        searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
+        searchState.setFacetsToRetrieve(searchSettings.collectionBrowseFacetNames);
+
+        SearchResultResponse result = doSearch(searchRequest, model, request);
+        result.setSelectedContainer(null);
+
+        model.addAttribute("queryMethod", "collections");
+        model.addAttribute("facetQueryMethod", "search");
+        model.addAttribute("menuId", "browse");
+        model.addAttribute("resultType", "collectionBrowse");
+        model.addAttribute("pageSubtitle", "Browse Collections");
+        return "collectionBrowse";
+    }
+
+    protected SearchResultResponse doSearch(SearchRequest searchRequest, Model model, HttpServletRequest request) {
+        LOG.debug("In handle search actions");
+        searchRequest.setRetrieveFacets(true);
+
+        // Request object for the search
+        SearchState searchState = searchRequest.getSearchState();
+
+        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+
+        if (resultResponse != null) {
+            if (searchRequest.isRetrieveFacets()) {
+                SearchRequest facetRequest = new SearchRequest(searchState, true);
+                facetRequest.setApplyCutoffs(false);
+                if (resultResponse.getSelectedContainer() != null) {
+                    SearchState facetState = (SearchState) searchState.clone();
+                    facetState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(),
+                            resultResponse.getSelectedContainer().getPath());
+                    facetRequest.setSearchState(facetState);
+                }
+
+                // Retrieve the facet result set
+                SearchResultResponse resultResponseFacets = queryLayer.getFacetList(facetRequest);
+                resultResponse.setFacetFields(resultResponseFacets.getFacetFields());
+            }
+
+            queryLayer.populateBreadcrumbs(searchRequest, resultResponse);
+        }
+
+        model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
+        model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
+        model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
+        model.addAttribute("resultResponse", resultResponse);
+
+        return resultResponse;
+    }
+
+    public void setCollectionsPid(PID collectionsPid) {
+        this.collectionsPid = collectionsPid;
+    }
 }

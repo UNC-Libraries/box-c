@@ -77,234 +77,236 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 @Controller
 @RequestMapping("/record")
 public class FullRecordController extends AbstractSolrSearchController {
-	private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
 
-	@Autowired(required = true)
-	private XSLViewResolver xslViewResolver;
-	@Autowired
-	private FedoraDataService fedoraDataService;
-	@Autowired
-	private ObjectPathFactory pathFactory;
-	@Autowired
-	SearchStateFactory stateFactory;
+    @Autowired(required = true)
+    private XSLViewResolver xslViewResolver;
+    @Autowired
+    private FedoraDataService fedoraDataService;
+    @Autowired
+    private ObjectPathFactory pathFactory;
+    @Autowired
+    SearchStateFactory stateFactory;
 
-	private static final int MAX_FOXML_TRIES = 2;
+    private static final int MAX_FOXML_TRIES = 2;
 
-	@RequestMapping(value = "/{pid}", method = RequestMethod.GET)
-	public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-		return getFullRecord(pid, model, request);
-	}
+    @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
+    public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        return getFullRecord(pid, model, request);
+    }
 
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
-		return getFullRecord(id, model, request);
-	}
+    @RequestMapping(method = RequestMethod.GET)
+    public String handleOldRequest(@RequestParam("id") String id, Model model, HttpServletRequest request) {
+        return getFullRecord(id, model, request);
+    }
 
-	public String getFullRecord(String pid, Model model, HttpServletRequest request) {
+    public String getFullRecord(String pid, Model model, HttpServletRequest request) {
 
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
-		// Retrieve the objects record from Solr
-		SimpleIdRequest idRequest = new SimpleIdRequest(pid, accessGroups);
-		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
-		if (briefObject == null) {
-			throw new InvalidRecordRequestException();
-		}
-		// Get path information.
-		model.addAttribute("briefObject", briefObject);
+        // Retrieve the objects record from Solr
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, accessGroups);
+        BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+        if (briefObject == null) {
+            throw new InvalidRecordRequestException();
+        }
+        // Get path information.
+        model.addAttribute("briefObject", briefObject);
 
-		boolean listAccess = AccessUtil.hasListAccessOnly(accessGroups, briefObject);
+        boolean listAccess = AccessUtil.hasListAccessOnly(accessGroups, briefObject);
 
-		Date embargoUntil = briefObject.getActiveEmbargo();
-		if (embargoUntil != null) {
-			model.addAttribute("embargoDate", embargoUntil);
-		}
+        Date embargoUntil = briefObject.getActiveEmbargo();
+        if (embargoUntil != null) {
+            model.addAttribute("embargoDate", embargoUntil);
+        }
 
-		// Retrieve the objects description from Fedora
-		String fullObjectView = null;
-		boolean containsContent = false;
-		
-		Document foxmlView = null;
-		if (!listAccess) {
-			try {
-				int retries = MAX_FOXML_TRIES;
-				do {
-					foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
-					containsContent = foxmlView.getRootElement().getContent().size() > 0;
-				} while (--retries > 0 && !containsContent);
+        // Retrieve the objects description from Fedora
+        String fullObjectView = null;
+        boolean containsContent = false;
 
-				if (containsContent) {
-					Element foxml = foxmlView.getRootElement().getChild("digitalObject", JDOMNamespaceUtil.FOXML_NS);
-					Element mods = FOXMLJDOMUtil.getMostRecentDatastream(Datastream.MD_DESCRIPTIVE, foxml);
-					
-					if (mods != null) {
-						mods = mods.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS)
-								.getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
-						fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", mods);
-					}
-				} else {
-					throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
-				}
-			} catch (AuthorizationException e) {
-				LOG.debug("Access to the full record was denied, user has list only access");
-				listAccess = true;
-			} catch (NotFoundException e) {
-				throw new InvalidRecordRequestException(e);
-			} catch (FedoraException e) {
-				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
-			} catch (RenderViewException e) {
-				LOG.error("Failed to render full record view for " + idRequest.getId(), e);
-			} catch (ServiceException e) {
-				if (e.getCause() instanceof TimeoutException) {
-					LOG.warn("Maximum retrieval time exceeded while retrieving FOXML for full record of {}",
-							idRequest.getId());
-				} else {
-					LOG.error("Failed to retrieve FOXML for object {}" , idRequest.getId(), e);
-				}
-			}
-		}
+        Document foxmlView = null;
+        if (!listAccess) {
+            try {
+                int retries = MAX_FOXML_TRIES;
+                do {
+                    foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
+                    containsContent = foxmlView.getRootElement().getContent().size() > 0;
+                } while (--retries > 0 && !containsContent);
 
-		// Get additional information depending on the type of object since the user has access
-		if (!listAccess) {
-			boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
-			boolean retrieveFacets = briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString());
+                if (containsContent) {
+                    Element foxml = foxmlView.getRootElement().getChild("digitalObject", JDOMNamespaceUtil.FOXML_NS);
+                    Element mods = FOXMLJDOMUtil.getMostRecentDatastream(Datastream.MD_DESCRIPTIVE, foxml);
 
-			if (retrieveChildrenCount) {
-				briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
-			}
+                    if (mods != null) {
+                        mods = mods.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS)
+                                .getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
+                        fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", mods);
+                    }
+                } else {
+                    throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
+                }
+            } catch (AuthorizationException e) {
+                LOG.debug("Access to the full record was denied, user has list only access");
+                listAccess = true;
+            } catch (NotFoundException e) {
+                throw new InvalidRecordRequestException(e);
+            } catch (FedoraException e) {
+                LOG.error("Failed to render full record view for " + idRequest.getId(), e);
+            } catch (RenderViewException e) {
+                LOG.error("Failed to render full record view for " + idRequest.getId(), e);
+            } catch (ServiceException e) {
+                if (e.getCause() instanceof TimeoutException) {
+                    LOG.warn("Maximum retrieval time exceeded while retrieving FOXML for full record of {}",
+                            idRequest.getId());
+                } else {
+                    LOG.error("Failed to retrieve FOXML for object {}" , idRequest.getId(), e);
+                }
+            }
+        }
 
-			if (retrieveFacets) {
-				List<String> facetsToRetrieve = null;
-				if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
-					facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
-				} else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-					facetsToRetrieve = new ArrayList<String>();
-					facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
-				}
+        // Get additional information depending on the type of object since the user has access
+        if (!listAccess) {
+            boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
+            boolean retrieveFacets = briefObject.getContentModel()
+                    .contains(ContentModelHelper.Model.CONTAINER.toString());
 
-				LOG.debug("Retrieving supplemental information for container at path " + briefObject.getPath().toString());
-				SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
-						accessGroups, facetsToRetrieve);
+            if (retrieveChildrenCount) {
+                briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
+            }
 
-				briefObject.getCountMap().put("child", resultResponse.getResultCount());
-				
-				boolean hasFacets = false;
-				for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
-					if (facetField.getValues().size() > 0) {
-						hasFacets = true;
-						break;
-					}
-				}
-				
-				model.addAttribute("hasFacetFields", hasFacets);
-				model.addAttribute("facetFields", resultResponse.getFacetFields());
-			}
+            if (retrieveFacets) {
+                List<String> facetsToRetrieve = null;
+                if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
+                    facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
+                } else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+                    facetsToRetrieve = new ArrayList<String>();
+                    facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
+                }
 
-			model.addAttribute("fullObjectView", fullObjectView);
-		}
+                LOG.debug("Retrieving supplemental information for container at path "
+                + briefObject.getPath().toString());
+                SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
+                        accessGroups, facetsToRetrieve);
 
-		if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
-				briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-			List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
-					searchSettings.maxNeighborResults, accessGroups);
-			model.addAttribute("neighborList", neighbors);
-			
-			// Get previous and next record in the same folder if there are any
-			Map<String, BriefObjectMetadataBean> previousNext = new HashMap<String, BriefObjectMetadataBean>();
-			
-			int selectedRecord = -1;
-			for (BriefObjectMetadataBean neighbor : neighbors) {
-				if (neighbor.getId().equals(briefObject.getId())) {
-					selectedRecord = neighbors.indexOf(neighbor);
-					break;
-				}
-			}
-			
-			if (selectedRecord != -1) {
-				if (selectedRecord > 0) {
-					previousNext.put("previous", neighbors.get(selectedRecord - 1));
-				}
-				
-				if (selectedRecord + 1 < neighbors.size()) {
-					previousNext.put("next", neighbors.get(selectedRecord + 1));
-				}
-			}
+                briefObject.getCountMap().put("child", resultResponse.getResultCount());
 
-			model.addAttribute("previousNext", previousNext);
-		}
-		
-		if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
-				|| briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
-			applyContainerSettings(pid, foxmlView, model, fullObjectView != null);
-		}
+                boolean hasFacets = false;
+                for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
+                    if (facetField.getValues().size() > 0) {
+                        hasFacets = true;
+                        break;
+                    }
+                }
 
-		model.addAttribute("listAccess", listAccess);
+                model.addAttribute("hasFacetFields", hasFacets);
+                model.addAttribute("facetFields", resultResponse.getFacetFields());
+            }
 
-		model.addAttribute("pageSubtitle", briefObject.getTitle());
-		return "fullRecord";
-	}
-	
-	// The default collection tab views which are retrieved if no settings are found
-	private static List<String> defaultViews =
-			Arrays.asList(ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
-	
-	private static List<String> defaultViewsDescriptive =
-			Arrays.asList(ContainerView.DESCRIPTION.name(), ContainerView.STRUCTURE.name(),
-					ContainerView.EXPORTS.name());
-	
-	private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
-		if (foxml == null) {
-			return;
-		}
-		
-		ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
-		
-		if (settings.getViews().size() == 0) {
-			// Only include the metadata tab by default if there is a descriptive record
-			if (hasDescription) {
-				settings.setViews(defaultViewsDescriptive);
-			} else {
-				settings.setViews(defaultViews);
-			}
-		}
-		
-		if (settings.getDefaultView() == null) {
-			settings.setDefaultView(ContainerView.STRUCTURE.name());
-		}
-		
-		// Populate department list
-		if (settings.getViews().contains(ContainerView.DEPARTMENTS.name())) {
-			SearchResultResponse result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
-			model.addAttribute("departmentFacets", result.getFacetFields().get(0));
-		}
-		
-		// Populate file list
-		if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
-			SearchState searchState = stateFactory.createSearchState();
-			searchState.setResourceTypes(
-					Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
-			SearchRequest listContentsRequest = new SearchRequest();
-			listContentsRequest.setSearchState(searchState);
-			listContentsRequest.setRetrieveFacets(false);
-			listContentsRequest.setApplyCutoffs(false);
-			listContentsRequest.setRootPid(pid);
-			listContentsRequest.getSearchState().setRollup(true);
-			
-			SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
-			model.addAttribute("contentListResponse", contentListResponse);
-		}
+            model.addAttribute("fullObjectView", fullObjectView);
+        }
 
-		model.addAttribute("containerSettings", settings);
-	}
+        if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
+                briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+            List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
+                    searchSettings.maxNeighborResults, accessGroups);
+            model.addAttribute("neighborList", neighbors);
 
-	@ResponseStatus(value = HttpStatus.FORBIDDEN)
-	@ExceptionHandler(InvalidRecordRequestException.class)
-	public String handleInvalidRecordRequest(HttpServletRequest request) {
-		request.setAttribute("pageSubtitle", "Invalid record");
-		return "error/invalidRecord";
-	}
+            // Get previous and next record in the same folder if there are any
+            Map<String, BriefObjectMetadataBean> previousNext = new HashMap<String, BriefObjectMetadataBean>();
 
-	public void setXslViewResolver(XSLViewResolver xslViewResolver) {
-		this.xslViewResolver = xslViewResolver;
-	}
+            int selectedRecord = -1;
+            for (BriefObjectMetadataBean neighbor : neighbors) {
+                if (neighbor.getId().equals(briefObject.getId())) {
+                    selectedRecord = neighbors.indexOf(neighbor);
+                    break;
+                }
+            }
+
+            if (selectedRecord != -1) {
+                if (selectedRecord > 0) {
+                    previousNext.put("previous", neighbors.get(selectedRecord - 1));
+                }
+
+                if (selectedRecord + 1 < neighbors.size()) {
+                    previousNext.put("next", neighbors.get(selectedRecord + 1));
+                }
+            }
+
+            model.addAttribute("previousNext", previousNext);
+        }
+
+        if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
+                || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
+            applyContainerSettings(pid, foxmlView, model, fullObjectView != null);
+        }
+
+        model.addAttribute("listAccess", listAccess);
+
+        model.addAttribute("pageSubtitle", briefObject.getTitle());
+        return "fullRecord";
+    }
+
+    // The default collection tab views which are retrieved if no settings are found
+    private static List<String> defaultViews =
+            Arrays.asList(ContainerView.STRUCTURE.name(), ContainerView.EXPORTS.name());
+
+    private static List<String> defaultViewsDescriptive =
+            Arrays.asList(ContainerView.DESCRIPTION.name(), ContainerView.STRUCTURE.name(),
+                    ContainerView.EXPORTS.name());
+
+    private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
+        if (foxml == null) {
+            return;
+        }
+
+        ContainerSettings settings = new ContainerSettings(foxml.getRootElement().getChildren().get(0));
+
+        if (settings.getViews().size() == 0) {
+            // Only include the metadata tab by default if there is a descriptive record
+            if (hasDescription) {
+                settings.setViews(defaultViewsDescriptive);
+            } else {
+                settings.setViews(defaultViews);
+            }
+        }
+
+        if (settings.getDefaultView() == null) {
+            settings.setDefaultView(ContainerView.STRUCTURE.name());
+        }
+
+        // Populate department list
+        if (settings.getViews().contains(ContainerView.DEPARTMENTS.name())) {
+            SearchResultResponse result = queryLayer.getDepartmentList(GroupsThreadStore.getGroups(), pid);
+            model.addAttribute("departmentFacets", result.getFacetFields().get(0));
+        }
+
+        // Populate file list
+        if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
+            SearchState searchState = stateFactory.createSearchState();
+            searchState.setResourceTypes(
+                    Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+            SearchRequest listContentsRequest = new SearchRequest();
+            listContentsRequest.setSearchState(searchState);
+            listContentsRequest.setRetrieveFacets(false);
+            listContentsRequest.setApplyCutoffs(false);
+            listContentsRequest.setRootPid(pid);
+            listContentsRequest.getSearchState().setRollup(true);
+
+            SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
+            model.addAttribute("contentListResponse", contentListResponse);
+        }
+
+        model.addAttribute("containerSettings", settings);
+    }
+
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    @ExceptionHandler(InvalidRecordRequestException.class)
+    public String handleInvalidRecordRequest(HttpServletRequest request) {
+        request.setAttribute("pageSubtitle", "Invalid record");
+        return "error/invalidRecord";
+    }
+
+    public void setXslViewResolver(XSLViewResolver xslViewResolver) {
+        this.xslViewResolver = xslViewResolver;
+    }
 }
