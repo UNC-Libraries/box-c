@@ -20,8 +20,8 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 
 public class CommitAction extends AbstractIndexingAction {
 
-	@Override
-	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		solrUpdateDriver.commit();
-	}
+    @Override
+    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        solrUpdateDriver.commit();
+    }
 }

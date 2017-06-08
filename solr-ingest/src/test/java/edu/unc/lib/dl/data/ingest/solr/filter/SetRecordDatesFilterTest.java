@@ -41,72 +41,72 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  * @author harring
  */
 public class SetRecordDatesFilterTest {
-	
-	private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
-	private static final String DATE_ADDED = "2017-01-01";
-	private static final String DATE_MODIFIED = "2017-05-31";
-	private static final String BAD_DATE = "abcd";
-	
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	@Mock
-	private DocumentIndexingPackage dip;
-	@Mock
-	private PID pid;
-	@Mock
-	private ContentObject contentObj;
-	@Mock
-	private Resource resource;
-	
-	@Rule
-	public ExpectedException expectedEx = ExpectedException.none();
-	
-	private IndexDocumentBean idb;
-	private SetRecordDatesFilter filter;
-	
-	@Before
-	public void setup() throws Exception {
-		idb = new IndexDocumentBean();
-		initMocks(this);
 
-		when(pid.getPid()).thenReturn(PID_STRING);
-		
-		when(dip.getDocument()).thenReturn(idb);
-		when(dip.getPid()).thenReturn(pid);
-		when(dip.getContentObject()).thenReturn(contentObj);
-		
-		when(contentObj.getResource()).thenReturn(resource);
-		
-		when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
-			.thenReturn(ResourceFactory.createResource(DATE_ADDED));
-		when(resource.getPropertyResourceValue(Fcrepo4Repository.lastModified))
-			.thenReturn(ResourceFactory.createResource(DATE_MODIFIED));
+    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+    private static final String DATE_ADDED = "2017-01-01";
+    private static final String DATE_MODIFIED = "2017-05-31";
+    private static final String BAD_DATE = "abcd";
 
-		filter = new SetRecordDatesFilter();
-	}
-	
-	@Test
-	public void testCreateDate() throws Exception {
-		filter.filter(dip);
-		assertEquals(DATE_ADDED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateAdded()));
-	}
-	
-	@Test
-	public void testUpdateDate() throws Exception {
-		filter.filter(dip);
-		assertEquals(DATE_MODIFIED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateUpdated()));
-	}
-	
-	@Test
-	public void testUnparseableDate() throws Exception {
-		expectedEx.expect((IndexingException.class));
-		// checks that the exception message contains the substring param
-		expectedEx.expectMessage("Failed to parse record dates from ");
-		
-		when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
-		.thenReturn(ResourceFactory.createResource(BAD_DATE));
-		
-		filter.filter(dip);
-	}
-	
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    @Mock
+    private DocumentIndexingPackage dip;
+    @Mock
+    private PID pid;
+    @Mock
+    private ContentObject contentObj;
+    @Mock
+    private Resource resource;
+
+    @Rule
+    public ExpectedException expectedEx = ExpectedException.none();
+
+    private IndexDocumentBean idb;
+    private SetRecordDatesFilter filter;
+
+    @Before
+    public void setup() throws Exception {
+        idb = new IndexDocumentBean();
+        initMocks(this);
+
+        when(pid.getPid()).thenReturn(PID_STRING);
+
+        when(dip.getDocument()).thenReturn(idb);
+        when(dip.getPid()).thenReturn(pid);
+        when(dip.getContentObject()).thenReturn(contentObj);
+
+        when(contentObj.getResource()).thenReturn(resource);
+
+        when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
+            .thenReturn(ResourceFactory.createResource(DATE_ADDED));
+        when(resource.getPropertyResourceValue(Fcrepo4Repository.lastModified))
+            .thenReturn(ResourceFactory.createResource(DATE_MODIFIED));
+
+        filter = new SetRecordDatesFilter();
+    }
+
+    @Test
+    public void testCreateDate() throws Exception {
+        filter.filter(dip);
+        assertEquals(DATE_ADDED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateAdded()));
+    }
+
+    @Test
+    public void testUpdateDate() throws Exception {
+        filter.filter(dip);
+        assertEquals(DATE_MODIFIED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateUpdated()));
+    }
+
+    @Test
+    public void testUnparseableDate() throws Exception {
+        expectedEx.expect((IndexingException.class));
+        // checks that the exception message contains the substring param
+        expectedEx.expectMessage("Failed to parse record dates from ");
+
+        when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
+        .thenReturn(ResourceFactory.createResource(BAD_DATE));
+
+        filter.filter(dip);
+    }
+
 }

@@ -20,15 +20,15 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 
 /**
  * Deletes all records from the index
- * 
+ *
  * @author bbpennel
  *
  */
 public class ClearIndexAction extends AbstractIndexingAction {
 
-	@Override
-	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		solrUpdateDriver.deleteByQuery("*:*");
-		solrUpdateDriver.commit();
-	}
+    @Override
+    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        solrUpdateDriver.deleteByQuery("*:*");
+        solrUpdateDriver.commit();
+    }
 }

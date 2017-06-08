@@ -32,50 +32,50 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  *
  */
 public class IndexTreeInplaceAction extends UpdateTreeAction {
-	private static final Logger log = LoggerFactory.getLogger(IndexTreeInplaceAction.class);
+    private static final Logger log = LoggerFactory.getLogger(IndexTreeInplaceAction.class);
 
-	@Override
-	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		log.debug("Starting inplace indexing of {}", updateRequest.getPid().getPid());
+    @Override
+    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        log.debug("Starting inplace indexing of {}", updateRequest.getPid().getPid());
 
-		super.performAction(updateRequest);
+        super.performAction(updateRequest);
 
-		// Force commit the updates currently staged
-		solrUpdateDriver.commit();
-		// Cleanup any objects in the tree that were no updated
-		this.deleteStaleChildren(updateRequest);
+        // Force commit the updates currently staged
+        solrUpdateDriver.commit();
+        // Cleanup any objects in the tree that were no updated
+        this.deleteStaleChildren(updateRequest);
 
-		if (log.isDebugEnabled())
-			log.debug(String.format("Finished inplace indexing of {}.  {} objects updated in {}ms", updateRequest.getPid()
-					.getPid(), updateRequest.getChildrenPending(),
-					System.currentTimeMillis() - updateRequest.getTimeStarted()));
-	}
+        if (log.isDebugEnabled())
+            log.debug(String.format("Finished inplace indexing of {}.  {} objects updated in {}ms", updateRequest.getPid()
+                    .getPid(), updateRequest.getChildrenPending(),
+                    System.currentTimeMillis() - updateRequest.getTimeStarted()));
+    }
 
-	public void deleteStaleChildren(SolrUpdateRequest updateRequest) throws IndexingException {
-		try {
-			long startTime = updateRequest.getTimeStarted();
+    public void deleteStaleChildren(SolrUpdateRequest updateRequest) throws IndexingException {
+        try {
+            long startTime = updateRequest.getTimeStarted();
 
-			StringBuilder query = new StringBuilder();
+            StringBuilder query = new StringBuilder();
 
-			if (TARGET_ALL.equals(updateRequest.getTargetID())) {
-				query.append("*:*");
-			} else {
-				// Get the path facet value for the starting point, since we need the hierarchy tier.
-				BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
+            if (TARGET_ALL.equals(updateRequest.getTargetID())) {
+                query.append("*:*");
+            } else {
+                // Get the path facet value for the starting point, since we need the hierarchy tier.
+                BriefObjectMetadata ancestorPathBean = getRootAncestorPath(updateRequest);
 
-				// Limit cleanup scope to root pid
-				query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
-						.append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
-			}
+                // Limit cleanup scope to root pid
+                query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
+                        .append(SolrSettings.sanitize(ancestorPathBean.getPath().getSearchValue()));
+            }
 
-			// Target any children with timestamp older than start time.
-			query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name())).append(":[* TO ")
-					.append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime)).append("]");
+            // Target any children with timestamp older than start time.
+            query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name())).append(":[* TO ")
+                    .append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime)).append("]");
 
-			solrUpdateDriver.deleteByQuery(query.toString());
-		} catch (Exception e) {
-			throw new IndexingException("Error encountered in deleteStaleChildren for "
-					+ updateRequest.getTargetID(), e);
-		}
-	}
+            solrUpdateDriver.deleteByQuery(query.toString());
+        } catch (Exception e) {
+            throw new IndexingException("Error encountered in deleteStaleChildren for "
+                    + updateRequest.getTargetID(), e);
+        }
+    }
 }

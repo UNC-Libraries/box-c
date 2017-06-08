@@ -50,85 +50,85 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateChildSetActionTest {
 
-	@Mock
-	private SolrUpdateDriver driver;
-	@Mock
-	private DocumentIndexingPipeline pipeline;
-	@Mock
-	private TripleStoreQueryService tsqs;
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
+    @Mock
+    private SolrUpdateDriver driver;
+    @Mock
+    private DocumentIndexingPipeline pipeline;
+    @Mock
+    private TripleStoreQueryService tsqs;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackageFactory factory;
 
-	private UpdateChildSetAction action;
+    private UpdateChildSetAction action;
 
-	private ChildSetRequest request;
+    private ChildSetRequest request;
 
-	@Before
-	public void setup() throws SolrServerException, IOException {
-		initMocks(this);
+    @Before
+    public void setup() throws SolrServerException, IOException {
+        initMocks(this);
 
-		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("0")));
+        when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("0")));
 
-		action = new UpdateChildSetAction();
-		action.setTsqs(tsqs);
-		action.setPipeline(pipeline);
-		action.setSolrUpdateDriver(driver);
-		action.setAddDocumentMode(false);
-		action.setCollectionsPid(new PID("uuid:1"));
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-		action.setFactory(factory);
-		action.init();
-	}
+        action = new UpdateChildSetAction();
+        action.setTsqs(tsqs);
+        action.setPipeline(pipeline);
+        action.setSolrUpdateDriver(driver);
+        action.setAddDocumentMode(false);
+        action.setCollectionsPid(new PID("uuid:1"));
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
+        action.setFactory(factory);
+        action.init();
+    }
 
-	@Test(expected = IndexingException.class)
-	public void testInvalidRequest() throws Exception {
+    @Test(expected = IndexingException.class)
+    public void testInvalidRequest() throws Exception {
 
-		SolrUpdateRequest request = mock(SolrUpdateRequest.class);
+        SolrUpdateRequest request = mock(SolrUpdateRequest.class);
 
-		action.performAction(request);
+        action.performAction(request);
 
-	}
+    }
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testPerformAction() throws Exception {
-		List<PID> children = Arrays.asList(new PID("c3"));
-		
-		when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenReturn(children, (List<PID>) null);
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testPerformAction() throws Exception {
+        List<PID> children = Arrays.asList(new PID("c3"));
 
-		request = new ChildSetRequest("c0", Arrays.asList("c1", "c2"), IndexingActionType.ADD);
+        when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenReturn(children, (List<PID>) null);
 
-		action.performAction(request);
+        request = new ChildSetRequest("c0", Arrays.asList("c1", "c2"), IndexingActionType.ADD);
 
-		// Only the two top level objects specified should have been looked up
-		verify(tsqs, times(2)).queryResourceIndex(anyString());
-		// DIPs for all objects except c4 should have been retrieved
-		verify(loader, times(3)).loadChildren(any(DocumentIndexingPackage.class));
-		//verify(dipFactory, times(4)).createDocumentIndexingPackage(any(PID.class));
-		// All objects except c0 (the parent) should have been updated
-		verify(driver, times(3)).updateDocument(eq("set"), any(IndexDocumentBean.class));
+        action.performAction(request);
 
-	}
+        // Only the two top level objects specified should have been looked up
+        verify(tsqs, times(2)).queryResourceIndex(anyString());
+        // DIPs for all objects except c4 should have been retrieved
+        verify(loader, times(3)).loadChildren(any(DocumentIndexingPackage.class));
+        //verify(dipFactory, times(4)).createDocumentIndexingPackage(any(PID.class));
+        // All objects except c0 (the parent) should have been updated
+        verify(driver, times(3)).updateDocument(eq("set"), any(IndexDocumentBean.class));
 
-	@Test
-	public void testPerformActionNoRequestTargets() throws Exception {
+    }
 
-		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
-		IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);
-		when(dipRoot.getDocument()).thenReturn(idbRoot);
-		List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"));
-		when(dipRoot.getChildren()).thenReturn(children1);
+    @Test
+    public void testPerformActionNoRequestTargets() throws Exception {
 
-		request = new ChildSetRequest("c0", new ArrayList<String>(), IndexingActionType.ADD);
+        DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
+        IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);
+        when(dipRoot.getDocument()).thenReturn(idbRoot);
+        List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"));
+        when(dipRoot.getChildren()).thenReturn(children1);
 
-		action.performAction(request);
+        request = new ChildSetRequest("c0", new ArrayList<String>(), IndexingActionType.ADD);
 
-		verify(tsqs, never()).queryResourceIndex(anyString());
-		//verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
-		// No updates should have occurred
-		verify(driver, never()).updateDocument(eq("set"), any(IndexDocumentBean.class));
+        action.performAction(request);
 
-	}
+        verify(tsqs, never()).queryResourceIndex(anyString());
+        //verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
+        // No updates should have occurred
+        verify(driver, never()).updateDocument(eq("set"), any(IndexDocumentBean.class));
+
+    }
 }

@@ -40,96 +40,96 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
 public class SetContentStatusFilterTest extends Assert {
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackageFactory factory;
 
-	private Map<String, List<String>> triples;
+    private Map<String, List<String>> triples;
 
-	private SetContentStatusFilter filter;
+    private SetContentStatusFilter filter;
 
-	@Before
-	public void setUp() throws Exception {
-		initMocks(this);
-		
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
+    @Before
+    public void setUp() throws Exception {
+        initMocks(this);
 
-		triples = new HashMap<String, List<String>>();
-		triples.put(FedoraProperty.disseminates.toString(),
-				Arrays.asList("info:fedora/uuid:item/" + Datastream.RELS_EXT.getName()));
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
 
-		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
+        triples = new HashMap<String, List<String>>();
+        triples.put(FedoraProperty.disseminates.toString(),
+                Arrays.asList("info:fedora/uuid:item/" + Datastream.RELS_EXT.getName()));
 
-		filter = new SetContentStatusFilter();
-	}
+        when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
 
-	@Test
-	public void testDescribedQuery() throws Exception {
+        filter = new SetContentStatusFilter();
+    }
 
-		triples.put(FedoraProperty.hasModel.toString(),
-				Arrays.asList(Model.SIMPLE.toString()));
+    @Test
+    public void testDescribedQuery() throws Exception {
 
-		triples.put(FedoraProperty.disseminates.toString(), Arrays.asList("info:fedora/uuid:item/"
-				+ Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
-				+ Datastream.RELS_EXT.getName()));
+        triples.put(FedoraProperty.hasModel.toString(),
+                Arrays.asList(Model.SIMPLE.toString()));
 
-		when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
-		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-		filter.filter(dip);
-		IndexDocumentBean idb = dip.getDocument();
+        triples.put(FedoraProperty.disseminates.toString(), Arrays.asList("info:fedora/uuid:item/"
+                + Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
+                + Datastream.RELS_EXT.getName()));
 
-		assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
-		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
+        when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
+        DocumentIndexingPackage dip = factory.createDip("uuid:item");
+        filter.filter(dip);
+        IndexDocumentBean idb = dip.getDocument();
 
-	}
+        assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
+        assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
 
-	@Test
-	public void testNotDescribedQuery() throws Exception {
+    }
 
-		when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
-		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-		filter.filter(dip);
-		IndexDocumentBean idb = dip.getDocument();
+    @Test
+    public void testNotDescribedQuery() throws Exception {
 
-		assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
-		assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
+        when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
+        DocumentIndexingPackage dip = factory.createDip("uuid:item");
+        filter.filter(dip);
+        IndexDocumentBean idb = dip.getDocument();
 
-	}
+        assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
+        assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
 
-	@Test
-	public void testAggregateNoDWOQuery() throws Exception {
-		triples.put(FedoraProperty.hasModel.toString(),
-				Arrays.asList(Model.AGGREGATE_WORK.toString()));
+    }
 
-		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-		filter.filter(dip);
-		IndexDocumentBean idb = dip.getDocument();
+    @Test
+    public void testAggregateNoDWOQuery() throws Exception {
+        triples.put(FedoraProperty.hasModel.toString(),
+                Arrays.asList(Model.AGGREGATE_WORK.toString()));
 
-		assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
-		assertTrue("Object incorrectly labeled as described",
-				idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
-		assertTrue("Aggregate should not have a default web object assigned",
-				idb.getContentStatus().contains(FacetConstants.CONTENT_NO_DEFAULT_OBJECT));
-	}
+        DocumentIndexingPackage dip = factory.createDip("uuid:item");
+        filter.filter(dip);
+        IndexDocumentBean idb = dip.getDocument();
 
-	@Test
-	public void testAggregateWithDWOQuery() throws Exception {
+        assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
+        assertTrue("Object incorrectly labeled as described",
+                idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
+        assertTrue("Aggregate should not have a default web object assigned",
+                idb.getContentStatus().contains(FacetConstants.CONTENT_NO_DEFAULT_OBJECT));
+    }
 
-		triples.put(CDRProperty.defaultWebObject.toString(),
-				Arrays.asList("dwo"));
+    @Test
+    public void testAggregateWithDWOQuery() throws Exception {
 
-		triples.put(FedoraProperty.hasModel.toString(),
-				Arrays.asList(Model.AGGREGATE_WORK.toString()));
+        triples.put(CDRProperty.defaultWebObject.toString(),
+                Arrays.asList("dwo"));
 
-		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-		filter.filter(dip);
-		IndexDocumentBean idb = dip.getDocument();
+        triples.put(FedoraProperty.hasModel.toString(),
+                Arrays.asList(Model.AGGREGATE_WORK.toString()));
 
-		assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
-		assertTrue("Object incorrectly labeled as described",
-				idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
-		assertTrue("Aggregate should not have a default web object assigned",
-				idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
-	}
+        DocumentIndexingPackage dip = factory.createDip("uuid:item");
+        filter.filter(dip);
+        IndexDocumentBean idb = dip.getDocument();
+
+        assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
+        assertTrue("Object incorrectly labeled as described",
+                idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
+        assertTrue("Aggregate should not have a default web object assigned",
+                idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
+    }
 }

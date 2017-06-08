@@ -42,76 +42,76 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class DocumentIndexingPackageDataLoaderTest {
-	
-	private DocumentIndexingPackageDataLoader dataLoader;
-	
-	@Mock
-	private Repository repository;
-	@Mock
-	private DocumentIndexingPackage dip;
-	@Mock
-	private PID pid;
-	
-	@Mock
-	private ContentObject contentObj;
-	@Mock
-	private BinaryObject modsBinary;
-	
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
-		
-		dataLoader = new DocumentIndexingPackageDataLoader();
-		dataLoader.setRepository(repository);
-		dataLoader.init();
-		
-		when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
-		when(dip.getPid()).thenReturn(pid);
-	}
-	
-	@Test
-	public void testLoadMods() throws Exception {
-		InputStream modsStream = new FileInputStream(new File(
-				"src/test/resources/datastream/inventoryMods.xml"));
-		
-		when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
-		when(contentObj.getMODS()).thenReturn(modsBinary);
-		when(modsBinary.getBinaryStream()).thenReturn(modsStream);
-		
-		Element modsElement = dataLoader.loadMods(dip);
-		
-		assertNotNull(modsElement);
-		assertEquals("mods", modsElement.getName());
-		
-		verify(repository).getContentObject(any(PID.class));
-	}
-	
-	@Test
-	public void testLoadNoMods() throws Exception {
-		
-		when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
-		when(contentObj.getMODS()).thenReturn(null);
-		
-		Element modsElement = dataLoader.loadMods(dip);
-		
-		assertNull(modsElement);
-		
-		verify(repository).getContentObject(any(PID.class));
-	}
-	
-	@Test(expected = IndexingException.class)
-	public void testLoadBadMods() throws Exception {
-		InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
-		
-		when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
-		when(contentObj.getMODS()).thenReturn(modsBinary);
-		when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
-		
-		dataLoader.loadMods(dip);
-	}
+
+    private DocumentIndexingPackageDataLoader dataLoader;
+
+    @Mock
+    private Repository repository;
+    @Mock
+    private DocumentIndexingPackage dip;
+    @Mock
+    private PID pid;
+
+    @Mock
+    private ContentObject contentObj;
+    @Mock
+    private BinaryObject modsBinary;
+
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
+
+        dataLoader = new DocumentIndexingPackageDataLoader();
+        dataLoader.setRepository(repository);
+        dataLoader.init();
+
+        when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
+        when(dip.getPid()).thenReturn(pid);
+    }
+
+    @Test
+    public void testLoadMods() throws Exception {
+        InputStream modsStream = new FileInputStream(new File(
+                "src/test/resources/datastream/inventoryMods.xml"));
+
+        when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+        when(contentObj.getMODS()).thenReturn(modsBinary);
+        when(modsBinary.getBinaryStream()).thenReturn(modsStream);
+
+        Element modsElement = dataLoader.loadMods(dip);
+
+        assertNotNull(modsElement);
+        assertEquals("mods", modsElement.getName());
+
+        verify(repository).getContentObject(any(PID.class));
+    }
+
+    @Test
+    public void testLoadNoMods() throws Exception {
+
+        when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+        when(contentObj.getMODS()).thenReturn(null);
+
+        Element modsElement = dataLoader.loadMods(dip);
+
+        assertNull(modsElement);
+
+        verify(repository).getContentObject(any(PID.class));
+    }
+
+    @Test(expected = IndexingException.class)
+    public void testLoadBadMods() throws Exception {
+        InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
+
+        when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+        when(contentObj.getMODS()).thenReturn(modsBinary);
+        when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
+
+        dataLoader.loadMods(dip);
+    }
 }

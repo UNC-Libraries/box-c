@@ -49,58 +49,58 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
  */
 public class SetFullTextFilterTest extends Assert {
 
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	@Mock
-	private AccessClient accessClient;
-	private DocumentIndexingPackageFactory factory;
-	private DocumentIndexingPackage dip;
-	@Mock
-	private MIMETypedStream stream;
-	Map<String, List<String>> triples;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    @Mock
+    private AccessClient accessClient;
+    private DocumentIndexingPackageFactory factory;
+    private DocumentIndexingPackage dip;
+    @Mock
+    private MIMETypedStream stream;
+    Map<String, List<String>> triples;
 
-	private SetFullTextFilter filter;
+    private SetFullTextFilter filter;
 
-	@Before
-	public void setup() throws Exception {
+    @Before
+    public void setup() throws Exception {
 
-		initMocks(this);
-		
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-		
-		triples = new HashMap<>();
-		
-		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
+        initMocks(this);
 
-		filter = new SetFullTextFilter();
-		filter.setAccessClient(accessClient);
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
 
-		when(stream.getStream()).thenReturn("Full text value".getBytes());
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.MD_FULL_TEXT.name()), anyString()))
-				.thenReturn(stream);
-		
-		dip = factory.createDip("uuid:item");
-	}
+        triples = new HashMap<>();
 
-	@Test
-	public void testFullText() throws Exception {
-		triples.put(CDRProperty.fullText.toString(), Arrays.asList("pid/MD_FULL_TEXT"));
+        when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
 
-		filter.filter(dip);
+        filter = new SetFullTextFilter();
+        filter.setAccessClient(accessClient);
 
-		verify(stream).getStream();
-		assertNotNull(dip.getDocument().getFullText());
+        when(stream.getStream()).thenReturn("Full text value".getBytes());
+        when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.MD_FULL_TEXT.name()), anyString()))
+                .thenReturn(stream);
 
-	}
+        dip = factory.createDip("uuid:item");
+    }
 
-	@Test
-	public void testNoFullText() throws Exception {
-		filter.filter(dip);
+    @Test
+    public void testFullText() throws Exception {
+        triples.put(CDRProperty.fullText.toString(), Arrays.asList("pid/MD_FULL_TEXT"));
 
-		verify(stream, never()).getStream();
-		assertNull(dip.getDocument().getFullText());
+        filter.filter(dip);
 
-	}
+        verify(stream).getStream();
+        assertNotNull(dip.getDocument().getFullText());
+
+    }
+
+    @Test
+    public void testNoFullText() throws Exception {
+        filter.filter(dip);
+
+        verify(stream, never()).getStream();
+        assertNull(dip.getDocument().getFullText());
+
+    }
 
 }
