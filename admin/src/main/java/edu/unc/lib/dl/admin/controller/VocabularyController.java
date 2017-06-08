@@ -51,79 +51,79 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
 @Controller
 public class VocabularyController extends AbstractSearchController {
 
-	@Autowired
-	private VocabularyHelperManager vocabularies;
+    @Autowired
+    private VocabularyHelperManager vocabularies;
 
-	@RequestMapping(value = { "invalidVocab", "invalidVocab/{pid}" }, method = RequestMethod.GET)
-	public String invalidVocab() {
-		return "report/invalidVocabulary";
-	}
+    @RequestMapping(value = { "invalidVocab", "invalidVocab/{pid}" }, method = RequestMethod.GET)
+    public String invalidVocab() {
+        return "report/invalidVocabulary";
+    }
 
-	@RequestMapping(value = { "getInvalidVocab", "getInvalidVocab/" }, method = RequestMethod.GET)
-	public @ResponseBody
-	Map<String, Object> getInvalidVocab(HttpServletRequest request, HttpServletResponse response) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(collectionsPid.getPid());
+    @RequestMapping(value = { "getInvalidVocab", "getInvalidVocab/" }, method = RequestMethod.GET)
+    public @ResponseBody
+    Map<String, Object> getInvalidVocab(HttpServletRequest request, HttpServletResponse response) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(collectionsPid.getPid());
 
-		return getInvalidVocab(searchRequest);
-	}
+        return getInvalidVocab(searchRequest);
+    }
 
-	@RequestMapping(value = "getInvalidVocab/{pid}", method = RequestMethod.GET)
-	public @ResponseBody
-	Map<String, Object> getInvalidVocab(@PathVariable("pid") String pid, HttpServletRequest request,
-			HttpServletResponse response) {
-		response.setContentType("application/json");
+    @RequestMapping(value = "getInvalidVocab/{pid}", method = RequestMethod.GET)
+    public @ResponseBody
+    Map<String, Object> getInvalidVocab(@PathVariable("pid") String pid, HttpServletRequest request,
+            HttpServletResponse response) {
+        response.setContentType("application/json");
 
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(pid);
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
 
-		return getInvalidVocab(searchRequest);
-	}
+        return getInvalidVocab(searchRequest);
+    }
 
-	public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
+    public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
 
-		BriefObjectMetadata selectedContainer =
-				queryLayer.addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(), false);
+        BriefObjectMetadata selectedContainer =
+                queryLayer.addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(), false);
 
-		Map<String, Object> results = new LinkedHashMap<String, Object>();
+        Map<String, Object> results = new LinkedHashMap<String, Object>();
 
-		Map<String, Object> vocabResults = new HashMap<>();
+        Map<String, Object> vocabResults = new HashMap<>();
 
-		Set<VocabularyHelper> helpers = vocabularies.getHelpers(collectionsPid);
-		if (helpers != null) {
-			for (VocabularyHelper helper : helpers) {
-				String prefix = helper.getInvalidTermPrefix();
-				String queryTerm = CDRProperty.invalidTerm.getPredicate() + "|" + prefix;
-				SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest, queryTerm);
+        Set<VocabularyHelper> helpers = vocabularies.getHelpers(collectionsPid);
+        if (helpers != null) {
+            for (VocabularyHelper helper : helpers) {
+                String prefix = helper.getInvalidTermPrefix();
+                String queryTerm = CDRProperty.invalidTerm.getPredicate() + "|" + prefix;
+                SearchResultResponse resultResponse = queryLayer.getRelationSet(searchRequest, queryTerm);
 
-				List<Map<String, Object>> vocabTypeResults = new ArrayList<>();
-				String predicate = invalidTerm.getPredicate();
-				for (BriefObjectMetadata record : resultResponse.getResultList()) {
-					Map<String, Object> data = new HashMap<>();
-					data.put("id", record.getId());
-					data.put("title", record.getTitle());
-					List<String> invalidTerms = record.getRelation(predicate);
-					List<String> resultTerms = new ArrayList<>();
-					for (String prefixedTerm : invalidTerms) {
-						String parts[] = prefixedTerm.split("\\|", 2);
-						if (parts[0].equals(prefix)) {
-							resultTerms.add(parts[1]);
-						}
-					}
-					data.put("invalidTerms", resultTerms);
+                List<Map<String, Object>> vocabTypeResults = new ArrayList<>();
+                String predicate = invalidTerm.getPredicate();
+                for (BriefObjectMetadata record : resultResponse.getResultList()) {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("id", record.getId());
+                    data.put("title", record.getTitle());
+                    List<String> invalidTerms = record.getRelation(predicate);
+                    List<String> resultTerms = new ArrayList<>();
+                    for (String prefixedTerm : invalidTerms) {
+                        String parts[] = prefixedTerm.split("\\|", 2);
+                        if (parts[0].equals(prefix)) {
+                            resultTerms.add(parts[1]);
+                        }
+                    }
+                    data.put("invalidTerms", resultTerms);
 
-					vocabTypeResults.add(data);
-				}
+                    vocabTypeResults.add(data);
+                }
 
-				vocabResults.put(helper.getInvalidTermPrefix(), vocabTypeResults);
-			}
-		}
+                vocabResults.put(helper.getInvalidTermPrefix(), vocabTypeResults);
+            }
+        }
 
-		results.put("vocabTypes", vocabResults);
-		results.put("container", SerializationUtil.metadataToMap(selectedContainer, groups));
+        results.put("vocabTypes", vocabResults);
+        results.put("container", SerializationUtil.metadataToMap(selectedContainer, groups));
 
-		return results;
-	}
+        return results;
+    }
 
 }
