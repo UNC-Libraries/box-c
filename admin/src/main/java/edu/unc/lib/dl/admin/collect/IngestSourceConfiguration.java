@@ -25,53 +25,53 @@ import java.util.List;
  */
 public class IngestSourceConfiguration {
 
-	private String id;
-	private String name;
-	private String base;
-	private List<String> patterns;
-	private List<String> containers;
+    private String id;
+    private String name;
+    private String base;
+    private List<String> patterns;
+    private List<String> containers;
 
-	public String getId() {
-		return id;
-	}
+    public String getId() {
+        return id;
+    }
 
-	public void setId(String id) {
-		this.id = id;
-	}
+    public void setId(String id) {
+        this.id = id;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public List<String> getPatterns() {
-		return patterns;
-	}
+    public List<String> getPatterns() {
+        return patterns;
+    }
 
-	public void setPatterns(List<String> patterns) {
-		this.patterns = patterns;
-	}
+    public void setPatterns(List<String> patterns) {
+        this.patterns = patterns;
+    }
 
-	public String getBase() {
-		return base;
-	}
+    public String getBase() {
+        return base;
+    }
 
-	public void setBase(String base) {
-		if (!base.endsWith("/")) {
-			base += "/";
-		}
-		this.base = base;
-	}
+    public void setBase(String base) {
+        if (!base.endsWith("/")) {
+            base += "/";
+        }
+        this.base = base;
+    }
 
-	public List<String> getContainers() {
-		return containers;
-	}
+    public List<String> getContainers() {
+        return containers;
+    }
 
-	public void setContainers(List<String> containers) {
-		this.containers = containers;
-	}
+    public void setContainers(List<String> containers) {
+        this.containers = containers;
+    }
 
 }
