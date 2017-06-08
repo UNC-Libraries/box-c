@@ -28,44 +28,50 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public abstract class AbstractFedoraEnhancement extends Enhancement<Element> {
-	
-	protected AbstractFedoraEnhancementService service;
-	protected EnhancementMessage message;
-	protected ManagementClient client;
-	
-	protected AbstractFedoraEnhancement(AbstractFedoraEnhancementService service, PID pid) {
-		super(pid);
-		this.service = service;
-		this.message = null;
-		this.client = service.getManagementClient();
-	}
-	
-	protected AbstractFedoraEnhancement(AbstractFedoraEnhancementService service, EnhancementMessage message) {
-		super(message.getPid());
-		this.message = message;
-		this.service = service;
-		this.client = service.getManagementClient();
-	}
-	
-	protected Document retrieveFoxml() throws FedoraException {
-		if (message != null) {
-			if (message.getFoxml() == null) {
-				Document foxml = service.getManagementClient().getObjectXML(pid);
-				message.setFoxml(foxml);
-			}
-			return message.getFoxml();
-		}
-		
-		return service.getManagementClient().getObjectXML(pid);
-	}
-	
-	protected List<String> getSourceData() throws FedoraException {
-		return getSourceData(this.retrieveFoxml());
-	}
-	
-	protected List<String> getSourceData(Document foxml) throws FedoraException {
-		Element relsExt = FOXMLJDOMUtil.getRelsExt(foxml);
-		return FOXMLJDOMUtil.getRelationValues(ContentModelHelper.CDRProperty.sourceData.getPredicate(), JDOMNamespaceUtil.CDR_NS, relsExt);
-	}
+
+     protected AbstractFedoraEnhancementService service;
+     protected EnhancementMessage message;
+     protected ManagementClient client;
+
+     protected AbstractFedoraEnhancement(AbstractFedoraEnhancementService service, PID pid) {
+          super(pid);
+          this.service = service;
+          this.message = null;
+          this.client = service.getManagementClient();
+     }
+
+     protected AbstractFedoraEnhancement(AbstractFedoraEnhancementService service, EnhancementMessage message) {
+          super(message.getPid());
+          this.message = message;
+          this.service = service;
+          this.client = service.getManagementClient();
+     }
+
+     protected Document retrieveFoxml() throws FedoraException {
+          if (message != null) {
+               if (message.getFoxml() == null) {
+                    Document foxml = service.getManagementClient().getObjectXML(pid);
+                    message.setFoxml(foxml);
+               }
+               return message.getFoxml();
+          }
+
+          return service.getManagementClient().getObjectXML(pid);
+     }
+
+     protected List<String> getSourceData() throws FedoraException {
+          return getSourceData(this.retrieveFoxml());
+     }
+
+     protected List<String> getSourceData(Document foxml) throws FedoraException {
+          Element relsExt = FOXMLJDOMUtil.getRelsExt(foxml);
+          return FOXMLJDOMUtil.getRelationValues(ContentModelHelper.CDRProperty.sourceData.getPredicate(),
+                  JDOMNamespaceUtil.CDR_NS, relsExt);
+     }
 }

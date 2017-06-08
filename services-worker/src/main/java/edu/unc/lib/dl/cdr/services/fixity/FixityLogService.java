@@ -23,54 +23,59 @@ import java.util.concurrent.Executors;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * 
+ * @author mdaines
+ *
+ */
 public class FixityLogService {
-	
-	private static final Log LOG = LogFactory.getLog(FixityLogService.class);
 
-	protected ExecutorService executorService = null;
-	private FixityLogTaskFactory fixityLogTaskFactory = null;
-	private Timer pollingTimer = null;
-	private long pollingIntervalSeconds = 60;
+     private static final Log LOG = LogFactory.getLog(FixityLogService.class);
 
-	public void init() {
-		this.executorService = Executors.newSingleThreadExecutor();
-		
-		this.pollingTimer = new Timer();
-		this.pollingTimer.schedule(new ExecuteTask(), 0, pollingIntervalSeconds * 1000);
-	}
+     protected ExecutorService executorService = null;
+     private FixityLogTaskFactory fixityLogTaskFactory = null;
+     private Timer pollingTimer = null;
+     private long pollingIntervalSeconds = 60;
 
-	public void destroy() {
-		this.executorService.shutdown();
-		this.pollingTimer.cancel();
-	}
-	
-	class ExecuteTask extends TimerTask {
-		public void run() {
-			executeFixityLogTask();
-		}
-	}
-	
-	private void executeFixityLogTask() {
-		LOG.debug("Creating and executing fixity log task");
-			
-		FixityLogTask task = this.fixityLogTaskFactory.createTask();
-		this.executorService.execute(task);
-	}
-	
-	public FixityLogTaskFactory getFixityLogTaskFactory() {
-		return fixityLogTaskFactory;
-	}
+     public void init() {
+          this.executorService = Executors.newSingleThreadExecutor();
 
-	public void setFixityLogTaskFactory(FixityLogTaskFactory fixityLogTaskFactory) {
-		this.fixityLogTaskFactory = fixityLogTaskFactory;
-	}
-	
-	public long getPollingIntervalSeconds() {
-		return pollingIntervalSeconds;
-	}
+          this.pollingTimer = new Timer();
+          this.pollingTimer.schedule(new ExecuteTask(), 0, pollingIntervalSeconds * 1000);
+     }
 
-	public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
-		this.pollingIntervalSeconds = pollingIntervalSeconds;
-	}
+     public void destroy() {
+          this.executorService.shutdown();
+          this.pollingTimer.cancel();
+     }
+
+     class ExecuteTask extends TimerTask {
+          public void run() {
+               executeFixityLogTask();
+          }
+     }
+
+     private void executeFixityLogTask() {
+          LOG.debug("Creating and executing fixity log task");
+
+          FixityLogTask task = this.fixityLogTaskFactory.createTask();
+          this.executorService.execute(task);
+     }
+
+     public FixityLogTaskFactory getFixityLogTaskFactory() {
+          return fixityLogTaskFactory;
+     }
+
+     public void setFixityLogTaskFactory(FixityLogTaskFactory fixityLogTaskFactory) {
+          this.fixityLogTaskFactory = fixityLogTaskFactory;
+     }
+
+     public long getPollingIntervalSeconds() {
+          return pollingIntervalSeconds;
+     }
+
+     public void setPollingIntervalSeconds(long pollingIntervalSeconds) {
+          this.pollingIntervalSeconds = pollingIntervalSeconds;
+     }
 
 }
