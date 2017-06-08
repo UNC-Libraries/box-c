@@ -37,83 +37,84 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * 
  */
 public abstract class AbstractFedoraManager {
-	private static Logger LOG = Logger.getLogger(AbstractFedoraManager.class);
+    private static Logger LOG = Logger.getLogger(AbstractFedoraManager.class);
 
-	@Autowired
-	protected AccessClient accessClient;
-	@Autowired
-	protected TripleStoreQueryService tripleStoreQueryService;
-	@Autowired
-	protected String swordPath;
-	protected PID collectionsPidObject;
-	@Autowired
-	protected AccessControlService aclService;
+    @Autowired
+    protected AccessClient accessClient;
+    @Autowired
+    protected TripleStoreQueryService tripleStoreQueryService;
+    @Autowired
+    protected String swordPath;
+    protected PID collectionsPidObject;
+    @Autowired
+    protected AccessControlService aclService;
 
-	public void init() {
-		collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
-	}
+    public void init() {
+        collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
+    }
 
-	protected String readFileAsString(String filePath) throws java.io.IOException {
-		LOG.debug("Loading path file " + filePath);
-		try(java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath)) {
-			return IOUtils.toString(inStream);
-		}
-	}
+    protected String readFileAsString(String filePath) throws java.io.IOException {
+        LOG.debug("Loading path file " + filePath);
+        try (java.io.InputStream inStream = this.getClass().getResourceAsStream(filePath)) {
+            return IOUtils.toString(inStream);
+        }
+    }
 
-	protected PID extractPID(String uri, String basePath) {
-		String pidString = null;
-		int pidIndex = uri.indexOf(basePath);
-		if (pidIndex > -1) {
-			pidString = uri.substring(pidIndex + basePath.length());
-		}
+    protected PID extractPID(String uri, String basePath) {
+        String pidString = null;
+        int pidIndex = uri.indexOf(basePath);
+        if (pidIndex > -1) {
+            pidString = uri.substring(pidIndex + basePath.length());
+        }
 
-		PID targetPID = null;
-		if (pidString.trim().length() == 0) {
-			targetPID = collectionsPidObject;
-		} else {
-			targetPID = new DatastreamPID(pidString);
-		}
-		return targetPID;
-	}
+        PID targetPID = null;
+        if (pidString.trim().length() == 0) {
+            targetPID = collectionsPidObject;
+        } else {
+            targetPID = new DatastreamPID(pidString);
+        }
+        return targetPID;
+    }
 
-	protected boolean hasAccess(AuthCredentials auth, PID pid, Permission permission, SwordConfigurationImpl config) {
-		if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername()))
-			return true;
-		ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		
-		return aclBean.hasPermission(groups, permission);
-	}
+    protected boolean hasAccess(AuthCredentials auth, PID pid, Permission permission, SwordConfigurationImpl config) {
+        if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername())) {
+            return true;
+        }
+        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
 
-	public AccessClient getAccessClient() {
-		return accessClient;
-	}
+        return aclBean.hasPermission(groups, permission);
+    }
 
-	public void setAccessClient(AccessClient accessClient) {
-		this.accessClient = accessClient;
-	}
+    public AccessClient getAccessClient() {
+        return accessClient;
+    }
 
-	public TripleStoreQueryService getTripleStoreQueryService() {
-		return tripleStoreQueryService;
-	}
+    public void setAccessClient(AccessClient accessClient) {
+        this.accessClient = accessClient;
+    }
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    public TripleStoreQueryService getTripleStoreQueryService() {
+        return tripleStoreQueryService;
+    }
 
-	public PID getCollectionsPidObject() {
-		return collectionsPidObject;
-	}
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 
-	public String getSwordPath() {
-		return swordPath;
-	}
+    public PID getCollectionsPidObject() {
+        return collectionsPidObject;
+    }
 
-	public void setSwordPath(String swordPath) {
-		this.swordPath = swordPath;
-	}
+    public String getSwordPath() {
+        return swordPath;
+    }
 
-	public void setAclService(AccessControlService aclService) {
-		this.aclService = aclService;
-	}
+    public void setSwordPath(String swordPath) {
+        this.swordPath = swordPath;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
 }

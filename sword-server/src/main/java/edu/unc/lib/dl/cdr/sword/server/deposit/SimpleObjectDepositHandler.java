@@ -33,41 +33,46 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class SimpleObjectDepositHandler extends AbstractDepositHandler {
-	private static Logger log = Logger
-			.getLogger(SimpleObjectDepositHandler.class);
+    private static Logger log = Logger
+            .getLogger(SimpleObjectDepositHandler.class);
 
-	@Override
-	public DepositReceipt doDeposit(PID destination, Deposit deposit,
-			PackagingType type, Priority priority, SwordConfiguration config,
-			String depositor, String owner) throws Exception {
-		log.debug("Preparing to perform a Simple Object deposit to "
-				+ destination.getPid());
+    @Override
+    public DepositReceipt doDeposit(PID destination, Deposit deposit,
+            PackagingType type, Priority priority, SwordConfiguration config,
+            String depositor, String owner) throws Exception {
+        log.debug("Preparing to perform a Simple Object deposit to "
+                + destination.getPid());
 
-		PID depositPID = null;
-		UUID depositUUID = UUID.randomUUID();
-		depositPID = new PID("uuid:" + depositUUID.toString());
-		File dir = makeNewDepositDirectory(depositPID.getUUID());
-		dir.mkdir();
+        PID depositPID = null;
+        UUID depositUUID = UUID.randomUUID();
+        depositPID = new PID("uuid:" + depositUUID.toString());
+        File dir = makeNewDepositDirectory(depositPID.getUUID());
+        dir.mkdir();
 
-		// write deposit file to data directory
-		if (deposit.getFile() != null) {
-			File dataDir = new File(dir, "data");
-			dataDir.mkdir();
-			File depositFile = new File(dataDir, URLDecoder.decode(deposit.getFilename(), "UTF-8"));
-			try {
-				FileUtils.moveFile(deposit.getFile(), depositFile);
-			} catch (IOException e) {
-				throw new Error(e);
-			}
-		}
+        // write deposit file to data directory
+        if (deposit.getFile() != null) {
+            File dataDir = new File(dir, "data");
+            dataDir.mkdir();
+            File depositFile = new File(dataDir, URLDecoder.decode(deposit.getFilename(), "UTF-8"));
+            try {
+                FileUtils.moveFile(deposit.getFile(), depositFile);
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+        }
 
-		// Skip deposit record for this tiny ingest
-		Map<String, String> options = new HashMap<String, String>();
-		options.put(DepositField.excludeDepositRecord.name(), "true");
+        // Skip deposit record for this tiny ingest
+        Map<String, String> options = new HashMap<String, String>();
+        options.put(DepositField.excludeDepositRecord.name(), "true");
 
-		registerDeposit(depositPID, destination, deposit,
-				type, Priority.high, depositor, owner, options);
-		return buildReceipt(depositPID, config);
-	}
+        registerDeposit(depositPID, destination, deposit,
+                type, Priority.high, depositor, owner, options);
+        return buildReceipt(depositPID, config);
+    }
 }

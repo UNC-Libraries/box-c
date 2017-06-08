@@ -32,99 +32,106 @@ import org.swordapp.server.ResourcePart;
 import org.swordapp.server.Statement;
 import org.swordapp.server.UriRegistry;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class AtomStatementImpl extends Statement {
-	private String author;
-	private String feedUri;
-	private String title;
-	private String updated;
-	
-	public AtomStatementImpl(String feedUri, String author, String title, String updated) {
-		this.contentType = "application/atom+xml;type=feed";
-		this.author = author != null ? author : "Unknown";
-		this.feedUri = feedUri;
-		this.title = title != null ? title : "Untitled";
-		this.updated = updated;
-	}
+    private String author;
+    private String feedUri;
+    private String title;
+    private String updated;
 
-	@Override
-	public void writeTo(Writer out) throws IOException {
-		Abdera abdera = new Abdera();
-		Feed feed = abdera.newFeed();
+    public AtomStatementImpl(String feedUri, String author, String title, String updated) {
+        this.contentType = "application/atom+xml;type=feed";
+        this.author = author != null ? author : "Unknown";
+        this.feedUri = feedUri;
+        this.title = title != null ? title : "Untitled";
+        this.updated = updated;
+    }
 
-		feed.setId(this.feedUri);
-		feed.addLink(this.feedUri, "self");
-		feed.setTitle(this.title);
-		feed.addAuthor(this.author);
+    @Override
+    public void writeTo(Writer out) throws IOException {
+        Abdera abdera = new Abdera();
+        Feed feed = abdera.newFeed();
 
-		if (this.updated != null) {
-			feed.setUpdated(this.updated);
-		} else {
-			feed.setUpdated(new Date());
-		}
+        feed.setId(this.feedUri);
+        feed.addLink(this.feedUri, "self");
+        feed.setTitle(this.title);
+        feed.addAuthor(this.author);
 
-		// create an entry for each Resource Part
-		for (ResourcePart resource : this.resources) {
-			Entry entry = feed.addEntry();
+        if (this.updated != null) {
+            feed.setUpdated(this.updated);
+        } else {
+            feed.setUpdated(new Date());
+        }
 
-			// id
-			// summary
-			// title
-			// updated
-			entry.setContent(new IRI(resource.getUri()), resource.getMediaType());
-			entry.setId(resource.getUri());
-			entry.setTitle("Resource " + resource.getUri());
-			entry.setSummary("Resource Part");
-			entry.setUpdated(new Date());
-		}
+        // create an entry for each Resource Part
+        for (ResourcePart resource : this.resources) {
+            Entry entry = feed.addEntry();
 
-		// create an entry for each original deposit
-		for (OriginalDeposit deposit : this.originalDeposits) {
-			Entry entry = feed.addEntry();
+            // id
+            // summary
+            // title
+            // updated
+            entry.setContent(new IRI(resource.getUri()), resource.getMediaType());
+            entry.setId(resource.getUri());
+            entry.setTitle("Resource " + resource.getUri());
+            entry.setSummary("Resource Part");
+            entry.setUpdated(new Date());
+        }
 
-			// id
-			// summary
-			// title
-			// updated
-			entry.setId(deposit.getUri());
-			entry.setTitle("Original Deposit " + deposit.getUri());
-			entry.setSummary("Original Deposit");
-			entry.setUpdated(new Date());
+        // create an entry for each original deposit
+        for (OriginalDeposit deposit : this.originalDeposits) {
+            Entry entry = feed.addEntry();
 
-			if (deposit.getMediaType() != null)
-				entry.setContent(new IRI(deposit.getUri()), deposit.getMediaType());
-			entry.addCategory(UriRegistry.SWORD_TERMS_NAMESPACE, UriRegistry.SWORD_ORIGINAL_DEPOSIT, "Original Deposit");
-			if (deposit.getDepositedOn() != null) {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-				entry.addSimpleExtension(new QName(UriRegistry.SWORD_TERMS_NAMESPACE, "depositedOn"),
-						sdf.format(deposit.getDepositedOn()));
-			}
+            // id
+            // summary
+            // title
+            // updated
+            entry.setId(deposit.getUri());
+            entry.setTitle("Original Deposit " + deposit.getUri());
+            entry.setSummary("Original Deposit");
+            entry.setUpdated(new Date());
 
-			if (deposit.getDepositedOnBehalfOf() != null) {
-				entry.addSimpleExtension(new QName(UriRegistry.SWORD_TERMS_NAMESPACE, "depositedOnBehalfOf"),
-						deposit.getDepositedOnBehalfOf());
-			}
+            if (deposit.getMediaType() != null) {
+                entry.setContent(new IRI(deposit.getUri()), deposit.getMediaType());
+            }
+            entry.addCategory(UriRegistry.SWORD_TERMS_NAMESPACE, UriRegistry.SWORD_ORIGINAL_DEPOSIT,
+                    "Original Deposit");
+            if (deposit.getDepositedOn() != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                entry.addSimpleExtension(new QName(UriRegistry.SWORD_TERMS_NAMESPACE, "depositedOn"),
+                        sdf.format(deposit.getDepositedOn()));
+            }
 
-			if (deposit.getDepositedBy() != null) {
-				entry.addSimpleExtension(new QName(UriRegistry.SWORD_TERMS_NAMESPACE, "depositedBy"),
-						deposit.getDepositedBy());
-			}
+            if (deposit.getDepositedOnBehalfOf() != null) {
+                entry.addSimpleExtension(new QName(UriRegistry.SWORD_TERMS_NAMESPACE, "depositedOnBehalfOf"),
+                        deposit.getDepositedOnBehalfOf());
+            }
 
-			if (deposit.getPackaging() != null){
-				for (String packaging : deposit.getPackaging()) {
-					entry.addSimpleExtension(UriRegistry.SWORD_PACKAGING, packaging);
-				}
-			}
-		}
+            if (deposit.getDepositedBy() != null) {
+                entry.addSimpleExtension(new QName(UriRegistry.SWORD_TERMS_NAMESPACE, "depositedBy"),
+                        deposit.getDepositedBy());
+            }
 
-		// now at the state as a categories
-		for (String state : this.states.keySet()) {
-			Category cat = feed.addCategory(UriRegistry.SWORD_STATE, state, "State");
-			if (this.states.get(state) != null) {
-				cat.setText(this.states.get(state));
-			}
-		}
+            if (deposit.getPackaging() != null) {
+                for (String packaging : deposit.getPackaging()) {
+                    entry.addSimpleExtension(UriRegistry.SWORD_PACKAGING, packaging);
+                }
+            }
+        }
 
-		// now write the feed
-		feed.writeTo(out);
-	}
+        // now at the state as a categories
+        for (String state : this.states.keySet()) {
+            Category cat = feed.addCategory(UriRegistry.SWORD_STATE, state, "State");
+            if (this.states.get(state) != null) {
+                cat.setText(this.states.get(state));
+            }
+        }
+
+        // now write the feed
+        feed.writeTo(out);
+    }
 }
