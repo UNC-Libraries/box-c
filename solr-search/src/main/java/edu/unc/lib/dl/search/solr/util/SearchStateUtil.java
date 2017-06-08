@@ -35,7 +35,7 @@ import edu.unc.lib.dl.search.solr.model.SearchState.RangePair;
 public class SearchStateUtil {
     private static SearchSettings searchSettings;
 
-    public SearchStateUtil(){
+    public SearchStateUtil() {
 
     }
 
@@ -56,21 +56,21 @@ public class SearchStateUtil {
 
     public static HashMap<String,String> generateSearchParameters(SearchState searchState) {
         HashMap<String,String> params = new HashMap<String,String>();
-        if (searchState.getSearchFields() != null && searchState.getSearchFields().size() > 0){
+        if (searchState.getSearchFields() != null && searchState.getSearchFields().size() > 0) {
             for (Entry<String,String> field: searchState.getSearchFields().entrySet()) {
                 String fieldName = searchSettings.searchFieldParam(field.getKey());
                 params.put(fieldName, urlEncodeParameter(field.getValue()));
             }
         }
 
-        if (searchState.getRangeFields() != null && searchState.getRangeFields().size() > 0){
+        if (searchState.getRangeFields() != null && searchState.getRangeFields().size() > 0) {
             for (Entry<String, RangePair> field: searchState.getRangeFields().entrySet()) {
                 String fieldName = searchSettings.searchFieldParam(field.getKey());
                 params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
             }
         }
         String ancestorPath = SearchFieldKeys.ANCESTOR_PATH.toString();
-        if (searchState.getFacets() != null && searchState.getFacets().size() > 0){
+        if (searchState.getFacets() != null && searchState.getFacets().size() > 0) {
             for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
                 if (!ancestorPath.equals(field.getKey())) {
                     String fieldName = searchSettings.searchFieldParam(field.getKey());
@@ -89,31 +89,31 @@ public class SearchStateUtil {
      * @param searchState
      * @return
      */
-    public static HashMap<String,String> generateStateParameters(SearchState searchState){
+    public static HashMap<String,String> generateStateParameters(SearchState searchState) {
         HashMap<String,String> params = generateSearchParameters(searchState);
 
         if (searchState.getRowsPerPage() != null && searchState.getRowsPerPage() >= 0) {
             params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
         }
 
-        if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)){
+        if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)) {
             params.put(searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"), joinFields(searchState.getFacetsToRetrieve(), ",", true));
         }
 
-        if (searchState.getFacetLimits() != null && searchState.getFacetLimits().size() > 0){
+        if (searchState.getFacetLimits() != null && searchState.getFacetLimits().size() > 0) {
             params.put(searchSettings.searchStateParam("FACET_LIMIT_FIELDS"), joinFields(searchState.getFacetLimits()));
         }
 
-        if (searchState.getStartRow() != null && searchState.getStartRow() != 0){
+        if (searchState.getStartRow() != null && searchState.getStartRow() != 0) {
             params.put(searchSettings.searchStateParam("START_ROW"), ""+searchState.getStartRow());
         }
 
         //Add base facet limit if it isn't the default
-        if (searchState.getBaseFacetLimit() != null && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup){
+        if (searchState.getBaseFacetLimit() != null && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup) {
             params.put(searchSettings.searchStateParam("BASE_FACET_LIMIT"), ""+searchState.getBaseFacetLimit());
         }
 
-        if (searchState.getSortType() != null && searchState.getSortType().length() != 0){
+        if (searchState.getSortType() != null && searchState.getSortType().length() != 0) {
             if (!"default".equals(searchState.getSortType()) || !searchState.getSortNormalOrder()) {
                 StringBuilder sortValue = new StringBuilder();
                 sortValue.append(searchState.getSortType());
@@ -127,11 +127,11 @@ public class SearchStateUtil {
 
         //Append search term operator if its not the default
         if (searchState.getSearchTermOperator() != null &&
-                !searchState.getSearchTermOperator().equals(searchSettings.defaultOperator)){
+                !searchState.getSearchTermOperator().equals(searchSettings.defaultOperator)) {
             params.put(searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"), searchState.getSearchTermOperator());
         }
 
-        if (searchState.getResourceTypes() != null && !searchState.getResourceTypes().containsAll(searchSettings.defaultResourceTypes)){
+        if (searchState.getResourceTypes() != null && !searchState.getResourceTypes().containsAll(searchSettings.defaultResourceTypes)) {
             params.put(searchSettings.searchStateParam("RESOURCE_TYPES"), joinFields(searchState.getResourceTypes(), ",", false));
         }
 
@@ -142,22 +142,22 @@ public class SearchStateUtil {
         return generateStateParameterString(generateSearchParameters(searchState));
     }
 
-    public static String generateStateParameterString(SearchState searchState){
+    public static String generateStateParameterString(SearchState searchState) {
         return generateStateParameterString(generateStateParameters(searchState));
     }
 
-    public static String generateStateParameterString(HashMap<String,String> stateParameters){
+    public static String generateStateParameterString(HashMap<String,String> stateParameters) {
         return joinFields(stateParameters, '&', '=', false);
     }
 
     private static String joinFields(Collection<String> collection, String delimiter, boolean performFieldLookup) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for (String object: collection){
+        for (String object: collection) {
             if (first)
                 first = false;
             else sb.append(delimiter);
-            if (performFieldLookup){
+            if (performFieldLookup) {
                 sb.append(searchSettings.searchFieldParam(object));
             } else {
                 sb.append(object);
@@ -167,15 +167,15 @@ public class SearchStateUtil {
         return sb.toString();
     }
 
-    private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter){
+    private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter) {
         return joinFields(fields, pairDelimiter, keyValueDelimiter, true);
     }
 
-    private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter, boolean performFieldLookup){
+    private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter, boolean performFieldLookup) {
         StringBuilder sb = new StringBuilder();
         boolean firstField = true;
         Iterator<?> fieldIt = fields.keySet().iterator();
-        while (fieldIt.hasNext()){
+        while (fieldIt.hasNext()) {
             String fieldName = (String)fieldIt.next();
             Object value = fields.get(fieldName);
             if (value != null && value.toString().trim().length() > 0) {
@@ -194,19 +194,19 @@ public class SearchStateUtil {
         return sb.toString();
     }
 
-    private static String joinFacets(Map<String,Object> fields, char pairDelimiter, char keyValueDelimiter){
+    private static String joinFacets(Map<String,Object> fields, char pairDelimiter, char keyValueDelimiter) {
         StringBuffer sb = new StringBuffer();
         boolean firstField = true;
         Iterator<String> fieldIt = fields.keySet().iterator();
-        while (fieldIt.hasNext()){
+        while (fieldIt.hasNext()) {
             String fieldName = fieldIt.next();
             if (firstField)
                 firstField = false;
             else sb.append(pairDelimiter);
             sb.append(searchSettings.searchFieldParam(fieldName)).append(keyValueDelimiter);
             Object fieldValue = fields.get(fieldName);
-            if (fieldValue != null){
-                if (fieldValue instanceof SearchFacet){
+            if (fieldValue != null) {
+                if (fieldValue instanceof SearchFacet) {
                     sb.append(((SearchFacet) fieldValue).getLimitToValue().replace("|", "%7C"));
                 } else {
                     sb.append(fieldValue.toString().replace("|", "%7C"));
@@ -216,7 +216,7 @@ public class SearchStateUtil {
         return sb.toString();
     }
 
-    private static String joinFields(Map<?,?> fields){
+    private static String joinFields(Map<?,?> fields) {
         return joinFields(fields, '|', ':');
     }
 
@@ -225,17 +225,17 @@ public class SearchStateUtil {
      * @param searchStateUrl
      * @return
      */
-    public static HashMap<String, String[]> getParametersAsHashMap(String searchStateUrl){
+    public static HashMap<String, String[]> getParametersAsHashMap(String searchStateUrl) {
         HashMap<String,String[]> parameterHashMap = new HashMap<String,String[]>();
         String[] parameterList = searchStateUrl.split("&");
-        for (String parameter: parameterList){
+        for (String parameter: parameterList) {
             String[] parameterPair = parameter.split("=");
-            if (parameterPair.length == 2){
+            if (parameterPair.length == 2) {
                 try {
                     String[] valueArray = new String[1];
                     valueArray[0] = URLDecoder.decode(parameterPair[1], "UTF-8");
                     parameterHashMap.put(parameterPair[0], valueArray);
-                } catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }

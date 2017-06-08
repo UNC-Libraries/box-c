@@ -18,10 +18,16 @@
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
 import org.apache.solr.client.solrj.response.FacetField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class CutoffFacet extends AbstractHierarchicalFacet {
     private static final Logger LOG = LoggerFactory.getLogger(CutoffFacet.class);
 
@@ -95,7 +101,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
     }
 
     public void sortTiers() {
-        Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>(){
+        Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>() {
             public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
                 return ((CutoffFacetNode)node1).getTier() - ((CutoffFacetNode)node2).getTier();
             }
@@ -106,7 +112,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
         facetNodes.add(node);
     }
 
-    public void addNode(String searchValue){
+    public void addNode(String searchValue) {
         int highestTier = getHighestTier();
         CutoffFacetNode node = new CutoffFacetNode(searchValue, highestTier + 1);
         this.facetNodes.add(node);
@@ -114,29 +120,33 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
 
     public HierarchicalFacetNode getNode(String searchKey) {
         for (HierarchicalFacetNode node: this.facetNodes) {
-            if (((CutoffFacetNode)node).getSearchKey().equals(searchKey))
+            if (((CutoffFacetNode)node).getSearchKey().equals(searchKey)) {
                 return node;
+            }
         }
         return null;
     }
 
     public CutoffFacetNode getHighestTierNode() {
-        if (this.facetNodes == null || this.facetNodes.size() == 0)
+        if (this.facetNodes == null || this.facetNodes.size() == 0) {
             return null;
+        }
 
         CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size()-1);
         if ("*".equals(lastNode.getSearchKey())) {
-            if (this.facetNodes.size() == 1)
+            if (this.facetNodes.size() == 1) {
                 return null;
-            return (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size()-2);
+            }
+            return (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 2);
         }
         return lastNode;
     }
 
-    public int getHighestTier(){
+    public int getHighestTier() {
         CutoffFacetNode lastNode = this.getHighestTierNode();
-        if (lastNode == null)
+        if (lastNode == null) {
             return -1;
+        }
         return lastNode.getTier();
     }
 
@@ -148,31 +158,35 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
     @Override
     public String getSearchKey() {
         CutoffFacetNode lastNode = this.getHighestTierNode();
-        if (lastNode == null)
+        if (lastNode == null) {
             return null;
+        }
         return lastNode.getSearchKey();
     }
 
     @Override
     public String getSearchValue() {
         CutoffFacetNode lastNode = this.getHighestTierNode();
-        if (lastNode == null)
+        if (lastNode == null) {
             return null;
+        }
         return lastNode.getSearchValue();
     }
 
     @Override
     public String getPivotValue() {
         CutoffFacetNode lastNode = this.getHighestTierNode();
-        if (lastNode == null)
+        if (lastNode == null) {
             return null;
+        }
         return lastNode.getPivotValue();
     }
 
     @Override
     public String getLimitToValue() {
-        if (this.facetNodes.size() == 0)
+        if (this.facetNodes.size() == 0) {
             return null;
+        }
         CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 1);
         return lastNode.getLimitToValue();
     }

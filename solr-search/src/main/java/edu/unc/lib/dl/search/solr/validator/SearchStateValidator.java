@@ -32,18 +32,18 @@ public class SearchStateValidator {
     private SearchSettings searchSettings;
     
     
-    public SearchStateValidator(){
+    public SearchStateValidator() {
     }
     
     public void validate(SearchState searchState) {
         //Validate search Fields and types
         Map<String,String> searchFields = searchState.getSearchFields();
-        if (searchFields != null){
+        if (searchFields != null) {
             Iterator<String> searchTypeIt = searchFields.keySet().iterator();
-            while (searchTypeIt.hasNext()){
+            while (searchTypeIt.hasNext()) {
                 //Validate the field name, verify that search fields users are looking for actually exist
                 String searchType = searchTypeIt.next();
-                if (!searchSettings.searchableFields.contains(searchType)){
+                if (!searchSettings.searchableFields.contains(searchType)) {
                     searchTypeIt.remove();
                 }
             }
@@ -51,13 +51,13 @@ public class SearchStateValidator {
             
         //Validate range fields
         Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
-        if (rangeFields != null){
+        if (rangeFields != null) {
             Iterator<Map.Entry<String, SearchState.RangePair>> rangeFieldIt = rangeFields.entrySet().iterator();
-            while (rangeFieldIt.hasNext()){
+            while (rangeFieldIt.hasNext()) {
                 Map.Entry<String, SearchState.RangePair> rangeField = rangeFieldIt.next();
                 //If invalid search fields are specified, discard them
-                if (searchSettings.rangeSearchableFields.contains(rangeField.getKey())){
-                    if (searchSettings.dateSearchableFields.contains(rangeField.getKey())){
+                if (searchSettings.rangeSearchableFields.contains(rangeField.getKey())) {
+                    if (searchSettings.dateSearchableFields.contains(rangeField.getKey())) {
                         if (rangeField.getValue().getLeftHand() != null)
                             rangeField.getValue().setLeftHand(rangeField.getValue().getLeftHand().replace('/', '-').replaceAll("[^0-9\\-]+",""));
                         if (rangeField.getValue().getRightHand() != null)
@@ -72,32 +72,32 @@ public class SearchStateValidator {
         //Validate facet fields
         
         Map<String,Object> facets = searchState.getFacets();
-        if (facets != null){
+        if (facets != null) {
             Iterator<String> facetIt = facets.keySet().iterator();
-            while (facetIt.hasNext()){
+            while (facetIt.hasNext()) {
                 String facetField = facetIt.next();
-                if (!searchSettings.facetNames.contains(facetField)){
+                if (!searchSettings.facetNames.contains(facetField)) {
                     facetIt.remove();
                 }
             }
         }
         
         //Validate start row number
-        if (searchState.getStartRow() < 0){
+        if (searchState.getStartRow() < 0) {
             searchState.setStartRow(0);
         }
         
         //Validate rows per page
-        if (searchState.getRowsPerPage() > searchSettings.maxPerPage){
+        if (searchState.getRowsPerPage() > searchSettings.maxPerPage) {
             searchState.setRowsPerPage(searchSettings.maxPerPage);
-        } else if (searchState.getRowsPerPage() <= 0){
+        } else if (searchState.getRowsPerPage() <= 0) {
             searchState.setRowsPerPage(0);
         }
         
-        if (searchState.getResourceTypes() != null){
+        if (searchState.getResourceTypes() != null) {
             Iterator<String> resourceTypesIt = searchState.getResourceTypes().iterator();
-            while (resourceTypesIt.hasNext()){
-                if (!searchSettings.resourceTypes.contains(resourceTypesIt.next())){
+            while (resourceTypesIt.hasNext()) {
+                if (!searchSettings.resourceTypes.contains(resourceTypesIt.next())) {
                     resourceTypesIt.remove();
                 }
             }
@@ -105,7 +105,7 @@ public class SearchStateValidator {
         
         //Validate sort type
         if (searchState.getSortType() == null || searchState.getSortType().length() == 0 ||
-                !searchSettings.sortTypes.containsKey(searchState.getSortType())){
+                !searchSettings.sortTypes.containsKey(searchState.getSortType())) {
             //Sort type was invalid, so overwrite it and order with defaults
             searchState.setSortType("default");
             searchState.setSortNormalOrder(true);

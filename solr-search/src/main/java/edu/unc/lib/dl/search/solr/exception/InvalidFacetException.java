@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.exception;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class InvalidFacetException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 

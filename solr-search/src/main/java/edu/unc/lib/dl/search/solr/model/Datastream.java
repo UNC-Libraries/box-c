@@ -19,6 +19,11 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class Datastream {
     private PID owner;
     private String name;
@@ -29,8 +34,9 @@ public class Datastream {
     private ContentModelHelper.Datastream datastreamClass;
 
     public Datastream(String datastream) {
-        if (datastream == null)
+        if (datastream == null) {
             throw new IllegalArgumentException("Datastream value must not be null");
+        }
 
         String[] dsParts = datastream.split("\\|");
 
@@ -106,8 +112,9 @@ public class Datastream {
 
     @Override
     public boolean equals(Object object) {
-        if (object == null)
+        if (object == null) {
             return false;
+        }
         if (object instanceof Datastream) {
             Datastream rightHand = (Datastream)object;
             // Equal if names match and either pids are null or both match
@@ -115,8 +122,9 @@ public class Datastream {
         }
         if (object instanceof String) {
             String rightHandString = (String)object;
-            if (rightHandString.equals(this.name))
+            if (rightHandString.equals(this.name)) {
                 return true;
+            }
             Datastream rightHand = new Datastream(rightHandString);
             return this.equals(rightHand);
         }
@@ -132,8 +140,9 @@ public class Datastream {
     }
 
     public String getDatastreamIdentifier() {
-        if (owner == null)
+        if (owner == null) {
             return name;
+        }
         return owner.getPid() + "/" + name;
     }
 

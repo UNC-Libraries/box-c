@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.solr.client.solrj.response.FacetField;
 
 public abstract class AbstractHierarchicalFacet extends GenericFacet implements Cloneable {
@@ -45,12 +46,12 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet implements 
         this.count = count;
     }
 
-    protected AbstractHierarchicalFacet(String fieldName, FacetField.Count countObject){
+    protected AbstractHierarchicalFacet(String fieldName, FacetField.Count countObject) {
         super(fieldName, countObject);
         facetNodes = new ArrayList<HierarchicalFacetNode>();
     }
 
-    protected AbstractHierarchicalFacet(GenericFacet facet){
+    protected AbstractHierarchicalFacet(GenericFacet facet) {
         super(facet);
         facetNodes = new ArrayList<HierarchicalFacetNode>();
     }
@@ -73,11 +74,15 @@ public abstract class AbstractHierarchicalFacet extends GenericFacet implements 
     public String toString() {
         StringBuilder sb = new StringBuilder('[');
         boolean first = true;
-        for (HierarchicalFacetNode node: this.facetNodes) {
-            if (first)
+        for (HierarchicalFacetNode node : this.facetNodes) {
+            if (first) {
                 first = false;
-            else sb.append(",");
-            sb.append('"').append(node.getSearchValue()).append('|').append(node.getDisplayValue()).append('|').append(node.getFacetValue()).append('"');
+            } else {
+                sb.append(",");
+            }
+            sb.append('"').append(node.getSearchValue()).append('|')
+                    .append(node.getDisplayValue()).append('|')
+                    .append(node.getFacetValue()).append('"');
         }
         sb.append(']');
         return sb.toString();

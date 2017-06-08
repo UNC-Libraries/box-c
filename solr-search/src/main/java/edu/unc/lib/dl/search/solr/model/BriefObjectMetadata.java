@@ -23,6 +23,12 @@ import java.util.Map;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * An object containing the metadata for a repository object
+ * 
+ * @author bbpennel
+ *
+ */
 public interface BriefObjectMetadata {
     public CutoffFacet getAncestorPathFacet();
 

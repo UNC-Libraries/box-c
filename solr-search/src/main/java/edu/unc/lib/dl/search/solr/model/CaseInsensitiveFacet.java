@@ -38,26 +38,29 @@ public class CaseInsensitiveFacet extends GenericFacet {
      * @param fieldName Field name of the display field
      * @param countObject Solr facet count object, the value coming from the display field for this facet
      */
-    public CaseInsensitiveFacet(String fieldName, FacetField.Count countObject){
+    public CaseInsensitiveFacet(String fieldName, FacetField.Count countObject) {
         super(fieldName, countObject);
         this.setFieldName(fieldName);
 
-        if (countObject != null && countObject.getName() != null)
+        if (countObject != null && countObject.getName() != null) {
             this.value = countObject.getName().toLowerCase();
+        }
     }
 
-    public CaseInsensitiveFacet(String fieldName, String facetValue){
+    public CaseInsensitiveFacet(String fieldName, String facetValue) {
         super(fieldName, facetValue);
         this.setFieldName(fieldName);
-        if (facetValue != null)
+        if (facetValue != null) {
             this.value = facetValue.toLowerCase();
+        }
     }
 
     public CaseInsensitiveFacet(CaseInsensitiveFacet facet) {
         super(facet);
         this.searchName = facet.searchName;
-        if (this.value != null)
+        if (this.value != null) {
             this.value = this.value.toLowerCase();
+        }
     }
 
     @Override
@@ -81,7 +84,7 @@ public class CaseInsensitiveFacet extends GenericFacet {
     }
 
     public static void deduplicateCaseInsensitiveValues(FacetFieldObject facetFieldObject) {
-        Map<String, GenericFacet> rollupMap = new LinkedHashMap<String, GenericFacet>(facetFieldObject.getValues().size());
+        Map<String, GenericFacet> rollupMap = new LinkedHashMap<>(facetFieldObject.getValues().size());
         for (GenericFacet genericFacet: facetFieldObject.getValues()) {
             CaseInsensitiveFacet deptFacet = (CaseInsensitiveFacet) genericFacet;
             GenericFacet existingFacet = rollupMap.get(deptFacet.getSearchValue());
@@ -97,7 +100,7 @@ public class CaseInsensitiveFacet extends GenericFacet {
     }
 
     @Override
-    public Object clone(){
+    public Object clone() {
         return new CaseInsensitiveFacet(this);
     }
 }

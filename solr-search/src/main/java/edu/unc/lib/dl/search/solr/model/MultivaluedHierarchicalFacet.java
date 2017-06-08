@@ -95,7 +95,7 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
     }
 
     public void sortTiers() {
-        Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>(){
+        Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>() {
             @Override
             public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
                 return ((MultivaluedHierarchicalFacetNode)node1).getTiers().size() - ((MultivaluedHierarchicalFacetNode)node2).getTiers().size();

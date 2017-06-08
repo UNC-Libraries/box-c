@@ -28,7 +28,7 @@ public class GenericFacet implements Cloneable, SearchFacet {
     protected String value;
     protected String displayValue;
     
-    public GenericFacet(){
+    public GenericFacet() {
     }
     
     /**
@@ -36,25 +36,25 @@ public class GenericFacet implements Cloneable, SearchFacet {
      * @param fieldName name of the facet to which this entry belongs.
      * @param facetString string from which the attributes of the facet will be interpreted.
      */
-    public GenericFacet(String fieldName, String facetString){
+    public GenericFacet(String fieldName, String facetString) {
         this.count = 0;
         this.fieldName = fieldName;
         this.value = facetString;
         this.displayValue = facetString;
     }
     
-    public GenericFacet(FacetField.Count countObject){
+    public GenericFacet(FacetField.Count countObject) {
         this(countObject.getFacetField().getName(), countObject);
     }
     
-    public GenericFacet(String fieldName, FacetField.Count countObject){
+    public GenericFacet(String fieldName, FacetField.Count countObject) {
         this.count = countObject.getCount();
         this.fieldName = fieldName;
         this.value = countObject.getName();
         this.displayValue = countObject.getName();
     }
     
-    public GenericFacet(GenericFacet facet){
+    public GenericFacet(GenericFacet facet) {
         this.fieldName = facet.getFieldName();
         this.count = facet.getCount();
         this.value = facet.getValue();

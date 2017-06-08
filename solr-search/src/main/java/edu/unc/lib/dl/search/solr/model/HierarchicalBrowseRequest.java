@@ -24,11 +24,11 @@ public class HierarchicalBrowseRequest extends SearchRequest {
     private int retrievalDepth;
     private boolean includeFiles;
 
-    public HierarchicalBrowseRequest(int retrievalDepth){
+    public HierarchicalBrowseRequest(int retrievalDepth) {
         this.retrievalDepth = retrievalDepth;
     }
 
-    public HierarchicalBrowseRequest(SearchState searchState, int retrievalDepth, AccessGroupSet accessGroups){
+    public HierarchicalBrowseRequest(SearchState searchState, int retrievalDepth, AccessGroupSet accessGroups) {
         super(searchState, accessGroups);
         this.retrievalDepth = retrievalDepth;
     }

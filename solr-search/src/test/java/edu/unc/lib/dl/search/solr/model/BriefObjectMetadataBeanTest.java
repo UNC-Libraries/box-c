@@ -71,7 +71,7 @@ public class BriefObjectMetadataBeanTest extends Assert {
     }
 
     @Test
-    public void datastreamEquality(){
+    public void datastreamEquality() {
         Datastream ds = new Datastream("DATA_FILE");
         Datastream ds2 = new Datastream("DATA_FILE|image/jpeg|jpg|0||");
         assertTrue(ds.equals(ds));

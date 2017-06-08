@@ -49,7 +49,7 @@ public class SearchActionServiceTest extends Assert {
     }
 
     @Test
-    public void executeActions(){
+    public void executeActions() {
         SearchState searchState = new SearchState();
 
         //Action on null search state
@@ -63,7 +63,7 @@ public class SearchActionServiceTest extends Assert {
     }
 
     @Test
-    public void searchFieldActions(){
+    public void searchFieldActions() {
         SearchState searchState = new SearchState();
 
         Map<String,String[]> params = new LinkedHashMap<String,String[]>();
@@ -139,7 +139,7 @@ public class SearchActionServiceTest extends Assert {
     }
 
     @Test
-    public void pagingActions(){
+    public void pagingActions() {
         Map<String,String[]> params = new LinkedHashMap<String,String[]>();
         SearchState searchState = new SearchState();
 
@@ -188,7 +188,7 @@ public class SearchActionServiceTest extends Assert {
     }
 
     @Test
-    public void rangeActions(){
+    public void rangeActions() {
         Map<String,String[]> params = new LinkedHashMap<String,String[]>();
         SearchState searchState = new SearchState();
         params.put("a." + searchSettings.actionName("SET_RANGE_FIELD"), new String[]{"added"});
@@ -246,7 +246,7 @@ public class SearchActionServiceTest extends Assert {
     }
 
     @Test
-    public void resourceTypeActions(){
+    public void resourceTypeActions() {
         Map<String,String[]> params = new LinkedHashMap<String,String[]>();
         SearchState searchState = new SearchState();
 
@@ -280,7 +280,7 @@ public class SearchActionServiceTest extends Assert {
     }
 
     @Test
-    public void facetActions(){
+    public void facetActions() {
         Map<String,String[]> params = new LinkedHashMap<String,String[]>();
         SearchState searchState = new SearchState();
 

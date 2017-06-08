@@ -23,7 +23,7 @@ import java.util.TimeZone;
 import org.apache.solr.common.util.DateUtil;
 
 public class DateFormatUtil {
-    public static String getFormattedDate(String dateString, boolean inclusive, boolean endRange){
+    public static String getFormattedDate(String dateString, boolean inclusive, boolean endRange) {
         return getFormattedDate(dateString, "yyyy-MM-dd'T'hh:mm:ss'Z'", inclusive, endRange);
     }
     
@@ -45,9 +45,9 @@ public class DateFormatUtil {
             return null;
         
         
-        if (dateString.contains("T") && dateString.contains("Z")){
+        if (dateString.contains("T") && dateString.contains("Z")) {
             //If the string is a full timestamp, is already in UTC and it is an inclusive request, simply return
-            if (inclusive){
+            if (inclusive) {
                 return dateString;
             } else {
                 //If it wasn't inclusive, then add or subtract 1 second
@@ -55,8 +55,8 @@ public class DateFormatUtil {
                 Calendar calendar = Calendar.getInstance();
                 try {
                     calendar.setTime(formatter.parse(dateString));
-                    if (!inclusive){
-                        if (endRange){
+                    if (!inclusive) {
+                        if (endRange) {
                             calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) - 1);
                         } else {
                             calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + 1);
@@ -80,54 +80,54 @@ public class DateFormatUtil {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
         
-        if (dateArray.length >= 1){
+        if (dateArray.length >= 1) {
             calendar.set(Calendar.YEAR, Integer.parseInt(dateArray[0]));
         }
-        if (dateArray.length >= 2){
+        if (dateArray.length >= 2) {
             calendar.set(Calendar.MONTH, Integer.parseInt(dateArray[1])-1);
         } else {
             calendar.set(Calendar.MONTH, 0);
         }
-        if (dateArray.length >= 3){
+        if (dateArray.length >= 3) {
             calendar.set(Calendar.DATE, Integer.parseInt(dateArray[2]));
         } else {
             calendar.set(Calendar.DATE, 1);
         }
         
-        if (dateArray.length == 1){
-            if (inclusive){
-                if (endRange){
+        if (dateArray.length == 1) {
+            if (inclusive) {
+                if (endRange) {
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR)+1);
                     calendar.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND)-1);
                 }
             } else {
-                if (!endRange){
+                if (!endRange) {
                     calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR)+1);
                 }
             }
         }
         
-        if (dateArray.length == 2){
-            if (inclusive){
-                if (endRange){
+        if (dateArray.length == 2) {
+            if (inclusive) {
+                if (endRange) {
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH)+1);
                     calendar.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND)-1);
                 }
             } else {
-                if (!endRange){
+                if (!endRange) {
                     calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH)+1);
                 }
             }
         }
         
-        if (dateArray.length == 3){
-            if (inclusive){
-                if (endRange){
+        if (dateArray.length == 3) {
+            if (inclusive) {
+                if (endRange) {
                     calendar.set(Calendar.DATE, calendar.get(Calendar.DATE)+1);
                     calendar.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND)-1);
                 }
             } else {
-                if (!endRange){
+                if (!endRange) {
                     calendar.set(Calendar.DATE, calendar.get(Calendar.DATE)+1);
                 }
             }

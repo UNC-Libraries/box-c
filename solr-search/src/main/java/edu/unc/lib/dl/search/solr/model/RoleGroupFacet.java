@@ -26,7 +26,7 @@ public class RoleGroupFacet extends GenericFacet {
     private String roleUri;
     private String groupName;
 
-    public RoleGroupFacet(String fieldName, FacetField.Count countObject){
+    public RoleGroupFacet(String fieldName, FacetField.Count countObject) {
         super(fieldName, countObject);
         this.setFieldName(fieldName);
 
@@ -34,7 +34,7 @@ public class RoleGroupFacet extends GenericFacet {
             this.setValue(countObject.getName());
     }
 
-    public RoleGroupFacet(String fieldName, String facetValue){
+    public RoleGroupFacet(String fieldName, String facetValue) {
         super(fieldName, facetValue);
         this.setFieldName(fieldName);
         if (facetValue != null)

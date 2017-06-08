@@ -129,8 +129,9 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
     @Override
     public Datastream getDatastreamObject(String datastreamName) {
-        if (datastreamName == null || this.datastreamObjects == null)
+        if (datastreamName == null || this.datastreamObjects == null) {
             return null;
+        }
 
         String[] datastreamParts = datastreamName.split("/", 2);
         String pid;
@@ -145,8 +146,9 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
         }
 
         for (Datastream datastream: this.datastreamObjects) {
-            if (datastream.equals(datastreamName) && (pid == null || pid.equals(datastream.getOwner().getPid())))
+            if (datastream.equals(datastreamName) && (pid == null || pid.equals(datastream.getOwner().getPid()))) {
                 return datastream;
+            }
         }
         return null;
     }
@@ -161,8 +163,9 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
             @Override
             public boolean contains(Object o) {
-                if (o instanceof String)
+                if (o instanceof String) {
                     return indexOf(new Datastream((String) o)) != -1;
+                }
                 return indexOf(o) != -1;
             }
         };
@@ -217,8 +220,9 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
         this.relationsMap = new HashMap<String, List<String>>(this.relations.size());
         for (String relation: this.relations) {
-            if (relation == null)
+            if (relation == null) {
                 continue;
+            }
             String[] rdfParts = relation.split("\\|", 2);
 
             List<String> values = this.relationsMap.get(rdfParts[0]);
@@ -232,21 +236,25 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
     @Override
     public List<String> getRelation(String relationName) {
-        if (relationsMap == null)
+        if (relationsMap == null) {
             return null;
+        }
         return this.relationsMap.get(relationName);
     }
 
     @Override
     public Datastream getDefaultWebData() {
-        if (this.relationsMap == null)
+        if (this.relationsMap == null) {
             return null;
+        }
         List<String> defaultWebDataValues = this.relationsMap.get(ContentModelHelper.CDRProperty.defaultWebData.getPredicate());
-        if (defaultWebDataValues == null)
+        if (defaultWebDataValues == null) {
             return null;
+        }
         String defaultWebData = defaultWebDataValues.get(0);
-        if (defaultWebData == null)
+        if (defaultWebData == null) {
             return null;
+        }
         return this.getDatastreamObject(defaultWebData);
     }
 
@@ -305,15 +313,17 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
     @Override
     public List<Tag> getTags() {
-        if (this.tags == null)
+        if (this.tags == null) {
             return null;
+        }
         return Collections.unmodifiableList(this.tags);
     }
 
     @Override
     public void addTag(Tag t) {
-        if (this.tags == null)
+        if (this.tags == null) {
             this.tags = new ArrayList<Tag>();
+        }
         this.tags.add(t);
     }
 

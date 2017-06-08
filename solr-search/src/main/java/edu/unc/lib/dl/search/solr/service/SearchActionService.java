@@ -46,7 +46,7 @@ public class SearchActionService {
     @Autowired
     private FacetFieldUtil facetFieldUtil;
 
-    public SearchActionService(){
+    public SearchActionService() {
     }
 
     /**
@@ -55,11 +55,11 @@ public class SearchActionService {
      * @param parameters
      * @return
      */
-    public SearchState executeActions(SearchState searchState, Map<String,String[]> parameters){
+    public SearchState executeActions(SearchState searchState, Map<String,String[]> parameters) {
         if (searchState == null || parameters == null || parameters.size() == 0)
             return searchState;
 
-        for (Entry<String,String[]> parameter: parameters.entrySet()){
+        for (Entry<String,String[]> parameter: parameters.entrySet()) {
             String actionName = parameter.getKey();
             String[] actionValues = parameter.getValue();
             if (actionName == null || actionValues == null)
@@ -69,56 +69,56 @@ public class SearchActionService {
                 continue;
             actionName = actionName.substring(index + 2);
             LOG.debug("Executing: " + actionName);
-            if (actionName.equals(searchSettings.actionName("SET_FACET"))){
+            if (actionName.equals(searchSettings.actionName("SET_FACET"))) {
                 setFacet(searchState, actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_FACET"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_FACET"))) {
                 removeField(searchState.getFacets(), actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("SET_SEARCH_FIELD"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_SEARCH_FIELD"))) {
                 setField(searchState.getSearchFields(), actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("ADD_SEARCH_FIELD"))){
+            } else if (actionName.equals(searchSettings.actionName("ADD_SEARCH_FIELD"))) {
                 addField(searchState.getSearchFields(), actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_SEARCH_FIELD"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_SEARCH_FIELD"))) {
                 removeField(searchState.getSearchFields(), actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("SET_RANGE_FIELD"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_RANGE_FIELD"))) {
                 setRangeFields(searchState, actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_RANGE_FIELD"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_RANGE_FIELD"))) {
                 removeField(searchState.getRangeFields(), actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("SET_FACET_LIMIT"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_FACET_LIMIT"))) {
                 setFacetLimit(searchState, actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_FACET_LIMIT"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_FACET_LIMIT"))) {
                 removeField(searchState.getFacetLimits(), actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("SET_FACET_SELECT"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_FACET_SELECT"))) {
                 setFacetSelect(searchState, actionValues);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_FACET_SELECT"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_FACET_SELECT"))) {
                 removeFacetSelect(searchState);
-            } else if (actionName.equals(searchSettings.actionName("NEXT_PAGE"))){
+            } else if (actionName.equals(searchSettings.actionName("NEXT_PAGE"))) {
                 nextPage(searchState);
-            } else if (actionName.equals(searchSettings.actionName("PREVIOUS_PAGE"))){
+            } else if (actionName.equals(searchSettings.actionName("PREVIOUS_PAGE"))) {
                 previousPage(searchState);
-            } else if (actionName.equals(searchSettings.actionName("SET_START_ROW"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_START_ROW"))) {
                 setStartRow(searchState, actionValues);
-            } else if (actionName.equals(searchSettings.actionName("SET_ROWS_PER_PAGE"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_ROWS_PER_PAGE"))) {
                 setRow(searchState, actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_ROWS_PER_PAGE"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_ROWS_PER_PAGE"))) {
                 removeRow(searchState);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("SET_RESOURCE_TYPE"))){
+            } else if (actionName.equals(searchSettings.actionName("SET_RESOURCE_TYPE"))) {
                 setResourceType(searchState, actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("REMOVE_RESOURCE_TYPE"))){
+            } else if (actionName.equals(searchSettings.actionName("REMOVE_RESOURCE_TYPE"))) {
                 removeResourceType(searchState, actionValues);
                 setStartRow(searchState, 0);
-            } else if (actionName.equals(searchSettings.actionName("RESET_NAVIGATION"))){
+            } else if (actionName.equals(searchSettings.actionName("RESET_NAVIGATION"))) {
                 resetNavigation(searchState, actionValues);
             }
         }
@@ -136,14 +136,14 @@ public class SearchActionService {
                 continue;
             try {
                 searchState.getRangeFields().put(key, new SearchState.RangePair(valueArray[1]));
-            } catch (ArrayIndexOutOfBoundsException e){
+            } catch (ArrayIndexOutOfBoundsException e) {
                 LOG.debug("Invalid range field " + valueArray[1]);
             }
         }
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void setField(Map collection, String[] values){
+    private void setField(Map collection, String[] values) {
         for (String value: values) {
             String[] valueArray = value.split(":", 2);
             if (valueArray.length != 2)
@@ -156,7 +156,7 @@ public class SearchActionService {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void addField(Map collection, String[] values){
+    private void addField(Map collection, String[] values) {
         for (String value: values) {
             String[] valueArray = value.split(":", 2);
             if (valueArray.length != 2)
@@ -173,7 +173,7 @@ public class SearchActionService {
     }
 
     @SuppressWarnings("rawtypes")
-    private void removeField(Map collection, String[] fieldList){
+    private void removeField(Map collection, String[] fieldList) {
         for (String fieldName : fieldList) {
             collection.remove(searchSettings.searchFieldKey(fieldName));
         }
@@ -194,7 +194,7 @@ public class SearchActionService {
         }
     }
 
-    private void setFacetLimit(SearchState searchState, String[] values){
+    private void setFacetLimit(SearchState searchState, String[] values) {
         for (String value : values) {
             try {
                 value = URLDecoder.decode(value, "UTF-8");
@@ -203,7 +203,7 @@ public class SearchActionService {
                 if (key == null)
                     continue;
                 facetFieldUtil.setFacetLimit(key, Integer.parseInt(valueArray[1]), searchState);
-            } catch (NumberFormatException e){
+            } catch (NumberFormatException e) {
                 LOG.error("Failed to perform set facet limit action: " + value);
             } catch (UnsupportedEncodingException e) {
                 LOG.error("Unsupported character encoding while setting facet limit", e);
@@ -211,89 +211,89 @@ public class SearchActionService {
         }
     }
 
-    private void setFacetSelect(SearchState searchState, String[] values){
+    private void setFacetSelect(SearchState searchState, String[] values) {
         if (values.length == 0)
             return;
         searchState.setFacetsToRetrieve(new ArrayList<String>(Arrays.asList(values[0].split(","))));
     }
 
-    private void removeFacetSelect(SearchState searchState){
+    private void removeFacetSelect(SearchState searchState) {
         searchState.setFacetsToRetrieve(null);
     }
 
-    private void nextPage(SearchState searchState){
+    private void nextPage(SearchState searchState) {
         if (searchState.getRowsPerPage() == null)
             return;
         searchState.setStartRow(searchState.getStartRow() + searchState.getRowsPerPage());
     }
 
-    private void previousPage(SearchState searchState){
+    private void previousPage(SearchState searchState) {
         if (searchState.getRowsPerPage() == null)
             return;
         searchState.setStartRow(searchState.getStartRow() - searchState.getRowsPerPage());
     }
 
-    private void setStartRow(SearchState searchState, String[] values){
+    private void setStartRow(SearchState searchState, String[] values) {
         if (values.length == 0)
             return;
         try {
             setStartRow(searchState, Integer.parseInt(values[0]));
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             setStartRow(searchState, 0);
         }
     }
 
-    private void setStartRow(SearchState searchState, int startRow){
+    private void setStartRow(SearchState searchState, int startRow) {
         searchState.setStartRow(startRow);
     }
 
-    private void setRow(SearchState searchState, String[] values){
+    private void setRow(SearchState searchState, String[] values) {
         if (values.length == 0)
             return;
         try {
             setRow(searchState, Integer.parseInt(values[0]));
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             // Ignore invalid number
         }
     }
 
-    private void setRow(SearchState searchState, int row){
+    private void setRow(SearchState searchState, int row) {
         searchState.setRowsPerPage(row);
     }
 
-    private void removeRow(SearchState searchState){
+    private void removeRow(SearchState searchState) {
         searchState.setRowsPerPage(null);
     }
 
-    private void setResourceType(SearchState searchState, String[] values){
+    private void setResourceType(SearchState searchState, String[] values) {
         if (values.length == 0)
             return;
         String[] resourceTypes = values[0].split(",");
         searchState.setResourceTypes(new ArrayList<String>(Arrays.asList(resourceTypes)));
     }
 
-    private void removeResourceType(SearchState searchState, String[] values){
+    private void removeResourceType(SearchState searchState, String[] values) {
         if (values.length == 0)
             return;
         String[] resourceTypes = values[0].split(",");
         searchState.getResourceTypes().removeAll(Arrays.asList(resourceTypes));
     }
 
-    private void resetNavigation(SearchState searchState, String[] values){
+    private void resetNavigation(SearchState searchState, String[] values) {
         if (values.length == 0)
             return;
         String mode = values[0];
-        if (mode.equals("search")){
+        if (mode.equals("search")) {
             searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.getFacetNames()));
             searchState.setRowsPerPage(searchSettings.defaultPerPage);
             searchState.setResourceTypes(null);
-        } else if (mode.equals("collections")){
+        } else if (mode.equals("collections")) {
             searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.getCollectionBrowseFacetNames()));
             searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
             ArrayList<String> resourceTypes = new ArrayList<String>();
             resourceTypes.add(searchSettings.getResourceTypeCollection());
             searchState.setResourceTypes(resourceTypes);
-        } else if (mode.equals("structure")){
+        } else if (mode.equals("structure")) {
             searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.getFacetNamesStructureBrowse()));
             searchState.setRowsPerPage(searchSettings.defaultPerPage);
             searchState.setResourceTypes(null);

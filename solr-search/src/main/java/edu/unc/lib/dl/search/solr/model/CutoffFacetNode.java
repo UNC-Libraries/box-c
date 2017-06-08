@@ -17,6 +17,11 @@ package edu.unc.lib.dl.search.solr.model;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class CutoffFacetNode implements HierarchicalFacetNode {
     private final String searchValue;
     private String searchKey;
@@ -30,7 +35,8 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
             try {
                 this.tier = new Integer(facetComponents[0]);
             } catch (Exception e) {
-                throw new InvalidHierarchicalFacetException("Invalid tier value " + facetComponents[0] + " from facet string " + facetValue);
+                throw new InvalidHierarchicalFacetException("Invalid tier value "
+                        + facetComponents[0] + " from facet string " + facetValue);
             }
         }
         if (facetComponents.length > 1) {
@@ -68,7 +74,7 @@ public class CutoffFacetNode implements HierarchicalFacetNode {
 
     @Override
     public String getFacetValue() {
-        if (facetValue == null && searchValue != null){
+        if (facetValue == null && searchValue != null) {
             facetValue = searchValue;
         }
         return facetValue;
