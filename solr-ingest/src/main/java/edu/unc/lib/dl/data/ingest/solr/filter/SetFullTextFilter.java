@@ -41,11 +41,13 @@ public class SetFullTextFilter implements IndexDocumentFilter {
 
         String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
 
-        if (fullTextDS == null || "false".equals(fullTextDS))
+        if (fullTextDS == null || "false".equals(fullTextDS)) {
             return;
+        }
 
         try {
-            MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(), ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
+            MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(),
+                    ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
             dip.getDocument().setFullText(new String(stream.getStream()));
         } catch (FedoraException e) {
             log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);

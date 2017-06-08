@@ -76,8 +76,9 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         Document foxml = dip.getFoxml();
-        if (foxml == null)
+        if (foxml == null) {
             throw new IndexingException("FOXML was not found or set for " + dip.getPid());
+        }
 
         // Generate list of datastreams on this object
         List<Datastream> datastreams = new ArrayList<Datastream>();
@@ -115,16 +116,18 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
                 if (sourceDataMimetype != null) {
                     defaultWebData.setMimetype(sourceDataMimetype);
                     // Use the extension if you've got it.  if not, get it
-                    if (defaultWebData.getExtension() == null)
+                    if (defaultWebData.getExtension() == null) {
                         defaultWebData.setExtension(this.getExtension(null, defaultWebData.getMimetype()));
+                    }
                 } else if (defaultWebData.getExtension() != null) {
                     String mimetype = this.getMimetypeFromExtension(defaultWebData.getExtension());
-                    if (mimetype != null)
+                    if (mimetype != null) {
                         defaultWebData.setMimetype(mimetype);
+                    }
                 }
             }
 
-            // If the filesize on the datastream is not set (due to old version of fedora creating it), then grab it from rels-ext
+            // If the filesize on the datastream is not set, then grab it from rels-ext
             if (defaultWebData.getFilesize() == null || defaultWebData.getFilesize() < 0) {
                 String sourceFileSize = dip.getFirstTriple(CDRProperty.hasSourceFileSize.getURI().toString());
                 if (sourceFileSize != null) {
@@ -144,24 +147,28 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
         dip.getDocument().setDatastream(datastreamList);
         for (Datastream ds : datastreams) {
             datastreamList.add(ds.toString());
-            // Only add the filesize for datastreams directly belonging to this object to the filesize total, and only if there is a filesize present.
-            if (ds.getOwner() == null && ds.getFilesize() != null)
+            // Only add the filesize for datastreams directly belonging to this object to the filesize total,
+            // and only if there is a filesize present.
+            if (ds.getOwner() == null && ds.getFilesize() != null) {
                 totalSize += ds.getFilesize();
+            }
         }
         dip.getDocument().setFilesizeTotal(totalSize);
     }
 
     /**
-     * Extracts a list of datastreams from a FOXML documents, including the datastream's name, file type, file size and
-     * backing enumeration.
+     * Extracts a list of datastreams from a FOXML documents, including the
+     * datastream's name, file type, file size and backing enumeration.
      *
      * @param dip
      * @param datastreams
-     *           List of datastreams to add to
+     *            List of datastreams to add to
      * @param includePIDAsOwner
-     *           If true, then the PID of the provided DIP will be listed as the owner of the datastream
+     *            If true, then the PID of the provided DIP will be listed as
+     *            the owner of the datastream
      */
-    private void extractDatastreams(DocumentIndexingPackage dip, List<Datastream> datastreams, boolean includePIDAsOwner)
+    private void extractDatastreams(DocumentIndexingPackage dip, List<Datastream> datastreams,
+            boolean includePIDAsOwner)
             throws IndexingException {
         Map<String, Element> datastreamMap = FOXMLJDOMUtil.getMostRecentDatastreamMap(dip.getFoxml());
         Iterator<Entry<String, Element>> it = datastreamMap.entrySet().iterator();
@@ -195,7 +202,8 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
     }
 
     // Used for determining sort file size, contentType. Store it for SetRelations
-    private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams) throws IndexingException {
+    private Datastream getDefaultWebData(DocumentIndexingPackage dip, List<Datastream> datastreams)
+            throws IndexingException {
         PID owner = null;
         String defaultWebDataUri = CDRProperty.defaultWebData.getURI().toString();
         String defaultWebData = dip.getFirstTriple(defaultWebDataUri);
@@ -205,14 +213,16 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
             defaultWebData = dip.getDefaultWebObject().getFirstTriple(defaultWebDataUri);
             owner = dip.getDefaultWebObject().getPid();
         }
-        if (defaultWebData == null)
+        if (defaultWebData == null) {
             return null;
+        }
 
         // Find the datastream that matches the defaultWebData datastream name and owner.
         String dwdName = defaultWebData.substring(defaultWebData.lastIndexOf('/') + 1);
         for (Datastream ds : datastreams) {
-            if (ds.getName().equals(dwdName) && (owner == ds.getOwner() || owner.equals(ds.getOwner())))
+            if (ds.getName().equals(dwdName) && (owner == ds.getOwner() || owner.equals(ds.getOwner()))) {
                 return ds;
+            }
         }
 
         return null;
@@ -223,8 +233,9 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
             Matcher matcher = extensionRegex.matcher(filepath);
             if (matcher.matches()) {
                 String extension = matcher.group(1);
-                if (extension.length() <= 8)
+                if (extension.length() <= 8) {
                     return extension.toLowerCase();
+                }
             }
         }
         if (mimetype != null) {
@@ -235,13 +246,15 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
     }
 
     private String getMimetypeFromExtension(String extension) {
-        if (extension == null)
+        if (extension == null) {
             return null;
+        }
         Iterator<Entry<Object, Object>> mimetypeIt = this.mimetypeToExtensionMap.entrySet().iterator();
         while (mimetypeIt.hasNext()) {
             Entry<Object, Object> mimetypeEntry = mimetypeIt.next();
-            if (extension.equals(mimetypeEntry.getValue()))
+            if (extension.equals(mimetypeEntry.getValue())) {
                 return (String) mimetypeEntry.getKey();
+            }
         }
         return null;
     }
@@ -251,30 +264,36 @@ public class SetDatastreamContentFilter implements IndexDocumentFilter {
         contentTypes.add('^' + contentCategory.getJoined());
         StringBuilder contentType = new StringBuilder();
         contentType.append('/').append(contentCategory.name()).append('^');
-        if (datastream.getExtension() == null)
+        if (datastream.getExtension() == null) {
             contentType.append("unknown,unknown");
-        else
+        } else {
             contentType.append(datastream.getExtension()).append(',').append(datastream.getExtension());
+        }
         contentTypes.add(contentType.toString());
     }
 
     private ContentCategory getContentCategory(String mimetype, String extension) {
-        if (mimetype == null)
+        if (mimetype == null) {
             return ContentCategory.unknown;
+        }
         int index = mimetype.indexOf('/');
         if (index != -1) {
             String mimetypeType = mimetype.substring(0, index);
-            if (mimetypeType.equals("image"))
+            if (mimetypeType.equals("image")) {
                 return ContentCategory.image;
-            if (mimetypeType.equals("video"))
+            }
+            if (mimetypeType.equals("video")) {
                 return ContentCategory.video;
-            if (mimetypeType.equals("audio"))
+            }
+            if (mimetypeType.equals("audio")) {
                 return ContentCategory.audio;
+            }
         }
 
         String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
-        if (contentCategory == null)
+        if (contentCategory == null) {
             contentCategory = (String)this.contentTypeProperties.get("ext." + extension);
+        }
         return ContentCategory.getContentCategory(contentCategory);
     }
 }

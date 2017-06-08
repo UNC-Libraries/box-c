@@ -35,6 +35,11 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public abstract class AbstractIndexingAction implements IndexingAction {
     protected DocumentIndexingPipeline pipeline;
     @Autowired

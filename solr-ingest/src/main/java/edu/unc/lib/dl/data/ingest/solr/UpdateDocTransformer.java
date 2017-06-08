@@ -89,12 +89,13 @@ public class UpdateDocTransformer {
             public Source resolve(String href, String base)
                     throws TransformerException {
                 Source result = null;
-                if (href.startsWith("/"))
+                if (href.startsWith("/")) {
                     result = new StreamSource(UpdateDocTransformer.class
                             .getResourceAsStream(href));
-                else
+                } else {
                     result = new StreamSource(UpdateDocTransformer.class
                             .getResourceAsStream("/transform/" + href));
+                }
                 return result;
             }
         });
@@ -111,11 +112,11 @@ public class UpdateDocTransformer {
     public synchronized void addDocument(Document doc) throws Exception {
         JDOMResult out = new JDOMResult();
 
-        synchronized(transformer){
+        synchronized (transformer) {
             transformer.transform(new JDOMSource(doc), out);
         }
         Element rootElement = out.getDocument().getRootElement();
-        for (Namespace namespace: namespaces){
+        for (Namespace namespace: namespaces) {
             rootElement.removeNamespaceDeclaration(namespace);
         }
         synchronizedAddDocElements.add(rootElement.detach());
@@ -158,7 +159,7 @@ public class UpdateDocTransformer {
      * Returns the list of update documents as a single update document with
      * all the individual elements as children.
      */
-    public String toString(){
+    public String toString() {
         Document addDoc = new Document();
         Element addDocRoot = new Element("update");
         addDoc.setRootElement(addDocRoot);
@@ -167,7 +168,7 @@ public class UpdateDocTransformer {
         return out.outputString(addDoc);
     }
 
-    public synchronized String exportUpdateDocument(){
+    public synchronized String exportUpdateDocument() {
         String updateDocument = this.toString();
         this.clearDocs();
         return updateDocument;
@@ -181,7 +182,7 @@ public class UpdateDocTransformer {
         this.xslName = xslName;
     }
 
-    public int getDocumentCount(){
+    public int getDocumentCount() {
         return this.addDocElements.size();
     }
 }

@@ -390,7 +390,7 @@ public class DigitalObjectManagerImplTest {
 		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editResourceType)))
 		.thenReturn(true);
 		
-		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), ResourceType.Aggregate, "user");
+		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), ResourceType.Work, "user");
 		
 		ArgumentCaptor<Document> newRelsCaptor = ArgumentCaptor.forClass(Document.class);
 		verify(managementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),

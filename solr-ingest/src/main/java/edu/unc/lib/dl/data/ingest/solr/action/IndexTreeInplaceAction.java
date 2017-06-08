@@ -45,10 +45,11 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
         // Cleanup any objects in the tree that were no updated
         this.deleteStaleChildren(updateRequest);
 
-        if (log.isDebugEnabled())
-            log.debug(String.format("Finished inplace indexing of {}.  {} objects updated in {}ms", updateRequest.getPid()
-                    .getPid(), updateRequest.getChildrenPending(),
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Finished inplace indexing of {}.  {} objects updated in {}ms",
+                    updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
                     System.currentTimeMillis() - updateRequest.getTimeStarted()));
+        }
     }
 
     public void deleteStaleChildren(SolrUpdateRequest updateRequest) throws IndexingException {
@@ -69,8 +70,10 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
             }
 
             // Target any children with timestamp older than start time.
-            query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name())).append(":[* TO ")
-                    .append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime)).append("]");
+            query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()))
+                    .append(":[* TO ")
+                    .append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime))
+                    .append("]");
 
             solrUpdateDriver.deleteByQuery(query.toString());
         } catch (Exception e) {

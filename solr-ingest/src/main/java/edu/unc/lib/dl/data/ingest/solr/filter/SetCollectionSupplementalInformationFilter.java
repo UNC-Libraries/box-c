@@ -29,6 +29,11 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class SetCollectionSupplementalInformationFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetCollectionSupplementalInformationFilter.class);
 
@@ -41,12 +46,14 @@ public class SetCollectionSupplementalInformationFilter implements IndexDocument
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         String parentCollection = dip.getDocument().getParentCollection();
-        if (parentCollection == null)
+        if (parentCollection == null) {
             return;
+        }
 
         IndexDocumentFilter collectionFilter = collectionFilters.get(parentCollection);
-        if (collectionFilter == null)
+        if (collectionFilter == null) {
             return;
+        }
 
         collectionFilter.filter(dip);
     }

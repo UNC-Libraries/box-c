@@ -22,6 +22,11 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.util.IndexingActionType;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class IndexTreeCleanAction extends UpdateTreeAction {
     private static final Logger log = LoggerFactory.getLogger(IndexTreeCleanAction.class);
 
@@ -46,10 +51,12 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
         // Perform normal recursive update
         super.performAction(updateRequest);
 
-        if (log.isDebugEnabled())
-            log.debug(String.format("Finished clean indexing of {}.  {} objects updated in {}ms", updateRequest.getPid()
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Finished clean indexing of {}.  {} objects updated in {}ms",
+                    updateRequest.getPid()
                     .getPid(), updateRequest.getChildrenPending(),
                     System.currentTimeMillis() - updateRequest.getTimeStarted()));
+        }
     }
 
     public void setDeleteAction(DeleteSolrTreeAction deleteAction) {

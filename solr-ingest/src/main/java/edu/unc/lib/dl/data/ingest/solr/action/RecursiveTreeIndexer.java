@@ -55,22 +55,25 @@ public class RecursiveTreeIndexer {
         DocumentIndexingPackage dip = null;
         try {
             // Force wait before each document being indexed
-            if (this.action.getUpdateDelay() > 0)
+            if (this.action.getUpdateDelay() > 0) {
                 Thread.sleep(this.action.getUpdateDelay());
+            }
 
             // Get the DIP for the next object being indexed
             dip = this.action.getDocumentIndexingPackage(pid, parent);
-            if (dip == null)
+            if (dip == null) {
                 throw new IndexingException("No document indexing package was retrieved for " + pid.getPid());
+            }
 
             // Perform document populating pipeline
             this.action.getPipeline().process(dip);
 
             // Update the current target in solr
-            if (addDocumentMode)
+            if (addDocumentMode) {
                 this.action.getSolrUpdateDriver().addDocument(dip.getDocument());
-            else
+            } else {
                 this.action.getSolrUpdateDriver().updateDocument("set", dip.getDocument());
+            }
 
             // Update the number of objects processed in this action
             this.updateRequest.incrementChildrenProcessed();
@@ -91,13 +94,15 @@ public class RecursiveTreeIndexer {
             return;
         } finally {
             // Clear parent bond to allow memory cleanup
-            if (dip != null)
+            if (dip != null) {
                 dip.setParentDocument((DocumentIndexingPackage) null);
+            }
         }
 
         // Start indexing the children
-        if (dip != null)
+        if (dip != null) {
             this.indexChildren(dip, dip.getChildren());
+        }
     }
 
     public void indexChildren(DocumentIndexingPackage parent, List<PID> children) throws IndexingException {

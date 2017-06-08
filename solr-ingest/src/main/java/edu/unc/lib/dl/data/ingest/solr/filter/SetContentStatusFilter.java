@@ -57,10 +57,11 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         if (datastreams != null) {
             String mdDescriptive = dip.getPid().getURI() + "/" + Datastream.MD_DESCRIPTIVE.getName();
             boolean described = datastreams.contains(mdDescriptive);
-            if (described)
+            if (described) {
                 status.add(FacetConstants.CONTENT_DESCRIBED);
-            else
+            } else {
                 status.add(FacetConstants.CONTENT_NOT_DESCRIBED);
+            }
         }
 
         // Valid/Not Valid content according to FITS

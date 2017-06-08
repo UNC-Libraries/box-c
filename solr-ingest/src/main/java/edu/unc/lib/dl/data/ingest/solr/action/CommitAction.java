@@ -18,6 +18,11 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class CommitAction extends AbstractIndexingAction {
 
     @Override

@@ -80,8 +80,9 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
                 Object[] args = invocation.getArguments();
                 PID pid = ((DocumentIndexingPackage) args[0]).getPid();
 
-                if (pid.getPid().equals("uuid:doesnotexist"))
+                if (pid.getPid().equals("uuid:doesnotexist")) {
                     throw new IndexingException("");
+                }
 
                 return children.get(pid.getPid());
             }
@@ -122,8 +123,9 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
             String id = (String) docAfter.getFieldValue("id");
             for (SolrDocument docBefore : docListBefore) {
                 if (id.equals(docBefore.getFieldValue("id"))) {
-                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
+                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id)) {
                         assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    }
                     else assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
                 }
             }
@@ -144,12 +146,14 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
         // Verify that all appropriate objects were updated, and that the dangling contains didn't create a record
         for (SolrDocument docAfter : docListAfter) {
             String id = (String) docAfter.getFieldValue("id");
-            if ("uuid:doesnotexist".equals(id))
+            if ("uuid:doesnotexist".equals(id)) {
                 fail("Record for dangling exists");
+            }
             for (SolrDocument docBefore : docListBefore) {
                 if (id.equals(docBefore.getFieldValue("id"))) {
-                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
+                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id)) {
                         assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    }
                     else
                         assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
                 }
@@ -174,8 +178,9 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
             String id = (String) docAfter.getFieldValue("id");
             for (SolrDocument docBefore : docListBefore) {
                 if (id.equals(docBefore.getFieldValue("id"))) {
-                    if ("uuid:6".equals(id))
+                    if ("uuid:6".equals(id)) {
                         assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    }
                     else
                         assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
                 }

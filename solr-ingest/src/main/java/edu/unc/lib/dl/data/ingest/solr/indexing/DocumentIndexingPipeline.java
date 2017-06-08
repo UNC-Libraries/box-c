@@ -23,6 +23,11 @@ import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelExceptio
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
     protected Collection<IndexDocumentFilter> filters;
 
@@ -32,9 +37,10 @@ public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
         if (dip.getTriples() != null) {
             List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
 
-            if (contentModels == null || contentModels.size() == 0)
+            if (contentModels == null || contentModels.size() == 0) {
                 throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
                         + " due having no content models assigned.");
+            }
 
             if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
                 throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()

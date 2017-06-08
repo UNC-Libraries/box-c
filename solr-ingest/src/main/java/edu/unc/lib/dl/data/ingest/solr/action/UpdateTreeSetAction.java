@@ -33,9 +33,10 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        if (!(updateRequest instanceof ChildSetRequest))
+        if (!(updateRequest instanceof ChildSetRequest)) {
             throw new IndexingException("ChildSetRequest required to perform TreeSet update, received "
                     + updateRequest.getClass().getName());
+        }
         ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
 
         // Calculate total number of objects to be indexed
@@ -51,9 +52,10 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
             treeIndexer.index(pid, null);
         }
 
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
                     updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
                     (System.currentTimeMillis() - updateRequest.getTimeStarted()) });
+        }
     }
 }

@@ -24,6 +24,11 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class DeleteSolrTreeAction extends AbstractIndexingAction {
     private static final Logger LOG = LoggerFactory.getLogger(DeleteSolrTreeAction.class);
 

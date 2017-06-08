@@ -21,7 +21,8 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 
 /**
- * Pipeline class which interates through a collection of filters to modify the document indexing package submitted to the process method.
+ * Pipeline class which interates through a collection of filters to modify the
+ * document indexing package submitted to the process method.
  *
  * @author bbpennel
  *

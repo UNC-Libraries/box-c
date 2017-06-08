@@ -25,11 +25,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class RLASupplementalFilter extends CollectionSupplementalInformationFilter {
     private static final Logger log = LoggerFactory.getLogger(RLASupplementalFilter.class);
 
@@ -55,8 +59,9 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
 
         idb.setKeyword(new ArrayList<String>());
         if (mods != null) {
-            if (idb.getDynamicFields() == null)
+            if (idb.getDynamicFields() == null) {
                 idb.setDynamicFields(new HashMap<String, Object>());
+            }
             try {
                 extractValues(mods, idb);
             } catch (JDOMException e) {
@@ -68,19 +73,24 @@ public class RLASupplementalFilter extends CollectionSupplementalInformationFilt
     private void extractValues(Element mods, IndexDocumentBean idb) throws JDOMException {
         List<?> elements = mods.getChildren();
 
-        if (elements == null)
+        if (elements == null) {
             return;
+        }
 
         for (Object elementObject : elements) {
             Element element = (Element) elementObject;
 
-            if (FILENAME_ID.equalsIgnoreCase(element.getAttributeValue("ID")) || FILENAME_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+            if (FILENAME_ID.equalsIgnoreCase(element.getAttributeValue("ID"))
+                    || FILENAME_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
                 idb.setIdentifierSort(element.getTextTrim());
-            } else if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID")) || CATALOG_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+            } else if (CATALOG_ID.equalsIgnoreCase(element.getAttributeValue("ID"))
+                    || CATALOG_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
                 idb.getDynamicFields().put(CATALOG_FIELD, element.getTextTrim());
-            } else if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID")) || CONTEXT_1_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+            } else if (CONTEXT_1_ID.equalsIgnoreCase(element.getAttributeValue("ID"))
+                    || CONTEXT_1_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
                 idb.getDynamicFields().put(CONTEXT_1_FIELD, element.getTextTrim());
-            } else if (SITE_CODE_ID.equalsIgnoreCase(element.getAttributeValue("ID")) || SITE_CODE_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
+            } else if (SITE_CODE_ID.equalsIgnoreCase(element.getAttributeValue("ID"))
+                    || SITE_CODE_LABEL.equalsIgnoreCase(element.getAttributeValue("displayLabel"))) {
                 Element geographicEl = element.getChild("geographic", JDOMNamespaceUtil.MODS_V3_NS);
                 if (geographicEl != null) {
                     idb.getDynamicFields().put(SITE_CODE_FIELD, geographicEl.getTextTrim());

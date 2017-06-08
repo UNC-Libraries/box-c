@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.exception;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class OrphanedObjectException extends IndexingException {
     private static final long serialVersionUID = 1L;
 

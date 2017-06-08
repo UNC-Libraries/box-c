@@ -31,6 +31,11 @@ import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class DocumentIndexingPackage {
     private DocumentIndexingPackageDataLoader loader;
 
@@ -179,10 +184,12 @@ public class DocumentIndexingPackage {
 
     public Long getDisplayOrder(String pid) throws NumberFormatException, IndexingException {
         Element mdContents = getMdContents();
-        if (mdContents == null)
+        if (mdContents == null) {
             return null;
+        }
         Element containerDiv = mdContents.getChild("div", JDOMNamespaceUtil.METS_NS);
-        Element orderDiv = JDOMQueryUtil.getChildByAttribute(containerDiv, "div", JDOMNamespaceUtil.METS_NS, "ID", pid);
+        Element orderDiv = JDOMQueryUtil.getChildByAttribute(
+                containerDiv, "div", JDOMNamespaceUtil.METS_NS, "ID", pid);
         if (orderDiv != null) {
             Long order = new Long(orderDiv.getAttributeValue("ORDER"));
             return order;
@@ -193,8 +200,9 @@ public class DocumentIndexingPackage {
     public String getLabel() throws IndexingException {
         if (label == null) {
             Map<String, List<String>> triples = getTriples();
-            if (triples != null)
+            if (triples != null) {
                 this.label = triples.get(FedoraProperty.label.toString()).get(0);
+            }
         }
         return label;
     }
@@ -222,8 +230,9 @@ public class DocumentIndexingPackage {
 
         List<String> tripleList = triples.get(uri);
 
-        if (tripleList == null || tripleList.size() == 0)
+        if (tripleList == null || tripleList.size() == 0) {
             return null;
+        }
 
         return tripleList.get(0);
     }

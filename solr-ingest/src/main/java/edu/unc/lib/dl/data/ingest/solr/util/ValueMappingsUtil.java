@@ -19,7 +19,12 @@ import java.util.Collection;
 
 import edu.unc.lib.dl.util.ContentModelHelper;
 
-public class ValueMappingsUtil {
+/**
+ * 
+ * @author bbpennel
+ *
+ */
+public abstract class ValueMappingsUtil {
 
     public static String getResourceType(Collection<String> contentModels) {
         if (contentModels.contains(ContentModelHelper.Model.COLLECTION.getPID().getURI())) {

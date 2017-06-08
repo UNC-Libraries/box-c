@@ -15,8 +15,14 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public enum ProcessingStatus {
-    ACTIVE("active"), INPROGRESS("inprogress"), BLOCKED("blocked"), QUEUED("queued"), FINISHED("finished"), FAILED("failed"), IGNORED("ignored");
+    ACTIVE("active"), INPROGRESS("inprogress"), BLOCKED("blocked"),
+    QUEUED("queued"), FINISHED("finished"), FAILED("failed"), IGNORED("ignored");
 
     String name;
 

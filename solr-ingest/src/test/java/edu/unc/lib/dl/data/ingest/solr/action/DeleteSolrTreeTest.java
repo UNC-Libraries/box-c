@@ -103,8 +103,9 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
         for (SolrDocument docAfter : docListAfter) {
             String id = (String) docAfter.getFieldValue("id");
-            if ("uuid:2".equals(id) || "uuid:6".equals(id))
+            if ("uuid:2".equals(id) || "uuid:6".equals(id)) {
                 fail("Object was not deleted: " + id);
+            }
         }
     }
 
@@ -135,8 +136,9 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
         for (SolrDocument docAfter : docListAfter) {
             String id = (String) docAfter.getFieldValue("id");
-            if ("uuid:6".equals(id))
+            if ("uuid:6".equals(id)) {
                 fail("Object was not deleted: " + id);
+            }
         }
     }
 

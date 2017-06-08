@@ -20,6 +20,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.message.ActionMessage;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class UpdateNodeRequest implements ActionMessage {
     private static final long serialVersionUID = 1L;
 
@@ -50,8 +55,9 @@ public class UpdateNodeRequest implements ActionMessage {
         timeFinished = System.currentTimeMillis();
         this.cleanupExternalReferences();
 
-        if (ProcessingStatus.ACTIVE.equals(this.status))
+        if (ProcessingStatus.ACTIVE.equals(this.status)) {
             this.status = ProcessingStatus.FINISHED;
+        }
     }
 
     /**

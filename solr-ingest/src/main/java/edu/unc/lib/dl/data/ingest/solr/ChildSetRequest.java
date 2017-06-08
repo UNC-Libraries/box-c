@@ -21,6 +21,11 @@ import java.util.List;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class ChildSetRequest extends SolrUpdateRequest {
     private static final long serialVersionUID = 1L;
     private List<PID> children;

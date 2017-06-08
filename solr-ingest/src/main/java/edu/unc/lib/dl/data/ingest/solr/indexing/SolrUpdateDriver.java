@@ -88,8 +88,8 @@ public class SolrUpdateDriver {
             for (String fieldName : sid.getFieldNames()) {
                 if (!ID_FIELD.equals(fieldName)) {
                     SolrInputField inputField = sid.getField(fieldName);
-                    // Adding in each non-null field value, except the timestamp field which gets cleared if not specified so
-                    // that it always gets updated as part of a partial update
+                    // Adding in each non-null field value, except the timestamp field which gets cleared
+                    // if not specified so that it always gets updated as part of a partial update
                     if (inputField != null && (inputField.getValue() != null || UPDATE_TIMESTAMP.equals(fieldName))) {
                         Map<String, Object> partialUpdate = new HashMap<String, Object>();
                         partialUpdate.put(operation, inputField.getValue());
@@ -97,8 +97,9 @@ public class SolrUpdateDriver {
                     }
                 }
             }
-            if (log.isDebugEnabled())
+            if (log.isDebugEnabled()) {
                 log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
+            }
             updateSolrServer.add(sid);
         } catch (IOException e) {
             throw new IndexingException("Failed to add document to solr", e);

@@ -18,6 +18,11 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface IndexDocumentFilter {
     public void filter(DocumentIndexingPackage dip) throws IndexingException;
 }

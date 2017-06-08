@@ -61,10 +61,11 @@ public class UpdateTreeAction extends AbstractIndexingAction {
         // Perform updates
         index(updateRequest);
 
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Finished updating tree of " + updateRequest.getPid().getPid() + ".  "
                     + updateRequest.getChildrenPending() + " objects updated in "
                     + (System.currentTimeMillis() - updateRequest.getTimeStarted()) + " ms");
+        }
     }
 
     public void setTsqs(TripleStoreQueryService tsqs) {
@@ -74,10 +75,11 @@ public class UpdateTreeAction extends AbstractIndexingAction {
     protected void index(SolrUpdateRequest updateRequest) throws IndexingException {
         // Translate the index all flag into the collections pid if neccessary
         PID startingPid;
-        if (TARGET_ALL.equals(updateRequest.getTargetID()))
+        if (TARGET_ALL.equals(updateRequest.getTargetID())) {
             startingPid = collectionsPid;
-        else
+        } else {
             startingPid = updateRequest.getPid();
+        }
 
         // Get the number of objects in the tree being indexed
         int totalObjects = countDescendants(startingPid) + 1;
@@ -97,8 +99,9 @@ public class UpdateTreeAction extends AbstractIndexingAction {
     protected int countDescendants(PID pid) {
         List<List<String>> results = tsqs.queryResourceIndex(String.format(descendantsQuery,
                 this.tsqs.getResourceIndexModelUri(), pid.getURI()));
-        if (results == null || results.size() == 0 || results.get(0).size() == 0)
+        if (results == null || results.size() == 0 || results.get(0).size() == 0) {
             return 0;
+        }
         return Integer.parseInt(results.get(0).get(0));
     }
 

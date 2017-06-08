@@ -37,24 +37,27 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
         this(pid, action, messageID, null);
     }
 
-    public SolrUpdateRequest(PID pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
+    public SolrUpdateRequest(PID pid, IndexingActionType action, String messageID, UpdateNodeRequest parent) {
         super(messageID);
-        if (pid == null || action == null)
+        if (pid == null || action == null) {
             throw new IllegalArgumentException("Both a target pid and an action are required.");
+        }
         this.pid = pid;
         this.action = action;
         linkedRequest = null;
     }
 
-    public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
+    public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent) {
         this(new PID(pid), action, messageID, parent);
     }
 
-    public SolrUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+    public SolrUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest,
+            String messageID, UpdateNodeRequest parent) {
         this(new PID(pid), action, linkedRequest, messageID, parent);
     }
 
-    public SolrUpdateRequest(PID pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
+    public SolrUpdateRequest(PID pid, IndexingActionType action, SolrUpdateRequest linkedRequest,
+            String messageID, UpdateNodeRequest parent) {
         this(pid, action, messageID, parent);
         this.setLinkedRequest(linkedRequest);
     }
@@ -75,29 +78,30 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
         this.action = action;
     }
 
-    public boolean isBlocked(){
+    public boolean isBlocked() {
         return false;
     }
 
-    public void linkedRequestEstablished(SolrUpdateRequest linkerRequest){
+    public void linkedRequestEstablished(SolrUpdateRequest linkerRequest) {
     }
 
-    public void setLinkedRequest(SolrUpdateRequest linkedRequest){
+    public void setLinkedRequest(SolrUpdateRequest linkedRequest) {
         this.linkedRequest = linkedRequest;
-        if (linkedRequest != null)
+        if (linkedRequest != null) {
             linkedRequest.linkedRequestEstablished(this);
+        }
     }
 
-    public SolrUpdateRequest getLinkedRequest(){
+    public SolrUpdateRequest getLinkedRequest() {
         return this.linkedRequest;
     }
 
-    public void linkedRequestCompleted(SolrUpdateRequest completedRequest){
+    public void linkedRequestCompleted(SolrUpdateRequest completedRequest) {
     }
 
-    public void requestCompleted(){
+    public void requestCompleted() {
         super.requestCompleted();
-        if (linkedRequest != null){
+        if (linkedRequest != null) {
             linkedRequest.linkedRequestCompleted(this);
         }
     }

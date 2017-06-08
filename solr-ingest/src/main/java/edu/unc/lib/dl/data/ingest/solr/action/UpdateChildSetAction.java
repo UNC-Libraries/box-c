@@ -39,9 +39,10 @@ public class UpdateChildSetAction extends UpdateTreeAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        if (!(updateRequest instanceof ChildSetRequest))
+        if (!(updateRequest instanceof ChildSetRequest)) {
             throw new IndexingException("ChildSetRequest required to perform move objects update, received "
                     + updateRequest.getClass().getName());
+        }
         ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
 
         log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
@@ -60,10 +61,11 @@ public class UpdateChildSetAction extends UpdateTreeAction {
         RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
         treeIndexer.indexChildren(dip, childSetRequest.getChildren());
 
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
                     updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
                     (System.currentTimeMillis() - updateRequest.getTimeStarted()) });
+        }
     }
 
     protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {

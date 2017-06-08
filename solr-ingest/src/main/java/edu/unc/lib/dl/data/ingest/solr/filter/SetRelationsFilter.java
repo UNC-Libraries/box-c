@@ -46,8 +46,9 @@ public class SetRelationsFilter implements IndexDocumentFilter{
 
         // Retrieve the default web datastream
         String defaultWebData = dip.getDefaultWebData();
-        if (defaultWebData != null)
+        if (defaultWebData != null) {
             relations.add(CDRProperty.defaultWebData.getPredicate() + "|" + new PID(defaultWebData).getPid());
+        }
 
         // Retrieve the default web object, from the cached version if possible.
         DocumentIndexingPackage defaultWebObjectPackage = dip.getDefaultWebObject();
@@ -56,16 +57,19 @@ public class SetRelationsFilter implements IndexDocumentFilter{
             defaultWebObject = defaultWebObjectPackage.getPid().getPid();
         } else {
             List<String> defaultWebObjectTriples = triples.get(CDRProperty.defaultWebObject.toString());
-            if (defaultWebObjectTriples != null)
+            if (defaultWebObjectTriples != null) {
                 defaultWebObject = defaultWebObjectTriples.get(0);
+            }
         }
-        if (defaultWebObject != null)
+        if (defaultWebObject != null) {
             relations.add(CDRProperty.defaultWebObject.getPredicate() + "|" + (new PID(defaultWebObject)).getPid());
+        }
 
         // Retrieve original content datastream name for items with a main content payload
         List<String> sourceData = triples.get(CDRProperty.sourceData.toString());
-        if (sourceData != null)
+        if (sourceData != null) {
             relations.add(CDRProperty.sourceData.getPredicate() + "|" + ((new PID(sourceData.get(0)).getPid())));
+        }
 
         // Retrieve and store label
         List<String> label = triples.get(FedoraProperty.label.toString());
@@ -83,8 +87,9 @@ public class SetRelationsFilter implements IndexDocumentFilter{
 
         // Retrieve and store embargo
         List<String> embargoUntil = triples.get(CDRProperty.embargoUntil.toString());
-        if (embargoUntil != null)
+        if (embargoUntil != null) {
             relations.add(CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
+        }
 
         // Retrieve and store invalid terms
         List<String> invalidTerms = triples.get(CDRProperty.invalidTerm.toString());

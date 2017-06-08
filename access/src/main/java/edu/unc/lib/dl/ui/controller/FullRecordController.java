@@ -284,7 +284,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
             SearchState searchState = stateFactory.createSearchState();
             searchState.setResourceTypes(
-                    Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+                    Arrays.asList(ResourceType.Work.name(), ResourceType.File.name()));
             SearchRequest listContentsRequest = new SearchRequest();
             listContentsRequest.setSearchState(searchState);
             listContentsRequest.setRetrieveFacets(false);

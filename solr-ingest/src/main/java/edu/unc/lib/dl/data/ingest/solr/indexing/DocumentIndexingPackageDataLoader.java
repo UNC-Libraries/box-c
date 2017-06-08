@@ -172,8 +172,8 @@ public class DocumentIndexingPackageDataLoader {
                     if (tries > 1) {
                         log.warn("Failed to retrieve FOXML for " + pid.getPid() + ", retrying.", e);
                     } else {
-                        throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid() + " after " + maxRetries
-                                + " tries.", e);
+                        throw new IndexingException("Failed to retrieve FOXML for " + pid.getPid()
+                        + " after " + maxRetries + " tries.", e);
                     }
                 }
             } while (--tries > 0);
@@ -234,7 +234,8 @@ public class DocumentIndexingPackageDataLoader {
         } else {
             try {
                 log.debug("Retrieving parent pid for " + dip.getPid().getPid());
-                parentPID = tsqs.fetchByPredicateAndLiteral(ContentModelHelper.Relationship.contains.toString(), dip.getPid()).get(0);
+                parentPID = tsqs.fetchByPredicateAndLiteral(ContentModelHelper.Relationship.contains.toString(),
+                        dip.getPid()).get(0);
             } catch (IndexOutOfBoundsException e) {
                 throw new OrphanedObjectException("Could not retrieve parent pid for " + dip.getPid().getPid());
             }
@@ -281,7 +282,8 @@ public class DocumentIndexingPackageDataLoader {
         return dsEl;
     }
     @Deprecated
-    private Element loadDatastream(DocumentIndexingPackage dip, Datastream ds, boolean checkFoxml) throws IndexingException {
+    private Element loadDatastream(DocumentIndexingPackage dip, Datastream ds, boolean checkFoxml)
+            throws IndexingException {
         PID pid = dip.getPid();
         String datastreamName = ds.getName();
 
@@ -310,7 +312,8 @@ public class DocumentIndexingPackageDataLoader {
                         Document dsDoc = new SAXBuilder().build(bais);
                         return dsDoc.detachRootElement();
                     } catch (JDOMException | IOException e) {
-                        throw new ServiceException("Failed to parse datastream " + datastreamName + " for object " + pid, e);
+                        throw new ServiceException("Failed to parse datastream " + datastreamName
+                                + " for object " + pid, e);
                     }
 
                 } catch (NotFoundException e) {
