@@ -43,79 +43,86 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 @RequestMapping(value = { "/status/item*", "/status/item" })
 public class ItemInfoRestController implements ServletContextAware {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(ItemInfoRestController.class);
-	protected ServletContext servletContext = null;
 
-	@Resource
-	private SolrSearchService solrSearchService;
-	
-	@Resource
-	protected TripleStoreQueryService tripleStoreQueryService;
+    private static final Logger LOG = LoggerFactory.getLogger(ItemInfoRestController.class);
+    protected ServletContext servletContext = null;
 
-	@Resource(name = "contextUrl")
-	protected String contextUrl = null;
+    @Resource
+    private SolrSearchService solrSearchService;
 
-	@RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
-	public @ResponseBody
-	BriefObjectMetadataBean getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id) {
-		response.setContentType("application/xml");
-		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, groupSet);
-		BriefObjectMetadataBean metadata = solrSearchService.getObjectById(idRequest);
-		return metadata;
-	}
+    @Resource
+    protected TripleStoreQueryService tripleStoreQueryService;
 
-	@RequestMapping(value = "{id}/solrRecord/version", method = RequestMethod.GET)
-	public @ResponseBody
-	Long getItemLastIndexed(@PathVariable("id") String id) {
-		// For when group forwarding is enabled here
-		/* AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";")); */
-		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
-		SimpleIdRequest idRequest = new SimpleIdRequest(id, Arrays.asList("_version_"), groupSet);
-		BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
-		if (md == null || md.get_version_() == null)
-			return null;
-		return md.get_version_();
-	}
-	
-	@RequestMapping(value = "solrRecord/version", method = RequestMethod.POST)
-	public @ResponseBody
-	Map<String, String> getItemsLastIndexed(@RequestParam("ids") String idsString) {
-		if (idsString == null)
-			return null;
-		
-		List<String> ids = Arrays.asList(idsString.split("\n"));
-		
-		// For when group forwarding is enabled here
-		/*AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";"));*/
-		AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
-		List<String> resultFields = Arrays.asList("_version_");
-		
-		IdListRequest listRequest = new IdListRequest(ids, resultFields, groupSet);
-		List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
-		Map<String, String> results = new HashMap<String,String>(listResults.size());
-		
-		for (BriefObjectMetadata result: listResults) {
-			results.put(result.getId(), Long.toString(result.get_version_()));
-		}
-		
-		return results;
-	}
+    @Resource(name = "contextUrl")
+    protected String contextUrl = null;
 
-	public void setSolrSearchService(SolrSearchService solrSearchService) {
-		this.solrSearchService = solrSearchService;
-	}
+    @RequestMapping(value = "{id}/solrRecord", method = RequestMethod.GET)
+    public @ResponseBody
+    BriefObjectMetadataBean getItemSolrRecord(HttpServletResponse response, @PathVariable("id") String id) {
+        response.setContentType("application/xml");
+        AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
+        SimpleIdRequest idRequest = new SimpleIdRequest(id, groupSet);
+        BriefObjectMetadataBean metadata = solrSearchService.getObjectById(idRequest);
+        return metadata;
+    }
 
-	@Override
-	public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
-	}
+    @RequestMapping(value = "{id}/solrRecord/version", method = RequestMethod.GET)
+    public @ResponseBody
+    Long getItemLastIndexed(@PathVariable("id") String id) {
+        // For when group forwarding is enabled here
+        /* AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";")); */
+        AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
+        SimpleIdRequest idRequest = new SimpleIdRequest(id, Arrays.asList("_version_"), groupSet);
+        BriefObjectMetadataBean md = solrSearchService.getObjectById(idRequest);
+        if (md == null || md.get_version_() == null) {
+            return null;
+        }
+        return md.get_version_();
+    }
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    @RequestMapping(value = "solrRecord/version", method = RequestMethod.POST)
+    public @ResponseBody
+    Map<String, String> getItemsLastIndexed(@RequestParam("ids") String idsString) {
+        if (idsString == null) {
+            return null;
+        }
+
+        List<String> ids = Arrays.asList(idsString.split("\n"));
+
+        // For when group forwarding is enabled here
+        /*AccessGroupSet groupSet = new AccessGroupSet(GroupsThreadStore.getGroups().split(";"));*/
+        AccessGroupSet groupSet = new AccessGroupSet(AccessGroupConstants.ADMIN_GROUP);
+        List<String> resultFields = Arrays.asList("_version_");
+
+        IdListRequest listRequest = new IdListRequest(ids, resultFields, groupSet);
+        List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
+        Map<String, String> results = new HashMap<String,String>(listResults.size());
+
+        for (BriefObjectMetadata result: listResults) {
+            results.put(result.getId(), Long.toString(result.get_version_()));
+        }
+
+        return results;
+    }
+
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
+
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 }

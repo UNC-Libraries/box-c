@@ -43,69 +43,69 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 @Controller
 @RequestMapping(value = { "/triplestoremonitor" })
 public class TripleStoreMonitorRestController implements ServletContextAware {
-	private static final Logger LOG = LoggerFactory.getLogger(TripleStoreMonitorRestController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TripleStoreMonitorRestController.class);
 
-	private ServletContext servletContext = null;
-	
-	private Map<String, String> mulgaraUpResponse = Collections.singletonMap("status", "ok");
+    private ServletContext servletContext = null;
 
-	@Resource
-	private TripleStoreQueryService tripleStoreQueryService;
+    private Map<String, String> mulgaraUpResponse = Collections.singletonMap("status", "ok");
 
-	public TripleStoreQueryService getTripleStoreQueryService() {
-		return tripleStoreQueryService;
-	}
+    @Resource
+    private TripleStoreQueryService tripleStoreQueryService;
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    public TripleStoreQueryService getTripleStoreQueryService() {
+        return tripleStoreQueryService;
+    }
 
-	@PostConstruct
-	public void init() {
-		LOG.debug("init");
-	}
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 
-	@RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
-	public @ResponseBody
-	Map<String, ? extends Object> getInfo() throws MulgaraDown {
-		LOG.debug("getInfo()");
-		String error = null;
-		try {
-			PID fedoraObjPID = this.getTripleStoreQueryService().verify(
-					ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID());
-			if(fedoraObjPID == null) {
-				error = "Cannot find "+ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID();
-			}
-		} catch (RuntimeException e) {
-			error = e.getLocalizedMessage();
-		}
-		if(error != null) {
-			throw new MulgaraDown(error);
-		} else {
-			return this.mulgaraUpResponse;
-		}
-	}
-	
-	static class MulgaraDown extends Exception {
-		private static final long serialVersionUID = 7354966480980839751L;
+    @PostConstruct
+    public void init() {
+        LOG.debug("init");
+    }
 
-		MulgaraDown(String msg) {
-			super(msg);
-		}
-	}
-	
-	@ExceptionHandler()
-	@ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR,reason="Mulgara is down")
-	public void mulgaraDown() { }
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.web.context.ServletContextAware#setServletContext(javax.servlet.ServletContext)
-	 */
-	@Override
-	public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
-	}
+    @RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
+    public @ResponseBody
+    Map<String, ? extends Object> getInfo() throws MulgaraDown {
+        LOG.debug("getInfo()");
+        String error = null;
+        try {
+            PID fedoraObjPID = this.getTripleStoreQueryService().verify(
+                    ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID());
+            if (fedoraObjPID == null) {
+                error = "Cannot find " + ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID();
+            }
+        } catch (RuntimeException e) {
+            error = e.getLocalizedMessage();
+        }
+        if (error != null) {
+            throw new MulgaraDown(error);
+        } else {
+            return this.mulgaraUpResponse;
+        }
+    }
+
+    static class MulgaraDown extends Exception {
+        private static final long serialVersionUID = 7354966480980839751L;
+
+        MulgaraDown(String msg) {
+            super(msg);
+        }
+    }
+
+    @ExceptionHandler()
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR,reason = "Mulgara is down")
+    public void mulgaraDown() { }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.springframework.web.context.ServletContextAware#setServletContext(javax.servlet.ServletContext)
+     */
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
 
 }
