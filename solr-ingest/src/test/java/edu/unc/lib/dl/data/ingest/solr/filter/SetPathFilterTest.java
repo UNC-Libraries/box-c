@@ -171,8 +171,8 @@ public class SetPathFilterTest {
     }
 
     private void ancestorPathCheck(List<String> ancestorPath, List<PID> pids) {
-        for(int i=0; i<ancestorPath.size(); i++) {
-            assertTrue(ancestorPath.get(i).startsWith(i + 1 + "," + pids.get(i).getId()));
+        for(int i = 0; i < ancestorPath.size(); i++) {
+            assertTrue(ancestorPath.get(i).equals(i + 1 + "," + pids.get(i).getId()));
         }
     }
 }
