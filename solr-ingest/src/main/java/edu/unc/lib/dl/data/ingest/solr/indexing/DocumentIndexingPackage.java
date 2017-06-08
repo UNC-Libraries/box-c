@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jdom2.Element;
 
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -70,6 +71,10 @@ public class DocumentIndexingPackage {
 
 	public void setPid(PID pid) {
 		this.pid = pid;
+	}
+	
+	public ContentObject getContentObject() throws IndexingException {
+		return loader.getContentObject(this);
 	}
 
 	public DocumentIndexingPackage getParentDocument() throws IndexingException {
@@ -126,18 +131,18 @@ public class DocumentIndexingPackage {
 	public void setDefaultWebData(String defaultWebData) {
 		this.defaultWebData = defaultWebData;
 	}
-
+	@Deprecated
 	public Document getFoxml() throws IndexingException {
 		if (foxml == null) {
 			foxml = loader.loadFOXML(this);
 		}
 		return foxml;
 	}
-
+	@Deprecated
 	public void setFoxml(Document foxml) {
 		this.foxml = foxml;
 	}
-	
+	@Deprecated
 	public boolean hasFoxml() {
 		return foxml != null;
 	}
@@ -152,7 +157,7 @@ public class DocumentIndexingPackage {
 
 	public Element getMods() throws IndexingException {
 		if (mods == null) {
-			mods = loader.loadMDDescriptive(this);
+			mods = loader.loadMods(this);
 		}
 		return mods;
 	}
@@ -231,10 +236,12 @@ public class DocumentIndexingPackage {
 		this.label = label;
 	}
 
+	@Deprecated
 	public ResourceType getResourceType() {
 		return resourceType;
 	}
 
+	@Deprecated
 	public void setResourceType(ResourceType resourceType) {
 		this.resourceType = resourceType;
 	}

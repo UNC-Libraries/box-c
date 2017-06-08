@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,87 +15,98 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
 
-import org.jdom2.Document;
-import org.jdom2.input.SAXBuilder;
-import org.junit.Assert;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mock;
 
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
-import edu.unc.lib.dl.util.DateTimeUtil;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
-public class SetRecordDatesFilterTest extends Assert {
+/*
+ * @author harring
+ */
+public class SetRecordDatesFilterTest {
 	
+	private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+	private static final String DATE_ADDED = "2017-01-01";
+	private static final String DATE_MODIFIED = "2017-05-31";
+	private static final String BAD_DATE = "abcd";
+	
+	@Mock
 	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
+	@Mock
+	private DocumentIndexingPackage dip;
+	@Mock
+	private PID pid;
+	@Mock
+	private ContentObject contentObj;
+	@Mock
+	private Resource resource;
+	
+	@Rule
+	public ExpectedException expectedEx = ExpectedException.none();
+	
+	private IndexDocumentBean idb;
+	private SetRecordDatesFilter filter;
 	
 	@Before
 	public void setup() throws Exception {
-		loader = new DocumentIndexingPackageDataLoader();
+		idb = new IndexDocumentBean();
+		initMocks(this);
+
+		when(pid.getPid()).thenReturn(PID_STRING);
 		
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
+		when(dip.getDocument()).thenReturn(idb);
+		when(dip.getPid()).thenReturn(pid);
+		when(dip.getContentObject()).thenReturn(contentObj);
+		
+		when(contentObj.getResource()).thenReturn(resource);
+		
+		when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
+			.thenReturn(ResourceFactory.createResource(DATE_ADDED));
+		when(resource.getPropertyResourceValue(Fcrepo4Repository.lastModified))
+			.thenReturn(ResourceFactory.createResource(DATE_MODIFIED));
+
+		filter = new SetRecordDatesFilter();
 	}
 	
 	@Test
-	public void foxmlExtractionTest() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
-		dip.setFoxml(foxml);
-		
-		SetRecordDatesFilter filter = new SetRecordDatesFilter();
+	public void testCreateDate() throws Exception {
 		filter.filter(dip);
-		
-		IndexDocumentBean idb = dip.getDocument();
-		
-		Date dateAdded = DateTimeUtil.parseUTCToDate("2011-10-04T20:31:52.107Z");
-		Date dateUpdated = DateTimeUtil.parseUTCToDate("2011-10-05T04:25:07.169Z");
-		
-		assertEquals(dateAdded, idb.getDateAdded());
-		assertEquals(dateUpdated, idb.getDateUpdated());
+		assertEquals(DATE_ADDED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateAdded()));
 	}
-
+	
 	@Test
-	public void queryExtractionTest() throws Exception {
-		
-		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
-		Map<String, List<String>> triples = new HashMap<>();
-		triples.put(FedoraProperty.createdDate.toString(), Arrays.asList("2011-10-04T20:31:52.107Z"));
-		triples.put(FedoraProperty.lastModifiedDate.toString(), Arrays.asList("2011-10-05T04:25:07.169Z"));
-		
-		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples);
-		loader.setTsqs(tsqs);
-		
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
-		
-		SetRecordDatesFilter filter = new SetRecordDatesFilter();
+	public void testUpdateDate() throws Exception {
 		filter.filter(dip);
-		
-		IndexDocumentBean idb = dip.getDocument();
-		
-		Date dateAdded = DateTimeUtil.parseUTCToDate("2011-10-04T20:31:52.107Z");
-		Date dateUpdated = DateTimeUtil.parseUTCToDate("2011-10-05T04:25:07.169Z");
-		
-		assertEquals(dateAdded, idb.getDateAdded());
-		assertEquals(dateUpdated, idb.getDateUpdated());
+		assertEquals(DATE_MODIFIED, new SimpleDateFormat("yyyy-MM-dd").format(idb.getDateUpdated()));
 	}
+	
+	@Test
+	public void testUnparseableDate() throws Exception {
+		expectedEx.expect((IndexingException.class));
+		// checks that the exception message contains the substring param
+		expectedEx.expectMessage("Failed to parse record dates from ");
+		
+		when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
+		.thenReturn(ResourceFactory.createResource(BAD_DATE));
+		
+		filter.filter(dip);
+	}
+	
 }

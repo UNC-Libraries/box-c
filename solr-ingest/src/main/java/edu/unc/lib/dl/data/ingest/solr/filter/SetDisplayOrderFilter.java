@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,8 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  * @author bbpennel
  * 
  */
-public class SetDisplayOrderFilter extends AbstractIndexDocumentFilter {
+public class SetDisplayOrderFilter implements IndexDocumentFilter {
 	private static final Logger log = LoggerFactory.getLogger(SetDisplayOrderFilter.class);
-
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		IndexDocumentBean idb = dip.getDocument();

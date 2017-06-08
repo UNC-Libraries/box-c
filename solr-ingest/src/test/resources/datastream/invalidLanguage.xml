@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title>Paper title</mods:title>
+  </mods:titleInfo>
+  <mods:genre>Dissertation</mods:genre>
+  <mods:language>
+    <mods:languageTerm authority="iso639-2b" type="code">xyz</mods:languageTerm>
+  </mods:language>
+  </mods:mods>

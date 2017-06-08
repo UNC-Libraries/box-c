@@ -15,11 +15,6 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.AGGREGATE_WORK;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
-
 import java.util.List;
 
 import edu.unc.lib.dl.rdf.Cdr;
@@ -31,8 +26,13 @@ import edu.unc.lib.dl.util.ContentModelHelper.Model;
  *
  */
 public enum ResourceType {
-    Collection(1, Cdr.Collection.getURI()), Aggregate(3, Cdr.Work.getURI()), Folder(
-            2, Cdr.Folder.getURI()), File(3, Cdr.FileObject.getURI());
+    AdminUnit(1, Cdr.AdminUnit.getURI()),
+    Collection(2, Cdr.Collection.getURI()),
+    Folder(3, Cdr.Folder.getURI()),
+    Work(4, Cdr.Work.getURI()),
+    File(4, Cdr.FileObject.getURI()),
+    DepositRecord(5, Cdr.DepositRecord.getURI()),
+    ContentRoot(5, Cdr.ContentRoot.getURI());
 
     private int displayOrder;
     private String uri;
@@ -43,7 +43,7 @@ public enum ResourceType {
         this.uri = uri;
     }
 
-    public int getDisplayOrder() {
+    public int getDisplayOrder(){
         return this.displayOrder;
     }
 
@@ -64,20 +64,24 @@ public enum ResourceType {
         return null;
     }
 
-    public static ResourceType getResourceTypeByContentModels(
-            List<String> contentModels) {
-        if (contentModels.contains(COLLECTION.getPID().getURI())) {
-            return Collection;
+    /**
+     * Gets the resourceType for rdf type uris
+     * 
+     * @param uris
+     * @return
+     */
+    public static ResourceType getResourceTypeForUris(List<String> uris) {
+        for (String uri : uris) {
+            ResourceType type = getResourceTypeByUri(uri);
+            if (type != null) {
+                return type;
+            }
         }
-        if (contentModels.contains(AGGREGATE_WORK.getPID().getURI())) {
-            return Aggregate;
-        }
-        if (contentModels.contains(CONTAINER.getPID().getURI())) {
-            return Folder;
-        }
-        if (contentModels.contains(SIMPLE.getPID().getURI())) {
-            return File;
-        }
+        return null;
+    }
+
+    @Deprecated
+    public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
         return null;
     }
 }

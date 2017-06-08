@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title>Paper title</mods:title>
+  </mods:titleInfo>
+  <mods:genre>Dissertation</mods:genre>
+  <mods:name type="personal">
+    <mods:affiliation>Music</mods:affiliation>
+    <mods:namePart>Test, Creator1</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:name type="personal">
+    <mods:namePart>Test, Creator2</mods:namePart>
+    <mods:role>
+      <mods:roleTerm authority="marcrelator" type="text">Creator</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  </mods:mods>
