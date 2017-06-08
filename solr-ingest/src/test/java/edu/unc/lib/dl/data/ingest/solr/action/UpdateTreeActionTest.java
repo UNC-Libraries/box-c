@@ -48,222 +48,222 @@ import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
-	private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
+    private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
 
-	@Mock
-	protected TripleStoreQueryService tsqs;
-	@Mock
-	protected DocumentIndexingPipeline pipeline;
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
+    @Mock
+    protected TripleStoreQueryService tsqs;
+    @Mock
+    protected DocumentIndexingPipeline pipeline;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackageFactory factory;
 
-	protected Map<String, List<PID>> children;
+    protected Map<String, List<PID>> children;
 
-	protected UpdateTreeAction action;
+    protected UpdateTreeAction action;
 
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
 
-		server.add(populate());
-		server.commit();
+        server.add(populate());
+        server.commit();
 
-		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
+        when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
 
-		children = populateChildren();
-		
-		when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenAnswer(new Answer<List<PID>>() {
+        children = populateChildren();
 
-			@Override
-			public List<PID> answer(InvocationOnMock invocation) throws Throwable {
-				Object[] args = invocation.getArguments();
-				PID pid = ((DocumentIndexingPackage) args[0]).getPid();
-				
-				if (pid.getPid().equals("uuid:doesnotexist"))
-					throw new IndexingException("");
-				
-				return children.get(pid.getPid());
-			}
-		});
+        when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenAnswer(new Answer<List<PID>>() {
 
-		action = getAction();
+            @Override
+            public List<PID> answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                PID pid = ((DocumentIndexingPackage) args[0]).getPid();
 
-		action.setTsqs(tsqs);
-		action.setPipeline(pipeline);
-		action.setSolrUpdateDriver(driver);
-		action.setAddDocumentMode(false);
-		action.setCollectionsPid(new PID("uuid:1"));
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-		action.setFactory(factory);
-		action.init();
-	}
+                if (pid.getPid().equals("uuid:doesnotexist"))
+                    throw new IndexingException("");
 
-	protected UpdateTreeAction getAction() {
-		return new UpdateTreeAction();
-	}
+                return children.get(pid.getPid());
+            }
+        });
 
-	@Test
-	public void testVerifyUpdated() throws Exception {
+        action = getAction();
 
-		SolrDocumentList docListBefore = getDocumentList();
+        action.setTsqs(tsqs);
+        action.setPipeline(pipeline);
+        action.setSolrUpdateDriver(driver);
+        action.setAddDocumentMode(false);
+        action.setCollectionsPid(new PID("uuid:1"));
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
+        action.setFactory(factory);
+        action.init();
+    }
 
-		action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
-		server.commit();
+    protected UpdateTreeAction getAction() {
+        return new UpdateTreeAction();
+    }
 
-		SolrDocumentList docListAfter = getDocumentList();
+    @Test
+    public void testVerifyUpdated() throws Exception {
 
-		log.debug("Docs: " + docListBefore);
-		log.debug("Docs: " + docListAfter);
+        SolrDocumentList docListBefore = getDocumentList();
 
-		// Verify that only the object itself and its children, excluding orphans, were updated
-		for (SolrDocument docAfter : docListAfter) {
-			String id = (String) docAfter.getFieldValue("id");
-			for (SolrDocument docBefore : docListBefore) {
-				if (id.equals(docBefore.getFieldValue("id"))) {
-					if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
-						assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-					else assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-				}
-			}
-		}
-	}
+        action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
+        server.commit();
 
-	@Test
-	public void danglingContains() throws Exception {
-		children.put("uuid:4", Arrays.asList(new PID("uuid:doesnotexist")));
+        SolrDocumentList docListAfter = getDocumentList();
 
-		SolrDocumentList docListBefore = getDocumentList();
+        log.debug("Docs: " + docListBefore);
+        log.debug("Docs: " + docListAfter);
 
-		action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
-		server.commit();
+        // Verify that only the object itself and its children, excluding orphans, were updated
+        for (SolrDocument docAfter : docListAfter) {
+            String id = (String) docAfter.getFieldValue("id");
+            for (SolrDocument docBefore : docListBefore) {
+                if (id.equals(docBefore.getFieldValue("id"))) {
+                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
+                        assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    else assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                }
+            }
+        }
+    }
 
-		SolrDocumentList docListAfter = getDocumentList();
+    @Test
+    public void danglingContains() throws Exception {
+        children.put("uuid:4", Arrays.asList(new PID("uuid:doesnotexist")));
 
-		// Verify that all appropriate objects were updated, and that the dangling contains didn't create a record
-		for (SolrDocument docAfter : docListAfter) {
-			String id = (String) docAfter.getFieldValue("id");
-			if ("uuid:doesnotexist".equals(id))
-				fail("Record for dangling exists");
-			for (SolrDocument docBefore : docListBefore) {
-				if (id.equals(docBefore.getFieldValue("id"))) {
-					if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
-						assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-					else
-						assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-				}
-			}
-		}
-	}
+        SolrDocumentList docListBefore = getDocumentList();
 
-	@Test
-	public void testNoDescendents() throws Exception {
+        action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
+        server.commit();
 
-		SolrDocumentList docListBefore = getDocumentList();
+        SolrDocumentList docListAfter = getDocumentList();
 
-		when(tsqs.queryResourceIndex(anyString())).thenReturn(new ArrayList<List<String>>());
+        // Verify that all appropriate objects were updated, and that the dangling contains didn't create a record
+        for (SolrDocument docAfter : docListAfter) {
+            String id = (String) docAfter.getFieldValue("id");
+            if ("uuid:doesnotexist".equals(id))
+                fail("Record for dangling exists");
+            for (SolrDocument docBefore : docListBefore) {
+                if (id.equals(docBefore.getFieldValue("id"))) {
+                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id))
+                        assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    else
+                        assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                }
+            }
+        }
+    }
 
-		action.performAction(new SolrUpdateRequest("uuid:6", IndexingActionType.RECURSIVE_ADD));
-		server.commit();
+    @Test
+    public void testNoDescendents() throws Exception {
 
-		SolrDocumentList docListAfter = getDocumentList();
+        SolrDocumentList docListBefore = getDocumentList();
 
-		// Verify that only the object itself and its children, excluding orphans, were updated
-		for (SolrDocument docAfter : docListAfter) {
-			String id = (String) docAfter.getFieldValue("id");
-			for (SolrDocument docBefore : docListBefore) {
-				if (id.equals(docBefore.getFieldValue("id"))) {
-					if ("uuid:6".equals(id))
-						assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-					else
-						assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-				}
-			}
-		}
-	}
+        when(tsqs.queryResourceIndex(anyString())).thenReturn(new ArrayList<List<String>>());
 
-	protected Map<String, List<PID>> populateChildren() {
-		Map<String, List<PID>> children = new HashMap<String, List<PID>>();
-		children.put("uuid:1", Arrays.asList(new PID("uuid:2"), new PID("uuid:3")));
-		children.put("uuid:2", Arrays.asList(new PID("uuid:4"), new PID("uuid:6")));
-		return children;
-	}
+        action.performAction(new SolrUpdateRequest("uuid:6", IndexingActionType.RECURSIVE_ADD));
+        server.commit();
 
-	protected List<SolrInputDocument> populate() {
-		List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
+        SolrDocumentList docListAfter = getDocumentList();
 
-		SolrInputDocument newDoc = new SolrInputDocument();
-		newDoc.addField("title", "Collections");
-		newDoc.addField("id", "uuid:1");
-		newDoc.addField("rollup", "uuid:1");
-		newDoc.addField("roleGroup", "");
-		newDoc.addField("readGroup", "");
-		newDoc.addField("adminGroup", "");
-		newDoc.addField("ancestorIds", "");
-		newDoc.addField("resourceType", "Folder");
-		docs.add(newDoc);
+        // Verify that only the object itself and its children, excluding orphans, were updated
+        for (SolrDocument docAfter : docListAfter) {
+            String id = (String) docAfter.getFieldValue("id");
+            for (SolrDocument docBefore : docListBefore) {
+                if (id.equals(docBefore.getFieldValue("id"))) {
+                    if ("uuid:6".equals(id))
+                        assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    else
+                        assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                }
+            }
+        }
+    }
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "A collection");
-		newDoc.addField("id", "uuid:2");
-		newDoc.addField("rollup", "uuid:2");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
-		newDoc.addField("resourceType", "Collection");
-		docs.add(newDoc);
+    protected Map<String, List<PID>> populateChildren() {
+        Map<String, List<PID>> children = new HashMap<String, List<PID>>();
+        children.put("uuid:1", Arrays.asList(new PID("uuid:2"), new PID("uuid:3")));
+        children.put("uuid:2", Arrays.asList(new PID("uuid:4"), new PID("uuid:6")));
+        return children;
+    }
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "Subfolder 1");
-		newDoc.addField("id", "uuid:4");
-		newDoc.addField("rollup", "uuid:4");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:2/uuid:4");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
-		newDoc.addField("resourceType", "Folder");
-		docs.add(newDoc);
+    protected List<SolrInputDocument> populate() {
+        List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "Orphaned");
-		newDoc.addField("id", "uuid:5");
-		newDoc.addField("rollup", "uuid:5");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
-		newDoc.addField("resourceType", "File");
-		docs.add(newDoc);
+        SolrInputDocument newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Collections");
+        newDoc.addField("id", "uuid:1");
+        newDoc.addField("rollup", "uuid:1");
+        newDoc.addField("roleGroup", "");
+        newDoc.addField("readGroup", "");
+        newDoc.addField("adminGroup", "");
+        newDoc.addField("ancestorIds", "");
+        newDoc.addField("resourceType", "Folder");
+        docs.add(newDoc);
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "File");
-		newDoc.addField("id", "uuid:6");
-		newDoc.addField("rollup", "uuid:6");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
-		newDoc.addField("resourceType", "File");
-		docs.add(newDoc);
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "A collection");
+        newDoc.addField("id", "uuid:2");
+        newDoc.addField("rollup", "uuid:2");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
+        newDoc.addField("resourceType", "Collection");
+        docs.add(newDoc);
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "Second collection");
-		newDoc.addField("id", "uuid:3");
-		newDoc.addField("rollup", "uuid:3");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:3");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
-		newDoc.addField("resourceType", "Collection");
-		docs.add(newDoc);
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Subfolder 1");
+        newDoc.addField("id", "uuid:4");
+        newDoc.addField("rollup", "uuid:4");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:2/uuid:4");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("resourceType", "Folder");
+        docs.add(newDoc);
 
-		return docs;
-	}
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Orphaned");
+        newDoc.addField("id", "uuid:5");
+        newDoc.addField("rollup", "uuid:5");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("resourceType", "File");
+        docs.add(newDoc);
+
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "File");
+        newDoc.addField("id", "uuid:6");
+        newDoc.addField("rollup", "uuid:6");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("resourceType", "File");
+        docs.add(newDoc);
+
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Second collection");
+        newDoc.addField("id", "uuid:3");
+        newDoc.addField("rollup", "uuid:3");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:3");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
+        newDoc.addField("resourceType", "Collection");
+        docs.add(newDoc);
+
+        return docs;
+    }
 }

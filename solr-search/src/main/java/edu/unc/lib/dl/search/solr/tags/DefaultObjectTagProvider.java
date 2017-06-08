@@ -25,11 +25,11 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
  * @date Jun 26, 2015
  */
 public class DefaultObjectTagProvider implements TagProvider {
-	@Override
-	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
-		if (record.getContentStatus().contains(FacetConstants.CONTENT_IS_DEFAULT_OBJECT)) {
-			Tag tag = new Tag("primary object");
-			record.addTag(tag);
-		}
-	}
+    @Override
+    public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
+        if (record.getContentStatus().contains(FacetConstants.CONTENT_IS_DEFAULT_OBJECT)) {
+            Tag tag = new Tag("primary object");
+            record.addTag(tag);
+        }
+    }
 }

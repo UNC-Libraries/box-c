@@ -31,42 +31,42 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class UpdateChildSetAction extends UpdateTreeAction {
-	private static final Logger log = LoggerFactory.getLogger(UpdateChildSetAction.class);
+    private static final Logger log = LoggerFactory.getLogger(UpdateChildSetAction.class);
 
-	public UpdateChildSetAction() {
-		this.addDocumentMode = false;
-	}
+    public UpdateChildSetAction() {
+        this.addDocumentMode = false;
+    }
 
-	@Override
-	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		if (!(updateRequest instanceof ChildSetRequest))
-			throw new IndexingException("ChildSetRequest required to perform move objects update, received "
-					+ updateRequest.getClass().getName());
-		ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
+    @Override
+    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        if (!(updateRequest instanceof ChildSetRequest))
+            throw new IndexingException("ChildSetRequest required to perform move objects update, received "
+                    + updateRequest.getClass().getName());
+        ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
 
-		log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
+        log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
 
-		// Generate the DIP for the new destination, but don't index it
-		DocumentIndexingPackage dip = getParentDIP(childSetRequest);
+        // Generate the DIP for the new destination, but don't index it
+        DocumentIndexingPackage dip = getParentDIP(childSetRequest);
 
-		// Calculate total number of objects to be indexed
-		int indexTargetTotal = 0;
-		for (PID child : childSetRequest.getChildren()) {
-			indexTargetTotal += this.countDescendants(child) + 1;
-		}
-		updateRequest.setChildrenPending(indexTargetTotal);
+        // Calculate total number of objects to be indexed
+        int indexTargetTotal = 0;
+        for (PID child : childSetRequest.getChildren()) {
+            indexTargetTotal += this.countDescendants(child) + 1;
+        }
+        updateRequest.setChildrenPending(indexTargetTotal);
 
-		// Index all the newly moved children
-		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
-		treeIndexer.indexChildren(dip, childSetRequest.getChildren());
+        // Index all the newly moved children
+        RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
+        treeIndexer.indexChildren(dip, childSetRequest.getChildren());
 
-		if (log.isDebugEnabled())
-			log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
-					updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
-					(System.currentTimeMillis() - updateRequest.getTimeStarted()) });
-	}
+        if (log.isDebugEnabled())
+            log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
+                    updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
+                    (System.currentTimeMillis() - updateRequest.getTimeStarted()) });
+    }
 
-	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
-		return factory.createDip(childSetRequest.getPid());
-	}
+    protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
+        return factory.createDip(childSetRequest.getPid());
+    }
 }

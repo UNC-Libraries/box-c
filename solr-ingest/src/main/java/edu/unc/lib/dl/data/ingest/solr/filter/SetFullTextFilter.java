@@ -33,32 +33,32 @@ import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
  *
  */
 public class SetFullTextFilter implements IndexDocumentFilter {
-	private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
+    private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
 
-	private AccessClient accessClient = null;
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
+    private AccessClient accessClient = null;
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
 
-		String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
+        String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
 
-		if (fullTextDS == null || "false".equals(fullTextDS))
-			return;
+        if (fullTextDS == null || "false".equals(fullTextDS))
+            return;
 
-		try {
-			MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(), ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
-			dip.getDocument().setFullText(new String(stream.getStream()));
-		} catch (FedoraException e) {
-			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
-		} catch (ServiceException e) {
-			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
-		}
-	}
+        try {
+            MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(), ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
+            dip.getDocument().setFullText(new String(stream.getStream()));
+        } catch (FedoraException e) {
+            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+        } catch (ServiceException e) {
+            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+        }
+    }
 
-	public AccessClient getAccessClient() {
-		return accessClient;
-	}
+    public AccessClient getAccessClient() {
+        return accessClient;
+    }
 
-	public void setAccessClient(AccessClient accessClient) {
-		this.accessClient = accessClient;
-	}
+    public void setAccessClient(AccessClient accessClient) {
+        this.accessClient = accessClient;
+    }
 }

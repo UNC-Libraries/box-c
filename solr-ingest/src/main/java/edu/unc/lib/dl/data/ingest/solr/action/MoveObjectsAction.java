@@ -30,31 +30,31 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class MoveObjectsAction extends UpdateChildSetAction {
-	private static final Logger log = LoggerFactory.getLogger(MoveObjectsAction.class);
+    private static final Logger log = LoggerFactory.getLogger(MoveObjectsAction.class);
 
-	public MoveObjectsAction() {
-		this.addDocumentMode = false;
-	}
+    public MoveObjectsAction() {
+        this.addDocumentMode = false;
+    }
 
-	@Override
-	protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
-		// Store the MD_CONTENTS of the parents so new children can be correctly located
-		DocumentIndexingPackage dip = factory.createDip(childSetRequest.getPid());
-		// Process the parent to get its inheritable properties
-		this.pipeline.process(dip);
-		return dip;
-	}
+    @Override
+    protected DocumentIndexingPackage getParentDIP(ChildSetRequest childSetRequest) throws IndexingException {
+        // Store the MD_CONTENTS of the parents so new children can be correctly located
+        DocumentIndexingPackage dip = factory.createDip(childSetRequest.getPid());
+        // Process the parent to get its inheritable properties
+        this.pipeline.process(dip);
+        return dip;
+    }
 
-	@Override
-	public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
-			throws IndexingException {
-		DocumentIndexingPackage dip = factory.createDip(pid, parent);
+    @Override
+    public DocumentIndexingPackage getDocumentIndexingPackage(PID pid, DocumentIndexingPackage parent)
+            throws IndexingException {
+        DocumentIndexingPackage dip = factory.createDip(pid, parent);
 
-		// For the top level children that were just moved we need to check for display order
-		if (parent.getMdContents() != null) {
-			log.debug("Updating display order for top level moved object {}", pid.getPid());
-			dip.getDocument().setDisplayOrder(parent.getDisplayOrder(pid.getPid()));
-		}
-		return dip;
-	}
+        // For the top level children that were just moved we need to check for display order
+        if (parent.getMdContents() != null) {
+            log.debug("Updating display order for top level moved object {}", pid.getPid());
+            dip.getDocument().setDisplayOrder(parent.getDisplayOrder(pid.getPid()));
+        }
+        return dip;
+    }
 }

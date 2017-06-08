@@ -40,71 +40,71 @@ import edu.unc.lib.dl.search.solr.model.Tag;
 
 public class AccessRestrictionsTagProviderTest extends Assert {
 
-	@Test
-	public void embargoed() {
-		AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
-		BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
-		Set<UserRole> roles = new HashSet<UserRole>();
-		ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
-		when(access.getRoles(any(AccessGroupSet.class))).thenReturn(roles);
-		when(metadata.getAccessControlBean()).thenReturn(access);
-		when(metadata.getRelations()).thenReturn(Arrays.asList("embargo-until|2084-03-05T00:00:00"));
+    @Test
+    public void embargoed() {
+        AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
+        BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
+        Set<UserRole> roles = new HashSet<UserRole>();
+        ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
+        when(access.getRoles(any(AccessGroupSet.class))).thenReturn(roles);
+        when(metadata.getAccessControlBean()).thenReturn(access);
+        when(metadata.getRelations()).thenReturn(Arrays.asList("embargo-until|2084-03-05T00:00:00"));
 
-		tagProvider.addTags(metadata, null);
+        tagProvider.addTags(metadata, null);
 
-		Mockito.verify(metadata, Mockito.atMost(1)).addTag(any(Tag.class));
-	}
+        Mockito.verify(metadata, Mockito.atMost(1)).addTag(any(Tag.class));
+    }
 
-	@Test
-	public void viewOnly() {
-		AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
-		BriefObjectMetadataBean metadata = new BriefObjectMetadataBean();
-		metadata.setStatus(new ArrayList<String>());
-		metadata.setRelations(new ArrayList<String>());
-		List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#observer|obs");
+    @Test
+    public void viewOnly() {
+        AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
+        BriefObjectMetadataBean metadata = new BriefObjectMetadataBean();
+        metadata.setStatus(new ArrayList<String>());
+        metadata.setRelations(new ArrayList<String>());
+        List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#observer|obs");
 
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(new PID("test"), roleGroupList);
-		metadata.setAccessControlBean(aclBean);
+        ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(new PID("test"), roleGroupList);
+        metadata.setAccessControlBean(aclBean);
 
-		AccessGroupSet groups = new AccessGroupSet("obs");
+        AccessGroupSet groups = new AccessGroupSet("obs");
 
-		tagProvider.addTags(metadata, groups);
+        tagProvider.addTags(metadata, groups);
 
-		assertEquals("view only", metadata.getTags().get(0).getLabel());
-	}
+        assertEquals("view only", metadata.getTags().get(0).getLabel());
+    }
 
-	@Test
-	public void overrideObserverTagWithHigherGrant() {
-		AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
-		BriefObjectMetadataBean metadata = new BriefObjectMetadataBean();
-		metadata.setStatus(new ArrayList<String>());
-		metadata.setRelations(new ArrayList<String>());
-		List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#observer|obs",
-				"http://cdr.unc.edu/definitions/roles#curator|obs");
+    @Test
+    public void overrideObserverTagWithHigherGrant() {
+        AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
+        BriefObjectMetadataBean metadata = new BriefObjectMetadataBean();
+        metadata.setStatus(new ArrayList<String>());
+        metadata.setRelations(new ArrayList<String>());
+        List<String> roleGroupList = Arrays.asList("http://cdr.unc.edu/definitions/roles#observer|obs",
+                "http://cdr.unc.edu/definitions/roles#curator|obs");
 
-		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(new PID("test"), roleGroupList);
-		metadata.setAccessControlBean(aclBean);
+        ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(new PID("test"), roleGroupList);
+        metadata.setAccessControlBean(aclBean);
 
-		AccessGroupSet groups = new AccessGroupSet("obs");
+        AccessGroupSet groups = new AccessGroupSet("obs");
 
-		tagProvider.addTags(metadata, groups);
+        tagProvider.addTags(metadata, groups);
 
-		// No tags were added, so tag array never initialized
-		assertNull(metadata.getTags());
-	}
-	
-	@Test
-	public void deleted() {
-		AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
-		BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
-		Set<UserRole> roles = new HashSet<UserRole>();
-		ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
-		when(access.getRoles(any(AccessGroupSet.class))).thenReturn(roles);
-		when(metadata.getAccessControlBean()).thenReturn(access);
-		when(metadata.getStatus()).thenReturn(Arrays.asList("Deleted"));
-		
-		tagProvider.addTags(metadata, null);
-		
-		Mockito.verify(metadata, Mockito.atMost(1)).addTag(any(Tag.class));
-	}
+        // No tags were added, so tag array never initialized
+        assertNull(metadata.getTags());
+    }
+
+    @Test
+    public void deleted() {
+        AccessRestrictionsTagProvider tagProvider = new AccessRestrictionsTagProvider();
+        BriefObjectMetadata metadata = mock(BriefObjectMetadata.class);
+        Set<UserRole> roles = new HashSet<UserRole>();
+        ObjectAccessControlsBean access = mock(ObjectAccessControlsBean.class);
+        when(access.getRoles(any(AccessGroupSet.class))).thenReturn(roles);
+        when(metadata.getAccessControlBean()).thenReturn(access);
+        when(metadata.getStatus()).thenReturn(Arrays.asList("Deleted"));
+
+        tagProvider.addTags(metadata, null);
+
+        Mockito.verify(metadata, Mockito.atMost(1)).addTag(any(Tag.class));
+    }
 }

@@ -38,75 +38,75 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  *
  */
 public class UpdateTreeAction extends AbstractIndexingAction {
-	private static final Logger log = LoggerFactory.getLogger(UpdateTreeAction.class);
+    private static final Logger log = LoggerFactory.getLogger(UpdateTreeAction.class);
 
-	@Autowired
-	protected TripleStoreQueryService tsqs;
-	private String descendantsQuery;
-	private long updateDelay;
+    @Autowired
+    protected TripleStoreQueryService tsqs;
+    private String descendantsQuery;
+    private long updateDelay;
 
-	@PostConstruct
-	public void init() {
-		try {
-			descendantsQuery = IOUtils.toString(this.getClass().getResourceAsStream("countDescendants.itql"), "UTF-8");
-		} catch (IOException e) {
-			log.error("Failed to load queries", e);
-		}
-	}
+    @PostConstruct
+    public void init() {
+        try {
+            descendantsQuery = IOUtils.toString(this.getClass().getResourceAsStream("countDescendants.itql"), "UTF-8");
+        } catch (IOException e) {
+            log.error("Failed to load queries", e);
+        }
+    }
 
-	@Override
-	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
+    @Override
+    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        log.debug("Starting update tree of {}", updateRequest.getPid().getPid());
 
-		// Perform updates
-		index(updateRequest);
+        // Perform updates
+        index(updateRequest);
 
-		if (log.isDebugEnabled())
-			log.debug("Finished updating tree of " + updateRequest.getPid().getPid() + ".  "
-					+ updateRequest.getChildrenPending() + " objects updated in "
-					+ (System.currentTimeMillis() - updateRequest.getTimeStarted()) + " ms");
-	}
+        if (log.isDebugEnabled())
+            log.debug("Finished updating tree of " + updateRequest.getPid().getPid() + ".  "
+                    + updateRequest.getChildrenPending() + " objects updated in "
+                    + (System.currentTimeMillis() - updateRequest.getTimeStarted()) + " ms");
+    }
 
-	public void setTsqs(TripleStoreQueryService tsqs) {
-		this.tsqs = tsqs;
-	}
+    public void setTsqs(TripleStoreQueryService tsqs) {
+        this.tsqs = tsqs;
+    }
 
-	protected void index(SolrUpdateRequest updateRequest) throws IndexingException {
-		// Translate the index all flag into the collections pid if neccessary
-		PID startingPid;
-		if (TARGET_ALL.equals(updateRequest.getTargetID()))
-			startingPid = collectionsPid;
-		else
-			startingPid = updateRequest.getPid();
+    protected void index(SolrUpdateRequest updateRequest) throws IndexingException {
+        // Translate the index all flag into the collections pid if neccessary
+        PID startingPid;
+        if (TARGET_ALL.equals(updateRequest.getTargetID()))
+            startingPid = collectionsPid;
+        else
+            startingPid = updateRequest.getPid();
 
-		// Get the number of objects in the tree being indexed
-		int totalObjects = countDescendants(startingPid) + 1;
-		updateRequest.setChildrenPending(totalObjects);
+        // Get the number of objects in the tree being indexed
+        int totalObjects = countDescendants(startingPid) + 1;
+        updateRequest.setChildrenPending(totalObjects);
 
-		// Start indexing
-		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, addDocumentMode);
-		treeIndexer.index(startingPid, null);
-	}
+        // Start indexing
+        RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, addDocumentMode);
+        treeIndexer.index(startingPid, null);
+    }
 
-	/**
-	 * Count the number of children objects belonging to the pid provided
-	 *
-	 * @param pid
-	 * @return
-	 */
-	protected int countDescendants(PID pid) {
-		List<List<String>> results = tsqs.queryResourceIndex(String.format(descendantsQuery,
-				this.tsqs.getResourceIndexModelUri(), pid.getURI()));
-		if (results == null || results.size() == 0 || results.get(0).size() == 0)
-			return 0;
-		return Integer.parseInt(results.get(0).get(0));
-	}
+    /**
+     * Count the number of children objects belonging to the pid provided
+     *
+     * @param pid
+     * @return
+     */
+    protected int countDescendants(PID pid) {
+        List<List<String>> results = tsqs.queryResourceIndex(String.format(descendantsQuery,
+                this.tsqs.getResourceIndexModelUri(), pid.getURI()));
+        if (results == null || results.size() == 0 || results.get(0).size() == 0)
+            return 0;
+        return Integer.parseInt(results.get(0).get(0));
+    }
 
-	public long getUpdateDelay() {
-		return updateDelay;
-	}
+    public long getUpdateDelay() {
+        return updateDelay;
+    }
 
-	public void setUpdateDelay(long updateDelay) {
-		this.updateDelay = updateDelay;
-	}
+    public void setUpdateDelay(long updateDelay) {
+        this.updateDelay = updateDelay;
+    }
 }

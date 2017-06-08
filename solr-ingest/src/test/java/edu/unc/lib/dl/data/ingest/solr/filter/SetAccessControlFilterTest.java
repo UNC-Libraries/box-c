@@ -42,7 +42,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */

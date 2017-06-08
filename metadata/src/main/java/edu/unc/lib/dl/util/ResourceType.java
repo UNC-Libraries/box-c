@@ -43,7 +43,7 @@ public enum ResourceType {
         this.uri = uri;
     }
 
-    public int getDisplayOrder(){
+    public int getDisplayOrder() {
         return this.displayOrder;
     }
 

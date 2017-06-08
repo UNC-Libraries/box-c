@@ -22,94 +22,94 @@ import org.apache.solr.client.solrj.response.FacetField;
  * @author bbpennel
  */
 public class GenericFacet implements Cloneable, SearchFacet {
-	//Name of the facet group to which this facet belongs.
-	protected String fieldName;
-	protected long count;
-	protected String value;
-	protected String displayValue;
-	
-	public GenericFacet(){
-	}
-	
-	/**
-	 * Default constructor which takes the name of the facet and the string representing it.
-	 * @param fieldName name of the facet to which this entry belongs.
-	 * @param facetString string from which the attributes of the facet will be interpreted.
-	 */
-	public GenericFacet(String fieldName, String facetString){
-		this.count = 0;
-		this.fieldName = fieldName;
-		this.value = facetString;
-		this.displayValue = facetString;
-	}
-	
-	public GenericFacet(FacetField.Count countObject){
-		this(countObject.getFacetField().getName(), countObject);
-	}
-	
-	public GenericFacet(String fieldName, FacetField.Count countObject){
-		this.count = countObject.getCount();
-		this.fieldName = fieldName;
-		this.value = countObject.getName();
-		this.displayValue = countObject.getName();
-	}
-	
-	public GenericFacet(GenericFacet facet){
-		this.fieldName = facet.getFieldName();
-		this.count = facet.getCount();
-		this.value = facet.getValue();
-		this.displayValue = facet.getDisplayValue();
-	}
-	
+    //Name of the facet group to which this facet belongs.
+    protected String fieldName;
+    protected long count;
+    protected String value;
+    protected String displayValue;
 
-	@Override
-	public String getFieldName() {
-		return fieldName;
-	}
+    public GenericFacet() {
+    }
 
-	public void setFieldName(String fieldName) {
-		this.fieldName = fieldName;
-	}
+    /**
+     * Default constructor which takes the name of the facet and the string representing it.
+     * @param fieldName name of the facet to which this entry belongs.
+     * @param facetString string from which the attributes of the facet will be interpreted.
+     */
+    public GenericFacet(String fieldName, String facetString) {
+        this.count = 0;
+        this.fieldName = fieldName;
+        this.value = facetString;
+        this.displayValue = facetString;
+    }
 
-	@Override
-	public long getCount() {
-		return count;
-	}
+    public GenericFacet(FacetField.Count countObject) {
+        this(countObject.getFacetField().getName(), countObject);
+    }
 
-	public void setCount(long count) {
-		this.count = count;
-	}
+    public GenericFacet(String fieldName, FacetField.Count countObject) {
+        this.count = countObject.getCount();
+        this.fieldName = fieldName;
+        this.value = countObject.getName();
+        this.displayValue = countObject.getName();
+    }
 
-	@Override
-	public String getValue() {
-		return value;
-	}
+    public GenericFacet(GenericFacet facet) {
+        this.fieldName = facet.getFieldName();
+        this.count = facet.getCount();
+        this.value = facet.getValue();
+        this.displayValue = facet.getDisplayValue();
+    }
 
-	public void setValue(String value) {
-		this.value = value;
-	}
-	
-	public void setDisplayValue(String displayValue) {
-		this.displayValue = displayValue;
-	}
-	
-	@Override
-	public String getDisplayValue() {
-		return displayValue;
-	}
 
-	@Override
-	public String getSearchValue() {
-		return value;
-	}
-	
-	@Override
-	public String getLimitToValue() {
-		return value;
-	}
-	
-	@Override
-	public Object clone() {
-		return new GenericFacet(this);
-	}
+    @Override
+    public String getFieldName() {
+        return fieldName;
+    }
+
+    public void setFieldName(String fieldName) {
+        this.fieldName = fieldName;
+    }
+
+    @Override
+    public long getCount() {
+        return count;
+    }
+
+    public void setCount(long count) {
+        this.count = count;
+    }
+
+    @Override
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public void setDisplayValue(String displayValue) {
+        this.displayValue = displayValue;
+    }
+
+    @Override
+    public String getDisplayValue() {
+        return displayValue;
+    }
+
+    @Override
+    public String getSearchValue() {
+        return value;
+    }
+
+    @Override
+    public String getLimitToValue() {
+        return value;
+    }
+
+    @Override
+    public Object clone() {
+        return new GenericFacet(this);
+    }
 }

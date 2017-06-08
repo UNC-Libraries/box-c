@@ -46,7 +46,7 @@ public abstract class DateTimeUtil {
     public static Date parseUTCToDate(String utcDate) throws ParseException {
         try {
             return parseUTCToDateTime(utcDate).toDate();
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new ParseException("Unparseable date: " + utcDate, 0);
         }
     }

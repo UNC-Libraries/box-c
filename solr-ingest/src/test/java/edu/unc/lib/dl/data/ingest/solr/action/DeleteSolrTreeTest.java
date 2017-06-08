@@ -47,161 +47,161 @@ import edu.unc.lib.dl.util.IndexingActionType;
 
 public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
-	@Mock
-	private SearchSettings searchSettings;
-	@Mock
-	private SolrSettings solrSettings;
-	@Mock
-	private SolrSearchService solrSearchService;
+    @Mock
+    private SearchSettings searchSettings;
+    @Mock
+    private SolrSettings solrSettings;
+    @Mock
+    private SolrSearchService solrSearchService;
 
-	private DeleteSolrTreeAction action;
+    private DeleteSolrTreeAction action;
 
-	@Mock
-	private BriefObjectMetadataBean metadata;
+    @Mock
+    private BriefObjectMetadataBean metadata;
 
-	@Before
-	public void setup() throws SolrServerException, IOException {
-		initMocks(this);
+    @Before
+    public void setup() throws SolrServerException, IOException {
+        initMocks(this);
 
-		when(searchSettings.getResourceTypeCollection()).thenReturn("Collection");
-		when(searchSettings.getResourceTypeFolder()).thenReturn("Folder");
+        when(searchSettings.getResourceTypeCollection()).thenReturn("Collection");
+        when(searchSettings.getResourceTypeFolder()).thenReturn("Folder");
 
-		when(solrSettings.getFieldName(eq(SearchFieldKeys.ANCESTOR_PATH.name()))).thenReturn("ancestorPath");
-		when(solrSettings.getFieldName(eq(SearchFieldKeys.ID.name()))).thenReturn("id");
+        when(solrSettings.getFieldName(eq(SearchFieldKeys.ANCESTOR_PATH.name()))).thenReturn("ancestorPath");
+        when(solrSettings.getFieldName(eq(SearchFieldKeys.ID.name()))).thenReturn("id");
 
-		when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(metadata);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(metadata);
 
-		action = new DeleteSolrTreeAction();
+        action = new DeleteSolrTreeAction();
 
-		action.setSolrUpdateDriver(driver);
-		action.setSolrSettings(solrSettings);
-		action.setSearchSettings(searchSettings);
-		action.setSolrSearchService(solrSearchService);
-		action.setAccessGroups(new AccessGroupSet("admin"));
-		action.setSolrSearchService(solrSearchService);
+        action.setSolrUpdateDriver(driver);
+        action.setSolrSettings(solrSettings);
+        action.setSearchSettings(searchSettings);
+        action.setSolrSearchService(solrSearchService);
+        action.setAccessGroups(new AccessGroupSet("admin"));
+        action.setSolrSearchService(solrSearchService);
 
-		server.add(populate());
-		server.commit();
-	}
+        server.add(populate());
+        server.commit();
+    }
 
-	@Test
-	public void deleteTree() throws Exception {
+    @Test
+    public void deleteTree() throws Exception {
 
-		when(metadata.getId()).thenReturn("uuid:2");
-		when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1"));
-		when(metadata.getResourceType()).thenReturn("Collection");
-		CutoffFacet path = mock(CutoffFacet.class);
-		when(path.getSearchValue()).thenReturn("2,uuid:2");
-		when(metadata.getPath()).thenReturn(path);
+        when(metadata.getId()).thenReturn("uuid:2");
+        when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1"));
+        when(metadata.getResourceType()).thenReturn("Collection");
+        CutoffFacet path = mock(CutoffFacet.class);
+        when(path.getSearchValue()).thenReturn("2,uuid:2");
+        when(metadata.getPath()).thenReturn(path);
 
-		action.performAction(new SolrUpdateRequest("uuid:2", IndexingActionType.DELETE_SOLR_TREE));
-		server.commit();
+        action.performAction(new SolrUpdateRequest("uuid:2", IndexingActionType.DELETE_SOLR_TREE));
+        server.commit();
 
-		SolrDocumentList docListAfter = getDocumentList();
+        SolrDocumentList docListAfter = getDocumentList();
 
-		assertEquals(2, docListAfter.getNumFound());
+        assertEquals(2, docListAfter.getNumFound());
 
-		for (SolrDocument docAfter : docListAfter) {
-			String id = (String) docAfter.getFieldValue("id");
-			if ("uuid:2".equals(id) || "uuid:6".equals(id))
-				fail("Object was not deleted: " + id);
-		}
-	}
+        for (SolrDocument docAfter : docListAfter) {
+            String id = (String) docAfter.getFieldValue("id");
+            if ("uuid:2".equals(id) || "uuid:6".equals(id))
+                fail("Object was not deleted: " + id);
+        }
+    }
 
-	@Test
-	public void deleteNonexistent() throws Exception {
+    @Test
+    public void deleteNonexistent() throws Exception {
 
-		when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(null);
+        when(solrSearchService.getObjectById(any(SimpleIdRequest.class))).thenReturn(null);
 
-		action.performAction(new SolrUpdateRequest("uuid:doesnotexist", IndexingActionType.DELETE_SOLR_TREE));
-		server.commit();
+        action.performAction(new SolrUpdateRequest("uuid:doesnotexist", IndexingActionType.DELETE_SOLR_TREE));
+        server.commit();
 
-		SolrDocumentList docListAfter = getDocumentList();
+        SolrDocumentList docListAfter = getDocumentList();
 
-		assertEquals(4, docListAfter.getNumFound());
-	}
+        assertEquals(4, docListAfter.getNumFound());
+    }
 
-	@Test
-	public void deleteSimple() throws Exception {
+    @Test
+    public void deleteSimple() throws Exception {
 
-		when(metadata.getResourceType()).thenReturn("File");
+        when(metadata.getResourceType()).thenReturn("File");
 
-		action.performAction(new SolrUpdateRequest("uuid:6", IndexingActionType.DELETE_SOLR_TREE));
-		server.commit();
+        action.performAction(new SolrUpdateRequest("uuid:6", IndexingActionType.DELETE_SOLR_TREE));
+        server.commit();
 
-		SolrDocumentList docListAfter = getDocumentList();
+        SolrDocumentList docListAfter = getDocumentList();
 
-		assertEquals("One object should have been removed", 3, docListAfter.getNumFound());
+        assertEquals("One object should have been removed", 3, docListAfter.getNumFound());
 
-		for (SolrDocument docAfter : docListAfter) {
-			String id = (String) docAfter.getFieldValue("id");
-			if ("uuid:6".equals(id))
-				fail("Object was not deleted: " + id);
-		}
-	}
+        for (SolrDocument docAfter : docListAfter) {
+            String id = (String) docAfter.getFieldValue("id");
+            if ("uuid:6".equals(id))
+                fail("Object was not deleted: " + id);
+        }
+    }
 
-	@Test
-	public void deleteEverything() throws Exception {
+    @Test
+    public void deleteEverything() throws Exception {
 
-		action.performAction(new SolrUpdateRequest(AbstractIndexingAction.TARGET_ALL,
-				IndexingActionType.DELETE_SOLR_TREE));
-		server.commit();
+        action.performAction(new SolrUpdateRequest(AbstractIndexingAction.TARGET_ALL,
+                IndexingActionType.DELETE_SOLR_TREE));
+        server.commit();
 
-		SolrDocumentList docListAfter = getDocumentList();
+        SolrDocumentList docListAfter = getDocumentList();
 
-		assertEquals("Index should be empty", 0, docListAfter.getNumFound());
-	}
+        assertEquals("Index should be empty", 0, docListAfter.getNumFound());
+    }
 
-	protected List<SolrInputDocument> populate() {
-		List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
+    protected List<SolrInputDocument> populate() {
+        List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
 
-		SolrInputDocument newDoc = new SolrInputDocument();
-		newDoc.addField("title", "Collections");
-		newDoc.addField("id", "uuid:1");
-		newDoc.addField("rollup", "uuid:1");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1");
-		newDoc.addField("resourceType", "Folder");
-		docs.add(newDoc);
+        SolrInputDocument newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Collections");
+        newDoc.addField("id", "uuid:1");
+        newDoc.addField("rollup", "uuid:1");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1");
+        newDoc.addField("resourceType", "Folder");
+        docs.add(newDoc);
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "A collection");
-		newDoc.addField("id", "uuid:2");
-		newDoc.addField("rollup", "uuid:2");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
-		newDoc.addField("resourceType", "Collection");
-		docs.add(newDoc);
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "A collection");
+        newDoc.addField("id", "uuid:2");
+        newDoc.addField("rollup", "uuid:2");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
+        newDoc.addField("resourceType", "Collection");
+        docs.add(newDoc);
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "File");
-		newDoc.addField("id", "uuid:6");
-		newDoc.addField("rollup", "uuid:6");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
-		newDoc.addField("resourceType", "File");
-		docs.add(newDoc);
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "File");
+        newDoc.addField("id", "uuid:6");
+        newDoc.addField("rollup", "uuid:6");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("resourceType", "File");
+        docs.add(newDoc);
 
-		newDoc = new SolrInputDocument();
-		newDoc.addField("title", "Second collection");
-		newDoc.addField("id", "uuid:3");
-		newDoc.addField("rollup", "uuid:3");
-		newDoc.addField("roleGroup", "public admin");
-		newDoc.addField("readGroup", "public");
-		newDoc.addField("adminGroup", "admin");
-		newDoc.addField("ancestorIds", "/uuid:1/uuid:3");
-		newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
-		newDoc.addField("resourceType", "Collection");
-		docs.add(newDoc);
+        newDoc = new SolrInputDocument();
+        newDoc.addField("title", "Second collection");
+        newDoc.addField("id", "uuid:3");
+        newDoc.addField("rollup", "uuid:3");
+        newDoc.addField("roleGroup", "public admin");
+        newDoc.addField("readGroup", "public");
+        newDoc.addField("adminGroup", "admin");
+        newDoc.addField("ancestorIds", "/uuid:1/uuid:3");
+        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
+        newDoc.addField("resourceType", "Collection");
+        docs.add(newDoc);
 
-		return docs;
-	}
+        return docs;
+    }
 }

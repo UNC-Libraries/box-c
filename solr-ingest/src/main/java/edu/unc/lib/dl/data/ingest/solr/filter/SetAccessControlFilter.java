@@ -92,7 +92,7 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
 
     /**
      * Set acl factory
-     * 
+     *
      * @param aclFactory an inherited acl factory
      */
     public void setAclFactory(InheritedAclFactory aclFactory) {
