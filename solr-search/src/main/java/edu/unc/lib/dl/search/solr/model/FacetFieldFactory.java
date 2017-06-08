@@ -32,89 +32,89 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class FacetFieldFactory {
-	private static final Logger LOG = LoggerFactory.getLogger(FacetFieldFactory.class);
-	
-	private SearchSettings searchSettings;
-	private SolrSettings solrSettings;
+    private static final Logger LOG = LoggerFactory.getLogger(FacetFieldFactory.class);
 
-	public GenericFacet createFacet(String fieldKey, String facetValue) {
-		Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
-		if (facetClass == null) {
-			facetClass = GenericFacet.class;
-		}
-		try {
-			Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
-			Object newFacet = constructor.newInstance(fieldKey, facetValue);
-			/*if (newFacet == null)
-				throw new Exception();*/
-			return (GenericFacet) newFacet;
-		} catch (InvocationTargetException e) {
-			if (e.getCause() instanceof InvalidHierarchicalFacetException)
-				throw (InvalidHierarchicalFacetException)e.getCause();
-			throw new InvalidFacetException(
-					"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
-							+ facetValue, e);
-		} catch (Exception e) {
-			LOG.debug(e.getClass().getName());
-			throw new InvalidFacetException(
-					"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
-							+ facetValue, e);
-		}
+    private SearchSettings searchSettings;
+    private SolrSettings solrSettings;
 
-	}
+    public GenericFacet createFacet(String fieldKey, String facetValue) {
+        Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
+        if (facetClass == null) {
+            facetClass = GenericFacet.class;
+        }
+        try {
+            Constructor<?> constructor = facetClass.getConstructor(String.class, String.class);
+            Object newFacet = constructor.newInstance(fieldKey, facetValue);
+            /*if (newFacet == null)
+                throw new Exception();*/
+            return (GenericFacet) newFacet;
+        } catch (InvocationTargetException e) {
+            if (e.getCause() instanceof InvalidHierarchicalFacetException)
+                throw (InvalidHierarchicalFacetException)e.getCause();
+            throw new InvalidFacetException(
+                    "An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
+                            + facetValue, e);
+        } catch (Exception e) {
+            LOG.debug(e.getClass().getName());
+            throw new InvalidFacetException(
+                    "An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
+                            + facetValue, e);
+        }
 
-	public FacetFieldList createFacetFieldList(List<FacetField> facetFields) {
-		if (facetFields == null)
-			return null;
-		Map<String, String> fieldNameMappings = solrSettings.getFieldNameToKey();
+    }
 
-		FacetFieldList facetFieldList = new FacetFieldList();
-		for (FacetField facetField : facetFields) {
-			String fieldName = fieldNameMappings.get(facetField.getName());
-			if (facetField.getValueCount() > 0) {
-				facetFieldList.add(createFacetFieldObject(fieldName, facetField));
-			}
-		}
-		return facetFieldList;
-	}
+    public FacetFieldList createFacetFieldList(List<FacetField> facetFields) {
+        if (facetFields == null)
+            return null;
+        Map<String, String> fieldNameMappings = solrSettings.getFieldNameToKey();
 
-	public FacetFieldObject createFacetFieldObject(String fieldKey, FacetField facetField) {
-		List<GenericFacet> values = new ArrayList<GenericFacet>();
+        FacetFieldList facetFieldList = new FacetFieldList();
+        for (FacetField facetField : facetFields) {
+            String fieldName = fieldNameMappings.get(facetField.getName());
+            if (facetField.getValueCount() > 0) {
+                facetFieldList.add(createFacetFieldObject(fieldName, facetField));
+            }
+        }
+        return facetFieldList;
+    }
 
-		// Generate list of facet values from Solr facet fields if they are provided.
-		if (facetField != null) {
-			Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
-			if (facetClass == null) {
-				facetClass = GenericFacet.class;
-			}
-			try {
-				Constructor<?> constructor = facetClass.getConstructor(String.class, FacetField.Count.class);
-				if (facetField != null) {
-					for (FacetField.Count value : facetField.getValues()) {
-						values.add((GenericFacet) constructor.newInstance(fieldKey, value));
-					}
-				}
-			} catch (Exception e) {
-				throw new InvalidFacetException(
-						"An exception occurred while attempting to instantiate a new facet field object for " + fieldKey, e);
-			}
-		}
+    public FacetFieldObject createFacetFieldObject(String fieldKey, FacetField facetField) {
+        List<GenericFacet> values = new ArrayList<GenericFacet>();
 
-		return new FacetFieldObject(fieldKey, values);
-	}
+        // Generate list of facet values from Solr facet fields if they are provided.
+        if (facetField != null) {
+            Class<?> facetClass = searchSettings.getFacetClasses().get(fieldKey);
+            if (facetClass == null) {
+                facetClass = GenericFacet.class;
+            }
+            try {
+                Constructor<?> constructor = facetClass.getConstructor(String.class, FacetField.Count.class);
+                if (facetField != null) {
+                    for (FacetField.Count value : facetField.getValues()) {
+                        values.add((GenericFacet) constructor.newInstance(fieldKey, value));
+                    }
+                }
+            } catch (Exception e) {
+                throw new InvalidFacetException(
+                        "An exception occurred while attempting to instantiate a new facet field object for " + fieldKey, e);
+            }
+        }
 
-	public void addMissingFacetFieldObjects(FacetFieldList facetFieldList, Collection<String> allFacetNames) {
-		for (String facetName : allFacetNames) {
-			if (!facetFieldList.contains(facetName))
-				facetFieldList.add(createFacetFieldObject(facetName, null));
-		}
-	}
+        return new FacetFieldObject(fieldKey, values);
+    }
 
-	public void setSearchSettings(SearchSettings searchSettings) {
-		this.searchSettings = searchSettings;
-	}
+    public void addMissingFacetFieldObjects(FacetFieldList facetFieldList, Collection<String> allFacetNames) {
+        for (String facetName : allFacetNames) {
+            if (!facetFieldList.contains(facetName))
+                facetFieldList.add(createFacetFieldObject(facetName, null));
+        }
+    }
 
-	public void setSolrSettings(SolrSettings solrSettings) {
-		this.solrSettings = solrSettings;
-	}
+    public void setSearchSettings(SearchSettings searchSettings) {
+        this.searchSettings = searchSettings;
+    }
+
+    public void setSolrSettings(SolrSettings solrSettings) {
+        this.solrSettings = solrSettings;
+    }
 }

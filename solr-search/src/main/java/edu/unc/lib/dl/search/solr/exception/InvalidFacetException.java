@@ -16,14 +16,14 @@
 package edu.unc.lib.dl.search.solr.exception;
 
 public class InvalidFacetException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public InvalidFacetException(String msg, Exception e) {
-		super(msg + "\n" + e.getMessage());
-		this.setStackTrace(e.getStackTrace());
-	}
+    public InvalidFacetException(String msg, Exception e) {
+        super(msg + "\n" + e.getMessage());
+        this.setStackTrace(e.getStackTrace());
+    }
 
-	public InvalidFacetException(String msg) {
-		super(msg);
-	}
+    public InvalidFacetException(String msg) {
+        super(msg);
+    }
 }

@@ -27,26 +27,26 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 public class DescriptiveTagProvider implements TagProvider {
 
-	@Override
-	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
-		Datastream descr = record.getDatastreamObject("MD_DESCRIPTIVE");
-		if(descr != null) {
-			record.addTag(new Tag("described"));
-		}
+    @Override
+    public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
+        Datastream descr = record.getDatastreamObject("MD_DESCRIPTIVE");
+        if(descr != null) {
+            record.addTag(new Tag("described"));
+        }
 
-		// Invalid vocabulary terms
-		if (record.getContentStatus() != null && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
-			Tag invalidTermTag = new Tag("invalid term");
+        // Invalid vocabulary terms
+        if (record.getContentStatus() != null && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
+            Tag invalidTermTag = new Tag("invalid term");
 
-			List<String> invalidTerms = record.getRelation(invalidTerm.getPredicate());
-			if (invalidTerms != null) {
-				for (String relation : invalidTerms) {
-					invalidTermTag.addDetail(relation);
-				}
-			}
+            List<String> invalidTerms = record.getRelation(invalidTerm.getPredicate());
+            if (invalidTerms != null) {
+                for (String relation : invalidTerms) {
+                    invalidTermTag.addDetail(relation);
+                }
+            }
 
-			record.addTag(invalidTermTag);
-		}
-	}
+            record.addTag(invalidTermTag);
+        }
+    }
 
 }

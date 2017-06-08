@@ -24,41 +24,41 @@ import java.util.List;
  */
 public class Tag {
 
-	/**
-	 * The tag label.
-	 */
-	private String label = null;
+    /**
+     * The tag label.
+     */
+    private String label = null;
 
-	/**
-	 * List of details about the data described in the tag, such as roles or dates
-	 */
-	private List<String> details;
+    /**
+     * List of details about the data described in the tag, such as roles or dates
+     */
+    private List<String> details;
 
-	public Tag(String label) {
-		this.label = label;
-	}
+    public Tag(String label) {
+        this.label = label;
+    }
 
-	public Tag(String label, String detail) {
-		this.label = label;
-		this.addDetail(detail);
-	}
+    public Tag(String label, String detail) {
+        this.label = label;
+        this.addDetail(detail);
+    }
 
-	public String getLabel() {
-		return label;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public void setLabel(String label) {
-		this.label = label;
-	}
+    public void setLabel(String label) {
+        this.label = label;
+    }
 
-	public void addDetail(String detail) {
-		if (details == null) {
-			details = new ArrayList<String>();
-		}
-		details.add(detail);
-	}
+    public void addDetail(String detail) {
+        if (details == null) {
+            details = new ArrayList<String>();
+        }
+        details.add(detail);
+    }
 
-	public List<String> getDetails() {
-		return this.details;
-	}
+    public List<String> getDetails() {
+        return this.details;
+    }
 }

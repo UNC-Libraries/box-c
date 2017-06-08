@@ -23,28 +23,28 @@ import java.util.List;
  */
 public class ObjectPath {
 
-	private final List<ObjectPathEntry> entries;
+    private final List<ObjectPathEntry> entries;
 
-	public ObjectPath(List<ObjectPathEntry> entries) {
-		this.entries = entries;
-	}
+    public ObjectPath(List<ObjectPathEntry> entries) {
+        this.entries = entries;
+    }
 
-	public List<ObjectPathEntry> getEntries() {
-		return entries;
-	}
+    public List<ObjectPathEntry> getEntries() {
+        return entries;
+    }
 
-	public String getName(String pid) {
-		ObjectPathEntry entry = getByPID(pid);
-		return entry == null ? null : entry.getName();
-	}
+    public String getName(String pid) {
+        ObjectPathEntry entry = getByPID(pid);
+        return entry == null ? null : entry.getName();
+    }
 
-	private ObjectPathEntry getByPID(String pid) {
-		for (ObjectPathEntry entry : entries) {
-			if (entry.getPid().equals(pid)) {
-				return entry;
-			}
-		}
+    private ObjectPathEntry getByPID(String pid) {
+        for (ObjectPathEntry entry : entries) {
+            if (entry.getPid().equals(pid)) {
+                return entry;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 }

@@ -19,5 +19,5 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 
 public interface TagProvider {
-	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups); 
+    public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups);
 }

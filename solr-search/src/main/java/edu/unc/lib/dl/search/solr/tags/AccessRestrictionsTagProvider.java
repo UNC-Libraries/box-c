@@ -30,71 +30,71 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Tag;
 
 public class AccessRestrictionsTagProvider implements TagProvider {
-	private static final Logger LOG = LoggerFactory.getLogger(AccessRestrictionsTagProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AccessRestrictionsTagProvider.class);
 
-	private static final String[] PUBLIC = new String[] { "public" };
+    private static final String[] PUBLIC = new String[] { "public" };
 
-	@Override
-	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
+    @Override
+    public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
 
-		ObjectAccessControlsBean acls = record.getAccessControlBean();
-		if (acls == null)
-			return;
+        ObjectAccessControlsBean acls = record.getAccessControlBean();
+        if (acls == null)
+            return;
 
-		// public
-		Set<UserRole> publicRoles = acls.getRoles(new AccessGroupSet(PUBLIC));
-		if (publicRoles.contains(UserRole.patron)) {
-			record.addTag(new Tag("public", "patron"));
-		} else if (publicRoles.contains(UserRole.metadataPatron)) {
-			record.addTag(new Tag("public", "metadata"));
-		} else if (publicRoles.contains(UserRole.accessCopiesPatron)) {
-			record.addTag(new Tag("public", "accessCopies"));
-		}
+        // public
+        Set<UserRole> publicRoles = acls.getRoles(new AccessGroupSet(PUBLIC));
+        if (publicRoles.contains(UserRole.patron)) {
+            record.addTag(new Tag("public", "patron"));
+        } else if (publicRoles.contains(UserRole.metadataPatron)) {
+            record.addTag(new Tag("public", "metadata"));
+        } else if (publicRoles.contains(UserRole.accessCopiesPatron)) {
+            record.addTag(new Tag("public", "accessCopies"));
+        }
 
-		List<String> status = record.getStatus();
+        List<String> status = record.getStatus();
 
-		// unpublished
-		if (status.contains("Unpublished")) {
-			record.addTag(new Tag("unpublished"));
-		}
+        // unpublished
+        if (status.contains("Unpublished")) {
+            record.addTag(new Tag("unpublished"));
+        }
 
-		if (status.contains("Deleted")) {
-			record.addTag(new Tag("deleted"));
-		}
+        if (status.contains("Deleted")) {
+            record.addTag(new Tag("deleted"));
+        }
 
-		if (status.contains("Embargoed")) {
-			Tag tag = new Tag("embargoed");
-			record.addTag(tag);
+        if (status.contains("Embargoed")) {
+            Tag tag = new Tag("embargoed");
+            record.addTag(tag);
 
-			Date embargo = acls.getLastActiveEmbargoUntilDate();
-			if (embargo != null) {
-				tag.addDetail(Long.toString(embargo.getTime()));
-			}
-		}
+            Date embargo = acls.getLastActiveEmbargoUntilDate();
+            if (embargo != null) {
+                tag.addDetail(Long.toString(embargo.getTime()));
+            }
+        }
 
-		if (accessGroups != null) {
-			Set<UserRole> myRoles = acls.getRoles(accessGroups);
+        if (accessGroups != null) {
+            Set<UserRole> myRoles = acls.getRoles(accessGroups);
 
-			// view only, meaning observer but no editing permissions
-			if (myRoles.contains(UserRole.canView)
-					&& !acls.hasPermission(accessGroups, Permission.editDescription)) {
-				record.addTag(new Tag("view only"));
-			}
-		}
+            // view only, meaning observer but no editing permissions
+            if (myRoles.contains(UserRole.canView)
+                    && !acls.hasPermission(accessGroups, Permission.editDescription)) {
+                record.addTag(new Tag("view only"));
+            }
+        }
 
-		if (status.contains("Roles Assigned")) {
-			Tag tag = new Tag("roles");
+        if (status.contains("Roles Assigned")) {
+            Tag tag = new Tag("roles");
 
-			for (UserRole role : UserRole.values()) {
-				List<String> groups = record.getRelation(role.getPredicate());
-				if (groups != null) {
-					for (String group : groups) {
-						tag.addDetail(role.getPredicate() + " " + group);
-					}
-				}
-			}
+            for (UserRole role : UserRole.values()) {
+                List<String> groups = record.getRelation(role.getPredicate());
+                if (groups != null) {
+                    for (String group : groups) {
+                        tag.addDetail(role.getPredicate() + " " + group);
+                    }
+                }
+            }
 
-			record.addTag(tag);
-		}
-	}
+            record.addTag(tag);
+        }
+    }
 }
