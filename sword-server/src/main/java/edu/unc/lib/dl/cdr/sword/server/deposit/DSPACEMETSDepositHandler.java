@@ -36,48 +36,54 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class DSPACEMETSDepositHandler extends AbstractDepositHandler {
-	private static Logger log = Logger.getLogger(DSPACEMETSDepositHandler.class);
+    private static Logger log = Logger.getLogger(DSPACEMETSDepositHandler.class);
 
-	@Override
-	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
-			SwordConfiguration config, String depositor, String owner) throws SwordError {
-		if (log.isDebugEnabled()) {
-			log.debug("Preparing to perform a DSPACE METS deposit to " + destination.getPid());
-			log.debug("Working with temporary file: "+ deposit.getFile().getAbsolutePath());
-		}
-		
-		// extract info from METS header
-		MetsHeaderScanner scanner = new MetsHeaderScanner();
-		try {
-			scanner.scan(deposit.getFile(), deposit.getFilename());
-		} catch (Exception e1) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400, "Unable to parse your METS file: "+deposit.getFilename(), e1);
-		}
-		
-		
-		UUID depositUUID = UUID.randomUUID();
-		PID depositPID = new PID("uuid:"+depositUUID.toString());
-		File dir = makeNewDepositDirectory(depositPID.getUUID());
-		
-		// drop upload in data directory
-		try {
-			File data = new File(dir, "data");
-			data.mkdir();
-			FileUtils.moveFile(deposit.getFile(), new File(data, deposit.getFilename()));
-		} catch (IOException e) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500, "Unable to create your deposit bag: "+depositPID.getPid(), e);
-		}
+    @Override
+    public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
+            SwordConfiguration config, String depositor, String owner) throws SwordError {
+        if (log.isDebugEnabled()) {
+            log.debug("Preparing to perform a DSPACE METS deposit to " + destination.getPid());
+            log.debug("Working with temporary file: " + deposit.getFile().getAbsolutePath());
+        }
 
-		// METS specific fields
-		Map<String, String> status = new HashMap<String, String>();
-		status.put(DepositField.packageProfile.name(), scanner.getProfile());
-		status.put(DepositField.metsType.name(), scanner.getType());
-		status.put(DepositField.createTime.name(), scanner.getCreateDate());
-		status.put(DepositField.intSenderDescription.name(), StringUtils.join(scanner.getNames(), ','));
-		
-		registerDeposit(depositPID, destination, deposit,
-				type, priority, depositor, owner, status);
-		return buildReceipt(depositPID, config);
-	}
+        // extract info from METS header
+        MetsHeaderScanner scanner = new MetsHeaderScanner();
+        try {
+            scanner.scan(deposit.getFile(), deposit.getFilename());
+        } catch (Exception e1) {
+            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
+                    "Unable to parse your METS file: " + deposit.getFilename(), e1);
+        }
+
+        UUID depositUUID = UUID.randomUUID();
+        PID depositPID = new PID("uuid:" + depositUUID.toString());
+        File dir = makeNewDepositDirectory(depositPID.getUUID());
+
+        // drop upload in data directory
+        try {
+            File data = new File(dir, "data");
+            data.mkdir();
+            FileUtils.moveFile(deposit.getFile(), new File(data, deposit.getFilename()));
+        } catch (IOException e) {
+            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
+                    "Unable to create your deposit bag: " + depositPID.getPid(), e);
+        }
+
+        // METS specific fields
+        Map<String, String> status = new HashMap<String, String>();
+        status.put(DepositField.packageProfile.name(), scanner.getProfile());
+        status.put(DepositField.metsType.name(), scanner.getType());
+        status.put(DepositField.createTime.name(), scanner.getCreateDate());
+        status.put(DepositField.intSenderDescription.name(), StringUtils.join(scanner.getNames(), ','));
+
+        registerDeposit(depositPID, destination, deposit,
+                type, priority, depositor, owner, status);
+        return buildReceipt(depositPID, config);
+    }
 }

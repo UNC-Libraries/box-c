@@ -39,49 +39,55 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class StatementManagerImpl extends AbstractFedoraManager implements StatementManager {
 
-	private static Logger log = Logger.getLogger(StatementManagerImpl.class);
+    private static Logger log = Logger.getLogger(StatementManagerImpl.class);
 
-	private DepositReportingUtil depositReportingUtil;
+    private DepositReportingUtil depositReportingUtil;
 
-	@Override
-	public Statement getStatement(String iri, Map<String, String> accept, AuthCredentials auth, SwordConfiguration config)
-			throws SwordServerException, SwordError, SwordAuthException {
+    @Override
+    public Statement getStatement(String iri, Map<String, String> accept,
+            AuthCredentials auth, SwordConfiguration config)
+                    throws SwordServerException, SwordError, SwordAuthException {
 
-		PID targetPID = extractPID(iri, SwordConfigurationImpl.STATE_PATH + "/");
+        PID targetPID = extractPID(iri, SwordConfigurationImpl.STATE_PATH + "/");
 
-		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
+        SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		if (!hasAccess(auth, targetPID, Permission.viewDescription, configImpl)) {
-			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to retrieve statement for " + targetPID.getPid());
-		}
+        if (!hasAccess(auth, targetPID, Permission.viewDescription, configImpl)) {
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+                    "Insufficient privileges to retrieve statement for " + targetPID.getPid());
+        }
 
-		String label = tripleStoreQueryService.lookupLabel(targetPID);
-		String lastModifiedString = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(targetPID,
-				ContentModelHelper.FedoraProperty.lastModifiedDate.toString());
+        String label = tripleStoreQueryService.lookupLabel(targetPID);
+        String lastModifiedString = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(targetPID,
+                ContentModelHelper.FedoraProperty.lastModifiedDate.toString());
 
-		Statement statement = new AtomStatementImpl(iri, "CDR", label, lastModifiedString);
+        Statement statement = new AtomStatementImpl(iri, "CDR", label, lastModifiedString);
 
-		if (lastModifiedString != null) {
-			try {
-				statement.setLastModified(DateTimeUtil.parseUTCToDate(lastModifiedString));
-			} catch (ParseException e) {
-				log.error("Could not parse last modified", e);
-			}
-		}
-		statement.setOriginalDeposits(depositReportingUtil.getOriginalDeposits(targetPID, configImpl));
+        if (lastModifiedString != null) {
+            try {
+                statement.setLastModified(DateTimeUtil.parseUTCToDate(lastModifiedString));
+            } catch (ParseException e) {
+                log.error("Could not parse last modified", e);
+            }
+        }
+        statement.setOriginalDeposits(depositReportingUtil.getOriginalDeposits(targetPID, configImpl));
 
-		statement.setResources(new ArrayList<ResourcePart>());
+        statement.setResources(new ArrayList<ResourcePart>());
 
-		statement.setStates(new HashMap<String, String>());
-		statement.addState("Activity", tripleStoreQueryService.fetchState(targetPID));
+        statement.setStates(new HashMap<String, String>());
+        statement.addState("Activity", tripleStoreQueryService.fetchState(targetPID));
 
-		return statement;
-	}
+        return statement;
+    }
 
-	public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
-		this.depositReportingUtil = depositReportingUtil;
-	}
+    public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {
+        this.depositReportingUtil = depositReportingUtil;
+    }
 }
