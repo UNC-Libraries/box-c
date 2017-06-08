@@ -108,7 +108,8 @@ public class SearchResultResponse {
 
                     if (representative.getContentTypeFacet() != null) {
                         repFacet = representative.getContentTypeFacet().get(0);
-                        LOG.debug("Pulling content type from representative " + representative.getId() + ": " + repFacet);
+                        LOG.debug("Pulling content type from representative {}: {}",
+                                representative.getId(), repFacet);
                         if (repFacet.contains(((MultivaluedHierarchicalFacet) contentTypeValue))) {
                             break;
                         } else {
@@ -129,8 +130,9 @@ public class SearchResultResponse {
     }
 
     public List<String> getIdList() {
-        if (this.resultList == null)
+        if (this.resultList == null) {
             return null;
+        }
         List<String> ids = new ArrayList<String>();
         for (BriefObjectMetadata brief: this.resultList) {
             ids.add(brief.getId());

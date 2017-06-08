@@ -191,11 +191,13 @@ public class SearchState implements Serializable, Cloneable {
      * @return An arraylist of strings containing all of the word fragments in the selected search term field.
      */
     public ArrayList<String> getSearchTermFragments(String fieldType) {
-        if (this.searchFields == null || fieldType == null)
+        if (this.searchFields == null || fieldType == null) {
             return null;
+        }
         String value = this.searchFields.get(fieldType);
-        if (value == null)
+        if (value == null) {
             return null;
+        }
         Matcher matcher = splitTermFragmentsRegex.matcher(value);
         ArrayList<String> fragments = new ArrayList<String>();
         while (matcher.find()) {
@@ -225,12 +227,16 @@ public class SearchState implements Serializable, Cloneable {
 
         public RangePair(String pairString) {
             String[] pairParts = pairString.split(",", 2);
-            if (pairParts[0].length() > 0)
+            if (pairParts[0].length() > 0) {
                 this.leftHand = pairParts[0];
-            else this.leftHand = null;
-            if (pairParts[1].length() > 0)
+            } else {
+                this.leftHand = null;
+            }
+            if (pairParts[1].length() > 0) {
                 this.rightHand = pairParts[1];
-            else this.rightHand = null;
+            } else {
+                this.rightHand = null;
+            }
         }
 
         public RangePair(String leftHand, String rightHand) {
@@ -262,12 +268,14 @@ public class SearchState implements Serializable, Cloneable {
         @Override
         public String toString() {
             if (leftHand == null) {
-                if (rightHand == null)
+                if (rightHand == null) {
                     return "";
+                }
                 return "," + rightHand;
             }
-            if (rightHand == null)
+            if (rightHand == null) {
                 return leftHand + ",";
+            }
             return leftHand + "," + rightHand;
         }
     }

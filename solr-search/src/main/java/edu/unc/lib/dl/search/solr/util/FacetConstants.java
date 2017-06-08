@@ -15,7 +15,12 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
-public class FacetConstants {
+/**
+ * 
+ * @author bbpennel
+ *
+ */
+public abstract class FacetConstants {
 
     public static final String CONTENT_NOT_DESCRIBED = "Not Described";
     public static final String CONTENT_DESCRIBED = "Described";

@@ -20,6 +20,11 @@ import java.util.List;
 
 import org.apache.solr.client.solrj.response.FacetField;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public abstract class AbstractHierarchicalFacet extends GenericFacet implements Cloneable {
     protected List<HierarchicalFacetNode> facetNodes;
 

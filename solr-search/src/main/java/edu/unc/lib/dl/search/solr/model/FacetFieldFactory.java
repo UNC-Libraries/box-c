@@ -31,6 +31,11 @@ import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class FacetFieldFactory {
     private static final Logger LOG = LoggerFactory.getLogger(FacetFieldFactory.class);
 
@@ -49,23 +54,25 @@ public class FacetFieldFactory {
                 throw new Exception();*/
             return (GenericFacet) newFacet;
         } catch (InvocationTargetException e) {
-            if (e.getCause() instanceof InvalidHierarchicalFacetException)
+            if (e.getCause() instanceof InvalidHierarchicalFacetException) {
                 throw (InvalidHierarchicalFacetException)e.getCause();
+            }
             throw new InvalidFacetException(
-                    "An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
-                            + facetValue, e);
+                    "An exception occurred while attempting to instantiate a new facet field object for "
+                            + fieldKey + " " + facetValue, e);
         } catch (Exception e) {
             LOG.debug(e.getClass().getName());
             throw new InvalidFacetException(
-                    "An exception occurred while attempting to instantiate a new facet field object for " + fieldKey + " "
-                            + facetValue, e);
+                    "An exception occurred while attempting to instantiate a new facet field object for "
+                            + fieldKey + " " + facetValue, e);
         }
 
     }
 
     public FacetFieldList createFacetFieldList(List<FacetField> facetFields) {
-        if (facetFields == null)
+        if (facetFields == null) {
             return null;
+        }
         Map<String, String> fieldNameMappings = solrSettings.getFieldNameToKey();
 
         FacetFieldList facetFieldList = new FacetFieldList();
@@ -96,7 +103,8 @@ public class FacetFieldFactory {
                 }
             } catch (Exception e) {
                 throw new InvalidFacetException(
-                        "An exception occurred while attempting to instantiate a new facet field object for " + fieldKey, e);
+                        "An exception occurred while attempting to instantiate a new facet field object for "
+                                + fieldKey, e);
             }
         }
 
@@ -105,8 +113,9 @@ public class FacetFieldFactory {
 
     public void addMissingFacetFieldObjects(FacetFieldList facetFieldList, Collection<String> allFacetNames) {
         for (String facetName : allFacetNames) {
-            if (!facetFieldList.contains(facetName))
+            if (!facetFieldList.contains(facetName)) {
                 facetFieldList.add(createFacetFieldObject(facetName, null));
+            }
         }
     }
 

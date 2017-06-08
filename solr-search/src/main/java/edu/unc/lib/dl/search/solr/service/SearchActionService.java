@@ -56,17 +56,20 @@ public class SearchActionService {
      * @return
      */
     public SearchState executeActions(SearchState searchState, Map<String,String[]> parameters) {
-        if (searchState == null || parameters == null || parameters.size() == 0)
+        if (searchState == null || parameters == null || parameters.size() == 0) {
             return searchState;
+        }
 
         for (Entry<String,String[]> parameter: parameters.entrySet()) {
             String actionName = parameter.getKey();
             String[] actionValues = parameter.getValue();
-            if (actionName == null || actionValues == null)
+            if (actionName == null || actionValues == null) {
                 continue;
+            }
             int index = actionName.indexOf("a.");
-            if (index != 0)
+            if (index != 0) {
                 continue;
+            }
             actionName = actionName.substring(index + 2);
             LOG.debug("Executing: " + actionName);
             if (actionName.equals(searchSettings.actionName("SET_FACET"))) {
@@ -129,11 +132,13 @@ public class SearchActionService {
     private void setRangeFields(SearchState searchState, String[] values) {
         for (String value: values) {
             String[] valueArray = value.split(":", 2);
-            if (valueArray.length != 2)
+            if (valueArray.length != 2) {
                 continue;
+            }
             String key = searchSettings.searchFieldKey(valueArray[0]);
-            if (key == null)
+            if (key == null) {
                 continue;
+            }
             try {
                 searchState.getRangeFields().put(key, new SearchState.RangePair(valueArray[1]));
             } catch (ArrayIndexOutOfBoundsException e) {
@@ -146,11 +151,13 @@ public class SearchActionService {
     private void setField(Map collection, String[] values) {
         for (String value: values) {
             String[] valueArray = value.split(":", 2);
-            if (valueArray.length != 2)
+            if (valueArray.length != 2) {
                 continue;
+            }
             String key = searchSettings.searchFieldKey(valueArray[0]);
-            if (key == null)
+            if (key == null) {
                 continue;
+            }
             collection.put(key, valueArray[1]);
         }
     }
@@ -159,15 +166,19 @@ public class SearchActionService {
     private void addField(Map collection, String[] values) {
         for (String value: values) {
             String[] valueArray = value.split(":", 2);
-            if (valueArray.length != 2)
+            if (valueArray.length != 2) {
                 continue;
+            }
             String key = searchSettings.searchFieldKey(valueArray[0]);
-            if (key == null)
+            if (key == null) {
                 continue;
+            }
             String previousValue = (String)collection.get(key);
-            if (previousValue == null)
+            if (previousValue == null) {
                 previousValue = valueArray[1];
-            else previousValue += " " + valueArray[1];
+            } else {
+                previousValue += " " + valueArray[1];
+            }
             collection.put(key, previousValue);
         }
     }
@@ -182,14 +193,17 @@ public class SearchActionService {
     private void setFacet(SearchState searchState, String[] values) {
         for (String value : values) {
             String[] valueArray = value.split(":", 2);
-            if (valueArray.length != 2)
+            if (valueArray.length != 2) {
                 continue;
+            }
             String key = searchSettings.searchFieldKey(valueArray[0]);
-            if (key == null)
+            if (key == null) {
                 continue;
+            }
             String fieldValue = valueArray[1];
-            if (fieldValue == null || fieldValue.length() == 0)
+            if (fieldValue == null || fieldValue.length() == 0) {
                 continue;
+            }
             searchState.getFacets().put(key, facetFieldFactory.createFacet(key, fieldValue));
         }
     }
@@ -200,8 +214,9 @@ public class SearchActionService {
                 value = URLDecoder.decode(value, "UTF-8");
                 String[] valueArray = value.split(":", 2);
                 String key = searchSettings.searchFieldKey(valueArray[0]);
-                if (key == null)
+                if (key == null) {
                     continue;
+                }
                 facetFieldUtil.setFacetLimit(key, Integer.parseInt(valueArray[1]), searchState);
             } catch (NumberFormatException e) {
                 LOG.error("Failed to perform set facet limit action: " + value);
@@ -212,8 +227,9 @@ public class SearchActionService {
     }
 
     private void setFacetSelect(SearchState searchState, String[] values) {
-        if (values.length == 0)
+        if (values.length == 0) {
             return;
+        }
         searchState.setFacetsToRetrieve(new ArrayList<String>(Arrays.asList(values[0].split(","))));
     }
 
@@ -222,20 +238,23 @@ public class SearchActionService {
     }
 
     private void nextPage(SearchState searchState) {
-        if (searchState.getRowsPerPage() == null)
+        if (searchState.getRowsPerPage() == null) {
             return;
+        }
         searchState.setStartRow(searchState.getStartRow() + searchState.getRowsPerPage());
     }
 
     private void previousPage(SearchState searchState) {
-        if (searchState.getRowsPerPage() == null)
+        if (searchState.getRowsPerPage() == null) {
             return;
+        }
         searchState.setStartRow(searchState.getStartRow() - searchState.getRowsPerPage());
     }
 
     private void setStartRow(SearchState searchState, String[] values) {
-        if (values.length == 0)
+        if (values.length == 0) {
             return;
+        }
         try {
             setStartRow(searchState, Integer.parseInt(values[0]));
         } catch (NumberFormatException e) {
@@ -248,8 +267,9 @@ public class SearchActionService {
     }
 
     private void setRow(SearchState searchState, String[] values) {
-        if (values.length == 0)
+        if (values.length == 0) {
             return;
+        }
         try {
             setRow(searchState, Integer.parseInt(values[0]));
         } catch (NumberFormatException e) {
@@ -266,22 +286,25 @@ public class SearchActionService {
     }
 
     private void setResourceType(SearchState searchState, String[] values) {
-        if (values.length == 0)
+        if (values.length == 0) {
             return;
+        }
         String[] resourceTypes = values[0].split(",");
         searchState.setResourceTypes(new ArrayList<String>(Arrays.asList(resourceTypes)));
     }
 
     private void removeResourceType(SearchState searchState, String[] values) {
-        if (values.length == 0)
+        if (values.length == 0) {
             return;
+        }
         String[] resourceTypes = values[0].split(",");
         searchState.getResourceTypes().removeAll(Arrays.asList(resourceTypes));
     }
 
     private void resetNavigation(SearchState searchState, String[] values) {
-        if (values.length == 0)
+        if (values.length == 0) {
             return;
+        }
         String mode = values[0];
         if (mode.equals("search")) {
             searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.getFacetNames()));

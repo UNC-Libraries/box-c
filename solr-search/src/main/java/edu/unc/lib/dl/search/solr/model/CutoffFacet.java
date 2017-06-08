@@ -79,8 +79,9 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
     }
 
     private String extractCutoffs(String facetValue) {
-        if (facetValue == null)
+        if (facetValue == null) {
             return null;
+        }
         String[] facetParts = facetValue.split("!");
         if (facetParts.length >= 2) {
             try {
@@ -132,7 +133,7 @@ public class CutoffFacet extends AbstractHierarchicalFacet {
             return null;
         }
 
-        CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size()-1);
+        CutoffFacetNode lastNode = (CutoffFacetNode)this.facetNodes.get(this.facetNodes.size() - 1);
         if ("*".equals(lastNode.getSearchKey())) {
             if (this.facetNodes.size() == 1) {
                 return null;

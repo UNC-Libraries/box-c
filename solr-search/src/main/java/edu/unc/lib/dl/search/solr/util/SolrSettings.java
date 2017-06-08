@@ -63,8 +63,8 @@ public class SolrSettings extends AbstractSettings {
         this.setCore(properties.getProperty("solr.core", ""));
         this.setSocketTimeout(Integer.parseInt(properties.getProperty("solr.socketTimeout", "1000")));
         this.setConnectionTimeout(Integer.parseInt(properties.getProperty("solr.connectionTimeout", "100")));
-        this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty("solr.defaultMaxConnectionsPerHost",
-                "100")));
+        this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty(
+                "solr.defaultMaxConnectionsPerHost", "100")));
         this.setMaxConnections(Integer.parseInt(properties.getProperty("solr.maxConnections", "100")));
         this.setMaxRetries(Integer.parseInt(properties.getProperty("solr.maxRetries", "1")));
 
@@ -72,8 +72,9 @@ public class SolrSettings extends AbstractSettings {
         if (this.path != null) {
             this.url = this.path;
             if (this.core != null && !this.core.equals("")) {
-                if (this.url.lastIndexOf("/") != this.url.length() - 1)
+                if (this.url.lastIndexOf("/") != this.url.length() - 1) {
                     this.url += "/";
+                }
                 this.url += this.core;
             }
         }
@@ -107,8 +108,9 @@ public class SolrSettings extends AbstractSettings {
         = Pattern.compile("\\b(?<!\\*)(AND|OR|NOT)\\b(?!\\*)");
 
     public static String sanitize(String value) {
-        if (value == null)
+        if (value == null) {
             return value;
+        }
         return escapeReservedWords.matcher(escapeQueryChars(value)).replaceAll("'$1'");
     }
 
@@ -117,9 +119,9 @@ public class SolrSettings extends AbstractSettings {
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             // These characters are part of the query syntax and must be escaped
-            if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':' || c == '^' || c == '['
-                    || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~' || c == '?' || c == '|'
-                    || c == '&' || c == ';' || c == '/' || Character.isWhitespace(c)) {
+            if (c == '\\' || c == '+' || c == '-' || c == '!' || c == '(' || c == ')' || c == ':'
+                    || c == '^' || c == '[' || c == ']' || c == '\"' || c == '{' || c == '}' || c == '~'
+                    || c == '?' || c == '|' || c == '&' || c == ';' || c == '/' || Character.isWhitespace(c)) {
                 sb.append('\\');
             }
             sb.append(c);
@@ -137,8 +139,9 @@ public class SolrSettings extends AbstractSettings {
      * @return
      */
     public static List<String> getSearchTermFragments(String value) {
-        if (value == null)
+        if (value == null) {
             return null;
+        }
         Matcher matcher = splitTermFragmentsRegex.matcher(value);
         List<String> fragments = new ArrayList<String>();
         while (matcher.find()) {
@@ -146,8 +149,9 @@ public class SolrSettings extends AbstractSettings {
                 boolean quoted = matcher.group(2) != null;
                 String fragment = quoted ? matcher.group(2) : matcher.group(4);
                 fragment = sanitize(fragment.replace("\\\"", "\""));
-                if (quoted || fragment.indexOf('\\') > -1)
+                if (quoted || fragment.indexOf('\\') > -1) {
                     fragment = '"' + fragment + '"';
+                }
                 fragments.add(fragment);
             }
         }

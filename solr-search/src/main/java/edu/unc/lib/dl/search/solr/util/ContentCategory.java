@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public enum ContentCategory {
     dataset("Dataset"), image("Image"), diskimage("Disk Image"), video("Video"), software("Software"),
     audio("Audio"), archive("Archive File"), text("Text"), unknown("Unknown");
@@ -36,11 +41,14 @@ public enum ContentCategory {
     }
 
     public static ContentCategory getContentCategory(String name) {
-        if (name == null)
+        if (name == null) {
             return unknown;
-        for (ContentCategory category: values())
-            if (category.name().equals(name))
+        }
+        for (ContentCategory category: values()) {
+            if (category.name().equals(name)) {
                 return category;
+            }
+        }
         return unknown;
     }
 }

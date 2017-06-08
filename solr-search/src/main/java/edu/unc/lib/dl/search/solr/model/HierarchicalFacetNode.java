@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface HierarchicalFacetNode extends Cloneable {
     /**
      * Display value for the current node

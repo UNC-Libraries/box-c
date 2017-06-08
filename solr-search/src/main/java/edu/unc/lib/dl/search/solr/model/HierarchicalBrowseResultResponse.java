@@ -29,11 +29,13 @@ import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
-import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     protected static final Logger log = LoggerFactory.getLogger(HierarchicalBrowseResultResponse.class);
 
@@ -72,8 +74,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
                     log.debug("Popsub|" + facetValue.getName() + ":" + facetValue.getCount());
                     int index = facetValue.getName().indexOf(",");
                     index = facetValue.getName().indexOf(",", index + 1);
-                    if (index != -1)
+                    if (index != -1) {
                         subcontainerCounts.put(facetValue.getName().substring(0, index), facetValue.getCount());
+                    }
                 }
             }
         }
@@ -83,8 +86,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         ListIterator<BriefObjectMetadata> resultIt = this.getResultList().listIterator(this.getResultList().size());
         while (resultIt.hasPrevious()) {
             BriefObjectMetadata briefObject = resultIt.previous();
-            if (briefObject == null || briefObject.getContentModel() == null)
+            if (briefObject == null || briefObject.getContentModel() == null) {
                 continue;
+            }
             if ((!briefObject.getCountMap().containsKey("child") || briefObject.getCountMap().get("child") == 0)
                     && briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
                 if (this.matchingContainerPids != null && this.matchingContainerPids.contains(briefObject.getId())) {
@@ -100,8 +104,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
                         for (HierarchicalFacetNode facetTier : briefObject.getAncestorPathFacet().getFacetNodes()) {
                             String tierIdentifier = facetTier.getSearchValue();
                             Long count = this.subcontainerCounts.get(tierIdentifier);
-                            if (count != null)
+                            if (count != null) {
                                 this.subcontainerCounts.put(tierIdentifier, count - 1);
+                            }
                         }
                     }
                 }
@@ -133,8 +138,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
      * it will always appear before its children
      */
     public void generateResultTree() {
-        if (this.getResultList() == null || this.getResultList().size() == 0)
+        if (this.getResultList() == null || this.getResultList().size() == 0) {
             return;
+        }
 
         Map<String, ResultNode> nodeMap = new HashMap<String, ResultNode>();
         ResultNode parentNode = new ResultNode(this.getResultList().get(0));
@@ -147,12 +153,14 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
             // Find the closest parent record
             for (int j = metadata.getAncestorPathFacet().getFacetNodes().size() - 1; j >= 0; j--) {
                 parentNode = nodeMap.get(metadata.getAncestorPathFacet().getFacetNodes().get(j).getSearchKey());
-                if (parentNode != null)
+                if (parentNode != null) {
                     break;
+                }
             }
             // Couldn't find any parent record, skip this item
-            if (parentNode == null)
+            if (parentNode == null) {
                 continue;
+            }
 
             ResultNode currentNode = new ResultNode(metadata);
             parentNode.getChildren().add(currentNode);
@@ -161,12 +169,14 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     public int getChildNodeIndex(String pid) {
-        if (pid == null)
+        if (pid == null) {
             return -1;
+        }
         for (int i = 0; i < rootNode.getChildren().size(); i++) {
             ResultNode childNode = rootNode.getChildren().get(i);
-            if (childNode.getMetadata().getPid().getPid().equals(pid))
+            if (childNode.getMetadata().getPid().getPid().equals(pid)) {
                 return i;
+            }
         }
         return -1;
     }
@@ -176,12 +186,14 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     private ResultNode findNode(String pid, ResultNode node) {
-        if (node.getMetadata().getPid().getPid().equals(pid))
+        if (node.getMetadata().getPid().getPid().equals(pid)) {
             return node;
+        }
         for (ResultNode childNode: node.getChildren()) {
             ResultNode found = findNode(pid, childNode);
-            if (found != null)
+            if (found != null) {
                 return found;
+            }
         }
         return null;
     }
@@ -249,8 +261,10 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         }
 
         public Boolean getIsTopLevel() {
-            if (metadata.getAncestorNames() != null && (metadata.getAncestorPath() == null || metadata.getAncestorPath().size() == 0))
+            if (metadata.getAncestorNames() != null && (metadata.getAncestorPath() == null
+                    || metadata.getAncestorPath().size() == 0)) {
                 return true;
+            }
             return null;
         }
 

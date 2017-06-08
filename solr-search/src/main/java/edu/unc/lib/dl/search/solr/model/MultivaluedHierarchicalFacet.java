@@ -28,6 +28,11 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
     private static final Logger log = LoggerFactory.getLogger(MultivaluedHierarchicalFacet.class);
 
@@ -42,15 +47,17 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
     }
 
     private void populateFacetNodes(String facetString) {
-        if (facetString == null)
+        if (facetString == null) {
             return;
+        }
 
         String[] tiers = MultivaluedHierarchicalFacetNode.extractFacetParts.split(facetString);
-        if (tiers.length == 0)
+        if (tiers.length == 0) {
             throw new InvalidHierarchicalFacetException("Empty facet string");
+        }
 
         // Create facet nodes for each tier in the facet string, skipping a leading blank node if present
-        for (int i = "".equals(tiers[0])? 1 : 0; i < tiers.length; i++) {
+        for (int i = "".equals(tiers[0]) ? 1 : 0; i < tiers.length; i++) {
             this.facetNodes.add(new MultivaluedHierarchicalFacetNode(tiers, i));
         }
     }
@@ -98,7 +105,8 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
         Collections.sort(this.facetNodes, new Comparator<HierarchicalFacetNode>() {
             @Override
             public int compare(HierarchicalFacetNode node1, HierarchicalFacetNode node2) {
-                return ((MultivaluedHierarchicalFacetNode)node1).getTiers().size() - ((MultivaluedHierarchicalFacetNode)node2).getTiers().size();
+                return ((MultivaluedHierarchicalFacetNode)node1).getTiers().size()
+                        - ((MultivaluedHierarchicalFacetNode)node2).getTiers().size();
             }
         });
     }
@@ -110,27 +118,31 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
 
     public HierarchicalFacetNode getNode(String searchKey) {
         for (HierarchicalFacetNode node: this.facetNodes) {
-            if (node.getSearchKey().equals(searchKey))
+            if (node.getSearchKey().equals(searchKey)) {
                 return node;
+            }
         }
         return null;
     }
 
     public HierarchicalFacetNode getNodeBySearchValue(String searchValue) {
         for (HierarchicalFacetNode node: this.facetNodes) {
-            if (node.getSearchValue().equals(searchValue))
+            if (node.getSearchValue().equals(searchValue)) {
                 return node;
+            }
         }
         return null;
     }
 
     public boolean contains(MultivaluedHierarchicalFacet facet) {
-        if (facet.facetNodes.size() > this.facetNodes.size())
+        if (facet.facetNodes.size() > this.facetNodes.size()) {
             return false;
+        }
 
         for (int i = 0; i < facet.facetNodes.size(); i++) {
-            if (!facet.facetNodes.get(i).getSearchKey().equals(this.facetNodes.get(i).getSearchKey()))
+            if (!facet.facetNodes.get(i).getSearchKey().equals(this.facetNodes.get(i).getSearchKey())) {
                 return false;
+            }
         }
         return true;
     }
@@ -139,7 +151,8 @@ public class MultivaluedHierarchicalFacet extends AbstractHierarchicalFacet {
         int startingCount = this.facetNodes.size();
         String targetJoined = this.getLastNode().joinTiers(false);
         for (HierarchicalFacetNode node: facet.getFacetNodes()) {
-            MultivaluedHierarchicalFacetNode targetNode = (MultivaluedHierarchicalFacetNode)this.getNodeBySearchValue(node.getSearchValue());
+            MultivaluedHierarchicalFacetNode targetNode = (MultivaluedHierarchicalFacetNode)
+                    this.getNodeBySearchValue(node.getSearchValue());
             if (targetNode != null) {
                 log.debug("Adding in display value " + node.getDisplayValue());
                 targetNode.setDisplayValue(node.getDisplayValue());

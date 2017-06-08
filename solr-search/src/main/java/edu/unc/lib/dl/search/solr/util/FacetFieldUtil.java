@@ -29,6 +29,11 @@ import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.MultivaluedHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class FacetFieldUtil {
 
     private SearchSettings searchSettings;
@@ -83,7 +88,8 @@ public class FacetFieldUtil {
         StringBuilder filterQuery = new StringBuilder();
         String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
 
-        filterQuery.append(solrFieldName).append(":").append(SolrSettings.sanitize(facet.getSearchValue())).append(",*");
+        filterQuery.append(solrFieldName).append(":").append(
+                SolrSettings.sanitize(facet.getSearchValue())).append(",*");
         solrQuery.addFilterQuery(filterQuery.toString());
 
         solrQuery.add("f." + solrFieldName + ".facet.prefix", facet.getPivotValue());

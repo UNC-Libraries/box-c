@@ -21,6 +21,11 @@ import java.util.regex.Pattern;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
     public static Pattern extractFacetParts = Pattern.compile("[\\^/]");
 
@@ -39,14 +44,16 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
      * @param tierNumber
      */
     public MultivaluedHierarchicalFacetNode(String[] facetParts, int tierNumber) {
-        if (facetParts.length == 0)
+        if (facetParts.length == 0) {
             throw new InvalidHierarchicalFacetException("Invalid facet format, no values were provided");
+        }
         StringBuilder facetBuilder = new StringBuilder();
         this.tiers = new ArrayList<String>();
-        for (int i = "".equals(facetParts[0])? 1 : 0; i < facetParts.length && i <= tierNumber; i++) {
+        for (int i = "".equals(facetParts[0]) ? 1 : 0; i < facetParts.length && i <= tierNumber; i++) {
             this.populateNode(facetParts[i], i, tierNumber);
-            if (i > 0)
+            if (i > 0) {
                 facetBuilder.append('/');
+            }
             facetBuilder.append(facetParts[i]);
         }
         this.facetValue = facetBuilder.toString();
@@ -57,9 +64,10 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
         this.tiers = new ArrayList<String>();
         try {
             String[] facetParts = extractFacetParts.split(facetValue);
-            if (facetParts.length == 0 )
+            if (facetParts.length == 0 ) {
                 throw new InvalidHierarchicalFacetException("Incorrect facet format for value " + facetValue);
-            for (int i = "".equals(facetParts[0])? 1 : 0; i < facetParts.length; i++) {
+            }
+            for (int i = "".equals(facetParts[0]) ? 1 : 0; i < facetParts.length; i++) {
                 this.populateNode(facetParts[i], i, facetParts.length - 1);
             }
         } catch (NullPointerException e) {
@@ -73,10 +81,11 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
         if (index == lastIndex) {
             String[] facetPair = facetPart.split(",", 2);
             // Query values will not have the display value part of the pair
-            if (facetPair.length == 2)
+            if (facetPair.length == 2) {
                 displayValue = facetPair[1];
-            else
+            } else {
                 displayValue = null;
+            }
             searchKey = facetPair[0];
             tiers.add(facetPair[0]);
         } else {
@@ -84,7 +93,8 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
         }
     }
 
-    public MultivaluedHierarchicalFacetNode(String displayValue, String searchKey, String facetValue, List<String> tiers) {
+    public MultivaluedHierarchicalFacetNode(String displayValue, String searchKey,
+            String facetValue, List<String> tiers) {
         this.displayValue = displayValue;
         this.searchKey = searchKey;
         this.facetValue = facetValue;
@@ -149,8 +159,9 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
      */
     @Override
     public String getSearchValue() {
-        if (searchValue == null)
+        if (searchValue == null) {
             this.searchValue = joinTiers(true);
+        }
         return this.searchValue;
     }
 
@@ -161,8 +172,9 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
      */
     @Override
     public String getPivotValue() {
-        if (pivotValue == null)
+        if (pivotValue == null) {
             this.pivotValue = joinTiers(false) + "^";
+        }
         return this.pivotValue;
     }
 
@@ -176,8 +188,9 @@ public class MultivaluedHierarchicalFacetNode implements HierarchicalFacetNode {
         if (this.limitValue == null) {
             StringBuilder joined = new StringBuilder();
             for (String tier : tiers) {
-                if (joined.length() > 0)
+                if (joined.length() > 0) {
                     joined.append('/');
+                }
                 joined.append(tier);
             }
             this.limitValue = joined.toString();

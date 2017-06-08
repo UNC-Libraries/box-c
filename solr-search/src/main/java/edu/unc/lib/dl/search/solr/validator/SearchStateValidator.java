@@ -30,11 +30,11 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 public class SearchStateValidator {
     @Autowired
     private SearchSettings searchSettings;
-    
-    
+
+
     public SearchStateValidator() {
     }
-    
+
     public void validate(SearchState searchState) {
         //Validate search Fields and types
         Map<String,String> searchFields = searchState.getSearchFields();
@@ -48,7 +48,7 @@ public class SearchStateValidator {
                 }
             }
         }
-            
+
         //Validate range fields
         Map<String,SearchState.RangePair> rangeFields = searchState.getRangeFields();
         if (rangeFields != null) {
@@ -58,19 +58,23 @@ public class SearchStateValidator {
                 //If invalid search fields are specified, discard them
                 if (searchSettings.rangeSearchableFields.contains(rangeField.getKey())) {
                     if (searchSettings.dateSearchableFields.contains(rangeField.getKey())) {
-                        if (rangeField.getValue().getLeftHand() != null)
-                            rangeField.getValue().setLeftHand(rangeField.getValue().getLeftHand().replace('/', '-').replaceAll("[^0-9\\-]+",""));
-                        if (rangeField.getValue().getRightHand() != null)
-                            rangeField.getValue().setRightHand(rangeField.getValue().getRightHand().replace('/', '-').replaceAll("[^0-9\\-]+",""));
+                        if (rangeField.getValue().getLeftHand() != null) {
+                            rangeField.getValue().setLeftHand(rangeField.getValue().getLeftHand()
+                                    .replace('/', '-').replaceAll("[^0-9\\-]+",""));
+                        }
+                        if (rangeField.getValue().getRightHand() != null) {
+                            rangeField.getValue().setRightHand(rangeField.getValue().getRightHand()
+                                    .replace('/', '-').replaceAll("[^0-9\\-]+",""));
+                        }
                     }
                 } else {
                     rangeFieldIt.remove();
                 }
             }
         }
-        
+
         //Validate facet fields
-        
+
         Map<String,Object> facets = searchState.getFacets();
         if (facets != null) {
             Iterator<String> facetIt = facets.keySet().iterator();
@@ -81,19 +85,19 @@ public class SearchStateValidator {
                 }
             }
         }
-        
+
         //Validate start row number
         if (searchState.getStartRow() < 0) {
             searchState.setStartRow(0);
         }
-        
+
         //Validate rows per page
         if (searchState.getRowsPerPage() > searchSettings.maxPerPage) {
             searchState.setRowsPerPage(searchSettings.maxPerPage);
         } else if (searchState.getRowsPerPage() <= 0) {
             searchState.setRowsPerPage(0);
         }
-        
+
         if (searchState.getResourceTypes() != null) {
             Iterator<String> resourceTypesIt = searchState.getResourceTypes().iterator();
             while (resourceTypesIt.hasNext()) {
@@ -102,7 +106,7 @@ public class SearchStateValidator {
                 }
             }
         }
-        
+
         //Validate sort type
         if (searchState.getSortType() == null || searchState.getSortType().length() == 0 ||
                 !searchSettings.sortTypes.containsKey(searchState.getSortType())) {

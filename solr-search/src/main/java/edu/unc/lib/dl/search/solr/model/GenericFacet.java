@@ -27,10 +27,10 @@ public class GenericFacet implements Cloneable, SearchFacet {
     protected long count;
     protected String value;
     protected String displayValue;
-    
+
     public GenericFacet() {
     }
-    
+
     /**
      * Default constructor which takes the name of the facet and the string representing it.
      * @param fieldName name of the facet to which this entry belongs.
@@ -42,25 +42,25 @@ public class GenericFacet implements Cloneable, SearchFacet {
         this.value = facetString;
         this.displayValue = facetString;
     }
-    
+
     public GenericFacet(FacetField.Count countObject) {
         this(countObject.getFacetField().getName(), countObject);
     }
-    
+
     public GenericFacet(String fieldName, FacetField.Count countObject) {
         this.count = countObject.getCount();
         this.fieldName = fieldName;
         this.value = countObject.getName();
         this.displayValue = countObject.getName();
     }
-    
+
     public GenericFacet(GenericFacet facet) {
         this.fieldName = facet.getFieldName();
         this.count = facet.getCount();
         this.value = facet.getValue();
         this.displayValue = facet.getDisplayValue();
     }
-    
+
 
     @Override
     public String getFieldName() {
@@ -88,11 +88,11 @@ public class GenericFacet implements Cloneable, SearchFacet {
     public void setValue(String value) {
         this.value = value;
     }
-    
+
     public void setDisplayValue(String displayValue) {
         this.displayValue = displayValue;
     }
-    
+
     @Override
     public String getDisplayValue() {
         return displayValue;
@@ -102,12 +102,12 @@ public class GenericFacet implements Cloneable, SearchFacet {
     public String getSearchValue() {
         return value;
     }
-    
+
     @Override
     public String getLimitToValue() {
         return value;
     }
-    
+
     @Override
     public Object clone() {
         return new GenericFacet(this);

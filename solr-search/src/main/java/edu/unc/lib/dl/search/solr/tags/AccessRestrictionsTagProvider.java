@@ -19,9 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -29,8 +26,12 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Tag;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class AccessRestrictionsTagProvider implements TagProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(AccessRestrictionsTagProvider.class);
 
     private static final String[] PUBLIC = new String[] { "public" };
 
@@ -38,8 +39,9 @@ public class AccessRestrictionsTagProvider implements TagProvider {
     public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
 
         ObjectAccessControlsBean acls = record.getAccessControlBean();
-        if (acls == null)
+        if (acls == null) {
             return;
+        }
 
         // public
         Set<UserRole> publicRoles = acls.getRoles(new AccessGroupSet(PUBLIC));

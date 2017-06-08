@@ -43,13 +43,15 @@ public class SearchStateUtil {
         char[] chars = value.toCharArray();
         StringBuilder sb = new StringBuilder();
         for (char character: chars) {
-            if (character == '&')
+            if (character == '&') {
                 sb.append("%26");
-            else if (character == '=')
+            } else if (character == '=') {
                 sb.append("%3D");
-            else if (character == '#')
+            } else if (character == '#') {
                 sb.append("%23");
-            else sb.append(character);
+            } else {
+                sb.append(character);
+            }
         }
         return sb.toString();
     }
@@ -74,9 +76,11 @@ public class SearchStateUtil {
             for (Entry<String,Object> field: searchState.getFacets().entrySet()) {
                 if (!ancestorPath.equals(field.getKey())) {
                     String fieldName = searchSettings.searchFieldParam(field.getKey());
-                    if (field.getValue() instanceof SearchFacet)
+                    if (field.getValue() instanceof SearchFacet) {
                         params.put(fieldName, urlEncodeParameter(((SearchFacet) field.getValue()).getLimitToValue()));
-                    else params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+                    } else {
+                        params.put(fieldName, urlEncodeParameter(field.getValue().toString()));
+                    }
                 }
             }
         }
@@ -93,24 +97,28 @@ public class SearchStateUtil {
         HashMap<String,String> params = generateSearchParameters(searchState);
 
         if (searchState.getRowsPerPage() != null && searchState.getRowsPerPage() >= 0) {
-            params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), ""+searchState.getRowsPerPage());
+            params.put(searchSettings.searchStateParam("ROWS_PER_PAGE"), "" + searchState.getRowsPerPage());
         }
 
-        if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0 && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)) {
-            params.put(searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"), joinFields(searchState.getFacetsToRetrieve(), ",", true));
+        if (searchState.getFacetsToRetrieve() != null && searchState.getFacetsToRetrieve().size() > 0
+                && !searchState.getFacetsToRetrieve().containsAll(searchSettings.facetNames)) {
+            params.put(searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"),
+                    joinFields(searchState.getFacetsToRetrieve(), ",", true));
         }
 
         if (searchState.getFacetLimits() != null && searchState.getFacetLimits().size() > 0) {
-            params.put(searchSettings.searchStateParam("FACET_LIMIT_FIELDS"), joinFields(searchState.getFacetLimits()));
+            params.put(searchSettings.searchStateParam("FACET_LIMIT_FIELDS"),
+                    joinFields(searchState.getFacetLimits()));
         }
 
         if (searchState.getStartRow() != null && searchState.getStartRow() != 0) {
-            params.put(searchSettings.searchStateParam("START_ROW"), ""+searchState.getStartRow());
+            params.put(searchSettings.searchStateParam("START_ROW"), "" + searchState.getStartRow());
         }
 
         //Add base facet limit if it isn't the default
-        if (searchState.getBaseFacetLimit() != null && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup) {
-            params.put(searchSettings.searchStateParam("BASE_FACET_LIMIT"), ""+searchState.getBaseFacetLimit());
+        if (searchState.getBaseFacetLimit() != null
+                && searchState.getBaseFacetLimit() != searchSettings.facetsPerGroup) {
+            params.put(searchSettings.searchStateParam("BASE_FACET_LIMIT"), "" + searchState.getBaseFacetLimit());
         }
 
         if (searchState.getSortType() != null && searchState.getSortType().length() != 0) {
@@ -118,8 +126,9 @@ public class SearchStateUtil {
                 StringBuilder sortValue = new StringBuilder();
                 sortValue.append(searchState.getSortType());
 
-                if (!searchState.getSortNormalOrder())
+                if (!searchState.getSortNormalOrder()) {
                     sortValue.append(',').append(searchSettings.sortReverse);
+                }
 
                 params.put(searchSettings.searchStateParam("SORT_TYPE"), sortValue.toString());
             }
@@ -131,8 +140,10 @@ public class SearchStateUtil {
             params.put(searchSettings.searchStateParam("SEARCH_TERM_OPERATOR"), searchState.getSearchTermOperator());
         }
 
-        if (searchState.getResourceTypes() != null && !searchState.getResourceTypes().containsAll(searchSettings.defaultResourceTypes)) {
-            params.put(searchSettings.searchStateParam("RESOURCE_TYPES"), joinFields(searchState.getResourceTypes(), ",", false));
+        if (searchState.getResourceTypes() != null
+                && !searchState.getResourceTypes().containsAll(searchSettings.defaultResourceTypes)) {
+            params.put(searchSettings.searchStateParam("RESOURCE_TYPES"),
+                    joinFields(searchState.getResourceTypes(), ",", false));
         }
 
         return params;
@@ -154,9 +165,11 @@ public class SearchStateUtil {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (String object: collection) {
-            if (first)
+            if (first) {
                 first = false;
-            else sb.append(delimiter);
+            } else {
+                sb.append(delimiter);
+            }
             if (performFieldLookup) {
                 sb.append(searchSettings.searchFieldParam(object));
             } else {
@@ -171,7 +184,8 @@ public class SearchStateUtil {
         return joinFields(fields, pairDelimiter, keyValueDelimiter, true);
     }
 
-    private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter, boolean performFieldLookup) {
+    private static String joinFields(Map<?,?> fields, char pairDelimiter, char keyValueDelimiter,
+            boolean performFieldLookup) {
         StringBuilder sb = new StringBuilder();
         boolean firstField = true;
         Iterator<?> fieldIt = fields.keySet().iterator();
@@ -179,37 +193,20 @@ public class SearchStateUtil {
             String fieldName = (String)fieldIt.next();
             Object value = fields.get(fieldName);
             if (value != null && value.toString().trim().length() > 0) {
-                if (firstField)
+                if (firstField) {
                     firstField = false;
-                else sb.append(pairDelimiter);
-                if (performFieldLookup)
+                } else {
+                    sb.append(pairDelimiter);
+                }
+                if (performFieldLookup) {
                     sb.append(searchSettings.searchFieldParam(fieldName));
-                else sb.append(fieldName);
+                } else {
+                    sb.append(fieldName);
+                }
                 sb.append(keyValueDelimiter);
 
-                if (value != null)
+                if (value != null) {
                     sb.append(value);
-            }
-        }
-        return sb.toString();
-    }
-
-    private static String joinFacets(Map<String,Object> fields, char pairDelimiter, char keyValueDelimiter) {
-        StringBuffer sb = new StringBuffer();
-        boolean firstField = true;
-        Iterator<String> fieldIt = fields.keySet().iterator();
-        while (fieldIt.hasNext()) {
-            String fieldName = fieldIt.next();
-            if (firstField)
-                firstField = false;
-            else sb.append(pairDelimiter);
-            sb.append(searchSettings.searchFieldParam(fieldName)).append(keyValueDelimiter);
-            Object fieldValue = fields.get(fieldName);
-            if (fieldValue != null) {
-                if (fieldValue instanceof SearchFacet) {
-                    sb.append(((SearchFacet) fieldValue).getLimitToValue().replace("|", "%7C"));
-                } else {
-                    sb.append(fieldValue.toString().replace("|", "%7C"));
                 }
             }
         }
@@ -228,7 +225,7 @@ public class SearchStateUtil {
     public static HashMap<String, String[]> getParametersAsHashMap(String searchStateUrl) {
         HashMap<String,String[]> parameterHashMap = new HashMap<String,String[]>();
         String[] parameterList = searchStateUrl.split("&");
-        for (String parameter: parameterList) {
+        for (String parameter : parameterList) {
             String[] parameterPair = parameter.split("=");
             if (parameterPair.length == 2) {
                 try {

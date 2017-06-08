@@ -25,17 +25,23 @@ import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.Tag;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class DescriptiveTagProvider implements TagProvider {
 
     @Override
     public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
         Datastream descr = record.getDatastreamObject("MD_DESCRIPTIVE");
-        if(descr != null) {
+        if (descr != null) {
             record.addTag(new Tag("described"));
         }
 
         // Invalid vocabulary terms
-        if (record.getContentStatus() != null && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
+        if (record.getContentStatus() != null
+                && record.getContentStatus().contains(FacetConstants.INVALID_VOCAB_TERM)) {
             Tag invalidTermTag = new Tag("invalid term");
 
             List<String> invalidTerms = record.getRelation(invalidTerm.getPredicate());

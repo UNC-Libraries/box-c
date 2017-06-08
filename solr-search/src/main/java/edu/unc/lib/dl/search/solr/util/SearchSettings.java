@@ -187,16 +187,18 @@ public class SearchSettings extends AbstractSettings {
 
         // Facet properties
         setFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.facetsPerGroup", "0")));
-        setExpandedFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.expandedFacetsPerGroup", "0")));
+        setExpandedFacetsPerGroup(Integer.parseInt(
+                properties.getProperty("search.facet.expandedFacetsPerGroup", "0")));
         setMaxFacetsPerGroup(Integer.parseInt(properties.getProperty("search.facet.maxFacetsPerGroup", "0")));
         populateCollectionFromProperty("search.facet.fields", facetNames, properties, ",");
         populateCollectionFromProperty("search.facet.defaultSearch", searchFacetNames, properties, ",");
         populateCollectionFromProperty("search.facet.defaultCollectionBrowse", collectionBrowseFacetNames, properties,
                 ",");
-        populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse, properties, ",");
+        populateCollectionFromProperty("search.facet.defaultStructureBrowse", facetNamesStructureBrowse,
+                properties, ",");
         try {
-            populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.dl.search.solr.model.", this.facetClasses,
-                    properties);
+            populateClassMapFromProperty("search.facet.class.", "edu.unc.lib.dl.search.solr.model.",
+                    this.facetClasses, properties);
         } catch (ClassNotFoundException e) {
             log.error("Invalid facet class specified in search.facet.class property", e);
         }
@@ -232,8 +234,8 @@ public class SearchSettings extends AbstractSettings {
         setResourceTypeCollection(properties.getProperty("search.resource.type.collection", ""));
         populateCollectionFromProperty("search.resource.types", resourceTypes, properties, ",");
         populateCollectionFromProperty("search.resource.searchDefault", defaultResourceTypes, properties, ",");
-        populateCollectionFromProperty("search.resource.collectionDefault", defaultCollectionResourceTypes, properties,
-                ",");
+        populateCollectionFromProperty("search.resource.collectionDefault", defaultCollectionResourceTypes,
+                properties, ",");
 
         Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
         while (propIt.hasNext()) {
@@ -389,8 +391,8 @@ public class SearchSettings extends AbstractSettings {
     }
 
     public boolean isResourceTypeContainer(String resourceType) {
-        return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType) || resourceTypeAggregate
-                .equals(resourceType));
+        return (resourceTypeCollection.equals(resourceType) || resourceTypeFolder.equals(resourceType)
+                || resourceTypeAggregate.equals(resourceType));
     }
 
     public Set<String> getResourceTypes() {
@@ -662,20 +664,20 @@ public class SearchSettings extends AbstractSettings {
     public String toString() {
         return "SearchSettings [queryMaxLength=" + queryMaxLength + ", defaultOperator=" + defaultOperator
                 + ", operators=" + operators + ", defaultPerPage=" + defaultPerPage + ", defaultCollectionsPerPage="
-                + defaultCollectionsPerPage + ", defaultListResultsPerPage=" + defaultListResultsPerPage + ", maxPerPage="
-                + maxPerPage + ", pagesToDisplay=" + pagesToDisplay + ", maxNeighborResults=" + maxNeighborResults
-                + ", searchFieldParams=" + searchFieldParams + ", searchFieldLabels=" + searchFieldLabels
-                + ", searchableFields=" + searchableFields + ", rangeSearchableFields=" + rangeSearchableFields
-                + ", dateSearchableFields=" + dateSearchableFields + ", facetNames=" + facetNames
-                + ", collectionBrowseFacetNames=" + collectionBrowseFacetNames + ", facetSubfieldDelimiter="
-                + facetSubfieldDelimiter + ", facetTierDelimiter=" + facetTierDelimiter + ", facetsPerGroup="
-                + facetsPerGroup + ", maxFacetsPerGroup=" + maxFacetsPerGroup + ", accessFields=" + accessFields
-                + ", accessFilterableFields=" + accessFilterableFields + ", resourceTypes=" + resourceTypes + ", actions="
-                + actions + ", searchStateParams=" + searchStateParams + ", resourceTypeFile=" + resourceTypeFile
-                + ", resourceTypeFolder=" + resourceTypeFolder + ", resourceTypeCollection=" + resourceTypeCollection
-                + ", defaultResourceTypes=" + defaultResourceTypes + ", defaultCollectionResourceTypes="
-                + defaultCollectionResourceTypes + ", sortTypes=" + sortTypes + ", sortDisplayNames=" + sortDisplayNames
-                + ", sortDisplayOrder=" + sortDisplayOrder + ", sortReverse=" + sortReverse + ", sortNormal=" + sortNormal
-                + "]";
+                + defaultCollectionsPerPage + ", defaultListResultsPerPage=" + defaultListResultsPerPage
+                + ", maxPerPage=" + maxPerPage + ", pagesToDisplay=" + pagesToDisplay + ", maxNeighborResults="
+                + maxNeighborResults + ", searchFieldParams=" + searchFieldParams + ", searchFieldLabels="
+                + searchFieldLabels + ", searchableFields=" + searchableFields + ", rangeSearchableFields="
+                + rangeSearchableFields + ", dateSearchableFields=" + dateSearchableFields + ", facetNames="
+                + facetNames + ", collectionBrowseFacetNames=" + collectionBrowseFacetNames
+                + ", facetSubfieldDelimiter=" + facetSubfieldDelimiter + ", facetTierDelimiter=" + facetTierDelimiter
+                + ", facetsPerGroup=" + facetsPerGroup + ", maxFacetsPerGroup=" + maxFacetsPerGroup + ", accessFields="
+                + accessFields + ", accessFilterableFields=" + accessFilterableFields + ", resourceTypes="
+                + resourceTypes + ", actions=" + actions + ", searchStateParams=" + searchStateParams
+                + ", resourceTypeFile=" + resourceTypeFile + ", resourceTypeFolder=" + resourceTypeFolder
+                + ", resourceTypeCollection=" + resourceTypeCollection + ", defaultResourceTypes="
+                + defaultResourceTypes + ", defaultCollectionResourceTypes=" + defaultCollectionResourceTypes
+                + ", sortTypes=" + sortTypes + ", sortDisplayNames=" + sortDisplayNames + ", sortDisplayOrder="
+                + sortDisplayOrder + ", sortReverse=" + sortReverse + ", sortNormal=" + sortNormal + "]";
     }
 }

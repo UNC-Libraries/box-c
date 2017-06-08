@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface SearchFacet {
 
     /**
@@ -53,8 +58,10 @@ public interface SearchFacet {
     public String getSearchValue();
 
     /**
-     * Returns the value for limiting results to this facet, formatted such that this facet type can parse it into a new SearchFacet.
-     * Used as the search value which appears in API calls, but not necessarily the format expected by the search index.
+     * Returns the value for limiting results to this facet, formatted such that
+     * this facet type can parse it into a new SearchFacet. Used as the search
+     * value which appears in API calls, but not necessarily the format expected
+     * by the search index.
      *
      * @return
      */

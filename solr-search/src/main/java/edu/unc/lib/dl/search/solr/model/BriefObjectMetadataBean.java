@@ -247,7 +247,8 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
         if (this.relationsMap == null) {
             return null;
         }
-        List<String> defaultWebDataValues = this.relationsMap.get(ContentModelHelper.CDRProperty.defaultWebData.getPredicate());
+        List<String> defaultWebDataValues = this.relationsMap.get(
+                ContentModelHelper.CDRProperty.defaultWebData.getPredicate());
         if (defaultWebDataValues == null) {
             return null;
         }

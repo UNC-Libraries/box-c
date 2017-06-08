@@ -118,7 +118,8 @@ public class Datastream {
         if (object instanceof Datastream) {
             Datastream rightHand = (Datastream)object;
             // Equal if names match and either pids are null or both match
-            return name.equals(rightHand.name) && (rightHand.owner == null || owner == null || owner.equals(rightHand.owner));
+            return name.equals(rightHand.name)
+                    && (rightHand.owner == null || owner == null || owner.equals(rightHand.owner));
         }
         if (object instanceof String) {
             String rightHandString = (String)object;

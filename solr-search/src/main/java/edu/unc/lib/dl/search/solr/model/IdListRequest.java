@@ -19,6 +19,11 @@ import java.util.List;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class IdListRequest extends SimpleIdRequest {
     private List<String> ids;
 

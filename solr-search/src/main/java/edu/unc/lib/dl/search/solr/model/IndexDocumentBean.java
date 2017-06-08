@@ -25,6 +25,11 @@ import org.apache.solr.client.solrj.beans.Field;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class IndexDocumentBean {
     protected PID pid;
     protected String id;

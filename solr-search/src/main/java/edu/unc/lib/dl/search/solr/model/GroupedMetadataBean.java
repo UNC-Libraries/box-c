@@ -23,6 +23,11 @@ import java.util.Map;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class GroupedMetadataBean implements BriefObjectMetadata {
     private final List<BriefObjectMetadataBean> items;
     private BriefObjectMetadataBean representative;
@@ -42,8 +47,9 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
             }
         }
 
-        if (this.representative == null && items.size() > 0)
+        if (this.representative == null && items.size() > 0) {
             this.representative = items.get(0);
+        }
     }
 
     public BriefObjectMetadataBean getRepresentative() {

@@ -15,10 +15,13 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class HierarchicalBrowseRequest extends SearchRequest {
     private static final long serialVersionUID = 1L;
     private int retrievalDepth;

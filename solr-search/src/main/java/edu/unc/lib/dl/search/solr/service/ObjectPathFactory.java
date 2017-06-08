@@ -62,7 +62,7 @@ public class ObjectPathFactory {
 
     @PostConstruct
     public void init() {
-        ConcurrentLinkedHashMap.Builder<String, PathCacheData> mapBuilder = new ConcurrentLinkedHashMap.Builder<String, PathCacheData>();
+        ConcurrentLinkedHashMap.Builder<String, PathCacheData> mapBuilder = new ConcurrentLinkedHashMap.Builder<>();
         mapBuilder.maximumWeightedCapacity(cacheSize);
         this.pathCache = mapBuilder.build();
 
@@ -83,19 +83,22 @@ public class ObjectPathFactory {
     }
 
     /**
-     * Retrieve the path of ancestor information leading up to and including the provided object. If no title is present,
-     * then the object will not be included in the result path, only the objects preceding it in the path will be
-     * present.
+     * Retrieve the path of ancestor information leading up to and including the
+     * provided object. If no title is present, then the object will not be
+     * included in the result path, only the objects preceding it in the path
+     * will be present.
      *
-     * The path is determined by the ancestorPath field of the BriefObjectMetadata object. If ancestorPath is not
-     * present, then null will be returned.
+     * The path is determined by the ancestorPath field of the
+     * BriefObjectMetadata object. If ancestorPath is not present, then null
+     * will be returned.
      *
      * @param bom
      * @return
      */
     public ObjectPath getPath(BriefObjectMetadata bom) {
-        if (bom.getAncestorPathFacet() == null)
+        if (bom.getAncestorPathFacet() == null) {
             return null;
+        }
 
         List<ObjectPathEntry> entries = new ArrayList<>();
 
@@ -127,8 +130,9 @@ public class ObjectPathFactory {
     }
 
     /**
-     * Returns a path data for a single entry, as identified by pid. The data is either retrieved from the cache if it is
-     * not older than the allowed time to live, or retrieved from the index
+     * Returns a path data for a single entry, as identified by pid. The data is
+     * either retrieved from the cache if it is not older than the allowed time
+     * to live, or retrieved from the index
      *
      * @param pid
      * @return
@@ -193,8 +197,9 @@ public class ObjectPathFactory {
         public long retrievedAt;
 
         public PathCacheData(String name, boolean isContainer) throws InvalidPathDataException {
-            if (name == null)
+            if (name == null) {
                 throw new InvalidPathDataException("No name value provided");
+            }
             this.name = name;
             this.isContainer = isContainer;
             retrievedAt = System.currentTimeMillis();

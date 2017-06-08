@@ -35,8 +35,9 @@ public class FacetFieldList extends ArrayList<FacetFieldObject> {
 
     public static FacetFieldObject get(FacetFieldList list, String facetName) {
         int index = indexOf(list, facetName);
-        if (index == -1)
+        if (index == -1) {
             return null;
+        }
         return list.get(index);
     }
 
@@ -60,10 +61,11 @@ public class FacetFieldList extends ArrayList<FacetFieldObject> {
 
     public static int indexOf(FacetFieldList list, String facetName, int startIndex) {
         int j = startIndex;
-        for (; j < list.size() && !list.get(j).getName().equals(facetName); j++)
-            ;
-        if (j >= list.size())
+        for (; j < list.size() && !list.get(j).getName().equals(facetName); j++) {
+        }
+        if (j >= list.size()) {
             return -1;
+        }
         return j;
     }
 

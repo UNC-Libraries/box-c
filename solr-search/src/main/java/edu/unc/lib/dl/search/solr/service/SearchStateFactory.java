@@ -261,8 +261,9 @@ public class SearchStateFactory {
 
     private String getParameter(Map<String,String[]> request, String key) {
         String[] value = request.get(key);
-        if (value != null)
+        if (value != null) {
             return value[0];
+        }
         return null;
     }
 
@@ -274,11 +275,13 @@ public class SearchStateFactory {
         Iterator<Entry<String, String[]>> paramIt = request.entrySet().iterator();
         while (paramIt.hasNext()) {
             Entry<String, String[]> param = paramIt.next();
-            if (param.getValue().length == 0)
+            if (param.getValue().length == 0) {
                 continue;
+            }
             String key = searchSettings.searchFieldKey(param.getKey());
-            if (key == null)
+            if (key == null) {
                 continue;
+            }
             String value;
             try {
                 value = URLDecoder.decode(param.getValue()[0], "UTF-8");
@@ -353,8 +356,9 @@ public class SearchStateFactory {
         } else {
             String resourceArray[] = parameter.split(",");
             for (String resourceType: resourceArray) {
-                if (resourceType != null && resourceType.trim().length() > 0)
+                if (resourceType != null && resourceType.trim().length() > 0) {
                     resourceTypes.add(resourceType);
+                }
             }
         }
         searchState.setResourceTypes(resourceTypes);
@@ -396,8 +400,9 @@ public class SearchStateFactory {
             String[] sortParts = parameter.split(",");
             if (sortParts.length > 0) {
                 searchState.setSortType(sortParts[0]);
-                if (sortParts.length == 2)
+                if (sortParts.length == 2) {
                     searchState.setSortNormalOrder(!sortParts[1].equals(searchSettings.sortReverse));
+                }
             }
         }
 
@@ -408,8 +413,9 @@ public class SearchStateFactory {
             String facetArray[] = parameter.split(",");
             for (String facet: facetArray) {
                 String facetKey = searchSettings.searchFieldKey(facet);
-                if (facetKey != null && searchSettings.getFacetNames().contains(facetKey))
+                if (facetKey != null && searchSettings.getFacetNames().contains(facetKey)) {
                     facetsToRetrieve.add(searchSettings.searchFieldKey(facet));
+                }
             }
             searchState.setFacetsToRetrieve(facetsToRetrieve);
         }
@@ -463,18 +469,21 @@ public class SearchStateFactory {
 
         parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.CONTENT_TYPE.name()));
         if (parameter != null && parameter.length() > 0) {
-            MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(SearchFieldKeys.CONTENT_TYPE.name(), parameter);
+            MultivaluedHierarchicalFacet hierFacet = new MultivaluedHierarchicalFacet(
+                    SearchFieldKeys.CONTENT_TYPE.name(), parameter);
             searchState.getFacets().put(SearchFieldKeys.CONTENT_TYPE.name(), hierFacet);
         }
 
         //Store date added.
         SearchState.RangePair dateAdded = new SearchState.RangePair();
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_ADDED.name()) + "Start");
+        parameter = getParameter(request, searchSettings.searchFieldParam(
+                SearchFieldKeys.DATE_ADDED.name()) + "Start");
         if (parameter != null && parameter.length() > 0) {
             dateAdded.setLeftHand(parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_ADDED.name()) + "End");
+        parameter = getParameter(request, searchSettings.searchFieldParam(
+                SearchFieldKeys.DATE_ADDED.name()) + "End");
         if (parameter != null && parameter.length() > 0) {
             dateAdded.setRightHand(parameter);
         }
@@ -485,12 +494,14 @@ public class SearchStateFactory {
 
         //Store date added.
         SearchState.RangePair dateCreated = new SearchState.RangePair();
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_CREATED.name()) + "Start");
+        parameter = getParameter(request, searchSettings.searchFieldParam(
+                SearchFieldKeys.DATE_CREATED.name()) + "Start");
         if (parameter != null && parameter.length() > 0) {
             dateCreated.setLeftHand(parameter);
         }
 
-        parameter = getParameter(request, searchSettings.searchFieldParam(SearchFieldKeys.DATE_CREATED.name()) + "End");
+        parameter = getParameter(request, searchSettings.searchFieldParam(
+                SearchFieldKeys.DATE_CREATED.name()) + "End");
         if (parameter != null && parameter.length() > 0) {
             dateCreated.setRightHand(parameter);
         }
