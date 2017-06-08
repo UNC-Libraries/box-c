@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -131,18 +131,18 @@ public class DocumentIndexingPackage {
 	public void setDefaultWebData(String defaultWebData) {
 		this.defaultWebData = defaultWebData;
 	}
-
+	@Deprecated
 	public Document getFoxml() throws IndexingException {
 		if (foxml == null) {
 			foxml = loader.loadFOXML(this);
 		}
 		return foxml;
 	}
-
+	@Deprecated
 	public void setFoxml(Document foxml) {
 		this.foxml = foxml;
 	}
-	
+	@Deprecated
 	public boolean hasFoxml() {
 		return foxml != null;
 	}

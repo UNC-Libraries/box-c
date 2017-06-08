@@ -24,3 +24,4 @@ static/css/cdr_access.css
 dump.rdb
 authorized_keys
 staging-areas
+*.iml

@@ -38,62 +38,64 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  * @author lfarrell
  *
  */
-public class SetPathFilter extends AbstractIndexDocumentFilter {
-	private static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
-	
-	private static final int COLLECTION_DEPTH = 2;
-	private static final int UNIT_DEPTH = 1;
-	
-	private ContentPathFactory pathFactory;
+public class SetPathFilter implements IndexDocumentFilter {
+    private static final Logger log = LoggerFactory.getLogger(SetPathFilter.class);
 
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-	    IndexDocumentBean idb = dip.getDocument();
-	    List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
-	    
-	    if (pids.size() == 0) {
+    private static final int COLLECTION_DEPTH = 2;
+    private static final int UNIT_DEPTH = 1;
+
+    private ContentPathFactory pathFactory;
+
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        log.debug("Performing set path filter for {}", dip.getPid());
+
+        IndexDocumentBean idb = dip.getDocument();
+        List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
+
+        if (pids.size() == 0) {
             throw new IndexingException("Object " + dip.getPid() + " has no known ancestors");
         }
-	    
-	    List<String> ancestorPath = new ArrayList<>();
-	    
-	    int i = 1;
-	    for (PID ancestorPid : pids) {
-	        ancestorPath.add(i + "," + ancestorPid.getId());
-	        i++;
-	    }
-	    
-	    idb.setAncestorPath(ancestorPath);
-	    
-	    // TODO
-	    // idb.setAncestorIds(ancestorIds);
 
-	    if (pids.size() > COLLECTION_DEPTH) {
-	        idb.setParentCollection(pids.get(COLLECTION_DEPTH).getId());
-	    }
-	    
-	    if (pids.size() > UNIT_DEPTH) {
-	        idb.setParentUnit(pids.get(UNIT_DEPTH).getId());
-	    }
+        List<String> ancestorPath = new ArrayList<>();
 
-	    ContentObject contentObject = dip.getContentObject();
-	    
-	    String rollup;
-	    
-	    if (contentObject instanceof FileObject) {
-	        rollup = pids.get(pids.size() - 1).getId();
-	    } else {
-	        rollup = contentObject.getPid().getId();
-	    }
+        int i = 1;
+        for (PID ancestorPid : pids) {
+            ancestorPath.add(i + "," + ancestorPid.getId());
+            i++;
+        }
 
-	    idb.setRollup(rollup);
-	}
+        idb.setAncestorPath(ancestorPath);
 
-	/**
-	 * Set path factory
-	 * 
-	 * @param pathFactory
-	 */
+        // TODO
+        // idb.setAncestorIds(ancestorIds);
+
+        if (pids.size() > COLLECTION_DEPTH) {
+            idb.setParentCollection(pids.get(COLLECTION_DEPTH).getId());
+        }
+
+        if (pids.size() > UNIT_DEPTH) {
+            idb.setParentUnit(pids.get(UNIT_DEPTH).getId());
+        }
+
+        ContentObject contentObject = dip.getContentObject();
+
+        String rollup;
+
+        if (contentObject instanceof FileObject) {
+            rollup = pids.get(pids.size() - 1).getId();
+        } else {
+            rollup = contentObject.getPid().getId();
+        }
+
+        idb.setRollup(rollup);
+    }
+
+    /**
+     * Set path factory
+     *
+     * @param pathFactory
+     */
     public void setPathFactory(ContentPathFactory pathFactory) {
         this.pathFactory = pathFactory;
     }
