@@ -15,8 +15,13 @@
  */
 package edu.unc.lib.dl.cdr.services.fixity;
 
+/**
+ * 
+ * @author mdaines
+ *
+ */
 public abstract class FixityLogTaskFactory {
 
-	public abstract FixityLogTask createTask();
+     public abstract FixityLogTask createTask();
 
 }

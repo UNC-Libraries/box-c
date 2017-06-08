@@ -16,74 +16,81 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+/**
+ * 
+ * @author mdaines
+ *
+ */
 public class WorkerDaemon implements Daemon, WorkerListener {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(WorkerDaemon.class);
-	private AbstractApplicationContext appContext;
-	
-	public WorkerDaemon() {
-	}
 
-	@Override
-	public void init(DaemonContext context) throws DaemonInitException, Exception {
-		LOG.debug("Daemon initialized with arguments {}.", context.getArguments());
-	}
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerDaemon.class);
+    private AbstractApplicationContext appContext;
 
-	@Override
-	public void start() throws Exception {
-		LOG.info("Starting the services worker daemon");
+    public WorkerDaemon() {
+    }
 
-		if (appContext == null) {
-			appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
-			appContext.registerShutdownHook();
-		} else {
-			appContext.refresh();
-		}
-		
-		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
-		for (WorkerPool workerPool : workerPools.values()) {
-			workerPool.getWorkerEventEmitter().addListener(this);
-			workerPool.run();
-		}
-	}
+    @Override
+    public void init(DaemonContext context) throws DaemonInitException, Exception {
+        LOG.debug("Daemon initialized with arguments {}.", context.getArguments());
+    }
 
-	@Override
-	public void stop() throws Exception {
-		LOG.info("Stopping the services worker daemon");
-		
-		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
-		for (WorkerPool workerPool : workerPools.values()) {
-			workerPool.end(true);
-		}
-		appContext.stop();
-	}
+    @Override
+    public void start() throws Exception {
+        LOG.info("Starting the services worker daemon");
 
-	@Override
-	public void destroy() {
-		LOG.info("Destroying the services worker daemon");
-	}
-	
-	private static final String onEventLogMessage = "onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}";
-	
-	@Override
-	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
-		if (event == null || event == WorkerEvent.WORKER_POLL) {
-			return;
-		}
-		
-		if (t != null) {
-			LOG.error("Throwable caused worker event " + event, t);
-		}
-		
-		Object[] params = new Object[] { event, worker, queue, job, runner, result, t };
-		
-		if (event == WorkerEvent.WORKER_ERROR || event == WorkerEvent.JOB_FAILURE) {
-			LOG.error(onEventLogMessage, params);
-		} else if (event == WorkerEvent.WORKER_START || event == WorkerEvent.WORKER_STOP) {
-			LOG.info(onEventLogMessage, params);
-		} else {
-			LOG.debug(onEventLogMessage, params);
-		}
-	}
+        if (appContext == null) {
+            appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
+            appContext.registerShutdownHook();
+        } else {
+            appContext.refresh();
+        }
+
+        Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
+        for (WorkerPool workerPool : workerPools.values()) {
+            workerPool.getWorkerEventEmitter().addListener(this);
+            workerPool.run();
+        }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        LOG.info("Stopping the services worker daemon");
+
+        Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
+        for (WorkerPool workerPool : workerPools.values()) {
+            workerPool.end(true);
+        }
+        appContext.stop();
+    }
+
+    @Override
+    public void destroy() {
+        LOG.info("Destroying the services worker daemon");
+    }
+
+    private static final String onEventLogMessage = "onEvent event={},"
+            + " worker={}, queue={}, job={}, runner={}, result={}, t={}";
+
+    @Override
+    public void onEvent(WorkerEvent event, Worker worker, String queue, Job job,
+            Object runner, Object result, Throwable t) {
+        if (event == null || event == WorkerEvent.WORKER_POLL) {
+            return;
+        }
+
+        if (t != null) {
+            LOG.error("Throwable caused worker event " + event, t);
+        }
+
+        Object[] params = new Object[] { event, worker, queue, job, runner, result, t };
+
+        if (event == WorkerEvent.WORKER_ERROR || event == WorkerEvent.JOB_FAILURE) {
+            LOG.error(onEventLogMessage, params);
+        } else if (event == WorkerEvent.WORKER_START || event == WorkerEvent.WORKER_STOP) {
+            LOG.info(onEventLogMessage, params);
+        } else {
+            LOG.debug(onEventLogMessage, params);
+        }
+    }
 
 }

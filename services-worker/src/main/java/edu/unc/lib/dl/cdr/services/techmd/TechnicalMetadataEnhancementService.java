@@ -31,29 +31,29 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
  * 
  */
 public class TechnicalMetadataEnhancementService extends AbstractDatastreamEnhancementService {
-	public static final String enhancementName = "Technical Metadata Extraction";
+    public static final String enhancementName = "Technical Metadata Extraction";
 
-	public TechnicalMetadataEnhancementService() {
-		super();
-	}
-	
-	public void init() {
-		mimetypePattern = null;
-		derivativeDatastream = Datastream.MD_TECHNICAL.getName();
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#getEnhancementTask (edu.unc.lib.dl.fedora.PID)
-	 */
-	@Override
-	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new TechnicalMetadataEnhancement(this, message);
-	}
+    public TechnicalMetadataEnhancementService() {
+        super();
+    }
 
-	@Override
-	public String getName() {
-		return enhancementName;
-	}
+    public void init() {
+        mimetypePattern = null;
+        derivativeDatastream = Datastream.MD_TECHNICAL.getName();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see edu.unc.lib.dl.cdr.services.ObjectEnhancementService#getEnhancementTask (edu.unc.lib.dl.fedora.PID)
+     */
+    @Override
+    public Enhancement<Element> getEnhancement(EnhancementMessage message) {
+        return new TechnicalMetadataEnhancement(this, message);
+    }
+
+    @Override
+    public String getName() {
+        return enhancementName;
+    }
 }

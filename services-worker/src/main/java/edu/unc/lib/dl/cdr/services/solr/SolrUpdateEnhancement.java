@@ -45,63 +45,65 @@ import edu.unc.lib.dl.util.IndexingActionType;
  * @author bbpennel
  */
 public class SolrUpdateEnhancement extends Enhancement<Element> {
-	private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancement.class);
-	SolrUpdateEnhancementService service = null;
-	EnhancementMessage message;
+    private static final Logger LOG = LoggerFactory.getLogger(SolrUpdateEnhancement.class);
+    SolrUpdateEnhancementService service = null;
+    EnhancementMessage message;
 
-	private final SolrSearchService searchService;
+    private final SolrSearchService searchService;
 
-	@Override
-	public Element call() throws EnhancementException {
-		Element result = null;
-		LOG.debug("Called Solr update service for {}", pid.getPid());
+    @Override
+    public Element call() throws EnhancementException {
+        Element result = null;
+        LOG.debug("Called Solr update service for {}", pid.getPid());
 
-		IndexingActionType action = ADD;
+        IndexingActionType action = ADD;
 
-		try {
-			List<String> completedServices = message.getCompletedServices();
-			// Perform a single item update
-			if (completedServices.contains(FullTextEnhancementService.class.getName())) {
-				action = UPDATE_FULL_TEXT;
-			} else if (completedServices.contains(TechnicalMetadataEnhancementService.class.getName())
-					|| completedServices.contains(ImageEnhancementService.class.getName())
-					|| completedServices.contains(ThumbnailEnhancementService.class.getName())) {
+        try {
+            List<String> completedServices = message.getCompletedServices();
+            // Perform a single item update
+            if (completedServices.contains(FullTextEnhancementService.class.getName())) {
+                action = UPDATE_FULL_TEXT;
+            } else if (completedServices.contains(TechnicalMetadataEnhancementService.class.getName())
+                    || completedServices.contains(ImageEnhancementService.class.getName())
+                    || completedServices.contains(ThumbnailEnhancementService.class.getName())) {
 
-				action = UPDATE_DATASTREAMS;
+                action = UPDATE_DATASTREAMS;
 
-				// Check if this object is the default web object for another item, and update that item's datastreams if so
-				List<PID> dwoFor = service.getTripleStoreQueryService().fetchByPredicateAndLiteral(
-						defaultWebObject.toString(), pid);
-				if (dwoFor != null && dwoFor.size() > 0) {
-					for (PID dwoPID : dwoFor) {
-						if (searchService.exists(dwoPID.getPid())) {
-							service.getMessageDirector().direct(new SolrUpdateRequest(dwoPID.getPid(), UPDATE_DATASTREAMS));
-						}
-					}
-				}
-			}
+                // Check if this object is the default web object for another item, and update
+                // that item's datastreams if so
+                List<PID> dwoFor = service.getTripleStoreQueryService().fetchByPredicateAndLiteral(
+                        defaultWebObject.toString(), pid);
+                if (dwoFor != null && dwoFor.size() > 0) {
+                    for (PID dwoPID : dwoFor) {
+                        if (searchService.exists(dwoPID.getPid())) {
+                            service.getMessageDirector().direct(new SolrUpdateRequest(dwoPID.getPid(),
+                                    UPDATE_DATASTREAMS));
+                        }
+                    }
+                }
+            }
 
-			long start = System.currentTimeMillis();
-			// Make sure the record is in solr before trying to do a partial update
-			if (!action.equals(ADD) && !searchService.exists(pid.getPid())) {
-				LOG.debug("Partial update for {} is not applicable, reverting to full update", pid.getPid());
-				action = ADD;
-			}
-			LOG.info("Checked for record in {}", (System.currentTimeMillis() - start));
-		} catch (SolrServerException e) {
-			LOG.error("Failed to check for the existense of {}", pid.getPid(), e);
-		}
+            long start = System.currentTimeMillis();
+            // Make sure the record is in solr before trying to do a partial update
+            if (!action.equals(ADD) && !searchService.exists(pid.getPid())) {
+                LOG.debug("Partial update for {} is not applicable, reverting to full update", pid.getPid());
+                action = ADD;
+            }
+            LOG.info("Checked for record in {}", (System.currentTimeMillis() - start));
+        } catch (SolrServerException e) {
+            LOG.error("Failed to check for the existense of {}", pid.getPid(), e);
+        }
 
-		SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
-		service.getMessageDirector().direct(updateRequest);
+        SolrUpdateRequest updateRequest = new SolrUpdateRequest(pid.getPid(), action);
+        service.getMessageDirector().direct(updateRequest);
 
-		return result;
-	}
+        return result;
+    }
 
-	public SolrUpdateEnhancement(SolrUpdateEnhancementService service, EnhancementMessage message) {
-		super(message.getPid());
-		this.service = service;
-		this.message = message;
-		this.searchService = service.getSolrSearchService();
-	}
+    public SolrUpdateEnhancement(SolrUpdateEnhancementService service, EnhancementMessage message) {
+        super(message.getPid());
+        this.service = service;
+        this.message = message;
+        this.searchService = service.getSolrSearchService();
+    }
 }
