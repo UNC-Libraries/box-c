@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,233 +15,192 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
-import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
-public class SetAccessControlFilterTest extends Assert {
-//	
-//	@Mock
-//	private DocumentIndexingPackageDataLoader loader;
-//	private DocumentIndexingPackageFactory factory;
-//	
-//	@Mock
-//	private ObjectAccessControlsBean aclBean;
-//	
-//	@Before
-//	public void setup() throws Exception {
-//		initMocks(this);
-//		
-//		factory = new DocumentIndexingPackageFactory();
-//		factory.setDataLoader(loader);
-//		
-//		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
-//	}
-//
-//	@Test
-//	public void noAdminGroups() throws Exception {
-//		when(aclBean.getGroupsByPermission(eq(Permission.viewDescription)))
-//				.thenReturn(new HashSet<>(Arrays.asList("patron")));
-//		
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		filter.filter(dip);
-//		
-//		assertEquals(1, dip.getDocument().getReadGroup().size());
-//		assertTrue(dip.getDocument().getReadGroup().contains("patron"));
-//		
-//		assertNull(dip.getDocument().getAdminGroup());
-//	}
-//
-//	@Test
-//	public void allowIndexingNo() throws Exception {
-//		Map<String, List<String>> triples = new HashMap<>();
-//		triples.put(CDRProperty.inheritPermissions.toString(), Arrays.asList("false"));
-//		triples.put(CDRProperty.allowIndexing.toString(), Arrays.asList("no"));
-//		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
-//		
-//		when(aclBean.getGroupsByPermission(eq(Permission.viewDescription)))
-//				.thenReturn(new HashSet<>(Arrays.asList("curator", "patron")));
-//		when(aclBean.getGroupsByPermission(eq(Permission.viewAdminUI)))
-//				.thenReturn(new HashSet<>(Arrays.asList("curator")));
-//		
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		
-//		filter.filter(dip);
-//		
-//		assertEquals(0, dip.getDocument().getReadGroup().size());
-//		
-//		assertEquals(1, dip.getDocument().getAdminGroup().size());
-//		assertTrue(dip.getDocument().getAdminGroup().contains("curator"));
-//	}
-//
-//	@Test
-//	public void unpublishedFromAclBean() throws Exception {
-//		when(aclBean.isAncestorsPublished()).thenReturn(true);
-//		when(aclBean.getIsPublished()).thenReturn(false);
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		
-//		filter.filter(dip);
-//
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertFalse(dip.getIsPublished());
-//		assertFalse(idb.getStatus().contains("Published"));
-//		assertTrue(idb.getStatus().contains("Unpublished"));
-//		assertFalse(idb.getStatus().contains("Parent Unpublished"));
-//	}
-//	
-//	@Test
-//	public void unpublishedFromParentAclBean() throws Exception {
-//		when(aclBean.isAncestorsPublished()).thenReturn(false);
-//		when(aclBean.getIsPublished()).thenReturn(true);
-//		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
-//		DocumentIndexingPackage parentDip = factory.createDip("uuid:parent");
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		dip.setParentDocument(parentDip);
-//		
-//		filter.filter(dip);
-//
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertFalse(dip.getIsPublished());
-//		assertFalse(idb.getStatus().contains("Published"));
-//		assertFalse(idb.getStatus().contains("Unpublished"));
-//		assertTrue(idb.getStatus().contains("Parent Unpublished"));
-//	}
-//	
-//	@Test
-//	public void publishedFromBothAclBean() throws Exception {
-//		Map<String,Collection<String>> roles = new HashMap<String,Collection<String>>();
-//		roles.put(UserRole.patron.toString(), Arrays.asList("public"));
-//		roles.put(UserRole.curator.toString(), Arrays.asList("curator"));
-//		
-//		ObjectAccessControlsBean parentAclBean = new ObjectAccessControlsBean(new PID("uuid:parent"), roles, null, new ArrayList<String>(), Arrays.asList("Published"), null);
-//		DocumentIndexingPackage parentDip = factory.createDip("uuid:parent");
-//		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(parentAclBean);
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		dip.setParentDocument(parentDip);
-//		
-//		filter.filter(dip);
-//
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertTrue(dip.getIsPublished());
-//		assertTrue(idb.getStatus().contains("Published"));
-//		assertFalse(idb.getStatus().contains("Unpublished"));
-//		assertFalse(idb.getStatus().contains("Parent Unpublished"));
-//		assertTrue(idb.getReadGroup().contains("public"));
-//		assertTrue(idb.getReadGroup().contains("curator"));
-//	}
-//	
-//	@Test
-//	public void embargoedStatus() throws Exception {
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		Map<String, List<String>> triples = new HashMap<>();
-//		triples.put(CDRProperty.embargoUntil.toString(), Arrays.asList("2074-02-03T00:00:00"));
-//		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
-//
-//		DocumentIndexingPackage parentCollection = factory.createDip("uuid:collection");
-//		parentCollection.setIsPublished(true);
-//		dip.setParentDocument(parentCollection);
-//
-//		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), new HashMap<String, List<String>>(), null, new ArrayList<String>(), null, null);
-//		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		filter.filter(dip);
-//
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertTrue(dip.getIsPublished());
-//		assertTrue(idb.getStatus().contains("Embargoed"));
-//	}
-//	
-//	@Test
-//	public void rolesAssigned() throws Exception {
-//		Map<String,List<String>> triples = new HashMap<>();
-//		triples.put(UserRole.patron.toString(), Arrays.asList("public"));
-//		triples.put(UserRole.curator.toString(), Arrays.asList("curator"));
-//		triples.put(CDRProperty.inheritPermissions.toString(), Arrays.asList("false"));
-//		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
-//		
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//
-//		DocumentIndexingPackage parentCollection = factory.createDip("uuid:collection");
-//		parentCollection.setIsPublished(true);
-//		dip.setParentDocument(parentCollection);
-//
-//		ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), new HashMap<String, List<String>>(), null, new ArrayList<String>(), null, null);
-//		when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		filter.filter(dip);
-//
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertTrue(dip.getIsPublished());
-//		assertTrue(idb.getStatus().contains("Roles Assigned"));
-//		assertTrue(idb.getStatus().contains("Not Inheriting Roles"));
-//	}
-//	
-//	@Test
-//	public void nonActiveFromAclBean() throws Exception {
-//		when(aclBean.getGroupsByPermission(eq(Permission.viewDescription)))
-//				.thenReturn(new HashSet<>(Arrays.asList("curator", "patron")));
-//		when(aclBean.getGroupsByPermission(eq(Permission.viewAdminUI)))
-//				.thenReturn(new HashSet<>(Arrays.asList("curator")));
-//		when(aclBean.getIsActive()).thenReturn(false);
-//		when(aclBean.getIsPublished()).thenReturn(true);
-//		when(aclBean.isAncestorsPublished()).thenReturn(true);
-//		
-//		//ObjectAccessControlsBean aclBean = new ObjectAccessControlsBean(new PID("uuid:item"), roles, null, new ArrayList<String>(), null, Arrays.asList("Deleted"));
-//		//when(loader.loadAccessControlBean(any(DocumentIndexingPackage.class))).thenReturn(aclBean);
-//		
-//		SetAccessControlFilter filter = new SetAccessControlFilter();
-//		DocumentIndexingPackage dip = factory.createDip("uuid:item");
-//		filter.filter(dip);
-//
-//		IndexDocumentBean idb = dip.getDocument();
-//
-//		assertTrue(dip.getIsDeleted());
-//		assertTrue(idb.getStatus().contains("Published"));
-//		assertFalse(idb.getReadGroup().contains("public"));
-//		assertTrue(idb.getReadGroup().contains("curator"));
-//	}
+/**
+ * 
+ * @author bbpennel
+ *
+ */
+public class SetAccessControlFilterTest {
+
+    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+
+    private static final String PRINC1 = "group1";
+    private static final String PRINC2 = "group2";
+
+    @Mock
+    private DocumentIndexingPackage dip;
+    @Mock
+    private IndexDocumentBean idb;
+    @Mock
+    private InheritedAclFactory aclFactory;
+
+    @Mock
+    private PID pid;
+
+    @Captor
+    private ArgumentCaptor<List<String>> listCaptor;
+
+    private Map<String, Set<String>> principalRoles;
+
+    private SetAccessControlFilter filter;
+
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
+
+        when(pid.getPid()).thenReturn(PID_STRING);
+
+        when(dip.getDocument()).thenReturn(idb);
+        when(dip.getPid()).thenReturn(pid);
+
+        principalRoles = new HashMap<>();
+        when(aclFactory.getPrincipalRoles(any(PID.class))).thenReturn(principalRoles);
+
+        filter = new SetAccessControlFilter();
+        filter.setAclFactory(aclFactory);
+    }
+
+    @Test
+    public void testHasPatronPrincipal() throws Exception {
+        addPrincipalRoles(PRINC1, UserRole.canViewOriginals);
+
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        assertTrue("Patron principal must not have admin viewing rights",
+                listCaptor.getValue().isEmpty());
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("Patron principal must have patron viewing rights",
+                listCaptor.getValue(), PRINC1);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canViewOriginals.name() + "|" + PRINC1));
+    }
+
+    @Test
+    public void testHasStaffPrincipal() throws Exception {
+        addPrincipalRoles(PRINC1, UserRole.canManage);
+
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        assertPrincipalsPresent("Staff principal must have admin viewing rights",
+                listCaptor.getValue(), PRINC1);
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("Staff principal must have patron viewing rights",
+                listCaptor.getValue(), PRINC1);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canManage.name() + "|" + PRINC1));
+    }
+
+    @Test
+    public void testHasNoPrincipals() throws Exception {
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        assertTrue("No admin rights should be granted",
+                listCaptor.getValue().isEmpty());
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertTrue("No read rights should be granted",
+                listCaptor.getValue().isEmpty());
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertTrue("No role assignments should be present",
+                listCaptor.getValue().isEmpty());
+    }
+
+    @Test
+    public void testHasMultiplePrincipals() throws Exception {
+        addPrincipalRoles(PRINC1, UserRole.canViewOriginals);
+        addPrincipalRoles(PRINC2, UserRole.canManage);
+
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        assertPrincipalsPresent("Only staff principal should be granted admin rights",
+                listCaptor.getValue(), PRINC2);
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("Both principals should be granted read rights",
+                listCaptor.getValue(), PRINC1, PRINC2);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canViewOriginals.name() + "|" + PRINC1));
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canManage.name() + "|" + PRINC2));
+    }
+
+    @Test
+    public void testPrincipalHasMultipleRoles() throws Exception {
+        addPrincipalRoles(PRINC1, UserRole.canViewOriginals,
+                UserRole.canDescribe, UserRole.canManage);
+
+        filter.filter(dip);
+
+        verify(idb).setAdminGroup(listCaptor.capture());
+        assertPrincipalsPresent("Principal should only appear once in admin rights",
+                listCaptor.getValue(), PRINC1);
+
+        verify(idb).setReadGroup(listCaptor.capture());
+        assertPrincipalsPresent("Principal should only appear once in read rights",
+                listCaptor.getValue(), PRINC1);
+
+        verify(idb).setRoleGroup(listCaptor.capture());
+        assertEquals("Principal should appear with each role granted",
+                3, listCaptor.getValue().size());
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canViewOriginals.name() + "|" + PRINC1));
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canManage.name() + "|" + PRINC1));
+        assertTrue(listCaptor.getValue().contains(
+                UserRole.canDescribe.name() + "|" + PRINC1));
+    }
+
+    private void assertPrincipalsPresent(String message, List<String> values, String... principals) {
+        assertEquals(message, principals.length, values.size());
+        for (String principal : principals) {
+            assertTrue(values.contains(principal));
+        }
+    }
+
+    private void addPrincipalRoles(String principal, UserRole...roles) {
+        Set<String> roleStrings = Arrays.stream(roles)
+                .map(r -> r.name())
+                .collect(Collectors.toSet());
+
+        principalRoles.put(principal, roleStrings);
+    }
 }

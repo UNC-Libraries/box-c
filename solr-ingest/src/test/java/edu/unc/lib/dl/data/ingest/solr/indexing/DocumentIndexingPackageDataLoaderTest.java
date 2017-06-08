@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,227 +15,103 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.InputStream;
+import java.util.UUID;
 
-import org.apache.commons.io.IOUtils;
-import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
-import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.Datastream;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
-public class DocumentIndexingPackageDataLoaderTest extends Assert {
-
-	@Mock
-	private ManagementClient managementClient;
-	@Mock
-	private AccessClient accessClient;
-	@Mock
-	private AccessControlService aclLookup;
-	@Mock
-	private ObjectAccessControlsBean aclBean;
-	@Mock
-	private TripleStoreQueryService tsqs;
-	@Mock
-	private Datastream datastream;
-	@Mock
-	private MIMETypedStream datastreamData;
-	@Mock
-	private Document mockFoxml;
+/**
+ * 
+ * @author bbpennel
+ *
+ */
+public class DocumentIndexingPackageDataLoaderTest {
 	
-	private DocumentIndexingPackageFactory factory;
-	private DocumentIndexingPackageDataLoader loader;
+	private DocumentIndexingPackageDataLoader dataLoader;
 	
 	@Mock
-	private DocumentIndexingPackage parentDip;
-	
+	private Repository repository;
+	@Mock
 	private DocumentIndexingPackage dip;
-
+	@Mock
+	private PID pid;
+	
+	@Mock
+	private ContentObject contentObj;
+	@Mock
+	private BinaryObject modsBinary;
+	
 	@Before
-	public void setup() {
+	public void setup() throws Exception {
 		initMocks(this);
 		
-		factory = new DocumentIndexingPackageFactory();
-		loader = new DocumentIndexingPackageDataLoader();
-		loader.setAccessClient(accessClient);
-		loader.setManagementClient(managementClient);
-		loader.setAccessControlService(aclLookup);
-		loader.setTsqs(tsqs);
-		loader.setFactory(factory);
-		factory.setDataLoader(loader);
+		dataLoader = new DocumentIndexingPackageDataLoader();
+		dataLoader.setRepository(repository);
+		dataLoader.init();
 		
-		dip = factory.createDip("uuid:test");
+		when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
+		when(dip.getPid()).thenReturn(pid);
 	}
 	
 	@Test
-	public void getFoxmlTest() throws Exception {
-		when(managementClient.getObjectXML(any(PID.class))).thenReturn(mockFoxml);
+	public void testLoadMods() throws Exception {
+		InputStream modsStream = new FileInputStream(new File(
+				"src/test/resources/datastream/inventoryMods.xml"));
 		
-		Document foxml = dip.getFoxml();
-		dip.getFoxml();
+		when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+		when(contentObj.getMODS()).thenReturn(modsBinary);
+		when(modsBinary.getBinaryStream()).thenReturn(modsStream);
 		
-		assertEquals(foxml, mockFoxml);
-		verify(managementClient).getObjectXML(any(PID.class));
-	}
-
-	@Test
-	public void getFoxmlRetryTest() throws Exception {
-		when(managementClient.getObjectXML(any(PID.class))).thenReturn(null, mockFoxml);
+		Element modsElement = dataLoader.loadMods(dip);
 		
-		Document foxml = dip.getFoxml();
+		assertNotNull(modsElement);
+		assertEquals("mods", modsElement.getName());
 		
-		assertEquals(foxml, mockFoxml);
-		verify(managementClient, times(2)).getObjectXML(any(PID.class));
-	}
-
-	@Test
-	public void getAclBeanTest() throws Exception {
-		
-		when(aclLookup.getObjectAccessControls(any(PID.class))).thenReturn(aclBean);
-		
-		ObjectAccessControlsBean resultAcl = dip.getAclBean();
-		
-		assertEquals(resultAcl, aclBean);
-		verify(aclLookup).getObjectAccessControls(any(PID.class));
-	}
-
-	@Test
-	public void getAclBeanFromParentTest() throws Exception {
-		aclBean = new ObjectAccessControlsBeanImpl(new PID("uuid:parent"), Collections.<String>emptyList());
-		
-		when(parentDip.hasAclBean()).thenReturn(true);
-		when(parentDip.getAclBean()).thenReturn(aclBean);
-		dip.setParentDocument(parentDip);
-		
-		ObjectAccessControlsBean resultAcl = dip.getAclBean();
-		
-		assertNotNull("Resulting bean should be present", resultAcl);
-		assertNotEquals("But should also not be the parent's bean", resultAcl, aclBean);
-		verify(aclLookup, never()).getObjectAccessControls(any(PID.class));
-	}
-
-	@Test
-	public void getTriplesFromFoxmlTest() throws Exception {
-		dip.setFoxml(getDocument("src/test/resources/foxml/folderSmall.xml"));
-		
-		Map<String, List<String>> triples = dip.getTriples();
-		
-		assertTrue(triples.size() > 0);
-		assertTrue("Check that fedora properties are extracted",
-				triples.containsKey(FedoraProperty.state.toString()));
-		assertEquals("Check that datastreams appear",
-				5, triples.get(FedoraProperty.disseminates.toString()).size());
-		
-		List<String> containsRels = triples.get(Relationship.contains.toString());
-		assertTrue(containsRels.size() > 5);
-		assertTrue("Check that relations get populated",
-				containsRels.contains("info:fedora/uuid:0f7343da-2c6f-48e2-9a2c-225e37cff2f6"));
-		assertEquals("yes", dip.getFirstTriple(CDRProperty.allowIndexing.toString()));
-		
-		verify(tsqs, never()).fetchAllTriples(any(PID.class));
+		verify(repository).getContentObject(any(PID.class));
 	}
 	
 	@Test
-	public void getTriplesTest() throws Exception {
-		Map<String, List<String>> tripleResponse = new HashMap<>();
-		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(tripleResponse);
+	public void testLoadNoMods() throws Exception {
 		
-		Map<String, List<String>> triples = dip.getTriples();
-		// Invoke multiple times
-		dip.getTriples();
+		when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+		when(contentObj.getMODS()).thenReturn(null);
 		
-		assertNotNull(triples);
-		// Check that only called once
-		verify(tsqs).fetchAllTriples(any(PID.class));
+		Element modsElement = dataLoader.loadMods(dip);
+		
+		assertNull(modsElement);
+		
+		verify(repository).getContentObject(any(PID.class));
 	}
 	
-	@Test
-	public void getMODSFromFoxmlTest() throws Exception {
-		dip.setFoxml(getDocument("src/test/resources/foxml/aggregateSplitDepartments.xml"));
+	@Test(expected = IndexingException.class)
+	public void testLoadBadMods() throws Exception {
+		InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
 		
-		Element mods = dip.getMods();
+		when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+		when(contentObj.getMODS()).thenReturn(modsBinary);
+		when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
 		
-		assertNotNull(mods);
-		assertEquals("mods", mods.getName());
-		verify(managementClient, never()).getDatastream(any(PID.class), anyString());
-	}
-	
-	@Test
-	public void getMDContentsTest() throws Exception {
-		when(managementClient.getDatastream(any(PID.class), anyString())).thenReturn(datastream);
-		
-		byte[] mdContentsBytes = IOUtils.toByteArray(
-				new FileInputStream(new File("src/test/resources/datastream/mdContents.xml")));
-		when(datastreamData.getStream()).thenReturn(mdContentsBytes);
-		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(datastreamData);
-		
-		Element mdContents = dip.getMdContents();
-		
-		verify(accessClient).getDatastreamDissemination(any(PID.class), anyString(), anyString());
-		assertNotNull(mdContents);
-		assertEquals("structMap", mdContents.getName());
-	}
-	
-	@Test
-	public void getMDContentsNotFoundTest() throws Exception {
-		when(managementClient.getDatastream(any(PID.class), anyString())).thenReturn(null);
-		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(datastreamData);
-		
-		Element mdContents = dip.getMdContents();
-		
-		verify(accessClient, never()).getDatastreamDissemination(any(PID.class), anyString(), anyString());
-		assertNull(mdContents);
-	}
-	
-	@Test
-	public void getMDContentsRetryTest() throws Exception {
-		when(managementClient.getDatastream(any(PID.class), anyString())).thenReturn(datastream);
-		
-		byte[] mdContentsBytes = IOUtils.toByteArray(
-				new FileInputStream(new File("src/test/resources/datastream/mdContents.xml")));
-		when(datastreamData.getStream()).thenReturn(mdContentsBytes);
-		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString()))
-				.thenThrow(new NotFoundException("")).thenReturn(datastreamData);
-		
-		Element mdContents = dip.getMdContents();
-		
-		verify(accessClient, times(2)).getDatastreamDissemination(any(PID.class), anyString(), anyString());
-		assertNotNull(mdContents);
-		assertEquals("structMap", mdContents.getName());
-	}
-	
-	private Document getDocument(String filePath) throws Exception {
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(filePath)));
-		return foxml;
+		dataLoader.loadMods(dip);
 	}
 }

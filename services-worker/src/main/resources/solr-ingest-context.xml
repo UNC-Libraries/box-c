@@ -55,13 +55,7 @@
 	
 	<bean id="dipDataLoader"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
-		<property name="managementClient" ref="managementClient" />
-		<property name="accessClient" ref="accessClient" />
-		<property name="tsqs" ref="tripleStoreQueryService" />
-		<property name="accessControlService" ref="accessControlService" />
-		<property name="factory" ref="dipFactory" />
-		<property name="retryDelay" value="10000" />
-		<property name="maxRetries" value="6" />
+		<property name="repository" ref="repository"></property>
 	</bean>
 
 	<!-- Ingest filters -->

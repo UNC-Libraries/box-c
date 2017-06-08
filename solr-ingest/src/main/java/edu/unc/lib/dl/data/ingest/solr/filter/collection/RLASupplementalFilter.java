@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;

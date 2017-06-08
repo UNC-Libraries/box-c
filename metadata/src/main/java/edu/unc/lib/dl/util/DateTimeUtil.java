@@ -31,9 +31,7 @@ import org.joda.time.format.ISODateTimeFormat;
  * @author Gregory Jansen
  *
  */
-public class DateTimeUtil {
-    private DateTimeUtil() {
-    }
+public abstract class DateTimeUtil {
 
     public final static DateTimeFormatter utcFormatter = DateTimeFormat
             .forPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(
@@ -46,7 +44,11 @@ public class DateTimeUtil {
     }
 
     public static Date parseUTCToDate(String utcDate) throws ParseException {
-        return parseUTCToDateTime(utcDate).toDate();
+        try {
+            return parseUTCToDateTime(utcDate).toDate();
+        } catch(IllegalArgumentException e) {
+            throw new ParseException("Unparseable date: " + utcDate, 0);
+        }
     }
 
     public static DateTime parseUTCToDateTime(String utcDate)
