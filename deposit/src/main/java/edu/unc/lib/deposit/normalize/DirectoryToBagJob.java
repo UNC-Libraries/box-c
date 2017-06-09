@@ -50,83 +50,84 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  * @author lfarrell
  */
 public class DirectoryToBagJob extends AbstractFileServerToBagJob {
-	private static final Logger log = LoggerFactory.getLogger(DirectoryToBagJob.class);
-	
-	public DirectoryToBagJob() {
-		super();
-	}
+    private static final Logger log = LoggerFactory.getLogger(DirectoryToBagJob.class);
 
-	public DirectoryToBagJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
+    public DirectoryToBagJob() {
+        super();
+    }
 
-	@Override
-	public void runJob() {
-		Model model = getWritableModel();
-		Bag depositBag = model.createBag(getDepositPID().getURI().toString());
-		
-		Map<String, String> status = getDepositStatus();
-		String sourcePath = status.get(DepositField.sourcePath.name());
-		File sourceFile = new File(sourcePath);
-		
-		// List all files and directories in the deposit, excluding the base directory
-		Collection<File> fileListings = FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
-		Iterator<File> filesIt = fileListings.iterator();
-		while (filesIt.hasNext()) {
-			File file = filesIt.next();
-			if (file.equals(sourceFile)) {
-				filesIt.remove();
-				break;
-			}
-		}
+    public DirectoryToBagJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
 
-		// Turn the base directory itself into the top level folder for this deposit
-		Bag sourceBag = getSourceBag(depositBag, sourceFile);
-		
-		int i = 0;
-		// Add all of the payload objects into the bag folder
-		for (File file : fileListings) {
-			log.debug("Adding object {}: {}", i++, file.getName());
-			
-			Boolean isDir = file.isDirectory();
-			String checksum = null;
+    @Override
+    public void runJob() {
+        Model model = getWritableModel();
+        Bag depositBag = model.createBag(getDepositPID().getURI().toString());
 
-			Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
-			String filePathString = filePath.toString();
-			String filename = filePath.getFileName().toString();
-			
-			if (!isDir) {
-				Resource fileResource = getFileResource(sourceBag, filePathString);
-				model.add(fileResource, CdrDeposit.label, filename);
-				
-				String fullPath = file.toString();
-				
-				try {
-					PID itemPID = PIDs.get(fileResource.getURI());
-					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
-					
-					PremisLogger premisDepositLogger = getPremisLogger(itemPID);
-					Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
-							.addEventDetail("Checksum for file is {0}", checksum)
-							.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-							.create();
-					
-					premisDepositLogger.writeEvent(premisDepositEvent);
-				} catch (IOException e) {
-					failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
-				}
+        Map<String, String> status = getDepositStatus();
+        String sourcePath = status.get(DepositField.sourcePath.name());
+        File sourceFile = new File(sourcePath);
 
-				model.add(fileResource, RDF.type, Cdr.FileObject);
-				model.add(fileResource, CdrDeposit.md5sum, checksum);
-				
-				// Find staged path for the file
-				Path storedPath = Paths.get(file.getAbsolutePath());
-				model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
-			} else {
-				Bag folderBag = getFolderBag(sourceBag, filePathString);
-				model.add(folderBag, CdrDeposit.label, filename);
-				model.add(folderBag, RDF.type, Cdr.Folder);
-			}
-		}
-	}
+        // List all files and directories in the deposit, excluding the base directory
+        Collection<File> fileListings =
+                FileUtils.listFilesAndDirs(sourceFile, TrueFileFilter.TRUE, TrueFileFilter.TRUE);
+        Iterator<File> filesIt = fileListings.iterator();
+        while (filesIt.hasNext()) {
+            File file = filesIt.next();
+            if (file.equals(sourceFile)) {
+                filesIt.remove();
+                break;
+            }
+        }
+
+        // Turn the base directory itself into the top level folder for this deposit
+        Bag sourceBag = getSourceBag(depositBag, sourceFile);
+
+        int i = 0;
+        // Add all of the payload objects into the bag folder
+        for (File file : fileListings) {
+            log.debug("Adding object {}: {}", i++, file.getName());
+
+            Boolean isDir = file.isDirectory();
+            String checksum = null;
+
+            Path filePath = sourceFile.toPath().getParent().relativize(file.toPath());
+            String filePathString = filePath.toString();
+            String filename = filePath.getFileName().toString();
+
+            if (!isDir) {
+                Resource fileResource = getFileResource(sourceBag, filePathString);
+                model.add(fileResource, CdrDeposit.label, filename);
+
+                String fullPath = file.toString();
+
+                try {
+                    PID itemPID = PIDs.get(fileResource.getURI());
+                    checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+
+                    PremisLogger premisDepositLogger = getPremisLogger(itemPID);
+                    Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+                            .addEventDetail("Checksum for file is {0}", checksum)
+                            .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                            .create();
+
+                    premisDepositLogger.writeEvent(premisDepositEvent);
+                } catch (IOException e) {
+                    failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
+                }
+
+                model.add(fileResource, RDF.type, Cdr.FileObject);
+                model.add(fileResource, CdrDeposit.md5sum, checksum);
+
+                // Find staged path for the file
+                Path storedPath = Paths.get(file.getAbsolutePath());
+                model.add(fileResource, CdrDeposit.stagingLocation, storedPath.toUri().toString());
+            } else {
+                Bag folderBag = getFolderBag(sourceBag, filePathString);
+                model.add(folderBag, CdrDeposit.label, filename);
+                model.add(folderBag, RDF.type, Cdr.Folder);
+            }
+        }
+    }
 }

@@ -44,89 +44,89 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class VirusScanJob extends AbstractDepositJob {
-	private static final Logger log = LoggerFactory
-			.getLogger(VirusScanJob.class);
+    private static final Logger log = LoggerFactory
+            .getLogger(VirusScanJob.class);
 
-	private ClamScan clamScan;
+    private ClamScan clamScan;
 
-	public VirusScanJob() {
-		super();
-	}
+    public VirusScanJob() {
+        super();
+    }
 
-	public ClamScan getClamScan() {
-		return clamScan;
-	}
+    public ClamScan getClamScan() {
+        return clamScan;
+    }
 
-	public void setClamScan(ClamScan clamScan) {
-		this.clamScan = clamScan;
-	}
+    public void setClamScan(ClamScan clamScan) {
+        this.clamScan = clamScan;
+    }
 
-	public VirusScanJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
+    public VirusScanJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
 
-	@Override
-	public void runJob() {
-		log.debug("Running virus checks on : {}", getDepositDirectory());
+    @Override
+    public void runJob() {
+        log.debug("Running virus checks on : {}", getDepositDirectory());
 
-		Map<String, String> failures = new HashMap<>();
+        Map<String, String> failures = new HashMap<>();
 
-		Model model = getReadOnlyModel();
-		List<Entry<PID, String>> hrefs = getPropertyPairList(model, CdrDeposit.stagingLocation);
+        Model model = getReadOnlyModel();
+        List<Entry<PID, String>> hrefs = getPropertyPairList(model, CdrDeposit.stagingLocation);
 
-		setTotalClicks(hrefs.size());
-		int scannedObjects = 0;
+        setTotalClicks(hrefs.size());
+        int scannedObjects = 0;
 
-		for (Entry<PID, String> href : hrefs) {
-			verifyRunning();
+        for (Entry<PID, String> href : hrefs) {
+            verifyRunning();
 
-			URI manifestURI = getStagedUri(href.getValue());
+            URI manifestURI = getStagedUri(href.getValue());
 
-			File file = new File(manifestURI.getPath());
+            File file = new File(manifestURI.getPath());
 
-			ScanResult result = clamScan.scan(file);
+            ScanResult result = clamScan.scan(file);
 
-			switch (result.getStatus()) {
-			case FAILED:
-				failures.put(manifestURI.toString(), result.getSignature());
-				break;
-			case ERROR:
-				throw new Error(
-						"Virus checks are producing errors: "
-								+ result.getException()
-										.getLocalizedMessage());
-			case PASSED:
-				PremisLogger premisLogger = getPremisLogger(href.getKey());
-				PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
+            switch (result.getStatus()) {
+            case FAILED:
+                failures.put(manifestURI.toString(), result.getSignature());
+                break;
+            case ERROR:
+                throw new Error(
+                        "Virus checks are producing errors: "
+                                + result.getException()
+                                        .getLocalizedMessage());
+            case PASSED:
+                PremisLogger premisLogger = getPremisLogger(href.getKey());
+                PremisEventBuilder premisEventBuilder = premisLogger.buildEvent(Premis.VirusCheck);
 
-				premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
-					.addEventDetail("File passed pre-ingest scan for viruses")
-					.write();
+                premisEventBuilder.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                    .addEventDetail("File passed pre-ingest scan for viruses")
+                    .write();
 
-				scannedObjects++;
-				break;
-			}
-			addClicks(1);
-		}
+                scannedObjects++;
+                break;
+            }
+            addClicks(1);
+        }
 
-		if (failures.size() > 0) {
-			StringBuilder sb = new StringBuilder("Virus checks failed for some files:\n");
-			for(String uri : failures.keySet()) {
-				sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
-			}
-			failJob(failures.size() + " virus check(s) failed.", sb.toString());
-		} else {
-			if (scannedObjects != hrefs.size()) {
-				failJob("Virus scan job did not attempt to scan all files.",
-						(hrefs.size() - scannedObjects) + " objects were not scanned.");
-			}
+        if (failures.size() > 0) {
+            StringBuilder sb = new StringBuilder("Virus checks failed for some files:\n");
+            for (String uri : failures.keySet()) {
+                sb.append(uri).append(" - ").append(failures.get(uri)).append("\n");
+            }
+            failJob(failures.size() + " virus check(s) failed.", sb.toString());
+        } else {
+            if (scannedObjects != hrefs.size()) {
+                failJob("Virus scan job did not attempt to scan all files.",
+                        (hrefs.size() - scannedObjects) + " objects were not scanned.");
+            }
 
-			PID depositPID = getDepositPID();
-			PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-			premisDepositLogger.buildEvent(Premis.VirusCheck)
-					.addSoftwareAgent(SoftwareAgent.clamav.getFullname())
-					.addEventDetail(scannedObjects + "files scanned for viruses.")
-					.write();
-		}
-	}
+            PID depositPID = getDepositPID();
+            PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+            premisDepositLogger.buildEvent(Premis.VirusCheck)
+                    .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
+                    .addEventDetail(scannedObjects + "files scanned for viruses.")
+                    .write();
+        }
+    }
 }

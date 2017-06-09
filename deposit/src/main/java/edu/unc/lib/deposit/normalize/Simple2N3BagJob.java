@@ -51,97 +51,99 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class Simple2N3BagJob extends AbstractDepositJob {
 
-	private static final Logger log = LoggerFactory.getLogger(Simple2N3BagJob.class);
+    private static final Logger log = LoggerFactory.getLogger(Simple2N3BagJob.class);
 
-	public Simple2N3BagJob() {
-		super();
-	}
+    public Simple2N3BagJob() {
+        super();
+    }
 
-	public Simple2N3BagJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
+    public Simple2N3BagJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
 
-	@Override
-	public void runJob() {
+    @Override
+    public void runJob() {
 
-		// deposit RDF bag
-		PID depositPID = getDepositPID();
-		Model model = getWritableModel();
-		Bag depositBag = model.createBag(depositPID.getURI().toString());
+        // deposit RDF bag
+        PID depositPID = getDepositPID();
+        Model model = getWritableModel();
+        Bag depositBag = model.createBag(depositPID.getURI().toString());
 
-		// Generate a uuid for the main object
-		PID mainPID = repository.mintContentPid();
+        // Generate a uuid for the main object
+        PID mainPID = repository.mintContentPid();
 
-		// Identify the important file from the deposit
-		Map<String, String> depositStatus = getDepositStatus();
-		String filename = depositStatus.get(DepositField.fileName.name());
-		String slug = depositStatus.get(DepositField.depositSlug.name());
-		String mimetype = depositStatus.get(DepositField.fileMimetype.name());
+        // Identify the important file from the deposit
+        Map<String, String> depositStatus = getDepositStatus();
+        String filename = depositStatus.get(DepositField.fileName.name());
+        String slug = depositStatus.get(DepositField.depositSlug.name());
+        String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
-		// Create the main resource as a simple resource
-		Resource mainResource = model.createResource(mainPID.getURI());
-		
-		populateFileObject(model, mainResource, slug, filename, mimetype);
+        // Create the main resource as a simple resource
+        Resource mainResource = model.createResource(mainPID.getURI());
 
-		// Store main resource as child of the deposit
-		depositBag.add(mainResource);
+        populateFileObject(model, mainResource, slug, filename, mimetype);
 
-		if (!this.getDepositDirectory().exists()) {
-			log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
-			this.getDepositDirectory().mkdir();
-		}
-		
-		// Add normalization event to deposit record
-		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
-				.addEventDetail("Normalized deposit package from {0} to {1}",
-						PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
-				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-				.create();
-		premisDepositLogger.writeEvent(premisDepositEvent);
-	}
+        // Store main resource as child of the deposit
+        depositBag.add(mainResource);
 
-	private void populateFileObject(Model model, Resource mainResource, String alabel, String filename,
-			String mimetype) {
-		File contentFile = new File(this.getDataDirectory(), filename);
-		if (!contentFile.exists()) {
-			failJob("Failed to find upload file for simple deposit: " + filename,
-					contentFile.getAbsolutePath());
-		}
-		
-		String checksum = null;
-		String fullPath = contentFile.toString();
-		
-		try {
-			checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
-			
-			PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(mainResource.toString()));
-			Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
-					.addEventDetail("Checksum for file is {0}", checksum)
-					.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-					.create();
-			
-			premisDepositLogger.writeEvent(premisDepositEvent);
-		} catch (IOException e) {
-			failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
-		}
-		
-		model.add(mainResource, CdrDeposit.md5sum, checksum);
+        if (!this.getDepositDirectory().exists()) {
+            log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
+            this.getDepositDirectory().mkdir();
+        }
 
-		if(alabel == null) alabel = contentFile.getName();
-		model.add(mainResource, CdrDeposit.label, alabel);
-		model.add(mainResource, CdrDeposit.size, Long.toString(contentFile.length()));
-		if (mimetype != null) {
-			model.add(mainResource, CdrDeposit.mimetype, mimetype);
-		}
+        // Add normalization event to deposit record
+        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+                .addEventDetail("Normalized deposit package from {0} to {1}",
+                        PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
+                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .create();
+        premisDepositLogger.writeEvent(premisDepositEvent);
+    }
 
-		// Reference the content file as the data file
-		try {
-			model.add(mainResource, CdrDeposit.stagingLocation,
-					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			failJob(e, "Failed to add staging location for {0} due to encoding issues", contentFile.getName());
-		}
-	}
+    private void populateFileObject(Model model, Resource mainResource, String alabel, String filename,
+            String mimetype) {
+        File contentFile = new File(this.getDataDirectory(), filename);
+        if (!contentFile.exists()) {
+            failJob("Failed to find upload file for simple deposit: " + filename,
+                    contentFile.getAbsolutePath());
+        }
+
+        String checksum = null;
+        String fullPath = contentFile.toString();
+
+        try {
+            checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+
+            PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(mainResource.toString()));
+            Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+                    .addEventDetail("Checksum for file is {0}", checksum)
+                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .create();
+
+            premisDepositLogger.writeEvent(premisDepositEvent);
+        } catch (IOException e) {
+            failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
+        }
+
+        model.add(mainResource, CdrDeposit.md5sum, checksum);
+
+        if (alabel == null) {
+            alabel = contentFile.getName();
+        }
+        model.add(mainResource, CdrDeposit.label, alabel);
+        model.add(mainResource, CdrDeposit.size, Long.toString(contentFile.length()));
+        if (mimetype != null) {
+            model.add(mainResource, CdrDeposit.mimetype, mimetype);
+        }
+
+        // Reference the content file as the data file
+        try {
+            model.add(mainResource, CdrDeposit.stagingLocation,
+                    DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
+        } catch (UnsupportedEncodingException e) {
+            failJob(e, "Failed to add staging location for {0} due to encoding issues", contentFile.getName());
+        }
+    }
 
 }

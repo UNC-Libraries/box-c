@@ -23,14 +23,14 @@ package edu.unc.lib.deposit.staging;
  */
 public class StagingException extends RuntimeException {
 
-	private static final long serialVersionUID = -4749841917768967399L;
+    private static final long serialVersionUID = -4749841917768967399L;
 
-	public StagingException(String message) {
-		super(message);
-	}
-	
-	public StagingException(String message, Exception e) {
-		super(message, e);
-	}
+    public StagingException(String message) {
+        super(message);
+    }
+
+    public StagingException(String message, Exception e) {
+        super(message, e);
+    }
 
 }

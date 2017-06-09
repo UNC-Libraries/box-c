@@ -11,42 +11,47 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 
+/**
+ * 
+ * @author mdaines
+ *
+ */
 public class PrepareResubmitJob extends AbstractDepositJob {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(CleanupDepositJob.class);
 
-	public PrepareResubmitJob() {
-	}
+    private static final Logger LOG = LoggerFactory.getLogger(CleanupDepositJob.class);
 
-	public PrepareResubmitJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
-	
-	@Override
-	public void runJob() {
-		
-		String uuid = getDepositUUID();
-		Map<String, String> status = getDepositStatus();
-		
-		File resubmitDir = new File(getDepositsDirectory(), status.get(DepositField.resubmitDirName.name()));
-		File backupDir = new File(resubmitDir, DepositConstants.RESUBMIT_BACKUP_DIR);
-		File depositDirectory = getDepositDirectory();
-		
-		// Swap directories: existing deposit directory becomes backup directory inside resubmit directory,
-		// resubmit directory becomes former deposit directory.
-		depositDirectory.renameTo(backupDir);
-		resubmitDir.renameTo(depositDirectory);
-		
-		// Set isResubmit flag, update the fileName, and remove resubmit fields.
-		DepositStatusFactory depositStatusFactory = getDepositStatusFactory();
-		depositStatusFactory.set(uuid, DepositField.isResubmit, "true");
-		depositStatusFactory.set(uuid, DepositField.fileName, status.get(DepositField.resubmitFileName.name()));
-		depositStatusFactory.deleteField(uuid, DepositField.resubmitDirName);
-		depositStatusFactory.deleteField(uuid, DepositField.resubmitFileName);
-		
-		// Destroy our model, since we'll recreate it in later steps
-		this.destroyModel();
-		
-	}
-	
+    public PrepareResubmitJob() {
+    }
+
+    public PrepareResubmitJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
+
+    @Override
+    public void runJob() {
+
+        String uuid = getDepositUUID();
+        Map<String, String> status = getDepositStatus();
+
+        File resubmitDir = new File(getDepositsDirectory(), status.get(DepositField.resubmitDirName.name()));
+        File backupDir = new File(resubmitDir, DepositConstants.RESUBMIT_BACKUP_DIR);
+        File depositDirectory = getDepositDirectory();
+
+        // Swap directories: existing deposit directory becomes backup directory inside resubmit directory,
+        // resubmit directory becomes former deposit directory.
+        depositDirectory.renameTo(backupDir);
+        resubmitDir.renameTo(depositDirectory);
+
+        // Set isResubmit flag, update the fileName, and remove resubmit fields.
+        DepositStatusFactory depositStatusFactory = getDepositStatusFactory();
+        depositStatusFactory.set(uuid, DepositField.isResubmit, "true");
+        depositStatusFactory.set(uuid, DepositField.fileName, status.get(DepositField.resubmitFileName.name()));
+        depositStatusFactory.deleteField(uuid, DepositField.resubmitDirName);
+        depositStatusFactory.deleteField(uuid, DepositField.resubmitFileName);
+
+        // Destroy our model, since we'll recreate it in later steps
+        this.destroyModel();
+
+    }
+
 }

@@ -28,235 +28,241 @@ import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
+/**
+ * 
+ * @author mdaines
+ *
+ */
 public class DepositEmailHandler {
 
-	protected SimpleDateFormat embargoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	
-	private static final Logger LOG = LoggerFactory.getLogger(DepositEmailHandler.class);
+    protected SimpleDateFormat embargoDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-	private DepositStatusFactory depositStatusFactory;
-	
-	private String baseUrl;
-	private JavaMailSender mailSender = null;
-	private String administratorEmail = null;
+    private static final Logger LOG = LoggerFactory.getLogger(DepositEmailHandler.class);
 
-	private Template completedHtmlTemplate = null;
-	private Template completedTextTemplate = null;
+    private DepositStatusFactory depositStatusFactory;
 
-	private Template failedHtmlTemplate = null;
-	private Template failedTextTemplate = null;
+    private String baseUrl;
+    private JavaMailSender mailSender = null;
+    private String administratorEmail = null;
 
-	@Autowired
-	private Dataset dataset;
-	
-	//@Autowired
-	//private FedoraAccessControlService accessControlService;
+    private Template completedHtmlTemplate = null;
+    private Template completedTextTemplate = null;
 
-	protected DepositStatusFactory getDepositStatusFactory() {
-		return depositStatusFactory;
-	}
+    private Template failedHtmlTemplate = null;
+    private Template failedTextTemplate = null;
 
-	public void setDepositStatusFactory(
-			DepositStatusFactory depositStatusFactory) {
-		this.depositStatusFactory = depositStatusFactory;
-	}
-	
-	public String getBaseUrl() {
-		return baseUrl;
-	}
+    @Autowired
+    private Dataset dataset;
 
-	public void setBaseUrl(String baseUrl) {
-		this.baseUrl = baseUrl;
-	}
+    //@Autowired
+    //private FedoraAccessControlService accessControlService;
 
-	public JavaMailSender getMailSender() {
-		return mailSender;
-	}
+    protected DepositStatusFactory getDepositStatusFactory() {
+        return depositStatusFactory;
+    }
 
-	public void setMailSender(JavaMailSender mailSender) {
-		this.mailSender = mailSender;
-	}
+    public void setDepositStatusFactory(
+            DepositStatusFactory depositStatusFactory) {
+        this.depositStatusFactory = depositStatusFactory;
+    }
 
-	public String getAdministratorEmail() {
-		return administratorEmail;
-	}
+    public String getBaseUrl() {
+        return baseUrl;
+    }
 
-	public void setAdministratorEmail(String administratorEmail) {
-		this.administratorEmail = administratorEmail;
-	}
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
 
-	public Template getCompletedHtmlTemplate() {
-		return completedHtmlTemplate;
-	}
+    public JavaMailSender getMailSender() {
+        return mailSender;
+    }
 
-	public void setCompletedHtmlTemplate(Template completedHtmlTemplate) {
-		this.completedHtmlTemplate = completedHtmlTemplate;
-	}
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
-	public Template getCompletedTextTemplate() {
-		return completedTextTemplate;
-	}
+    public String getAdministratorEmail() {
+        return administratorEmail;
+    }
 
-	public void setCompletedTextTemplate(Template completedTextTemplate) {
-		this.completedTextTemplate = completedTextTemplate;
-	}
+    public void setAdministratorEmail(String administratorEmail) {
+        this.administratorEmail = administratorEmail;
+    }
 
-	public Template getFailedHtmlTemplate() {
-		return failedHtmlTemplate;
-	}
+    public Template getCompletedHtmlTemplate() {
+        return completedHtmlTemplate;
+    }
 
-	public void setFailedHtmlTemplate(Template failedHtmlTemplate) {
-		this.failedHtmlTemplate = failedHtmlTemplate;
-	}
+    public void setCompletedHtmlTemplate(Template completedHtmlTemplate) {
+        this.completedHtmlTemplate = completedHtmlTemplate;
+    }
 
-	public Template getFailedTextTemplate() {
-		return failedTextTemplate;
-	}
+    public Template getCompletedTextTemplate() {
+        return completedTextTemplate;
+    }
 
-	public void setFailedTextTemplate(Template failedTextTemplate) {
-		this.failedTextTemplate = failedTextTemplate;
-	}
+    public void setCompletedTextTemplate(Template completedTextTemplate) {
+        this.completedTextTemplate = completedTextTemplate;
+    }
 
-	public DepositEmailHandler() {
-	}
+    public Template getFailedHtmlTemplate() {
+        return failedHtmlTemplate;
+    }
 
-	public void sendDepositResults(String depositUUID) {
-		DepositState state = this.getDepositStatusFactory().getState(depositUUID); 
-		
-		switch (state) {
-		case failed:
-			sendFailed(depositUUID);
-			break;
-		case finished:
-			sendCompleted(depositUUID);
-			break;
-		default:
-			LOG.error("Don't know how to send deposit results email for state {}, for deposit {}", state, depositUUID);
-		}
-	}
-	
-	private void sendFailed(String depositUUID) {
-		LOG.info("Sending deposit failed email for {}", depositUUID);
-		
-		Map<String, String> status = this.getDepositStatusFactory().get(depositUUID);
-		
-		Map<String, Object> data = new HashMap<String, Object>();
-		data.putAll(status);
-		data.put("baseUrl", this.getBaseUrl());
+    public void setFailedHtmlTemplate(Template failedHtmlTemplate) {
+        this.failedHtmlTemplate = failedHtmlTemplate;
+    }
 
-		String html = failedHtmlTemplate.execute(data);
-		String text = failedTextTemplate.execute(data);
-		
-		MimeMessage mimeMessage = mailSender.createMimeMessage();
-		
-		try {
-			MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
+    public Template getFailedTextTemplate() {
+        return failedTextTemplate;
+    }
 
-			String depositorEmail = status.get(DepositField.depositorEmail.name());
+    public void setFailedTextTemplate(Template failedTextTemplate) {
+        this.failedTextTemplate = failedTextTemplate;
+    }
 
-			if (depositorEmail != null) {
-				message.addTo(depositorEmail);
-			}
-			
-			if (getAdministratorEmail() != null) {
-				message.addTo(getAdministratorEmail());
-			}
-			
-			message.setSubject("CDR deposit failed");
-			message.setFrom(getAdministratorEmail());
-			message.setText(text, html);
-			
-			this.mailSender.send(mimeMessage);
-		} catch (MessagingException e) {
-			LOG.error("Cannot send notification email", e);
-		}
-	}
-	
-	private void sendCompleted(String depositUUID) {
-		Map<String, String> status = this.getDepositStatusFactory().get(depositUUID);
+    public DepositEmailHandler() {
+    }
 
-		String depositorEmail = status.get(DepositField.depositorEmail.name());
-		
-		if (depositorEmail == null) {
-			return;
-		}
+    public void sendDepositResults(String depositUUID) {
+        DepositState state = this.getDepositStatusFactory().getState(depositUUID);
 
-		LOG.info("Sending deposit completed email for {}", depositUUID);
-		
-		// If there is a "main object" in this deposit (it has exactly one top-level object), try linking to that.
-		// If there isn't, use the container. With this scheme, there is the possibility that we could have multiple
-		// top-level objects that are not public, but a container that is public, in which case the email wouldn't
-		// make sense. However, form deposits currently always have a "main object".
-		
-		String objectPid = getMainObjectPidForDeposit(depositUUID);
-		
-		if (objectPid == null) {
-			objectPid = status.get(DepositField.containerId.name());
-		} 
-		
-		//ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(PIDs.get(objectPid));
-		Date embargoUntil = null; //accessControls.getLastActiveEmbargoUntilDate();
-		boolean hasPatronRoleForPublicGroup = true; //accessControls.getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
-		
-		Map<String, Object> data = new HashMap<String, Object>();
-		data.putAll(status);
-		data.put("baseUrl", this.getBaseUrl());
-		data.put("objectPid", objectPid);
-		
-		if (embargoUntil != null) {
-			data.put("embargoUntil", embargoDateFormat.format(embargoUntil));
-			data.put("isEmbargoed", new Boolean(true));
-		} else if (hasPatronRoleForPublicGroup) {
-			data.put("isOpen", new Boolean(true));
-		} else {
-			data.put("isClosed", new Boolean(true));
-		}
+        switch (state) {
+        case failed:
+            sendFailed(depositUUID);
+            break;
+        case finished:
+            sendCompleted(depositUUID);
+            break;
+        default:
+            LOG.error("Don't know how to send deposit results email for state {}, for deposit {}", state, depositUUID);
+        }
+    }
 
-		String html = completedHtmlTemplate.execute(data);
-		String text = completedTextTemplate.execute(data);
-		
-		MimeMessage mimeMessage = mailSender.createMimeMessage();
-		
-		try {
-			MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
-			
-			message.addTo(depositorEmail);
-			message.setSubject("CDR deposit complete");
-			message.setFrom(getAdministratorEmail());
-			message.setText(text, html);
-			
-			this.mailSender.send(mimeMessage);
-		} catch (MessagingException e) {
-			LOG.error("Cannot send notification email", e);
-		}
-		
-	}
-	
-	private String getMainObjectPidForDeposit(String depositUUID) {
-		try {
-			PID depositPID = PIDs.get(depositUUID);
-			
-			String uri = depositPID.getURI();
-			this.dataset.begin(ReadWrite.READ);
-			Model model = this.dataset.getNamedModel(uri).begin();
-	
-			String depositPid = depositPID.getURI();
-			Bag depositBag = model.getBag(depositPid);
-			
-			List<String> topLevelPids = new ArrayList<String>();
-			DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
-			
-			// There is a "main object" if the deposit has exactly one top-level object.
-			if (topLevelPids.size() == 1) {
-				return PIDs.get(topLevelPids.get(0)).toString();
-			} else {
-				return null;
-			}
-		} finally {
-			if (this.dataset.isInTransaction()) {
-				this.dataset.end();
-			}
-		}
-	}
+    private void sendFailed(String depositUUID) {
+        LOG.info("Sending deposit failed email for {}", depositUUID);
+
+        Map<String, String> status = this.getDepositStatusFactory().get(depositUUID);
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.putAll(status);
+        data.put("baseUrl", this.getBaseUrl());
+
+        String html = failedHtmlTemplate.execute(data);
+        String text = failedTextTemplate.execute(data);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
+
+            String depositorEmail = status.get(DepositField.depositorEmail.name());
+
+            if (depositorEmail != null) {
+                message.addTo(depositorEmail);
+            }
+
+            if (getAdministratorEmail() != null) {
+                message.addTo(getAdministratorEmail());
+            }
+
+            message.setSubject("CDR deposit failed");
+            message.setFrom(getAdministratorEmail());
+            message.setText(text, html);
+
+            this.mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            LOG.error("Cannot send notification email", e);
+        }
+    }
+
+    private void sendCompleted(String depositUUID) {
+        Map<String, String> status = this.getDepositStatusFactory().get(depositUUID);
+
+        String depositorEmail = status.get(DepositField.depositorEmail.name());
+
+        if (depositorEmail == null) {
+            return;
+        }
+
+        LOG.info("Sending deposit completed email for {}", depositUUID);
+
+        // If there is a "main object" in this deposit (it has exactly one top-level object), try linking to that.
+        // If there isn't, use the container. With this scheme, there is the possibility that we could have multiple
+        // top-level objects that are not public, but a container that is public, in which case the email wouldn't
+        // make sense. However, form deposits currently always have a "main object".
+
+        String objectPid = getMainObjectPidForDeposit(depositUUID);
+
+        if (objectPid == null) {
+            objectPid = status.get(DepositField.containerId.name());
+        }
+
+        //ObjectAccessControlsBean accessControls = accessControlService.getObjectAccessControls(PIDs.get(objectPid));
+        Date embargoUntil = null; //accessControls.getLastActiveEmbargoUntilDate();
+      //accessControls.getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
+        boolean hasPatronRoleForPublicGroup = true;
+
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.putAll(status);
+        data.put("baseUrl", this.getBaseUrl());
+        data.put("objectPid", objectPid);
+
+        if (embargoUntil != null) {
+            data.put("embargoUntil", embargoDateFormat.format(embargoUntil));
+            data.put("isEmbargoed", new Boolean(true));
+        } else if (hasPatronRoleForPublicGroup) {
+            data.put("isOpen", new Boolean(true));
+        } else {
+            data.put("isClosed", new Boolean(true));
+        }
+
+        String html = completedHtmlTemplate.execute(data);
+        String text = completedTextTemplate.execute(data);
+
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper message = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
+
+            message.addTo(depositorEmail);
+            message.setSubject("CDR deposit complete");
+            message.setFrom(getAdministratorEmail());
+            message.setText(text, html);
+
+            this.mailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            LOG.error("Cannot send notification email", e);
+        }
+
+    }
+
+    private String getMainObjectPidForDeposit(String depositUUID) {
+        try {
+            PID depositPID = PIDs.get(depositUUID);
+
+            String uri = depositPID.getURI();
+            this.dataset.begin(ReadWrite.READ);
+            Model model = this.dataset.getNamedModel(uri).begin();
+
+            String depositPid = depositPID.getURI();
+            Bag depositBag = model.getBag(depositPid);
+
+            List<String> topLevelPids = new ArrayList<String>();
+            DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
+
+            // There is a "main object" if the deposit has exactly one top-level object.
+            if (topLevelPids.size() == 1) {
+                return PIDs.get(topLevelPids.get(0)).toString();
+            } else {
+                return null;
+            }
+        } finally {
+            if (this.dataset.isInTransaction()) {
+                this.dataset.end();
+            }
+        }
+    }
 
 }
