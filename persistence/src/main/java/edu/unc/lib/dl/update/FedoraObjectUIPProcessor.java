@@ -101,9 +101,9 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
     }
 
     private Collection<IndexingActionType> getIndexingActions(FedoraObjectUIP fuip) {
-        if (fuip.getModifiedData().size() == 0)
+        if (fuip.getModifiedData().size() == 0) {
             return null;
-        Collection<IndexingActionType> actionTypes = new HashSet<IndexingActionType>(fuip.getModifiedData().size());
+        }        Collection<IndexingActionType> actionTypes = new HashSet<IndexingActionType>(fuip.getModifiedData().size());
         // Only detecting ACL changes this way for now as it would otherwise be unidentifiable from other RELS_EXT updates
         if (fuip.getIncomingData().containsKey("ACL") && fuip.getModifiedData().containsKey(Datastream.RELS_EXT.getName())) {
             actionTypes.add(IndexingActionType.UPDATE_ACCESS);
@@ -114,14 +114,14 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
     private Datastream getTargetedDatastream(FedoraObjectUIP fuip) {
         String pid = fuip.getPID().getPid();
         int index = pid.indexOf('/');
-        if (index == -1 || index == pid.length() - 1)
+        if (index == -1 || index == pid.length() - 1) {
             return null;
-
+        }
         String datastreamName = pid.substring(index + 1);
         Datastream datastream = Datastream.getDatastream(datastreamName);
-        if (datastream != null)
+        if (datastream != null) {
             return datastream;
-
+        }
         return this.virtualDatastreamMap.get(datastreamName);
     }
 

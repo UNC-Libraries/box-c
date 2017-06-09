@@ -38,16 +38,16 @@ public class AccessControlUIPFilter extends RELSEXTUIPFilter {
     @Override
     public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException {
         // Only run this filter for metadata update requests
-        if (uip == null || !(uip instanceof MetadataUIP))
+        if (uip == null || !(uip instanceof MetadataUIP)) {
             return uip;
-
+        }
         MetadataUIP metadataUIP = (MetadataUIP) uip;
 
         Object incomingObject = uip.getIncomingData().get(aclDatastreamName);
         // Do not apply filter unless the rels-ext ds is being targeted.
-        if (incomingObject == null)
+        if (incomingObject == null) {
             return uip;
-
+        }
         metadataUIP.getIncomingData().put(aclDatastreamName, AccessControlTransformationUtil.aclToRDF((Element)incomingObject));
 
         return this.doRelsExtFilter(metadataUIP, relsDatastreamName, aclDatastreamName);
@@ -57,9 +57,9 @@ public class AccessControlUIPFilter extends RELSEXTUIPFilter {
             throws UIPException {
         Element incoming = uip.getIncomingData().get(incomingDatastream);
         Element newModified = this.getBaseElement(uip, baseDatastream, incoming);
-        if (newModified == null)
+        if (newModified == null) {
             return null;
-
+        }
         // Clear out all the ACL related relations
         Element baseDescription = newModified.getChild("Description", JDOMNamespaceUtil.RDF_NS);
         Iterator<?> relationIt = baseDescription.getChildren().iterator();

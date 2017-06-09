@@ -31,15 +31,15 @@ public class RDFUtil {
      * @return
      */
     public static Element mergeRDF(Element baseRDF, Element incomingRDF) {
-        if (baseRDF == null)
+        if (baseRDF == null) {
             return incomingRDF;
-        if (incomingRDF == null)
+        }        if (incomingRDF == null) {
             return baseRDF;
-        List<?> incomingChildren = incomingRDF.getChildren("Description", JDOMNamespaceUtil.RDF_NS);
+        }        List<?> incomingChildren = incomingRDF.getChildren("Description", JDOMNamespaceUtil.RDF_NS);
         // If there is no rdf:Description tag in the incoming data, then there is nothing to add.
-        if (incomingChildren.size() == 0)
+        if (incomingChildren.size() == 0) {
             return baseRDF;
-
+        }
         Element incomingDescription = (Element) incomingChildren.get(0);
         Element newDescription = null;
 
@@ -54,9 +54,9 @@ public class RDFUtil {
         List<?> incomingElements = incomingDescription.getChildren();
         // Add all the incoming element children to the base modified object
         for (Object incomingObject : incomingElements) {
-            if (incomingObject instanceof Element)
+            if (incomingObject instanceof Element) {
                 newDescription.addContent((Element) ((Element) incomingObject).clone());
-        }
+            }        }
 
         return baseRDF;
     }
@@ -70,14 +70,14 @@ public class RDFUtil {
      * @return
      */
     public static Element updateRDF(Element baseRDF, Element incomingRDF) {
-        if (baseRDF == null)
+        if (baseRDF == null) {
             return incomingRDF;
-        if (incomingRDF == null)
+        }        if (incomingRDF == null) {
             return baseRDF;
-        // If there is no rdf:Description tag in the incoming data, then there is nothing to add.
-        if (incomingRDF.getChildren().size() == 0)
+        }        // If there is no rdf:Description tag in the incoming data, then there is nothing to add.
+        if (incomingRDF.getChildren().size() == 0) {
             return baseRDF;
-
+        }
         Element incomingDescription = (Element) incomingRDF.getChildren("Description", JDOMNamespaceUtil.RDF_NS).get(0);
         Element newDescription = null;
 

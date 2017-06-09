@@ -96,11 +96,11 @@ public class OperationsMessageSender {
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         remove.addContent(reorderedEl);
-        if (reordered != null)
+        if (reordered != null) {
             for (PID re : reordered) {
                 reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
             }
-
+        }
         sendMessage(msg);
     }
 

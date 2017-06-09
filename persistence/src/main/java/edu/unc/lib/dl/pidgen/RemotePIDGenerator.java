@@ -27,6 +27,9 @@ import edu.unc.lib.dl.fedora.PID;
  * PIDGenerator that uses a remote Fedora instance to generate PIDs.
  *
  * http://localhost:8080/fedora/management/getNextPID?numPIDs=10&namespace=nara&xml=true
+ * 
+ * @author count0
+ * 
  */
 public class RemotePIDGenerator implements PIDGenerator {
     private ManagementClient managementClient;

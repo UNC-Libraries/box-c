@@ -15,18 +15,20 @@
  */
 package edu.unc.lib.dl.pidgen;
 
-import java.io.IOException;
 import java.util.List;
 
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public interface PIDGenerator {
 
     /**
      * Get the next unique PID.
      *
-     * @throws IOException
-     *            if pid generation failed, for any reason.
      */
     public PID getNextPID();
 

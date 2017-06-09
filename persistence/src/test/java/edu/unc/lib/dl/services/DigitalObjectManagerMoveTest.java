@@ -160,9 +160,9 @@ public class DigitalObjectManagerMoveTest {
 
         @Override
         public Document answer(InvocationOnMock invocation) throws Throwable {
-            if (matcher.lastMatchedDoc == null)
+            if (matcher.lastMatchedDoc == null) {
                 return startingValue;
-
+            }
             return matcher.lastMatchedDoc.clone();
         }
     }

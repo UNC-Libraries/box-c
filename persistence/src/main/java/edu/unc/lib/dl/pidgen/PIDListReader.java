@@ -30,6 +30,11 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public class PIDListReader extends DefaultHandler {
 
     private static final Logger logger = Logger.getLogger(PIDListReader.class.getName());
@@ -48,8 +53,9 @@ public class PIDListReader extends DefaultHandler {
         } catch (Exception e) {
             logger.warn("Error parsing pidList", e);
             String msg = e.getMessage();
-            if (msg == null)
+            if (msg == null) {
                 msg = e.getClass().getName();
+            }
             throw new IOException("Error parsing pidList: " + msg);
         }
     }

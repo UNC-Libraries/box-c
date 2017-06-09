@@ -35,13 +35,14 @@ public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
     @Override
     public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException {
         // Only run this filter for metadata update requests
-        if (uip == null || !(uip instanceof MetadataUIP))
+        if (uip == null || !(uip instanceof MetadataUIP)) {
             return uip;
-
+        }
         // Do not apply filter dcterms is populated AND there is no incoming mods
         if (!(uip.getIncomingData().containsKey(datastreamName) || uip.getModifiedData().containsKey(datastreamName))
-                || uip.getIncomingData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()) != null)
+                || uip.getIncomingData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()) != null) {
             return uip;
+        }
 
         MetadataUIP metadataUIP = (MetadataUIP) uip;
 

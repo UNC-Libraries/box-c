@@ -74,13 +74,13 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
     @Override
     public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException {
         // Only run this filter for metadata update requests
-        if (uip == null || !(uip instanceof MetadataUIP))
+        if (uip == null || !(uip instanceof MetadataUIP)) {
             return uip;
-
+        }
         // Do not apply filter unless the mods ds is being targeted.
-        if (!uip.getIncomingData().containsKey(datastreamName) && !uip.getModifiedData().containsKey(datastreamName))
+        if (!uip.getIncomingData().containsKey(datastreamName) && !uip.getModifiedData().containsKey(datastreamName)) {
             return uip;
-
+        }
         MetadataUIP metadataUIP = (MetadataUIP) uip;
 
         log.debug("Performing MODS filter operation " + uip.getOperation().name() + " on " + uip.getPID().getPid());

@@ -54,9 +54,9 @@ public class AtomPubMetadataParserUtil {
             Entry entry, PID pid) throws IOException, JDOMException {
         String defaultDatastream = null;
         // If the request was for a specific datastream, add it in
-        if (pid != null && pid instanceof DatastreamPID)
+        if (pid != null && pid instanceof DatastreamPID) {
             defaultDatastream = ((DatastreamPID) pid).getDatastream();
-        return extractDatastreams(entry, defaultDatastream);
+        }        return extractDatastreams(entry, defaultDatastream);
     }
 
     /**
@@ -166,10 +166,11 @@ public class AtomPubMetadataParserUtil {
                             .build(inStream);
                     org.jdom2.Element rootNode = jdomDocument.getRootElement();
 
-                    if (defaultDatastream == null)
+                    if (defaultDatastream == null) {
                         datastreamMap.put(ATOM_DC_DATASTREAM, rootNode);
-                    else
+                    } else {
                         datastreamMap.put(defaultDatastream, rootNode);
+                    }
                 }
             } else if (!multiDocumentMode) {
                 // Add in the targeted datastream
@@ -201,12 +202,13 @@ public class AtomPubMetadataParserUtil {
                         null);
             }
         } finally {
-            if (dcOutStream != null)
+            if (dcOutStream != null) {
                 try {
                     dcOutStream.close();
                 } catch (IOException e) {
                     log.error("Failed to close DC", e);
                 }
+            }
         }
         return datastreamMap;
     }
@@ -222,9 +224,9 @@ public class AtomPubMetadataParserUtil {
      */
     public static org.jdom2.Element abderaToJDOM(Element element,
             SAXBuilder saxBuilder) throws JDOMException, IOException {
-        if (element == null)
+        if (element == null) {
             return null;
-        try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+        }        try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             element.writeTo(outStream);
             try (ByteArrayInputStream inStream = new ByteArrayInputStream(
                     outStream.toByteArray())) {

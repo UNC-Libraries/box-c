@@ -361,9 +361,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         availableCheck();
 
         // Prevent deletion of the repository object and the collections object
-        if (pid.equals(ContentModelHelper.Administrative_PID.REPOSITORY.getPID()) || pid.equals(collectionsPid))
+        if (pid.equals(ContentModelHelper.Administrative_PID.REPOSITORY.getPID()) || pid.equals(collectionsPid)) {
             throw new IllegalRepositoryStateException("Cannot delete administrative object: " + pid);
-
+        }
         List<PID> deleted = new ArrayList<PID>();
 
         // FIXME disallow delete of "/admin" folder
@@ -496,9 +496,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         PID parent = this.getTripleStoreQueryService().fetchContainer(pid);
         if (parent == null) {
             // Block removal of repo object
-            if (ContentModelHelper.Administrative_PID.REPOSITORY.getPID().equals(pid))
+            if (ContentModelHelper.Administrative_PID.REPOSITORY.getPID().equals(pid)) {
                 return null;
-            throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
+            }            throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
         }
         log.debug("removeFromContainer called on PID: " + parent.getPid());
         try {
@@ -722,9 +722,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     public String addOrReplaceDatastream(PID pid, Datastream datastream, String label, File content, String mimetype,
             String user, String message) throws UpdateException {
         String dsLabel = datastream.getLabel();
-        if (label != null)
+        if (label != null) {
             dsLabel = label;
-        List<String> datastreamNames = tripleStoreQueryService.listDisseminators(pid);
+        }        List<String> datastreamNames = tripleStoreQueryService.listDisseminators(pid);
         log.debug("Current datastreams: " + datastreamNames);
         String datastreamName = pid.getURI() + "/" + datastream.getName();
         log.debug("Adding or replacing datastream: " + datastreamName);
@@ -779,12 +779,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
         // Check that none of the items being moved are the destination or one of its ancestors
         for (PID pid : moving) {
-            if (pid.equals(destination))
+            if (pid.equals(destination)) {
                 throw new IngestException("The destination folder and one of the moving objects are the same: " + destination);
-            for (PID destPid : destinationPath) {
-                if (pid.equals(destPid))
+            }            for (PID destPid : destinationPath) {
+                if (pid.equals(destPid)) {
                     throw new IngestException("The destination folder is below one of the moving objects: " + destination);
-            }
+                }            }
         }
 
         // Determine the set of parents for all of the PIDs to be moved

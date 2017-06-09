@@ -73,9 +73,9 @@ public class MetadataUIP extends FedoraObjectUIP {
 
     @Override
     public void storeOriginalDatastreams(AccessClient accessClient) throws UIPException {
-        if (incomingData == null)
+        if (incomingData == null) {
             return;
-
+        }
         SAXBuilder builder = new SAXBuilder();
         for (String datastream: incomingData.keySet()) {
             log.debug("Retrieving original document for " + datastream);
@@ -97,21 +97,23 @@ public class MetadataUIP extends FedoraObjectUIP {
                 //Datastream wasn't found, therefore it doesn't exist and no original should be added
                 log.debug("Datastream " + datastream + " was not found for pid " + pid);
             } catch (FedoraException e) {
-                if (e instanceof FileSystemException || e instanceof AuthorizationException)
+                if (e instanceof FileSystemException || e instanceof AuthorizationException) {
                     throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
                             + pid.getPid(), e);
+                }
                 // Fedora isn't correctly identifying NotFoundExceptions in 3.6.2's soap client, so identify it by process of elimination
             } catch (Exception e) {
                 throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
                         + pid.getPid(), e);
             } finally {
-                if (inputStream != null)
+                if (inputStream != null) {
                     try {
                         inputStream.close();
                     } catch (IOException e) {
                         throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
                                 + pid.getPid(), e);
                     }
+                }
             }
         }
 

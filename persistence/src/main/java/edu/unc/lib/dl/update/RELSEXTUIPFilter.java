@@ -35,17 +35,17 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
     @Override
     public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException {
         // Only run this filter for metadata update requests
-        if (uip == null || !(uip instanceof MetadataUIP))
+        if (uip == null || !(uip instanceof MetadataUIP)) {
             return uip;
-
+        }
         MetadataUIP metadataUIP = (MetadataUIP) uip;
         log.debug("Checking " + datastreamName + " filter on " + uip.getPID().getPid());
 
         Object incomingObject = uip.getIncomingData().get(datastreamName);
         // Do not apply filter unless the rels-ext ds is being targeted.
-        if (incomingObject == null)
+        if (incomingObject == null) {
             return uip;
-        return this.doRelsExtFilter(metadataUIP, datastreamName, datastreamName);
+        }        return this.doRelsExtFilter(metadataUIP, datastreamName, datastreamName);
     }
 
     protected UpdateInformationPackage doRelsExtFilter(MetadataUIP uip, String baseDatastream,
@@ -95,9 +95,9 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
     protected Element performAdd(MetadataUIP uip, String baseDatastream, String incomingDatastream) throws UIPException {
         Element incoming = uip.getIncomingData().get(incomingDatastream);
         Element newModified = getNewModifiedElement(uip, baseDatastream, incoming);
-        if (newModified == null)
+        if (newModified == null) {
             return null;
-
+        }
         return RDFUtil.mergeRDF(newModified, incoming);
     }
 
@@ -105,9 +105,9 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
             throws UIPException {
         Element incoming = uip.getIncomingData().get(incomingDatastream);
         Element newModified = getNewModifiedElement(uip, baseDatastream, incoming);
-        if (newModified == null)
+        if (newModified == null) {
             return null;
-
+        }
         return RDFUtil.updateRDF(newModified, incoming);
     }
 
@@ -123,9 +123,9 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
     }
 
     protected void outputDatastreams(Map<String, org.jdom2.Element> datastreamMap) throws IOException {
-        if (datastreamMap == null)
+        if (datastreamMap == null) {
             return;
-        XMLOutputter outputter = new XMLOutputter();
+        }        XMLOutputter outputter = new XMLOutputter();
         java.util.Iterator<java.util.Map.Entry<String, org.jdom2.Element>> it = datastreamMap.entrySet().iterator();
 
         while (it.hasNext()) {

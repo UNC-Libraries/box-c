@@ -30,12 +30,12 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 
     protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName, Element incoming) {
         log.debug("Getting new modified element using base " + datastreamName + " and " + incoming);
-        if (incoming == null)
+        if (incoming == null) {
             return null;
-        // If this is a replace operation, then the new modified element is simply the incoming element.
-        if (uip.getOperation().equals(UpdateOperation.REPLACE))
+        }        // If this is a replace operation, then the new modified element is simply the incoming element.
+        if (uip.getOperation().equals(UpdateOperation.REPLACE)) {
             return (Element) incoming.clone();
-
+        }
         return this.getBaseElement(uip, datastreamName, incoming);
     }
 
@@ -75,9 +75,9 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
 
     protected Element performAdd(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
         Element newModified = getNewModifiedElement(uip, datastreamName, incoming);
-        if (newModified == null)
+        if (newModified == null) {
             return null;
-
+        }
         // Clone all the child elements of the incoming metadata
         List<Element> incomingElements = (List<Element>) incoming.getChildren();
         // Add all the incoming element children to the base modified object
