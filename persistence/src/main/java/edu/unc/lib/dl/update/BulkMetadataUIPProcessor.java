@@ -37,9 +37,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -49,6 +46,8 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.RedisWorkerConstants;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 /**
  * Update processor which performs bulk metadata imports from a CDR metadata package
@@ -236,16 +235,18 @@ public class BulkMetadataUIPProcessor implements UIPProcessor {
     }
 
     /**
-     * Resumes an interrupted update using the last resumption point stored, moving the update cursor up to the point
-     * where the next getNextUpdate call will return the information for the next datastream after where the previous run
-     * left off.
+     * Resumes an interrupted update using the last resumption point stored,
+     * moving the update cursor up to the point where the next getNextUpdate
+     * call will return the information for the next datastream after where the
+     * previous run left off.
      *
      * @param uip
      * @throws UpdateException
      */
     private void resume(BulkMetadataUIP uip) throws UpdateException {
         try (Jedis jedis = jedisPool.getResource()) {
-            Map<String, String> resumeValues = jedis.hgetAll(RedisWorkerConstants.BULK_RESUME_PREFIX + uip.getPID().getPid());
+            Map<String, String> resumeValues = jedis.hgetAll(RedisWorkerConstants.BULK_RESUME_PREFIX
+                    + uip.getPID().getPid());
             if (resumeValues == null) {
                 // No resumption info, so store update info just in case
                 storeUpdateInformation(uip);

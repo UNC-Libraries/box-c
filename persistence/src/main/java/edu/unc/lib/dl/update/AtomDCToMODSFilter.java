@@ -24,6 +24,11 @@ import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
     private static Logger log = Logger.getLogger(AtomDCToMODSFilter.class);
     private final String datastreamName = AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM;
@@ -59,21 +64,26 @@ public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
             //Use the newly transformed mods as the incoming data, being sent to MD_DESCRIPTIVE
             switch (uip.getOperation()) {
                 case REPLACE:
-                    newModified = performReplace(metadataUIP, ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), mods);
+                    newModified = performReplace(metadataUIP, ContentModelHelper.Datastream
+                            .MD_DESCRIPTIVE.getName(), mods);
                     break;
                 case ADD:
-                    newModified = performAdd(metadataUIP, ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), mods);
+                    newModified = performAdd(metadataUIP, ContentModelHelper.Datastream
+                            .MD_DESCRIPTIVE.getName(), mods);
                     break;
                 case UPDATE:
-                    // Doing add for update since the schema does not allow a way to indicate a tag should replace another
-                    newModified = performAdd(metadataUIP, ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), mods);
+                    // Doing add for update since the schema does not allow a way to indicate
+                    // a tag should replace another
+                    newModified = performAdd(metadataUIP, ContentModelHelper.Datastream
+                            .MD_DESCRIPTIVE.getName(), mods);
                     break;
             }
 
             if (newModified != null) {
                 // Validate the new mods before storing
                 validate(uip, newModified);
-                metadataUIP.getModifiedData().put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), newModified);
+                metadataUIP.getModifiedData().put(ContentModelHelper.Datastream
+                        .MD_DESCRIPTIVE.getName(), newModified);
             }
         } catch (TransformerException e) {
             throw new UIPException("Failed to transform DC Terms to MODS", e);

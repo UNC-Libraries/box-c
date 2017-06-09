@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.update;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class UIPException extends Exception {
     private static final long serialVersionUID = -7491079063778888042L;
 

@@ -135,13 +135,16 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
             PremisEventLogger.addDetailedOutcome(event, "MODS is not valid",
                     "The supplied MODS metadata does not meet CDR vocabulary requirements.", detailExtension);
             StringBuilder validationOutput = new StringBuilder();
-            List<?> failedList = detailExtension.getChildren("failed-assert", JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS);
+            List<?> failedList = detailExtension.getChildren("failed-assert",
+                    JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS);
             for (Object failedObject : failedList) {
                 Element failedElement = (Element) failedObject;
                 validationOutput.append(
-                        failedElement.getChildText("text", JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS)).append('\n');
+                        failedElement.getChildText("text", JDOMNamespaceUtil
+                                .SCHEMATRON_VALIDATION_REPORT_NS)).append('\n');
             }
-            throw new UIPException("The supplied MODS metadata did not meet requirements.\n  " + validationOutput.toString());
+            throw new UIPException("The supplied MODS metadata did not meet requirements.\n  "
+                    + validationOutput.toString());
         }
     }
 

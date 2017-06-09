@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.update;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public enum UpdateOperation {
     ADD, REPLACE, UPDATE, DELETE;
 }

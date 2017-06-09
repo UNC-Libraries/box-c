@@ -15,6 +15,11 @@
  */
 package edu.unc.lib.dl.update;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface UIPUpdateFilter {
     public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException;
 }
