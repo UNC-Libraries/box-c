@@ -106,8 +106,7 @@ public class OperationsMessageSender {
     }
 
     public void sendMoveOperation(String userid, Collection<PID> sources, PID destination,
-            Collection<PID> moved,
-            Collection<PID> reordered) {
+            Collection<PID> moved, Collection<PID> reordered) {
         Document msg = new Document();
         Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.MOVE.getName());
         Element move = new Element("move", CDR_MESSAGE_NS);
