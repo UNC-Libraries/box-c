@@ -20,10 +20,10 @@ import edu.unc.lib.dl.fedora.PID;
 
 public abstract class FedoraObjectUIP extends UIPImpl {
 
-	public FedoraObjectUIP(PID pid, String user, UpdateOperation operation) {
-		super(pid, user, operation);
-	}
+    public FedoraObjectUIP(PID pid, String user, UpdateOperation operation) {
+        super(pid, user, operation);
+    }
 
-	public abstract void storeOriginalDatastreams(AccessClient accessClient) throws UIPException;
-	
+    public abstract void storeOriginalDatastreams(AccessClient accessClient) throws UIPException;
+
 }

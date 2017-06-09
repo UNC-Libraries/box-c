@@ -39,99 +39,99 @@ import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class MetadataUIP extends FedoraObjectUIP {
-	private static Logger log = Logger.getLogger(MetadataUIP.class);
+    private static Logger log = Logger.getLogger(MetadataUIP.class);
 
-	public MetadataUIP(PID pid, String user, UpdateOperation operation) {
-		super(pid, user, operation);
-		incomingData = new HashMap<String,Element>();
-		originalData = new HashMap<String,Element>();
-		modifiedData = new HashMap<String,Element>();
-	}
+    public MetadataUIP(PID pid, String user, UpdateOperation operation) {
+        super(pid, user, operation);
+        incomingData = new HashMap<String,Element>();
+        originalData = new HashMap<String,Element>();
+        modifiedData = new HashMap<String,Element>();
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Map<String, Element> getIncomingData() {
-		return (Map<String, Element>) incomingData;
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Element> getIncomingData() {
+        return (Map<String, Element>) incomingData;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Map<String, Element> getOriginalData() {
-		return (Map<String, Element>) originalData;
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Element> getOriginalData() {
+        return (Map<String, Element>) originalData;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Map<String, Element> getModifiedData() {
-		return (Map<String, Element>) modifiedData;
-	}
-	
-	@Override
-	public String getMimetype(String key) {
-		return "text/xml";
-	}
-	
-	@Override
-	public void storeOriginalDatastreams(AccessClient accessClient) throws UIPException {
-		if (incomingData == null)
-			return;
-		
-		SAXBuilder builder = new SAXBuilder();
-		for (String datastream: incomingData.keySet()){
-			log.debug("Retrieving original document for " + datastream);
-			// Only attempt to retrieve known datastreams
-			if (Datastream.getDatastream(datastream) == null && !AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM.equals(datastream)) {
-				log.debug("Datastream " + datastream + " was not a known datastream, skipping");
-				continue;
-			}
-			ByteArrayInputStream inputStream = null;
-			try {
-				MIMETypedStream dsStream = accessClient.getDatastreamDissemination(pid, datastream, null);
-				if (dsStream != null){
-					inputStream = new ByteArrayInputStream(dsStream.getStream());
-					Document dsDocument = builder.build(inputStream);
-					Element rootElement = dsDocument.detachRootElement();
-					this.getOriginalData().put(datastream, rootElement);
-				}
-			} catch (NotFoundException e){
-				//Datastream wasn't found, therefore it doesn't exist and no original should be added
-				log.debug("Datastream " + datastream + " was not found for pid " + pid);
-			} catch (FedoraException e) { 
-				if (e instanceof FileSystemException || e instanceof AuthorizationException)
-					throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-							+ pid.getPid(), e);
-				// Fedora isn't correctly identifying NotFoundExceptions in 3.6.2's soap client, so identify it by process of elimination
-			} catch (Exception e) {
-				throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-						+ pid.getPid(), e);
-			} finally {
-				if (inputStream != null)
-					try {
-						inputStream.close();
-					} catch (IOException e) {
-						throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-								+ pid.getPid(), e);
-					}
-			}
-		}
-		
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<String, Element> getModifiedData() {
+        return (Map<String, Element>) modifiedData;
+    }
 
-	/**
-	 * Generates temporary files for each metadata datastream and returns a hash of them by datastream
-	 */
-	@Override
-	public Map<String, File> getModifiedFiles() {
-		Map<String, File> modifiedFiles = new HashMap<String, File>();
-		for (Entry<String, ?> modified : modifiedData.entrySet()) {
-			Element modifiedElement = (Element)modified.getValue();
-			try {
-				File temp = ClientUtils.writeXMLToTempFile(modifiedElement);
-				modifiedFiles.put(modified.getKey(), temp);
-			} catch (IOException e) {
-				log.error("Failed to create temp file", e);
-			}
-		}
-		return modifiedFiles;
-	}
+    @Override
+    public String getMimetype(String key) {
+        return "text/xml";
+    }
+
+    @Override
+    public void storeOriginalDatastreams(AccessClient accessClient) throws UIPException {
+        if (incomingData == null)
+            return;
+
+        SAXBuilder builder = new SAXBuilder();
+        for (String datastream: incomingData.keySet()) {
+            log.debug("Retrieving original document for " + datastream);
+            // Only attempt to retrieve known datastreams
+            if (Datastream.getDatastream(datastream) == null && !AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM.equals(datastream)) {
+                log.debug("Datastream " + datastream + " was not a known datastream, skipping");
+                continue;
+            }
+            ByteArrayInputStream inputStream = null;
+            try {
+                MIMETypedStream dsStream = accessClient.getDatastreamDissemination(pid, datastream, null);
+                if (dsStream != null) {
+                    inputStream = new ByteArrayInputStream(dsStream.getStream());
+                    Document dsDocument = builder.build(inputStream);
+                    Element rootElement = dsDocument.detachRootElement();
+                    this.getOriginalData().put(datastream, rootElement);
+                }
+            } catch (NotFoundException e) {
+                //Datastream wasn't found, therefore it doesn't exist and no original should be added
+                log.debug("Datastream " + datastream + " was not found for pid " + pid);
+            } catch (FedoraException e) {
+                if (e instanceof FileSystemException || e instanceof AuthorizationException)
+                    throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
+                            + pid.getPid(), e);
+                // Fedora isn't correctly identifying NotFoundExceptions in 3.6.2's soap client, so identify it by process of elimination
+            } catch (Exception e) {
+                throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
+                        + pid.getPid(), e);
+            } finally {
+                if (inputStream != null)
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
+                                + pid.getPid(), e);
+                    }
+            }
+        }
+
+    }
+
+    /**
+     * Generates temporary files for each metadata datastream and returns a hash of them by datastream
+     */
+    @Override
+    public Map<String, File> getModifiedFiles() {
+        Map<String, File> modifiedFiles = new HashMap<String, File>();
+        for (Entry<String, ?> modified : modifiedData.entrySet()) {
+            Element modifiedElement = (Element)modified.getValue();
+            try {
+                File temp = ClientUtils.writeXMLToTempFile(modifiedElement);
+                modifiedFiles.put(modified.getKey(), temp);
+            } catch (IOException e) {
+                log.error("Failed to create temp file", e);
+            }
+        }
+        return modifiedFiles;
+    }
 }

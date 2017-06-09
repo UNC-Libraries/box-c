@@ -27,33 +27,33 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
  * @date Aug 7, 2015
  */
 public class MODSVocabularyUIPFilter extends MetadataUIPFilter {
-	private static Logger log = Logger.getLogger(MODSVocabularyUIPFilter.class);
-	
-	private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
+    private static Logger log = Logger.getLogger(MODSVocabularyUIPFilter.class);
 
-	@Autowired
-	private VocabularyHelperManager vocabManager;
-	
-	@Override
-	public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException {
-		// Only run this filter for metadata update requests
-		if (uip == null || !(uip instanceof MetadataUIP))
-			return uip;
+    private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
 
-		// Do not apply filter unless the mods ds is being targeted.
-		if (!uip.getIncomingData().containsKey(datastreamName) && !uip.getModifiedData().containsKey(datastreamName))
-			return uip;
+    @Autowired
+    private VocabularyHelperManager vocabManager;
 
-		MetadataUIP metadataUIP = (MetadataUIP) uip;
+    @Override
+    public UpdateInformationPackage doFilter(UpdateInformationPackage uip) throws UIPException {
+        // Only run this filter for metadata update requests
+        if (uip == null || !(uip instanceof MetadataUIP))
+            return uip;
 
-		log.debug("Performing vocabulary update filter on " + uip.getPID().getPid());
+        // Do not apply filter unless the mods ds is being targeted.
+        if (!uip.getIncomingData().containsKey(datastreamName) && !uip.getModifiedData().containsKey(datastreamName))
+            return uip;
 
-		try {
-			vocabManager.updateInvalidTermsRelations(uip.getPID(), metadataUIP.getIncomingData().get(datastreamName));
-		} catch (FedoraException e) {
-			throw new UIPException("Failed to update vocabulary terms for " + uip.getPID(), e);
-		}
+        MetadataUIP metadataUIP = (MetadataUIP) uip;
 
-		return uip;
-	}
+        log.debug("Performing vocabulary update filter on " + uip.getPID().getPid());
+
+        try {
+            vocabManager.updateInvalidTermsRelations(uip.getPID(), metadataUIP.getIncomingData().get(datastreamName));
+        } catch (FedoraException e) {
+            throw new UIPException("Failed to update vocabulary terms for " + uip.getPID(), e);
+        }
+
+        return uip;
+    }
 }

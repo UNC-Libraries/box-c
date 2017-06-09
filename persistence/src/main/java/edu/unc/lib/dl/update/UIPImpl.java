@@ -25,87 +25,87 @@ import edu.unc.lib.dl.util.PremisEventLogger;
 
 public class UIPImpl implements UpdateInformationPackage {
 
-	protected PID pid;
-	protected String user;
-	protected UpdateOperation operation;
+    protected PID pid;
+    protected String user;
+    protected UpdateOperation operation;
 
-	protected HashMap<String, ?> incomingData;
-	protected HashMap<String, ?> originalData;
-	protected HashMap<String, ?> modifiedData;
+    protected HashMap<String, ?> incomingData;
+    protected HashMap<String, ?> originalData;
+    protected HashMap<String, ?> modifiedData;
 
-	protected String message;
-	
-	protected PremisEventLogger eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI());
+    protected String message;
 
-	public UIPImpl(PID pid, String user, UpdateOperation operation) {
-		this.pid = pid;
-		this.user = user;
-		this.operation = operation;
-		message = null;
-	}
+    protected PremisEventLogger eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI());
 
-	@Override
-	public PID getPID() {
-		return pid;
-	}
+    public UIPImpl(PID pid, String user, UpdateOperation operation) {
+        this.pid = pid;
+        this.user = user;
+        this.operation = operation;
+        message = null;
+    }
 
-	@Override
-	public String getUser() {
-		return user;
-	}
+    @Override
+    public PID getPID() {
+        return pid;
+    }
 
-	@Override
-	public UpdateOperation getOperation() {
-		return operation;
-	}
+    @Override
+    public String getUser() {
+        return user;
+    }
 
-	@Override
-	public Map<String, ?> getIncomingData() {
-		return incomingData;
-	}
+    @Override
+    public UpdateOperation getOperation() {
+        return operation;
+    }
 
-	@Override
-	public Map<String, ?> getOriginalData() {
-		return originalData;
-	}
+    @Override
+    public Map<String, ?> getIncomingData() {
+        return incomingData;
+    }
 
-	@Override
-	public Map<String, ?> getModifiedData() {
-		return modifiedData;
-	}
+    @Override
+    public Map<String, ?> getOriginalData() {
+        return originalData;
+    }
 
-	@Override
-	public Map<String, File> getModifiedFiles() {
-		return null;
-	}
-	
-	@Override
-	public String getMimetype(String key) {
-		return null;
-	}
-	
-	@Override
-	public PremisEventLogger getEventLogger(){
-		return this.eventLogger;
-	}
+    @Override
+    public Map<String, ?> getModifiedData() {
+        return modifiedData;
+    }
 
-	public void setIncomingData(HashMap<String, ?> incomingData) {
-		this.incomingData = incomingData;
-	}
+    @Override
+    public Map<String, File> getModifiedFiles() {
+        return null;
+    }
 
-	public void setOriginalData(HashMap<String, ?> originalData) {
-		this.originalData = originalData;
-	}
+    @Override
+    public String getMimetype(String key) {
+        return null;
+    }
 
-	public void setModifiedData(HashMap<String, ?> modifiedData) {
-		this.modifiedData = modifiedData;
-	}
+    @Override
+    public PremisEventLogger getEventLogger() {
+        return this.eventLogger;
+    }
 
-	public String getMessage() {
-		return message;
-	}
+    public void setIncomingData(HashMap<String, ?> incomingData) {
+        this.incomingData = incomingData;
+    }
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
+    public void setOriginalData(HashMap<String, ?> originalData) {
+        this.originalData = originalData;
+    }
+
+    public void setModifiedData(HashMap<String, ?> modifiedData) {
+        this.modifiedData = modifiedData;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }

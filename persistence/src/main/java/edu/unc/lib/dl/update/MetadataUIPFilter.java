@@ -21,83 +21,83 @@ import org.apache.log4j.Logger;
 import org.jdom2.Element;
 
 public abstract class MetadataUIPFilter implements UIPUpdateFilter {
-	private static Logger log = Logger.getLogger(MetadataUIPFilter.class);
-	
-	protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName) {
-		Element incoming = uip.getIncomingData().get(datastreamName);
-		return getNewModifiedElement(uip, datastreamName, incoming);
-	}
+    private static Logger log = Logger.getLogger(MetadataUIPFilter.class);
 
-	protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName, Element incoming) {
-		log.debug("Getting new modified element using base " + datastreamName + " and " + incoming);
-		if (incoming == null)
-			return null;
-		// If this is a replace operation, then the new modified element is simply the incoming element.
-		if (uip.getOperation().equals(UpdateOperation.REPLACE))
-			return (Element) incoming.clone();
+    protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName) {
+        Element incoming = uip.getIncomingData().get(datastreamName);
+        return getNewModifiedElement(uip, datastreamName, incoming);
+    }
 
-		return this.getBaseElement(uip, datastreamName, incoming);
-	}
+    protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName, Element incoming) {
+        log.debug("Getting new modified element using base " + datastreamName + " and " + incoming);
+        if (incoming == null)
+            return null;
+        // If this is a replace operation, then the new modified element is simply the incoming element.
+        if (uip.getOperation().equals(UpdateOperation.REPLACE))
+            return (Element) incoming.clone();
 
-	protected Element getBaseElement(MetadataUIP uip, String datastreamName, Element incoming) {
-		Element modified = uip.getModifiedData().get(datastreamName);
-		Element original = uip.getOriginalData().get(datastreamName);
+        return this.getBaseElement(uip, datastreamName, incoming);
+    }
 
-		Element newModified = null;
+    protected Element getBaseElement(MetadataUIP uip, String datastreamName, Element incoming) {
+        Element modified = uip.getModifiedData().get(datastreamName);
+        Element original = uip.getOriginalData().get(datastreamName);
 
-		if (modified == null) {
-			// If there is no original or modified data, than return the incoming as new modified
-			if (original == null) {
-				return (Element) incoming.clone();
-			} else {
-				// Set the base for the new modified object to the original data
-				newModified = (Element) original.clone();
-			}
-		} else {
-			// Use the previous modified data
-			newModified = (Element) modified.clone();
-		}
+        Element newModified = null;
 
-		return newModified;
-	}
+        if (modified == null) {
+            // If there is no original or modified data, than return the incoming as new modified
+            if (original == null) {
+                return (Element) incoming.clone();
+            } else {
+                // Set the base for the new modified object to the original data
+                newModified = (Element) original.clone();
+            }
+        } else {
+            // Use the previous modified data
+            newModified = (Element) modified.clone();
+        }
 
-	/**
-	 * Performs an add operation assuming there are no uniqueness restrictions
-	 * 
-	 * @param uip
-	 * @return
-	 * @throws UIPException
-	 */
-	protected Element performAdd(MetadataUIP uip, String datastreamName) throws UIPException {
-		Element incoming = uip.getIncomingData().get(datastreamName);
-		return performAdd(uip, datastreamName, incoming);
-	}
+        return newModified;
+    }
 
-	protected Element performAdd(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
-		Element newModified = getNewModifiedElement(uip, datastreamName, incoming);
-		if (newModified == null)
-			return null;
+    /**
+     * Performs an add operation assuming there are no uniqueness restrictions
+     *
+     * @param uip
+     * @return
+     * @throws UIPException
+     */
+    protected Element performAdd(MetadataUIP uip, String datastreamName) throws UIPException {
+        Element incoming = uip.getIncomingData().get(datastreamName);
+        return performAdd(uip, datastreamName, incoming);
+    }
 
-		// Clone all the child elements of the incoming metadata
-		List<Element> incomingElements = (List<Element>) incoming.getChildren();
-		// Add all the incoming element children to the base modified object
-		for (Element incomingElement : incomingElements) {
-			newModified.addContent((Element) incomingElement.clone());
-		}
+    protected Element performAdd(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
+        Element newModified = getNewModifiedElement(uip, datastreamName, incoming);
+        if (newModified == null)
+            return null;
 
-		return newModified;
-	}
+        // Clone all the child elements of the incoming metadata
+        List<Element> incomingElements = (List<Element>) incoming.getChildren();
+        // Add all the incoming element children to the base modified object
+        for (Element incomingElement : incomingElements) {
+            newModified.addContent((Element) incomingElement.clone());
+        }
 
-	protected Element performReplace(MetadataUIP uip, String datastreamName) throws UIPException {
-		return getNewModifiedElement(uip, datastreamName);
-	}
+        return newModified;
+    }
 
-	protected Element performReplace(MetadataUIP uip, String baseDatastream, String incomingDatastream)
-			throws UIPException {
-		return getNewModifiedElement(uip, baseDatastream, uip.getIncomingData().get(incomingDatastream));
-	}
+    protected Element performReplace(MetadataUIP uip, String datastreamName) throws UIPException {
+        return getNewModifiedElement(uip, datastreamName);
+    }
 
-	protected Element performReplace(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
-		return getNewModifiedElement(uip, datastreamName, incoming);
-	}
+    protected Element performReplace(MetadataUIP uip, String baseDatastream, String incomingDatastream)
+            throws UIPException {
+        return getNewModifiedElement(uip, baseDatastream, uip.getIncomingData().get(incomingDatastream));
+    }
+
+    protected Element performReplace(MetadataUIP uip, String datastreamName, Element incoming) throws UIPException {
+        return getNewModifiedElement(uip, datastreamName, incoming);
+    }
 }

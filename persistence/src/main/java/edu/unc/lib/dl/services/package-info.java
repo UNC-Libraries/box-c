@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 /**
- * Provides some basic service components for the repository, including the 
+ * Provides some basic service components for the repository, including the
  * main repository gatekeeper, DigitalObjectManager.
  */
 package edu.unc.lib.dl.services;

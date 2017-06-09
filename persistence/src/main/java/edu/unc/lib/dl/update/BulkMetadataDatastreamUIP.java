@@ -24,36 +24,36 @@ import edu.unc.lib.dl.fedora.PID;
  * @date Jul 13, 2015
  */
 public class BulkMetadataDatastreamUIP extends MetadataUIP {
-	private String lastModified;
-	private String datastream;
-	
-	/**
-	 * @param pid
-	 * @param user
-	 * @param operation
-	 */
-	public BulkMetadataDatastreamUIP(PID pid, String user, UpdateOperation operation,
-			String datastream, String lastModified, Document content) {
-		super(pid, user, operation);
-		this.lastModified = lastModified;
-		this.datastream = datastream;
-		
-		getIncomingData().put(datastream, content.getRootElement());
-	}
+    private String lastModified;
+    private String datastream;
 
-	public String getLastModified() {
-		return lastModified;
-	}
+    /**
+     * @param pid
+     * @param user
+     * @param operation
+     */
+    public BulkMetadataDatastreamUIP(PID pid, String user, UpdateOperation operation,
+            String datastream, String lastModified, Document content) {
+        super(pid, user, operation);
+        this.lastModified = lastModified;
+        this.datastream = datastream;
 
-	public void setLastModified(String lastModified) {
-		this.lastModified = lastModified;
-	}
+        getIncomingData().put(datastream, content.getRootElement());
+    }
 
-	public String getDatastream() {
-		return datastream;
-	}
+    public String getLastModified() {
+        return lastModified;
+    }
 
-	public void setDatastream(String datastream) {
-		this.datastream = datastream;
-	}
+    public void setLastModified(String lastModified) {
+        this.lastModified = lastModified;
+    }
+
+    public String getDatastream() {
+        return datastream;
+    }
+
+    public void setDatastream(String datastream) {
+        this.datastream = datastream;
+    }
 }

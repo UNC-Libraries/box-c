@@ -44,236 +44,236 @@ import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class OperationsMessageSender {
-	private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
+    private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
 
-	private JmsTemplate jmsTemplate = null;
+    private JmsTemplate jmsTemplate = null;
 
-	public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
-			Collection<PID> reordered, String depositId) {
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), CDRActions.ADD.getName());
-		Element add = new Element("add", CDR_MESSAGE_NS);
-		contentEl.addContent(add);
+    public void sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
+            Collection<PID> reordered, String depositId) {
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, destinations.iterator().next(), CDRActions.ADD.getName());
+        Element add = new Element("add", CDR_MESSAGE_NS);
+        contentEl.addContent(add);
 
-		add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
+        add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
 
-		for (PID destination : destinations) {
-			add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
-		}
+        for (PID destination : destinations) {
+            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        }
 
-		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-		add.addContent(subjects);
-		for (PID sub : added) {
-			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-		}
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        add.addContent(subjects);
+        for (PID sub : added) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+        }
 
-		Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-		add.addContent(reorderedEl);
-		for (PID re : reordered) {
-			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
-		}
+        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
+        add.addContent(reorderedEl);
+        for (PID re : reordered) {
+            reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+        }
 
-		sendMessage(msg);
-		LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
-	}
+        sendMessage(msg);
+        LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
+    }
 
-	public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed, Collection<PID> reordered) {
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REMOVE.getName());
-		Element remove = new Element("remove", CDR_MESSAGE_NS);
-		contentEl.addContent(remove);
+    public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed, Collection<PID> reordered) {
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REMOVE.getName());
+        Element remove = new Element("remove", CDR_MESSAGE_NS);
+        contentEl.addContent(remove);
 
-		remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
 
-		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-		remove.addContent(subjects);
-		for (PID sub : removed) {
-			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-		}
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        remove.addContent(subjects);
+        for (PID sub : removed) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+        }
 
-		Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-		remove.addContent(reorderedEl);
-		if (reordered != null)
-			for (PID re : reordered) {
-				reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
-			}
+        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
+        remove.addContent(reorderedEl);
+        if (reordered != null)
+            for (PID re : reordered) {
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+            }
 
-		sendMessage(msg);
-	}
+        sendMessage(msg);
+    }
 
-	public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
-			Collection<PID> reordered) {
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.MOVE.getName());
-		Element move = new Element("move", CDR_MESSAGE_NS);
-		contentEl.addContent(move);
+    public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
+            Collection<PID> reordered) {
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.MOVE.getName());
+        Element move = new Element("move", CDR_MESSAGE_NS);
+        contentEl.addContent(move);
 
-		move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
 
-		Element oldParents = new Element("oldParents", CDR_MESSAGE_NS);
-		move.addContent(oldParents);
-		for (PID old : sources) {
-			oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.getPid()));
-		}
+        Element oldParents = new Element("oldParents", CDR_MESSAGE_NS);
+        move.addContent(oldParents);
+        for (PID old : sources) {
+            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.getPid()));
+        }
 
-		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-		move.addContent(subjects);
-		for (PID sub : moved) {
-			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-		}
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        move.addContent(subjects);
+        for (PID sub : moved) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+        }
 
-		Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-		move.addContent(reorderedEl);
-		for (PID re : reordered) {
-			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
-		}
+        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
+        move.addContent(reorderedEl);
+        for (PID re : reordered) {
+            reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+        }
 
-		sendMessage(msg);
-	}
+        sendMessage(msg);
+    }
 
-	public void sendReorderOperation(String userid, String timestamp, PID destination, Collection<PID> reordered) {
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REORDER.getName());
-		Element reorder = new Element("reorder", CDR_MESSAGE_NS);
-		contentEl.addContent(reorder);
+    public void sendReorderOperation(String userid, String timestamp, PID destination, Collection<PID> reordered) {
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REORDER.getName());
+        Element reorder = new Element("reorder", CDR_MESSAGE_NS);
+        contentEl.addContent(reorder);
 
-		reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
 
-		Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-		reorder.addContent(reorderedEl);
-		for (PID re : reordered) {
-			reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
-		}
+        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
+        reorder.addContent(reorderedEl);
+        for (PID re : reordered) {
+            reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+        }
 
-		sendMessage(msg);
-	}
+        sendMessage(msg);
+    }
 
-	/**
-	 * 
-	 * 
-	 * @param userid
-	 * @param pids
-	 * @param publish
-	 *           Subjects are published if true, unpublished if false
-	 */
-	public String sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
-		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.PUBLISH.getName(), messageId);
-		
-		Element publishEl = new Element("publish", CDR_MESSAGE_NS);
-		contentEl.addContent(publishEl);
+    /**
+     *
+     *
+     * @param userid
+     * @param pids
+     * @param publish
+     *           Subjects are published if true, unpublished if false
+     */
+    public String sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
+        String messageId = "urn:uuid:" + UUID.randomUUID().toString();
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.PUBLISH.getName(), messageId);
 
-		Element publishValueEl = new Element("value", CDR_MESSAGE_NS);
-		publishEl.addContent(publishValueEl);
-		if (publish) {
-			publishValueEl.setText("yes");
-		} else {
-			publishValueEl.setText("no");
-		}
+        Element publishEl = new Element("publish", CDR_MESSAGE_NS);
+        contentEl.addContent(publishEl);
 
-		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-		publishEl.addContent(subjects);
-		for (PID sub : pids) {
-			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-		}
+        Element publishValueEl = new Element("value", CDR_MESSAGE_NS);
+        publishEl.addContent(publishValueEl);
+        if (publish) {
+            publishValueEl.setText("yes");
+        } else {
+            publishValueEl.setText("no");
+        }
 
-		sendMessage(msg);
-		
-		return messageId;
-	}
-	
-	public String sendEditTypeOperation(String userid, Collection<PID> pids, ResourceType newType) {
-		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.EDIT_TYPE.getName(), messageId);
-		
-		Element newTypeEl = new Element("newType", CDR_MESSAGE_NS);
-		contentEl.addContent(newTypeEl);
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        publishEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+        }
 
-		Element newTypeValueEl = new Element("value", CDR_MESSAGE_NS);
-		newTypeEl.addContent(newTypeValueEl);
-		newTypeEl.setText(newType.name());
+        sendMessage(msg);
 
-		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-		newTypeEl.addContent(subjects);
-		for (PID sub : pids) {
-			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-		}
+        return messageId;
+    }
 
-		sendMessage(msg);
-		
-		return messageId;
-	}
-	
-	public String sendIndexingOperation(String userid, Collection<PID> pids, IndexingActionType type) {
-		String messageId = "urn:uuid:" + UUID.randomUUID().toString();
-		Document msg = new Document();
-		Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.INDEX.getName(), messageId);
-		
-		Element indexEl = new Element(type.getName(), CDR_MESSAGE_NS);
-		contentEl.addContent(indexEl);
+    public String sendEditTypeOperation(String userid, Collection<PID> pids, ResourceType newType) {
+        String messageId = "urn:uuid:" + UUID.randomUUID().toString();
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.EDIT_TYPE.getName(), messageId);
 
-		Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-		indexEl.addContent(subjects);
-		for (PID sub : pids) {
-			subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-		}
-		
-		sendMessage(msg);
-		
-		return messageId;
-	}
-	
-	private void sendMessage(Document msg) {
-		XMLOutputter out = new XMLOutputter();
-		final String msgStr = out.outputString(msg);
+        Element newTypeEl = new Element("newType", CDR_MESSAGE_NS);
+        contentEl.addContent(newTypeEl);
 
-		this.jmsTemplate.send(new MessageCreator() {
+        Element newTypeValueEl = new Element("value", CDR_MESSAGE_NS);
+        newTypeEl.addContent(newTypeValueEl);
+        newTypeEl.setText(newType.name());
 
-			@Override
-			public Message createMessage(Session session) throws JMSException {
-				return session.createTextMessage(msgStr);
-			}
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        newTypeEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+        }
 
-		});
-	}
+        sendMessage(msg);
 
-	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation) {
-		return createAtomEntry(msg, userid, contextpid, operation, "urn:uuid:" + UUID.randomUUID().toString());
-	}
-	
-	/**
-	 * @param msg
-	 * @param userid
-	 * @param pid
-	 * @return
-	 */
-	private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation, String messageId) {
-		Element entry = new Element("entry", ATOM_NS);
-		msg.addContent(entry);
-		entry.addContent(new Element("id", ATOM_NS).setText(messageId));
-		DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
-		String timestamp = fmt.print(DateTimeUtils.currentTimeMillis());
-		entry.addContent(new Element("updated", ATOM_NS).setText(timestamp));
-		entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid))
-				.addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));
-		entry.addContent(new Element("title", ATOM_NS).setText(operation).setAttribute("type", "text"));
-		entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getPid()).setAttribute("type", "text"));
-		Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
-		entry.addContent(content);
-		return content;
-	}
+        return messageId;
+    }
 
-	public JmsTemplate getJmsTemplate() {
-		return jmsTemplate;
-	}
+    public String sendIndexingOperation(String userid, Collection<PID> pids, IndexingActionType type) {
+        String messageId = "urn:uuid:" + UUID.randomUUID().toString();
+        Document msg = new Document();
+        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.INDEX.getName(), messageId);
 
-	public void setJmsTemplate(JmsTemplate jmsTemplate) {
-		this.jmsTemplate = jmsTemplate;
-	}
+        Element indexEl = new Element(type.getName(), CDR_MESSAGE_NS);
+        contentEl.addContent(indexEl);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        indexEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+        }
+
+        sendMessage(msg);
+
+        return messageId;
+    }
+
+    private void sendMessage(Document msg) {
+        XMLOutputter out = new XMLOutputter();
+        final String msgStr = out.outputString(msg);
+
+        this.jmsTemplate.send(new MessageCreator() {
+
+            @Override
+            public Message createMessage(Session session) throws JMSException {
+                return session.createTextMessage(msgStr);
+            }
+
+        });
+    }
+
+    private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation) {
+        return createAtomEntry(msg, userid, contextpid, operation, "urn:uuid:" + UUID.randomUUID().toString());
+    }
+
+    /**
+     * @param msg
+     * @param userid
+     * @param pid
+     * @return
+     */
+    private Element createAtomEntry(Document msg, String userid, PID contextpid, String operation, String messageId) {
+        Element entry = new Element("entry", ATOM_NS);
+        msg.addContent(entry);
+        entry.addContent(new Element("id", ATOM_NS).setText(messageId));
+        DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+        String timestamp = fmt.print(DateTimeUtils.currentTimeMillis());
+        entry.addContent(new Element("updated", ATOM_NS).setText(timestamp));
+        entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid))
+                .addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));
+        entry.addContent(new Element("title", ATOM_NS).setText(operation).setAttribute("type", "text"));
+        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getPid()).setAttribute("type", "text"));
+        Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
+        entry.addContent(content);
+        return content;
+    }
+
+    public JmsTemplate getJmsTemplate() {
+        return jmsTemplate;
+    }
+
+    public void setJmsTemplate(JmsTemplate jmsTemplate) {
+        this.jmsTemplate = jmsTemplate;
+    }
 
 }

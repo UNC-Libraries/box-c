@@ -34,109 +34,109 @@ import org.springframework.mail.javamail.MimeMessagePreparator;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class MockJavaMailSender implements JavaMailSender {
-	private final Log log = LogFactory.getLog(MockJavaMailSender.class);
-	private JavaMailSenderImpl wrapped = null;
+    private final Log log = LogFactory.getLog(MockJavaMailSender.class);
+    private JavaMailSenderImpl wrapped = null;
 
-	public MockJavaMailSender(JavaMailSenderImpl wrapped) {
-		this.wrapped = wrapped;
-	}
+    public MockJavaMailSender(JavaMailSenderImpl wrapped) {
+        this.wrapped = wrapped;
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.mail.javamail.JavaMailSender#createMimeMessage()
-	 */
-	@Override
-	public MimeMessage createMimeMessage() {
-		return this.wrapped.createMimeMessage();
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.mail.javamail.JavaMailSender#createMimeMessage()
+     */
+    @Override
+    public MimeMessage createMimeMessage() {
+        return this.wrapped.createMimeMessage();
+    }
 
-	private void logit(MimeMessage msg) {
-		log.debug("Dumping message content to standard out.");
-		try {
-			msg.writeTo(System.out);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
-	}
+    private void logit(MimeMessage msg) {
+        log.debug("Dumping message content to standard out.");
+        try {
+            msg.writeTo(System.out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.mail.javamail.JavaMailSender#createMimeMessage(java.io.InputStream)
-	 */
-	@Override
-	public MimeMessage createMimeMessage(InputStream contentStream) throws MailException {
-		return this.wrapped.createMimeMessage(contentStream);
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.mail.javamail.JavaMailSender#createMimeMessage(java.io.InputStream)
+     */
+    @Override
+    public MimeMessage createMimeMessage(InputStream contentStream) throws MailException {
+        return this.wrapped.createMimeMessage(contentStream);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.mail.javamail.JavaMailSender#send(javax.mail.internet.MimeMessage)
-	 */
-	@Override
-	public void send(MimeMessage mimeMessage) throws MailException {
-		logit(mimeMessage);
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.mail.javamail.JavaMailSender#send(javax.mail.internet.MimeMessage)
+     */
+    @Override
+    public void send(MimeMessage mimeMessage) throws MailException {
+        logit(mimeMessage);
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.mail.javamail.JavaMailSender#send(javax.mail.internet.MimeMessage[])
-	 */
-	@Override
-	public void send(MimeMessage[] mimeMessages) throws MailException {
-		for (int i = 0; i < mimeMessages.length; i++) {
-			logit(mimeMessages[i]);
-		}
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.mail.javamail.JavaMailSender#send(javax.mail.internet.MimeMessage[])
+     */
+    @Override
+    public void send(MimeMessage[] mimeMessages) throws MailException {
+        for (int i = 0; i < mimeMessages.length; i++) {
+            logit(mimeMessages[i]);
+        }
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.springframework.mail.javamail.JavaMailSender#send(org.springframework.mail.javamail.MimeMessagePreparator)
-	 */
-	@Override
-	public void send(MimeMessagePreparator mimeMessagePreparator) throws MailException {
-		// eh, not used right now..
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.springframework.mail.javamail.JavaMailSender#send(org.springframework.mail.javamail.MimeMessagePreparator)
+     */
+    @Override
+    public void send(MimeMessagePreparator mimeMessagePreparator) throws MailException {
+        // eh, not used right now..
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.springframework.mail.javamail.JavaMailSender#send(org.springframework.mail.javamail.MimeMessagePreparator[])
-	 */
-	@Override
-	public void send(MimeMessagePreparator[] mimeMessagePreparators) throws MailException {
-		// eh, not used right now..
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see
+     * org.springframework.mail.javamail.JavaMailSender#send(org.springframework.mail.javamail.MimeMessagePreparator[])
+     */
+    @Override
+    public void send(MimeMessagePreparator[] mimeMessagePreparators) throws MailException {
+        // eh, not used right now..
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.mail.MailSender#send(org.springframework.mail.SimpleMailMessage)
-	 */
-	@Override
-	public void send(SimpleMailMessage simpleMessage) throws MailException {
-		// eh, not used right now..
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.mail.MailSender#send(org.springframework.mail.SimpleMailMessage)
+     */
+    @Override
+    public void send(SimpleMailMessage simpleMessage) throws MailException {
+        // eh, not used right now..
+    }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.springframework.mail.MailSender#send(org.springframework.mail.SimpleMailMessage[])
-	 */
-	@Override
-	public void send(SimpleMailMessage[] simpleMessages) throws MailException {
-		// eh, not used right now..
-	}
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.springframework.mail.MailSender#send(org.springframework.mail.SimpleMailMessage[])
+     */
+    @Override
+    public void send(SimpleMailMessage[] simpleMessages) throws MailException {
+        // eh, not used right now..
+    }
 
 }
