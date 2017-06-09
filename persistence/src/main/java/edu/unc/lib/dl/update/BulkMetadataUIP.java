@@ -81,7 +81,7 @@ public class BulkMetadataUIP extends UIPImpl {
 
     public BulkMetadataUIP(String pid, String emailAddress, String user, AccessGroupSet groups,
             File importFile, String originalFilename) throws UIPException {
-        super(new PID(pid == null? UUID.randomUUID().toString() : pid), user, UpdateOperation.REPLACE);
+        super(new PID(pid == null ? UUID.randomUUID().toString() : pid), user, UpdateOperation.REPLACE);
 
         existingUpdate = pid != null;
 
@@ -157,12 +157,12 @@ public class BulkMetadataUIP extends UIPImpl {
                             if (element.getName().getLocalPart().equals(UPDATE_TAG)) {
                                 // Get last modified date if available
                                 Attribute lastModifiedAttr = element.getAttributeByName(lastModifiedAttribute);
-                                lastModified = lastModifiedAttr == null? null : lastModifiedAttr.getValue();
+                                lastModified = lastModifiedAttr == null ? null : lastModifiedAttr.getValue();
 
                                 Attribute typeAttr = element.getAttributeByName(typeAttribute);
                                 if (typeAttr == null) {
-                                    throw new UpdateException("Invalid import data, missing type attribute on update of "
-                                            + currentPid);
+                                    throw new UpdateException("Invalid import data, missing type attribute"
+                                            + " on update of " + currentPid);
                                 }
                                 if (MODS_TYPE.equals(typeAttr.getValue())) {
                                     currentDs = Datastream.MD_DESCRIPTIVE.toString();
@@ -202,7 +202,8 @@ public class BulkMetadataUIP extends UIPImpl {
                         }
 
                         // Finished with opening tags and the update tag is ending, done with content.
-                        if (countOpenings == 0 && e.isEndElement() && UPDATE_TAG.equals(e.asEndElement().getName().getLocalPart())) {
+                        if (countOpenings == 0 && e.isEndElement() && UPDATE_TAG.equals(
+                                e.asEndElement().getName().getLocalPart())) {
                             state = DocumentState.IN_OBJECT;
                             // Increment the number of updates retrieved
                             updateCount++;

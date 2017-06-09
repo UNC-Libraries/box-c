@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.update;
 
+import static edu.unc.lib.dl.util.AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -35,9 +37,13 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
-import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class MetadataUIP extends FedoraObjectUIP {
     private static Logger log = Logger.getLogger(MetadataUIP.class);
 
@@ -80,7 +86,7 @@ public class MetadataUIP extends FedoraObjectUIP {
         for (String datastream: incomingData.keySet()) {
             log.debug("Retrieving original document for " + datastream);
             // Only attempt to retrieve known datastreams
-            if (Datastream.getDatastream(datastream) == null && !AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM.equals(datastream)) {
+            if (Datastream.getDatastream(datastream) == null && !ATOM_DC_DATASTREAM.equals(datastream)) {
                 log.debug("Datastream " + datastream + " was not a known datastream, skipping");
                 continue;
             }
@@ -98,20 +104,21 @@ public class MetadataUIP extends FedoraObjectUIP {
                 log.debug("Datastream " + datastream + " was not found for pid " + pid);
             } catch (FedoraException e) {
                 if (e instanceof FileSystemException || e instanceof AuthorizationException) {
-                    throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-                            + pid.getPid(), e);
+                    throw new UIPException("Exception occurred while attempting to store datastream " + datastream
+                            + " for " + pid.getPid(), e);
                 }
-                // Fedora isn't correctly identifying NotFoundExceptions in 3.6.2's soap client, so identify it by process of elimination
+                // Fedora isn't correctly identifying NotFoundExceptions in
+                // 3.6.2's soap client, so identify it by process of elimination
             } catch (Exception e) {
-                throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-                        + pid.getPid(), e);
+                throw new UIPException("Exception occurred while attempting to store datastream " + datastream
+                        + " for " + pid.getPid(), e);
             } finally {
                 if (inputStream != null) {
                     try {
                         inputStream.close();
                     } catch (IOException e) {
-                        throw new UIPException("Exception occurred while attempting to store datastream " + datastream + " for "
-                                + pid.getPid(), e);
+                        throw new UIPException("Exception occurred while attempting to store datastream " + datastream
+                                + " for " + pid.getPid(), e);
                     }
                 }
             }

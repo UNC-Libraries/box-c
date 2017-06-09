@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.filter.Filters;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -41,23 +39,23 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author count0
  *
  */
-public class ContainerContentsHelper {
+public abstract class ContainerContentsHelper {
     private static final Log log = LogFactory.getLog(ContainerContentsHelper.class);
 
     /**
-     * Adds new children to the content index. If there is an order specified for a new child, then it will insert the
-     * child at the specified position. Any existing children after the specified position will be shifted if neccessary.
+     * Adds new children to the content index. If there is an order specified
+     * for a new child, then it will insert the child at the specified position.
+     * Any existing children after the specified position will be shifted if
+     * neccessary.
      *
      * @param reordered
      *
      * @param oldContents
-     *           bytes for the old XML CONTENTS stream
+     *            bytes for the old XML CONTENTS stream
      * @param topPid
-     *           new child pid
+     *            new child pid
      * @param containerOrder
      * @return
-     * @throws JDOMException
-     * @throws IOException
      */
     public static Document addChildContentAIPInCustomOrder(Document result, PID containerPID,
             Collection<ContainerPlacement> placements, List<PID> reordered) {

@@ -23,10 +23,15 @@ import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
-import edu.unc.lib.dl.util.RDFUtil;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.util.RDFUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class RELSEXTUIPFilter extends MetadataUIPFilter {
     private static Logger log = Logger.getLogger(RELSEXTUIPFilter.class);
 
@@ -45,7 +50,8 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
         // Do not apply filter unless the rels-ext ds is being targeted.
         if (incomingObject == null) {
             return uip;
-        }        return this.doRelsExtFilter(metadataUIP, datastreamName, datastreamName);
+        }
+        return this.doRelsExtFilter(metadataUIP, datastreamName, datastreamName);
     }
 
     protected UpdateInformationPackage doRelsExtFilter(MetadataUIP uip, String baseDatastream,
@@ -92,7 +98,8 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
         return uip;
     }
 
-    protected Element performAdd(MetadataUIP uip, String baseDatastream, String incomingDatastream) throws UIPException {
+    protected Element performAdd(MetadataUIP uip, String baseDatastream, String incomingDatastream)
+            throws UIPException {
         Element incoming = uip.getIncomingData().get(incomingDatastream);
         Element newModified = getNewModifiedElement(uip, baseDatastream, incoming);
         if (newModified == null) {
@@ -115,7 +122,8 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
         // Make sure Description has rdf:about set, and that it is the object's pid
         Element descriptionElement = relsEXT.getChild("Description", JDOMNamespaceUtil.RDF_NS);
         if (descriptionElement == null || descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) == null
-                || (descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) != null && !uip.getPID().getURI()
+                || (descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) != null
+                    && !uip.getPID().getURI()
                         .equals(descriptionElement.getAttributeValue("about", JDOMNamespaceUtil.RDF_NS)))) {
             Attribute aboutAttribute = new Attribute("about", uip.getPID().getURI(), JDOMNamespaceUtil.RDF_NS);
             descriptionElement.setAttribute(aboutAttribute);
@@ -125,7 +133,8 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
     protected void outputDatastreams(Map<String, org.jdom2.Element> datastreamMap) throws IOException {
         if (datastreamMap == null) {
             return;
-        }        XMLOutputter outputter = new XMLOutputter();
+        }
+        XMLOutputter outputter = new XMLOutputter();
         java.util.Iterator<java.util.Map.Entry<String, org.jdom2.Element>> it = datastreamMap.entrySet().iterator();
 
         while (it.hasNext()) {

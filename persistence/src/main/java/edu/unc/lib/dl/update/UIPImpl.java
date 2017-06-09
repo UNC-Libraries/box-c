@@ -23,6 +23,11 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class UIPImpl implements UpdateInformationPackage {
 
     protected PID pid;
@@ -35,7 +40,8 @@ public class UIPImpl implements UpdateInformationPackage {
 
     protected String message;
 
-    protected PremisEventLogger eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID.ADMINISTRATOR_GROUP.getPID().getURI());
+    protected PremisEventLogger eventLogger = new PremisEventLogger(ContentModelHelper.Administrative_PID
+            .ADMINISTRATOR_GROUP.getPID().getURI());
 
     public UIPImpl(PID pid, String user, UpdateOperation operation) {
         this.pid = pid;

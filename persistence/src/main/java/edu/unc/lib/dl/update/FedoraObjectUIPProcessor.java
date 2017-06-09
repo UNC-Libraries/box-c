@@ -33,6 +33,11 @@ import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.IndexingActionType;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class FedoraObjectUIPProcessor implements UIPProcessor {
     private static Logger log = Logger.getLogger(FedoraObjectUIPProcessor.class);
 
@@ -74,28 +79,32 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
                 for (Entry<String, File> modifiedFile : modifiedFiles.entrySet()) {
                     Datastream datastream = Datastream.getDatastream(modifiedFile.getKey());
                     if (datastream != null && modifiedFile.getValue() != null) {
-                        log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID().getPid());
+                        log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID());
                         digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
                                 uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
                     }
                 }
             } else {
-                log.debug("Adding/replacing targeted " + targetedDatastream.getName() + " with " + uip.getModifiedFiles());
+                log.debug("Adding/replacing targeted " + targetedDatastream.getName()
+                        + " with " + uip.getModifiedFiles());
                 log.debug("Specifically with file: " + modifiedFiles.get(targetedDatastream.getName()));
                 // Datastream was specifically targeted, so only perform updates to it
                 // The reasoning for filtering it down at this step is that other datastreams may have been involved in
                 // early steps to compute the new value for the targeted datastream, but we don't want to commit those
                 // changes
                 digitalObjectManager.addOrReplaceDatastream(uip.getPID(), targetedDatastream,
-                        modifiedFiles.get(targetedDatastream.getName()), uip.getMimetype(targetedDatastream.getName()),
+                        modifiedFiles.get(targetedDatastream.getName()),
+                        uip.getMimetype(targetedDatastream.getName()),
                         uip.getUser(), uip.getMessage());
             }
 
             // Issue indexing operations based on the data updated
             Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
             if (indexingActions != null) {
-                for (IndexingActionType actionType : indexingActions)
-                    operationsMessageSender.sendIndexingOperation(uip.getUser(), Arrays.asList(uip.getPID()), actionType);
+                for (IndexingActionType actionType : indexingActions) {
+                    operationsMessageSender.sendIndexingOperation(uip.getUser(),
+                            Arrays.asList(uip.getPID()), actionType);
+                }
             }
         }
     }
@@ -103,9 +112,12 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
     private Collection<IndexingActionType> getIndexingActions(FedoraObjectUIP fuip) {
         if (fuip.getModifiedData().size() == 0) {
             return null;
-        }        Collection<IndexingActionType> actionTypes = new HashSet<IndexingActionType>(fuip.getModifiedData().size());
-        // Only detecting ACL changes this way for now as it would otherwise be unidentifiable from other RELS_EXT updates
-        if (fuip.getIncomingData().containsKey("ACL") && fuip.getModifiedData().containsKey(Datastream.RELS_EXT.getName())) {
+        }
+        Collection<IndexingActionType> actionTypes = new HashSet<>(fuip.getModifiedData().size());
+        // Only detecting ACL changes this way for now as it would otherwise be
+        // unidentifiable from other RELS_EXT updates
+        if (fuip.getIncomingData().containsKey("ACL")
+                && fuip.getModifiedData().containsKey(Datastream.RELS_EXT.getName())) {
             actionTypes.add(IndexingActionType.UPDATE_ACCESS);
         }
         return actionTypes;

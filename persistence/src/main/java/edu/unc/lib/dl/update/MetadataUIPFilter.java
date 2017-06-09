@@ -20,6 +20,11 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.jdom2.Element;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public abstract class MetadataUIPFilter implements UIPUpdateFilter {
     private static Logger log = Logger.getLogger(MetadataUIPFilter.class);
 

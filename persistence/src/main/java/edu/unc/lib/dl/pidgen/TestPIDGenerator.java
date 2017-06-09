@@ -24,6 +24,9 @@ import edu.unc.lib.dl.fedora.PID;
  * Simple, local implementation of PIDGenerator for testing purposes.
  *
  * The first PID will be test:1, the next will be test:2, and so on.
+ * 
+ * @author count0
+ * 
  */
 public class TestPIDGenerator implements PIDGenerator {
 

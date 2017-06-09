@@ -32,14 +32,12 @@ import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
-import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
@@ -67,17 +65,17 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
           try {
                // enqueues objects that use this one as a surrogate.
-               List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid);
-               for (PID usesMe : usesMeForSurrogate) {
-                    this.service.getMessageDirector().direct(
-                              new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace,
-                                        JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(),
-                                        ThumbnailEnhancementService.class.getName()));
-                    this.service.getMessageDirector().direct(
-                              new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace,
-                                        JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(),
-                                        SolrUpdateEnhancementService.class.getName()));
-               }
+//               List<PID> usesMeForSurrogate = this.service.getTripleStoreQueryService().fetchPIDsSurrogateFor(pid);
+//               for (PID usesMe : usesMeForSurrogate) {
+//                    this.service.getMessageDirector().direct(
+//                              new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace,
+//                                        JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(),
+//                                        ThumbnailEnhancementService.class.getName()));
+//                    this.service.getMessageDirector().direct(
+//                              new EnhancementMessage(usesMe, JMSMessageUtil.servicesMessageNamespace,
+//                                        JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(),
+//                                        SolrUpdateEnhancementService.class.getName()));
+//               }
 
                // get sourceData data stream IDs
                List<String> surrogateDSIDs = this.service.getTripleStoreQueryService().getSurrogateData(pid);

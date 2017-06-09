@@ -21,10 +21,16 @@ import org.jdom2.Element;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
-public class RDFUtil {
+/**
+ * 
+ * @author bbpennel
+ *
+ */
+public abstract class RDFUtil {
 
     /**
-     * Adds all elements from an incoming RDF element into a base RDF element without overwriting any existing data
+     * Adds all elements from an incoming RDF element into a base RDF element
+     * without overwriting any existing data
      *
      * @param baseRDF
      * @param incomingRDF
@@ -33,9 +39,11 @@ public class RDFUtil {
     public static Element mergeRDF(Element baseRDF, Element incomingRDF) {
         if (baseRDF == null) {
             return incomingRDF;
-        }        if (incomingRDF == null) {
+        }
+        if (incomingRDF == null) {
             return baseRDF;
-        }        List<?> incomingChildren = incomingRDF.getChildren("Description", JDOMNamespaceUtil.RDF_NS);
+        }
+        List<?> incomingChildren = incomingRDF.getChildren("Description", JDOMNamespaceUtil.RDF_NS);
         // If there is no rdf:Description tag in the incoming data, then there is nothing to add.
         if (incomingChildren.size() == 0) {
             return baseRDF;
@@ -56,14 +64,16 @@ public class RDFUtil {
         for (Object incomingObject : incomingElements) {
             if (incomingObject instanceof Element) {
                 newDescription.addContent((Element) ((Element) incomingObject).clone());
-            }        }
+            }
+        }
 
         return baseRDF;
     }
 
     /**
-     * Adds all elements from an incoming RDF element into a base RDF element, where all relations in the incoming element
-     * will overwrite those in the base element when they match on both subject and predicate.
+     * Adds all elements from an incoming RDF element into a base RDF element,
+     * where all relations in the incoming element will overwrite those in the
+     * base element when they match on both subject and predicate.
      *
      * @param baseRDF
      * @param incomingRDF
@@ -72,13 +82,16 @@ public class RDFUtil {
     public static Element updateRDF(Element baseRDF, Element incomingRDF) {
         if (baseRDF == null) {
             return incomingRDF;
-        }        if (incomingRDF == null) {
+        }
+        if (incomingRDF == null) {
             return baseRDF;
-        }        // If there is no rdf:Description tag in the incoming data, then there is nothing to add.
+        }
+        // If there is no rdf:Description tag in the incoming data, then there is nothing to add.
         if (incomingRDF.getChildren().size() == 0) {
             return baseRDF;
         }
-        Element incomingDescription = (Element) incomingRDF.getChildren("Description", JDOMNamespaceUtil.RDF_NS).get(0);
+        Element incomingDescription = (Element) incomingRDF.getChildren("Description",
+                JDOMNamespaceUtil.RDF_NS).get(0);
         Element newDescription = null;
 
         // If the previous rels-ext didn't have a description, then use the new one

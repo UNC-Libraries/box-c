@@ -9,6 +9,11 @@ import org.springframework.context.ApplicationContextAware;
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.worker.JobFactory;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public class SpringJobFactory implements JobFactory, ApplicationContextAware {
     private Logger log = LoggerFactory.getLogger(SpringJobFactory.class);
 

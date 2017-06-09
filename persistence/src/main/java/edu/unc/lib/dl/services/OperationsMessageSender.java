@@ -80,7 +80,8 @@ public class OperationsMessageSender {
         LOG.debug("sent add operation JMS message using JMS template:" + this.getJmsTemplate().toString());
     }
 
-    public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed, Collection<PID> reordered) {
+    public void sendRemoveOperation(String userid, PID destination, Collection<PID> removed,
+            Collection<PID> reordered) {
         Document msg = new Document();
         Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REMOVE.getName());
         Element remove = new Element("remove", CDR_MESSAGE_NS);
@@ -104,7 +105,8 @@ public class OperationsMessageSender {
         sendMessage(msg);
     }
 
-    public void sendMoveOperation(String userid, Collection<PID> sources, PID destination, Collection<PID> moved,
+    public void sendMoveOperation(String userid, Collection<PID> sources, PID destination,
+            Collection<PID> moved,
             Collection<PID> reordered) {
         Document msg = new Document();
         Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.MOVE.getName());
@@ -134,7 +136,8 @@ public class OperationsMessageSender {
         sendMessage(msg);
     }
 
-    public void sendReorderOperation(String userid, String timestamp, PID destination, Collection<PID> reordered) {
+    public void sendReorderOperation(String userid, String timestamp, PID destination,
+            Collection<PID> reordered) {
         Document msg = new Document();
         Element contentEl = createAtomEntry(msg, userid, destination, CDRActions.REORDER.getName());
         Element reorder = new Element("reorder", CDR_MESSAGE_NS);
@@ -162,7 +165,8 @@ public class OperationsMessageSender {
     public String sendPublishOperation(String userid, Collection<PID> pids, boolean publish) {
         String messageId = "urn:uuid:" + UUID.randomUUID().toString();
         Document msg = new Document();
-        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.PUBLISH.getName(), messageId);
+        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(),
+                CDRActions.PUBLISH.getName(), messageId);
 
         Element publishEl = new Element("publish", CDR_MESSAGE_NS);
         contentEl.addContent(publishEl);
@@ -189,7 +193,8 @@ public class OperationsMessageSender {
     public String sendEditTypeOperation(String userid, Collection<PID> pids, ResourceType newType) {
         String messageId = "urn:uuid:" + UUID.randomUUID().toString();
         Document msg = new Document();
-        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.EDIT_TYPE.getName(), messageId);
+        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(),
+                CDRActions.EDIT_TYPE.getName(), messageId);
 
         Element newTypeEl = new Element("newType", CDR_MESSAGE_NS);
         contentEl.addContent(newTypeEl);
@@ -212,7 +217,8 @@ public class OperationsMessageSender {
     public String sendIndexingOperation(String userid, Collection<PID> pids, IndexingActionType type) {
         String messageId = "urn:uuid:" + UUID.randomUUID().toString();
         Document msg = new Document();
-        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(), CDRActions.INDEX.getName(), messageId);
+        Element contentEl = createAtomEntry(msg, userid, pids.iterator().next(),
+                CDRActions.INDEX.getName(), messageId);
 
         Element indexEl = new Element(type.getName(), CDR_MESSAGE_NS);
         contentEl.addContent(indexEl);

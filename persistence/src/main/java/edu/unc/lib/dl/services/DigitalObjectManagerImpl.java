@@ -93,7 +93,8 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
 import edu.unc.lib.dl.xml.ModsXmlHelper;
 
 /**
- * This class orchestrates the transactions that modify repository objects and update ancillary services.
+ * This class orchestrates the transactions that modify repository objects and
+ * update ancillary services.
  *
  * @author count0
  *
@@ -159,29 +160,32 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             throw new UpdateException("Cannot edit to type " + newType + ", operation not supported");
         }
 
-        // Check that the user has permissions to add/remove from all sources and the destination
+        // Check that the user has permissions to add/remove from all sources
+        // and the destination
         AccessGroupSet groups = GroupsThreadStore.getGroups();
         for (PID subject : subjects) {
             if (!aclService.hasAccess(subject, groups, Permission.editResourceType)) {
-                throw new UpdateException("Insufficient permissions to perform edit type", new AuthorizationException(
-                        "Cannot complete edit type operation, user " + user + " does not have permission to modify "
-                        + subject));
+                throw new UpdateException("Insufficient permissions to perform edit type",
+                        new AuthorizationException("Cannot complete edit type operation, user " + user
+                                + " does not have permission to modify " + subject));
             }
         }
 
         for (PID subject : subjects) {
             do {
                 try {
-                    DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(subject, RELS_EXT.getName());
+                    DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(subject,
+                            RELS_EXT.getName());
 
                     if (relsExtResp == null) {
-                        throw new UpdateException("Unable to retrieve RELS-EXT for " + subject + ", cannot change models");
+                        throw new UpdateException(
+                                "Unable to retrieve RELS-EXT for " + subject + ", cannot change models");
                     }
 
                     Document relsExt = relsExtResp.getDocument();
 
-                    Element descriptionEl = relsExt.getDocument().getRootElement()
-                            .getChild("Description", JDOMNamespaceUtil.RDF_NS);
+                    Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description",
+                            JDOMNamespaceUtil.RDF_NS);
 
                     String hasModelPredicate = ContentModelHelper.FedoraProperty.hasModel.getFragment();
                     Namespace hasModelNS = ContentModelHelper.FedoraProperty.hasModel.getNamespace();
@@ -195,7 +199,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                     }
                     ResourceType existingType = ResourceType.getResourceTypeByContentModels(existingModels);
 
-                    // If the resource type hasn't changed from what is present in Fedora, then skip changing
+                    // If the resource type hasn't changed from what is present
+                    // in Fedora, then skip changing
                     if (existingType.equals(newType)) {
                         break;
                     }
@@ -203,7 +208,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                     // Validate that the conversion is allowed
                     if (existingType.equals(ResourceType.File)) {
                         // Can't convert from file currently
-                        throw new UpdateException("Cannot edit object " + subject + " from type File, operation not supported");
+                        throw new UpdateException(
+                                "Cannot edit object " + subject + " from type File, operation not supported");
                     }
 
                     // Remove existing content models
@@ -233,15 +239,15 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                     }
 
                     // Push the changes to the objects relations
-                    managementClient
-                            .modifyDatastream(subject, RELS_EXT.getName(), null, relsExtResp.getLastModified(), relsExt);
+                    managementClient.modifyDatastream(subject, RELS_EXT.getName(), null, relsExtResp.getLastModified(),
+                            relsExt);
 
                     // Add premis event for the resource type change
                     PremisEventLogger logger = new PremisEventLogger(user);
-                    Element event = logger.logEvent(PremisEventLogger.Type.MIGRATION, "Changed resource type to "
-                            + newType.name(), subject);
-                    PremisEventLogger.addDetailedOutcome(event, "success", "Changed resource type from " + existingType.name()
-                            + " to " + newType.name(), null);
+                    Element event = logger.logEvent(PremisEventLogger.Type.MIGRATION,
+                            "Changed resource type to " + newType.name(), subject);
+                    PremisEventLogger.addDetailedOutcome(event, "success",
+                            "Changed resource type from " + existingType.name() + " to " + newType.name(), null);
                     this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, subject);
 
                     break;
@@ -250,7 +256,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                 } catch (FedoraException e) {
                     throw new UpdateException("Error while updating relations for " + subject, e);
                 }
-                // Repeat rels-ext update if the source changed since the datastream was retrieved
+                // Repeat rels-ext update if the source changed since the
+                // datastream was retrieved
             } while (true);
         }
 
@@ -272,30 +279,32 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
             // Check that the user has sufficient permissions
             if (!aclService.hasAccess(aggregate, GroupsThreadStore.getGroups(), Permission.addRemoveContents)) {
-                throw new UpdateException("Insufficient permissions to set default web object", new AuthorizationException(
-                        "Cannot set default web object, user " + user + " does not have permission to modify "
-                        + aggregate));
+                throw new UpdateException("Insufficient permissions to set default web object",
+                        new AuthorizationException("Cannot set default web object, user " + user
+                                + " does not have permission to modify " + aggregate));
             }
 
             do {
                 try {
                     log.debug("Assigning {} as the DWO for {}", dwo, aggregate);
-                    DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(aggregate, RELS_EXT.getName());
+                    DatastreamDocument relsExtResp = managementClient.getXMLDatastreamIfExists(aggregate,
+                            RELS_EXT.getName());
 
                     if (relsExtResp == null) {
-                        throw new UpdateException("Unable to retrieve RELS-EXT for " + aggregate
-                                + ", cannot set default web object");
+                        throw new UpdateException(
+                                "Unable to retrieve RELS-EXT for " + aggregate + ", cannot set default web object");
                     }
 
                     Document relsExt = relsExtResp.getDocument();
 
-                    Element descriptionEl = relsExt.getDocument().getRootElement()
-                            .getChild("Description", JDOMNamespaceUtil.RDF_NS);
+                    Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description",
+                            JDOMNamespaceUtil.RDF_NS);
 
                     String predicate = CDRProperty.defaultWebObject.getPredicate();
                     Namespace ns = CDRProperty.defaultWebObject.getNamespace();
 
-                    // Remove existing dwo relations and indicate their pids need updating.
+                    // Remove existing dwo relations and indicate their pids
+                    // need updating.
                     List<Element> dwoEls = descriptionEl.getChildren(predicate, ns);
                     if (dwoEls != null) {
                         Iterator<Element> dwoIt = dwoEls.iterator();
@@ -323,8 +332,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                     }
 
                     // Push the changes to the objects relations
-                    managementClient
-                            .modifyDatastream(aggregate, RELS_EXT.getName(), null, relsExtResp.getLastModified(), relsExt);
+                    managementClient.modifyDatastream(aggregate, RELS_EXT.getName(), null,
+                            relsExtResp.getLastModified(), relsExt);
 
                     modified.add(aggregate);
                     modified.add(dwo);
@@ -334,7 +343,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                 } catch (FedoraException e) {
                     throw new UpdateException("Error while updating relations for " + aggregate, e);
                 }
-                // Repeat rels-ext update if the source changed since the datastream was retrieved
+                // Repeat rels-ext update if the source changed since the
+                // datastream was retrieved
             } while (true);
         }
 
@@ -346,13 +356,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * This method destroys a set of objects in Fedora, leaving no preservation data. It will update any ancillary
-     * services and log delete events.
+     * This method destroys a set of objects in Fedora, leaving no preservation
+     * data. It will update any ancillary services and log delete events.
      *
      * @param pids
-     *           the PIDs of the objects to purge
+     *            the PIDs of the objects to purge
      * @param message
-     *           the reason for the purge
+     *            the reason for the purge
      * @return a list of PIDs that were purged
      * @see edu.unc.lib.dl.services.DigitalObjectManager.purge()
      */
@@ -403,8 +413,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             // update container
             this.removeFromContainer(pid);
 
-            Element event = logger.logEvent(PremisEventLogger.Type.DELETION, "Deleted " + deleted.size()
-                    + " contained object(s).", container);
+            Element event = logger.logEvent(PremisEventLogger.Type.DELETION,
+                    "Deleted " + deleted.size() + " contained object(s).", container);
             PremisEventLogger.addDetailedOutcome(event, "success", "Message: " + message, null);
             this.forwardedManagementClient.writePremisEventsToFedoraObject(logger, container);
 
@@ -453,11 +463,12 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * Generates a list of referring object PIDs. Dependent objects are currently defined as those objects that refer to
-     * the specified pid in RELS-EXT other than it's container.
+     * Generates a list of referring object PIDs. Dependent objects are
+     * currently defined as those objects that refer to the specified pid in
+     * RELS-EXT other than it's container.
      *
      * @param pid
-     *           the object depended upon
+     *            the object depended upon
      * @return a list of dependent object PIDs
      */
     private List<PID> getReferencesToContents(PID pid) {
@@ -475,19 +486,19 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * This must be called after properties are set. It checks for basic repository objects and throws a runtime
-     * exception if they don't exist.
+     * This must be called after properties are set. It checks for basic
+     * repository objects and throws a runtime exception if they don't exist.
      */
     public void init() {
         // throw a runtime exception?
     }
 
     /**
-     * Just removes object from container, does not log this event. MUST finish operation or dump rollback info and
-     * rethrow exception.
+     * Just removes object from container, does not log this event. MUST finish
+     * operation or dump rollback info and rethrow exception.
      *
      * @param pid
-     *           the PID of the object to remove
+     *            the PID of the object to remove
      * @return the PID of the old container
      * @throws FedoraException
      */
@@ -498,13 +509,14 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             // Block removal of repo object
             if (ContentModelHelper.Administrative_PID.REPOSITORY.getPID().equals(pid)) {
                 return null;
-            }            throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
+            }
+            throw new NotFoundException("Found an object without a parent that is not the REPOSITORY");
         }
         log.debug("removeFromContainer called on PID: " + parent.getPid());
         try {
             // remove ir:contains statement to RELS-EXT
-            relsextDone = this.getManagementClient().purgeObjectRelationship(parent,
-                    Relationship.contains.name(), Relationship.contains.getNamespace(), pid);
+            relsextDone = this.getManagementClient().purgeObjectRelationship(parent, Relationship.contains.name(),
+                    Relationship.contains.getNamespace(), pid);
             if (relsextDone == false) {
                 log.error("failed to purge relationship: " + parent + " contains " + pid);
             }
@@ -515,15 +527,18 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                 try {
                     Document newXML;
                     Document oldXML;
-                    MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(parent, "MD_CONTENTS", null);
-                    try(ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
+                    MIMETypedStream mts = this.getAccessClient().getDatastreamDissemination(parent, "MD_CONTENTS",
+                            null);
+                    try (ByteArrayInputStream bais = new ByteArrayInputStream(mts.getStream())) {
                         oldXML = new SAXBuilder().build(bais);
                     }
                     newXML = ContainerContentsHelper.remove(oldXML, pid);
                     this.getManagementClient().modifyInlineXMLDatastream(parent, "MD_CONTENTS", false,
-                            "removing child object from this container", new ArrayList<String>(), "List of Contents", newXML);
+                            "removing child object from this container", new ArrayList<String>(), "List of Contents",
+                            newXML);
                 } catch (NotFoundException e) {
-                    // MD_CONTENTS was not found, so we will assume this is an unordered container
+                    // MD_CONTENTS was not found, so we will assume this is an
+                    // unordered container
                 }
             }
         } catch (JDOMException e) {
@@ -724,7 +739,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         String dsLabel = datastream.getLabel();
         if (label != null) {
             dsLabel = label;
-        }        List<String> datastreamNames = tripleStoreQueryService.listDisseminators(pid);
+        }
+        List<String> datastreamNames = tripleStoreQueryService.listDisseminators(pid);
         log.debug("Current datastreams: " + datastreamNames);
         String datastreamName = pid.getURI() + "/" + datastream.getName();
         log.debug("Adding or replacing datastream: " + datastreamName);
@@ -733,28 +749,30 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                 // Handle inline datastreams
                 if (datastreamNames.contains(datastreamName)) {
                     log.debug("Replacing preexisting internal datastream " + datastreamName);
-                    return this.forwardedManagementClient.modifyDatastreamByValue(pid, datastream.getName(), false, message,
-                            new ArrayList<String>(), datastream.getLabel(), mimetype, null, null, content);
+                    return this.forwardedManagementClient.modifyDatastreamByValue(pid, datastream.getName(), false,
+                            message, new ArrayList<String>(), datastream.getLabel(), mimetype, null, null, content);
                 } else {
                     log.debug("Adding internal datastream " + datastreamName);
-                    return this.forwardedManagementClient.addInlineXMLDatastream(pid, datastream.getName(), false, message,
-                            new ArrayList<String>(), datastream.getLabel(), datastream.isVersionable(), content);
+                    return this.forwardedManagementClient.addInlineXMLDatastream(pid, datastream.getName(), false,
+                            message, new ArrayList<String>(), datastream.getLabel(), datastream.isVersionable(),
+                            content);
                 }
             } else if (datastream.getControlGroup().equals(ContentModelHelper.ControlGroup.MANAGED)) {
                 // Handle managed datastreams
                 String dsLocation = forwardedManagementClient.upload(content);
                 if (datastreamNames.contains(datastreamName)) {
                     log.debug("Replacing preexisting managed datastream " + datastreamName);
-                    return forwardedManagementClient.modifyDatastreamByReference(pid, datastream.getName(), false, message,
-                            Collections.<String> emptyList(), dsLabel, mimetype, null, null, dsLocation);
+                    return forwardedManagementClient.modifyDatastreamByReference(pid, datastream.getName(), false,
+                            message, Collections.<String>emptyList(), dsLabel, mimetype, null, null, dsLocation);
                 } else {
                     log.debug("Adding managed datastream " + datastreamName);
                     return forwardedManagementClient.addManagedDatastream(pid, datastream.getName(), false, message,
-                            Collections.<String> emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
+                            Collections.<String>emptyList(), dsLabel, datastream.isVersionable(), mimetype, dsLocation);
                 }
             }
         } catch (FedoraException | IOException e) {
-            throw new UpdateException("Failed to modify datastream " + datastream.getName() + " for " + pid.getPid(), e);
+            throw new UpdateException("Failed to modify datastream " + datastream.getName() + " for " + pid.getPid(),
+                    e);
         }
         return null;
     }
@@ -774,23 +792,30 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         // Verify the destination is a container
         List<URI> cmtypes = this.getTripleStoreQueryService().lookupContentModels(destination);
         if (!cmtypes.contains(ContentModelHelper.Model.CONTAINER.getURI())) {
-            throw new IngestException("The destination is not a folder: " + destinationPath + " " + destination.getPid());
+            throw new IngestException(
+                    "The destination is not a folder: " + destinationPath + " " + destination.getPid());
         }
 
-        // Check that none of the items being moved are the destination or one of its ancestors
+        // Check that none of the items being moved are the destination or one
+        // of its ancestors
         for (PID pid : moving) {
             if (pid.equals(destination)) {
-                throw new IngestException("The destination folder and one of the moving objects are the same: " + destination);
-            }            for (PID destPid : destinationPath) {
+                throw new IngestException(
+                        "The destination folder and one of the moving objects are the same: " + destination);
+            }
+            for (PID destPid : destinationPath) {
                 if (pid.equals(destPid)) {
-                    throw new IngestException("The destination folder is below one of the moving objects: " + destination);
-                }            }
+                    throw new IngestException(
+                            "The destination folder is below one of the moving objects: " + destination);
+                }
+            }
         }
 
         // Determine the set of parents for all of the PIDs to be moved
         Map<PID, List<PID>> sources = getChildrenContainerMap(moving);
 
-        // Check that the user has permissions to add/remove from all sources and the destination
+        // Check that the user has permissions to add/remove from all sources
+        // and the destination
         AccessGroupSet groups = GroupsThreadStore.getGroups();
         List<PID> containerList = new ArrayList<>(sources.keySet());
         containerList.add(destination);
@@ -802,11 +827,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             }
         }
 
-        // Get RELS-EXT documents for the set of parents and replace moved children with tombstones
+        // Get RELS-EXT documents for the set of parents and replace moved
+        // children with tombstones
         try {
             for (Entry<PID, List<PID>> sourceEntry : sources.entrySet()) {
                 PID sourcePID = sourceEntry.getKey();
-                // replace the moved children with tombstones and clear them out of MD_CONTENTS
+                // replace the moved children with tombstones and clear them out
+                // of MD_CONTENTS
                 removeChildren(sourcePID, sourceEntry.getValue(), true);
             }
         } catch (Exception e) {
@@ -820,7 +847,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         try {
             addChildren(destination, moving, reordered);
         } catch (Exception e) {
-            // Unexpected failure during move, need to fail operation and roll back
+            // Unexpected failure during move, need to fail operation and roll
+            // back
             log.error("Failed to add children to destination {} during move, attempting to rollback", destination, e);
             rollbackMove(sources);
             throw new IngestException("Failed to move " + moving.size() + " objects into " + destination, e);
@@ -842,8 +870,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
         // Send out notification message that the move has completed
         if (this.getOperationsMessageSender() != null) {
-            this.getOperationsMessageSender().sendMoveOperation(user, sources.keySet(), destination, moving,
-                    reordered);
+            this.getOperationsMessageSender().sendMoveOperation(user, sources.keySet(), destination, moving, reordered);
         }
     }
 
@@ -854,8 +881,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * Attempts to rollback a failed move operation by returning part way moved objects to their original source
-     * container and cleaning up removal markers
+     * Attempts to rollback a failed move operation by returning part way moved
+     * objects to their original source container and cleaning up removal
+     * markers
      *
      * @param source
      * @param moving
@@ -885,7 +913,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             // Determine where the children ended up getting moved to
             Map<PID, List<PID>> destinationMap = getChildrenContainerMap(moving);
             for (Entry<PID, List<PID>> destEntry : destinationMap.entrySet()) {
-                // Remove all of the moved children from the destination they ended up in
+                // Remove all of the moved children from the destination they
+                // ended up in
                 removeChildren(destEntry.getKey(), destEntry.getValue(), false);
             }
 
@@ -897,9 +926,11 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             // Clean up the tombstones
             cleanupRemovedChildren(source, moving);
 
-            // Send out notification message that the rollback operation completed
+            // Send out notification message that the rollback operation
+            // completed
             if (getOperationsMessageSender() != null) {
-                getOperationsMessageSender().sendMoveOperation("cdr", destinationMap.keySet(), source, moving, reordered);
+                getOperationsMessageSender().sendMoveOperation("cdr", destinationMap.keySet(), source, moving,
+                        reordered);
             }
         } catch (FedoraException e) {
             log.error("Failed to automatically rollback move operation on source {}", source, e);
@@ -917,10 +948,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         Map<PID, List<PID>> childContainerMap = new HashMap<>();
         for (PID pid : moving) {
             // Get all containers which contain the moved object.
-            String query = String.format(
-                    "select $pid from <%1$s> where $pid <%2$s> <%3$s>;",
-                    tripleStoreQueryService.getResourceIndexModelUri(),
-                    Relationship.contains, pid.getURI());
+            String query = String.format("select $pid from <%1$s> where $pid <%2$s> <%3$s>;",
+                    tripleStoreQueryService.getResourceIndexModelUri(), Relationship.contains, pid.getURI());
             List<List<String>> result = tripleStoreQueryService.queryResourceIndex(query);
             if (result == null) {
                 log.warn("Attempting to move orphaned object {}", pid);
@@ -943,8 +972,9 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * Remove children from the provided list within the specified container. If replaceWithMarkers is true, then instead
-     * of removing the relations, they will be replaced with removedChild markers
+     * Remove children from the provided list within the specified container. If
+     * replaceWithMarkers is true, then instead of removing the relations, they
+     * will be replaced with removedChild markers
      *
      * @param container
      * @param children
@@ -960,7 +990,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             Document relsExt = relsExtResp.getDocument();
 
             try {
-                Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+                Element descriptionEl = relsExt.getDocument().getRootElement().getChild("Description",
+                        JDOMNamespaceUtil.RDF_NS);
                 List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
 
                 Iterator<Element> containsIt = containsEls.iterator();
@@ -970,7 +1001,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
                     if (children.contains(childPID)) {
                         if (replaceWithMarkers) {
-                            // Switch the moved children to the tombstone relation
+                            // Switch the moved children to the tombstone
+                            // relation
                             containsEl.setName(removedChild.name());
                         } else {
                             // Remove the entry
@@ -981,22 +1013,25 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
                 if (log.isDebugEnabled()) {
                     XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-                    log.debug("Attempting to update RELS-EXT for {} to remove children:\n{}", container, outputter.outputString(relsExt));
+                    log.debug("Attempting to update RELS-EXT for {} to remove children:\n{}", container,
+                            outputter.outputString(relsExt));
                 }
 
-                managementClient.modifyDatastream(container, RELS_EXT.getName(),
-                        "Removing moved children", relsExtResp.getLastModified(), relsExt);
+                managementClient.modifyDatastream(container, RELS_EXT.getName(), "Removing moved children",
+                        relsExtResp.getLastModified(), relsExt);
                 break removeRelsExt;
             } catch (OptimisticLockException e) {
                 log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
             }
-            // Repeat rels-ext update if the source changed since the datastream was retrieved
+            // Repeat rels-ext update if the source changed since the datastream
+            // was retrieved
         } while (true);
 
         // Update source MD_CONTENTS to remove children if it is present
         removeMDContents: do {
             try {
-                DatastreamDocument mdContents = managementClient.getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
+                DatastreamDocument mdContents = managementClient.getXMLDatastreamIfExists(container,
+                        MD_CONTENTS.getName());
 
                 if (mdContents != null) {
                     ContainerContentsHelper.remove(mdContents.getDocument(), children);
@@ -1008,8 +1043,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                     }
 
                     managementClient.modifyDatastream(container, MD_CONTENTS.getName(),
-                            "Removing " + children.size() + " moved children",
-                            mdContents.getLastModified(), mdContents.getDocument());
+                            "Removing " + children.size() + " moved children", mdContents.getLastModified(),
+                            mdContents.getDocument());
                 }
                 break removeMDContents;
             } catch (OptimisticLockException e) {
@@ -1019,7 +1054,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * Add a list of children to a container, updating MD_CONTENTS as well if present
+     * Add a list of children to a container, updating MD_CONTENTS as well if
+     * present
      *
      * @param container
      * @param children
@@ -1027,8 +1063,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
      * @throws FedoraException
      * @throws IngestException
      */
-    private void addChildren(PID container, List<PID> children, Collection<PID> reordered) throws FedoraException,
-            IngestException {
+    private void addChildren(PID container, List<PID> children, Collection<PID> reordered)
+            throws FedoraException, IngestException {
 
         updateRelsExt: do {
             try {
@@ -1037,7 +1073,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
                 Element descriptionEl = relsExt.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
 
-                // Get the list of existing contains relations to avoid duplicate relations
+                // Get the list of existing contains relations to avoid
+                // duplicate relations
                 List<Element> containsEls = descriptionEl.getChildren(contains.name(), contains.getNamespace());
                 Set<PID> existingChildren = new HashSet<>(containsEls.size());
                 for (Element containsEl : containsEls) {
@@ -1057,7 +1094,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
                 if (log.isDebugEnabled()) {
                     XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-                    log.debug("Attempting to update RELS-EXT for {} to add children:\n{}", container, outputter.outputString(relsExt));
+                    log.debug("Attempting to update RELS-EXT for {} to add children:\n{}", container,
+                            outputter.outputString(relsExt));
                 }
 
                 // Push changes out to the container container
@@ -1072,7 +1110,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         updateMDContents: do {
             try {
                 // Update MD_CONTENTS to add new children if it is present
-                DatastreamDocument mdContentsResp = managementClient.getXMLDatastreamIfExists(container, MD_CONTENTS.getName());
+                DatastreamDocument mdContentsResp = managementClient.getXMLDatastreamIfExists(container,
+                        MD_CONTENTS.getName());
 
                 if (mdContentsResp != null) {
                     Document mdContents = ContainerContentsHelper.addChildContentListInCustomOrder(
@@ -1084,8 +1123,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                                 outputter.outputString(mdContents));
                     }
 
-                    managementClient.modifyDatastream(container, MD_CONTENTS.getName(), "Adding " + children.size()
-                            + " children", mdContentsResp.getLastModified(), mdContents);
+                    managementClient.modifyDatastream(container, MD_CONTENTS.getName(),
+                            "Adding " + children.size() + " children", mdContentsResp.getLastModified(), mdContents);
                 }
                 break updateMDContents;
             } catch (OptimisticLockException e) {
@@ -1095,7 +1134,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     /**
-     * Cleanup removedChild references to a list of pids within a particular container.
+     * Cleanup removedChild references to a list of pids within a particular
+     * container.
      *
      * @param container
      * @param children
@@ -1105,7 +1145,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     private void cleanupRemovedChildren(PID container, List<PID> children) throws IngestException, FedoraException {
 
         updateRelsExt: do {
-            // Get the current time before accessing RELS-EXT for use in optimistic locking
+            // Get the current time before accessing RELS-EXT for use in
+            // optimistic locking
             DatastreamDocument relsExtResp = managementClient.getRELSEXTWithRetries(container);
             Document relsExt = relsExtResp.getDocument();
 
@@ -1126,7 +1167,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
 
                 if (log.isDebugEnabled()) {
                     XMLOutputter outputter = new XMLOutputter(org.jdom2.output.Format.getPrettyFormat());
-                    log.debug("Attempting to update RELS-EXT for {} to clean up children:\n{}", container, outputter.outputString(relsExt));
+                    log.debug("Attempting to update RELS-EXT for {} to clean up children:\n{}", container,
+                            outputter.outputString(relsExt));
                 }
 
                 managementClient.modifyDatastream(container, RELS_EXT.getName(), "Cleaning up moved children",
@@ -1135,13 +1177,13 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             } catch (OptimisticLockException e) {
                 log.debug("Unable to update RELS-EXT for {}, retrying", container, e);
             }
-            // Repeat rels-ext update if the source changed since the datastream was retrieved
+            // Repeat rels-ext update if the source changed since the datastream
+            // was retrieved
         } while (true);
     }
 
     @Override
-    public void addChildrenToContainer(PID container, List<PID> children)
-            throws FedoraException, IngestException {
+    public void addChildrenToContainer(PID container, List<PID> children) throws FedoraException, IngestException {
         AccessGroupSet groups = GroupsThreadStore.getGroups();
         if (groups != null && !aclService.hasAccess(container, groups, Permission.addRemoveContents)) {
             throw new AuthorizationException("Insufficient permissions to add children to " + container);
@@ -1168,25 +1210,23 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
     }
 
     @Override
-    public PID createContainer(String name, PID parent, Model extraModel,
-            String user, byte[] mods) throws IngestException {
+    public PID createContainer(String name, PID parent, Model extraModel, String user, byte[] mods)
+            throws IngestException {
 
-        PID containerPid = new PID("uuid:"+UUID.randomUUID());
+        PID containerPid = new PID("uuid:" + UUID.randomUUID());
         Document foxml = FOXMLJDOMUtil.makeFOXMLDocument(containerPid.getPid());
         FOXMLJDOMUtil.setProperty(foxml, ObjectProperty.label, name);
         PremisEventLogger logger = new PremisEventLogger(user);
 
         // MODS
         if (mods != null) {
-            try(ByteArrayInputStream bais = new ByteArrayInputStream(mods)) {
+            try (ByteArrayInputStream bais = new ByteArrayInputStream(mods)) {
                 Document modsDoc = new SAXBuilder().build(bais);
-                if (!this.getSchematronValidator().isValid(
-                        new JDOMSource(modsDoc), "vocabularies-mods")) {
+                if (!this.getSchematronValidator().isValid(new JDOMSource(modsDoc), "vocabularies-mods")) {
                     throw new IngestException("MODS was invalid against vocabularies");
                 } else {
                     Element event = logger.logEvent(Type.VALIDATION,
-                            "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)",
-                            containerPid,
+                            "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)", containerPid,
                             "MD_DESCRIPTIVE");
                     PremisEventLogger.addDetailedOutcome(event, "MODS is valid",
                             "The supplied MODS metadata meets all CDR vocabulary requirements.", null);
@@ -1194,8 +1234,8 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
                 Element modsEl = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(
                         ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
                         ContentModelHelper.Datastream.MD_DESCRIPTIVE.getLabel(),
-                        ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()+"1.0",
-                        modsDoc.detachRootElement(), true);
+                        ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName() + "1.0", modsDoc.detachRootElement(),
+                        true);
                 foxml.getRootElement().addContent(modsEl);
             } catch (IOException e) {
                 throw new Error(e);
@@ -1209,41 +1249,28 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         Element descrElement = new Element("Description", JDOMNamespaceUtil.RDF_NS);
         descrElement.setAttribute("about", containerPid.getURI(), JDOMNamespaceUtil.RDF_NS);
         rdfElement.addContent(descrElement);
-        descrElement.addContent(
-                new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute(
-                        "resource",
-                        ContentModelHelper.Model.CONTAINER.getURI().toString(),
-                        JDOMNamespaceUtil.RDF_NS));
-        descrElement.addContent(
-                new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute(
-                        "resource",
-                        ContentModelHelper.Model.PRESERVEDOBJECT.getURI().toString(),
-                        JDOMNamespaceUtil.RDF_NS));
+        descrElement.addContent(new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute("resource",
+                ContentModelHelper.Model.CONTAINER.getURI().toString(), JDOMNamespaceUtil.RDF_NS));
+        descrElement.addContent(new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute("resource",
+                ContentModelHelper.Model.PRESERVEDOBJECT.getURI().toString(), JDOMNamespaceUtil.RDF_NS));
         if (extraModel != null) {
-            descrElement.addContent(
-                    new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute(
-                            "resource",
-                            extraModel.getURI().toString(),
-                            JDOMNamespaceUtil.RDF_NS));
+            descrElement.addContent(new Element("hasModel", JDOMNamespaceUtil.FEDORA_MODEL_NS).setAttribute("resource",
+                    extraModel.getURI().toString(), JDOMNamespaceUtil.RDF_NS));
         }
-        Element relsEl = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(
-                ContentModelHelper.Datastream.RELS_EXT.getName(),
+        Element relsEl = FOXMLJDOMUtil.makeInlineXMLDatastreamElement(ContentModelHelper.Datastream.RELS_EXT.getName(),
                 ContentModelHelper.Datastream.RELS_EXT.getLabel(),
-                ContentModelHelper.Datastream.RELS_EXT.getName()+"1.0",
-                rdfElement,
+                ContentModelHelper.Datastream.RELS_EXT.getName() + "1.0", rdfElement,
                 ContentModelHelper.Datastream.RELS_EXT.isVersionable());
         foxml.getRootElement().addContent(relsEl);
 
         // PREMIS
         Element premisEl = new Element("premis", JDOMNamespaceUtil.PREMIS_V2_NS)
                 .addContent(PremisEventLogger.getObjectElement(containerPid));
-        logger.logEvent(Type.CREATION,
-                "Container created", containerPid);
+        logger.logEvent(Type.CREATION, "Container created", containerPid);
         logger.appendLogEvents(containerPid, premisEl);
         String premisLoc = forwardedManagementClient.upload(new Document(premisEl));
-        Element premisDSEl = FOXMLJDOMUtil.makeLocatorDatastream(
-                ContentModelHelper.Datastream.MD_EVENTS.getName(), "M", premisLoc, "text/xml", "URL",
-                ContentModelHelper.Datastream.MD_EVENTS.getLabel(), false, null);
+        Element premisDSEl = FOXMLJDOMUtil.makeLocatorDatastream(ContentModelHelper.Datastream.MD_EVENTS.getName(), "M",
+                premisLoc, "text/xml", "URL", ContentModelHelper.Datastream.MD_EVENTS.getLabel(), false, null);
         foxml.getRootElement().addContent(premisDSEl);
 
         if (log.isDebugEnabled()) {

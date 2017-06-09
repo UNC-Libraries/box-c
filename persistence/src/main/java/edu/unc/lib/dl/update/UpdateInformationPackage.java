@@ -21,6 +21,11 @@ import java.util.Map;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PremisEventLogger;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface UpdateInformationPackage {
 
     public PID getPID();

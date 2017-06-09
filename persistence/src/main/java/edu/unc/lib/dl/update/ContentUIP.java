@@ -23,6 +23,11 @@ import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class ContentUIP extends FedoraObjectUIP {
 
     public ContentUIP(PID pid, String user, UpdateOperation operation) {
@@ -53,8 +58,9 @@ public class ContentUIP extends FedoraObjectUIP {
         // For efficiency, only pulling down the original if it is being
         // modified, not replaced/deleted
         if (!(this.operation.equals(UpdateOperation.ADD) || this.operation
-                .equals(UpdateOperation.UPDATE)))
+                .equals(UpdateOperation.UPDATE))) {
             return;
+        }
 
         for (String datastream : modifiedData.keySet()) {
             try {

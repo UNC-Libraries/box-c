@@ -17,7 +17,11 @@ package edu.unc.lib.dl.update;
 
 import java.util.List;
 
-
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class UIPUpdatePipeline {
 
     private List<UIPUpdateFilter> updateFilters;

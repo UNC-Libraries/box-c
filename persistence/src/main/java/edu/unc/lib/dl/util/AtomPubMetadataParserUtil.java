@@ -33,7 +33,12 @@ import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
-public class AtomPubMetadataParserUtil {
+/**
+ * 
+ * @author bbpennel
+ *
+ */
+public abstract class AtomPubMetadataParserUtil {
     private static Logger log = Logger
             .getLogger(AtomPubMetadataParserUtil.class);
 
@@ -56,7 +61,8 @@ public class AtomPubMetadataParserUtil {
         // If the request was for a specific datastream, add it in
         if (pid != null && pid instanceof DatastreamPID) {
             defaultDatastream = ((DatastreamPID) pid).getDatastream();
-        }        return extractDatastreams(entry, defaultDatastream);
+        }
+        return extractDatastreams(entry, defaultDatastream);
     }
 
     /**
@@ -226,7 +232,8 @@ public class AtomPubMetadataParserUtil {
             SAXBuilder saxBuilder) throws JDOMException, IOException {
         if (element == null) {
             return null;
-        }        try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
+        }
+        try (ByteArrayOutputStream outStream = new ByteArrayOutputStream()) {
             element.writeTo(outStream);
             try (ByteArrayInputStream inStream = new ByteArrayInputStream(
                     outStream.toByteArray())) {

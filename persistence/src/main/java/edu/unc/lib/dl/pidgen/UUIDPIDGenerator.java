@@ -28,6 +28,9 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * @see http://www.ietf.org/rfc/rfc4122.txt This identifier scheme is compatible with both the Fedora PID and a URN.
  *      PIDs are of the form "uuid:21a579fb-7bca-4025-88c0-345ee293725b". Note that datastream PIDs and datastream
  *      version PIDs will be uniquely persistent, but will not be compatible with URN.
+ *
+ * @author count0
+ * 
  */
 public class UUIDPIDGenerator implements PIDGenerator {
     private TripleStoreQueryService tripleStoreQueryService;
