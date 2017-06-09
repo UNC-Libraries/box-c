@@ -238,7 +238,7 @@
 				<executions>
 					<execution>
 						<id>check-style</id>
-						<phase>validate</phase>
+						<phase>verify</phase>
 						<configuration>
 							<configLocation>checkstyle.xml</configLocation>
 							<encoding>UTF-8</encoding>
