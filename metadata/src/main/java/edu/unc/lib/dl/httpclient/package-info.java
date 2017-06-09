@@ -18,4 +18,9 @@
  * by HttpClient.
  */
 
+/**
+ * httpclient
+ * @author count0
+ *
+ */
 package edu.unc.lib.dl.httpclient;

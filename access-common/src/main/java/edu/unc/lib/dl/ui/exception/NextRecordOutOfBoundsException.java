@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dl.ui.exception;
 
+/**
+ * 
+ * @author count0
+ */
 public class NextRecordOutOfBoundsException extends Exception {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 }

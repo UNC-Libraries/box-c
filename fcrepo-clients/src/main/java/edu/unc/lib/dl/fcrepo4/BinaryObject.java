@@ -30,124 +30,124 @@ import edu.unc.lib.dl.rdf.Premis;
 /**
  * A binary resource object in the repository. Represents a single binary file
  * and its properties.
- * 
+ *
  * @author bbpennel
  *
  */
 public class BinaryObject extends RepositoryObject {
 
-	private String filename;
-	private String mimetype;
-	private String checksum;
-	private Long filesize;
+    private String filename;
+    private String mimetype;
+    private String checksum;
+    private Long filesize;
 
-	private URI metadataUri;
+    private URI metadataUri;
 
-	protected BinaryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-		
-		metadataUri = repository.getMetadataUri(pid);
-	}
+    protected BinaryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
 
-	@Override
-	public BinaryObject validateType() throws FedoraException {
-		if (!isType(Fcrepo4Repository.Binary.getURI())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a Deposit Record.");
-		}
-		return this;
-	}
-	
-	@Override
-	public RepositoryObject getParent() {
-		return dataLoader.getParentObject(this);
-	}
+        metadataUri = repository.getMetadataUri(pid);
+    }
 
-	/**
-	 * Get an inputstream of the binary content
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public InputStream getBinaryStream() throws FedoraException {
-		return dataLoader.getBinaryStream(this);
-	}
-	
-	/**
-	 * Non-RDF resources, like binaries, have to retrieve metadata from a different path
-	 */
-	@Override
-	public URI getMetadataUri() {
-		return metadataUri;
-	}
+    @Override
+    public BinaryObject validateType() throws FedoraException {
+        if (!isType(Fcrepo4Repository.Binary.getURI())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a Deposit Record.");
+        }
+        return this;
+    }
 
-	/**
-	 * Get the filename of the binary content if it was provided.
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public String getFilename() throws FedoraException {
-		if (filename == null) {
-			Statement property = getResource().getProperty(Ebucore.filename);
-			if (property != null) {
-				filename = property.getString();
-			}
-		}
-		return filename;
-	}
+    @Override
+    public RepositoryObject getParent() {
+        return dataLoader.getParentObject(this);
+    }
 
-	public void setFilename(String filename) {
-		this.filename = filename;
-	}
+    /**
+     * Get an inputstream of the binary content
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public InputStream getBinaryStream() throws FedoraException {
+        return dataLoader.getBinaryStream(this);
+    }
 
-	/**
-	 * Get the mimetype of the store binary content
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public String getMimetype() throws FedoraException {
-		if (mimetype == null) {
-			mimetype = getResource().getProperty(Ebucore.hasMimeType).getString();
-		}
-		return mimetype;
-	}
+    /**
+     * Non-RDF resources, like binaries, have to retrieve metadata from a different path
+     */
+    @Override
+    public URI getMetadataUri() {
+        return metadataUri;
+    }
 
-	public void setMimetype(String mimetype) {
-		this.mimetype = mimetype;
-	}
+    /**
+     * Get the filename of the binary content if it was provided.
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public String getFilename() throws FedoraException {
+        if (filename == null) {
+            Statement property = getResource().getProperty(Ebucore.filename);
+            if (property != null) {
+                filename = property.getString();
+            }
+        }
+        return filename;
+    }
 
-	/**
-	 * Get the SHA-1 checksum for the stored binary content 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public String getChecksum() throws FedoraException {
-		if (checksum == null) {
-			checksum = getResource().getProperty(Premis.hasMessageDigest)
-					.getObject().toString();
-		}
-		return checksum;
-	}
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
 
-	public void setChecksum(String checksum) {
-		this.checksum = checksum;
-	}
+    /**
+     * Get the mimetype of the store binary content
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public String getMimetype() throws FedoraException {
+        if (mimetype == null) {
+            mimetype = getResource().getProperty(Ebucore.hasMimeType).getString();
+        }
+        return mimetype;
+    }
 
-	/**
-	 * Get the filesize of the stored binary content in bytes
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public Long getFilesize() throws FedoraException {
-		if (filesize == null) {
-			filesize = getResource().getProperty(Premis.hasSize).getLong();
-		}
-		return filesize;
-	}
+    public void setMimetype(String mimetype) {
+        this.mimetype = mimetype;
+    }
 
-	public void setFilesize(Long filesize) {
-		this.filesize = filesize;
-	}
+    /**
+     * Get the SHA-1 checksum for the stored binary content
+     * @return
+     * @throws FedoraException
+     */
+    public String getChecksum() throws FedoraException {
+        if (checksum == null) {
+            checksum = getResource().getProperty(Premis.hasMessageDigest)
+                    .getObject().toString();
+        }
+        return checksum;
+    }
+
+    public void setChecksum(String checksum) {
+        this.checksum = checksum;
+    }
+
+    /**
+     * Get the filesize of the stored binary content in bytes
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public Long getFilesize() throws FedoraException {
+        if (filesize == null) {
+            filesize = getResource().getProperty(Premis.hasSize).getLong();
+        }
+        return filesize;
+    }
+
+    public void setFilesize(Long filesize) {
+        this.filesize = filesize;
+    }
 }

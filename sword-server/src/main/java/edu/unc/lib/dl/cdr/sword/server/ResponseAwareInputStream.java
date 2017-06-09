@@ -28,22 +28,22 @@ import org.apache.http.client.methods.CloseableHttpResponse;
  * 
  */
 public class ResponseAwareInputStream extends InputStream {
-	private CloseableHttpResponse response;
-	private InputStream originalStream;
+    private CloseableHttpResponse response;
+    private InputStream originalStream;
 
-	public ResponseAwareInputStream(CloseableHttpResponse resp) throws IOException {
-		this.response = resp;
-		this.originalStream = resp.getEntity().getContent();
-	}
+    public ResponseAwareInputStream(CloseableHttpResponse resp) throws IOException {
+        this.response = resp;
+        this.originalStream = resp.getEntity().getContent();
+    }
 
-	@Override
-	public int read() throws IOException {
-		return originalStream.read();
-	}
+    @Override
+    public int read() throws IOException {
+        return originalStream.read();
+    }
 
-	public void close() throws IOException {
-		if (response != null) {
-			response.close();
-		}
-	}
+    public void close() throws IOException {
+        if (response != null) {
+            response.close();
+        }
+    }
 }

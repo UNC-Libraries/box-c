@@ -44,95 +44,95 @@ import edu.unc.lib.dl.util.ResourceType;
  */
 @Controller
 public class ContentModelController {
-	
-	private static final Logger log = LoggerFactory.getLogger(ContentModelController.class);
-	
-	@Autowired
-	private DigitalObjectManager dom;
 
-	@RequestMapping(value = "edit/editType", method = RequestMethod.POST)
-	public @ResponseBody Object editResourceType(@RequestBody EditResourceTypeRequest editRequest,
-			HttpServletResponse response) {
-		
-		Map<String, Object> results = new HashMap<>();
-		
-		if (editRequest.newType == null || editRequest.newType.equals(ResourceType.File)) {
-			results.put("error", "Invalid type " + editRequest.newType
-					+ " specified as the new type.  Only container types are supported currently.");
-			response.setStatus(400);
-			return results;
-		}
-		
-		editRequest.user = GroupsThreadStore.getUsername();
-		editRequest.groupSet = GroupsThreadStore.getGroups();
-		
-		EditTypeRunnable editType = new EditTypeRunnable(editRequest);
-		Thread editThread = new Thread(editType);
-		editThread.start();
-		
-		results.put("message", "Operation to edit " + editRequest.pids.size() + " objects to type "
-				+ editRequest.newType + " has begun");
-		
-		response.setStatus(200);
-		return results;
-	}
+    private static final Logger log = LoggerFactory.getLogger(ContentModelController.class);
 
-	public static class EditResourceTypeRequest {
-		private List<PID> pids;
-		private ResourceType newTypeObject;
-		private String newType;
-		private String user;
-		private AccessGroupSet groupSet;
-		
+    @Autowired
+    private DigitalObjectManager dom;
 
-		public ResourceType getNewType() {
-			return newTypeObject;
-		}
+    @RequestMapping(value = "edit/editType", method = RequestMethod.POST)
+    public @ResponseBody Object editResourceType(@RequestBody EditResourceTypeRequest editRequest,
+            HttpServletResponse response) {
 
-		public void setNewType(String newType) {
-			this.newType = newType;
-			this.newTypeObject = ResourceType.valueOf(newType);
-		}
+        Map<String, Object> results = new HashMap<>();
 
-		public void setPids(List<String> pids) {
-			this.pids = new ArrayList<PID>(pids.size());
-			for (String id : pids)
-				this.pids.add(new PID(id));
-		}
-		
-		public List<PID> getPids() {
-			return this.pids;
-		}
-	}
-	
-	private class EditTypeRunnable implements Runnable {
-		
-		private final EditResourceTypeRequest editRequest;
-		
-		public EditTypeRunnable(EditResourceTypeRequest editRequest) {
-			this.editRequest = editRequest;
-		}
+        if (editRequest.newType == null || editRequest.newType.equals(ResourceType.File)) {
+            results.put("error", "Invalid type " + editRequest.newType
+                    + " specified as the new type.  Only container types are supported currently.");
+            response.setStatus(400);
+            return results;
+        }
 
-		@Override
-		public void run() {
-			Long start = System.currentTimeMillis();
-			
-			try {
-				GroupsThreadStore.storeGroups(editRequest.groupSet);
-				GroupsThreadStore.storeUsername(editRequest.user);
-				
-				try {
-					dom.editResourceType(editRequest.pids, editRequest.getNewType(), editRequest.user);
-				} catch (UpdateException e) {
-					log.warn("Failed to edit model to {}", editRequest.newType, e);
-				}
-			} finally {
-				GroupsThreadStore.clearStore();
-			}
-			
-			log.info("Finished changing content models for {} object(s) in {}ms",
-					editRequest.pids.size(), (System.currentTimeMillis() - start));
-		}
-		
-	}
+        editRequest.user = GroupsThreadStore.getUsername();
+        editRequest.groupSet = GroupsThreadStore.getGroups();
+
+        EditTypeRunnable editType = new EditTypeRunnable(editRequest);
+        Thread editThread = new Thread(editType);
+        editThread.start();
+
+        results.put("message", "Operation to edit " + editRequest.pids.size() + " objects to type "
+                + editRequest.newType + " has begun");
+
+        response.setStatus(200);
+        return results;
+    }
+
+    public static class EditResourceTypeRequest {
+        private List<PID> pids;
+        private ResourceType newTypeObject;
+        private String newType;
+        private String user;
+        private AccessGroupSet groupSet;
+
+        public ResourceType getNewType() {
+            return newTypeObject;
+        }
+
+        public void setNewType(String newType) {
+            this.newType = newType;
+            this.newTypeObject = ResourceType.valueOf(newType);
+        }
+
+        public void setPids(List<String> pids) {
+            this.pids = new ArrayList<PID>(pids.size());
+            for (String id : pids) {
+                this.pids.add(new PID(id));
+            }
+        }
+
+        public List<PID> getPids() {
+            return this.pids;
+        }
+    }
+
+    private class EditTypeRunnable implements Runnable {
+
+        private final EditResourceTypeRequest editRequest;
+
+        public EditTypeRunnable(EditResourceTypeRequest editRequest) {
+            this.editRequest = editRequest;
+        }
+
+        @Override
+        public void run() {
+            Long start = System.currentTimeMillis();
+
+            try {
+                GroupsThreadStore.storeGroups(editRequest.groupSet);
+                GroupsThreadStore.storeUsername(editRequest.user);
+
+                try {
+                    dom.editResourceType(editRequest.pids, editRequest.getNewType(), editRequest.user);
+                } catch (UpdateException e) {
+                    log.warn("Failed to edit model to {}", editRequest.newType, e);
+                }
+            } finally {
+                GroupsThreadStore.clearStore();
+            }
+
+            log.info("Finished changing content models for {} object(s) in {}ms",
+                    editRequest.pids.size(), (System.currentTimeMillis() - start));
+        }
+
+    }
 }

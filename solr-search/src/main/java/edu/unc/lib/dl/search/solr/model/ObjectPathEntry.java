@@ -21,38 +21,38 @@ package edu.unc.lib.dl.search.solr.model;
  */
 public class ObjectPathEntry {
 
-	private String pid;
-	private String name;
-	private boolean isContainer;
+    private String pid;
+    private String name;
+    private boolean isContainer;
 
-	public ObjectPathEntry(String pid, String name, boolean isContainer) {
-		this.pid = pid;
-		this.name = name;
-		this.isContainer = isContainer;
-	}
+    public ObjectPathEntry(String pid, String name, boolean isContainer) {
+        this.pid = pid;
+        this.name = name;
+        this.isContainer = isContainer;
+    }
 
-	public String getPid() {
-		return pid;
-	}
+    public String getPid() {
+        return pid;
+    }
 
-	public void setPid(String pid) {
-		this.pid = pid;
-	}
+    public void setPid(String pid) {
+        this.pid = pid;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public boolean isContainer() {
-		return isContainer;
-	}
+    public boolean isContainer() {
+        return isContainer;
+    }
 
-	public void setContainer(boolean isContainer) {
-		this.isContainer = isContainer;
-	}
+    public void setContainer(boolean isContainer) {
+        this.isContainer = isContainer;
+    }
 
 }

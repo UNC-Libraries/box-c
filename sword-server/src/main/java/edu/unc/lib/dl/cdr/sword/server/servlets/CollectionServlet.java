@@ -35,68 +35,73 @@ import org.swordapp.server.CollectionListManager;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 @RequestMapping(SwordConfigurationImpl.COLLECTION_PATH)
 public class CollectionServlet extends BaseSwordServlet {
-	private static Logger LOG = Logger.getLogger(CollectionServlet.class);
+    private static Logger LOG = Logger.getLogger(CollectionServlet.class);
 
-	@Resource
-	protected CollectionListManager collectionListManager;
-	@Resource
-	protected CollectionDepositManager collectionDepositManager;
-	protected CollectionAPI api;
+    @Resource
+    protected CollectionListManager collectionListManager;
+    @Resource
+    protected CollectionDepositManager collectionDepositManager;
+    protected CollectionAPI api;
 
-	@PostConstruct
-	public void init() throws ServletException {
-		// load the API
-		this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
-	}
+    @PostConstruct
+    public void init() throws ServletException {
+        // load the API
+        this.api = new CollectionAPI(this.collectionListManager, this.collectionDepositManager, this.config);
+    }
 
-	@RequestMapping(value = { "", "/", "/{pid}", "/{pid}/*" }, method = RequestMethod.GET)
-	public void collectionList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("GET request for collection content list");
-		this.api.get(req, resp);
-	}
+    @RequestMapping(value = { "", "/", "/{pid}", "/{pid}/*" }, method = RequestMethod.GET)
+    public void collectionList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        LOG.debug("GET request for collection content list");
+        this.api.get(req, resp);
+    }
 
-	@RequestMapping(value = { "", "/", "/{pid}" }, method = RequestMethod.POST)
-	public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (LOG.isDebugEnabled()) {
-			LOG.debug("POST request to submit to collection: " + req.getQueryString());
-			LOG.debug("Packaging: " + req.getHeader("Packaging"));
-			String headers = null;
-			@SuppressWarnings("unchecked")
-			Enumeration<String> e = req.getHeaderNames();
-			LOG.debug("Collection submission headers:");
-			while (e.hasMoreElements()) {
-				headers = e.nextElement();
-				if (headers != null) {
-					LOG.debug("  " + headers + ":" + req.getHeader(headers));
-				}
-			}
-		}
-		
-		try {
-			this.api.post(req, resp);
-		} catch (Exception e) {
-			LOG.error("An unhandled exception occurred while attempting to ingest to " + req.getRequestURI(), e);
-			resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-			resp.getWriter().write("An unexpected exception occurred while attempting to process your submission.");
-		}
-	}
+    @RequestMapping(value = { "", "/", "/{pid}" }, method = RequestMethod.POST)
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("POST request to submit to collection: " + req.getQueryString());
+            LOG.debug("Packaging: " + req.getHeader("Packaging"));
+            String headers = null;
+            @SuppressWarnings("unchecked")
+            Enumeration<String> e = req.getHeaderNames();
+            LOG.debug("Collection submission headers:");
+            while (e.hasMoreElements()) {
+                headers = e.nextElement();
+                if (headers != null) {
+                    LOG.debug("  " + headers + ":" + req.getHeader(headers));
+                }
+            }
+        }
 
-	public CollectionListManager getCollectionListManager() {
-		return collectionListManager;
-	}
+        try {
+            this.api.post(req, resp);
+        } catch (Exception e) {
+            LOG.error("An unhandled exception occurred while attempting to ingest to " + req.getRequestURI(), e);
+            resp.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            resp.getWriter().write("An unexpected exception occurred while attempting to process your submission.");
+        }
+    }
 
-	public void setCollectionListManager(CollectionListManager collectionListManager) {
-		this.collectionListManager = collectionListManager;
-	}
+    public CollectionListManager getCollectionListManager() {
+        return collectionListManager;
+    }
 
-	public CollectionDepositManager getCollectionDepositManager() {
-		return collectionDepositManager;
-	}
+    public void setCollectionListManager(CollectionListManager collectionListManager) {
+        this.collectionListManager = collectionListManager;
+    }
 
-	public void setCollectionDepositManager(CollectionDepositManager collectionDepositManager) {
-		this.collectionDepositManager = collectionDepositManager;
-	}
+    public CollectionDepositManager getCollectionDepositManager() {
+        return collectionDepositManager;
+    }
+
+    public void setCollectionDepositManager(CollectionDepositManager collectionDepositManager) {
+        this.collectionDepositManager = collectionDepositManager;
+    }
 }

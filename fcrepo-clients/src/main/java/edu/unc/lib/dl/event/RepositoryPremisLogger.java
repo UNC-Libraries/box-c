@@ -36,84 +36,84 @@ import edu.unc.lib.dl.util.ObjectPersistenceException;
 /**
  * Logs PREMIS events for a repository object, which are persisted as PREMIS
  * event objects in the repository.
- * 
+ *
  * @author bbpennel
  *
  */
 public class RepositoryPremisLogger implements PremisLogger {
 
-	private Repository repository;
-	private RepositoryObject repoObject;
-	
-	private List<PremisEventObject> events;
-	
-	public RepositoryPremisLogger(RepositoryObject repoObject, Repository repository) {
-		this.repoObject = repoObject;
-		this.repository = repository;
-	}
-	
-	@Override
-	public PremisEventBuilder buildEvent(Resource eventType, Date date) {
-		if (date == null) {
-			date = new Date();
-		}
+    private Repository repository;
+    private RepositoryObject repoObject;
 
-		return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
-				eventType, date, this);
-	}
+    private List<PremisEventObject> events;
 
-	@Override
-	public PremisEventBuilder buildEvent(Resource eventType) {
-		return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
-				eventType, new Date(), this);
-	}
+    public RepositoryPremisLogger(RepositoryObject repoObject, Repository repository) {
+        this.repoObject = repoObject;
+        this.repository = repository;
+    }
 
-	@Override
-	public PremisLogger writeEvent(Resource eventResc) {
-		Model eventModel = eventResc.getModel();
-		PID eventPid = PIDs.get(eventResc.getURI());
+    @Override
+    public PremisEventBuilder buildEvent(Resource eventType, Date date) {
+        if (date == null) {
+            date = new Date();
+        }
 
-		try {
-			repository.createPremisEvent(eventPid, eventModel);
-		} catch (FedoraException e) {
-			throw new ObjectPersistenceException("Failed to create event at " + eventPid, e);
-		}
+        return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
+                eventType, date, this);
+    }
 
-		return this;
-	}
+    @Override
+    public PremisEventBuilder buildEvent(Resource eventType) {
+        return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
+                eventType, new Date(), this);
+    }
 
-	@Override
-	public List<PID> listEvents() {
-		Model model = repoObject.getModel();
+    @Override
+    public PremisLogger writeEvent(Resource eventResc) {
+        Model eventModel = eventResc.getModel();
+        PID eventPid = PIDs.get(eventResc.getURI());
 
-		List<PID> pids = new ArrayList<>();
-		NodeIterator nodeIt = model.listObjectsOfProperty(Premis.hasEvent);
-		while (nodeIt.hasNext()) {
-			RDFNode node = nodeIt.nextNode();
-			if (node.isResource()) {
-				pids.add(PIDs.get(node.asResource().getURI()));
-			}
-		}
+        try {
+            repository.createPremisEvent(eventPid, eventModel);
+        } catch (FedoraException e) {
+            throw new ObjectPersistenceException("Failed to create event at " + eventPid, e);
+        }
 
-		return pids;
-	}
+        return this;
+    }
 
-	private void retrieveAllEvents() {
-		List<PID> eventPids = listEvents();
+    @Override
+    public List<PID> listEvents() {
+        Model model = repoObject.getModel();
 
-		for (PID pid : eventPids) {
-			events.add(repository.getPremisEvent(pid));
-		}
-	}
+        List<PID> pids = new ArrayList<>();
+        NodeIterator nodeIt = model.listObjectsOfProperty(Premis.hasEvent);
+        while (nodeIt.hasNext()) {
+            RDFNode node = nodeIt.nextNode();
+            if (node.isResource()) {
+                pids.add(PIDs.get(node.asResource().getURI()));
+            }
+        }
 
-	@Override
-	public List<PremisEventObject> getEvents() {
-		if (events == null) {
-			events = new ArrayList<>();
-			retrieveAllEvents();
-		}
+        return pids;
+    }
 
-		return events;
-	}
+    private void retrieveAllEvents() {
+        List<PID> eventPids = listEvents();
+
+        for (PID pid : eventPids) {
+            events.add(repository.getPremisEvent(pid));
+        }
+    }
+
+    @Override
+    public List<PremisEventObject> getEvents() {
+        if (events == null) {
+            events = new ArrayList<>();
+            retrieveAllEvents();
+        }
+
+        return events;
+    }
 
 }

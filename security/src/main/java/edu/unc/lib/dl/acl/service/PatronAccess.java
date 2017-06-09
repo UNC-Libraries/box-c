@@ -23,8 +23,8 @@ package edu.unc.lib.dl.acl.service;
  *
  */
 public enum PatronAccess {
-	parent,
-	none,
-	everyone,
-	authenticated
+    parent,
+    none,
+    everyone,
+    authenticated
 }

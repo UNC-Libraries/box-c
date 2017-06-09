@@ -20,86 +20,86 @@ import org.junit.Test;
 
 public class UserSecurityProfileFilterTest {
 
-	@Test
-	public void filterTests() {
-		/*UserSecurityProfileFilter filter = new UserSecurityProfileFilter();
+    @Test
+    public void filterTests() {
+        /*UserSecurityProfileFilter filter = new UserSecurityProfileFilter();
 
-		MockHttpServletRequest request = new MockHttpServletRequest();
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		MockFilterChain chain = new MockFilterChain();
-		request.setServletPath("/test/");
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        MockFilterChain chain = new MockFilterChain();
+        request.setServletPath("/test/");
 
-		request.addHeader("isMemberOf", "");
-		try {
-			filter.doFilterInternal(request, response, chain);
+        request.addHeader("isMemberOf", "");
+        try {
+            filter.doFilterInternal(request, response, chain);
 
-			UserSecurityProfile user = (UserSecurityProfile)request.getSession().getAttribute("user");
-			Assert.assertNotNull(user);
+            UserSecurityProfile user = (UserSecurityProfile)request.getSession().getAttribute("user");
+            Assert.assertNotNull(user);
 
-			Assert.assertTrue(user.getUserName().equals(""));
-			Assert.assertNotNull(user.getAccessGroups());
-			Assert.assertEquals(user.getAccessGroups().size(), 1);
-			Assert.assertTrue(user.getAccessGroups().contains(AccessGroupConstants.PUBLIC_GROUP));
-			Assert.assertNotNull(user.getDatastreamAccessCache());
+            Assert.assertTrue(user.getUserName().equals(""));
+            Assert.assertNotNull(user.getAccessGroups());
+            Assert.assertEquals(user.getAccessGroups().size(), 1);
+            Assert.assertTrue(user.getAccessGroups().contains(AccessGroupConstants.PUBLIC_GROUP));
+            Assert.assertNotNull(user.getDatastreamAccessCache());
 
-			//////////////
-			request = new MockHttpServletRequest();
-			response = new MockHttpServletResponse();
-			chain = new MockFilterChain();
+            //////////////
+            request = new MockHttpServletRequest();
+            response = new MockHttpServletResponse();
+            chain = new MockFilterChain();
 
-			request.setRemoteUser("testUser");
-			request.addHeader("isMemberOf", "testGroup");
+            request.setRemoteUser("testUser");
+            request.addHeader("isMemberOf", "testGroup");
 
-			filter.doFilterInternal(request, response, chain);
-			user = (UserSecurityProfile)request.getSession().getAttribute("user");
+            filter.doFilterInternal(request, response, chain);
+            user = (UserSecurityProfile)request.getSession().getAttribute("user");
 
-			Assert.assertTrue("testUser".equals(user.getUserName()));
-			Assert.assertEquals(user.getAccessGroups().size(), 2);
+            Assert.assertTrue("testUser".equals(user.getUserName()));
+            Assert.assertEquals(user.getAccessGroups().size(), 2);
 
-			////////////
-			request = new MockHttpServletRequest();
-			response = new MockHttpServletResponse();
-			chain = new MockFilterChain();
+            ////////////
+            request = new MockHttpServletRequest();
+            response = new MockHttpServletResponse();
+            chain = new MockFilterChain();
 
-			request.setRemoteUser("user");
+            request.setRemoteUser("user");
 
-			user = new UserSecurityProfile();
-			user.setUserName("testUser");
-			user.getDatastreamAccessCache().put("testObject", AccessType.FILE);
-			request.getSession().setAttribute("user", user);
+            user = new UserSecurityProfile();
+            user.setUserName("testUser");
+            user.getDatastreamAccessCache().put("testObject", AccessType.FILE);
+            request.getSession().setAttribute("user", user);
 
-			filter.doFilterInternal(request, response, chain);
-			user = (UserSecurityProfile)request.getSession().getAttribute("user");
+            filter.doFilterInternal(request, response, chain);
+            user = (UserSecurityProfile)request.getSession().getAttribute("user");
 
-			Assert.assertTrue("user".equals(user.getUserName()));
-			Assert.assertEquals(user.getAccessGroups().size(), 1);
-			Assert.assertEquals(user.getDatastreamAccessCache().size(), 0);
+            Assert.assertTrue("user".equals(user.getUserName()));
+            Assert.assertEquals(user.getAccessGroups().size(), 1);
+            Assert.assertEquals(user.getDatastreamAccessCache().size(), 0);
 
-			/////////////
-			request = new MockHttpServletRequest();
-			response = new MockHttpServletResponse();
-			chain = new MockFilterChain();
+            /////////////
+            request = new MockHttpServletRequest();
+            response = new MockHttpServletResponse();
+            chain = new MockFilterChain();
 
-			String groups = "public;unc:lib:cdr:test";
-			request.setRemoteUser("testUser");
-			request.addHeader("isMemberOf", groups);
+            String groups = "public;unc:lib:cdr:test";
+            request.setRemoteUser("testUser");
+            request.addHeader("isMemberOf", groups);
 
-			user = new UserSecurityProfile();
-			user.setUserName("testUser");
-			user.setAccessGroups(groups);
-			user.getDatastreamAccessCache().put("testObject", AccessType.FILE);
-			request.getSession().setAttribute("user", user);
+            user = new UserSecurityProfile();
+            user.setUserName("testUser");
+            user.setAccessGroups(groups);
+            user.getDatastreamAccessCache().put("testObject", AccessType.FILE);
+            request.getSession().setAttribute("user", user);
 
-			filter.doFilterInternal(request, response, chain);
-			user = (UserSecurityProfile)request.getSession().getAttribute("user");
+            filter.doFilterInternal(request, response, chain);
+            user = (UserSecurityProfile)request.getSession().getAttribute("user");
 
-			Assert.assertTrue("testUser".equals(user.getUserName()));
-			Assert.assertTrue(groups.equals(user.getIsMemeberOf()));
-			Assert.assertEquals(user.getAccessGroups().size(), 2);
-			Assert.assertEquals(user.getDatastreamAccessCache().size(), 1);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail(e.toString());
-		}*/
-	}
+            Assert.assertTrue("testUser".equals(user.getUserName()));
+            Assert.assertTrue(groups.equals(user.getIsMemeberOf()));
+            Assert.assertEquals(user.getAccessGroups().size(), 2);
+            Assert.assertEquals(user.getDatastreamAccessCache().size(), 1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.toString());
+        }*/
+    }
 }

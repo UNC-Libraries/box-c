@@ -42,115 +42,127 @@ import org.apache.jena.riot.RDFFormat;
  */
 public class RDFModelUtil {
 
-	public final static String TURTLE_MIMETYPE = "text/turtle";
+    public final static String TURTLE_MIMETYPE = "text/turtle";
 
-	public static void serializeModel(Model model, File file) throws IOException {
-		try (FileOutputStream fos = new FileOutputStream(file)) {
-			RDFDataMgr.write(fos, model, RDFFormat.TURTLE_PRETTY);
-		}
-	}
+    private RDFModelUtil() {
 
-	/**
-	 * Serializes and streams the provided model as serialized turtle
-	 * 
-	 * @param model
-	 * @return
-	 * @throws IOException
-	 */
-	public static InputStream streamModel(Model model) throws IOException {
-		return streamModel(model, RDFFormat.TURTLE_PRETTY);
-	}
+    }
 
-	/**
-	 * Serializes and streams the provided model, using the specified format
-	 * 
-	 * @param model
-	 * @param format
-	 * @return
-	 * @throws IOException
-	 */
-	public static InputStream streamModel(Model model, RDFFormat format) throws IOException {
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			RDFDataMgr.write(bos, model, format);
-			return new ByteArrayInputStream(bos.toByteArray());
-		}
-	}
+    public static void serializeModel(Model model, File file) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            RDFDataMgr.write(fos, model, RDFFormat.TURTLE_PRETTY);
+        }
+    }
 
-	/**
-	 * Returns a model built from the given turtle input stream
-	 * 
-	 * @param inStream
-	 * @return
-	 */
-	public static Model createModel(InputStream inStream) {
-		Model model = ModelFactory.createDefaultModel();
-		model.read(inStream, null, "TURTLE");
-		return model;
-	}
+    /**
+     * Serializes and streams the provided model as serialized turtle
+     * 
+     * @param model
+     * @return
+     * @throws IOException
+     */
+    public static InputStream streamModel(Model model) throws IOException {
+        return streamModel(model, RDFFormat.TURTLE_PRETTY);
+    }
 
-	/**
-	 * Convert the given model into a SPARQL update query which inserts all
-	 * of the properties in the model.
-	 * 
-	 * @param model
-	 * @return sparql update query which adds all properties from the given model
-	 */
-	public static String createSparqlInsert(Model model) {
-		StringBuilder query = new StringBuilder();
-		query.append("INSERT {\n");
+    /**
+     * Serializes and streams the provided model, using the specified format
+     * 
+     * @param model
+     * @param format
+     * @return
+     * @throws IOException
+     */
+    public static InputStream streamModel(Model model, RDFFormat format) throws IOException {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            RDFDataMgr.write(bos, model, format);
+            return new ByteArrayInputStream(bos.toByteArray());
+        }
+    }
 
-		ResIterator it = model.listSubjects();
-		while (it.hasNext()) {
-			Resource resc = it.nextResource();
-			String currentUri = resc.getURI();
+    /**
+     * Returns a model built from the given turtle input stream
+     * 
+     * @param inStream
+     * @return
+     */
+    public static Model createModel(InputStream inStream) {
+        Model model = ModelFactory.createDefaultModel();
+        model.read(inStream, null, "TURTLE");
+        return model;
+    }
 
-			StmtIterator pIt = resc.listProperties();
-			while (pIt.hasNext()) {
-				Statement property = pIt.nextStatement();
-				query.append(" <").append(currentUri).append('>').append(" <").append(property.getPredicate().getURI())
-						.append("> ");
-				if (property.getObject().isResource()) {
-					query.append('<').append(property.getObject().asResource().getURI()).append('>');
-				} else {
-					Node node = property.getObject().asNode();
-					query.append('"').append(node.getLiteralLexicalForm()).append('"');
-					String typeUri = node.getLiteralDatatypeURI();
-					if (typeUri != null) {
-						query.append("^^<").append(node.getLiteralDatatypeURI()).append('>');
-					}
-				}
-				query.append(" .\n");
-			}
+    /**
+     * Convert the given model into a SPARQL update query which inserts all of
+     * the properties in the model.
+     * 
+     * @param model
+     * @return sparql update query which adds all properties from the given
+     *         model
+     */
+    public static String createSparqlInsert(Model model) {
+        StringBuilder query = new StringBuilder();
+        query.append("INSERT {\n");
 
-		}
+        ResIterator it = model.listSubjects();
+        while (it.hasNext()) {
+            Resource resc = it.nextResource();
+            String currentUri = resc.getURI();
 
-		query.append("}\nWHERE {}");
+            StmtIterator pIt = resc.listProperties();
+            while (pIt.hasNext()) {
+                Statement property = pIt.nextStatement();
+                query.append(" <").append(currentUri).append('>').append(" <")
+                        .append(property.getPredicate().getURI()).append("> ");
+                if (property.getObject().isResource()) {
+                    query.append('<')
+                            .append(property.getObject().asResource().getURI())
+                            .append('>');
+                } else {
+                    Node node = property.getObject().asNode();
+                    query.append('"').append(node.getLiteralLexicalForm())
+                            .append('"');
+                    String typeUri = node.getLiteralDatatypeURI();
+                    if (typeUri != null) {
+                        query.append("^^<")
+                                .append(node.getLiteralDatatypeURI())
+                                .append('>');
+                    }
+                }
+                query.append(" .\n");
+            }
 
-		return query.toString();
-	}
-	
-	public static String createSparqlInsert(String subjUri, Property property, Resource object) {
-		return buildSparqlInsert(subjUri, property, "<" + object.getURI() + ">");
-	}
-	
-	public static String createSparqlInsert(String subjUri, Property property, String value) {
-		return buildSparqlInsert(subjUri, property, "\"" + value + "\"");
-	}
+        }
 
-	private static String buildSparqlInsert(String subjUri, Property property, String object) {
-		StringBuilder query = new StringBuilder();
-		query.append("INSERT {\n");
+        query.append("}\nWHERE {}");
 
-		if (subjUri == null) {
-			query.append(" <>");
-		} else {
-			query.append(" <").append(subjUri).append('>');
-		}
-		
-		query.append(" <").append(property.getURI()).append("> ")
-			.append(object).append(" .\n")
-			.append("}\nWHERE {}");
-		
-		return query.toString();
-	}
+        return query.toString();
+    }
+
+    public static String createSparqlInsert(String subjUri, Property property,
+            Resource object) {
+        return buildSparqlInsert(subjUri, property, "<" + object.getURI() + ">");
+    }
+
+    public static String createSparqlInsert(String subjUri, Property property,
+            String value) {
+        return buildSparqlInsert(subjUri, property, "\"" + value + "\"");
+    }
+
+    private static String buildSparqlInsert(String subjUri, Property property,
+            String object) {
+        StringBuilder query = new StringBuilder();
+        query.append("INSERT {\n");
+
+        if (subjUri == null) {
+            query.append(" <>");
+        } else {
+            query.append(" <").append(subjUri).append('>');
+        }
+
+        query.append(" <").append(property.getURI()).append("> ")
+                .append(object).append(" .\n").append("}\nWHERE {}");
+
+        return query.toString();
+    }
 }

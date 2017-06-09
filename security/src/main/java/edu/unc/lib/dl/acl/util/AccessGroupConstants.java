@@ -15,26 +15,35 @@
  */
 package edu.unc.lib.dl.acl.util;
 
+/**
+ * Constants related to access control groups
+ * 
+ * @author bbpennel
+ *
+ */
 public class AccessGroupConstants {
-	public final static String PUBLIC_GROUP = "public";
-	public final static String AUTHENTICATED_GROUP = "authenticated";
-	public static String ADMIN_GROUP = null;
-	public static String ADMIN_GROUP_ESCAPED = null;
-	
-	public void setADMIN_GROUP(String group){
-		if (ADMIN_GROUP != null)
-			return;
-		ADMIN_GROUP = group;
-		ADMIN_GROUP_ESCAPED = ADMIN_GROUP.replaceAll(":", "\\\\:");
-	}
-	
-	public String getPUBLIC_GROUP() {
-		return PUBLIC_GROUP;
-	}
-	public String getADMIN_GROUP() {
-		return ADMIN_GROUP;
-	}
-	public String getADMIN_GROUP_ESCAPED() {
-		return ADMIN_GROUP_ESCAPED;
-	}
+    public final static String PUBLIC_GROUP = "public";
+    public final static String AUTHENTICATED_GROUP = "authenticated";
+    public static String ADMIN_GROUP = null;
+    public static String ADMIN_GROUP_ESCAPED = null;
+
+    public void setADMIN_GROUP(String group) {
+        if (ADMIN_GROUP != null) {
+            return;
+        }
+        ADMIN_GROUP = group;
+        ADMIN_GROUP_ESCAPED = ADMIN_GROUP.replaceAll(":", "\\\\:");
+    }
+
+    public String getPUBLIC_GROUP() {
+        return PUBLIC_GROUP;
+    }
+
+    public String getADMIN_GROUP() {
+        return ADMIN_GROUP;
+    }
+
+    public String getADMIN_GROUP_ESCAPED() {
+        return ADMIN_GROUP_ESCAPED;
+    }
 }

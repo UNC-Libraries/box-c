@@ -21,20 +21,20 @@ package edu.unc.lib.dl.fedora;
  */
 public class FedoraTimeoutException extends ServiceException {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -5509017474926163463L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = -5509017474926163463L;
 
-	public FedoraTimeoutException(String desc) {
-		super(desc);
-	}
+    public FedoraTimeoutException(String desc) {
+        super(desc);
+    }
 
-	/**
-	 * @param cause
-	 */
-	public FedoraTimeoutException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * @param cause
+     */
+    public FedoraTimeoutException(Throwable cause) {
+        super(cause);
+    }
 
 }

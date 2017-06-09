@@ -51,69 +51,68 @@ import edu.unc.lib.dl.rdf.PcdmUse;
  *
  */
 public class FulltextProcessor implements Processor {
-	private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
-	
-	private final Repository repository;
-	private final String slug;
-	private final String fileName;
-	
-	private final int maxRetries;
-	private final long retryDelay;
-	
-	private final static String MIMETYPE = "text/plain";
+    private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
-	public FulltextProcessor(Repository repository, String slug, String fileName, int maxRetries, long retryDelay) {
-		this.repository = repository;
-		this.slug = slug;
-		this.fileName = fileName;
-		this.maxRetries = maxRetries;
-		this.retryDelay = retryDelay;
-	}
+    private final Repository repository;
+    private final String slug;
+    private final String fileName;
 
-	@Override
-	public void process(Exchange exchange) throws Exception {
-		final Message in = exchange.getIn();
+    private final int maxRetries;
+    private final long retryDelay;
 
-		String binaryUri = (String) in.getHeader(FCREPO_URI);
-		String binaryPath = (String) in.getHeader(CdrBinaryPath);
-		String text = extractText(binaryPath);
-		int retryAttempt = 0;
-		
-		InputStream binaryStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
-		
-		while (true) {
-			try {
-				BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
-				FileObject parent = (FileObject) binary.getParent();
-				
-				parent.addDerivative(slug, binaryStream, fileName, MIMETYPE, PcdmUse.ExtractedText);
-				
-				log.info("Adding derivative for {} from {}", binaryUri, fileName);
-				break;
-			} catch (Exception e) {
-				if (retryAttempt == maxRetries) {
-					throw e;
-				}
-				
-				retryAttempt++;
-				log.info("Unable to add derivative for {} from {}. Retrying, attempt {}",
-						binaryUri, binaryPath, retryAttempt);
-				TimeUnit.MILLISECONDS.sleep(retryDelay);
-				
-			}
-		}
-	}
-	
-	private String extractText(String filepath) throws IOException, SAXException, TikaException {
-		BodyContentHandler handler = new BodyContentHandler();
+    private final static String MIMETYPE = "text/plain";
 
-		AutoDetectParser parser = new AutoDetectParser();
-		Metadata metadata = new Metadata();
+    public FulltextProcessor(Repository repository, String slug, String fileName, int maxRetries, long retryDelay) {
+        this.repository = repository;
+        this.slug = slug;
+        this.fileName = fileName;
+        this.maxRetries = maxRetries;
+        this.retryDelay = retryDelay;
+    }
 
-		try (InputStream stream = new FileInputStream(new File(filepath))) {
-			parser.parse(stream, handler, metadata);
-			return handler.toString();
-		}
-	}
+    @Override
+    public void process(Exchange exchange) throws Exception {
+        final Message in = exchange.getIn();
+
+        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        String binaryPath = (String) in.getHeader(CdrBinaryPath);
+        String text = extractText(binaryPath);
+        int retryAttempt = 0;
+
+        InputStream binaryStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
+
+        while (true) {
+            try {
+                BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
+                FileObject parent = (FileObject) binary.getParent();
+
+                parent.addDerivative(slug, binaryStream, fileName, MIMETYPE, PcdmUse.ExtractedText);
+
+                log.info("Adding derivative for {} from {}", binaryUri, fileName);
+                break;
+            } catch (Exception e) {
+                if (retryAttempt == maxRetries) {
+                    throw e;
+                }
+
+                retryAttempt++;
+                log.info("Unable to add derivative for {} from {}. Retrying, attempt {}",
+                        binaryUri, binaryPath, retryAttempt);
+                TimeUnit.MILLISECONDS.sleep(retryDelay);
+
+            }
+        }
+    }
+
+    private String extractText(String filepath) throws IOException, SAXException, TikaException {
+        BodyContentHandler handler = new BodyContentHandler();
+
+        AutoDetectParser parser = new AutoDetectParser();
+        Metadata metadata = new Metadata();
+
+        try (InputStream stream = new FileInputStream(new File(filepath))) {
+            parser.parse(stream, handler, metadata);
+            return handler.toString();
+        }
+    }
 }
-

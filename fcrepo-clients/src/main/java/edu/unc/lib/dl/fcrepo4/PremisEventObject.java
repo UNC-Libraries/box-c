@@ -8,48 +8,48 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class PremisEventObject extends RepositoryObject implements Comparable<PremisEventObject> {
-	private static final Logger log = LoggerFactory.getLogger(PremisEventObject.class);
+    private static final Logger log = LoggerFactory.getLogger(PremisEventObject.class);
 
-	public PremisEventObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    public PremisEventObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	@Override
-	public PremisEventObject validateType() throws FedoraException {
-		return this;
-	}
+    @Override
+    public PremisEventObject validateType() throws FedoraException {
+        return this;
+    }
 
-	/**
-	 * Default sort order for events is chronological by event date.
-	 */
-	@Override
-	public int compareTo(PremisEventObject o) {
-		try {
-			String d1 = getResource().getProperty(Premis.hasEventDateTime).getString();
-			String d2 = o.getResource().getProperty(Premis.hasEventDateTime).getString();
-			return d1.compareTo(d2);
-		} catch (FedoraException e) {
-			log.error("Failed to parse event date while ordering", e);
-			return 0;
-		}
-	}
-	
-	@Override
-	public RepositoryObject getParent() {
-		return dataLoader.getParentObject(this);
-	}
+    /**
+     * Default sort order for events is chronological by event date.
+     */
+    @Override
+    public int compareTo(PremisEventObject o) {
+        try {
+            String d1 = getResource().getProperty(Premis.hasEventDateTime).getString();
+            String d2 = o.getResource().getProperty(Premis.hasEventDateTime).getString();
+            return d1.compareTo(d2);
+        } catch (FedoraException e) {
+            log.error("Failed to parse event date while ordering", e);
+            return 0;
+        }
+    }
 
-	/**
-	 * Override to assume that the remote version will not change after creation
-	 * of the event. Supports offline creation of PREMIS event objects
-	 */
-	@Override
-	public boolean isUnmodified() {
-		return true;
-	}
+    @Override
+    public RepositoryObject getParent() {
+        return dataLoader.getParentObject(this);
+    }
+
+    /**
+     * Override to assume that the remote version will not change after creation
+     * of the event. Supports offline creation of PREMIS event objects
+     */
+    @Override
+    public boolean isUnmodified() {
+        return true;
+    }
 }

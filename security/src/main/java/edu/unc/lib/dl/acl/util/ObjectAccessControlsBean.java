@@ -21,73 +21,76 @@ import java.util.Set;
 
 /**
  * Encapsulates the complete set of access controls that apply to a particular object.
- *
+ * 
+ * @author bbpennel
+ * 
  */
 public interface ObjectAccessControlsBean {
-	/**
-	 * Find the last active embargo date, or null of no embargo is set.
-	 *
-	 * @return the embargo date or null
-	 */
-	public Date getLastActiveEmbargoUntilDate();
+    /**
+     * Find the last active embargo date, or null of no embargo is set.
+     *
+     * @return the embargo date or null
+     */
+    public Date getLastActiveEmbargoUntilDate();
 
-	/**
-	 * Builds a set of all user roles granted to the given groups.
-	 *
-	 * @param groups
-	 * @return
-	 */
-	public Set<UserRole> getRoles(AccessGroupSet groups);
+    /**
+     * Builds a set of all user roles granted to the given groups.
+     *
+     * @param groups
+     * @return
+     */
+    public Set<UserRole> getRoles(AccessGroupSet groups);
 
-	/**
-	 * Returns true if a user has the specified permission on this object, given
-	 * a set of groups.
-	 *
-	 * @param groups
-	 *            user memberships
-	 * @param permission
-	 *            the permission requested
-	 * @return if permitted
-	 */
-	public boolean hasPermission(AccessGroupSet groups, Permission permission);
+    /**
+     * Returns true if a user has the specified permission on this object, given
+     * a set of groups.
+     *
+     * @param groups
+     *            user memberships
+     * @param permission
+     *            the permission requested
+     * @return if permitted
+     */
+    public boolean hasPermission(AccessGroupSet groups, Permission permission);
 
-	public static boolean hasPermission(AccessGroupSet groups, Permission permission, Set<UserRole> roles) {
-		for (UserRole r : roles) {
-			if (r.getPermissions().contains(permission))
-				return true;
-		}
-		return false;
-	}
+    public static boolean hasPermission(AccessGroupSet groups, Permission permission, Set<UserRole> roles) {
+        for (UserRole r : roles) {
+            if (r.getPermissions().contains(permission)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Retrieves the set of all permissions granted to a set of access groups
-	 *
-	 * @param groups
-	 * @return
-	 */
-	public Set<String> getPermissionsByGroups(AccessGroupSet groups);
+    /**
+     * Retrieves the set of all permissions granted to a set of access groups
+     *
+     * @param groups
+     * @return
+     */
+    public Set<String> getPermissionsByGroups(AccessGroupSet groups);
 
-	/**
-	 * Returns all groups assigned to this object that possess the given permission
-	 *
-	 * @param permission
-	 * @return
-	 */
-	public Set<String> getGroupsByPermission(Permission permission);
+    /**
+     * Returns all groups assigned to this object that possess the given permission
+     *
+     * @param permission
+     * @return
+     */
+    public Set<String> getGroupsByPermission(Permission permission);
 
-	/**
-	 * Returns all groups assigned to the given role
-	 *
-	 * @param userRole
-	 * @return
-	 */
-	public Set<String> getGroupsByUserRole(UserRole userRole);
+    /**
+     * Returns all groups assigned to the given role
+     *
+     * @param userRole
+     * @return
+     */
+    public Set<String> getGroupsByUserRole(UserRole userRole);
 
-	/**
-	 * Returns a list where each entry contains a single role name + group pairing assigned to this object. Values are
-	 * pipe delimited
-	 * 
-	 * @return
-	 */
-	public List<String> roleGroupsToUnprefixedList();
+    /**
+     * Returns a list where each entry contains a single role name + group pairing assigned to this object. Values are
+     * pipe delimited
+     * 
+     * @return
+     */
+    public List<String> roleGroupsToUnprefixedList();
 }

@@ -22,131 +22,131 @@ import edu.unc.lib.dl.fedora.PID;
 /**
  * Persistent identifier for a fedora repository object.  Provides both externally
  * facing URI information as well as the internal Fedora repository URI.
- * 
+ *
  * @author bbpennel
  *
  */
 public class FedoraPID extends PID {
-	private static final long serialVersionUID = 7627752253405069756L;
-	
-	private String id;
-	private String qualifier;
-	private String qualifiedId;
-	private String componentPath;
-	private URI repositoryUri;
-	private String repositoryPath;
+    private static final long serialVersionUID = 7627752253405069756L;
 
-	public FedoraPID(String id, String qualifier, String componentPath, URI repositoryUri) {
-		this.id = id;
-		this.qualifier = qualifier;
-		this.componentPath = componentPath;
-		this.repositoryUri = repositoryUri;
-		this.repositoryPath = repositoryUri.toString();
-		this.qualifiedId = qualifier + "/" + id;
-		if (componentPath != null) {
-			this.qualifiedId += "/" + componentPath;
-		}
-	}
+    private String id;
+    private String qualifier;
+    private String qualifiedId;
+    private String componentPath;
+    private URI repositoryUri;
+    private String repositoryPath;
 
-	/**
-	 * Get the unique identifier for this object.
-	 * 
-	 * @return the unique identifier for this object
-	 */
-	@Override
-	public String getId() {
-		return id;
-	}
+    public FedoraPID(String id, String qualifier, String componentPath, URI repositoryUri) {
+        this.id = id;
+        this.qualifier = qualifier;
+        this.componentPath = componentPath;
+        this.repositoryUri = repositoryUri;
+        this.repositoryPath = repositoryUri.toString();
+        this.qualifiedId = qualifier + "/" + id;
+        if (componentPath != null) {
+            this.qualifiedId += "/" + componentPath;
+        }
+    }
 
-	/**
-	 * Get the object type path qualifier for this object.
-	 * 
-	 * @return the object type path qualifier for this object.
-	 */
-	@Override
-	public String getQualifier() {
-		return qualifier;
-	}
+    /**
+     * Get the unique identifier for this object.
+     *
+     * @return the unique identifier for this object
+     */
+    @Override
+    public String getId() {
+        return id;
+    }
 
-	/**
-	 * Get the qualified unique identifier for this object, containing the
-	 * formatted qualifier and id.
-	 * 
-	 * @return the qualified id
-	 */
-	@Override
-	public String getQualifiedId() {
-		return qualifiedId;
-	}
+    /**
+     * Get the object type path qualifier for this object.
+     *
+     * @return the object type path qualifier for this object.
+     */
+    @Override
+    public String getQualifier() {
+        return qualifier;
+    }
 
-	/**
-	 * Get the component path, which is the portion of the repository path identifying 
-	 * a specific component of the digital object
-	 * 
-	 * @return the component path
-	 */
-	@Override
-	public String getComponentPath() {
-		return componentPath;
-	}
+    /**
+     * Get the qualified unique identifier for this object, containing the
+     * formatted qualifier and id.
+     *
+     * @return the qualified id
+     */
+    @Override
+    public String getQualifiedId() {
+        return qualifiedId;
+    }
 
-	/**
-	 * The passed in PID is a component of this pid if its repository path contains
-	 * this object but is not the same path. 
-	 */
-	@Override
-	public boolean containsComponent(PID pid) {
-		return pid.getRepositoryPath().startsWith(repositoryPath) &&
-				!repositoryPath.equals(pid.getRepositoryPath());
-	}
+    /**
+     * Get the component path, which is the portion of the repository path identifying
+     * a specific component of the digital object
+     *
+     * @return the component path
+     */
+    @Override
+    public String getComponentPath() {
+        return componentPath;
+    }
 
-	@Override
-	public String getURI() {
-		return getRepositoryPath();
-	}
-	
-	/**
-	 * Get the repository uri for this object or component, which is the full URI of the object in Fedora
-	 * 
-	 * @return
-	 */
-	@Override
-	public URI getRepositoryUri() {
-		return repositoryUri;
-	}
+    /**
+     * The passed in PID is a component of this pid if its repository path contains
+     * this object but is not the same path.
+     */
+    @Override
+    public boolean containsComponent(PID pid) {
+        return pid.getRepositoryPath().startsWith(repositoryPath) &&
+                !repositoryPath.equals(pid.getRepositoryPath());
+    }
 
-	@Override
-	public String getRepositoryPath() {
-		return repositoryPath;
-	}
+    @Override
+    public String getURI() {
+        return getRepositoryPath();
+    }
 
-	/**
-	 * Get the persistent identifier for this object
-	 */
-	@Override
-	public String getPid() {
-		// Special case for content paths for legacy purposes
-		if (RepositoryPathConstants.CONTENT_BASE.equals(qualifier)) {
-			if (componentPath == null) {
-				return "uuid:" + id;
-			}
-			return "uuid:" + id + "/" + componentPath;
-		}
-		return getQualifiedId();
-	}
+    /**
+     * Get the repository uri for this object or component, which is the full URI of the object in Fedora
+     *
+     * @return
+     */
+    @Override
+    public URI getRepositoryUri() {
+        return repositoryUri;
+    }
 
-	@Override
-	public String getUUID() {
-		return getId();
-	}
+    @Override
+    public String getRepositoryPath() {
+        return repositoryPath;
+    }
 
-	@Override
-	public String toString() {
-		return getRepositoryPath();
-	}
-	
-	@Override
-	public int hashCode() {
-		return repositoryPath.hashCode();
-	}
+    /**
+     * Get the persistent identifier for this object
+     */
+    @Override
+    public String getPid() {
+        // Special case for content paths for legacy purposes
+        if (RepositoryPathConstants.CONTENT_BASE.equals(qualifier)) {
+            if (componentPath == null) {
+                return "uuid:" + id;
+            }
+            return "uuid:" + id + "/" + componentPath;
+        }
+        return getQualifiedId();
+    }
+
+    @Override
+    public String getUUID() {
+        return getId();
+    }
+
+    @Override
+    public String toString() {
+        return getRepositoryPath();
+    }
+
+    @Override
+    public int hashCode() {
+        return repositoryPath.hashCode();
+    }
 }

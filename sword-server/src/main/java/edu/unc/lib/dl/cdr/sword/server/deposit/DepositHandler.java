@@ -30,24 +30,24 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
  * 
  */
 public interface DepositHandler {
-	/**
-	 * Ingests the provided Deposit object into the container destination
-	 * 
-	 * @param destination
-	 *           PID of the container which will become the parent of the deposit
-	 * @param deposit
-	 * @param type
-	 *           packaging type of the deposit
-	 * @param priority
-	 *           priority level for the submitted deposit
-	 * @param config
-	 * @param depositor
-	 *           username of the depositor
-	 * @param owner
-	 *           username of the owner to assign to the deposit
-	 * @return
-	 * @throws Exception
-	 */
-	public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
-			SwordConfiguration config, String depositor, String owner) throws Exception;
+    /**
+     * Ingests the provided Deposit object into the container destination
+     * 
+     * @param destination
+     *           PID of the container which will become the parent of the deposit
+     * @param deposit
+     * @param type
+     *           packaging type of the deposit
+     * @param priority
+     *           priority level for the submitted deposit
+     * @param config
+     * @param depositor
+     *           username of the depositor
+     * @param owner
+     *           username of the owner to assign to the deposit
+     * @return
+     * @throws Exception
+     */
+    public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,
+            SwordConfiguration config, String depositor, String owner) throws Exception;
 }

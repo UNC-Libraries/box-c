@@ -57,108 +57,110 @@ import edu.unc.lib.dl.httpclient.HttpClientUtil;
  */
 @Controller
 public class IngestController {
-	private static final Logger log = LoggerFactory.getLogger(IngestController.class);
+    private static final Logger log = LoggerFactory.getLogger(IngestController.class);
 
-	@Autowired
-	private String swordUrl;
-	@Autowired
-	private String swordUsername;
-	@Autowired
-	private String swordPassword;
-	private static QName SWORD_VERBOSE_DESCRIPTION = new QName("http://purl.org/net/sword/terms/", "verboseDescription");
+    @Autowired
+    private String swordUrl;
+    @Autowired
+    private String swordUsername;
+    @Autowired
+    private String swordPassword;
+    private static QName SWORD_VERBOSE_DESCRIPTION = new QName(
+            "http://purl.org/net/sword/terms/", "verboseDescription");
 
-	@RequestMapping(value = "ingest/{pid}", method = RequestMethod.POST)
-	public @ResponseBody
-	Map<String, ? extends Object> ingestPackageController(@PathVariable("pid") String pid,
-			@RequestParam("type") String type, @RequestParam(value = "name", required = false) String name,
-			@RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
-		
-		String destinationUrl = swordUrl + "collection/" + pid;
-		CloseableHttpClient client = HttpClientUtil
-				.getAuthenticatedClient(null, swordUsername, swordPassword);
-		HttpPost method = new HttpPost(destinationUrl);
+    @RequestMapping(value = "ingest/{pid}", method = RequestMethod.POST)
+    public @ResponseBody
+    Map<String, ? extends Object> ingestPackageController(@PathVariable("pid") String pid,
+            @RequestParam("type") String type, @RequestParam(value = "name", required = false) String name,
+            @RequestParam("file") MultipartFile ingestFile, HttpServletRequest request, HttpServletResponse response) {
 
-		// Set SWORD related headers for performing ingest
-		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
-		method.addHeader("Packaging", type);
-		method.addHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
-		method.addHeader("Content-Type", ingestFile.getContentType());
-		method.addHeader("mail", request.getHeader("mail"));
+        String destinationUrl = swordUrl + "collection/" + pid;
+        CloseableHttpClient client = HttpClientUtil
+                .getAuthenticatedClient(null, swordUsername, swordPassword);
+        HttpPost method = new HttpPost(destinationUrl);
 
-		if (ingestFile.getOriginalFilename() != null) {
-			try {
-				method.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(ingestFile.getOriginalFilename(), "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				log.warn("Unable to properly encode value to UTF-8", e);
-				method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
-			}
-		}
-		if (name != null && name.trim().length() > 0) {
-			try {
-				method.addHeader("Slug", URLEncoder.encode(name, "UTF-8"));
-			} catch (UnsupportedEncodingException e1) {
-				log.warn("Unable to properly encode value to UTF-8", e1);
-				method.addHeader("Slug", name);
-			}
-		}
+        // Set SWORD related headers for performing ingest
+        method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+        method.addHeader("Packaging", type);
+        method.addHeader("On-Behalf-Of", GroupsThreadStore.getUsername());
+        method.addHeader("Content-Type", ingestFile.getContentType());
+        method.addHeader("mail", request.getHeader("mail"));
 
-		// Setup the json response
-		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("action", "ingest");
-		result.put("destination", pid);
-		
-		try {
-			InputStreamEntity entity = new InputStreamEntity(ingestFile.getInputStream(), ingestFile.getSize());
-			method.setEntity(entity);
-		} catch (IOException e) {
-			log.error("Failed to read ingest file", e);
-			return null;
-		}
-		
-		try (CloseableHttpResponse httpResp = client.execute(method)) {
-			int statusCode = httpResp.getStatusLine().getStatusCode();
-			
-			response.setStatus(statusCode);
+        if (ingestFile.getOriginalFilename() != null) {
+            try {
+                method.setHeader("Content-Disposition",
+                        "attachment; filename=" + URLEncoder.encode(ingestFile.getOriginalFilename(), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                log.warn("Unable to properly encode value to UTF-8", e);
+                method.addHeader("Content-Disposition", "attachment; filename=" + ingestFile.getOriginalFilename());
+            }
+        }
+        if (name != null && name.trim().length() > 0) {
+            try {
+                method.addHeader("Slug", URLEncoder.encode(name, "UTF-8"));
+            } catch (UnsupportedEncodingException e1) {
+                log.warn("Unable to properly encode value to UTF-8", e1);
+                method.addHeader("Slug", name);
+            }
+        }
 
-			// Object successfully "create", or at least queued
-			if (statusCode == 201) {
-				String newPid = httpResp.getFirstHeader("Location").getValue();
-				newPid = newPid.substring(newPid.lastIndexOf('/'));
-				result.put("pid", newPid);
-			} else if (statusCode == 401) {
-				// Unauthorized
-				result.put("error", "Not authorized to ingest to container " + pid);
-			} else if (statusCode == 400 || statusCode >= 500) {
-				// Server error, report it to the client
-				result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName()
-						+ "\" to " + pid);
+        // Setup the json response
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("action", "ingest");
+        result.put("destination", pid);
 
-				// Inspect the SWORD response, extracting the stacktrace
-				InputStream entryPart = httpResp.getEntity().getContent();
-				Abdera abdera = new Abdera();
-				Parser parser = abdera.getParser();
-				Document<Entry> entryDoc = parser.parse(entryPart);
-				Object rootEntry = entryDoc.getRoot();
-				String stackTrace;
-				if (rootEntry instanceof FOMExtensibleElement) {
-					stackTrace = ((org.apache.abdera.parser.stax.FOMExtensibleElement) entryDoc.getRoot()).getExtension(
-							SWORD_VERBOSE_DESCRIPTION).getText();
-					result.put("errorStack", stackTrace);
-				} else {
-					stackTrace = ((Entry) rootEntry).getExtension(SWORD_VERBOSE_DESCRIPTION).getText();
-					result.put("errorStack", stackTrace);
-				}
-				log.warn(
-						"Failed to upload ingest package file " + ingestFile.getName() + " from user "
-								+ GroupsThreadStore.getUsername(), stackTrace);
-			}
-			return result;
-		} catch (Exception e) {
-			log.warn("Encountered an unexpected error while ingesting package " + ingestFile.getName() + " from user "
-					+ GroupsThreadStore.getUsername(), e);
-			result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName() + "\" to "
-					+ pid);
-			return result;
-		}
-	}
+        try {
+            InputStreamEntity entity = new InputStreamEntity(ingestFile.getInputStream(), ingestFile.getSize());
+            method.setEntity(entity);
+        } catch (IOException e) {
+            log.error("Failed to read ingest file", e);
+            return null;
+        }
+
+        try (CloseableHttpResponse httpResp = client.execute(method)) {
+            int statusCode = httpResp.getStatusLine().getStatusCode();
+
+            response.setStatus(statusCode);
+
+            // Object successfully "create", or at least queued
+            if (statusCode == 201) {
+                String newPid = httpResp.getFirstHeader("Location").getValue();
+                newPid = newPid.substring(newPid.lastIndexOf('/'));
+                result.put("pid", newPid);
+            } else if (statusCode == 401) {
+                // Unauthorized
+                result.put("error", "Not authorized to ingest to container " + pid);
+            } else if (statusCode == 400 || statusCode >= 500) {
+                // Server error, report it to the client
+                result.put("error", "A server error occurred while attempting to ingest \"" + ingestFile.getName()
+                        + "\" to " + pid);
+
+                // Inspect the SWORD response, extracting the stacktrace
+                InputStream entryPart = httpResp.getEntity().getContent();
+                Abdera abdera = new Abdera();
+                Parser parser = abdera.getParser();
+                Document<Entry> entryDoc = parser.parse(entryPart);
+                Object rootEntry = entryDoc.getRoot();
+                String stackTrace;
+                if (rootEntry instanceof FOMExtensibleElement) {
+                    stackTrace = ((org.apache.abdera.parser.stax.FOMExtensibleElement) entryDoc.getRoot()).getExtension(
+                            SWORD_VERBOSE_DESCRIPTION).getText();
+                    result.put("errorStack", stackTrace);
+                } else {
+                    stackTrace = ((Entry) rootEntry).getExtension(SWORD_VERBOSE_DESCRIPTION).getText();
+                    result.put("errorStack", stackTrace);
+                }
+                log.warn(
+                        "Failed to upload ingest package file " + ingestFile.getName() + " from user "
+                                + GroupsThreadStore.getUsername(), stackTrace);
+            }
+            return result;
+        } catch (Exception e) {
+            log.warn("Encountered an unexpected error while ingesting package " + ingestFile.getName() + " from user "
+                    + GroupsThreadStore.getUsername(), e);
+            result.put("error", "A server error occurred while attempting to ingest \""
+                    + ingestFile.getName() + "\" to " + pid);
+            return result;
+        }
+    }
 }

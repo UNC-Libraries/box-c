@@ -18,12 +18,17 @@ package edu.unc.lib.dl.update;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public abstract class FedoraObjectUIP extends UIPImpl {
 
-	public FedoraObjectUIP(PID pid, String user, UpdateOperation operation) {
-		super(pid, user, operation);
-	}
+    public FedoraObjectUIP(PID pid, String user, UpdateOperation operation) {
+        super(pid, user, operation);
+    }
 
-	public abstract void storeOriginalDatastreams(AccessClient accessClient) throws UIPException;
-	
+    public abstract void storeOriginalDatastreams(AccessClient accessClient) throws UIPException;
+
 }

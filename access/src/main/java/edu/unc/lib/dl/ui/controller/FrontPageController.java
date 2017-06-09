@@ -36,26 +36,28 @@ import edu.unc.lib.dl.ui.util.ExternalContentSettings;
 @Controller
 @RequestMapping("/")
 public class FrontPageController extends AbstractSolrSearchController {
-	private static final Logger LOG = LoggerFactory.getLogger(FrontPageController.class);
-	
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request){
-		LOG.debug("In front page controller");
+    private static final Logger LOG = LoggerFactory.getLogger(FrontPageController.class);
 
-		// Retrieve collection stats
-		model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount());
-		model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount());
-		model.addAttribute("formatCounts", this.queryLayer.getFormatCounts());
-		
-		model.addAttribute("menuId", "home");
-		
-		try {
-			RssFeedBean wpRssFeed = RssParserService.getRssFeed(ExternalContentSettings.getUrl("wpRss"), Integer.parseInt(ExternalContentSettings.get("external.wpRss.maxLinks")));
-			model.addAttribute("wpRssItem", wpRssFeed.getItems().get(0));
-		} catch (Exception e) {
-			LOG.error("Error retreiving the CDR WordPress Collection Highlights feed: ", e);
-		}
-		
-		return "frontPage";
-	}
+    @RequestMapping(method = RequestMethod.GET)
+    public String handleRequest(Model model, HttpServletRequest request) {
+        LOG.debug("In front page controller");
+
+        // Retrieve collection stats
+        model.addAttribute("departmentsCount", this.queryLayer.getDepartmentsCount());
+        model.addAttribute("collectionsCount", this.queryLayer.getCollectionsCount());
+        model.addAttribute("formatCounts", this.queryLayer.getFormatCounts());
+
+        model.addAttribute("menuId", "home");
+
+        try {
+            RssFeedBean wpRssFeed =
+                    RssParserService.getRssFeed(ExternalContentSettings.getUrl("wpRss"),
+                            Integer.parseInt(ExternalContentSettings.get("external.wpRss.maxLinks")));
+            model.addAttribute("wpRssItem", wpRssFeed.getItems().get(0));
+        } catch (Exception e) {
+            LOG.error("Error retreiving the CDR WordPress Collection Highlights feed: ", e);
+        }
+
+        return "frontPage";
+    }
 }

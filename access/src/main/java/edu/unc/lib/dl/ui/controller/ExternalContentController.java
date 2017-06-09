@@ -29,40 +29,42 @@ import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.ExternalContentSettings;
 
 /**
- * Simple controller for transferring users to an allowed subset of external pages, with support for 
+ * Simple controller for transferring users to an allowed subset of external pages, with support for
  * redirecting or embedding.
  * @author bbpennel
  */
 @Controller
 @RequestMapping("/external")
 public class ExternalContentController {
-	@SuppressWarnings("unused")
-	private static final Logger LOG = LoggerFactory.getLogger(ExternalContentController.class);
-	
-	@RequestMapping(method = RequestMethod.POST)
-	public String handlePost(Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		String page = request.getParameter("page");
-		//Support for redirecting post requests?
-		//Map parameters = request.getParameterMap();
-		return forwardToContent(page, model, request, response);
-	}
-	
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		String page = request.getParameter("page");
-		return forwardToContent(page, model, request, response);
-	}
-	
-	private String forwardToContent(String page, Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		String contentUrl = ExternalContentSettings.getUrl(page);
-		//If no page was specified or if an invalid page was requested, then issue a 404 error.
-		if (page == null || contentUrl == null){
-			throw new ResourceNotFoundException();
-		}
-		if (contentUrl.indexOf("redirect:") == 0){
-			return contentUrl;
-		}
-		model.addAttribute("contentUrl", contentUrl);
-		return "externalTemplate";
-	}
+    @SuppressWarnings("unused")
+    private static final Logger LOG = LoggerFactory.getLogger(ExternalContentController.class);
+
+    @RequestMapping(method = RequestMethod.POST)
+    public String handlePost(Model model, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String page = request.getParameter("page");
+        //Support for redirecting post requests?
+        //Map parameters = request.getParameterMap();
+        return forwardToContent(page, model, request, response);
+    }
+
+    @RequestMapping(method = RequestMethod.GET)
+    public String handleRequest(Model model, HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        String page = request.getParameter("page");
+        return forwardToContent(page, model, request, response);
+    }
+
+    private String forwardToContent(String page, Model model, HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+        String contentUrl = ExternalContentSettings.getUrl(page);
+        //If no page was specified or if an invalid page was requested, then issue a 404 error.
+        if (page == null || contentUrl == null) {
+            throw new ResourceNotFoundException();
+        }
+        if (contentUrl.indexOf("redirect:") == 0) {
+            return contentUrl;
+        }
+        model.addAttribute("contentUrl", contentUrl);
+        return "externalTemplate";
+    }
 }

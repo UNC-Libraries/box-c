@@ -23,129 +23,135 @@ import java.util.Map;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * An object containing the metadata for a repository object
+ * 
+ * @author bbpennel
+ *
+ */
 public interface BriefObjectMetadata {
-	public CutoffFacet getAncestorPathFacet();
+    public CutoffFacet getAncestorPathFacet();
 
-	public ObjectPath getObjectPath();
+    public ObjectPath getObjectPath();
 
-	public void setObjectPath(ObjectPath objectPath);
+    public void setObjectPath(ObjectPath objectPath);
 
-	public CutoffFacet getPath();
+    public CutoffFacet getPath();
 
-	public List<MultivaluedHierarchicalFacet> getContentTypeFacet();
+    public List<MultivaluedHierarchicalFacet> getContentTypeFacet();
 
-	public List<Datastream> getDatastreamObjects();
+    public List<Datastream> getDatastreamObjects();
 
-	public Datastream getDatastreamObject(String datastreamName);
+    public Datastream getDatastreamObject(String datastreamName);
 
-	public Map<String, Collection<String>> getGroupRoleMap();
+    public Map<String, Collection<String>> getGroupRoleMap();
 
-	public ObjectAccessControlsBean getAccessControlBean();
+    public ObjectAccessControlsBean getAccessControlBean();
 
-	public void setCountMap(Map<String,Long> countMap);
+    public void setCountMap(Map<String,Long> countMap);
 
-	public Map<String,Long> getCountMap();
+    public Map<String,Long> getCountMap();
 
-	public String getId();
+    public String getId();
 
-	public PID getPid();
+    public PID getPid();
 
-	public List<String> getAncestorPath();
+    public List<String> getAncestorPath();
 
-	public String getAncestorNames();
+    public String getAncestorNames();
 
-	public String getAncestorIds();
+    public String getAncestorIds();
 
-	public String getParentCollectionName();
+    public String getParentCollectionName();
 
-	public String getParentCollection();
+    public String getParentCollection();
 
-	public List<String> getScope();
+    public List<String> getScope();
 
-	public String getRollup();
+    public String getRollup();
 
-	public Long get_version_();
+    public Long get_version_();
 
-	public List<String> getDatastream();
+    public List<String> getDatastream();
 
-	public Long getFilesizeSort();
+    public Long getFilesizeSort();
 
-	public Long getFilesizeTotal();
+    public Long getFilesizeTotal();
 
-	public List<String> getRelations();
+    public List<String> getRelations();
 
-	public List<String> getRelation(String relationName);
+    public List<String> getRelation(String relationName);
 
-	public Datastream getDefaultWebData();
+    public Datastream getDefaultWebData();
 
-	public Boolean getIsPart();
+    public Boolean getIsPart();
 
-	public List<String> getContentModel();
+    public List<String> getContentModel();
 
-	public String getResourceType();
+    public String getResourceType();
 
-	public Integer getResourceTypeSort();
+    public Integer getResourceTypeSort();
 
-	public String getCreatorSort();
+    public String getCreatorSort();
 
-	public String getDefaultSortType();
+    public String getDefaultSortType();
 
-	public Long getDisplayOrder();
+    public Long getDisplayOrder();
 
-	public List<String> getContentType();
+    public List<String> getContentType();
 
-	public Date getTimestamp();
+    public Date getTimestamp();
 
-	public Date getLastIndexed();
+    public Date getLastIndexed();
 
-	public List<String> getRoleGroup();
+    public List<String> getRoleGroup();
 
-	public List<String> getReadGroup();
+    public List<String> getReadGroup();
 
-	public List<String> getAdminGroup();
+    public List<String> getAdminGroup();
 
-	public List<String> getStatus();
+    public List<String> getStatus();
 
-	public List<String> getContentStatus();
+    public List<String> getContentStatus();
 
-	public List<String> getIdentifier();
+    public List<String> getIdentifier();
 
-	public String getLabel();
+    public String getLabel();
 
-	public String getTitle();
+    public String getTitle();
 
-	public List<String> getOtherTitle();
+    public List<String> getOtherTitle();
 
-	public String getAbstractText();
+    public String getAbstractText();
 
-	public List<String> getKeyword();
+    public List<String> getKeyword();
 
-	public List<String> getSubject();
+    public List<String> getSubject();
 
-	public List<String> getLanguage();
+    public List<String> getLanguage();
 
-	public List<String> getCreator();
+    public List<String> getCreator();
 
-	public List<String> getContributor();
+    public List<String> getContributor();
 
-	public List<String> getDepartment();
+    public List<String> getDepartment();
 
-	public Date getDateCreated();
+    public Date getDateCreated();
 
-	public Date getDateAdded();
+    public Date getDateAdded();
 
-	public Date getDateUpdated();
+    public Date getDateUpdated();
 
-	public String getCitation();
+    public String getCitation();
 
-	public String getFullText();
+    public String getFullText();
 
-	public List<Tag> getTags();
+    public List<Tag> getTags();
 
-	public void addTag(Tag t);
+    public void addTag(Tag t);
 
-	public Map<String,Object> getDynamicFields();
+    public Map<String,Object> getDynamicFields();
 
-	public Date getActiveEmbargo();
+    public Date getActiveEmbargo();
 
 }

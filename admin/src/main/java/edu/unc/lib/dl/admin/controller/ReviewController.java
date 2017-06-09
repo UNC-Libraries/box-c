@@ -49,67 +49,67 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 @Controller
 public class ReviewController extends AbstractSearchController {
 
-	@RequestMapping(value = "review", method = RequestMethod.GET, produces = "text/html")
-	public String getReviewList(Model model, HttpServletRequest request) {
-		return "search/reviewList";
-	}
+    @RequestMapping(value = "review", method = RequestMethod.GET, produces = "text/html")
+    public String getReviewList(Model model, HttpServletRequest request) {
+        return "search/reviewList";
+    }
 
-	@RequestMapping(value = "review/{pid}", method = RequestMethod.GET, produces = "text/html")
-	public String getReviewList(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
-		return "search/reviewList";
-	}
+    @RequestMapping(value = "review/{pid}", method = RequestMethod.GET, produces = "text/html")
+    public String getReviewList(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
+        return "search/reviewList";
+    }
 
-	@RequestMapping(value = "review/{pid}", method = RequestMethod.GET, produces = "application/json")
-	public @ResponseBody Map<String, Object> reviewJSON(@PathVariable("pid") String pid, HttpServletRequest request,
-			HttpServletResponse response) {
-		return getResults(getReviewRequest(pid, request));
-	}
+    @RequestMapping(value = "review/{pid}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody Map<String, Object> reviewJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+            HttpServletResponse response) {
+        return getResults(getReviewRequest(pid, request));
+    }
 
-	@RequestMapping(value = "review", method = RequestMethod.GET, produces = "application/json")
-	public @ResponseBody Map<String, Object> reviewJSON(HttpServletRequest request, HttpServletResponse response) {
-		return getResults(getReviewRequest(null, request));
-	}
+    @RequestMapping(value = "review", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody Map<String, Object> reviewJSON(HttpServletRequest request, HttpServletResponse response) {
+        return getResults(getReviewRequest(null, request));
+    }
 
-	private Map<String, Object> getResults(SearchRequest searchRequest) {
-		SearchResultResponse resp = getSearchResults(searchRequest);
+    private Map<String, Object> getResults(SearchRequest searchRequest) {
+        SearchResultResponse resp = getSearchResults(searchRequest);
 
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
-		Map<String, Object> results = new HashMap<>();
-		results.put("metadata", resultList);
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
+        Map<String, Object> results = new HashMap<>();
+        results.put("metadata", resultList);
 
-		SearchState state = resp.getSearchState();
-		results.put("pageStart", state.getStartRow());
-		results.put("pageRows", state.getRowsPerPage());
-		results.put("resultCount", resp.getResultCount());
-		results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
-		results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
-		results.put("queryMethod", "review");
-		results.put("resultOperation", "review");
+        SearchState state = resp.getSearchState();
+        results.put("pageStart", state.getStartRow());
+        results.put("pageRows", state.getRowsPerPage());
+        results.put("resultCount", resp.getResultCount());
+        results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
+        results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
+        results.put("queryMethod", "review");
+        results.put("resultOperation", "review");
 
-		long invalidVocabCount = queryLayer.getInvalidVocabularyCount(searchRequest);
-		results.put("invalidVocabCount", invalidVocabCount);
+        long invalidVocabCount = queryLayer.getInvalidVocabularyCount(searchRequest);
+        results.put("invalidVocabCount", invalidVocabCount);
 
-		if (resp.getSelectedContainer() != null) {
-			results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
-		}
+        if (resp.getSelectedContainer() != null) {
+            results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
+        }
 
-		return results;
-	}
+        return results;
+    }
 
-	private SearchRequest getReviewRequest(String pid, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(pid);
+    private SearchRequest getReviewRequest(String pid, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
 
-		searchRequest.setApplyCutoffs(false);
+        searchRequest.setApplyCutoffs(false);
 
-		SearchState searchState = searchRequest.getSearchState();
-		searchState.setIncludeParts(false);
-		GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
-		searchState.getFacets().put("STATUS", facet);
+        SearchState searchState = searchRequest.getSearchState();
+        searchState.setIncludeParts(false);
+        GenericFacet facet = new GenericFacet("STATUS", "Unpublished");
+        searchState.getFacets().put("STATUS", facet);
 
-		searchState.setPermissionLimits(Arrays.asList(Permission.publish, Permission.editDescription));
+        searchState.setPermissionLimits(Arrays.asList(Permission.publish, Permission.editDescription));
 
-		return searchRequest;
-	}
+        return searchRequest;
+    }
 }

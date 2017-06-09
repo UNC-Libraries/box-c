@@ -29,38 +29,47 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
+/**
+ * 
+ * Interceptor which forwards groups via custom http header in a post request
+ * 
+ * @author bbpennel
+ *
+ */
 public class GroupsToHttpHeaderInterceptor implements ClientInterceptor {
-	private static final Logger LOG = LoggerFactory.getLogger(GroupsToHttpHeaderInterceptor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GroupsToHttpHeaderInterceptor.class);
 
-	@Override
-	public boolean handleRequest(MessageContext messageContext) throws WebServiceClientException {
-		LOG.debug("In handleRequest()");
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		if (groups != null) {
-			LOG.debug("GOT GROUPS FROM THREAD");
-			TransportContext context = TransportContextHolder.getTransportContext();
-			HttpComponentsConnection connection = (HttpComponentsConnection) context.getConnection();
-			HttpPost postMethod = connection.getHttpPost();
-			postMethod.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";", null, false));
-			LOG.debug("Added HTTP header to POST: " + HttpClientUtil.FORWARDED_GROUPS_HEADER + " : " + groups.joinAccessGroups(";", null, false));
-		} else {
-			LOG.debug("NO GROUPS SET ON THREAD");
-		}
-		return true;
-	}
+    @Override
+    public boolean handleRequest(MessageContext messageContext) throws WebServiceClientException {
+        LOG.debug("In handleRequest()");
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        if (groups != null) {
+            LOG.debug("GOT GROUPS FROM THREAD");
+            TransportContext context = TransportContextHolder.getTransportContext();
+            HttpComponentsConnection connection = (HttpComponentsConnection) context.getConnection();
+            HttpPost postMethod = connection.getHttpPost();
+            postMethod.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER,
+                    groups.joinAccessGroups(";", null, false));
+            LOG.debug("Added HTTP header to POST: " + HttpClientUtil.FORWARDED_GROUPS_HEADER + " : "
+                    + groups.joinAccessGroups(";", null, false));
+        } else {
+            LOG.debug("NO GROUPS SET ON THREAD");
+        }
+        return true;
+    }
 
-	@Override
-	public boolean handleResponse(MessageContext messageContext) throws WebServiceClientException {
-		return true;
-	}
+    @Override
+    public boolean handleResponse(MessageContext messageContext) throws WebServiceClientException {
+        return true;
+    }
 
-	@Override
-	public boolean handleFault(MessageContext messageContext) throws WebServiceClientException {
-		return true;
-	}
+    @Override
+    public boolean handleFault(MessageContext messageContext) throws WebServiceClientException {
+        return true;
+    }
 
-	@Override
-	public void afterCompletion(MessageContext messageContext, Exception e) throws WebServiceClientException {
-	}
+    @Override
+    public void afterCompletion(MessageContext messageContext, Exception e) throws WebServiceClientException {
+    }
 
 }

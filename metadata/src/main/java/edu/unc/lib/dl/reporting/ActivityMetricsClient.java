@@ -30,84 +30,85 @@ import redis.clients.jedis.JedisPool;
  */
 public class ActivityMetricsClient {
 
-	private static SimpleDateFormat metricsDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	
-	private JedisPool jedisPool;
-	
-	public JedisPool getJedisPool() {
-		return jedisPool;
-	}
+    private static SimpleDateFormat metricsDateFormat = new SimpleDateFormat(
+            "yyyy-MM-dd");
 
-	public void setJedisPool(JedisPool jedisPool) {
-		this.jedisPool = jedisPool;
-	}
-	
-	public void incrMoves() {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "moves", 1);
-		}
-	}
-	
-	public void incrFinishedEnhancement(String className) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "finished-enh:" + className, 1);
-		}
-	}
-	
-	public void incrFailedEnhancement(String className) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "failed-enh:" + className, 1);
-		}
-	}
-	
-	public void incrFailedDeposit() {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "failed", 1);
-		}
-	}
-	
-	public void incrFailedDepositJob(String className) {
-		incrFailedDeposit();
+    private JedisPool jedisPool;
 
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "failed-job:" + className, 1);
-		}
-	}
-	
-	public void incrFinishedDeposit() {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "finished", 1);
-		}
-	}
-	
-	public void incrDepositFileThroughput(String uuid, long bytes) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
+    public JedisPool getJedisPool() {
+        return jedisPool;
+    }
 
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "throughput-files", 1);
-			jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "throughput-bytes", bytes);
-		}
-	}
-	
-	public void setDepositDuration(String uuid, long milliseconds) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			
-			jedis.hset(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "duration", Long.toString(milliseconds));
-		}
-	}
-	
-	public void setQueuedDepositDuration(String uuid, long milliseconds) {
-		try (Jedis jedis = getJedisPool().getResource()) {
-			String date = metricsDateFormat.format(new Date());
-			
-			jedis.hset(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "queued-duration", Long.toString(milliseconds));
-		}
-	}
+    public void setJedisPool(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
+    }
+
+    public void incrMoves() {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+            jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "moves", 1);
+        }
+    }
+
+    public void incrFinishedEnhancement(String className) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+            jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "finished-enh:" + className, 1);
+        }
+    }
+
+    public void incrFailedEnhancement(String className) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+            jedis.hincrBy(OPERATION_METRICS_PREFIX + date, "failed-enh:" + className, 1);
+        }
+    }
+
+    public void incrFailedDeposit() {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+            jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "failed", 1);
+        }
+    }
+
+    public void incrFailedDepositJob(String className) {
+        incrFailedDeposit();
+
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+            jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "failed-job:" + className, 1);
+        }
+    }
+
+    public void incrFinishedDeposit() {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+            jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date, "finished", 1);
+        }
+    }
+
+    public void incrDepositFileThroughput(String uuid, long bytes) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+
+            jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "throughput-files", 1);
+            jedis.hincrBy(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "throughput-bytes", bytes);
+        }
+    }
+
+    public void setDepositDuration(String uuid, long milliseconds) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+
+            jedis.hset(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "duration", Long.toString(milliseconds));
+        }
+    }
+
+    public void setQueuedDepositDuration(String uuid, long milliseconds) {
+        try (Jedis jedis = getJedisPool().getResource()) {
+            String date = metricsDateFormat.format(new Date());
+
+            jedis.hset(DEPOSIT_METRICS_PREFIX + date + ":" + uuid, "queued-duration", Long.toString(milliseconds));
+        }
+    }
 }

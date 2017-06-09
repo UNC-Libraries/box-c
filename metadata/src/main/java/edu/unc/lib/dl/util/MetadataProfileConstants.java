@@ -23,7 +23,11 @@ package edu.unc.lib.dl.util;
  */
 public class MetadataProfileConstants {
 
-	public final static String PROQUEST_ETD = "proquest";
+    public final static String PROQUEST_ETD = "proquest";
 
-	public final static String BIOMED_ARTICLE = "biomedcentral_article";
+    public final static String BIOMED_ARTICLE = "biomedcentral_article";
+
+    private MetadataProfileConstants() {
+
+    }
 }

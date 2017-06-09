@@ -29,48 +29,50 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
  *
  */
 public class DatastreamAccessValidator {
-	
-	public DatastreamAccessValidator(){
-	}
-	
-	public static void filterSearchResult(SearchResultResponse response, AccessGroupSet userAccess){
-		for (BriefObjectMetadata metadata: response.getResultList()){
-			filterBriefObject(metadata, userAccess);
-		}
-	}
-	
-	public static void filterBriefObject(BriefObjectMetadata metadata, AccessGroupSet userAccess){
-		if (userAccess.contains(AccessGroupConstants.ADMIN_GROUP))
-			return;
-	}
-	
-	public static void filterDatastreams(Collection<Datastream> datastreams, AccessGroupSet surrogateAccess, 
-			AccessGroupSet fileAccess, AccessGroupSet userAccess){
-		
-		if (userAccess.contains(AccessGroupConstants.ADMIN_GROUP))
-			return;
-		
-		/*
-		
-		//Remove surrogate datastreams if no matching groups
-		if (!surrogateAccess.containsAny(userAccess)){
-			for (Datastream accessDS: accessSettings.getSurrogateDatastreams()){
-				datastreams.remove(accessDS);
-			}
-		}
-		
-		//Remove file datastreams if no matching groups
-		if (!fileAccess.containsAny(userAccess)){
-			for (Datastream accessDS: accessSettings.getFileDatastreams()){
-				datastreams.remove(accessDS);
-			}
-		}
-		
-		//Remove admin datastreams if not an admin
-		if (!userAccess.contains(accessSettings.getAdminGroup())){
-			for (Datastream accessDS: accessSettings.getAdminDatastreams()){
-				datastreams.remove(accessDS);
-			}
-		}*/
-	}
+
+    private DatastreamAccessValidator() {
+    }
+
+    public static void filterSearchResult(SearchResultResponse response, AccessGroupSet userAccess) {
+        for (BriefObjectMetadata metadata: response.getResultList()) {
+            filterBriefObject(metadata, userAccess);
+        }
+    }
+
+    public static void filterBriefObject(BriefObjectMetadata metadata, AccessGroupSet userAccess) {
+        if (userAccess.contains(AccessGroupConstants.ADMIN_GROUP)) {
+            return;
+        }
+    }
+
+    public static void filterDatastreams(Collection<Datastream> datastreams, AccessGroupSet surrogateAccess,
+            AccessGroupSet fileAccess, AccessGroupSet userAccess) {
+
+        if (userAccess.contains(AccessGroupConstants.ADMIN_GROUP)) {
+            return;
+        }
+
+        /*
+
+        //Remove surrogate datastreams if no matching groups
+        if (!surrogateAccess.containsAny(userAccess)) {
+            for (Datastream accessDS: accessSettings.getSurrogateDatastreams()) {
+                datastreams.remove(accessDS);
+            }
+        }
+
+        //Remove file datastreams if no matching groups
+        if (!fileAccess.containsAny(userAccess)) {
+            for (Datastream accessDS: accessSettings.getFileDatastreams()) {
+                datastreams.remove(accessDS);
+            }
+        }
+
+        //Remove admin datastreams if not an admin
+        if (!userAccess.contains(accessSettings.getAdminGroup())) {
+            for (Datastream accessDS: accessSettings.getAdminDatastreams()) {
+                datastreams.remove(accessDS);
+            }
+        }*/
+    }
 }

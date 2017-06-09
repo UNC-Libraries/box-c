@@ -38,72 +38,72 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class SetObjectTypeFilterTest {
 
     private SetObjectTypeFilter filter;
-    
+
     @Mock
     private DocumentIndexingPackage dip;
     @Mock
     private IndexDocumentBean idb;
     @Mock
     private ContentObject contentObj;
-    
+
     @Mock
     private PID pid;
-    
+
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
         when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
-        
+
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
-        
+
         when(dip.getContentObject()).thenReturn(contentObj);
-        
+
         filter = new SetObjectTypeFilter();
     }
 
     @Test
     public void testWorkResourceType() throws Exception {
         when(contentObj.getTypes()).thenReturn(Arrays.asList(Cdr.Work.getURI()));
-        
+
         filter.filter(dip);
-        
+
         verify(idb).setResourceType(eq(ResourceType.Work.name()));
         verify(idb).setResourceTypeSort(eq(ResourceType.Work.getDisplayOrder()));
     }
-    
+
     @Test
     public void testMultipleRdfTypes() throws Exception {
         when(contentObj.getTypes()).thenReturn(Arrays.asList(
                 Fcrepo4Repository.Resource.getURI(),
                 Fcrepo4Repository.Container.getURI(),
                 Cdr.AdminUnit.getURI()));
-        
+
         filter.filter(dip);
-        
+
         verify(idb).setResourceType(eq(ResourceType.AdminUnit.name()));
         verify(idb).setResourceTypeSort(eq(ResourceType.AdminUnit.getDisplayOrder()));
     }
-    
+
     @Test(expected = IndexingException.class)
     public void testNoResourceType() throws Exception {
         when(contentObj.getTypes()).thenReturn(Collections.emptyList());
-        
+
         filter.filter(dip);
     }
-    
+
     @Test(expected = IndexingException.class)
     public void testBadResourceType() throws Exception {
         when(contentObj.getTypes()).thenReturn(Arrays.asList("http://example.com/bad"));
-        
+
         filter.filter(dip);
     }
 }

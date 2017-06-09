@@ -15,10 +15,15 @@
  */
 package edu.unc.lib.dl.fedora;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class InvalidDatastreamException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public InvalidDatastreamException(String message) {
-		super(message);
-	}
+    public InvalidDatastreamException(String message) {
+        super(message);
+    }
 }

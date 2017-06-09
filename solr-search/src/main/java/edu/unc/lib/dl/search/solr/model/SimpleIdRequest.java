@@ -24,55 +24,55 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
  * @author bbpennel
  */
 public class SimpleIdRequest {
-	protected String id;
-	protected List<String> resultFields;
-	protected AccessGroupSet accessGroups;
-	
-	public SimpleIdRequest(String id) {
-		this.id = id;
-	}
-	
-	public SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
-		this.accessGroups = accessGroups;
-		this.resultFields = resultFields;
-	}
-	
-	public SimpleIdRequest(String id, List<String> resultFields) {
-		this.id = id;
-		this.resultFields = resultFields;
-	}
-	
-	public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups) {
-		this.id = id;
-		this.accessGroups = accessGroups;
-		this.resultFields = resultFields;
-	}
-	
-	public SimpleIdRequest(String id, AccessGroupSet accessGroups) {
-		this(id, null, accessGroups);
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
-	
-	public AccessGroupSet getAccessGroups() {
-		return accessGroups;
-	}
-	
-	public void setAccessGroups(AccessGroupSet accessGroups) {
-		this.accessGroups = accessGroups;
-	}
+    protected String id;
+    protected List<String> resultFields;
+    protected AccessGroupSet accessGroups;
 
-	public List<String> getResultFields() {
-		return resultFields;
-	}
+    public SimpleIdRequest(String id) {
+        this.id = id;
+    }
 
-	public void setResultFields(List<String> resultFields) {
-		this.resultFields = resultFields;
-	}
+    public SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
+        this.accessGroups = accessGroups;
+        this.resultFields = resultFields;
+    }
+
+    public SimpleIdRequest(String id, List<String> resultFields) {
+        this.id = id;
+        this.resultFields = resultFields;
+    }
+
+    public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups) {
+        this.id = id;
+        this.accessGroups = accessGroups;
+        this.resultFields = resultFields;
+    }
+
+    public SimpleIdRequest(String id, AccessGroupSet accessGroups) {
+        this(id, null, accessGroups);
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public AccessGroupSet getAccessGroups() {
+        return accessGroups;
+    }
+
+    public void setAccessGroups(AccessGroupSet accessGroups) {
+        this.accessGroups = accessGroups;
+    }
+
+    public List<String> getResultFields() {
+        return resultFields;
+    }
+
+    public void setResultFields(List<String> resultFields) {
+        this.resultFields = resultFields;
+    }
 }

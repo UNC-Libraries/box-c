@@ -24,24 +24,24 @@ import edu.unc.lib.dl.fedora.PID;
  * @date Jun 24, 2015
  */
 public class DocumentIndexingPackageFactory {
-	
-	@Autowired
-	private DocumentIndexingPackageDataLoader dataLoader;
 
-	public DocumentIndexingPackage createDip(String pid) {
-		return new DocumentIndexingPackage(new PID(pid), null, dataLoader);
-	}
+    @Autowired
+    private DocumentIndexingPackageDataLoader dataLoader;
 
-	public DocumentIndexingPackage createDip(PID pid) {
-		return new DocumentIndexingPackage(pid, null, dataLoader);
-	}
+    public DocumentIndexingPackage createDip(String pid) {
+        return new DocumentIndexingPackage(new PID(pid), null, dataLoader);
+    }
 
-	public DocumentIndexingPackage createDip(PID pid, DocumentIndexingPackage parentDip) {
-		return new DocumentIndexingPackage(pid, parentDip, dataLoader);
-	}
+    public DocumentIndexingPackage createDip(PID pid) {
+        return new DocumentIndexingPackage(pid, null, dataLoader);
+    }
 
-	public void setDataLoader(DocumentIndexingPackageDataLoader dataLoader) {
-		this.dataLoader = dataLoader;
-	}
+    public DocumentIndexingPackage createDip(PID pid, DocumentIndexingPackage parentDip) {
+        return new DocumentIndexingPackage(pid, parentDip, dataLoader);
+    }
+
+    public void setDataLoader(DocumentIndexingPackageDataLoader dataLoader) {
+        this.dataLoader = dataLoader;
+    }
 
 }

@@ -34,122 +34,122 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
  * Vocabulary helper instantiated from a JSON array containing a list of vocabulary terms
- * 
+ *
  * @author bbpennel
  * @date Oct 7, 2015
  */
 public class JSONVocabularyHelper implements VocabularyHelper {
-	
-	private List<String> values;
-	
-	private String vocabularyURI;
-	private String invalidTermPrefix;
-	
-	private String selectorString;
-	private XPathExpression<Element> selector;
-	private Namespace[] namespaces;
-	
-	@Override
-	public List<List<String>> getAuthoritativeForm(String term) {
-		if (values.contains(term)) {
-			return Arrays.asList(Arrays.asList(term));
-		}
-		return null;
-	}
 
-	@Override
-	public List<List<String>> getAuthoritativeForms(Element docRoot) throws JDOMException {
-		List<List<String>> terms = new ArrayList<>();
-		
-		List<Element> elements = selector.evaluate(docRoot);
-		for (Element element : elements) {
-			String value = element.getTextTrim();
-			if (values.contains(value)) {
-				terms.add(Arrays.asList(value));
-			}
-		}
-		
-		return terms;
-	}
+    private List<String> values;
 
-	@Override
-	public Set<String> getInvalidTerms(Element docRoot) throws JDOMException {
-		return generateInvalidTermsList(docRoot, false);
-	}
+    private String vocabularyURI;
+    private String invalidTermPrefix;
 
-	@Override
-	public Set<String> getInvalidTermsWithPrefix(Element docRoot) throws JDOMException {
-		return generateInvalidTermsList(docRoot, true);
-	}
-	
-	private Set<String> generateInvalidTermsList(Element docRoot, boolean includePrefix) {
-		Set<String> invalidTerms = new HashSet<>();
-		
-		List<Element> elements = selector.evaluate(docRoot);
-		for (Element element : elements) {
-			String value = element.getTextTrim();
-			if (!values.contains(value)) {
-				if (includePrefix) {
-					invalidTerms.add(invalidTermPrefix + "|" + value);
-				} else {
-					invalidTerms.add(value);
-				}
-			}
-		}
-		
-		return invalidTerms;
-	}
+    private String selectorString;
+    private XPathExpression<Element> selector;
+    private Namespace[] namespaces;
 
-	@Override
-	public boolean updateDocumentTerms(Element docElement) throws JDOMException {
-		return false;
-	}
+    @Override
+    public List<List<String>> getAuthoritativeForm(String term) {
+        if (values.contains(term)) {
+            return Arrays.asList(Arrays.asList(term));
+        }
+        return null;
+    }
 
-	@Override
-	public Collection<String> getVocabularyTerms() {
-		return values;
-	}
+    @Override
+    public List<List<String>> getAuthoritativeForms(Element docRoot) throws JDOMException {
+        List<List<String>> terms = new ArrayList<>();
 
-	@Override
-	public void setSelector(String selector) {
-		XPathFactory xFactory = XPathFactory.instance();
-		this.selector = xFactory.compile(selector, Filters.element(), null, namespaces);
-		this.selectorString = selector;
-	}
-	
-	@Override
-	public void setSelectorNamespaces(Namespace[] namespaces) {
-		this.namespaces = namespaces;
-	}
+        List<Element> elements = selector.evaluate(docRoot);
+        for (Element element : elements) {
+            String value = element.getTextTrim();
+            if (values.contains(value)) {
+                terms.add(Arrays.asList(value));
+            }
+        }
 
-	@Override
-	public String getSelector() {
-		return selectorString;
-	}
+        return terms;
+    }
 
-	public void setInvalidTermPrefix(String prefix) {
-		this.invalidTermPrefix = prefix;
-	}
-	
-	@Override
-	public String getInvalidTermPrefix() {
-		return invalidTermPrefix;
-	}
+    @Override
+    public Set<String> getInvalidTerms(Element docRoot) throws JDOMException {
+        return generateInvalidTermsList(docRoot, false);
+    }
 
-	@Override
-	public String getVocabularyURI() {
-		return this.vocabularyURI;
-	}
+    @Override
+    public Set<String> getInvalidTermsWithPrefix(Element docRoot) throws JDOMException {
+        return generateInvalidTermsList(docRoot, true);
+    }
 
-	@Override
-	public void setVocabularyURI(String vocabularyURI) {
-		this.vocabularyURI = vocabularyURI;
-	}
+    private Set<String> generateInvalidTermsList(Element docRoot, boolean includePrefix) {
+        Set<String> invalidTerms = new HashSet<>();
 
-	@Override
-	public void setContent(byte[] content) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		String[] values = mapper.readValue(content, String[].class);
-		this.values = Arrays.asList(values);
-	}
+        List<Element> elements = selector.evaluate(docRoot);
+        for (Element element : elements) {
+            String value = element.getTextTrim();
+            if (!values.contains(value)) {
+                if (includePrefix) {
+                    invalidTerms.add(invalidTermPrefix + "|" + value);
+                } else {
+                    invalidTerms.add(value);
+                }
+            }
+        }
+
+        return invalidTerms;
+    }
+
+    @Override
+    public boolean updateDocumentTerms(Element docElement) throws JDOMException {
+        return false;
+    }
+
+    @Override
+    public Collection<String> getVocabularyTerms() {
+        return values;
+    }
+
+    @Override
+    public void setSelector(String selector) {
+        XPathFactory xFactory = XPathFactory.instance();
+        this.selector = xFactory.compile(selector, Filters.element(), null, namespaces);
+        this.selectorString = selector;
+    }
+
+    @Override
+    public void setSelectorNamespaces(Namespace[] namespaces) {
+        this.namespaces = namespaces;
+    }
+
+    @Override
+    public String getSelector() {
+        return selectorString;
+    }
+
+    public void setInvalidTermPrefix(String prefix) {
+        this.invalidTermPrefix = prefix;
+    }
+
+    @Override
+    public String getInvalidTermPrefix() {
+        return invalidTermPrefix;
+    }
+
+    @Override
+    public String getVocabularyURI() {
+        return this.vocabularyURI;
+    }
+
+    @Override
+    public void setVocabularyURI(String vocabularyURI) {
+        this.vocabularyURI = vocabularyURI;
+    }
+
+    @Override
+    public void setContent(byte[] content) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String[] values = mapper.readValue(content, String[].class);
+        this.values = Arrays.asList(values);
+    }
 }

@@ -25,7 +25,7 @@ import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Sets the resource type and resource type sort order for the object being indexed
- * 
+ *
  * @author bbpennel
  *
  */
@@ -34,10 +34,10 @@ public class SetObjectTypeFilter implements IndexDocumentFilter {
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         IndexDocumentBean idb = dip.getDocument();
-        
+
         ContentObject contentObj = dip.getContentObject();
         List<String> types = contentObj.getTypes();
-        
+
         ResourceType resourceType = ResourceType.getResourceTypeForUris(types);
         if (resourceType == null) {
             throw new IndexingException("Object " + dip.getPid()

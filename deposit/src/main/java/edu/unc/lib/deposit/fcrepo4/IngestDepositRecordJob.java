@@ -50,104 +50,104 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class IngestDepositRecordJob extends AbstractDepositJob {
-	private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
+    private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
-	public IngestDepositRecordJob() {
-		super();
-	}
+    public IngestDepositRecordJob() {
+        super();
+    }
 
-	public IngestDepositRecordJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
-	
-	@Override
-	public void runJob() {
-		PID depositPID = getDepositPID();
-		String depositUri = depositPID.getURI();
-		
-		log.debug("Creating record for deposit {}", depositUri);
+    public IngestDepositRecordJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
 
-		Model dModel = getReadOnlyModel();
-		Map<String, String> status = getDepositStatus();
+    @Override
+    public void runJob() {
+        PID depositPID = getDepositPID();
+        String depositUri = depositPID.getURI();
 
-		Resource deposit = dModel.getResource(depositUri);
+        log.debug("Creating record for deposit {}", depositUri);
 
-		// Create aip model for the deposit record
-		Resource aipObjResc = makeDepositRecord(deposit, status);
-		Model aipModel = aipObjResc.getModel();
+        Model dModel = getReadOnlyModel();
+        Map<String, String> status = getDepositStatus();
 
-		// Add ingestion event to PREMIS log
-		PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-		premisDepositLogger.buildEvent(Premis.Ingestion)
-				.addEventDetail("ingested as PID: {0}. {1}", depositPID.getPid(), 
-						aipObjResc.getProperty(DcElements.title).getObject().toString())
-				.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-				.addAuthorizingAgent(DepositField.depositorName.name())
-				.write();
+        Resource deposit = dModel.getResource(depositUri);
 
-		// Create the deposit record object in Fedora
-		DepositRecord depositRecord;
-		try {
-			depositRecord = repository.createDepositRecord(depositPID, aipModel)
-					.addPremisEvents(premisDepositLogger.getEvents());
+        // Create aip model for the deposit record
+        Resource aipObjResc = makeDepositRecord(deposit, status);
+        Model aipModel = aipObjResc.getModel();
 
-			// Add manifest files
-			List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
-			for (String manifestPath : manifestURIs) {
-				depositRecord.addManifest(new File(manifestPath), "text/plain");
-			}
+        // Add ingestion event to PREMIS log
+        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+        premisDepositLogger.buildEvent(Premis.Ingestion)
+                .addEventDetail("ingested as PID: {0}. {1}", depositPID.getPid(),
+                        aipObjResc.getProperty(DcElements.title).getObject().toString())
+                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .addAuthorizingAgent(DepositField.depositorName.name())
+                .write();
 
-			// Add references to deposited objects
-			Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
-			List<Resource> children = new ArrayList<Resource>();
-			// walks through the bag and adds children to the list
-			DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
-			depositRecord.addIngestedObjects(depositPID, children);
-			
-		} catch (IOException | FedoraException e) {
-			failJob(e, "Failed to ingest deposit record {0}", depositPID);
-		}
-	}
+        // Create the deposit record object in Fedora
+        DepositRecord depositRecord;
+        try {
+            depositRecord = repository.createDepositRecord(depositPID, aipModel)
+                    .addPremisEvents(premisDepositLogger.getEvents());
 
-	/**
-	 * Generates a model containing the properties for this deposit record
-	 * 
-	 * @param deposit
-	 * @param status
-	 * @return
-	 */
-	private Resource makeDepositRecord(Resource deposit, Map<String, String> status) {
-		Model aipModel = ModelFactory.createDefaultModel();
+            // Add manifest files
+            List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
+            for (String manifestPath : manifestURIs) {
+                depositRecord.addManifest(new File(manifestPath), "text/plain");
+            }
 
-		Resource aipObjResc = aipModel.createResource(deposit.getURI());
+            // Add references to deposited objects
+            Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
+            List<Resource> children = new ArrayList<Resource>();
+            // walks through the bag and adds children to the list
+            DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
+            depositRecord.addIngestedObjects(depositPID, children);
 
-		String filename = status.get(DepositField.fileName.name());
-		String title = "Deposit record" + (filename == null? "" : " for " + filename);
-		aipObjResc.addProperty(DcElements.title, title);
+        } catch (IOException | FedoraException e) {
+            failJob(e, "Failed to ingest deposit record {0}", depositPID);
+        }
+    }
 
-		aipObjResc.addProperty(Rdfs.type, Cdr.DepositRecord);
+    /**
+     * Generates a model containing the properties for this deposit record
+     * 
+     * @param deposit
+     * @param status
+     * @return
+     */
+    private Resource makeDepositRecord(Resource deposit, Map<String, String> status) {
+        Model aipModel = ModelFactory.createDefaultModel();
 
-		String method = status.get(DepositField.depositMethod.name());
-		if (method != null) {
-			aipObjResc.addProperty(Cdr.depositMethod, method);
-		}
-		String onBehalfOf = status.get(DepositField.depositorName.name());
-		if (onBehalfOf != null) {
-			aipObjResc.addProperty(Cdr.depositedOnBehalfOf, onBehalfOf);
-		}
-		String depositPackageType = status.get(DepositField.packagingType.name());
-		if (depositPackageType != null) {
-			aipObjResc.addProperty(Cdr.depositPackageType, depositPackageType);
-		}
-		String depositPackageProfile = status.get(DepositField.packageProfile.name());
-		if (depositPackageProfile != null) {
-			aipObjResc.addProperty(Cdr.depositPackageProfile, depositPackageProfile);
-		}
+        Resource aipObjResc = aipModel.createResource(deposit.getURI());
 
-		return aipObjResc;
-	}
+        String filename = status.get(DepositField.fileName.name());
+        String title = "Deposit record" + (filename == null ? "" : " for " + filename);
+        aipObjResc.addProperty(DcElements.title, title);
 
-	public void setRepository(Repository repository) {
-		this.repository = repository;
-	}
+        aipObjResc.addProperty(Rdfs.type, Cdr.DepositRecord);
+
+        String method = status.get(DepositField.depositMethod.name());
+        if (method != null) {
+            aipObjResc.addProperty(Cdr.depositMethod, method);
+        }
+        String onBehalfOf = status.get(DepositField.depositorName.name());
+        if (onBehalfOf != null) {
+            aipObjResc.addProperty(Cdr.depositedOnBehalfOf, onBehalfOf);
+        }
+        String depositPackageType = status.get(DepositField.packagingType.name());
+        if (depositPackageType != null) {
+            aipObjResc.addProperty(Cdr.depositPackageType, depositPackageType);
+        }
+        String depositPackageProfile = status.get(DepositField.packageProfile.name());
+        if (depositPackageProfile != null) {
+            aipObjResc.addProperty(Cdr.depositPackageProfile, depositPackageProfile);
+        }
+
+        return aipObjResc;
+    }
+
+    public void setRepository(Repository repository) {
+        this.repository = repository;
+    }
 }

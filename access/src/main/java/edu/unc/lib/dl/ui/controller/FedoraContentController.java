@@ -41,64 +41,64 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 @Controller
 public class FedoraContentController {
-	@Autowired
-	private FedoraContentService fedoraContentService;
+    @Autowired
+    private FedoraContentService fedoraContentService;
 
-	@RequestMapping("/indexablecontent/{pid}")
-	public void getDefaultIndexableContent(@PathVariable("pid") String pid,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download,
-			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download,
-				new AnalyticsUserData(request), response);
-	}
+    @RequestMapping("/indexablecontent/{pid}")
+    public void getDefaultIndexableContent(@PathVariable("pid") String pid,
+            @RequestParam(value = "dl", defaultValue = "false") boolean download,
+            HttpServletRequest request, HttpServletResponse response) {
+        fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download,
+                new AnalyticsUserData(request), response);
+    }
 
-	@RequestMapping("/indexablecontent/{pid}/{datastream}")
-	public void getIndexableContent(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download,
-			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
-	}
+    @RequestMapping("/indexablecontent/{pid}/{datastream}")
+    public void getIndexableContent(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
+            @RequestParam(value = "dl", defaultValue = "false") boolean download,
+            HttpServletRequest request, HttpServletResponse response) {
+        fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
+    }
 
-	@RequestMapping("/indexablecontent")
-	public void getIndexableContentByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download,
-			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(id, datastream, download, new AnalyticsUserData(request), response);
-	}
+    @RequestMapping("/indexablecontent")
+    public void getIndexableContentByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
+            @RequestParam(value = "dl", defaultValue = "false") boolean download,
+            HttpServletRequest request, HttpServletResponse response) {
+        fedoraContentService.streamData(id, datastream, download, new AnalyticsUserData(request), response);
+    }
 
-	@RequestMapping("/content/{pid}")
-	public void getDefaultDatastream(@PathVariable("pid") String pid,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download,
-			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download,
-				new AnalyticsUserData(request), response);
-	}
+    @RequestMapping("/content/{pid}")
+    public void getDefaultDatastream(@PathVariable("pid") String pid,
+            @RequestParam(value = "dl", defaultValue = "false") boolean download,
+            HttpServletRequest request, HttpServletResponse response) {
+        fedoraContentService.streamData(pid, ContentModelHelper.Datastream.DATA_FILE.getName(), download,
+                new AnalyticsUserData(request), response);
+    }
 
-	@RequestMapping("/content/{pid}/{datastream}")
-	public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download,
-			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
-	}
+    @RequestMapping("/content/{pid}/{datastream}")
+    public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
+            @RequestParam(value = "dl", defaultValue = "false") boolean download,
+            HttpServletRequest request, HttpServletResponse response) {
+        fedoraContentService.streamData(pid, datastream, download, new AnalyticsUserData(request), response);
+    }
 
-	@RequestMapping("/content")
-	public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
-			@RequestParam(value = "dl", defaultValue = "false") boolean download,
-			HttpServletRequest request, HttpServletResponse response) {
-		fedoraContentService.streamData(id, datastream, download, new AnalyticsUserData(request), response);
-	}
+    @RequestMapping("/content")
+    public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
+            @RequestParam(value = "dl", defaultValue = "false") boolean download,
+            HttpServletRequest request, HttpServletResponse response) {
+        fedoraContentService.streamData(id, datastream, download, new AnalyticsUserData(request), response);
+    }
 
-	@ResponseStatus(value = HttpStatus.NOT_FOUND)
-	@ExceptionHandler(ResourceNotFoundException.class)
-	public String handleResourceNotFound(HttpServletRequest request) {
-		request.setAttribute("pageSubtitle", "Invalid content");
-		return "error/invalidRecord";
-	}
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public String handleResourceNotFound(HttpServletRequest request) {
+        request.setAttribute("pageSubtitle", "Invalid content");
+        return "error/invalidRecord";
+    }
 
-	@ResponseStatus(value = HttpStatus.FORBIDDEN)
-	@ExceptionHandler(InvalidRecordRequestException.class)
-	public String handleInvalidRecordRequest(HttpServletRequest request) {
-		request.setAttribute("pageSubtitle", "Invalid content");
-		return "error/invalidRecord";
-	}
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    @ExceptionHandler(InvalidRecordRequestException.class)
+    public String handleInvalidRecordRequest(HttpServletRequest request) {
+        request.setAttribute("pageSubtitle", "Invalid content");
+        return "error/invalidRecord";
+    }
 }

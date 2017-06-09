@@ -45,45 +45,46 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 @Controller
 public class AddContainerController {
-	private static final Logger log = LoggerFactory.getLogger(AddContainerController.class);
+    private static final Logger log = LoggerFactory.getLogger(AddContainerController.class);
 
-	@Autowired
-	private DigitalObjectManager digitalObjectManager;
-	
-	@RequestMapping(value = "edit/create_container/{id}", method = RequestMethod.POST)
-	public @ResponseBody
-	String createContainer(@PathVariable("id") String parentId, @RequestParam("name") String name,
-			@RequestParam(value = "type", required = false) String type,
-			@RequestParam(value = "description", required = false) MultipartFile description, Model model,
-			HttpServletRequest request, HttpServletResponse response) {
-		PID parent = new PID(parentId);
-		try {
-			String user = request.getHeader("On-Behalf-Of");
-			if (user == null)
-				user = request.getRemoteUser();
-			
-			ContentModelHelper.Model extraModel = null;
-			if (type != null && type.equals("collection")) {
-				extraModel = ContentModelHelper.Model.COLLECTION;
-			} else if (type != null && type.equals("aggregate")) {
-				extraModel = ContentModelHelper.Model.AGGREGATE_WORK;
-			} 
-			
-			byte[] mods = null;
-			if(description != null && !description.isEmpty()) {
-				mods = description.getBytes();
-			}
+    @Autowired
+    private DigitalObjectManager digitalObjectManager;
 
-			PID containerPid = digitalObjectManager.createContainer(name, parent, extraModel, user, mods);
-			response.setStatus(201);
-			return "{\"pid\": \"" + containerPid.getPid() + "\"}";
-		} catch (IOException e) {
-			log.error("Unexpected IO exception", e);
-		} catch (IngestException e) {
-			log.error("Unexpected exception", e);
-		}
-		response.setStatus(500);
-		return "{\"error\": \"An error occurred while attempting to create a container in " + parent + "\"}";
-	}
+    @RequestMapping(value = "edit/create_container/{id}", method = RequestMethod.POST)
+    public @ResponseBody
+    String createContainer(@PathVariable("id") String parentId, @RequestParam("name") String name,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestParam(value = "description", required = false) MultipartFile description, Model model,
+            HttpServletRequest request, HttpServletResponse response) {
+        PID parent = new PID(parentId);
+        try {
+            String user = request.getHeader("On-Behalf-Of");
+            if (user == null) {
+                user = request.getRemoteUser();
+            }
+
+            ContentModelHelper.Model extraModel = null;
+            if (type != null && type.equals("collection")) {
+                extraModel = ContentModelHelper.Model.COLLECTION;
+            } else if (type != null && type.equals("aggregate")) {
+                extraModel = ContentModelHelper.Model.AGGREGATE_WORK;
+            }
+
+            byte[] mods = null;
+            if (description != null && !description.isEmpty()) {
+                mods = description.getBytes();
+            }
+
+            PID containerPid = digitalObjectManager.createContainer(name, parent, extraModel, user, mods);
+            response.setStatus(201);
+            return "{\"pid\": \"" + containerPid.getPid() + "\"}";
+        } catch (IOException e) {
+            log.error("Unexpected IO exception", e);
+        } catch (IngestException e) {
+            log.error("Unexpected exception", e);
+        }
+        response.setStatus(500);
+        return "{\"error\": \"An error occurred while attempting to create a container in " + parent + "\"}";
+    }
 
 }

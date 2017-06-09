@@ -14,6 +14,7 @@
 /static.tar.gz
 /puppet.tar.gz
 */fcrepo4-data
+target
 .idea
 static/js/cdr-admin.js
 static/css/cdr_admin.css

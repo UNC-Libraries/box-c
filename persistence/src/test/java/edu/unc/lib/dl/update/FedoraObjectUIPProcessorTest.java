@@ -53,113 +53,113 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class FedoraObjectUIPProcessorTest extends Assert {
 
-	@Test
-	public void invalidDatastreamAndMissingContent() throws Exception {
-		AccessClient accessClient = mock(AccessClient.class);
-		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
-		
-		UIPUpdatePipeline pipeline = mock(UIPUpdatePipeline.class);
-		DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
-		
-		FedoraObjectUIPProcessor uipProcessor = new FedoraObjectUIPProcessor();
-		uipProcessor.setAccessClient(accessClient);
-		uipProcessor.setDigitalObjectManager(digitalObjectManager);
-		uipProcessor.setPipeline(pipeline);
-		
-		
-		PID pid = new PID("uuid:test");
-		
-		Map<String,File> modifiedFiles = new HashMap<String,File>();
-		modifiedFiles.put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), mock(File.class));
-		modifiedFiles.put(ContentModelHelper.Datastream.MD_TECHNICAL.getName(), null);
-		modifiedFiles.put(ContentModelHelper.Datastream.AUDIT.getName(), mock(File.class));
-		modifiedFiles.put("INVALID", mock(File.class));
-		
-		FedoraObjectUIP uip = mock(FedoraObjectUIP.class);
-		when(uip.getModifiedFiles()).thenReturn(modifiedFiles);
-		when(uip.getPID()).thenReturn(pid);
-		when(uip.getUser()).thenReturn("testuser");
-		when(uip.getOperation()).thenReturn(UpdateOperation.ADD);
-		
-		when(pipeline.processUIP(uip)).thenReturn(uip);
-		
-		uipProcessor.process(uip);
-		
-		verify(uip, times(1)).getModifiedFiles();
-		verify(uip, times(1)).storeOriginalDatastreams(any(AccessClient.class));
-		verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), anyString(), anyString());
-		verify(digitalObjectManager, times(1)).addOrReplaceDatastream(any(PID.class), eq(Datastream.AUDIT), any(File.class), anyString(), anyString(), anyString());
-		verify(digitalObjectManager, times(1)).addOrReplaceDatastream(any(PID.class), eq(Datastream.MD_DESCRIPTIVE), any(File.class), anyString(), anyString(), anyString());
-		
-		//Check reaction to null modified files, shouldn't do any updates
-		when(uip.getModifiedFiles()).thenReturn(null);
-		uipProcessor.process(uip);
-		verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), anyString(), anyString());
-	}
-	
-	@Test
-	public void testNormalOperations() throws Exception {
-		FedoraObjectUIPProcessor processor = new FedoraObjectUIPProcessor();
-		AccessControlService aclService = mock(AccessControlService.class);
-		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editAccessControl)))
-			.thenReturn(true);
-		processor.setAclService(aclService);
-		
-		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
-		Abdera abdera = new Abdera();
-		Parser parser = abdera.getParser();
-		Document<Entry> entryDoc = parser.parse(entryPart);
-		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
-		org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
-		org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
-		rdfElement.addContent(descElement);
-		org.jdom2.Element relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
-				JDOMNamespaceUtil.CDR_NS);
-		relElement.setText("yes");
-		descElement.addContent(relElement);
-		relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
-				JDOMNamespaceUtil.CDR_ACL_NS);
-		relElement.setText("2013-02-01");
-		descElement.addContent(relElement);
-		relElement = new org.jdom2.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
-				JDOMNamespaceUtil.FEDORA_MODEL_NS);
-		relElement.setText(ContentModelHelper.Model.SIMPLE.name());
-		descElement.addContent(relElement);
+    @Test
+    public void invalidDatastreamAndMissingContent() throws Exception {
+        AccessClient accessClient = mock(AccessClient.class);
+        when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
 
-		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), rdfElement);
-		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+        UIPUpdatePipeline pipeline = mock(UIPUpdatePipeline.class);
+        DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
 
-		MetadataUIP uip = mock(MetadataUIP.class);
-		when(uip.getPID()).thenReturn(new PID("uuid:test/ACL"));
-		when(uip.getOperation()).thenReturn(UpdateOperation.REPLACE);
-		when(uip.getOriginalData()).thenReturn(originalMap);
-		when(uip.getModifiedData()).thenReturn(originalMap);
-		when(uip.getIncomingData()).thenReturn(datastreamMap);
-		when(uip.getModifiedFiles()).thenReturn(getModifiedFiles(originalMap));
-		
-		UIPUpdatePipeline pipeline = mock(UIPUpdatePipeline.class);
-		when(pipeline.processUIP(any(UpdateInformationPackage.class))).thenReturn(uip);
-		processor.setPipeline(pipeline);
-		processor.setVirtualDatastreamMap(new HashMap<String,Datastream>());
-		DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
-		processor.setDigitalObjectManager(digitalObjectManager);
-		processor.setOperationsMessageSender(mock(OperationsMessageSender.class));
-		
-		processor.process(uip);
-	}
-	
-	public Map<String, File> getModifiedFiles(Map<String, org.jdom2.Element> modifiedData) {
-		Map<String, File> modifiedFiles = new HashMap<String, File>();
-		for (java.util.Map.Entry<String, ?> modified : modifiedData.entrySet()) {
-			Element modifiedElement = (Element)modified.getValue();
-			try {
-				File temp = ClientUtils.writeXMLToTempFile(modifiedElement);
-				modifiedFiles.put(modified.getKey(), temp);
-			} catch (IOException e) {
-				System.err.println("Failed to create temp file" + e);
-			}
-		}
-		return modifiedFiles;
-	}
+        FedoraObjectUIPProcessor uipProcessor = new FedoraObjectUIPProcessor();
+        uipProcessor.setAccessClient(accessClient);
+        uipProcessor.setDigitalObjectManager(digitalObjectManager);
+        uipProcessor.setPipeline(pipeline);
+
+
+        PID pid = new PID("uuid:test");
+
+        Map<String,File> modifiedFiles = new HashMap<String,File>();
+        modifiedFiles.put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), mock(File.class));
+        modifiedFiles.put(ContentModelHelper.Datastream.MD_TECHNICAL.getName(), null);
+        modifiedFiles.put(ContentModelHelper.Datastream.AUDIT.getName(), mock(File.class));
+        modifiedFiles.put("INVALID", mock(File.class));
+
+        FedoraObjectUIP uip = mock(FedoraObjectUIP.class);
+        when(uip.getModifiedFiles()).thenReturn(modifiedFiles);
+        when(uip.getPID()).thenReturn(pid);
+        when(uip.getUser()).thenReturn("testuser");
+        when(uip.getOperation()).thenReturn(UpdateOperation.ADD);
+
+        when(pipeline.processUIP(uip)).thenReturn(uip);
+
+        uipProcessor.process(uip);
+
+        verify(uip, times(1)).getModifiedFiles();
+        verify(uip, times(1)).storeOriginalDatastreams(any(AccessClient.class));
+        verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), anyString(), anyString());
+        verify(digitalObjectManager, times(1)).addOrReplaceDatastream(any(PID.class), eq(Datastream.AUDIT), any(File.class), anyString(), anyString(), anyString());
+        verify(digitalObjectManager, times(1)).addOrReplaceDatastream(any(PID.class), eq(Datastream.MD_DESCRIPTIVE), any(File.class), anyString(), anyString(), anyString());
+
+        //Check reaction to null modified files, shouldn't do any updates
+        when(uip.getModifiedFiles()).thenReturn(null);
+        uipProcessor.process(uip);
+        verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), anyString(), anyString());
+    }
+
+    @Test
+    public void testNormalOperations() throws Exception {
+        FedoraObjectUIPProcessor processor = new FedoraObjectUIPProcessor();
+        AccessControlService aclService = mock(AccessControlService.class);
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editAccessControl)))
+            .thenReturn(true);
+        processor.setAclService(aclService);
+
+        InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
+        Abdera abdera = new Abdera();
+        Parser parser = abdera.getParser();
+        Document<Entry> entryDoc = parser.parse(entryPart);
+        Entry entry = entryDoc.getRoot();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
+        org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
+        rdfElement.addContent(descElement);
+        org.jdom2.Element relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.isPublished.getPredicate(),
+                JDOMNamespaceUtil.CDR_NS);
+        relElement.setText("yes");
+        descElement.addContent(relElement);
+        relElement = new org.jdom2.Element(ContentModelHelper.CDRProperty.embargoUntil.getPredicate(),
+                JDOMNamespaceUtil.CDR_ACL_NS);
+        relElement.setText("2013-02-01");
+        descElement.addContent(relElement);
+        relElement = new org.jdom2.Element(ContentModelHelper.FedoraProperty.hasModel.name(),
+                JDOMNamespaceUtil.FEDORA_MODEL_NS);
+        relElement.setText(ContentModelHelper.Model.SIMPLE.name());
+        descElement.addContent(relElement);
+
+        originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), rdfElement);
+        Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
+
+        MetadataUIP uip = mock(MetadataUIP.class);
+        when(uip.getPID()).thenReturn(new PID("uuid:test/ACL"));
+        when(uip.getOperation()).thenReturn(UpdateOperation.REPLACE);
+        when(uip.getOriginalData()).thenReturn(originalMap);
+        when(uip.getModifiedData()).thenReturn(originalMap);
+        when(uip.getIncomingData()).thenReturn(datastreamMap);
+        when(uip.getModifiedFiles()).thenReturn(getModifiedFiles(originalMap));
+
+        UIPUpdatePipeline pipeline = mock(UIPUpdatePipeline.class);
+        when(pipeline.processUIP(any(UpdateInformationPackage.class))).thenReturn(uip);
+        processor.setPipeline(pipeline);
+        processor.setVirtualDatastreamMap(new HashMap<String,Datastream>());
+        DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
+        processor.setDigitalObjectManager(digitalObjectManager);
+        processor.setOperationsMessageSender(mock(OperationsMessageSender.class));
+
+        processor.process(uip);
+    }
+
+    public Map<String, File> getModifiedFiles(Map<String, org.jdom2.Element> modifiedData) {
+        Map<String, File> modifiedFiles = new HashMap<String, File>();
+        for (java.util.Map.Entry<String, ?> modified : modifiedData.entrySet()) {
+            Element modifiedElement = (Element)modified.getValue();
+            try {
+                File temp = ClientUtils.writeXMLToTempFile(modifiedElement);
+                modifiedFiles.put(modified.getKey(), temp);
+            } catch (IOException e) {
+                System.err.println("Failed to create temp file" + e);
+            }
+        }
+        return modifiedFiles;
+    }
 }

@@ -26,36 +26,36 @@ import org.apache.jena.query.QueryFactory;
 
 /**
  * Service for executing sparql queries against a Fuseki backend
- * 
+ *
  * @author bbpennel
  *
  */
 public class FusekiSparqlQueryServiceImpl implements SparqlQueryService {
 
-	private String fusekiQueryURL;
-	private CloseableHttpClient httpClient;
-	private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
+    private String fusekiQueryURL;
+    private CloseableHttpClient httpClient;
+    private final HttpClientConnectionManager multiThreadedHttpConnectionManager;
 
-	public FusekiSparqlQueryServiceImpl() {
-		this.multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
-		this.httpClient = HttpClients.custom()
-				.setConnectionManager(multiThreadedHttpConnectionManager)
-				.build();
-	}
+    public FusekiSparqlQueryServiceImpl() {
+        this.multiThreadedHttpConnectionManager = new PoolingHttpClientConnectionManager();
+        this.httpClient = HttpClients.custom()
+                .setConnectionManager(multiThreadedHttpConnectionManager)
+                .build();
+    }
 
-	public void destroy() {
-		this.httpClient = null;
-		this.multiThreadedHttpConnectionManager.shutdown();
-	}
+    public void destroy() {
+        this.httpClient = null;
+        this.multiThreadedHttpConnectionManager.shutdown();
+    }
 
-	@Override
-	public QueryExecution executeQuery(String queryString) {
-		Query query = QueryFactory.create(queryString);
+    @Override
+    public QueryExecution executeQuery(String queryString) {
+        Query query = QueryFactory.create(queryString);
 
-		return QueryExecutionFactory.sparqlService(fusekiQueryURL, query, httpClient);
-	}
+        return QueryExecutionFactory.sparqlService(fusekiQueryURL, query, httpClient);
+    }
 
-	public void setFusekiQueryURL(String fusekiQueryURL) {
-		this.fusekiQueryURL = fusekiQueryURL;
-	}
+    public void setFusekiQueryURL(String fusekiQueryURL) {
+        this.fusekiQueryURL = fusekiQueryURL;
+    }
 }

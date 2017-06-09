@@ -2,7 +2,12 @@ package edu.unc.lib.dl.sparql;
 
 import org.apache.jena.query.QueryExecution;
 
+/**
+ * Execute Sparql query
+ * @author bbpennel
+ *
+ */
 public interface SparqlQueryService {
 
-	public QueryExecution executeQuery(String queryString);
+    public QueryExecution executeQuery(String queryString);
 }

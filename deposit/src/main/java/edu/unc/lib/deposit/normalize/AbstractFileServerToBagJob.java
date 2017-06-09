@@ -53,195 +53,195 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author lfarrell
  */
 public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
-	private static final Logger log = LoggerFactory
-			.getLogger(AbstractFileServerToBagJob.class);
-	
-	private Map<String, Bag> pathToFolderBagCache;
-	
-	public AbstractFileServerToBagJob() {
-		pathToFolderBagCache = new HashMap<>();
-	}
-	
-	public AbstractFileServerToBagJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-		
-		pathToFolderBagCache = new HashMap<>();
-	}
+    private static final Logger log = LoggerFactory
+            .getLogger(AbstractFileServerToBagJob.class);
 
-	@Override
-	public abstract void runJob();
-	
-	protected Bag getSourceBag(Bag depositBag, File sourceFile) {
-		Model model = depositBag.getModel();
-		Map<String, String> status = getDepositStatus();
-		
-		PID containerPID = createPID();
-		Bag bagFolder = model.createBag(containerPID.getURI());
-		model.add(bagFolder, CdrDeposit.label, 
-				status.get(DepositField.fileName.name()));
-		model.add(bagFolder, RDF.type, Cdr.Folder);
-		depositBag.add(bagFolder);
-		
-		// Cache the source bag folder
-		pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
-		
-		// Add extra descriptive information
-		addDescription(containerPID, status);
-		
-		return bagFolder;
-	}
-	
-	/**
-	 * Creates and returns a Jena Resource for the given path representing a file,
-	 * adding it to the hierarchy for the deposit  
-	 * 
-	 * @param sourceBag
-	 * @param filepath
-	 * @return
-	 */
-	protected Resource getFileResource(Bag sourceBag, String filepath) {
-		Bag parentBag = getParentBag(sourceBag, filepath);
+    private Map<String, Bag> pathToFolderBagCache;
 
-		PID pid = createPID();
+    public AbstractFileServerToBagJob() {
+        pathToFolderBagCache = new HashMap<>();
+    }
 
-		Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
-		parentBag.add(fileResource);
+    public AbstractFileServerToBagJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
 
-		return fileResource;
-	}
-	
-	/**
-	 * Creates and returns a Jena Bag for the given filepath representing a folder, and adds
-	 * it to the hierarchy for the deposit
-	 * 
-	 * @param sourceBag
-	 * @param filepath
-	 * @param model
-	 * @return
-	 */
-	protected Bag getFolderBag(Bag sourceBag, String filepath) {
-		Bag parentBag = getParentBag(sourceBag, filepath);
-		
-		PID pid = createPID();
-		
-		Bag bagFolder = sourceBag.getModel().createBag(pid.getURI());
-		parentBag.add(bagFolder);
-		
-		pathToFolderBagCache.put(filepath, bagFolder);
-		return bagFolder;
-	}
-	
-	private PID createPID() {
-		UUID uuid = UUID.randomUUID();
-		PID pid = PIDs.get(uuid.toString());
-		
-		return pid;
-	}
-	
-	/**
-	 * Returns a Jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
-	 * 
-	 * @param sourceBag
-	 * @param filepath
-	 * @return
-	 */
-	protected Bag getParentBag(Bag sourceBag, String filepath) {
-		// Retrieve the bag from the cache by base filepath if available.
-		String basePath = Paths.get(filepath).getParent().toString();
-		if (pathToFolderBagCache.containsKey(basePath)) {
-			return pathToFolderBagCache.get(basePath);
-		}
-		
-		Model model = sourceBag.getModel();
-		
-		// find or create a folder resource for the filepath
-		String[] pathSegments = filepath.split("/");
-		
-		// Nothing to do with paths that only have data
-		if (pathSegments.length <= 2) {
-			return sourceBag;
-		}
-		
-		Bag currentNode = sourceBag;
-		
-		for (int i = 1; i < pathSegments.length - 1; i++) {
-			
-			String segment = pathSegments[i];
-			String folderPath = StringUtils.join(Arrays.copyOfRange(pathSegments, 0, i + 1), "/");
-			
-			if (pathToFolderBagCache.containsKey(folderPath)) {
-				currentNode = pathToFolderBagCache.get(folderPath);
-				continue;
-			}
-			
-			log.debug("No cached folder bag for {}, creating new one", folderPath);
-			// No existing folder was found, create one
-			PID pid = createPID();
-			
-			Bag childBag = model.createBag(pid.getURI());
-			currentNode.add(childBag);
-			
-			model.add(childBag, CdrDeposit.label, segment);
-			model.add(childBag, RDF.type, Cdr.Folder);
-			
-			pathToFolderBagCache.put(folderPath, childBag);
-			
-			currentNode = childBag;
-		}
-		
-		return currentNode;
-	}
-	
-	/**
-	 * Adds additional metadata fields for the root bag container if they are provided
-	 * 
-	 * @param containerPID
-	 * @param status
-	 */
-	public void addDescription(PID containerPID, Map<String, String> status) {
-		Document doc = new Document();
-		Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
-		doc.addContent(mods);
-		
-		if (status.containsKey(DepositField.extras.name())) {
-			ObjectMapper mapper = new ObjectMapper();
-			try {
-				JsonNode node = mapper.readTree(status.get(DepositField.extras.name()));
-				
-				JsonNode accessionNode = node.get("accessionNumber");
-				if (accessionNode != null) {
-					Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-					identifier.setText(accessionNode.asText());
-					identifier.setAttribute("type", "local");
-					identifier.setAttribute("displayLabel", "Accession Identifier");
-					mods.addContent(identifier);
-				}
-				
-				JsonNode mediaNode = node.get("mediaId");
-				if (mediaNode != null) {
-					Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-					identifier.setText(mediaNode.asText());
-					identifier.setAttribute("type", "local");
-					identifier.setAttribute("displayLabel", "Source Identifier");
-					mods.addContent(identifier);
-				}
-			} catch (IOException e) {
-				failJob(e, "Failed to parse extras data for {0}", getDepositPID());
-				log.error("Failed to parse extras data for {0}", this.getDepositPID(), e);
-			}
-		}
-		
-		// Persist the MODS file to disk if there were any fields added
-		if (mods.getChildren().size() > 0) {
-			final File modsFolder = getDescriptionDir();
-			modsFolder.mkdirs();
-			File modsFile = new File(modsFolder, containerPID.getUUID() + ".xml");
-			try (FileOutputStream fos = new FileOutputStream(modsFile)) {
-				new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
-			} catch (IOException e) {
-				failJob(e, "Unable to write descriptive metadata for bag deposit {0}", getDepositPID());
-			}
-			
-		}
-	}
+        pathToFolderBagCache = new HashMap<>();
+    }
+
+    @Override
+    public abstract void runJob();
+
+    protected Bag getSourceBag(Bag depositBag, File sourceFile) {
+        Model model = depositBag.getModel();
+        Map<String, String> status = getDepositStatus();
+
+        PID containerPID = createPID();
+        Bag bagFolder = model.createBag(containerPID.getURI());
+        model.add(bagFolder, CdrDeposit.label,
+                status.get(DepositField.fileName.name()));
+        model.add(bagFolder, RDF.type, Cdr.Folder);
+        depositBag.add(bagFolder);
+
+        // Cache the source bag folder
+        pathToFolderBagCache.put(sourceFile.getName(), bagFolder);
+
+        // Add extra descriptive information
+        addDescription(containerPID, status);
+
+        return bagFolder;
+    }
+
+    /**
+     * Creates and returns a Jena Resource for the given path representing a file,
+     * adding it to the hierarchy for the deposit
+     * 
+     * @param sourceBag
+     * @param filepath
+     * @return
+     */
+    protected Resource getFileResource(Bag sourceBag, String filepath) {
+        Bag parentBag = getParentBag(sourceBag, filepath);
+
+        PID pid = createPID();
+
+        Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
+        parentBag.add(fileResource);
+
+        return fileResource;
+    }
+
+    /**
+     * Creates and returns a Jena Bag for the given filepath representing a folder, and adds
+     * it to the hierarchy for the deposit
+     * 
+     * @param sourceBag
+     * @param filepath
+     * @param model
+     * @return
+     */
+    protected Bag getFolderBag(Bag sourceBag, String filepath) {
+        Bag parentBag = getParentBag(sourceBag, filepath);
+
+        PID pid = createPID();
+
+        Bag bagFolder = sourceBag.getModel().createBag(pid.getURI());
+        parentBag.add(bagFolder);
+
+        pathToFolderBagCache.put(filepath, bagFolder);
+        return bagFolder;
+    }
+
+    private PID createPID() {
+        UUID uuid = UUID.randomUUID();
+        PID pid = PIDs.get(uuid.toString());
+
+        return pid;
+    }
+
+    /**
+     * Returns a Jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
+     * 
+     * @param sourceBag
+     * @param filepath
+     * @return
+     */
+    protected Bag getParentBag(Bag sourceBag, String filepath) {
+        // Retrieve the bag from the cache by base filepath if available.
+        String basePath = Paths.get(filepath).getParent().toString();
+        if (pathToFolderBagCache.containsKey(basePath)) {
+            return pathToFolderBagCache.get(basePath);
+        }
+
+        Model model = sourceBag.getModel();
+
+        // find or create a folder resource for the filepath
+        String[] pathSegments = filepath.split("/");
+
+        // Nothing to do with paths that only have data
+        if (pathSegments.length <= 2) {
+            return sourceBag;
+        }
+
+        Bag currentNode = sourceBag;
+
+        for (int i = 1; i < pathSegments.length - 1; i++) {
+
+            String segment = pathSegments[i];
+            String folderPath = StringUtils.join(Arrays.copyOfRange(pathSegments, 0, i + 1), "/");
+
+            if (pathToFolderBagCache.containsKey(folderPath)) {
+                currentNode = pathToFolderBagCache.get(folderPath);
+                continue;
+            }
+
+            log.debug("No cached folder bag for {}, creating new one", folderPath);
+            // No existing folder was found, create one
+            PID pid = createPID();
+
+            Bag childBag = model.createBag(pid.getURI());
+            currentNode.add(childBag);
+
+            model.add(childBag, CdrDeposit.label, segment);
+            model.add(childBag, RDF.type, Cdr.Folder);
+
+            pathToFolderBagCache.put(folderPath, childBag);
+
+            currentNode = childBag;
+        }
+
+        return currentNode;
+    }
+
+    /**
+     * Adds additional metadata fields for the root bag container if they are provided
+     * 
+     * @param containerPID
+     * @param status
+     */
+    public void addDescription(PID containerPID, Map<String, String> status) {
+        Document doc = new Document();
+        Element mods = new Element("mods", JDOMNamespaceUtil.MODS_V3_NS);
+        doc.addContent(mods);
+
+        if (status.containsKey(DepositField.extras.name())) {
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                JsonNode node = mapper.readTree(status.get(DepositField.extras.name()));
+
+                JsonNode accessionNode = node.get("accessionNumber");
+                if (accessionNode != null) {
+                    Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+                    identifier.setText(accessionNode.asText());
+                    identifier.setAttribute("type", "local");
+                    identifier.setAttribute("displayLabel", "Accession Identifier");
+                    mods.addContent(identifier);
+                }
+
+                JsonNode mediaNode = node.get("mediaId");
+                if (mediaNode != null) {
+                    Element identifier = new Element("identifier", JDOMNamespaceUtil.MODS_V3_NS);
+                    identifier.setText(mediaNode.asText());
+                    identifier.setAttribute("type", "local");
+                    identifier.setAttribute("displayLabel", "Source Identifier");
+                    mods.addContent(identifier);
+                }
+            } catch (IOException e) {
+                failJob(e, "Failed to parse extras data for {0}", getDepositPID());
+                log.error("Failed to parse extras data for {0}", this.getDepositPID(), e);
+            }
+        }
+
+        // Persist the MODS file to disk if there were any fields added
+        if (mods.getChildren().size() > 0) {
+            final File modsFolder = getDescriptionDir();
+            modsFolder.mkdirs();
+            File modsFile = new File(modsFolder, containerPID.getUUID() + ".xml");
+            try (FileOutputStream fos = new FileOutputStream(modsFile)) {
+                new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
+            } catch (IOException e) {
+                failJob(e, "Unable to write descriptive metadata for bag deposit {0}", getDepositPID());
+            }
+
+        }
+    }
 }

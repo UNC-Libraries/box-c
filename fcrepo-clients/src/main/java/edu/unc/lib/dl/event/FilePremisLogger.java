@@ -45,158 +45,158 @@ import edu.unc.lib.dl.util.ObjectPersistenceException;
 
 /**
  * Logs PREMIS events for a repository object to a backing file
- * 
+ *
  * @author lfarrell
  *
  */
 public class FilePremisLogger implements PremisLogger {
 
-	private static final Logger log = LoggerFactory.getLogger(FilePremisLogger.class);
+    private static final Logger log = LoggerFactory.getLogger(FilePremisLogger.class);
 
-	private File premisFile;
-	private PID objectPid;
-	private Model model;
+    private File premisFile;
+    private PID objectPid;
+    private Model model;
 
-	private Repository repository;
+    private Repository repository;
 
-	public FilePremisLogger(PID pid, File file, Repository repository) {
-		this.objectPid = pid;
-		this.premisFile = file;
-		this.repository = repository;
-	}
+    public FilePremisLogger(PID pid, File file, Repository repository) {
+        this.objectPid = pid;
+        this.premisFile = file;
+        this.repository = repository;
+    }
 
-	/**
-	 * Allows for an arbitrary timestamp to be set for a premis event
-	 * 
-	 * @param eventType
-	 * @return PremisEventBuilder
-	 */
-	@Override
-	public PremisEventBuilder buildEvent(Resource eventType, Date date) {
-		if (date == null) {
-			date = new Date();
-		}
+    /**
+     * Allows for an arbitrary timestamp to be set for a premis event
+     *
+     * @param eventType
+     * @return PremisEventBuilder
+     */
+    @Override
+    public PremisEventBuilder buildEvent(Resource eventType, Date date) {
+        if (date == null) {
+            date = new Date();
+        }
 
-		return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
-				eventType, date, this);
-	}
+        return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
+                eventType, date, this);
+    }
 
-	/**
-	 * Returns an instance of buildEvent with the timestamp automatically set to the current time
-	 * 
-	 * @param eventType
-	 * @return PremisEventBuilder
-	 */
-	@Override
-	public PremisEventBuilder buildEvent(Resource eventType) {
-		return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
-				eventType, new Date(), this);
-	}
+    /**
+     * Returns an instance of buildEvent with the timestamp automatically set to the current time
+     *
+     * @param eventType
+     * @return PremisEventBuilder
+     */
+    @Override
+    public PremisEventBuilder buildEvent(Resource eventType) {
+        return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
+                eventType, new Date(), this);
+    }
 
-	/**
-	 * Adds an event to the log file
-	 * 
-	 * @param eventResc
-	 * @return
-	 */
-	@Override
-	public PremisLogger writeEvent(Resource eventResc) {
-		// Add the event to the model for this event log
-		Model model = getModel().add(eventResc.getModel());
+    /**
+     * Adds an event to the log file
+     *
+     * @param eventResc
+     * @return
+     */
+    @Override
+    public PremisLogger writeEvent(Resource eventResc) {
+        // Add the event to the model for this event log
+        Model model = getModel().add(eventResc.getModel());
 
-		if (premisFile != null) {
-			// Persist the log to file
-			try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
-				RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
-			} catch (IOException e) {
-				throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
-			}
-		}
+        if (premisFile != null) {
+            // Persist the log to file
+            try (FileOutputStream rdfFile = new FileOutputStream(premisFile)) {
+                RDFDataMgr.write(rdfFile, model, RDFFormat.TURTLE_PRETTY);
+            } catch (IOException e) {
+                throw new ObjectPersistenceException("Failed to stream PREMIS log to file for " + objectPid, e);
+            }
+        }
 
-		return this;
-	}
+        return this;
+    }
 
-	/**
-	 * Returns the Model containing events from this logger
-	 * 
-	 * @return
-	 */
-	public Model getModel() {
-		if (model != null) {
-			return model;
-		}
+    /**
+     * Returns the Model containing events from this logger
+     *
+     * @return
+     */
+    public Model getModel() {
+        if (model != null) {
+            return model;
+        }
 
-		Model model = ModelFactory.createDefaultModel();
+        Model model = ModelFactory.createDefaultModel();
 
-		if (premisFile != null && premisFile.exists()) {
-			InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
-			model.read(in, null, Lang.TURTLE.getName());
-		}
+        if (premisFile != null && premisFile.exists()) {
+            InputStream in = FileManager.get().open(premisFile.getAbsolutePath());
+            model.read(in, null, Lang.TURTLE.getName());
+        }
 
-		return model;
-	}
+        return model;
+    }
 
-	@Override
-	public List<PID> listEvents() {
-		List<PID> eventPids = new ArrayList<>();
+    @Override
+    public List<PID> listEvents() {
+        List<PID> eventPids = new ArrayList<>();
 
-		// Find all of the individual events and turn their identifiers into pids
-		for (ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
-			Resource eventResc = eventIt.nextResource();
-			PID eventPid = PIDs.get(eventResc.getURI());
+        // Find all of the individual events and turn their identifiers into pids
+        for (ResIterator eventIt = model.listResourcesWithProperty(Premis.hasEventType); eventIt.hasNext(); ) {
+            Resource eventResc = eventIt.nextResource();
+            PID eventPid = PIDs.get(eventResc.getURI());
 
-			eventPids.add(eventPid);
-		}
+            eventPids.add(eventPid);
+        }
 
-		return eventPids;
-	}
+        return eventPids;
+    }
 
-	@Override
-	public List<PremisEventObject> getEvents() {
-		List<PremisEventObject> events = new ArrayList<>();
-		ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventType);
-		// Find all of the events and construct a list of PremisEventObjects from them.
-		try {
-			gatherAllObjectsForEvents(eventIt, events);
-		} finally {
-			eventIt.close();
-		}
-		
-		log.debug("Retrieved {} events from file log for object {}",
-				events.size(), objectPid.getQualifiedId());
-		return events;
-	}
-	
-	private void gatherAllObjectsForEvents(ResIterator eventIt, List<PremisEventObject> events) {
-			while (eventIt.hasNext()) {
-				Resource eventResc = eventIt.nextResource();
-				PID eventPid = PIDs.get(eventResc.getURI());
-				// Construct a model for just this event
-				Model eventModel = ModelFactory.createDefaultModel();
-				StmtIterator stmtIt = eventResc.listProperties();
-				// Add all statements with this resc as subject to the model
-				eventModel.add(stmtIt);
-				stmtIt.close();
-				// Get a fresh iterator to check all objects of all the triples for properties
-				stmtIt = eventResc.listProperties();
-				while (stmtIt.hasNext()) {
-					RDFNode objNode = stmtIt.next().getObject();
-					if (objNode.isResource()) {
-						StmtIterator objIt = objNode.asResource().listProperties();
-						// Add statements to the event's model for any objects that have properties
-						if (objIt != null) {
-							eventModel.add(objIt);
-							objIt.close();
-						}
-					}
-				}
-				stmtIt.close();
-				// Construct the event object with a presupplied model
-				PremisEventObject event = new PremisEventObject(eventPid, repository,
-						repository.getRepositoryObjectDataLoader());
-				event.storeModel(eventModel);
+    @Override
+    public List<PremisEventObject> getEvents() {
+        List<PremisEventObject> events = new ArrayList<>();
+        ResIterator eventIt = getModel().listResourcesWithProperty(Premis.hasEventType);
+        // Find all of the events and construct a list of PremisEventObjects from them.
+        try {
+            gatherAllObjectsForEvents(eventIt, events);
+        } finally {
+            eventIt.close();
+        }
 
-				events.add(event);
-		} 
-	}
+        log.debug("Retrieved {} events from file log for object {}",
+                events.size(), objectPid.getQualifiedId());
+        return events;
+    }
+
+    private void gatherAllObjectsForEvents(ResIterator eventIt, List<PremisEventObject> events) {
+            while (eventIt.hasNext()) {
+                Resource eventResc = eventIt.nextResource();
+                PID eventPid = PIDs.get(eventResc.getURI());
+                // Construct a model for just this event
+                Model eventModel = ModelFactory.createDefaultModel();
+                StmtIterator stmtIt = eventResc.listProperties();
+                // Add all statements with this resc as subject to the model
+                eventModel.add(stmtIt);
+                stmtIt.close();
+                // Get a fresh iterator to check all objects of all the triples for properties
+                stmtIt = eventResc.listProperties();
+                while (stmtIt.hasNext()) {
+                    RDFNode objNode = stmtIt.next().getObject();
+                    if (objNode.isResource()) {
+                        StmtIterator objIt = objNode.asResource().listProperties();
+                        // Add statements to the event's model for any objects that have properties
+                        if (objIt != null) {
+                            eventModel.add(objIt);
+                            objIt.close();
+                        }
+                    }
+                }
+                stmtIt.close();
+                // Construct the event object with a presupplied model
+                PremisEventObject event = new PremisEventObject(eventPid, repository,
+                        repository.getRepositoryObjectDataLoader());
+                event.storeModel(eventModel);
+
+                events.add(event);
+        }
+    }
 }

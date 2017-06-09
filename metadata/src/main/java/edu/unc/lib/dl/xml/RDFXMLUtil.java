@@ -32,98 +32,107 @@ import edu.unc.lib.dl.fedora.PID;
  * @date Aug 24, 2015
  */
 public class RDFXMLUtil {
-	
-	public static boolean removeRelationship(Element root, String predicate, Namespace ns, PID object) {
-		return removeTriple(root, predicate, ns, false, object.getURI(), null);
-	}
-	
-	public static boolean removeLiteral(Element root, String predicate, Namespace ns, String value, String datatype) {
-		return removeTriple(root, predicate, ns, true, value, datatype);
-	}
-	
-	public static boolean removeTriple(Element root, String predicate, Namespace ns, boolean isLiteral,
-			String value, String datatype) {
-		Element descEl = root.getChild("Description", RDF_NS);
-		if (value == null) {
-			// Specific value not specified, remove all by predicate
-			return descEl.removeChildren(predicate, ns);
-		}
-		
-		boolean removed = false;
-		Iterator<Element> elIt = descEl.getChildren(predicate, ns).iterator();
-		while (elIt.hasNext()) {
-			Element el = elIt.next();
-			if (isLiteral) {
-				if (datatype != null && !datatype.equals(el.getAttributeValue("resource", RDF_NS))) {
-					continue;
-				}
-				if (value.equals(el.getText())) {
-					elIt.remove();
-					removed = true;
-				}
-			} else {
-				String atVal = el.getAttributeValue("resource", RDF_NS);
-				if (value.equals(atVal)) {
-					elIt.remove();
-					removed = true;
-				}
-			}
-		}
-		return removed;
-	}
-	
-	public static void setExclusiveRelation(Element root, String predicate, Namespace ns, PID object) {
-		setExclusiveTriple(root, predicate, ns, false, object.getURI(), null);
-	}
-	
-	public static void setExclusiveLiteral(Element root, String predicate, Namespace ns,
-			String value, String datatype) {
-		setExclusiveTriple(root, predicate, ns, true, value, datatype);
-	}
+    private RDFXMLUtil() {
+    }
 
-	public static void setExclusiveTriple(Element root, String predicate, Namespace ns, boolean isLiteral,
-			String value, String datatype) {
-		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
-		
-		descEl.removeChildren(predicate, ns);
-		
-		addTriple(root, predicate, ns, isLiteral, value, datatype);
-	}
-	
-	public static void addTriple(Element root, String predicate, Namespace ns, boolean isLiteral,
-			String value, String datatype) {
-		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
-		
-		Element relEl = new Element(predicate, ns);
-		if (isLiteral) {
-			if (datatype != null) {
-				relEl.setAttribute("datatype", datatype, JDOMNamespaceUtil.RDF_NS);
-			}
-			relEl.setText(value);
-		} else {
-			relEl.setAttribute("resource", value, JDOMNamespaceUtil.RDF_NS);
-		}
-		
-		descEl.addContent(relEl);
-	}
-	
-	public static List<String> getLiteralValues(Element root, String predicate, Namespace ns) {
-		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
-		
-		List<Element> tripleEls = descEl.getChildren(predicate, ns);
-		if (tripleEls.size() == 0) {
-			return Collections.emptyList();
-		}
-		List<String> values = new ArrayList<>(tripleEls.size());
-		for (Element tripleEl : tripleEls) {
-			values.add(tripleEl.getText());
-		}
-		return values;
-	}
-	
-	public static String getLiteralValue(Element root, String predicate, Namespace ns) {
-		Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
-		
-		return descEl.getChildText(predicate, ns);
-	}
+    public static boolean removeRelationship(final Element root, final String predicate,
+            final Namespace ns, final PID object) {
+        return removeTriple(root, predicate, ns, false, object.getURI(), null);
+    }
+
+    public static boolean removeLiteral(final Element root, final String predicate,
+            final Namespace ns, final String value, final String datatype) {
+        return removeTriple(root, predicate, ns, true, value, datatype);
+    }
+
+    public static boolean removeTriple(final Element root, final String predicate,
+            final Namespace ns, final boolean isLiteral, final String value, final String datatype) {
+        Element descEl = root.getChild("Description", RDF_NS);
+        if (value == null) {
+            // Specific value not specified, remove all by predicate
+            return descEl.removeChildren(predicate, ns);
+        }
+
+        boolean removed = false;
+        Iterator<Element> elIt = descEl.getChildren(predicate, ns).iterator();
+        while (elIt.hasNext()) {
+            Element el = elIt.next();
+            if (isLiteral) {
+                if (datatype != null
+                        && !datatype.equals(el.getAttributeValue("resource",
+                                RDF_NS))) {
+                    continue;
+                }
+                if (value.equals(el.getText())) {
+                    elIt.remove();
+                    removed = true;
+                }
+            } else {
+                String atVal = el.getAttributeValue("resource", RDF_NS);
+                if (value.equals(atVal)) {
+                    elIt.remove();
+                    removed = true;
+                }
+            }
+        }
+        return removed;
+    }
+
+    public static void setExclusiveRelation(final Element root, final String predicate,
+            final Namespace ns, final PID object) {
+        setExclusiveTriple(root, predicate, ns, false, object.getURI(), null);
+    }
+
+    public static void setExclusiveLiteral(final Element root, final String predicate,
+            final Namespace ns, final String value, final String datatype) {
+        setExclusiveTriple(root, predicate, ns, true, value, datatype);
+    }
+
+    public static void setExclusiveTriple(final Element root, final String predicate,
+            final Namespace ns, final boolean isLiteral, final String value, final String datatype) {
+        Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+
+        descEl.removeChildren(predicate, ns);
+
+        addTriple(root, predicate, ns, isLiteral, value, datatype);
+    }
+
+    public static void addTriple(final Element root, final String predicate, final Namespace ns,
+            final boolean isLiteral, final String value, final String datatype) {
+        Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+
+        Element relEl = new Element(predicate, ns);
+        if (isLiteral) {
+            if (datatype != null) {
+                relEl.setAttribute("datatype", datatype,
+                        JDOMNamespaceUtil.RDF_NS);
+            }
+            relEl.setText(value);
+        } else {
+            relEl.setAttribute("resource", value, JDOMNamespaceUtil.RDF_NS);
+        }
+
+        descEl.addContent(relEl);
+    }
+
+    public static List<String> getLiteralValues(final Element root, final String predicate,final Namespace ns) {
+        Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+
+        List<Element> tripleEls = descEl.getChildren(predicate, ns);
+        if (tripleEls.size() == 0) {
+            return Collections.emptyList();
+        }
+        List<String> values = new ArrayList<>(tripleEls.size());
+        for (Element tripleEl : tripleEls) {
+            values.add(tripleEl.getText());
+        }
+        return values;
+    }
+
+    public static String getLiteralValue(final Element root, final String predicate,
+            final Namespace ns) {
+        Element descEl = root.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+
+        return descEl.getChildText(predicate, ns);
+    }
 }

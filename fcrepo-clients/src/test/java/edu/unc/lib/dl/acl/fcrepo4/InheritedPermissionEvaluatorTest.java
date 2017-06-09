@@ -45,211 +45,211 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class InheritedPermissionEvaluatorTest {
 
-	private static final String PATRON_PRINC = "everyone";
-	private static final String STAFF_PRINC = "adminGrp";
+    private static final String PATRON_PRINC = "everyone";
+    private static final String STAFF_PRINC = "adminGrp";
 
-	private static final String REPO_BASE = "http://example.com/rest/";
+    private static final String REPO_BASE = "http://example.com/rest/";
 
-	@Mock
-	private ContentPathFactory pathFactory;
+    @Mock
+    private ContentPathFactory pathFactory;
 
-	@Mock
-	private ObjectPermissionEvaluator objectPermissionEvaluator;
+    @Mock
+    private ObjectPermissionEvaluator objectPermissionEvaluator;
 
-	@Mock
-	private Repository repository;
+    @Mock
+    private Repository repository;
 
-	private InheritedPermissionEvaluator evaluator;
+    private InheritedPermissionEvaluator evaluator;
 
-	private Set<String> principals;
+    private Set<String> principals;
 
-	private List<PID> ancestorPids;
+    private List<PID> ancestorPids;
 
-	private PID pid;
+    private PID pid;
 
-	@Before
-	public void init() {
-		initMocks(this);
+    @Before
+    public void init() {
+        initMocks(this);
 
-		when(repository.getBaseUri()).thenReturn(REPO_BASE);
-		PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn(REPO_BASE);
+        PIDs.setRepository(repository);
 
-		evaluator = new InheritedPermissionEvaluator();
-		evaluator.setObjectPermissionEvaluator(objectPermissionEvaluator);
-		evaluator.setPathFactory(pathFactory);
+        evaluator = new InheritedPermissionEvaluator();
+        evaluator.setObjectPermissionEvaluator(objectPermissionEvaluator);
+        evaluator.setPathFactory(pathFactory);
 
-		principals = new HashSet<>(Arrays.asList(PATRON_PRINC));
+        principals = new HashSet<>(Arrays.asList(PATRON_PRINC));
 
-		ancestorPids = new ArrayList<>();
-		ancestorPids.add(PIDs.get(CONTENT_ROOT_ID));
+        ancestorPids = new ArrayList<>();
+        ancestorPids.add(PIDs.get(CONTENT_ROOT_ID));
 
-		when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(ancestorPids);
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(ancestorPids);
 
-		pid = PIDs.get(UUID.randomUUID().toString());
-	}
+        pid = PIDs.get(UUID.randomUUID().toString());
+    }
 
-	@Test
-	public void unitHasPatronPermissionTest() {
+    @Test
+    public void unitHasPatronPermissionTest() {
 
-		assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
-	}
+        assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
+    }
 
-	@Test
-	public void unitPatronRequestingStaffTest() {
+    @Test
+    public void unitPatronRequestingStaffTest() {
 
-		assertFalse(evaluator.hasPermission(pid, principals, Permission.ingest));
-	}
+        assertFalse(evaluator.hasPermission(pid, principals, Permission.ingest));
+    }
 
-	@Test
-	public void unitHasStaffPermissionTest() {
+    @Test
+    public void unitHasStaffPermissionTest() {
 
-		when(objectPermissionEvaluator.hasStaffPermission(
-				eq(pid), nonEmptySet(), any(Permission.class))).thenReturn(true);
+        when(objectPermissionEvaluator.hasStaffPermission(
+                eq(pid), nonEmptySet(), any(Permission.class))).thenReturn(true);
 
-		principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+        principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		assertTrue(evaluator.hasPermission(pid, principals, Permission.ingest));
-	}
+        assertTrue(evaluator.hasPermission(pid, principals, Permission.ingest));
+    }
 
-	@Test
-	public void collectionHasPatronTest() {
+    @Test
+    public void collectionHasPatronTest() {
 
-		// Add unit pid into ancestors
-		addPidToAncestors();
+        // Add unit pid into ancestors
+        addPidToAncestors();
 
-		when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
-				eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(principals);
+        when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
+                eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(principals);
 
-		assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
-	}
+        assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
+    }
 
-	@Test
-	public void collectionNoPrincipalsWithPatronRoleTest() {
+    @Test
+    public void collectionNoPrincipalsWithPatronRoleTest() {
 
-		// Add unit pid into ancestors
-		addPidToAncestors();
+        // Add unit pid into ancestors
+        addPidToAncestors();
 
-		when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
-				eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(Collections.emptySet());
+        when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
+                eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(Collections.emptySet());
 
-		assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
-	}
+        assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
+    }
 
-	@Test
-	public void collectionHasStaffPermission() {
+    @Test
+    public void collectionHasStaffPermission() {
 
-		addPidToAncestors();
+        addPidToAncestors();
 
-		when(objectPermissionEvaluator.hasStaffPermission(
-				eq(pid), nonEmptySet(), any(Permission.class))).thenReturn(true);
+        when(objectPermissionEvaluator.hasStaffPermission(
+                eq(pid), nonEmptySet(), any(Permission.class))).thenReturn(true);
 
-		principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+        principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		assertTrue(evaluator.hasPermission(pid, principals, Permission.ingest));
-	}
+        assertTrue(evaluator.hasPermission(pid, principals, Permission.ingest));
+    }
 
-	@Test
-	public void collectionNoStaffPermission() {
+    @Test
+    public void collectionNoStaffPermission() {
 
-		addPidToAncestors();
+        addPidToAncestors();
 
-		when(objectPermissionEvaluator.hasStaffPermission(
-				eq(pid), nonEmptySet(), any(Permission.class))).thenReturn(false);
+        when(objectPermissionEvaluator.hasStaffPermission(
+                eq(pid), nonEmptySet(), any(Permission.class))).thenReturn(false);
 
-		principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+        principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		assertFalse(evaluator.hasPermission(pid, principals, Permission.ingest));
-	}
+        assertFalse(evaluator.hasPermission(pid, principals, Permission.ingest));
+    }
 
-	@Test
-	public void collectionInheritedStaffPermission() {
-		PID unitPid = addPidToAncestors();
+    @Test
+    public void collectionInheritedStaffPermission() {
+        PID unitPid = addPidToAncestors();
 
-		// Grant permission on the unit rather than the collection
-		when(objectPermissionEvaluator.hasStaffPermission(
-				eq(unitPid), nonEmptySet(), any(Permission.class))).thenReturn(true);
+        // Grant permission on the unit rather than the collection
+        when(objectPermissionEvaluator.hasStaffPermission(
+                eq(unitPid), nonEmptySet(), any(Permission.class))).thenReturn(true);
 
-		principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+        principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		assertTrue(evaluator.hasPermission(pid, principals, Permission.ingest));
-	}
+        assertTrue(evaluator.hasPermission(pid, principals, Permission.ingest));
+    }
 
-	@Test
-	public void contentHasPatronPermission() {
+    @Test
+    public void contentHasPatronPermission() {
 
-		addPidToAncestors();
-		// Add collection pid into ancestors
-		PID collectionPid = addPidToAncestors();
+        addPidToAncestors();
+        // Add collection pid into ancestors
+        PID collectionPid = addPidToAncestors();
 
-		when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
-				eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(principals);
+        when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
+                eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(principals);
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(true);
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(true);
 
-		assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
-	}
+        assertTrue(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
+    }
 
-	@Test
-	public void contentNoCollectionPermission() {
+    @Test
+    public void contentNoCollectionPermission() {
 
-		addPidToAncestors();
-		// Add collection pid into ancestors
-		PID collectionPid = addPidToAncestors();
+        addPidToAncestors();
+        // Add collection pid into ancestors
+        PID collectionPid = addPidToAncestors();
 
-		when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
-				eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(Collections.emptySet());
+        when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
+                eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(Collections.emptySet());
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(true);
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(true);
 
-		assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
-	}
+        assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
+    }
 
-	@Test
-	public void contentRemovePatronAccess() {
-		addPidToAncestors();
-		PID collectionPid = addPidToAncestors();
+    @Test
+    public void contentRemovePatronAccess() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
 
-		when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
-				eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(principals);
+        when(objectPermissionEvaluator.getPatronPrincipalsWithPermission(
+                eq(collectionPid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(principals);
 
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
-				.thenReturn(false);
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), nonEmptySet(), eq(Permission.viewMetadata)))
+                .thenReturn(false);
 
-		assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
-	}
+        assertFalse(evaluator.hasPermission(pid, principals, Permission.viewMetadata));
+    }
 
-	@Test
-	public void contentRequestStaffPermission() {
-		addPidToAncestors();
-		addPidToAncestors();
+    @Test
+    public void contentRequestStaffPermission() {
+        addPidToAncestors();
+        addPidToAncestors();
 
-		principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+        principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		assertFalse(evaluator.hasPermission(pid, principals, Permission.ingest));
-	}
+        assertFalse(evaluator.hasPermission(pid, principals, Permission.ingest));
+    }
 
-	private PID addPidToAncestors() {
-		PID ancestor = PIDs.get(UUID.randomUUID().toString());
-		ancestorPids.add(ancestor);
-		return ancestor;
-	}
+    private PID addPidToAncestors() {
+        PID ancestor = PIDs.get(UUID.randomUUID().toString());
+        ancestorPids.add(ancestor);
+        return ancestor;
+    }
 
-	private static Set<String> nonEmptySet() {
-		return argThat(new NonEmptySetMatcher());
-	}
+    private static Set<String> nonEmptySet() {
+        return argThat(new NonEmptySetMatcher());
+    }
 
-	private static class NonEmptySetMatcher extends ArgumentMatcher<Set<String>> {
-		@SuppressWarnings("unchecked")
-		@Override
-		public boolean matches(Object set) {
-			return ((Set<String>) set).size() > 0;
-		}
-	 }
+    private static class NonEmptySetMatcher extends ArgumentMatcher<Set<String>> {
+        @SuppressWarnings("unchecked")
+        @Override
+        public boolean matches(Object set) {
+            return ((Set<String>) set).size() > 0;
+        }
+     }
 }

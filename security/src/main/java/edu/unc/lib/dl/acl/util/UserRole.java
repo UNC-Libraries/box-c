@@ -49,159 +49,159 @@ import edu.unc.lib.dl.rdf.CdrAcl;
  *
  */
 public enum UserRole {
-	list("list", new Permission[] {}),
-	metadataPatron("metadata-patron", new Permission[] {
-			Permission.viewMetadata}),
-	accessCopiesPatron("access-copies-patron", new Permission[] {
-			Permission.viewMetadata, Permission.viewAccessCopies}),
-	patron("patron", new Permission[] {
-			Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	canView("canView", new Permission[] {
-			Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
-	// Patron roles
-	canDiscover("canDiscover", false),
-	canViewMetadata("canViewMetadata", false, viewMetadata),
-	canViewAccessCopies("canViewAccessCopies", false, viewMetadata, viewAccessCopies),
-	canViewOriginals("canViewOriginals", false, viewMetadata, viewAccessCopies, viewOriginal),
-	// Staff roles
-	canAccess("canAccess", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal),
-	canIngest("canIngest", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-			ingest),
-	canDescribe("canDescribe", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-			editDescription, bulkUpdateDescription),
-	canManage("canManage", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-			ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
-			changePatronAccess, editResourceType),
-	unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-			ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
-			changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
-	administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-			ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
-			changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles);
+    list("list", new Permission[] {}),
+    metadataPatron("metadata-patron", new Permission[] {
+            Permission.viewMetadata}),
+    accessCopiesPatron("access-copies-patron", new Permission[] {
+            Permission.viewMetadata, Permission.viewAccessCopies}),
+    patron("patron", new Permission[] {
+            Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+    canView("canView", new Permission[] {
+            Permission.viewHidden, Permission.viewMetadata, Permission.viewAccessCopies, Permission.viewOriginal}),
+    // Patron roles
+    canDiscover("canDiscover", false),
+    canViewMetadata("canViewMetadata", false, viewMetadata),
+    canViewAccessCopies("canViewAccessCopies", false, viewMetadata, viewAccessCopies),
+    canViewOriginals("canViewOriginals", false, viewMetadata, viewAccessCopies, viewOriginal),
+    // Staff roles
+    canAccess("canAccess", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal),
+    canIngest("canIngest", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+            ingest),
+    canDescribe("canDescribe", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+            editDescription, bulkUpdateDescription),
+    canManage("canManage", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+            ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+            changePatronAccess, editResourceType),
+    unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+            ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+            changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
+    administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
+            ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+            changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles);
 
-	private URI uri;
-	private String predicate;
-	private String propertyString;
-	private Set<Permission> permissions;
-	private Boolean isStaffRole;
+    private URI uri;
+    private String predicate;
+    private String propertyString;
+    private Set<Permission> permissions;
+    private Boolean isStaffRole;
 
-	UserRole(String predicate, boolean isStaffRole, Permission... perms) {
-		this.predicate = predicate;
-		this.propertyString = CdrAcl.getURI() + predicate;
-		this.uri = URI.create(propertyString);
-		this.isStaffRole = isStaffRole;
-		this.permissions = new HashSet<>(Arrays.asList(perms));
-	}
-	
-	@Deprecated
-	UserRole(String predicate, Permission[] perms) {
-		try {
-			this.predicate = predicate;
-			this.uri = new URI(CdrAcl.getURI() + predicate);
-			HashSet<Permission> mypermissions = new HashSet<Permission>(perms.length);
-			Collections.addAll(mypermissions, perms);
-			this.permissions = Collections.unmodifiableSet(mypermissions);
-		} catch (URISyntaxException e) {
-			Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
-			x.initCause(e);
-			throw x;
-		}
-	}
+    UserRole(String predicate, boolean isStaffRole, Permission... perms) {
+        this.predicate = predicate;
+        this.propertyString = CdrAcl.getURI() + predicate;
+        this.uri = URI.create(propertyString);
+        this.isStaffRole = isStaffRole;
+        this.permissions = new HashSet<>(Arrays.asList(perms));
+    }
 
-	@Deprecated
-	public static boolean matchesMemberURI(String test) {
-		for(UserRole r : UserRole.values()) {
-			if(r.getURI().toString().equals(test)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    @Deprecated
+    UserRole(String predicate, Permission[] perms) {
+        try {
+            this.predicate = predicate;
+            this.uri = new URI(CdrAcl.getURI() + predicate);
+            HashSet<Permission> mypermissions = new HashSet<Permission>(perms.length);
+            Collections.addAll(mypermissions, perms);
+            this.permissions = Collections.unmodifiableSet(mypermissions);
+        } catch (URISyntaxException e) {
+            Error x = new ExceptionInInitializerError("Cannot initialize ContentModelHelper");
+            x.initCause(e);
+            throw x;
+        }
+    }
 
-	@Deprecated
-	public static UserRole getUserRole(String roleUri) {
-		for(UserRole r : UserRole.values()) {
-			if(r.propertyString.equals(roleUri)) {
-				return r;
-			}
-		}
-		return null;
-	}
+    @Deprecated
+    public static boolean matchesMemberURI(String test) {
+        for (UserRole r : UserRole.values()) {
+            if (r.getURI().toString().equals(test)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * Return a list of all user roles which have the specified permission
-	 *
-	 * @param permission
-	 * @return
-	 */
-	public static Set<UserRole> getUserRoles(Collection<Permission> inPermissions) {
+    @Deprecated
+    public static UserRole getUserRole(String roleUri) {
+        for (UserRole r : UserRole.values()) {
+            if (r.propertyString.equals(roleUri)) {
+                return r;
+            }
+        }
+        return null;
+    }
 
-		Set<UserRole> roles = new HashSet<UserRole>();
-		for (UserRole r : UserRole.values()) {
-			if (r.permissions.containsAll(inPermissions)) {
-				roles.add(r);
-			}
-		}
-		return roles;
-	}
+    /**
+     * Return a list of all user roles which have the specified permission
+     *
+     * @param permission
+     * @return
+     */
+    public static Set<UserRole> getUserRoles(Collection<Permission> inPermissions) {
 
-	/**
-	 * Return a set of staff UserRoles
-	 * 
-	 * @return
-	 */
-	public static Set<UserRole> getStaffRoles() {
-		return Arrays.stream(UserRole.values())
-			.filter(p -> p.isStaffRole != null && p.isStaffRole)
-			.collect(Collectors.toSet());
-	}
+        Set<UserRole> roles = new HashSet<UserRole>();
+        for (UserRole r : UserRole.values()) {
+            if (r.permissions.containsAll(inPermissions)) {
+                roles.add(r);
+            }
+        }
+        return roles;
+    }
 
-	/**
-	 * Return a set of patron UserRoles
-	 * 
-	 * @return
-	 */
-	public static Set<UserRole> getPatronRoles() {
-		return Arrays.stream(UserRole.values())
-			.filter(p -> p.isStaffRole != null && !p.isStaffRole)
-			.collect(Collectors.toSet());
-	}
+    /**
+     * Return a set of staff UserRoles
+     * 
+     * @return
+     */
+    public static Set<UserRole> getStaffRoles() {
+        return Arrays.stream(UserRole.values())
+            .filter(p -> p.isStaffRole != null && p.isStaffRole)
+            .collect(Collectors.toSet());
+    }
 
-	/**
-	 * Return the URI of the property for this role as a string.
-	 * 
-	 * @return
-	 */
-	public String getPropertyString() {
-		return this.propertyString;
-	}
+    /**
+     * Return a set of patron UserRoles
+     * 
+     * @return
+     */
+    public static Set<UserRole> getPatronRoles() {
+        return Arrays.stream(UserRole.values())
+            .filter(p -> p.isStaffRole != null && !p.isStaffRole)
+            .collect(Collectors.toSet());
+    }
 
-	public URI getURI() {
-		return this.uri;
-	}
+    /**
+     * Return the URI of the property for this role as a string.
+     * 
+     * @return
+     */
+    public String getPropertyString() {
+        return this.propertyString;
+    }
 
-	public Set<Permission> getPermissions() {
-		return permissions;
-	}
+    public URI getURI() {
+        return this.uri;
+    }
 
-	public String getPredicate() {
-		return predicate;
-	}
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
 
-	public boolean isStaffRole() {
-		return this.isStaffRole;
-	}
+    public String getPredicate() {
+        return predicate;
+    }
 
-	public boolean isPatronRole() {
-		return !this.isStaffRole;
-	}
+    public boolean isStaffRole() {
+        return this.isStaffRole;
+    }
 
-	public boolean equals(String value){
-		return propertyString.equals(value);
-	}
+    public boolean isPatronRole() {
+        return !this.isStaffRole;
+    }
 
-	@Override
-	public String toString() {
-		return this.propertyString;
-	}
+    public boolean equals(String value) {
+        return propertyString.equals(value);
+    }
+
+    @Override
+    public String toString() {
+        return this.propertyString;
+    }
 }

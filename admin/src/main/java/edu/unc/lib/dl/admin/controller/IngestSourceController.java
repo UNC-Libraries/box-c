@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.admin.controller;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,177 +53,178 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
  */
 @Controller
 public class IngestSourceController {
-	private static final Logger log = LoggerFactory.getLogger(IngestSourceController.class);
-	
-	@Autowired
-	private AccessControlService aclService;
+    private static final Logger log = LoggerFactory.getLogger(IngestSourceController.class);
 
-	@Autowired
-	private IngestSourceManager sourceManager;
-	
-	@Autowired
-	private DepositStatusFactory depositStatusFactory;
+    @Autowired
+    private AccessControlService aclService;
 
-	@RequestMapping(value = "listSources/{pid}", method = RequestMethod.GET, produces = "application/json")
-	public @ResponseBody Object listIngestSources(@PathVariable("pid") String pid, HttpServletResponse resp) {
-		PID destination = new PID(pid);
+    @Autowired
+    private IngestSourceManager sourceManager;
 
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		// Check that the user has permission to deposit to the destination
-		if (!aclService.hasAccess(destination, groups, Permission.addRemoveContents)) {
-			resp.setStatus(401);
-			return null;
-		}
-		
-		Map<String, Object> result = new HashMap<>();
-		result.put("sources", sourceManager.listSources(destination));
-		result.put("candidates", sourceManager.listCandidates(destination));
-		
-		return result;
-	}
+    @Autowired
+    private DepositStatusFactory depositStatusFactory;
 
-	@RequestMapping(value = "ingestFromSource/{pid}", method = RequestMethod.POST, produces = "application/json")
-	public @ResponseBody Object ingestFromSource(@PathVariable("pid") String pid,
-			@RequestBody List<IngestPackageDetails> packages, HttpServletResponse resp) {
-		
-		log.info("Request to ingest from source to {}", pid);
-		PID destPid = new PID(pid);
+    @RequestMapping(value = "listSources/{pid}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody Object listIngestSources(@PathVariable("pid") String pid, HttpServletResponse resp) {
+        PID destination = new PID(pid);
 
-		// Check that user has permission to deposit to the selected destination
-		if (!aclService.hasAccess(destPid, GroupsThreadStore.getGroups(), Permission.addRemoveContents)) {
-			log.debug("Access denied to user {} while attempting to from ingest source deposit to {}",
-					GroupsThreadStore.getUsername(), pid);
-			resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return "Insufficient permissions to deposit to the selected destination";
-		}
-		
-		// Validate the packages requested for deposit
-		for (IngestPackageDetails packageDetails : packages) {
-			if (StringUtils.isBlank(packageDetails.getPackagePath())
-					|| StringUtils.isBlank(packageDetails.getPackagingType())) {
-				resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				return "Package selected for deposit was missing either a path or packaging type";
-			}
-			
-			// Verify that the package path is from within the allowed locations for the specified ingest source
-			if (!sourceManager.isPathValid(packageDetails.getPackagePath(), packageDetails.getSourceId())) {
-				resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-				return "Invalid source path specified: " + packageDetails.getPackagePath();
-			}
-		}
-		
-		ObjectMapper mapper = new ObjectMapper();
-		// Build deposit entries and add to queue
-		for (IngestPackageDetails packageDetails : packages) {
-			IngestSourceConfiguration source = sourceManager.getSourceConfiguration(packageDetails.getSourceId());
-			
-			PID depositPID = new PID("uuid:" + UUID.randomUUID().toString());
-			
-			// Generate a filename if one was not provided
-			String filename = packageDetails.getLabel();
-			if (StringUtils.isBlank(filename)) {
-				filename = packageDetails.getPackagePath().substring(packageDetails.getPackagePath().lastIndexOf('/') + 1);
-			}
-			
-			Map<String, String> deposit = new HashMap<>();
-			try {
-				deposit.put(DepositField.sourcePath.name(),
-						new java.io.File(source.getBase(), packageDetails.getPackagePath()).getCanonicalPath());
-			} catch (IOException e) {
-				return "Failed to set package path";
-			}
-			deposit.put(DepositField.fileName.name(), filename);
-			deposit.put(DepositField.packagingType.name(), packageDetails.getPackagingType());
-			deposit.put(DepositField.uuid.name(), depositPID.getUUID());
-			deposit.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
-			deposit.put(DepositField.depositorName.name(), GroupsThreadStore.getUsername());
-			deposit.put(DepositField.permissionGroups.name(), GroupsThreadStore.getGroupString());
-			if (!StringUtils.isBlank(GroupsThreadStore.getEmail())) {
-				deposit.put(DepositField.depositorEmail.name(), GroupsThreadStore.getEmail());
-			}
-			
-			deposit.put(DepositField.containerId.name(), pid);
-			deposit.put(DepositField.state.name(), DepositState.unregistered.name());
-			deposit.put(DepositField.actionRequest.name(), DepositAction.register.name());
-			
-			Map<String, String> extras = new HashMap<>();
-			if (!StringUtils.isBlank(packageDetails.getAccessionNumber())) {
-				extras.put("accessionNumber", packageDetails.getAccessionNumber());
-			}
-			if (!StringUtils.isBlank(packageDetails.getMediaId())) {
-				extras.put("mediaId", packageDetails.getMediaId());
-			}
-			try {
-				deposit.put(DepositField.extras.name(), mapper.writeValueAsString(extras));
-			} catch (IOException e) {
-				log.error("Failed to serialize extra data for deposit {}", depositPID, e);
-			}
-			
-			this.depositStatusFactory.save(depositPID.getUUID(), deposit);
-		}
-		
-		resp.setStatus(HttpServletResponse.SC_OK);
-		return null;
-	}
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        // Check that the user has permission to deposit to the destination
+        if (!aclService.hasAccess(destination, groups, Permission.addRemoveContents)) {
+            resp.setStatus(401);
+            return null;
+        }
 
-	public static class IngestPackageDetails {
-		private String sourceId;
-		// Path is relative to the base for the source
-		private String packagePath;
-		private String label;
-		private String packagingType;
-		private String accessionNumber;
-		private String mediaId;
-		
-		public IngestPackageDetails() {
-		}
+        Map<String, Object> result = new HashMap<>();
+        result.put("sources", sourceManager.listSources(destination));
+        result.put("candidates", sourceManager.listCandidates(destination));
 
-		public String getSourceId() {
-			return sourceId;
-		}
+        return result;
+    }
 
-		public void setSourceId(String sourceId) {
-			this.sourceId = sourceId;
-		}
+    @RequestMapping(value = "ingestFromSource/{pid}", method = RequestMethod.POST, produces = "application/json")
+    public @ResponseBody Object ingestFromSource(@PathVariable("pid") String pid,
+            @RequestBody List<IngestPackageDetails> packages, HttpServletResponse resp) {
 
-		public String getPackagePath() {
-			return packagePath;
-		}
+        log.info("Request to ingest from source to {}", pid);
+        PID destPid = new PID(pid);
 
-		public void setPackagePath(String packagePath) {
-			this.packagePath = packagePath;
-		}
+        // Check that user has permission to deposit to the selected destination
+        if (!aclService.hasAccess(destPid, GroupsThreadStore.getGroups(), Permission.addRemoveContents)) {
+            log.debug("Access denied to user {} while attempting to from ingest source deposit to {}",
+                    GroupsThreadStore.getUsername(), pid);
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return "Insufficient permissions to deposit to the selected destination";
+        }
 
-		public String getLabel() {
-			return label;
-		}
+        // Validate the packages requested for deposit
+        for (IngestPackageDetails packageDetails : packages) {
+            if (StringUtils.isBlank(packageDetails.getPackagePath())
+                    || StringUtils.isBlank(packageDetails.getPackagingType())) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return "Package selected for deposit was missing either a path or packaging type";
+            }
 
-		public void setLabel(String label) {
-			this.label = label;
-		}
+            // Verify that the package path is from within the allowed locations for the specified ingest source
+            if (!sourceManager.isPathValid(packageDetails.getPackagePath(), packageDetails.getSourceId())) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return "Invalid source path specified: " + packageDetails.getPackagePath();
+            }
+        }
 
-		public String getPackagingType() {
-			return packagingType;
-		}
+        ObjectMapper mapper = new ObjectMapper();
+        // Build deposit entries and add to queue
+        for (IngestPackageDetails packageDetails : packages) {
+            IngestSourceConfiguration source = sourceManager.getSourceConfiguration(packageDetails.getSourceId());
 
-		public void setPackagingType(String packagingType) {
-			this.packagingType = packagingType;
-		}
+            PID depositPID = new PID("uuid:" + UUID.randomUUID().toString());
 
-		public String getAccessionNumber() {
-			return accessionNumber;
-		}
+            // Generate a filename if one was not provided
+            String filename = packageDetails.getLabel();
+            if (StringUtils.isBlank(filename)) {
+                filename = packageDetails.getPackagePath().substring(
+                        packageDetails.getPackagePath().lastIndexOf('/') + 1);
+            }
 
-		public void setAccessionNumber(String accessionNumber) {
-			this.accessionNumber = accessionNumber;
-		}
+            Map<String, String> deposit = new HashMap<>();
+            try {
+                deposit.put(DepositField.sourcePath.name(),
+                        new java.io.File(source.getBase(), packageDetails.getPackagePath()).getCanonicalPath());
+            } catch (IOException e) {
+                return "Failed to set package path";
+            }
+            deposit.put(DepositField.fileName.name(), filename);
+            deposit.put(DepositField.packagingType.name(), packageDetails.getPackagingType());
+            deposit.put(DepositField.uuid.name(), depositPID.getUUID());
+            deposit.put(DepositField.submitTime.name(), String.valueOf(System.currentTimeMillis()));
+            deposit.put(DepositField.depositorName.name(), GroupsThreadStore.getUsername());
+            deposit.put(DepositField.permissionGroups.name(), GroupsThreadStore.getGroupString());
+            if (!StringUtils.isBlank(GroupsThreadStore.getEmail())) {
+                deposit.put(DepositField.depositorEmail.name(), GroupsThreadStore.getEmail());
+            }
 
-		public String getMediaId() {
-			return mediaId;
-		}
+            deposit.put(DepositField.containerId.name(), pid);
+            deposit.put(DepositField.state.name(), DepositState.unregistered.name());
+            deposit.put(DepositField.actionRequest.name(), DepositAction.register.name());
 
-		public void setMediaId(String mediaId) {
-			this.mediaId = mediaId;
-		}
-	}
+            Map<String, String> extras = new HashMap<>();
+            if (!StringUtils.isBlank(packageDetails.getAccessionNumber())) {
+                extras.put("accessionNumber", packageDetails.getAccessionNumber());
+            }
+            if (!StringUtils.isBlank(packageDetails.getMediaId())) {
+                extras.put("mediaId", packageDetails.getMediaId());
+            }
+            try {
+                deposit.put(DepositField.extras.name(), mapper.writeValueAsString(extras));
+            } catch (IOException e) {
+                log.error("Failed to serialize extra data for deposit {}", depositPID, e);
+            }
+
+            this.depositStatusFactory.save(depositPID.getUUID(), deposit);
+        }
+
+        resp.setStatus(HttpServletResponse.SC_OK);
+        return null;
+    }
+
+    public static class IngestPackageDetails {
+        private String sourceId;
+        // Path is relative to the base for the source
+        private String packagePath;
+        private String label;
+        private String packagingType;
+        private String accessionNumber;
+        private String mediaId;
+
+        public IngestPackageDetails() {
+        }
+
+        public String getSourceId() {
+            return sourceId;
+        }
+
+        public void setSourceId(String sourceId) {
+            this.sourceId = sourceId;
+        }
+
+        public String getPackagePath() {
+            return packagePath;
+        }
+
+        public void setPackagePath(String packagePath) {
+            this.packagePath = packagePath;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public void setLabel(String label) {
+            this.label = label;
+        }
+
+        public String getPackagingType() {
+            return packagingType;
+        }
+
+        public void setPackagingType(String packagingType) {
+            this.packagingType = packagingType;
+        }
+
+        public String getAccessionNumber() {
+            return accessionNumber;
+        }
+
+        public void setAccessionNumber(String accessionNumber) {
+            this.accessionNumber = accessionNumber;
+        }
+
+        public String getMediaId() {
+            return mediaId;
+        }
+
+        public void setMediaId(String mediaId) {
+            this.mediaId = mediaId;
+        }
+    }
 }

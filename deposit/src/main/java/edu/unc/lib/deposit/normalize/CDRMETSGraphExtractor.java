@@ -35,223 +35,232 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
-
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class CDRMETSGraphExtractor {
-	public static final Logger LOG = LoggerFactory.getLogger(CDRMETSGraphExtractor.class);
-	public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
-	
-	private static Map<String, URI> containerTypes = new HashMap<String, URI>();
-	static {
-		containerTypes.put("Folder", URI.create(Cdr.Folder.getURI()));
-		containerTypes.put("Collection", URI.create(Cdr.Collection.getURI()));
-		containerTypes.put("Aggregate Work", URI.create(Cdr.Work.getURI()));
-		containerTypes.put("SWORD Object", URI.create(Cdr.Work.getURI()));
-	}
+    public static final Logger LOG = LoggerFactory.getLogger(CDRMETSGraphExtractor.class);
+    public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
 
-	private PID depositId = null;
-	METSHelper helper = null;
-	private Document mets = null;
+    private static Map<String, URI> containerTypes = new HashMap<String, URI>();
+    static {
+        containerTypes.put("Folder", URI.create(Cdr.Folder.getURI()));
+        containerTypes.put("Collection", URI.create(Cdr.Collection.getURI()));
+        containerTypes.put("Aggregate Work", URI.create(Cdr.Work.getURI()));
+        containerTypes.put("SWORD Object", URI.create(Cdr.Work.getURI()));
+    }
 
-	public CDRMETSGraphExtractor(Document mets, PID depositId) {
-		this.depositId = depositId;
-		this.mets = mets;
-		this.helper = new METSHelper(mets);
-	}
+    private PID depositId = null;
+    METSHelper helper = null;
+    private Document mets = null;
 
-	public void addArrangement(Model m) {
-		addDivProperties(m);
-		LOG.info("Added DIV properties");
-		addStructLinkProperties(m);
-		LOG.info("Added struct link properties");
-		addContainerTriples(m);
-	}
-	
-	/**
-	 * Extract the deposit's staging location from the METS amdSec, if available.
-	 * @return staging URI or null
-	 */
-	protected String getStagingLocation() {
-		String result = null;
-		@SuppressWarnings("rawtypes")
-		Iterator i = mets.getDescendants(new ElementFilter("stagingLocation", JDOMNamespaceUtil.SIMPLE_METS_PROFILE_NS));
-		while(i.hasNext()) {
-			Element e = (Element)i.next();
-			String loc = e.getTextTrim();
-			if(loc.length() > 0) { 
-				result = loc;
-				break;
-			}
-		}
-		return result;
-	}
+    public CDRMETSGraphExtractor(Document mets, PID depositId) {
+        this.depositId = depositId;
+        this.mets = mets;
+        this.helper = new METSHelper(mets);
+    }
 
-	private void addDivProperties(Model m) {
-		Iterator<Element> divs = helper.getDivs();
-		while (divs.hasNext()) {
-			Element div = divs.next();
-			String pid = METSHelper.getPIDURI(div);
-			Resource o = m.createResource(pid);
-			if(div.getAttributeValue("LABEL") != null) {
-				m.add(o, CdrDeposit.label, div.getAttributeValue("LABEL"));
-			}
-			String orig = METSHelper.getOriginalURI(div);
-			if(orig != null) {
-				m.add(o, CdrDeposit.originalLocation, m.getResource(orig));
-			}
-		}
-	}
+    public void addArrangement(Model m) {
+        addDivProperties(m);
+        LOG.info("Added DIV properties");
+        addStructLinkProperties(m);
+        LOG.info("Added struct link properties");
+        addContainerTriples(m);
+    }
 
-	private void addStructLinkProperties(Model m) {
-		if (mets.getRootElement().getChild("structLink", METS_NS) == null)
-			return;
-		for (Object e : mets.getRootElement().getChild("structLink", METS_NS)
-				.getChildren()) {
-			if (!(e instanceof Element))
-				continue;
-			Element link = (Element) e;
-			String from = link.getAttributeValue("from", XLINK_NS);
-			String arcrole = link.getAttributeValue("arcrole", XLINK_NS);
-			String to = link.getAttributeValue("to", XLINK_NS);
-			if ("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder"
-					.equals(arcrole)) {
-				// TODO: handle alphabetic sorting
-			} else {
-				Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
-				Resource toR = m.createResource(helper.getPIDURIForDIVID(to));
-				Property role = m.createProperty(arcrole);
-				m.add(fromR, role, toR);
-			}
-		}
-	}
+    /**
+     * Extract the deposit's staging location from the METS amdSec, if available.
+     * @return staging URI or null
+     */
+    protected String getStagingLocation() {
+        String result = null;
+        @SuppressWarnings("rawtypes")
+        Iterator i = mets.getDescendants(new ElementFilter("stagingLocation",
+                JDOMNamespaceUtil.SIMPLE_METS_PROFILE_NS));
+        while (i.hasNext()) {
+            Element e = (Element)i.next();
+            String loc = e.getTextTrim();
+            if (loc.length() > 0) {
+                result = loc;
+                break;
+            }
+        }
+        return result;
+    }
 
-	public void saveDescriptions(FilePathFunction f) {
-		Iterator<Element> divs = helper.getDivs();
-		while (divs.hasNext()) {
-			Element div = divs.next();
-			String dmdid = div.getAttributeValue("DMDID");
-			if (dmdid == null)
-				continue;
-			Element dmdSecEl = helper.getElement(dmdid);
-			if (dmdSecEl == null)
-				continue;
-			Element modsEl = dmdSecEl.getChild("mdWrap", METS_NS)
-					.getChild("xmlData", METS_NS).getChild("mods", MODS_V3_NS);
-			String pid = METSHelper.getPIDURI(div);
-			String path = f.getPath(pid);
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(path);
-				Document mods = new Document();
-				mods.setRootElement((Element) modsEl.detach());
-				new XMLOutputter(Format.getPrettyFormat()).output(mods, fos);
-			} catch (IOException e) {
-				throw new Error("unexpected exception", e);
-			} finally {
-				try {
-					fos.close();
-				} catch (IOException ignored) {
-				}
-			}
-		}
-	}
+    private void addDivProperties(Model m) {
+        Iterator<Element> divs = helper.getDivs();
+        while (divs.hasNext()) {
+            Element div = divs.next();
+            String pid = METSHelper.getPIDURI(div);
+            Resource o = m.createResource(pid);
+            if (div.getAttributeValue("LABEL") != null) {
+                m.add(o, CdrDeposit.label, div.getAttributeValue("LABEL"));
+            }
+            String orig = METSHelper.getOriginalURI(div);
+            if (orig != null) {
+                m.add(o, CdrDeposit.originalLocation, m.getResource(orig));
+            }
+        }
+    }
 
-	private void addContainerTriples(Model m) {
-		// add deposit-level parent (represented as structMap or bag div)
-		Element topContainer = (Element) mets.getRootElement().getChild(
-				"structMap", METS_NS);
-		Element firstdiv = topContainer.getChild("div", METS_NS);
-		if (firstdiv != null
-				&& "bag".equals(firstdiv.getAttributeValue("TYPE")
-						.toLowerCase())) {
-			topContainer = firstdiv;
-		}
-		Bag top = m.createBag(depositId.getURI());
-		List<Element> topchildren = topContainer.getChildren(
-				"div", METS_NS);
-		for (Element childEl : topchildren) {
-			Resource child = m.createResource(METSHelper.getPIDURI(childEl));
-			top.add(child);
-		}
+    private void addStructLinkProperties(Model m) {
+        if (mets.getRootElement().getChild("structLink", METS_NS) == null) {
+            return;
+        }
+        for (Object e : mets.getRootElement().getChild("structLink", METS_NS)
+                .getChildren()) {
+            if (!(e instanceof Element)) {
+                continue;
+            }
+            Element link = (Element) e;
+            String from = link.getAttributeValue("from", XLINK_NS);
+            String arcrole = link.getAttributeValue("arcrole", XLINK_NS);
+            String to = link.getAttributeValue("to", XLINK_NS);
+            if ("http://cdr.unc.edu/definitions/1.0/base-model.xml#hasAlphabeticalOrder"
+                    .equals(arcrole)) {
+                // TODO: handle alphabetic sorting
+            } else {
+                Resource fromR = m.createResource(helper.getPIDURIForDIVID(from));
+                Resource toR = m.createResource(helper.getPIDURIForDIVID(to));
+                Property role = m.createProperty(arcrole);
+                m.add(fromR, role, toR);
+            }
+        }
+    }
 
-		Iterator<Element> divs = helper.getDivs();
-		while (divs.hasNext()) {
-			// FIXME detect Baq or Seq from model
-			Element div = divs.next();
-			String type = div.getAttributeValue("TYPE");
-			if (type != null && "bag".equals(type.toLowerCase())) {
-				continue;
-			}
-			List<Element> children = div.getChildren("div",
-					METS_NS);
+    public void saveDescriptions(FilePathFunction f) {
+        Iterator<Element> divs = helper.getDivs();
+        while (divs.hasNext()) {
+            Element div = divs.next();
+            String dmdid = div.getAttributeValue("DMDID");
+            if (dmdid == null) {
+                continue;
+            }
+            Element dmdSecEl = helper.getElement(dmdid);
+            if (dmdSecEl == null) {
+                continue;
+            }
+            Element modsEl = dmdSecEl.getChild("mdWrap", METS_NS)
+                    .getChild("xmlData", METS_NS).getChild("mods", MODS_V3_NS);
+            String pid = METSHelper.getPIDURI(div);
+            String path = f.getPath(pid);
+            FileOutputStream fos = null;
+            try {
+                fos = new FileOutputStream(path);
+                Document mods = new Document();
+                mods.setRootElement((Element) modsEl.detach());
+                new XMLOutputter(Format.getPrettyFormat()).output(mods, fos);
+            } catch (IOException e) {
+                throw new Error("unexpected exception", e);
+            } finally {
+                try {
+                    fos.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
 
-			if (type == null) {
-				if (children.size() > 0) {
-					type = "Folder";
-				} else {
-					type = "File";
-				}
-			}
+    private void addContainerTriples(Model m) {
+        // add deposit-level parent (represented as structMap or bag div)
+        Element topContainer = (Element) mets.getRootElement().getChild(
+                "structMap", METS_NS);
+        Element firstdiv = topContainer.getChild("div", METS_NS);
+        if (firstdiv != null
+                && "bag".equals(firstdiv.getAttributeValue("TYPE")
+                        .toLowerCase())) {
+            topContainer = firstdiv;
+        }
+        Bag top = m.createBag(depositId.getURI());
+        List<Element> topchildren = topContainer.getChildren(
+                "div", METS_NS);
+        for (Element childEl : topchildren) {
+            Resource child = m.createResource(METSHelper.getPIDURI(childEl));
+            top.add(child);
+        }
 
-			if (containerTypes.keySet().contains(type)) {
-				// add any children
-				Bag parent = m.createBag(METSHelper.getPIDURI(div));
-				for (Element childEl : children) {
-					Resource child = m.createResource(METSHelper
-							.getPIDURI(childEl));
-					parent.add(child);
-				}
-				// set container content model(s)
-				m.add(parent, RDF.type, Cdr.Folder);
-				if (!"Folder".equals(type)) {
-					m.add(parent, RDF.type, m.createResource(containerTypes
-							.get(type).toString()));
-				}
-			}
+        Iterator<Element> divs = helper.getDivs();
+        while (divs.hasNext()) {
+            // FIXME detect Baq or Seq from model
+            Element div = divs.next();
+            String type = div.getAttributeValue("TYPE");
+            if (type != null && "bag".equals(type.toLowerCase())) {
+                continue;
+            }
+            List<Element> children = div.getChildren("div",
+                    METS_NS);
 
-		}
-	}
+            if (type == null) {
+                if (children.size() > 0) {
+                    type = "Folder";
+                } else {
+                    type = "File";
+                }
+            }
 
-	public void addAccessControls(Model m) {
-		Iterator<Element> divs = helper.getDivs();
-		while (divs.hasNext()) {
-			Element div = divs.next();
-			Resource object = m.createResource(METSHelper.getPIDURI(div));
-			if (div.getAttributeValue("ADMID") != null) {
-				Element rightsMdEl = helper.getElement(div
-						.getAttributeValue("ADMID"));
-				Element aclEl = rightsMdEl.getChild("mdWrap", METS_NS)
-						.getChild("xmlData", METS_NS)
-						.getChild("accessControl", METS_ACL_NS);
+            if (containerTypes.keySet().contains(type)) {
+                // add any children
+                Bag parent = m.createBag(METSHelper.getPIDURI(div));
+                for (Element childEl : children) {
+                    Resource child = m.createResource(METSHelper
+                            .getPIDURI(childEl));
+                    parent.add(child);
+                }
+                // set container content model(s)
+                m.add(parent, RDF.type, Cdr.Folder);
+                if (!"Folder".equals(type)) {
+                    m.add(parent, RDF.type, m.createResource(containerTypes
+                            .get(type).toString()));
+                }
+            }
 
-				// TODO: need to revisit this; isPublished, when "false" record "no"
-				/**String publishedVal = aclEl.getAttributeValue("published",
-						METS_ACL_NS);
-				if ("false".equals(publishedVal)) {
-					Property published = m
-							.createProperty(ContentModelHelper.CDRProperty.isPublished
-									.getURI().toString());
-					m.add(object, published, "no");
-				} */
+        }
+    }
 
-				// embargo, converts date to dateTime
-				String embargoUntilVal = aclEl.getAttributeValue(
-						"embargo-until", METS_ACL_NS);
-				if (embargoUntilVal != null) {
-					m.add(object, CdrAcl.embargoUntil, embargoUntilVal + "T00:00:00",
-							XSDDatatype.XSDdateTime);
-				}
+    public void addAccessControls(Model m) {
+        Iterator<Element> divs = helper.getDivs();
+        while (divs.hasNext()) {
+            Element div = divs.next();
+            Resource object = m.createResource(METSHelper.getPIDURI(div));
+            if (div.getAttributeValue("ADMID") != null) {
+                Element rightsMdEl = helper.getElement(div
+                        .getAttributeValue("ADMID"));
+                Element aclEl = rightsMdEl.getChild("mdWrap", METS_NS)
+                        .getChild("xmlData", METS_NS)
+                        .getChild("accessControl", METS_ACL_NS);
 
-				// add grants to groups
-				for (Object o : aclEl.getChildren("grant", METS_ACL_NS)) {
-					Element grant = (Element) o;
-					String role = grant.getAttributeValue("role", METS_ACL_NS);
-					String group = grant.getAttributeValue("group", METS_ACL_NS);
-					String roleURI = NamespaceConstants.CDR_ROLE_NS_URI + role;
-					Property roleProp = m.createProperty(roleURI);
-					m.add(object, roleProp, group);
-				}
+                // TODO: need to revisit this; isPublished, when "false" record "no"
+                /**String publishedVal = aclEl.getAttributeValue("published",
+                        METS_ACL_NS);
+                if ("false".equals(publishedVal)) {
+                    Property published = m
+                            .createProperty(ContentModelHelper.CDRProperty.isPublished
+                                    .getURI().toString());
+                    m.add(object, published, "no");
+                } */
 
-			}
-		}
-	}
+                // embargo, converts date to dateTime
+                String embargoUntilVal = aclEl.getAttributeValue(
+                        "embargo-until", METS_ACL_NS);
+                if (embargoUntilVal != null) {
+                    m.add(object, CdrAcl.embargoUntil, embargoUntilVal + "T00:00:00",
+                            XSDDatatype.XSDdateTime);
+                }
+
+                // add grants to groups
+                for (Object o : aclEl.getChildren("grant", METS_ACL_NS)) {
+                    Element grant = (Element) o;
+                    String role = grant.getAttributeValue("role", METS_ACL_NS);
+                    String group = grant.getAttributeValue("group", METS_ACL_NS);
+                    String roleURI = NamespaceConstants.CDR_ROLE_NS_URI + role;
+                    Property roleProp = m.createProperty(roleURI);
+                    m.add(object, roleProp, group);
+                }
+
+            }
+        }
+    }
 }

@@ -15,57 +15,57 @@ import org.junit.Test;
 
 public class PrincipalClassifierTest {
 
-	private static final String STAFF_PRINC = "staff";
+    private static final String STAFF_PRINC = "staff";
 
-	@Test
-	public void classifyPrincipalsTest() {
-		Set<String> principals = new HashSet<>(Arrays.asList(PUBLIC_PRINC,
-				AUTHENTICATED_PRINC, STAFF_PRINC));
+    @Test
+    public void classifyPrincipalsTest() {
+        Set<String> principals = new HashSet<>(Arrays.asList(PUBLIC_PRINC,
+                AUTHENTICATED_PRINC, STAFF_PRINC));
 
-		Set<String> patronPrincipals = new HashSet<>();
-		Set<String> staffPrincipals = new HashSet<>();
-		classifyPrincipals(principals, patronPrincipals, staffPrincipals);
+        Set<String> patronPrincipals = new HashSet<>();
+        Set<String> staffPrincipals = new HashSet<>();
+        classifyPrincipals(principals, patronPrincipals, staffPrincipals);
 
-		assertEquals(2, patronPrincipals.size());
-		assertTrue(patronPrincipals.contains(PUBLIC_PRINC));
-		assertTrue(patronPrincipals.contains(AUTHENTICATED_PRINC));
+        assertEquals(2, patronPrincipals.size());
+        assertTrue(patronPrincipals.contains(PUBLIC_PRINC));
+        assertTrue(patronPrincipals.contains(AUTHENTICATED_PRINC));
 
-		assertEquals(1, staffPrincipals.size());
-		assertTrue(staffPrincipals.contains(STAFF_PRINC));
-	}
+        assertEquals(1, staffPrincipals.size());
+        assertTrue(staffPrincipals.contains(STAFF_PRINC));
+    }
 
-	@Test
-	public void classifyPrincipalsNoPatronsTest() {
-		Set<String> principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+    @Test
+    public void classifyPrincipalsNoPatronsTest() {
+        Set<String> principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		Set<String> patronPrincipals = new HashSet<>();
-		Set<String> staffPrincipals = new HashSet<>();
-		classifyPrincipals(principals, patronPrincipals, staffPrincipals);
+        Set<String> patronPrincipals = new HashSet<>();
+        Set<String> staffPrincipals = new HashSet<>();
+        classifyPrincipals(principals, patronPrincipals, staffPrincipals);
 
-		assertEquals(0, patronPrincipals.size());
+        assertEquals(0, patronPrincipals.size());
 
-		assertEquals(1, staffPrincipals.size());
-		assertTrue(staffPrincipals.contains(STAFF_PRINC));
-	}
+        assertEquals(1, staffPrincipals.size());
+        assertTrue(staffPrincipals.contains(STAFF_PRINC));
+    }
 
-	@Test
-	public void getPatronPrincipalsTest() {
-		Set<String> principals = new HashSet<>(Arrays.asList(PUBLIC_PRINC,
-				AUTHENTICATED_PRINC, STAFF_PRINC));
+    @Test
+    public void getPatronPrincipalsTest() {
+        Set<String> principals = new HashSet<>(Arrays.asList(PUBLIC_PRINC,
+                AUTHENTICATED_PRINC, STAFF_PRINC));
 
-		Set<String> patronPrincipals = getPatronPrincipals(principals);
+        Set<String> patronPrincipals = getPatronPrincipals(principals);
 
-		assertEquals(2, patronPrincipals.size());
-		assertTrue(patronPrincipals.contains(PUBLIC_PRINC));
-		assertTrue(patronPrincipals.contains(AUTHENTICATED_PRINC));
-	}
+        assertEquals(2, patronPrincipals.size());
+        assertTrue(patronPrincipals.contains(PUBLIC_PRINC));
+        assertTrue(patronPrincipals.contains(AUTHENTICATED_PRINC));
+    }
 
-	@Test
-	public void getPatronPrincipalsNoPatronsTest() {
-		Set<String> principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
+    @Test
+    public void getPatronPrincipalsNoPatronsTest() {
+        Set<String> principals = new HashSet<>(Arrays.asList(STAFF_PRINC));
 
-		Set<String> patronPrincipals = getPatronPrincipals(principals);
+        Set<String> patronPrincipals = getPatronPrincipals(principals);
 
-		assertEquals(0, patronPrincipals.size());
-	}
+        assertEquals(0, patronPrincipals.size());
+    }
 }

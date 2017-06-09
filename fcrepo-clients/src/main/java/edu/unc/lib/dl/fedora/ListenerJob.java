@@ -23,6 +23,6 @@ import org.jdom2.Document;
  */
 public interface ListenerJob {
 
-	public void onEvent(Document message);
+    public void onEvent(Document message);
 
 }

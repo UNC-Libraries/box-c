@@ -27,44 +27,44 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  * @date Aug 14, 2015
  */
 public class RunEnhancementsTreeJob implements Runnable {
-	
-	private TripleStoreQueryService tripleStoreQueryService;
-	
-	private final List<PID> targets;
-	private final boolean force;
-	
-	private Client jesqueClient;
-	
-	private String runEnhancementTreeQueue;
-	
-	public RunEnhancementsTreeJob(List<String> targets, boolean force) {
-		this.targets = PID.toPIDList(targets);
-		this.force = force;
-	}
 
-	@Override
-	public void run() {
-		for (PID target : targets) {
-			List<PID> allChildren = tripleStoreQueryService.fetchAllContents(target);
-			allChildren.add(target);
-			
-			for (PID pid : allChildren) {
-				jesqueClient.enqueue(runEnhancementTreeQueue,
-						new Job(ApplyEnhancementServicesJob.class.getName(), pid.getPid(), force));
-			}
-		}
-	}
+    private TripleStoreQueryService tripleStoreQueryService;
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    private final List<PID> targets;
+    private final boolean force;
 
-	public void setJesqueClient(Client jesqueClient) {
-		this.jesqueClient = jesqueClient;
-	}
+    private Client jesqueClient;
 
-	public void setRunEnhancementTreeQueue(String runEnhancementTreeQueue) {
-		this.runEnhancementTreeQueue = runEnhancementTreeQueue;
-	}
+    private String runEnhancementTreeQueue;
+
+    public RunEnhancementsTreeJob(List<String> targets, boolean force) {
+        this.targets = PID.toPIDList(targets);
+        this.force = force;
+    }
+
+    @Override
+    public void run() {
+        for (PID target : targets) {
+            List<PID> allChildren = tripleStoreQueryService.fetchAllContents(target);
+            allChildren.add(target);
+
+            for (PID pid : allChildren) {
+                jesqueClient.enqueue(runEnhancementTreeQueue,
+                        new Job(ApplyEnhancementServicesJob.class.getName(), pid.getPid(), force));
+            }
+        }
+    }
+
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
+
+    public void setJesqueClient(Client jesqueClient) {
+        this.jesqueClient = jesqueClient;
+    }
+
+    public void setRunEnhancementTreeQueue(String runEnhancementTreeQueue) {
+        this.runEnhancementTreeQueue = runEnhancementTreeQueue;
+    }
 
 }

@@ -29,37 +29,37 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
  * @date Jul 31, 2015
  */
 public class BulkMetadataUpdateJob implements Runnable {
-	private static final Logger log = LoggerFactory.getLogger(BulkMetadataUpdateJob.class);
-	
-	private UIPProcessor uipProcessor;
-	private final BulkMetadataUIP uip;
-	
-	public BulkMetadataUpdateJob(String updateId, String email, String username, Collection<String> groups,
-			String importPath, String originalFilename) throws UIPException {
-		AccessGroupSet groupSet = new AccessGroupSet();
-		groupSet.addAll(groups);
-		
-		uip = new BulkMetadataUIP(updateId, email, username, groupSet, new File(importPath), originalFilename);
-	}
-	
-	@Override
-	public void run() {
-		try {
-			GroupsThreadStore.storeGroups(uip.getGroups());
-			
-			uipProcessor.process(uip);
-		} catch (UpdateException | UIPException e) {
-			log.error("Failed to update metadata for {}", uip.getUser(), e);
-		} finally {
-			GroupsThreadStore.clearStore();
-		}
-	}
+    private static final Logger log = LoggerFactory.getLogger(BulkMetadataUpdateJob.class);
 
-	public UIPProcessor getUipProcessor() {
-		return uipProcessor;
-	}
+    private UIPProcessor uipProcessor;
+    private final BulkMetadataUIP uip;
 
-	public void setUipProcessor(UIPProcessor uipProcessor) {
-		this.uipProcessor = uipProcessor;
-	}
+    public BulkMetadataUpdateJob(String updateId, String email, String username, Collection<String> groups,
+            String importPath, String originalFilename) throws UIPException {
+        AccessGroupSet groupSet = new AccessGroupSet();
+        groupSet.addAll(groups);
+
+        uip = new BulkMetadataUIP(updateId, email, username, groupSet, new File(importPath), originalFilename);
+    }
+
+    @Override
+    public void run() {
+        try {
+            GroupsThreadStore.storeGroups(uip.getGroups());
+
+            uipProcessor.process(uip);
+        } catch (UpdateException | UIPException e) {
+            log.error("Failed to update metadata for {}", uip.getUser(), e);
+        } finally {
+            GroupsThreadStore.clearStore();
+        }
+    }
+
+    public UIPProcessor getUipProcessor() {
+        return uipProcessor;
+    }
+
+    public void setUipProcessor(UIPProcessor uipProcessor) {
+        this.uipProcessor = uipProcessor;
+    }
 }

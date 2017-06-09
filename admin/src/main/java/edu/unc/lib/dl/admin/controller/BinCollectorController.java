@@ -68,191 +68,194 @@ import edu.unc.lib.dl.ui.util.FedoraUtil;
  */
 @Controller
 public class BinCollectorController {
-	private static final Logger log = LoggerFactory.getLogger(BinCollectorController.class);
+    private static final Logger log = LoggerFactory.getLogger(BinCollectorController.class);
 
-	@Autowired
-	private DepositBinCollector binCollector;
+    @Autowired
+    private DepositBinCollector binCollector;
 
-	@Autowired(required = true)
-	protected SolrQueryLayerService queryLayer;
-	@Autowired
-	protected SearchSettings searchSettings;
-	@Autowired
-	private FedoraUtil fedoraUtil;
-	@Autowired
-	private AccessControlService aclService;
+    @Autowired(required = true)
+    protected SolrQueryLayerService queryLayer;
+    @Autowired
+    protected SearchSettings searchSettings;
+    @Autowired
+    private FedoraUtil fedoraUtil;
+    @Autowired
+    private AccessControlService aclService;
 
-	private final List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
-			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.PARENT_COLLECTION.name());
+    private final List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
+            SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+            SearchFieldKeys.ANCESTOR_PATH.name(),SearchFieldKeys.ROLE_GROUP.name(),
+            SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.PARENT_COLLECTION.name());
 
-	@RequestMapping(value = "collector", method = RequestMethod.GET)
-	public String listCollectors() {
-		return "collector/listBins";
-	}
+    @RequestMapping(value = "collector", method = RequestMethod.GET)
+    public String listCollectors() {
+        return "collector/listBins";
+    }
 
-	@RequestMapping(value = "collector/details/{key}", method = RequestMethod.GET)
-	public String binDetails() {
-		return "collector/listBins";
-	}
+    @RequestMapping(value = "collector/details/{key}", method = RequestMethod.GET)
+    public String binDetails() {
+        return "collector/listBins";
+    }
 
-	@RequestMapping(value = "collector/list", method = RequestMethod.GET)
-	public @ResponseBody
-	Object listCollectors(Model model) {
+    @RequestMapping(value = "collector/list", method = RequestMethod.GET)
+    public @ResponseBody
+    Object listCollectors(Model model) {
 
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
 
-		// Get the list of collectors
-		Map<String, DepositBinConfiguration> configs = binCollector.getBinConfigurations();
+        // Get the list of collectors
+        Map<String, DepositBinConfiguration> configs = binCollector.getBinConfigurations();
 
-		// Filter list down to just those that the user has rights to
-		List<Object> response = new ArrayList<Object>();
+        // Filter list down to just those that the user has rights to
+        List<Object> response = new ArrayList<Object>();
 
-		Iterator<Entry<String, DepositBinConfiguration>> configIt = configs.entrySet().iterator();
-		while (configIt.hasNext()) {
-			Entry<String, DepositBinConfiguration> configEntry = configIt.next();
-			DepositBinConfiguration config = configEntry.getValue();
+        Iterator<Entry<String, DepositBinConfiguration>> configIt = configs.entrySet().iterator();
+        while (configIt.hasNext()) {
+            Entry<String, DepositBinConfiguration> configEntry = configIt.next();
+            DepositBinConfiguration config = configEntry.getValue();
 
-			PID destPID = new PID(config.getDestination());
+            PID destPID = new PID(config.getDestination());
 
-			SimpleIdRequest entryRequest = new SimpleIdRequest(destPID.getPid(), resultsFieldList, groups);
-			BriefObjectMetadata entryBean = queryLayer.getObjectById(entryRequest);
+            SimpleIdRequest entryRequest = new SimpleIdRequest(destPID.getPid(), resultsFieldList, groups);
+            BriefObjectMetadata entryBean = queryLayer.getObjectById(entryRequest);
 
-			// Only select collectors where the user can ingest to the destination container
-			ObjectAccessControlsBean aclBean = new ObjectAccessControlsBeanImpl(entryBean.getPid(), entryBean.getRoleGroup());
+            // Only select collectors where the user can ingest to the destination container
+            ObjectAccessControlsBean aclBean =
+                    new ObjectAccessControlsBeanImpl(entryBean.getPid(), entryBean.getRoleGroup());
 
-			boolean hasPermission = aclBean.hasPermission(groups, Permission.addRemoveContents);
-			if (!hasPermission)
-				continue;
+            boolean hasPermission = aclBean.hasPermission(groups, Permission.addRemoveContents);
+            if (!hasPermission) {
+                continue;
+            }
 
-			Map<String, Object> collectorEntry = new HashMap<String, Object>();
-			collectorEntry.put("key", configEntry.getKey());
-			collectorEntry.put("name", config.getName());
-			collectorEntry.put("destPID", config.getDestination());
-			collectorEntry.put("destTitle", entryBean.getTitle());
+            Map<String, Object> collectorEntry = new HashMap<String, Object>();
+            collectorEntry.put("key", configEntry.getKey());
+            collectorEntry.put("name", config.getName());
+            collectorEntry.put("destPID", config.getDestination());
+            collectorEntry.put("destTitle", entryBean.getTitle());
 
-			// If the destination was not a collection then find the record for its parent collection
-			BriefObjectMetadata collectionBean = entryBean;
-			if (!searchSettings.resourceTypeCollection.equals(entryBean.getResourceType())
-					&& entryBean.getParentCollection() != null) {
-				entryRequest = new SimpleIdRequest(entryBean.getParentCollection(), resultsFieldList, groups);
-				collectionBean = queryLayer.getObjectById(entryRequest);
-				collectorEntry.put("collectionTitle", collectionBean.getTitle());
-			}
+            // If the destination was not a collection then find the record for its parent collection
+            BriefObjectMetadata collectionBean = entryBean;
+            if (!searchSettings.resourceTypeCollection.equals(entryBean.getResourceType())
+                    && entryBean.getParentCollection() != null) {
+                entryRequest = new SimpleIdRequest(entryBean.getParentCollection(), resultsFieldList, groups);
+                collectionBean = queryLayer.getObjectById(entryRequest);
+                collectorEntry.put("collectionTitle", collectionBean.getTitle());
+            }
 
-			Datastream thumbDS = entryBean.getDatastreamObject(THUMB_LARGE.getName());
-			if (thumbDS != null) {
-				String thumbPID = thumbDS.getOwner() == null ? entryBean.getId() : thumbDS.getOwner().getPid();
+            Datastream thumbDS = entryBean.getDatastreamObject(THUMB_LARGE.getName());
+            if (thumbDS != null) {
+                String thumbPID = thumbDS.getOwner() == null ? entryBean.getId() : thumbDS.getOwner().getPid();
 
-				collectorEntry.put("collectionThumb", thumbPID);
-			}
+                collectorEntry.put("collectionThumb", thumbPID);
+            }
 
-			// Get statistics for remaining collectors
-			ListFilesResult listFilesResult = binCollector.listFiles(configEntry.getKey());
-			collectorEntry.put("applicableCount", listFilesResult.applicable.size());
-			collectorEntry.put("nonapplicableCount", listFilesResult.nonapplicable.size());
+            // Get statistics for remaining collectors
+            ListFilesResult listFilesResult = binCollector.listFiles(configEntry.getKey());
+            collectorEntry.put("applicableCount", listFilesResult.applicable.size());
+            collectorEntry.put("nonapplicableCount", listFilesResult.nonapplicable.size());
 
-			response.add(collectorEntry);
-		}
+            response.add(collectorEntry);
+        }
 
-		return response;
-	}
+        return response;
+    }
 
-	@RequestMapping(value = "collector/bin/{key}", method = RequestMethod.GET)
-	public @ResponseBody
-	Object viewCollector(@PathVariable("key") String binKey, Model model, HttpServletResponse resp) {
-		DepositBinConfiguration config = binCollector.getConfiguration(binKey);
+    @RequestMapping(value = "collector/bin/{key}", method = RequestMethod.GET)
+    public @ResponseBody
+    Object viewCollector(@PathVariable("key") String binKey, Model model, HttpServletResponse resp) {
+        DepositBinConfiguration config = binCollector.getConfiguration(binKey);
 
-		if (config == null) {
-			log.debug("Invalid bin key provided {}", binKey);
-			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			return null;
-		}
+        if (config == null) {
+            log.debug("Invalid bin key provided {}", binKey);
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
 
-		// Check permissions
-		if (!hasPermission(config.getDestination())) {
-			resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return null;
-		}
+        // Check permissions
+        if (!hasPermission(config.getDestination())) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        }
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("key", binKey);
-		response.put("name", config.getName());
-		response.put("destPID", config.getDestination());
-		response.put("binPaths", config.getPaths());
+        Map<String, Object> response = new HashMap<String, Object>();
+        response.put("key", binKey);
+        response.put("name", config.getName());
+        response.put("destPID", config.getDestination());
+        response.put("binPaths", config.getPaths());
 
-		ListFilesResult listFilesResult = binCollector.listFiles(binKey);
-		response.put("applicableFiles", serializeFileList(listFilesResult.applicable));
-		response.put("nonapplicableFiles", serializeFileList(listFilesResult.nonapplicable));
+        ListFilesResult listFilesResult = binCollector.listFiles(binKey);
+        response.put("applicableFiles", serializeFileList(listFilesResult.applicable));
+        response.put("nonapplicableFiles", serializeFileList(listFilesResult.nonapplicable));
 
-		return response;
-	}
+        return response;
+    }
 
-	private List<Object> serializeFileList(List<File> fileList) {
-		List<Object> result = new ArrayList<Object>(fileList.size());
-		for (File file : fileList) {
-			Map<String, String> entry = new HashMap<String, String>();
-			entry.put("path", file.getAbsolutePath());
-			entry.put("size", Long.toString(file.length()));
-			entry.put("time", Long.toString(file.lastModified()));
+    private List<Object> serializeFileList(List<File> fileList) {
+        List<Object> result = new ArrayList<Object>(fileList.size());
+        for (File file : fileList) {
+            Map<String, String> entry = new HashMap<String, String>();
+            entry.put("path", file.getAbsolutePath());
+            entry.put("size", Long.toString(file.length()));
+            entry.put("time", Long.toString(file.lastModified()));
 
-			result.add(entry);
-		}
+            result.add(entry);
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	@RequestMapping(value = "collector/bin/{key}", method = RequestMethod.POST)
-	public @ResponseBody
-	Object startCollection(@PathVariable("key") String binKey, HttpServletResponse resp,
-			@RequestParam(value = "files[]", required = false) String[] fileList, Model model) {
+    @RequestMapping(value = "collector/bin/{key}", method = RequestMethod.POST)
+    public @ResponseBody
+    Object startCollection(@PathVariable("key") String binKey, HttpServletResponse resp,
+            @RequestParam(value = "files[]", required = false) String[] fileList, Model model) {
 
-		DepositBinConfiguration config = binCollector.getConfiguration(binKey);
+        DepositBinConfiguration config = binCollector.getConfiguration(binKey);
 
-		if (fileList == null || fileList.length == 0) {
-			return null;
-		}
-		
-		if (config == null) {
-			log.debug("Invalid bin key provided {}", binKey);
-			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			return null;
-		}
+        if (fileList == null || fileList.length == 0) {
+            return null;
+        }
 
-		// Check permissions
-		if (!hasPermission(config.getDestination())) {
-			resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
-			return null;
-		}
+        if (config == null) {
+            log.debug("Invalid bin key provided {}", binKey);
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
 
-		Map<String, String> extras = new HashMap<String,String>();
-		extras.put(EXTRA_DEPOSITOR_NAME, GroupsThreadStore.getUsername());
-		extras.put(EXTRA_OWNER_NAME, GroupsThreadStore.getUsername());
-		extras.put(EXTRA_DEPOSITOR_EMAIL, GroupsThreadStore.getEmail());
-		extras.put(EXTRA_PERMISSION_GROUPS, GroupsThreadStore.getGroupString());
+        // Check permissions
+        if (!hasPermission(config.getDestination())) {
+            resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return null;
+        }
 
-		Map<String, Object> response = new HashMap<String, Object>();
-		response.put("key", binKey);
-		response.put("name", config.getName());
+        Map<String, String> extras = new HashMap<String,String>();
+        extras.put(EXTRA_DEPOSITOR_NAME, GroupsThreadStore.getUsername());
+        extras.put(EXTRA_OWNER_NAME, GroupsThreadStore.getUsername());
+        extras.put(EXTRA_DEPOSITOR_EMAIL, GroupsThreadStore.getEmail());
+        extras.put(EXTRA_PERMISSION_GROUPS, GroupsThreadStore.getGroupString());
 
-		try {
-			List<String> files = Arrays.asList(fileList);
-			binCollector.collect(files, binKey, extras);
-			response.put("success", true);
-		} catch (IOException e) {
-			response.put("success", false);
-			response.put("error", e.toString());
-			log.error("User {} failed to collect items from {}",
-					new Object[] { GroupsThreadStore.getUsername(), binKey, e });
-		}
+        Map<String, Object> response = new HashMap<String, Object>();
+        response.put("key", binKey);
+        response.put("name", config.getName());
 
-		return response;
-	}
+        try {
+            List<String> files = Arrays.asList(fileList);
+            binCollector.collect(files, binKey, extras);
+            response.put("success", true);
+        } catch (IOException e) {
+            response.put("success", false);
+            response.put("error", e.toString());
+            log.error("User {} failed to collect items from {}",
+                    new Object[] { GroupsThreadStore.getUsername(), binKey, e });
+        }
 
-	private boolean hasPermission(String destination) {
-		ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(new PID(destination));
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
+        return response;
+    }
 
-		return aclBean.hasPermission(groups, Permission.addRemoveContents);
-	}
+    private boolean hasPermission(String destination) {
+        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(new PID(destination));
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+
+        return aclBean.hasPermission(groups, Permission.addRemoveContents);
+    }
 }

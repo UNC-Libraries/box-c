@@ -30,28 +30,28 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 
 public class DocumentIndexingPipelineTest extends Assert {
-	private DocumentIndexingPackageFactory factory;
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
-		
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-	}
-	
-	@Test(expected=UnsupportedContentModelException.class)
-	public void depositReceipt() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:test");
+    private DocumentIndexingPackageFactory factory;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
 
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/depositReceipt.xml")));
-		dip.setFoxml(foxml);
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
 
-		DocumentIndexingPipeline pipeline = new DocumentIndexingPipeline();
-		pipeline.process(dip);
-	}
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
+    }
+
+    @Test(expected=UnsupportedContentModelException.class)
+    public void depositReceipt() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:test");
+
+        SAXBuilder builder = new SAXBuilder();
+        Document foxml = builder.build(new FileInputStream(new File(
+                "src/test/resources/foxml/depositReceipt.xml")));
+        dip.setFoxml(foxml);
+
+        DocumentIndexingPipeline pipeline = new DocumentIndexingPipeline();
+        pipeline.process(dip);
+    }
 }

@@ -43,101 +43,105 @@ import edu.unc.lib.dl.util.ErrorURIRegistry;
  */
 public class CollectionListManagerImpl extends AbstractFedoraManager implements CollectionListManager {
 
-	private static final Abdera abdera = new Abdera();
-	private int pageSize = 10;
+    private static final Abdera abdera = new Abdera();
+    private int pageSize = 10;
 
-	@Override
-	public Feed listCollectionContents(IRI collectionIRI, AuthCredentials auth, SwordConfiguration config)
-			throws SwordServerException, SwordAuthException, SwordError {
+    @Override
+    public Feed listCollectionContents(IRI collectionIRI, AuthCredentials auth, SwordConfiguration config)
+            throws SwordServerException, SwordAuthException, SwordError {
 
-		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
+        SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		PID containerPID = null;
+        PID containerPID = null;
 
-		String query = collectionIRI.getPath();
-		// Remove path prefixing from url
-		int index = query.indexOf(SwordConfigurationImpl.COLLECTION_PATH + "/");
-		if (index == -1)
-			throw new SwordServerException("No collection path was found for IRI " + collectionIRI);
-		query = query.substring(index + SwordConfigurationImpl.COLLECTION_PATH.length() + 1);
+        String query = collectionIRI.getPath();
+        // Remove path prefixing from url
+        int index = query.indexOf(SwordConfigurationImpl.COLLECTION_PATH + "/");
+        if (index == -1) {
+            throw new SwordServerException("No collection path was found for IRI " + collectionIRI);
+        }
+        query = query.substring(index + SwordConfigurationImpl.COLLECTION_PATH.length() + 1);
 
-		// Extract the PID
-		String pidString = null;
-		int startPage = 0;
-		index = query.indexOf("/");
-		if (index > 0) {
-			pidString = query.substring(0, index);
-			try {
-				startPage = Integer.parseInt(query.substring(index + 1));
-				if (startPage < 0)
-					startPage = 0;
-			} catch (NumberFormatException e) {
-				throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 404, "Collection content page number was not valid.");
-			}
-		} else {
-			pidString = query;
-		}
+        // Extract the PID
+        String pidString = null;
+        int startPage = 0;
+        index = query.indexOf("/");
+        if (index > 0) {
+            pidString = query.substring(0, index);
+            try {
+                startPage = Integer.parseInt(query.substring(index + 1));
+                if (startPage < 0) {
+                    startPage = 0;
+                }
+            } catch (NumberFormatException e) {
+                throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 404,
+                        "Collection content page number was not valid.");
+            }
+        } else {
+            pidString = query;
+        }
 
-		if (pidString == null || "".equals(pidString.trim())) {
-			containerPID = this.collectionsPidObject;
-		} else {
-			containerPID = new PID(pidString);
-		}
+        if (pidString == null || "".equals(pidString.trim())) {
+            containerPID = this.collectionsPidObject;
+        } else {
+            containerPID = new PID(pidString);
+        }
 
-		// Verify access control
-		if (!hasAccess(auth, containerPID, Permission.viewDescription, configImpl)) {
-			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to view the collection list for " + containerPID.getPid());
-		}
+        // Verify access control
+        if (!hasAccess(auth, containerPID, Permission.viewDescription, configImpl)) {
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+                    "Insufficient privileges to view the collection list for " + containerPID.getPid());
+        }
 
-		Feed feed = abdera.getFactory().newFeed();
-		feed.setId(containerPID.getPid());
-		// add in the next page link
-		feed.addLink(configImpl.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + containerPID.getPid()
-				+ "/" + (startPage + 1), "next");
+        Feed feed = abdera.getFactory().newFeed();
+        feed.setId(containerPID.getPid());
+        // add in the next page link
+        feed.addLink(configImpl.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/" + containerPID.getPid()
+                + "/" + (startPage + 1), "next");
 
-		try {
-			this.getImmediateChildren(containerPID, startPage, feed, auth, configImpl);
-		} catch (IOException e) {
-			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500, "Failed to retrieve children for "
-					+ containerPID.getPid(), e);
-		}
+        try {
+            this.getImmediateChildren(containerPID, startPage, feed, auth, configImpl);
+        } catch (IOException e) {
+            throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500, "Failed to retrieve children for "
+                    + containerPID.getPid(), e);
+        }
 
-		return feed;
-	}
+        return feed;
+    }
 
-	protected List<Entry> getImmediateChildren(PID pid, int startPage, Feed feed, AuthCredentials auth,
-			SwordConfigurationImpl config) throws IOException {
-		String query = this.readFileAsString("immediateChildrenPaged.sparql");
-		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI(), pageSize,
-				startPage * pageSize);
-		List<Entry> result = new ArrayList<Entry>();
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results")).get("bindings");
-		for (Map<?, ?> binding : bindings) {
-			PID childPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
-			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
+    protected List<Entry> getImmediateChildren(PID pid, int startPage, Feed feed, AuthCredentials auth,
+            SwordConfigurationImpl config) throws IOException {
+        String query = this.readFileAsString("immediateChildrenPaged.sparql");
+        query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI(), pageSize,
+                startPage * pageSize);
+        List<Entry> result = new ArrayList<Entry>();
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query)
+                .get("results")).get("bindings");
+        for (Map<?, ?> binding : bindings) {
+            PID childPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
+            String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 
-			if (hasAccess(auth, childPID, Permission.viewDescription, config)) {
-				Entry entry = feed.addEntry();
-				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid()
-						+ ".atom", "edit");
-				entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid(),
-						"edit-media");
-				entry.setId(childPID.getURI());
-				entry.setTitle(slug);
+            if (hasAccess(auth, childPID, Permission.viewDescription, config)) {
+                Entry entry = feed.addEntry();
+                entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid()
+                        + ".atom", "edit");
+                entry.addLink(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/" + childPID.getPid(),
+                        "edit-media");
+                entry.setId(childPID.getURI());
+                entry.setTitle(slug);
 
-				result.add(entry);
-			}
-		}
-		return result;
-	}
+                result.add(entry);
+            }
+        }
+        return result;
+    }
 
-	public int getPageSize() {
-		return pageSize;
-	}
+    public int getPageSize() {
+        return pageSize;
+    }
 
-	public void setPageSize(int pageSize) {
-		this.pageSize = pageSize;
-	}
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
 }

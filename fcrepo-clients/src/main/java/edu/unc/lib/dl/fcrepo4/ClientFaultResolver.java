@@ -25,29 +25,29 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 /**
  * Resolves exceptions which clients encounter while interacting with Fedora into more specific
  * exceptions within the repositories domain.
- * 
+ *
  * @author bbpennel
  *
  */
-public class ClientFaultResolver {
+public abstract class ClientFaultResolver {
 
-	/**
-	 * Resolves a FcrepoOperationFailedException into a more specific FedoraException if possible
-	 * 
-	 * @param ex
-	 * @return
-	 */
-	public static FedoraException resolve(Exception ex) {
-		if (ex instanceof FcrepoOperationFailedException) {
-			FcrepoOperationFailedException e = (FcrepoOperationFailedException) ex;
-			
-			switch(e.getStatusCode()) {
-			case HttpStatus.SC_FORBIDDEN:
-				return new AuthorizationException(ex);
-			case HttpStatus.SC_NOT_FOUND:
-					return new NotFoundException(ex);
-			}
-		}
-		return new FedoraException(ex);
-	}
+    /**
+     * Resolves a FcrepoOperationFailedException into a more specific FedoraException if possible
+     *
+     * @param ex
+     * @return
+     */
+    public static FedoraException resolve(Exception ex) {
+        if (ex instanceof FcrepoOperationFailedException) {
+            FcrepoOperationFailedException e = (FcrepoOperationFailedException) ex;
+
+            switch(e.getStatusCode()) {
+            case HttpStatus.SC_FORBIDDEN:
+                return new AuthorizationException(ex);
+            case HttpStatus.SC_NOT_FOUND:
+                    return new NotFoundException(ex);
+            }
+        }
+        return new FedoraException(ex);
+    }
 }

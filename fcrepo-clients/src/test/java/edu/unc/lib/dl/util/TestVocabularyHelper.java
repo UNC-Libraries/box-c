@@ -28,82 +28,82 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
 
 public class TestVocabularyHelper implements VocabularyHelper {
 
-	private Set<String> invalidTerms;
-	private String vocabURI;
-	private String prefix;
+    private Set<String> invalidTerms;
+    private String vocabURI;
+    private String prefix;
 
-	@Override
-	public List<List<String>> getAuthoritativeForm(String term) {
-		return null;
-	}
+    @Override
+    public List<List<String>> getAuthoritativeForm(String term) {
+        return null;
+    }
 
-	@Override
-	public Set<String> getInvalidTerms(Element docElement) throws JDOMException {
-		return invalidTerms;
-	}
+    @Override
+    public Set<String> getInvalidTerms(Element docElement) throws JDOMException {
+        return invalidTerms;
+    }
 
-	public void setInvalidTerms(Set<String> invalidTerms) {
-		this.invalidTerms = invalidTerms;
-	}
+    public void setInvalidTerms(Set<String> invalidTerms) {
+        this.invalidTerms = invalidTerms;
+    }
 
-	@Override
-	public Set<String> getInvalidTermsWithPrefix(Element modsRoot) throws JDOMException {
-		Set<String> prefixed = new HashSet<>(invalidTerms.size());
-		for (String term : invalidTerms) {
-			prefixed.add(prefix + "|" + term);
-		}
-		return prefixed;
-	}
+    @Override
+    public Set<String> getInvalidTermsWithPrefix(Element modsRoot) throws JDOMException {
+        Set<String> prefixed = new HashSet<>(invalidTerms.size());
+        for (String term : invalidTerms) {
+            prefixed.add(prefix + "|" + term);
+        }
+        return prefixed;
+    }
 
-	@Override
-	public boolean updateDocumentTerms(Element docElement) throws JDOMException {
-		return false;
-	}
+    @Override
+    public boolean updateDocumentTerms(Element docElement) throws JDOMException {
+        return false;
+    }
 
-	@Override
-	public Collection<String> getVocabularyTerms() {
-		return null;
-	}
+    @Override
+    public Collection<String> getVocabularyTerms() {
+        return null;
+    }
 
-	@Override
-	public void setSelector(String selector) {
+    @Override
+    public void setSelector(String selector) {
 
-	}
+    }
 
-	@Override
-	public String getInvalidTermPrefix() {
-		return prefix;
-	}
+    @Override
+    public String getInvalidTermPrefix() {
+        return prefix;
+    }
 
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
 
-	@Override
-	public String getVocabularyURI() {
-		return vocabURI;
-	}
+    @Override
+    public String getVocabularyURI() {
+        return vocabURI;
+    }
 
-	@Override
-	public void setVocabularyURI(String vocabularyURI) {
-		this.vocabURI = vocabularyURI;
-	}
+    @Override
+    public void setVocabularyURI(String vocabularyURI) {
+        this.vocabURI = vocabularyURI;
+    }
 
-	@Override
-	public void setContent(byte[] content) throws Exception {
-	}
+    @Override
+    public void setContent(byte[] content) throws Exception {
+    }
 
-	@Override
-	public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
-		return null;
-	}
+    @Override
+    public List<List<String>> getAuthoritativeForms(Element docElement) throws JDOMException {
+        return null;
+    }
 
-	@Override
-	public void setSelectorNamespaces(Namespace[] namespaces) {
-	}
+    @Override
+    public void setSelectorNamespaces(Namespace[] namespaces) {
+    }
 
-	@Override
-	public String getSelector() {
-		return null;
-	}
+    @Override
+    public String getSelector() {
+        return null;
+    }
 }

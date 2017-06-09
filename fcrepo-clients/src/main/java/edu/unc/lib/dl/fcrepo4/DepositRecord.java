@@ -42,130 +42,131 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class DepositRecord extends RepositoryObject {
 
-	protected DepositRecord(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    protected DepositRecord(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	/**
-	 *  Adds the given file as a manifest for this deposit.
-	 * 
-	 * @param manifest File containing the manifest content
-	 * @param mimetype mimetype string of the manifest file
-	 * @return BinaryObject representing the newly created manifest object
-	 * @throws FedoraException
-	 */
-	public BinaryObject addManifest(File manifest, String mimetype)
-			throws FedoraException, IOException {
+    /**
+     *  Adds the given file as a manifest for this deposit.
+     *
+     * @param manifest File containing the manifest content
+     * @param mimetype mimetype string of the manifest file
+     * @return BinaryObject representing the newly created manifest object
+     * @throws FedoraException
+     */
+    public BinaryObject addManifest(File manifest, String mimetype)
+            throws FedoraException, IOException {
 
-		InputStream contentStream = new FileInputStream(manifest);
-		return addManifest(contentStream, manifest.getName(), mimetype);
-	}
+        InputStream contentStream = new FileInputStream(manifest);
+        return addManifest(contentStream, manifest.getName(), mimetype);
+    }
 
-	/**
-	 * Adds the given inputstream as the content of a manifest for this deposit.
-	 * 
-	 * @param manifestStream inputstream containing the binary content for this manifest
-	 * @param filename filename for the manifest
-	 * @param mimetype mimetype for the content of the manifest
-	 * @return representing the newly created manifest object
-	 * @throws FedoraException
-	 */
-	public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype) throws FedoraException {
-		URI manifestsUri = getManifestsUri();
-		return repository.createBinary(manifestsUri, null, manifestStream, filename,
-				mimetype, null, null);
-	}
+    /**
+     * Adds the given inputstream as the content of a manifest for this deposit.
+     *
+     * @param manifestStream inputstream containing the binary content for this manifest
+     * @param filename filename for the manifest
+     * @param mimetype mimetype for the content of the manifest
+     * @return representing the newly created manifest object
+     * @throws FedoraException
+     */
+    public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype)
+            throws FedoraException {
+        URI manifestsUri = getManifestsUri();
+        return repository.createBinary(manifestsUri, null, manifestStream, filename,
+                mimetype, null, null);
+    }
 
-	/**
-	 * Retrieves the requested manifest of this deposit record
-	 * 
-	 * @param pid
-	 * @return The requested manifest as a BinaryObject or null if the pid was
-	 *         not a component of this deposit record
-	 * @throws FedoraException
-	 */
-	public BinaryObject getManifest(PID pid) throws FedoraException {
-		if (!this.pid.containsComponent(pid)) {
-			return null;
-		}
-		return repository.getBinary(pid);
-	}
+    /**
+     * Retrieves the requested manifest of this deposit record
+     *
+     * @param pid
+     * @return The requested manifest as a BinaryObject or null if the pid was
+     *         not a component of this deposit record
+     * @throws FedoraException
+     */
+    public BinaryObject getManifest(PID pid) throws FedoraException {
+        if (!this.pid.containsComponent(pid)) {
+            return null;
+        }
+        return repository.getBinary(pid);
+    }
 
-	/**
-	 * Retrieves a list of pids for manifests contained by this deposit record
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public List<PID> listManifests() throws FedoraException {
-		return addPidsToList(Cdr.hasManifest);
-	}
-	
-	/**
-	 * Establishes a relationship between the deposit record and each object
-	 * that was added to the deposit.
-	 * @param depositPID
-	 * @param children
-	 * @return the DepositRecord itself, to allow method chaining
-	 */
-	public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
-		Model triples = ModelFactory.createDefaultModel();
-		Resource res = triples.createResource(depositPID.getURI());
-		for (Resource child : children) {
-			res.addProperty(Cdr.hasIngestedObject, child);
-		}
-		repository.createRelationships(depositPID, triples);
-		return this;
-	}
+    /**
+     * Retrieves a list of pids for manifests contained by this deposit record
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public List<PID> listManifests() throws FedoraException {
+        return addPidsToList(Cdr.hasManifest);
+    }
 
-	/**
-	 * Retrieves a list of pids for objects contained by this deposit record
-	 * @return
-	 * @throws FedoraException
-	 */
-	public List<PID> listDepositedObjects() throws FedoraException { 
-		return addPidsToList(Cdr.hasIngestedObject);
-	}
+    /**
+     * Establishes a relationship between the deposit record and each object
+     * that was added to the deposit.
+     * @param depositPID
+     * @param children
+     * @return the DepositRecord itself, to allow method chaining
+     */
+    public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
+        Model triples = ModelFactory.createDefaultModel();
+        Resource res = triples.createResource(depositPID.getURI());
+        for (Resource child : children) {
+            res.addProperty(Cdr.hasIngestedObject, child);
+        }
+        repository.createRelationships(depositPID, triples);
+        return this;
+    }
 
-	@Override
-	public DepositRecord addPremisEvents(List<PremisEventObject> events) throws FedoraException {
-		return (DepositRecord) super.addPremisEvents(events);
-	}
+    /**
+     * Retrieves a list of pids for objects contained by this deposit record
+     * @return
+     * @throws FedoraException
+     */
+    public List<PID> listDepositedObjects() throws FedoraException {
+        return addPidsToList(Cdr.hasIngestedObject);
+    }
 
-	/**
-	 * Ensure that the object retrieved has the DepositRecord type
-	 */
-	@Override
-	public DepositRecord validateType() throws FedoraException {
-		if (!isType(Cdr.DepositRecord.toString())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a Deposit Record.");
-		}
-		return this;
-	}
-	
-	@Override
-	public RepositoryObject getParent() {
-		return dataLoader.getParentObject(this);
-	}
+    @Override
+    public DepositRecord addPremisEvents(List<PremisEventObject> events) throws FedoraException {
+        return (DepositRecord) super.addPremisEvents(events);
+    }
 
-	/**
-	 * Returns the URI for the container which holds manifests for this record
-	 * 
-	 * @return
-	 */
-	public URI getManifestsUri() {
-		return URI.create(pid.getRepositoryUri()
-				+ "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
-	}
-	
-	private List<PID> addPidsToList(Property p) {
-		Resource resource = getResource();
-		StmtIterator containsIt = resource.listProperties(p);
-		List<PID> pids = new ArrayList<>();
-		while (containsIt.hasNext()) {
-			String path = containsIt.next().getObject().toString();
-			pids.add(PIDs.get(path));
-		}
-		return pids;
-	}
+    /**
+     * Ensure that the object retrieved has the DepositRecord type
+     */
+    @Override
+    public DepositRecord validateType() throws FedoraException {
+        if (!isType(Cdr.DepositRecord.toString())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a Deposit Record.");
+        }
+        return this;
+    }
+
+    @Override
+    public RepositoryObject getParent() {
+        return dataLoader.getParentObject(this);
+    }
+
+    /**
+     * Returns the URI for the container which holds manifests for this record
+     *
+     * @return
+     */
+    public URI getManifestsUri() {
+        return URI.create(pid.getRepositoryUri()
+                + "/" + RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
+    }
+
+    private List<PID> addPidsToList(Property p) {
+        Resource resource = getResource();
+        StmtIterator containsIt = resource.listProperties(p);
+        List<PID> pids = new ArrayList<>();
+        while (containsIt.hasNext()) {
+            String path = containsIt.next().getObject().toString();
+            pids.add(PIDs.get(path));
+        }
+        return pids;
+    }
 }

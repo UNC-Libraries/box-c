@@ -30,28 +30,36 @@ import org.jdom2.Document;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public class XMLRetrievalService {
-	public static Document getXMLDocument(String url) throws HttpException, IOException, JDOMException {
-		SAXBuilder builder = new SAXBuilder();
+    protected XMLRetrievalService() {
+    }
 
-		CloseableHttpClient client = HttpClients.createDefault();
-		HttpGet method = new HttpGet(url);
-		RequestConfig requestConfig = RequestConfig.custom()
-				.setSocketTimeout(2000)
-				.setConnectTimeout(2000)
-				.setCookieSpec(CookieSpecs.IGNORE_COOKIES)
-				.build();
-		method.setConfig(requestConfig);
+    public static Document getXMLDocument(String url) throws HttpException, IOException, JDOMException {
+        SAXBuilder builder = new SAXBuilder();
 
-		InputStream responseStream = null;
-		Document document = null;
+        CloseableHttpClient client = HttpClients.createDefault();
+        HttpGet method = new HttpGet(url);
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setSocketTimeout(2000)
+                .setConnectTimeout(2000)
+                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
+                .build();
+        method.setConfig(requestConfig);
 
-		try (CloseableHttpResponse response = client.execute(method)) {
-			HttpEntity entity = response.getEntity();
-			responseStream = entity.getContent();
-			document = builder.build(responseStream);
-		}
+        InputStream responseStream = null;
+        Document document = null;
 
-		return document;
-	}
+        try (CloseableHttpResponse response = client.execute(method)) {
+            HttpEntity entity = response.getEntity();
+            responseStream = entity.getContent();
+            document = builder.build(responseStream);
+        }
+
+        return document;
+    }
 }
