@@ -20,78 +20,78 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class FcrepoClientFactory {
-	private static final Logger log = LoggerFactory.getLogger(FcrepoClientFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(FcrepoClientFactory.class);
 
-	private String baseUri;
+    private String baseUri;
 
-	private static FcrepoClientFactory instance;
+    private static FcrepoClientFactory instance;
 
-	private FcrepoClientFactory(String base) {
-		baseUri = base;
-	}
+    private FcrepoClientFactory(String base) {
+        baseUri = base;
+    }
 
-	/**
-	 * Returns a FcrepoClientFactory with the given baseUri if the factory has
-	 * not been previously constructed, otherwise the existing factory will be
-	 * returned.
-	 * 
-	 * @param baseUri
-	 *            base uri for the repository. Required.
-	 * @return a new FcrepoClientFactory with the given baseUri or the
-	 *         previously constructed factory.
-	 */
-	public static FcrepoClientFactory factory(String baseUri) {
-		if (baseUri == null) {
-			throw new IllegalArgumentException("A base URI is required to construct a factory");
-		}
+    /**
+     * Returns a FcrepoClientFactory with the given baseUri if the factory has
+     * not been previously constructed, otherwise the existing factory will be
+     * returned.
+     *
+     * @param baseUri
+     *            base uri for the repository. Required.
+     * @return a new FcrepoClientFactory with the given baseUri or the
+     *         previously constructed factory.
+     */
+    public static FcrepoClientFactory factory(String baseUri) {
+        if (baseUri == null) {
+            throw new IllegalArgumentException("A base URI is required to construct a factory");
+        }
 
-		if (instance == null) {
-			instance = new FcrepoClientFactory(baseUri);
-		} else {
-			log.warn("Requested to construct a factory when a previous instance has "
-					+ "already been initialized (current base uri: {0}, requested {1}), ignoring.",
-					instance.baseUri, baseUri);
-		}
-		return instance;
-	}
+        if (instance == null) {
+            instance = new FcrepoClientFactory(baseUri);
+        } else {
+            log.warn("Requested to construct a factory when a previous instance has "
+                    + "already been initialized (current base uri: {0}, requested {1}), ignoring.",
+                    instance.baseUri, baseUri);
+        }
+        return instance;
+    }
 
-	/**
-	 * Returns the default factory. The factory must have been previously
-	 * constructed via the factory(baseUri) method.
-	 * 
-	 * @return the existing default FcrepoClientFactory
-	 */
-	public static FcrepoClientFactory defaultFactory() {
-		return instance;
-	}
+    /**
+     * Returns the default factory. The factory must have been previously
+     * constructed via the factory(baseUri) method.
+     *
+     * @return the existing default FcrepoClientFactory
+     */
+    public static FcrepoClientFactory defaultFactory() {
+        return instance;
+    }
 
-	/**
-	 * Construct a TransactionalFcrepoClient object with the supplied authentication information
-	 * 
-	 * @param host
-	 * @param user
-	 * @param password
-	 * @return
-	 */
-	public FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
-		return TransactionalFcrepoClient.client(baseUri)
-				.credentials(user, password)
-				.authScope(host)
-				.throwExceptionOnFailure()
-				.build();
-	}
+    /**
+     * Construct a TransactionalFcrepoClient object with the supplied authentication information
+     *
+     * @param host
+     * @param user
+     * @param password
+     * @return
+     */
+    public FcrepoClient makeAuthenticatedClient(String host, String user, String password) {
+        return TransactionalFcrepoClient.client(baseUri)
+                .credentials(user, password)
+                .authScope(host)
+                .throwExceptionOnFailure()
+                .build();
+    }
 
-	/**
-	 * Construct a TransactionalFcrepoClient with exceptions thrown on failure and no authentication.
-	 * 
-	 * @return
-	 */
-	public FcrepoClient makeClient() {
-		return TransactionalFcrepoClient.client(baseUri).throwExceptionOnFailure().build();
-	}
+    /**
+     * Construct a TransactionalFcrepoClient with exceptions thrown on failure and no authentication.
+     *
+     * @return
+     */
+    public FcrepoClient makeClient() {
+        return TransactionalFcrepoClient.client(baseUri).throwExceptionOnFailure().build();
+    }
 }

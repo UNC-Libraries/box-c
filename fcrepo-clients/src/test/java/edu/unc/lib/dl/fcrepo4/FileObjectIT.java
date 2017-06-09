@@ -36,122 +36,122 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class FileObjectIT extends AbstractFedoraIT {
 
-	@Autowired
-	private Repository repository;
+    @Autowired
+    private Repository repository;
 
-	private PID pid;
+    private PID pid;
 
-	private static final String origBodyString = "Original data";
-	private static final String origFilename = "original.txt";
-	private static final String origMimetype = "text/plain";
-	private static final String origSha1Checksum = DigestUtils.sha1Hex(origBodyString);
+    private static final String origBodyString = "Original data";
+    private static final String origFilename = "original.txt";
+    private static final String origMimetype = "text/plain";
+    private static final String origSha1Checksum = DigestUtils.sha1Hex(origBodyString);
 
-	@Before
-	public void init() throws Exception {
-		// Generate a new ID every time so that tests don't conflict
-		pid = PIDs.get(RepositoryPathConstants.CONTENT_BASE + "/" + UUID.randomUUID().toString());
-		
-		createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-	}
+    @Before
+    public void init() throws Exception {
+        // Generate a new ID every time so that tests don't conflict
+        pid = PIDs.get(RepositoryPathConstants.CONTENT_BASE + "/" + UUID.randomUUID().toString());
 
-	@Test
-	public void createFileObjectTest() throws Exception {
+        createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+    }
 
-		FileObject fileObj = repository.createFileObject(pid, null);
+    @Test
+    public void createFileObjectTest() throws Exception {
 
-		assertNotNull(fileObj);
-		assertEquals(pid.getRepositoryPath(), fileObj.getPid().getRepositoryPath());
+        FileObject fileObj = repository.createFileObject(pid, null);
 
-		assertObjectExists(fileObj.getPid());
-	}
+        assertNotNull(fileObj);
+        assertEquals(pid.getRepositoryPath(), fileObj.getPid().getRepositoryPath());
 
-	@Test
-	public void addOriginalFileTest() throws Exception {
-		FileObject fileObj = repository.createFileObject(pid, null);
+        assertObjectExists(fileObj.getPid());
+    }
 
-		// Prep file and add
-		InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-		BinaryObject origObj = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum);
+    @Test
+    public void addOriginalFileTest() throws Exception {
+        FileObject fileObj = repository.createFileObject(pid, null);
 
-		verifyOriginalFile(origObj);
+        // Prep file and add
+        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
+        BinaryObject origObj = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum);
 
-		BinaryObject retrievedOrig = fileObj.getOriginalFile();
-		verifyOriginalFile(retrievedOrig);
-	}
+        verifyOriginalFile(origObj);
 
-	@Test
-	public void getMultipleBinariesTest() throws Exception {
-		FileObject fileObj = repository.createFileObject(pid, null);
+        BinaryObject retrievedOrig = fileObj.getOriginalFile();
+        verifyOriginalFile(retrievedOrig);
+    }
 
-		// Add the original
-		InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-		BinaryObject bObj3 = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum);
-		
-		// Construct the derivative objects
-		String textBodyString = "Extracted text";
-		String textFilename = "extracted.txt";
-		String textMimetype = "text/plain";
-		InputStream textContentStream = new ByteArrayInputStream(textBodyString.getBytes());
-		BinaryObject bObj1 = fileObj.addDerivative("text", textContentStream, textFilename, textMimetype, PcdmUse.ExtractedText);
-		assertNotNull(bObj1);
+    @Test
+    public void getMultipleBinariesTest() throws Exception {
+        FileObject fileObj = repository.createFileObject(pid, null);
 
-		String thumbBodyString = "";
-		String thumbFilename = "thumb.png";
-		String thumbMimetype = "image/png";
-		InputStream thumbContentStream = new ByteArrayInputStream(thumbBodyString.getBytes());
-		BinaryObject bObj2 = fileObj.addDerivative("thumb", thumbContentStream, thumbFilename, thumbMimetype, PcdmUse.ThumbnailImage);
-		assertNotNull(bObj1);
+        // Add the original
+        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
+        BinaryObject bObj3 = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum);
 
-		// Retrieve the binary objects directly
-		List<BinaryObject> binaries = fileObj.getBinaryObjects();
+        // Construct the derivative objects
+        String textBodyString = "Extracted text";
+        String textFilename = "extracted.txt";
+        String textMimetype = "text/plain";
+        InputStream textContentStream = new ByteArrayInputStream(textBodyString.getBytes());
+        BinaryObject bObj1 = fileObj.addDerivative("text", textContentStream, textFilename, textMimetype, PcdmUse.ExtractedText);
+        assertNotNull(bObj1);
 
-		assertEquals("Incorrect number of binaries added", 3, binaries.size());
+        String thumbBodyString = "";
+        String thumbFilename = "thumb.png";
+        String thumbMimetype = "image/png";
+        InputStream thumbContentStream = new ByteArrayInputStream(thumbBodyString.getBytes());
+        BinaryObject bObj2 = fileObj.addDerivative("thumb", thumbContentStream, thumbFilename, thumbMimetype, PcdmUse.ThumbnailImage);
+        assertNotNull(bObj1);
 
-		// Find each of the created binaries by pid
-		BinaryObject rObj1 = findBinaryByPid(binaries, bObj1.getPid());
-		BinaryObject rObj2 = findBinaryByPid(binaries, bObj2.getPid());
-		BinaryObject rObj3 = findBinaryByPid(binaries, bObj3.getPid());
+        // Retrieve the binary objects directly
+        List<BinaryObject> binaries = fileObj.getBinaryObjects();
 
-		assertNotNull(rObj1);
-		assertNotNull(rObj2);
-		assertNotNull(rObj3);
+        assertEquals("Incorrect number of binaries added", 3, binaries.size());
 
-		// Verify that binaries had correct data added
-		verifyFile(rObj1, textFilename, textMimetype, textBodyString);
-		verifyFile(rObj2, thumbFilename, thumbMimetype, thumbBodyString);
-		verifyOriginalFile(rObj3);
-	}
+        // Find each of the created binaries by pid
+        BinaryObject rObj1 = findBinaryByPid(binaries, bObj1.getPid());
+        BinaryObject rObj2 = findBinaryByPid(binaries, bObj2.getPid());
+        BinaryObject rObj3 = findBinaryByPid(binaries, bObj3.getPid());
 
-	@Test(expected = ObjectTypeMismatchException.class)
-	public void getNonFileObject() throws Exception{
-		PID objPid = PIDs.get("uuid:" + UUID.randomUUID().toString());
+        assertNotNull(rObj1);
+        assertNotNull(rObj2);
+        assertNotNull(rObj3);
 
-		client.put(objPid.getRepositoryUri()).perform().close();
-		
-		repository.getFileObject(objPid);
-	}
+        // Verify that binaries had correct data added
+        verifyFile(rObj1, textFilename, textMimetype, textBodyString);
+        verifyFile(rObj2, thumbFilename, thumbMimetype, thumbBodyString);
+        verifyOriginalFile(rObj3);
+    }
 
-	private void verifyOriginalFile(BinaryObject origObj) {
-		verifyFile(origObj, origFilename, origMimetype, origBodyString);
-	}
+    @Test(expected = ObjectTypeMismatchException.class)
+    public void getNonFileObject() throws Exception{
+        PID objPid = PIDs.get("uuid:" + UUID.randomUUID().toString());
 
-	private void verifyFile(BinaryObject bObj, String filename, String mimetype, String bodyString) {
-		assertEquals(filename, bObj.getFilename());
-		assertEquals(mimetype, bObj.getMimetype());
+        client.put(objPid.getRepositoryUri()).perform().close();
 
-		String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream()))
-				.lines().collect(Collectors.joining("\n"));
-		assertEquals("Original content did not match submitted value", bodyString, respString);
-	}
+        repository.getFileObject(objPid);
+    }
 
-	private BinaryObject findBinaryByPid(List<BinaryObject> binaries, PID pid) {
-		return binaries.stream()
-				.filter(p -> p.getPid().equals(pid)).findAny().get();
-	}
+    private void verifyOriginalFile(BinaryObject origObj) {
+        verifyFile(origObj, origFilename, origMimetype, origBodyString);
+    }
+
+    private void verifyFile(BinaryObject bObj, String filename, String mimetype, String bodyString) {
+        assertEquals(filename, bObj.getFilename());
+        assertEquals(mimetype, bObj.getMimetype());
+
+        String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Original content did not match submitted value", bodyString, respString);
+    }
+
+    private BinaryObject findBinaryByPid(List<BinaryObject> binaries, PID pid) {
+        return binaries.stream()
+                .filter(p -> p.getPid().equals(pid)).findAny().get();
+    }
 }

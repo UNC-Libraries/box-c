@@ -33,99 +33,99 @@ import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Initializes the structure of the repository
- * 
+ *
  * @author bbpennel
  *
  */
 public class RepositoryInitializer {
 
-	private Repository repository;
-	
-	private RepositoryObjectFactory objFactory;
-	
-	private FcrepoClient fcrepoClient;
-	
-	public RepositoryInitializer() {
-	}
+    private Repository repository;
 
-	/**
-	 * Initializes objects required for the base functionality of the repository
-	 */
-	public void initializeRepository() {
-		// Initialize the content base container
-		URI contentUri = createContainer(RepositoryPathConstants.CONTENT_BASE,
-				"Content Tree");
-		
-		// Add the content tree root object
-		createContentRoot(contentUri);
-		
-		// Initialize the path where deposit records are stored
-		createContainer(RepositoryPathConstants.DEPOSIT_RECORD_BASE,
-				"Deposit Records");
-	}
-	
-	private URI createContainer(String id, String title) {
-		String containerString = URIUtil.join(repository.getBaseUri(), id);
-		URI containerUri = URI.create(containerString);
-		
-		// Abort initialization of already present container
-		if (objectExists(containerUri)) {
-			return containerUri;
-		}
-		
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(containerString);
-		resc.addProperty(DC.title, title);
-		
-		objFactory.createObject(containerUri, model);
-		
-		return containerUri;
-	}
-	
-	private URI createContentRoot(URI contentUri) {
-		String contentRootString = URIUtil.join(
-				contentUri, RepositoryPathConstants.CONTENT_ROOT_ID);
-		URI contentRootUri = URI.create(contentRootString);
+    private RepositoryObjectFactory objFactory;
 
-		// Don't initialize the object if it is already present.
-		if (objectExists(contentRootUri)) {
-			return contentRootUri;
-		}
-		
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(contentRootString);
-		resc.addProperty(DC.title, "Content Collections Root");
-		
-		
-		objFactory.createContentRootObject(contentRootUri, model);
-		
-		return contentRootUri;
-	}
+    private FcrepoClient fcrepoClient;
 
-	private boolean objectExists(URI uri) {
-		try (FcrepoResponse response = fcrepoClient.head(uri)
-				.perform()) {
-			return true;
-		} catch (IOException e) {
-			throw new FedoraException("Failed to close HEAD response for " + uri, e);
-		} catch (FcrepoOperationFailedException e) {
-			if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-				return false;
-			}
-			throw new FedoraException("Failed to check on object " + uri
-					+ " during initialization", e);
-		}
-	}
-	
-	public void setRepository(Repository repository) {
-		this.repository = repository;
-	}
+    public RepositoryInitializer() {
+    }
 
-	public void setObjFactory(RepositoryObjectFactory objFactory) {
-		this.objFactory = objFactory;
-	}
+    /**
+     * Initializes objects required for the base functionality of the repository
+     */
+    public void initializeRepository() {
+        // Initialize the content base container
+        URI contentUri = createContainer(RepositoryPathConstants.CONTENT_BASE,
+                "Content Tree");
 
-	public void setFcrepoClient(FcrepoClient fcrepoClient) {
-		this.fcrepoClient = fcrepoClient;
-	}
+        // Add the content tree root object
+        createContentRoot(contentUri);
+
+        // Initialize the path where deposit records are stored
+        createContainer(RepositoryPathConstants.DEPOSIT_RECORD_BASE,
+                "Deposit Records");
+    }
+
+    private URI createContainer(String id, String title) {
+        String containerString = URIUtil.join(repository.getBaseUri(), id);
+        URI containerUri = URI.create(containerString);
+
+        // Abort initialization of already present container
+        if (objectExists(containerUri)) {
+            return containerUri;
+        }
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(containerString);
+        resc.addProperty(DC.title, title);
+
+        objFactory.createObject(containerUri, model);
+
+        return containerUri;
+    }
+
+    private URI createContentRoot(URI contentUri) {
+        String contentRootString = URIUtil.join(
+                contentUri, RepositoryPathConstants.CONTENT_ROOT_ID);
+        URI contentRootUri = URI.create(contentRootString);
+
+        // Don't initialize the object if it is already present.
+        if (objectExists(contentRootUri)) {
+            return contentRootUri;
+        }
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(contentRootString);
+        resc.addProperty(DC.title, "Content Collections Root");
+
+
+        objFactory.createContentRootObject(contentRootUri, model);
+
+        return contentRootUri;
+    }
+
+    private boolean objectExists(URI uri) {
+        try (FcrepoResponse response = fcrepoClient.head(uri)
+                .perform()) {
+            return true;
+        } catch (IOException e) {
+            throw new FedoraException("Failed to close HEAD response for " + uri, e);
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+                return false;
+            }
+            throw new FedoraException("Failed to check on object " + uri
+                    + " during initialization", e);
+        }
+    }
+
+    public void setRepository(Repository repository) {
+        this.repository = repository;
+    }
+
+    public void setObjFactory(RepositoryObjectFactory objFactory) {
+        this.objFactory = objFactory;
+    }
+
+    public void setFcrepoClient(FcrepoClient fcrepoClient) {
+        this.fcrepoClient = fcrepoClient;
+    }
 }

@@ -23,21 +23,21 @@ import org.mockito.Mock;
 
 public class AbstractFedoraTest {
 
-	protected static final String FEDORA_BASE = "http://example.com/";
+    protected static final String FEDORA_BASE = "http://example.com/";
 
-	@Mock
-	protected RepositoryObjectDataLoader dataLoader;
-	@Mock
-	protected Repository repository;
+    @Mock
+    protected RepositoryObjectDataLoader dataLoader;
+    @Mock
+    protected Repository repository;
 
-	@Before
-	public void initBase() {
-		initMocks(this);
+    @Before
+    public void initBase() {
+        initMocks(this);
 
-		PIDs.setRepository(repository);
-		when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
+        PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
 
-		when(repository.getRepositoryObjectDataLoader()).thenReturn(dataLoader);
-	}
+        when(repository.getRepositoryObjectDataLoader()).thenReturn(dataLoader);
+    }
 
 }

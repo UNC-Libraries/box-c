@@ -24,36 +24,36 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 /**
  * Represents a collection within the repository. This is a second-level container to which
  * folders and works can be added.
- * 
+ *
  * @author harring
  *
  */
 public class CollectionObject extends ContentContainerObject {
 
-	protected CollectionObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    protected CollectionObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	@Override
-	public CollectionObject validateType() throws FedoraException {
-		if (!isType(Cdr.Collection.getURI())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a Collection.");
-		}
-		if (!isType(PcdmModels.Object.getURI())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a PCDM Object.");
-		}
-		return this;
-	}
-	
-	@Override
-	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-		if (!(member instanceof FolderObject || member instanceof WorkObject)) {
-			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
-					+ " as a member of WorkObject " + pid.getQualifiedId());
-		}
+    @Override
+    public CollectionObject validateType() throws FedoraException {
+        if (!isType(Cdr.Collection.getURI())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a Collection.");
+        }
+        if (!isType(PcdmModels.Object.getURI())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a PCDM Object.");
+        }
+        return this;
+    }
 
-		repository.addMember(this, member);
-		return this;
-	}
+    @Override
+    public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+        if (!(member instanceof FolderObject || member instanceof WorkObject)) {
+            throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
+                    + " as a member of WorkObject " + pid.getQualifiedId());
+        }
+
+        repository.addMember(this, member);
+        return this;
+    }
 
 }

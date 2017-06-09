@@ -38,158 +38,158 @@ import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class WorkObjectIT extends AbstractFedoraIT {
 
-	private PID pid;
+    private PID pid;
 
-	@Before
-	public void init() {
-		pid = repository.mintContentPid();
-	}
+    @Before
+    public void init() {
+        pid = repository.mintContentPid();
+    }
 
-	@Test
-	public void createWorkObjectTest() throws Exception {
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryPath());
-		resc.addProperty(DcElements.title, "Title");
+    @Test
+    public void createWorkObjectTest() throws Exception {
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(pid.getRepositoryPath());
+        resc.addProperty(DcElements.title, "Title");
 
-		WorkObject obj = repository.createWorkObject(pid, model);
+        WorkObject obj = repository.createWorkObject(pid, model);
 
-		assertTrue(obj.getTypes().contains(Cdr.Work.getURI()));
-		assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
+        assertTrue(obj.getTypes().contains(Cdr.Work.getURI()));
+        assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
 
-		assertEquals("Title", obj.getResource().getProperty(DcElements.title).getString());
-	}
+        assertEquals("Title", obj.getResource().getProperty(DcElements.title).getString());
+    }
 
-	@Test
-	public void addDataFileTest() throws Exception {
-		WorkObject obj = repository.createWorkObject(pid);
+    @Test
+    public void addDataFileTest() throws Exception {
+        WorkObject obj = repository.createWorkObject(pid);
 
-		String bodyString = "Content";
-		String filename = "file.txt";
-		String mimetype = "text/plain";
-		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        String bodyString = "Content";
+        String filename = "file.txt";
+        String mimetype = "text/plain";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		obj.addDataFile(filename, contentStream, mimetype, null);
+        obj.addDataFile(filename, contentStream, mimetype, null);
 
-		List<ContentObject> members = obj.getMembers();
-		assertEquals(1, members.size());
+        List<ContentObject> members = obj.getMembers();
+        assertEquals(1, members.size());
 
-		assertTrue(members.get(0) instanceof FileObject);
+        assertTrue(members.get(0) instanceof FileObject);
 
-		FileObject dataObj = (FileObject) members.get(0);
-		BinaryObject bObj = dataObj.getOriginalFile();
+        FileObject dataObj = (FileObject) members.get(0);
+        BinaryObject bObj = dataObj.getOriginalFile();
 
-		assertEquals(filename, bObj.getFilename());
-		assertEquals(mimetype, bObj.getMimetype());
+        assertEquals(filename, bObj.getFilename());
+        assertEquals(mimetype, bObj.getMimetype());
 
-		String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream()))
-				.lines().collect(Collectors.joining("\n"));
-		assertEquals("Original content did not match submitted value", bodyString, respString);
-	}
+        String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Original content did not match submitted value", bodyString, respString);
+    }
 
-	@Test
-	public void addPrimaryObjectAndSupplements() throws Exception {
-		WorkObject obj = repository.createWorkObject(pid);
+    @Test
+    public void addPrimaryObjectAndSupplements() throws Exception {
+        WorkObject obj = repository.createWorkObject(pid);
 
-		// Create the primary object
-		String bodyString = "Primary object";
-		String filename = "primary.txt";
-		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        // Create the primary object
+        String bodyString = "Primary object";
+        String filename = "primary.txt";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		FileObject primaryObj = obj.addDataFile(filename, contentStream, null, null);
-		// Set it as the primary object for our work
-		obj.setPrimaryObject(primaryObj.getPid());
+        FileObject primaryObj = obj.addDataFile(filename, contentStream, null, null);
+        // Set it as the primary object for our work
+        obj.setPrimaryObject(primaryObj.getPid());
 
-		// Create the supplemental object
-		String bodyStringS = "Supplement1";
-		String filenameS = "s1.txt";
-		InputStream contentStreamS = new ByteArrayInputStream(bodyStringS.getBytes());
+        // Create the supplemental object
+        String bodyStringS = "Supplement1";
+        String filenameS = "s1.txt";
+        InputStream contentStreamS = new ByteArrayInputStream(bodyStringS.getBytes());
 
-		FileObject supp = obj.addDataFile(filenameS, contentStreamS, null, null);
+        FileObject supp = obj.addDataFile(filenameS, contentStreamS, null, null);
 
-		// Retrieve the primary object and verify it
-		FileObject primaryResult = obj.getPrimaryObject();
-		assertEquals(primaryObj.getPid(), primaryResult.getPid());
+        // Retrieve the primary object and verify it
+        FileObject primaryResult = obj.getPrimaryObject();
+        assertEquals(primaryObj.getPid(), primaryResult.getPid());
 
-		BinaryObject primaryBinary = primaryResult.getOriginalFile();
-		assertEquals(filename, primaryBinary.getFilename());
+        BinaryObject primaryBinary = primaryResult.getOriginalFile();
+        assertEquals(filename, primaryBinary.getFilename());
 
-		String respString = new BufferedReader(new InputStreamReader(primaryBinary.getBinaryStream()))
-				.lines().collect(Collectors.joining("\n"));
-		assertEquals("Original content did not match submitted value", bodyString, respString);
+        String respString = new BufferedReader(new InputStreamReader(primaryBinary.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Original content did not match submitted value", bodyString, respString);
 
-		// Get all members of this work and verify everything is there
-		List<ContentObject> members = obj.getMembers();
-		assertEquals("Incorrect number of members assigned to work", 2, members.size());
+        // Get all members of this work and verify everything is there
+        List<ContentObject> members = obj.getMembers();
+        assertEquals("Incorrect number of members assigned to work", 2, members.size());
 
-		FileObject primaryMember = (FileObject) findContentObjectByPid(members, primaryObj.getPid());
-		assertNotNull("Primary object not found in members", primaryMember);
+        FileObject primaryMember = (FileObject) findContentObjectByPid(members, primaryObj.getPid());
+        assertNotNull("Primary object not found in members", primaryMember);
 
-		FileObject suppMember = (FileObject) findContentObjectByPid(members, supp.getPid());
-		BinaryObject suppFile = suppMember.getOriginalFile();
-		assertEquals(filenameS, suppFile.getFilename());
-	}
-	
-	@Test
-	public void addModsTest() throws Exception {
-		WorkObject obj = repository.createWorkObject(pid);
-		String bodyString = "some MODS content";
-		InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
-		FileObject fileObj = obj.addDescription(modsStream);
-		
-		assertObjectExists(obj.getMODS().getPid());
-		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
-		assertEquals(1, binObjs.size());
-		assertObjectExists(binObjs.get(0).getPid());
-		// make sure content is added to MODS
-		String respString = new BufferedReader(new InputStreamReader(binObjs.get(0).getBinaryStream()))
-				.lines().collect(Collectors.joining("\n"));
-		assertEquals("Original content did not match submitted value", bodyString, respString);
-	}
-	
-	@Test
-	public void addSourceMdTest() throws Exception {
-		WorkObject anotherObj = repository.createWorkObject(pid);
-		String sourceProfile = "some source md";
-		String sourceMdBodyString = "source md content";
-		String modsBodyString = "MODS content";
-		InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
-		InputStream modsStream = new ByteArrayInputStream(modsBodyString.getBytes());
-		FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream);
-		// tests that getDescription returns FileObject containing source md and mods
-		assertObjectExists(anotherObj.getDescription().getPid());
-		assertNotNull(anotherObj.getMODS());
-		List<BinaryObject> binObjs = fileObj.getBinaryObjects();
-		assertEquals(2, binObjs.size());
-		
-		BinaryObject b0 = binObjs.get(0);
-		BinaryObject b1 = binObjs.get(1);
-		PID pid0 = b0.getPid();
-		PID pid1 = b1.getPid();
-		// tests that mods and source md binaries were created
-		assertObjectExists(pid0);
-		assertObjectExists(pid1);
-		// make sure content is added to source md and mods binaries
-		if (pid0.equals((anotherObj.getMODS().getPid()))) {
-			verifyContent(b1, b0, sourceMdBodyString, modsBodyString);
-		} else {
-			verifyContent(b0, b1, sourceMdBodyString, modsBodyString);
-		}
-	}
-	
-	private void verifyContent(BinaryObject sourceMdBin, BinaryObject modsBin,
-			String sourceMdBodyString, String modsBodyString) {
-		String sourceMdRespString = new BufferedReader(new InputStreamReader(sourceMdBin.getBinaryStream()))
-				.lines().collect(Collectors.joining("\n"));
-		assertEquals("Original content did not match submitted value", sourceMdBodyString, sourceMdRespString);
-		
-		String modsRespString = new BufferedReader(new InputStreamReader(modsBin.getBinaryStream()))
-				.lines().collect(Collectors.joining("\n"));
-		assertEquals("Original content did not match submitted value", modsBodyString, modsRespString);
-	}
+        FileObject suppMember = (FileObject) findContentObjectByPid(members, supp.getPid());
+        BinaryObject suppFile = suppMember.getOriginalFile();
+        assertEquals(filenameS, suppFile.getFilename());
+    }
+
+    @Test
+    public void addModsTest() throws Exception {
+        WorkObject obj = repository.createWorkObject(pid);
+        String bodyString = "some MODS content";
+        InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
+        FileObject fileObj = obj.addDescription(modsStream);
+
+        assertObjectExists(obj.getMODS().getPid());
+        List<BinaryObject> binObjs = fileObj.getBinaryObjects();
+        assertEquals(1, binObjs.size());
+        assertObjectExists(binObjs.get(0).getPid());
+        // make sure content is added to MODS
+        String respString = new BufferedReader(new InputStreamReader(binObjs.get(0).getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Original content did not match submitted value", bodyString, respString);
+    }
+
+    @Test
+    public void addSourceMdTest() throws Exception {
+        WorkObject anotherObj = repository.createWorkObject(pid);
+        String sourceProfile = "some source md";
+        String sourceMdBodyString = "source md content";
+        String modsBodyString = "MODS content";
+        InputStream sourceMdStream = new ByteArrayInputStream(sourceMdBodyString.getBytes());
+        InputStream modsStream = new ByteArrayInputStream(modsBodyString.getBytes());
+        FileObject fileObj = anotherObj.addDescription(sourceMdStream, sourceProfile, modsStream);
+        // tests that getDescription returns FileObject containing source md and mods
+        assertObjectExists(anotherObj.getDescription().getPid());
+        assertNotNull(anotherObj.getMODS());
+        List<BinaryObject> binObjs = fileObj.getBinaryObjects();
+        assertEquals(2, binObjs.size());
+
+        BinaryObject b0 = binObjs.get(0);
+        BinaryObject b1 = binObjs.get(1);
+        PID pid0 = b0.getPid();
+        PID pid1 = b1.getPid();
+        // tests that mods and source md binaries were created
+        assertObjectExists(pid0);
+        assertObjectExists(pid1);
+        // make sure content is added to source md and mods binaries
+        if (pid0.equals((anotherObj.getMODS().getPid()))) {
+            verifyContent(b1, b0, sourceMdBodyString, modsBodyString);
+        } else {
+            verifyContent(b0, b1, sourceMdBodyString, modsBodyString);
+        }
+    }
+
+    private void verifyContent(BinaryObject sourceMdBin, BinaryObject modsBin,
+            String sourceMdBodyString, String modsBodyString) {
+        String sourceMdRespString = new BufferedReader(new InputStreamReader(sourceMdBin.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Original content did not match submitted value", sourceMdBodyString, sourceMdRespString);
+
+        String modsRespString = new BufferedReader(new InputStreamReader(modsBin.getBinaryStream()))
+                .lines().collect(Collectors.joining("\n"));
+        assertEquals("Original content did not match submitted value", modsBodyString, modsRespString);
+    }
 }

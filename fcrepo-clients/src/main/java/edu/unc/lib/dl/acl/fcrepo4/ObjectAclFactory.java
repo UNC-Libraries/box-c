@@ -49,167 +49,167 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 /**
  * Factory which provides access control details which are directly represented
  * on objects, but does not take into account inheritance.
- * 
+ *
  * @author bbpennel
  *
  */
 public class ObjectAclFactory implements AclFactory {
 
-	private static final Logger log = LoggerFactory.getLogger(ObjectAclFactory.class);
+    private static final Logger log = LoggerFactory.getLogger(ObjectAclFactory.class);
 
-	private LoadingCache<String, List<Entry<String, String>>> objAclCache;
-	private long cacheTimeToLive;
-	private long cacheMaxSize;
+    private LoadingCache<String, List<Entry<String, String>>> objAclCache;
+    private long cacheTimeToLive;
+    private long cacheMaxSize;
 
-	private SparqlQueryService queryService;
+    private SparqlQueryService queryService;
 
-	private final List<String> roleUris;
+    private final List<String> roleUris;
 
-	public ObjectAclFactory() {
-		List<String> roleUris = new ArrayList<>(UserRole.values().length);
+    public ObjectAclFactory() {
+        List<String> roleUris = new ArrayList<>(UserRole.values().length);
 
-		for (UserRole role : UserRole.values()) {
-			roleUris.add(role.getPropertyString());
-		}
+        for (UserRole role : UserRole.values()) {
+            roleUris.add(role.getPropertyString());
+        }
 
-		this.roleUris = Collections.unmodifiableList(roleUris);
-	}
+        this.roleUris = Collections.unmodifiableList(roleUris);
+    }
 
-	public void init() {
-		objAclCache = CacheBuilder.newBuilder()
-				.maximumSize(cacheMaxSize)
-				.expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
-				.build(new ObjectAclCacheLoader());
-	}
+    public void init() {
+        objAclCache = CacheBuilder.newBuilder()
+                .maximumSize(cacheMaxSize)
+                .expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
+                .build(new ObjectAclCacheLoader());
+    }
 
-	@Override
-	public Map<String, Set<String>> getPrincipalRoles(PID pid) {
+    @Override
+    public Map<String, Set<String>> getPrincipalRoles(PID pid) {
 
-		Map<String, Set<String>> result = getObjectAcls(pid).stream()
-				// Filter to only role assignments
-				.filter(p -> roleUris.contains(p.getKey()))
-				// Group up roles by principal
-				.collect(Collectors.groupingBy(
-						Entry<String, String>::getValue,
-						Collectors.mapping(Entry<String, String>::getKey, Collectors.toSet())
-					));
+        Map<String, Set<String>> result = getObjectAcls(pid).stream()
+                // Filter to only role assignments
+                .filter(p -> roleUris.contains(p.getKey()))
+                // Group up roles by principal
+                .collect(Collectors.groupingBy(
+                        Entry<String, String>::getValue,
+                        Collectors.mapping(Entry<String, String>::getKey, Collectors.toSet())
+                    ));
 
-		return result;
-	}
+        return result;
+    }
 
-	@Override
-	public PatronAccess getPatronAccess(PID pid) {
+    @Override
+    public PatronAccess getPatronAccess(PID pid) {
 
-		String patronPropertyUri = CdrAcl.patronAccess.getURI();
-		return getObjectAcls(pid).stream()
-				.filter(p -> patronPropertyUri.equals(p.getKey()))
-				.findFirst()
-				.map(p -> PatronAccess.valueOf(p.getValue()))
-				.orElse(PatronAccess.parent);
-	}
+        String patronPropertyUri = CdrAcl.patronAccess.getURI();
+        return getObjectAcls(pid).stream()
+                .filter(p -> patronPropertyUri.equals(p.getKey()))
+                .findFirst()
+                .map(p -> PatronAccess.valueOf(p.getValue()))
+                .orElse(PatronAccess.parent);
+    }
 
-	@Override
-	public Date getEmbargoUntil(PID pid) {
+    @Override
+    public Date getEmbargoUntil(PID pid) {
 
-		String embargoPropertyUri = CdrAcl.embargoUntil.getURI();
-		return getObjectAcls(pid).stream()
-				.filter(p -> embargoPropertyUri.equals(p.getKey()))
-				.findFirst()
-				.map(p -> {
-					try {
-						return DateTimeUtil.parseUTCToDate(p.getValue());
-					} catch (IllegalArgumentException | ParseException e) {
-						log.warn("Failed to parse embargo {} for {} while retrieving ACLs",
-								new Object[] {p.getValue(), pid}, e);
-						return null;
-					}
-				})
-				.orElse(null);
-	}
+        String embargoPropertyUri = CdrAcl.embargoUntil.getURI();
+        return getObjectAcls(pid).stream()
+                .filter(p -> embargoPropertyUri.equals(p.getKey()))
+                .findFirst()
+                .map(p -> {
+                    try {
+                        return DateTimeUtil.parseUTCToDate(p.getValue());
+                    } catch (IllegalArgumentException | ParseException e) {
+                        log.warn("Failed to parse embargo {} for {} while retrieving ACLs",
+                                new Object[] {p.getValue(), pid}, e);
+                        return null;
+                    }
+                })
+                .orElse(null);
+    }
 
-	@Override
-	public boolean isMarkedForDeletion(PID pid) {
+    @Override
+    public boolean isMarkedForDeletion(PID pid) {
 
-		String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
-		return getObjectAcls(pid).stream()
-				.filter(p -> deletedPropertyUri.equals(p.getKey()))
-				.findFirst()
-				.isPresent();
-	}
+        String deletedPropertyUri = CdrAcl.markedForDeletion.getURI();
+        return getObjectAcls(pid).stream()
+                .filter(p -> deletedPropertyUri.equals(p.getKey()))
+                .findFirst()
+                .isPresent();
+    }
 
-	private List<Entry<String, String>> getObjectAcls(PID pid) {
-		String pidString = pid.getRepositoryPath();
-		return objAclCache.getUnchecked(pidString);
-	}
+    private List<Entry<String, String>> getObjectAcls(PID pid) {
+        String pidString = pid.getRepositoryPath();
+        return objAclCache.getUnchecked(pidString);
+    }
 
-	public long getCacheTimeToLive() {
-		return cacheTimeToLive;
-	}
+    public long getCacheTimeToLive() {
+        return cacheTimeToLive;
+    }
 
-	public void setCacheTimeToLive(long cacheTimeToLive) {
-		this.cacheTimeToLive = cacheTimeToLive;
-	}
+    public void setCacheTimeToLive(long cacheTimeToLive) {
+        this.cacheTimeToLive = cacheTimeToLive;
+    }
 
-	public long getCacheMaxSize() {
-		return cacheMaxSize;
-	}
+    public long getCacheMaxSize() {
+        return cacheMaxSize;
+    }
 
-	public void setCacheMaxSize(long cacheMaxSize) {
-		this.cacheMaxSize = cacheMaxSize;
-	}
+    public void setCacheMaxSize(long cacheMaxSize) {
+        this.cacheMaxSize = cacheMaxSize;
+    }
 
-	public SparqlQueryService getQueryService() {
-		return queryService;
-	}
+    public SparqlQueryService getQueryService() {
+        return queryService;
+    }
 
-	public void setQueryService(SparqlQueryService queryService) {
-		this.queryService = queryService;
-	}
+    public void setQueryService(SparqlQueryService queryService) {
+        this.queryService = queryService;
+    }
 
-	/**
-	 * Loader for cache of ACL information about individual objects. Retrieves
-	 * ACL properties from a SPARQL endpoint which are directly present on
-	 * objects
-	 * 
-	 * @author bbpennel
-	 *
-	 */
-	private class ObjectAclCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
-		
-		private static final String ACL_QUERY = "SELECT ?pred ?obj"
-				+ " WHERE { <%1$s> ?pred ?obj ."
-				+ "   filter(strstarts(str(?pred), \"http://cdr.unc.edu/definitions/acl#\")) . }";
+    /**
+     * Loader for cache of ACL information about individual objects. Retrieves
+     * ACL properties from a SPARQL endpoint which are directly present on
+     * objects
+     *
+     * @author bbpennel
+     *
+     */
+    private class ObjectAclCacheLoader extends CacheLoader<String, List<Entry<String, String>>> {
 
-		public List<Entry<String, String>> load(String key) {
+        private static final String ACL_QUERY = "SELECT ?pred ?obj"
+                + " WHERE { <%1$s> ?pred ?obj ."
+                + "   filter(strstarts(str(?pred), \"http://cdr.unc.edu/definitions/acl#\")) . }";
 
-			String query = String.format(ACL_QUERY, key);
+        public List<Entry<String, String>> load(String key) {
 
-			try (QueryExecution qExecution = queryService.executeQuery(query)) {
-				ResultSet resultSet = qExecution.execSelect();
-				List<Entry<String, String>> valueResults = new ArrayList<>();
+            String query = String.format(ACL_QUERY, key);
 
-				// Read all results into a list of predicate object pairs
-				for (; resultSet.hasNext() ;) {
-					QuerySolution soln = resultSet.nextSolution();
-					Resource predicateRes = soln.getResource("pred");
-					RDFNode valueNode = soln.get("obj");
+            try (QueryExecution qExecution = queryService.executeQuery(query)) {
+                ResultSet resultSet = qExecution.execSelect();
+                List<Entry<String, String>> valueResults = new ArrayList<>();
 
-					if (predicateRes != null && valueNode != null) {
-						String predicateString = predicateRes.getURI();
-						String valueString;
-						if (valueNode.isLiteral()) {
-							valueString = valueNode.asLiteral().getLexicalForm();
-						} else {
-							valueString = valueNode.asResource().getURI();
-						}
+                // Read all results into a list of predicate object pairs
+                for (; resultSet.hasNext() ;) {
+                    QuerySolution soln = resultSet.nextSolution();
+                    Resource predicateRes = soln.getResource("pred");
+                    RDFNode valueNode = soln.get("obj");
 
-						valueResults.add(new SimpleEntry<String, String>
-								(predicateString, valueString));
-					}
-				}
+                    if (predicateRes != null && valueNode != null) {
+                        String predicateString = predicateRes.getURI();
+                        String valueString;
+                        if (valueNode.isLiteral()) {
+                            valueString = valueNode.asLiteral().getLexicalForm();
+                        } else {
+                            valueString = valueNode.asResource().getURI();
+                        }
 
-				return valueResults;
-			}
-		}
-	}
+                        valueResults.add(new SimpleEntry<String, String>
+                                (predicateString, valueString));
+                    }
+                }
+
+                return valueResults;
+            }
+        }
+    }
 }

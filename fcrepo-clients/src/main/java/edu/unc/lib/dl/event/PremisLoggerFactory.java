@@ -23,18 +23,18 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * A factory class for creating PremisLogger instances
- * 
+ *
  * @author harring
  */
 
 public class PremisLoggerFactory {
-	
-	public PremisLogger createPremisLogger(PID pid, File file, Repository repository) {
-		return new FilePremisLogger(pid, file, repository);
-	}
-	
-	public PremisLogger createPremisLogger(RepositoryObject repoObject, Repository repository) {
-		return new RepositoryPremisLogger(repoObject, repository);
-	}
+
+    public PremisLogger createPremisLogger(PID pid, File file, Repository repository) {
+        return new FilePremisLogger(pid, file, repository);
+    }
+
+    public PremisLogger createPremisLogger(RepositoryObject repoObject, Repository repository) {
+        return new RepositoryPremisLogger(repoObject, repository);
+    }
 
 }

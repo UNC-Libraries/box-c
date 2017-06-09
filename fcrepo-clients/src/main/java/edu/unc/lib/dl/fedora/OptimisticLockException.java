@@ -21,10 +21,10 @@ package edu.unc.lib.dl.fedora;
  */
 public class OptimisticLockException extends FedoraException {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public OptimisticLockException(String message) {
-		super(message);
-	}
+    public OptimisticLockException(String message) {
+        super(message);
+    }
 
 }

@@ -37,81 +37,81 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 /**
- * 
- * 
+ *
+ *
  * @author harring
  */
 public class AdminUnitTest extends AbstractFedoraTest {
-	
-	private PID pid;
-	private AdminUnit unit;
-	
-	private PID collectionChildPid;
-	
-	@Mock
-	private CollectionObject collectionChildObj;
-	@Mock
-	private WorkObject workChildObj;
 
-	@Before
-	public void init() {
-		initMocks(this);
+    private PID pid;
+    private AdminUnit unit;
 
-		pid = PIDs.get(UUID.randomUUID().toString());
+    private PID collectionChildPid;
 
-		unit = new AdminUnit(pid, repository, dataLoader);
+    @Mock
+    private CollectionObject collectionChildObj;
+    @Mock
+    private WorkObject workChildObj;
 
-		collectionChildPid = PIDs.get(UUID.randomUUID().toString());
-		when(collectionChildObj.getPid()).thenReturn(collectionChildPid);
+    @Before
+    public void init() {
+        initMocks(this);
 
-	}
+        pid = PIDs.get(UUID.randomUUID().toString());
 
-	@Test
-	public void isValidTypeTest() {
-		// Return the correct RDF types
-		List<String> types = Arrays.asList(PcdmModels.Collection.getURI(), Cdr.AdminUnit.getURI());
-		when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-			@Override
-			public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-				unit.setTypes(types);
-				return dataLoader;
-			}
-		});
+        unit = new AdminUnit(pid, repository, dataLoader);
 
-		unit.validateType();
-	}
-	
-	@Test(expected = ObjectTypeMismatchException.class)
-	public void invalidTypeTest() {
-		List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
-		when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-			@Override
-			public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-				unit.setTypes(types);
-				return dataLoader;
-			}
-		});
+        collectionChildPid = PIDs.get(UUID.randomUUID().toString());
+        when(collectionChildObj.getPid()).thenReturn(collectionChildPid);
 
-		unit.validateType();
-	}
-	
-	// should not be able to add a Work object as a member of AdminUnit
-	@Test(expected = ObjectTypeMismatchException.class)
-	public void addWorkMemberTest() {
-		unit.addMember(workChildObj);
-	}
+    }
 
-	@Test
-	public void addCollectionObjectMemberTest() {
-		unit.addMember(collectionChildObj);
-		repository.mintContentPid();
+    @Test
+    public void isValidTypeTest() {
+        // Return the correct RDF types
+        List<String> types = Arrays.asList(PcdmModels.Collection.getURI(), Cdr.AdminUnit.getURI());
+        when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+            @Override
+            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+                unit.setTypes(types);
+                return dataLoader;
+            }
+        });
 
-		ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-		verify(repository).addMember(eq(unit), captor.capture());
+        unit.validateType();
+    }
 
-		ContentObject child = captor.getValue();
-		assertTrue("Incorrect type of child added", child instanceof CollectionObject);
-		assertEquals("Child did not have the expected pid", collectionChildPid, child.getPid());
-	}
+    @Test(expected = ObjectTypeMismatchException.class)
+    public void invalidTypeTest() {
+        List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
+        when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+            @Override
+            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+                unit.setTypes(types);
+                return dataLoader;
+            }
+        });
+
+        unit.validateType();
+    }
+
+    // should not be able to add a Work object as a member of AdminUnit
+    @Test(expected = ObjectTypeMismatchException.class)
+    public void addWorkMemberTest() {
+        unit.addMember(workChildObj);
+    }
+
+    @Test
+    public void addCollectionObjectMemberTest() {
+        unit.addMember(collectionChildObj);
+        repository.mintContentPid();
+
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
+        verify(repository).addMember(eq(unit), captor.capture());
+
+        ContentObject child = captor.getValue();
+        assertTrue("Incorrect type of child added", child instanceof CollectionObject);
+        assertEquals("Child did not have the expected pid", collectionChildPid, child.getPid());
+    }
 
 }

@@ -37,125 +37,125 @@ import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class ContentPathFactoryTest {
 
-	private static final long CACHE_TIME_TO_LIVE = 100l;
-	private static final long CACHE_MAX_SIZE = 5;
-	private static final String FEDORA_BASE = "http://example.com/rest/";
+    private static final long CACHE_TIME_TO_LIVE = 100l;
+    private static final long CACHE_MAX_SIZE = 5;
+    private static final String FEDORA_BASE = "http://example.com/rest/";
 
-	private ContentPathFactory pathFactory;
+    private ContentPathFactory pathFactory;
 
-	private SparqlQueryService queryService;
+    private SparqlQueryService queryService;
 
-	private Model model;
+    private Model model;
 
-	private PID collectionsPid;
+    private PID collectionsPid;
 
-	@Mock
-	private Repository repository;
+    @Mock
+    private Repository repository;
 
-	@Before
-	public void init() {
-		initMocks(this);
+    @Before
+    public void init() {
+        initMocks(this);
 
-		PIDs.setRepository(repository);
-		when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
+        PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
 
-		model = ModelFactory.createDefaultModel();
+        model = ModelFactory.createDefaultModel();
 
-		queryService = new JenaSparqlQueryServiceImpl(model);
+        queryService = new JenaSparqlQueryServiceImpl(model);
 
-		pathFactory = new ContentPathFactory();
-		pathFactory.setQueryService(queryService);
-		pathFactory.setCacheMaxSize(CACHE_MAX_SIZE);
-		pathFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
-		pathFactory.init();
+        pathFactory = new ContentPathFactory();
+        pathFactory.setQueryService(queryService);
+        pathFactory.setCacheMaxSize(CACHE_MAX_SIZE);
+        pathFactory.setCacheTimeToLive(CACHE_TIME_TO_LIVE);
+        pathFactory.init();
 
-		collectionsPid = makePid("collections");
-		model.getResource(collectionsPid.getRepositoryPath());
-	}
+        collectionsPid = makePid("collections");
+        model.getResource(collectionsPid.getRepositoryPath());
+    }
 
-	@Test
-	public void getAncestorPidsTest() throws Exception {
-		PID unitPid = addChild(collectionsPid);
-		PID collPid = addChild(unitPid);
+    @Test
+    public void getAncestorPidsTest() throws Exception {
+        PID unitPid = addChild(collectionsPid);
+        PID collPid = addChild(unitPid);
 
-		List<PID> ancestors = pathFactory.getAncestorPids(collPid);
+        List<PID> ancestors = pathFactory.getAncestorPids(collPid);
 
-		assertEquals("Incorrect number of ancestors", 2, ancestors.size());
-		assertEquals(collectionsPid, ancestors.get(0));
-		assertEquals(unitPid, ancestors.get(1));
-	}
+        assertEquals("Incorrect number of ancestors", 2, ancestors.size());
+        assertEquals(collectionsPid, ancestors.get(0));
+        assertEquals(unitPid, ancestors.get(1));
+    }
 
-	@Test
-	public void getFileAncestorsTest() throws Exception {
-		PID unitPid = addChild(collectionsPid);
-		PID collPid = addChild(unitPid);
-		PID workPid = addChild(collPid);
-		PID fileObjPid = addChild(workPid);
-		PID filePid = addFile(fileObjPid);
+    @Test
+    public void getFileAncestorsTest() throws Exception {
+        PID unitPid = addChild(collectionsPid);
+        PID collPid = addChild(unitPid);
+        PID workPid = addChild(collPid);
+        PID fileObjPid = addChild(workPid);
+        PID filePid = addFile(fileObjPid);
 
-		List<PID> ancestors = pathFactory.getAncestorPids(filePid);
+        List<PID> ancestors = pathFactory.getAncestorPids(filePid);
 
-		assertEquals("Incorrect number of ancestors", 5, ancestors.size());
-		assertEquals(collectionsPid, ancestors.get(0));
-		assertEquals(fileObjPid, ancestors.get(4));
-	}
+        assertEquals("Incorrect number of ancestors", 5, ancestors.size());
+        assertEquals(collectionsPid, ancestors.get(0));
+        assertEquals(fileObjPid, ancestors.get(4));
+    }
 
-	@Test
-	public void getCachedAncestorPidsTest() throws Exception {
-		PID unitPid = addChild(collectionsPid);
-		PID collPid = addChild(unitPid);
+    @Test
+    public void getCachedAncestorPidsTest() throws Exception {
+        PID unitPid = addChild(collectionsPid);
+        PID collPid = addChild(unitPid);
 
-		List<PID> ancestors = pathFactory.getAncestorPids(collPid);
+        List<PID> ancestors = pathFactory.getAncestorPids(collPid);
 
-		// Switch ownership of coll to a new unit
-		PID unit2Pid = addChild(collectionsPid);
-		model.remove(model.getResource(unitPid.getRepositoryPath()),
-				PcdmModels.hasMember, model.getResource(collPid.getRepositoryPath()));
-		model.getResource(unit2Pid.getRepositoryPath())
-				.addProperty(PcdmModels.hasMember, model.getResource(collPid.getRepositoryPath()));
+        // Switch ownership of coll to a new unit
+        PID unit2Pid = addChild(collectionsPid);
+        model.remove(model.getResource(unitPid.getRepositoryPath()),
+                PcdmModels.hasMember, model.getResource(collPid.getRepositoryPath()));
+        model.getResource(unit2Pid.getRepositoryPath())
+                .addProperty(PcdmModels.hasMember, model.getResource(collPid.getRepositoryPath()));
 
-		assertEquals("Incorrect number of ancestors", 2, ancestors.size());
-		assertEquals(collectionsPid, ancestors.get(0));
-		assertEquals(unitPid, ancestors.get(1));
+        assertEquals("Incorrect number of ancestors", 2, ancestors.size());
+        assertEquals(collectionsPid, ancestors.get(0));
+        assertEquals(unitPid, ancestors.get(1));
 
-		// Wait for cache to expire and then check that the new path is retrieved
-		TimeUnit.MILLISECONDS.sleep(CACHE_TIME_TO_LIVE * 2);
+        // Wait for cache to expire and then check that the new path is retrieved
+        TimeUnit.MILLISECONDS.sleep(CACHE_TIME_TO_LIVE * 2);
 
-		ancestors = pathFactory.getAncestorPids(collPid);
-		assertEquals("Incorrect number of ancestors", 2, ancestors.size());
-		assertEquals(collectionsPid, ancestors.get(0));
-		assertEquals("Ancestors did not update to new unit", unit2Pid, ancestors.get(1));
-	}
+        ancestors = pathFactory.getAncestorPids(collPid);
+        assertEquals("Incorrect number of ancestors", 2, ancestors.size());
+        assertEquals(collectionsPid, ancestors.get(0));
+        assertEquals("Ancestors did not update to new unit", unit2Pid, ancestors.get(1));
+    }
 
-	private PID addChild(PID parentPid) {
-		PID childPid = makePid();
-		Resource childResc = model.getResource(childPid.getRepositoryPath());
-		model.getResource(parentPid.getRepositoryPath())
-				.addProperty(PcdmModels.hasMember, childResc);
+    private PID addChild(PID parentPid) {
+        PID childPid = makePid();
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        model.getResource(parentPid.getRepositoryPath())
+                .addProperty(PcdmModels.hasMember, childResc);
 
-		return childPid;
-	}
+        return childPid;
+    }
 
-	private PID addFile(PID parentPid) {
-		PID childPid = makePid();
-		Resource childResc = model.getResource(childPid.getRepositoryPath());
-		model.getResource(parentPid.getRepositoryPath())
-				.addProperty(PcdmModels.hasFile, childResc);
+    private PID addFile(PID parentPid) {
+        PID childPid = makePid();
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        model.getResource(parentPid.getRepositoryPath())
+                .addProperty(PcdmModels.hasFile, childResc);
 
-		return childPid;
-	}
+        return childPid;
+    }
 
-	private PID makePid() {
-		return makePid(UUID.randomUUID().toString());
-	}
+    private PID makePid() {
+        return makePid(UUID.randomUUID().toString());
+    }
 
-	private PID makePid(String id) {
-		return PIDs.get(id);
-	}
+    private PID makePid(String id) {
+        return PIDs.get(id);
+    }
 }

@@ -23,35 +23,35 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
  * Represents the highest-level container in the repository.
- * 
+ *
  * @author harring
  *
  */
 public class AdminUnit extends ContentContainerObject {
 
-	protected AdminUnit(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    protected AdminUnit(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	@Override
-	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-		if (!(member instanceof CollectionObject)) {
-			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
-					+ " as a member of AdminUnit " + pid.getQualifiedId());
-		}
-		repository.addMember(this, member);
-		return this;
-	}
+    @Override
+    public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+        if (!(member instanceof CollectionObject)) {
+            throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
+                    + " as a member of AdminUnit " + pid.getQualifiedId());
+        }
+        repository.addMember(this, member);
+        return this;
+    }
 
-	@Override
-	public AdminUnit validateType() throws FedoraException {
-		if (!isType(Cdr.AdminUnit.getURI())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not an AdminUnit.");
-		}
-		if (!isType(PcdmModels.Collection.getURI())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a PCDM Collection.");
-		}
-		return this;
-	}
+    @Override
+    public AdminUnit validateType() throws FedoraException {
+        if (!isType(Cdr.AdminUnit.getURI())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not an AdminUnit.");
+        }
+        if (!isType(PcdmModels.Collection.getURI())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a PCDM Collection.");
+        }
+        return this;
+    }
 
 }

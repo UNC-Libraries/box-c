@@ -70,8 +70,9 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
     }
 
     /**
-     * Constructs a new ObjectAccessControlsBean object from a collection of pipe delimited role uri/group pairings,
-     * representing all role/group relationships assigned to this object
+     * Constructs a new ObjectAccessControlsBean object from a collection of
+     * pipe delimited role uri/group pairings, representing all role/group
+     * relationships assigned to this object
      *
      * @param pid
      * @param roleGroups
@@ -132,15 +133,16 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
     }
 
     /**
-     * Construct a new access control bean by applying triples from an item on top of an existing access control bean as
-     * if it were the parent for the new object
+     * Construct a new access control bean by applying triples from an item on
+     * top of an existing access control bean as if it were the parent for the
+     * new object
      *
      * @param baseAcls
-     *           parent objects access control information
+     *            parent objects access control information
      * @param pid
-     *           pid of the new object
+     *            pid of the new object
      * @param triples
-     *           map of triples containing the access control of the new object
+     *            map of triples containing the access control of the new object
      */
     public ObjectAccessControlsBeanImpl(ObjectAccessControlsBean baseAclsG, PID pid,
             Map<String, List<String>> triples) {
@@ -239,8 +241,9 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
     }
 
     /**
-     * Generates a new role/group mapping by filtering out role mappings that do not have administrative viewing rights.
-     * This is based on if there are any active embargoes, the object is unpublished or not active.
+     * Generates a new role/group mapping by filtering out role mappings that do
+     * not have administrative viewing rights. This is based on if there are any
+     * active embargoes, the object is unpublished or not active.
      *
      * @return
      */
@@ -406,11 +409,13 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
     }
 
     /**
-     * Determines if this access object contains roles matching any of the groups in the supplied access group set
+     * Determines if this access object contains roles matching any of the
+     * groups in the supplied access group set
      *
      * @param groups
-     *           group membershps
-     * @return true if any of the groups are associated with a role for this object
+     *            group membershps
+     * @return true if any of the groups are associated with a role for this
+     *         object
      */
     public boolean containsAny(AccessGroupSet groups) {
         Map<UserRole, Set<String>> roleGroups = this.activeRoleGroups;
@@ -512,8 +517,8 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
     }
 
     /**
-     * Returns a list where each entry contains a single role uri + group pairing assigned to this object. Values are
-     * pipe delimited
+     * Returns a list where each entry contains a single role uri + group
+     * pairing assigned to this object. Values are pipe delimited
      *
      * @return
      */
@@ -529,8 +534,8 @@ public class ObjectAccessControlsBeanImpl implements ObjectAccessControlsBean {
     }
 
     /**
-     * Returns a list where each entry contains a single role name + group pairing assigned to this object. Values are
-     * pipe delimited
+     * Returns a list where each entry contains a single role name + group
+     * pairing assigned to this object. Values are pipe delimited
      * 
      * @return
      */

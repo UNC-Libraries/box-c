@@ -37,51 +37,52 @@ import org.slf4j.LoggerFactory;
  */
 public class JobForwardingJMSListener implements MessageListener {
 
-	private static final Logger log = LoggerFactory.getLogger(JobForwardingJMSListener.class);
+    private static final Logger log = LoggerFactory.getLogger(JobForwardingJMSListener.class);
 
-	private final List<ListenerJob> listenerJobs;
+    private final List<ListenerJob> listenerJobs;
 
-	public JobForwardingJMSListener() {
-		// This construct is particularly suited for large ingests, where the list of listeners changes slowly.
-		listenerJobs = new CopyOnWriteArrayList<ListenerJob>();
-	}
+    public JobForwardingJMSListener() {
+        // This construct is particularly suited for large ingests, where the list of listeners changes slowly.
+        listenerJobs = new CopyOnWriteArrayList<ListenerJob>();
+    }
 
-	public void registerListener(ListenerJob listener) {
-		listenerJobs.add(listener);
-	}
+    public void registerListener(ListenerJob listener) {
+        listenerJobs.add(listener);
+    }
 
-	public void unregisterListener(ListenerJob listener) {
-		listenerJobs.remove(listener);
-	}
+    public void unregisterListener(ListenerJob listener) {
+        listenerJobs.remove(listener);
+    }
 
-	@Override
-	public void onMessage(Message message) {
+    @Override
+    public void onMessage(Message message) {
 
-		log.debug("Received message");
+        log.debug("Received message");
 
-		// If no jobs are listening, ignore the message
-		if (listenerJobs.size() == 0)
-			return;
+        // If no jobs are listening, ignore the message
+        if (listenerJobs.size() == 0) {
+            return;
+        }
 
-		if (message instanceof TextMessage) {
-			try {
-				TextMessage msg = (TextMessage) message;
+        if (message instanceof TextMessage) {
+            try {
+                TextMessage msg = (TextMessage) message;
 
-				String messageBody = msg.getText();
-				Document msgDoc = new SAXBuilder().build(new StringReader(messageBody));
+                String messageBody = msg.getText();
+                Document msgDoc = new SAXBuilder().build(new StringReader(messageBody));
 
-				log.debug("Message contents:\n{}", messageBody);
+                log.debug("Message contents:\n{}", messageBody);
 
-				// This does not need to be synchronized because it is using CopyOnWriteArrayList
-				for (ListenerJob listener : listenerJobs) {
-					listener.onEvent(msgDoc);
-				}
+                // This does not need to be synchronized because it is using CopyOnWriteArrayList
+                for (ListenerJob listener : listenerJobs) {
+                    listener.onEvent(msgDoc);
+                }
 
-			} catch (Exception e) {
-				log.error("onMessage failed", e);
-			}
-		} else {
-			throw new IllegalArgumentException("Message must be of type TextMessage");
-		}
-	}
+            } catch (Exception e) {
+                log.error("onMessage failed", e);
+            }
+        } else {
+            throw new IllegalArgumentException("Message must be of type TextMessage");
+        }
+    }
 }

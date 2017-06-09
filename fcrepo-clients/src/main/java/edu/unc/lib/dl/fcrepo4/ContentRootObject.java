@@ -23,33 +23,33 @@ import edu.unc.lib.dl.rdf.Cdr;
 /**
  * A repository object which represents the root of the content tree. Can only
  * contain AdminUnit objects as direct children.
- * 
+ *
  * @author bbpennel
  *
  */
 public class ContentRootObject extends ContentContainerObject {
 
-	protected ContentRootObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    protected ContentRootObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	@Override
-	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-		if (!(member instanceof FolderObject)) {
-			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
-					+ " as a member of ContentRootObject " + pid.getQualifiedId());
-		}
+    @Override
+    public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+        if (!(member instanceof FolderObject)) {
+            throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
+                    + " as a member of ContentRootObject " + pid.getQualifiedId());
+        }
 
-		repository.addMember(this, member);
-		return this;
-	}
+        repository.addMember(this, member);
+        return this;
+    }
 
-	@Override
-	public RepositoryObject validateType() throws FedoraException {
-		if (!isType(Cdr.ContentRoot.toString())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not the ContentRoot object.");
-		}
-		return this;
-	}
+    @Override
+    public RepositoryObject validateType() throws FedoraException {
+        if (!isType(Cdr.ContentRoot.toString())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not the ContentRoot object.");
+        }
+        return this;
+    }
 
 }

@@ -33,83 +33,83 @@ import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class FolderObjectIT extends AbstractFedoraIT {
 
-	private PID pid;
+    private PID pid;
 
-	@Before
-	public void init() {
-		pid = repository.mintContentPid();
-	}
+    @Before
+    public void init() {
+        pid = repository.mintContentPid();
+    }
 
-	@Test
-	public void createFolderObjectTest() {
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(pid.getRepositoryPath());
-		resc.addProperty(DcElements.title, "Folder Title");
+    @Test
+    public void createFolderObjectTest() {
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(pid.getRepositoryPath());
+        resc.addProperty(DcElements.title, "Folder Title");
 
-		FolderObject obj = repository.createFolderObject(pid, model);
+        FolderObject obj = repository.createFolderObject(pid, model);
 
-		assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
-		assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
+        assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
+        assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
 
-		assertEquals("Folder Title", obj.getResource()
-				.getProperty(DcElements.title).getString());
-	}
+        assertEquals("Folder Title", obj.getResource()
+                .getProperty(DcElements.title).getString());
+    }
 
-	@Test
-	public void addFolderTest() throws Exception {
-		FolderObject obj = repository.createFolderObject(pid);
+    @Test
+    public void addFolderTest() throws Exception {
+        FolderObject obj = repository.createFolderObject(pid);
 
-		FolderObject child = obj.addFolder();
+        FolderObject child = obj.addFolder();
 
-		assertNotNull(child);
-		assertObjectExists(child.getPid());
-		assertTrue(child.getTypes().contains(Cdr.Folder.getURI()));
+        assertNotNull(child);
+        assertObjectExists(child.getPid());
+        assertTrue(child.getTypes().contains(Cdr.Folder.getURI()));
 
-		obj.getResource().hasProperty(PcdmModels.hasMember, child.getResource());
-	}
+        obj.getResource().hasProperty(PcdmModels.hasMember, child.getResource());
+    }
 
-	@Test
-	public void addWorkTest() throws Exception {
-		FolderObject obj = repository.createFolderObject(pid);
+    @Test
+    public void addWorkTest() throws Exception {
+        FolderObject obj = repository.createFolderObject(pid);
 
-		PID childPid = repository.mintContentPid();
+        PID childPid = repository.mintContentPid();
 
-		Model childModel = ModelFactory.createDefaultModel();
-		Resource childResc = childModel.createResource(childPid.getRepositoryPath());
-		childResc.addProperty(DcElements.title, "Work Title");
+        Model childModel = ModelFactory.createDefaultModel();
+        Resource childResc = childModel.createResource(childPid.getRepositoryPath());
+        childResc.addProperty(DcElements.title, "Work Title");
 
-		obj.addWork(childPid, childModel);
-		WorkObject child = repository.getWorkObject(childPid);
+        obj.addWork(childPid, childModel);
+        WorkObject child = repository.getWorkObject(childPid);
 
-		assertNotNull(child);
-		assertObjectExists(childPid);
-		assertTrue(child.getTypes().contains(Cdr.Work.getURI()));
-		assertEquals("Work Title", child.getResource()
-				.getProperty(DcElements.title).getString());
+        assertNotNull(child);
+        assertObjectExists(childPid);
+        assertTrue(child.getTypes().contains(Cdr.Work.getURI()));
+        assertEquals("Work Title", child.getResource()
+                .getProperty(DcElements.title).getString());
 
-		obj.getResource().hasProperty(PcdmModels.hasMember, child.getResource());
-	}
+        obj.getResource().hasProperty(PcdmModels.hasMember, child.getResource());
+    }
 
-	@Test
-	public void getMembersTest() {
-		FolderObject obj = repository.createFolderObject(pid);
+    @Test
+    public void getMembersTest() {
+        FolderObject obj = repository.createFolderObject(pid);
 
-		WorkObject child1 = obj.addWork();
-		FolderObject child2 = obj.addFolder();
+        WorkObject child1 = obj.addWork();
+        FolderObject child2 = obj.addFolder();
 
-		List<ContentObject> members = obj.getMembers();
-		assertEquals("Incorrect number of members", 2, members.size());
+        List<ContentObject> members = obj.getMembers();
+        assertEquals("Incorrect number of members", 2, members.size());
 
-		WorkObject member1 = (WorkObject) findContentObjectByPid(members, child1.getPid());
-		FolderObject member2 = (FolderObject) findContentObjectByPid(members, child2.getPid());
+        WorkObject member1 = (WorkObject) findContentObjectByPid(members, child1.getPid());
+        FolderObject member2 = (FolderObject) findContentObjectByPid(members, child2.getPid());
 
-		assertNotNull(member1);
-		assertNotNull(member2);
-	}
+        assertNotNull(member1);
+        assertNotNull(member2);
+    }
 }

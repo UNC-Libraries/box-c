@@ -38,53 +38,53 @@ import edu.unc.lib.dl.util.URIUtil;
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public class AbstractFedoraIT {
 
-	@Autowired
-	protected String baseAddress;
+    @Autowired
+    protected String baseAddress;
 
-	@Autowired
-	protected FcrepoClient client;
-	
-	@Autowired
-	protected Repository repository;
+    @Autowired
+    protected FcrepoClient client;
 
-	@Before
-	public void initBase() {
-		PIDs.setRepository(repository);
-	}
-	
-	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(URIUtil.join(baseAddress, name));
-		// Create a parent object to put the binary into
-		try (FcrepoResponse response = client.put(baseUri).perform()) {
-			return response.getLocation();
-		} catch(FcrepoOperationFailedException e) {
-			if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
-				throw e;
-			}
-			// Ignore duplicate creation of base container
-			return baseUri;
-		}
-	}
-	
-	/**
-	 * Asserts that the object identified by pid has been created in Fedora.  Does not work for binary resources
-	 * 
-	 * @param pid
-	 * @throws FcrepoOperationFailedException 
-	 * @throws IOException 
-	 */
-	protected void assertObjectExists(PID pid) throws IOException, FcrepoOperationFailedException {
-		assertObjectExists(pid.getRepositoryUri());
-	}
-	
-	protected void assertObjectExists(URI uri) throws IOException, FcrepoOperationFailedException {
-		try (FcrepoResponse response = client.head(uri).perform()) {
-			assertEquals(HttpStatus.SC_OK, response.getStatusCode());
-		}
-	}
+    @Autowired
+    protected Repository repository;
 
-	protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
-		return objs.stream()
-				.filter(p -> p.getPid().equals(pid)).findAny().get();
-	}
+    @Before
+    public void initBase() {
+        PIDs.setRepository(repository);
+    }
+
+    protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+        URI baseUri = URI.create(URIUtil.join(baseAddress, name));
+        // Create a parent object to put the binary into
+        try (FcrepoResponse response = client.put(baseUri).perform()) {
+            return response.getLocation();
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+                throw e;
+            }
+            // Ignore duplicate creation of base container
+            return baseUri;
+        }
+    }
+
+    /**
+     * Asserts that the object identified by pid has been created in Fedora.  Does not work for binary resources
+     *
+     * @param pid
+     * @throws FcrepoOperationFailedException
+     * @throws IOException
+     */
+    protected void assertObjectExists(PID pid) throws IOException, FcrepoOperationFailedException {
+        assertObjectExists(pid.getRepositoryUri());
+    }
+
+    protected void assertObjectExists(URI uri) throws IOException, FcrepoOperationFailedException {
+        try (FcrepoResponse response = client.head(uri).perform()) {
+            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        }
+    }
+
+    protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
+        return objs.stream()
+                .filter(p -> p.getPid().equals(pid)).findAny().get();
+    }
 }
