@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
@@ -64,12 +65,12 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		FileObject fileObj = getFileObject(dip);
-		String filepath = fileObj.getUri().getPath();
-		String mimetype = fileObj.getOriginalFile().getMimetype();
+		BinaryObject binObj = getFileObject(dip).getOriginalFile();
+		String filepath = binObj.getFilename();
+		String mimetype = binObj.getMimetype();
 		log.debug("The binary has filepath " + filepath + " and mimetype " + mimetype);
 		List<String> contentTypes = new ArrayList<String>();
-		extractContentType(fileObj, filepath, mimetype, contentTypes);
+		extractContentType(filepath, mimetype, contentTypes);
 		dip.getDocument().setContentType(contentTypes);
 	}
 
@@ -100,15 +101,16 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 		return null;
 	}
 
-	private void extractContentType(ContentObject obj, String filepath, String mimetype, List<String> contentTypes) {
+	private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
 		ContentCategory contentCategory = getContentCategory(mimetype, getExtension(filepath, mimetype));
 		contentTypes.add('^' + contentCategory.getJoined());
 		StringBuilder contentType = new StringBuilder();
 		contentType.append('/').append(contentCategory.name()).append('^');
-		if (getExtension(filepath, mimetype) == null)
+		String extension = getExtension(filepath, mimetype);
+		if (extension == null)
 			contentType.append("unknown,unknown");
 		else
-			contentType.append(getExtension(filepath, mimetype)).append(',').append(getExtension(filepath, mimetype));
+			contentType.append(extension).append(',').append(extension);
 		contentTypes.add(contentType.toString());
 	}
 
