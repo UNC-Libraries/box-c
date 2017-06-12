@@ -53,6 +53,8 @@ public class SearchSettings extends AbstractSettings {
 	public int defaultListResultsPerPage;
 	// Upper limit to the number of results allowed to be returned in a single search request.
 	public int maxPerPage;
+	// Number of files to show in a structure browse result
+	public int structureFilesPerPage;
 	// Upper limit to the number of page navigation links to display at a time.
 	public int pagesToDisplay;
 	// Max number of neighbor items to display in the neighbor view
@@ -176,6 +178,7 @@ public class SearchSettings extends AbstractSettings {
 		setDefaultListResultsPerPage(Integer.parseInt(properties.getProperty("search.results.defaultListResultsPerPage",
 				"0")));
 		setMaxPerPage(Integer.parseInt(properties.getProperty("search.results.maxPerPage", "0")));
+		setStructureFilesPerPage(Integer.parseInt(properties.getProperty("search.results.structureFilesPerPage", "0")));
 		setPagesToDisplay(Integer.parseInt(properties.getProperty("search.results.pagesToDisplay", "0")));
 		setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
 
@@ -298,6 +301,14 @@ public class SearchSettings extends AbstractSettings {
 
 	public void setMaxPerPage(int maxPerPage) {
 		this.maxPerPage = maxPerPage;
+	}
+
+	public int getStructureFilesPerPage() {
+		return structureFilesPerPage;
+	}
+
+	public void setStructureFilesPerPage(int structureFilesPerPage) {
+		this.structureFilesPerPage = structureFilesPerPage;
 	}
 
 	public Set<String> getSearchableFields() {

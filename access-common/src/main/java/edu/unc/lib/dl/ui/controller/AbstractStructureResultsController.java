@@ -67,6 +67,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 		} else {
 			browseRequest.setSearchState(this.searchStateFactory.createStructureBrowseSearchState(request
 					.getParameterMap()));
+			browseRequest.getSearchState().setRowsPerPage(searchSettings.getStructureFilesPerPage());
 		}
 		if (pid != null)
 			browseRequest.setRootPid(pid);
