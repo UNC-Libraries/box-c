@@ -43,72 +43,71 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  *
  */
 public class SetContentTypeFilterTest {
-	
-	private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
-	
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	@Mock
-	private DocumentIndexingPackage dip;
-	@Mock
-	private PID pid;
-	@Mock
-	private FileObject fileObj;
-	@Mock
-	private WorkObject workObj;
-	@Mock
-	private BinaryObject binObj;
-	@Mock
-	private Resource resource;
-	@Mock
-	private IndexDocumentBean idb;
-	@Captor
-	private ArgumentCaptor<List<String>> listCaptor;
-	
-	private SetContentTypeFilter filter;
-	
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
+    
+    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
+    
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    @Mock
+    private DocumentIndexingPackage dip;
+    @Mock
+    private PID pid;
+    @Mock
+    private FileObject fileObj;
+    @Mock
+    private WorkObject workObj;
+    @Mock
+    private BinaryObject binObj;
+    @Mock
+    private Resource resource;
+    @Mock
+    private IndexDocumentBean idb;
+    @Captor
+    private ArgumentCaptor<List<String>> listCaptor;
+    
+    private SetContentTypeFilter filter;
+    
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
 
-		when(pid.getPid()).thenReturn(PID_STRING);
-		
-		when(dip.getDocument()).thenReturn(idb);
-		when(dip.getPid()).thenReturn(pid);
-		
-		when(workObj.getPrimaryObject()).thenReturn(fileObj);
-		when(fileObj.getOriginalFile()).thenReturn(binObj);
-		
-		filter = new SetContentTypeFilter();
-	}
+        when(pid.getPid()).thenReturn(PID_STRING);
+        
+        when(dip.getDocument()).thenReturn(idb);
+        when(dip.getPid()).thenReturn(pid);
+        
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+        when(fileObj.getOriginalFile()).thenReturn(binObj);
+        
+        filter = new SetContentTypeFilter();
+    }
 
-	@Test
-	public void testGetContentTypeFromWorkObject() throws Exception {
-		when(dip.getContentObject()).thenReturn(workObj);
-		when(workObj.getPrimaryObject()).thenReturn(fileObj);
-		
-		when(binObj.getFilename()).thenReturn("primary.xml");
-		when(binObj.getMimetype()).thenReturn("text/xml");
-		
-		filter.filter(dip);
-		
-		verify(idb).setContentType(listCaptor.capture());
-		assertEquals("^text,Text", listCaptor.getValue().get(0));
-		assertEquals("/text^xml,xml", listCaptor.getValue().get(1));
-	}
-	
-	@Test
-	public void testGetContentTypeFromFileObject() throws Exception {
-		when(dip.getContentObject()).thenReturn(fileObj);
-		when(fileObj.getOriginalFile()).thenReturn(binObj);
-		when(binObj.getFilename()).thenReturn("data.csv");
-		when(binObj.getMimetype()).thenReturn("ext.csv");
-		
-		filter.filter(dip);
-		
-		verify(idb).setContentType(listCaptor.capture());
-		assertEquals("^dataset,Dataset", listCaptor.getValue().get(0));
-		assertEquals("/dataset^csv,csv", listCaptor.getValue().get(1));
-	}
-
+    @Test
+    public void testGetContentTypeFromWorkObject() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+        
+        when(binObj.getFilename()).thenReturn("primary.xml");
+        when(binObj.getMimetype()).thenReturn("text/xml");
+        
+        filter.filter(dip);
+        
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^text,Text", listCaptor.getValue().get(0));
+        assertEquals("/text^xml,xml", listCaptor.getValue().get(1));
+    }
+    
+    @Test
+    public void testGetContentTypeFromFileObject() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getOriginalFile()).thenReturn(binObj);
+        when(binObj.getFilename()).thenReturn("data.csv");
+        when(binObj.getMimetype()).thenReturn("ext.csv");
+        
+        filter.filter(dip);
+        
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^dataset,Dataset", listCaptor.getValue().get(0));
+        assertEquals("/dataset^csv,csv", listCaptor.getValue().get(1));
+    }
 }

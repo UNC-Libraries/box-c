@@ -42,98 +42,106 @@ import edu.unc.lib.dl.search.solr.util.ContentCategory;
  *
  */
 public class SetContentTypeFilter implements IndexDocumentFilter {
-	
-	private static final Logger log = LoggerFactory.getLogger(SetContentTypeFilter.class);
-	private static final Pattern EXTENSION_REGEX = Pattern.compile("^[^\\n]*[^.]\\.(\\d*[a-zA-Z][a-zA-Z0-9]*)[\"'{}, _\\-`()*]*$");
-	private static final int EXTENSION_LIMIT = 8;
-	
-	private Properties mimetypeToExtensionMap;
-	private Properties contentTypeProperties;
-	
-	public SetContentTypeFilter() {
-		try {
-			mimetypeToExtensionMap = new Properties();
-			mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
-					"mimetypeToExtension.txt")));
-			contentTypeProperties = new Properties();
-			contentTypeProperties.load(new InputStreamReader(this.getClass().getResourceAsStream(
-					"toContentType.properties")));
-		} catch (IOException e) {
-			log.error("Failed to load mimetype mappings", e);
-		}
-	}
 
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		BinaryObject binObj = getFileObject(dip).getOriginalFile();
-		String filepath = binObj.getFilename();
-		String mimetype = binObj.getMimetype();
-		log.debug("The binary has filepath " + filepath + " and mimetype " + mimetype);
-		List<String> contentTypes = new ArrayList<String>();
-		extractContentType(filepath, mimetype, contentTypes);
-		dip.getDocument().setContentType(contentTypes);
-	}
+    private static final Logger log = LoggerFactory.getLogger(SetContentTypeFilter.class);
+    private static final Pattern EXTENSION_REGEX =
+            Pattern.compile("^[^\\n]*[^.]\\.(\\d*[a-zA-Z][a-zA-Z0-9]*)[\"'{}, _\\-`()*]*$");
+    private static final int EXTENSION_LIMIT = 8;
 
-	private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
-		ContentObject obj = dip.getContentObject();
-		FileObject fileObj;
-		if (obj instanceof WorkObject) {
-			fileObj = ((WorkObject) obj).getPrimaryObject();
-		} else {
-			fileObj = (FileObject) obj;
-		}
-		return fileObj;
-	}
-	
-	private String getExtension(String filepath, String mimetype) {
-		if (filepath != null) {
-			Matcher matcher = EXTENSION_REGEX.matcher(filepath);
-			if (matcher.matches()) {
-				String extension = matcher.group(1);
-				if (extension.length() <= EXTENSION_LIMIT)
-					return extension.toLowerCase();
-			}
-		}
-		if (mimetype != null) {
-			String extension = mimetypeToExtensionMap.getProperty(mimetype);
-			return extension;
-		}
-		return null;
-	}
+    private Properties mimetypeToExtensionMap;
+    private Properties contentTypeProperties;
 
-	private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
-		ContentCategory contentCategory = getContentCategory(mimetype, getExtension(filepath, mimetype));
-		// add string with name + display-name to list of content types
-		contentTypes.add('^' + contentCategory.getJoined());
-		StringBuilder contentType = new StringBuilder();
-		contentType.append('/').append(contentCategory.name()).append('^');
-		String extension = getExtension(filepath, mimetype);
-		if (extension == null)
-			contentType.append("unknown,unknown");
-		else
-			contentType.append(extension).append(',').append(extension);
-		// add string with content category name + extension to list of content types
-		contentTypes.add(contentType.toString());
-	}
+    public SetContentTypeFilter() {
+        try {
+            mimetypeToExtensionMap = new Properties();
+            mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
+                    "mimetypeToExtension.txt")));
+            contentTypeProperties = new Properties();
+            contentTypeProperties.load(new InputStreamReader(this.getClass().getResourceAsStream(
+                    "toContentType.properties")));
+        } catch (IOException e) {
+            log.error("Failed to load mimetype mappings", e);
+        }
+    }
 
-	private ContentCategory getContentCategory(String mimetype, String extension) {
-		if (mimetype == null)
-			return ContentCategory.unknown;
-		int index = mimetype.indexOf('/');
-		if (index != -1) {
-			String mimetypeType = mimetype.substring(0, index);
-			if (mimetypeType.equals("image"))
-				return ContentCategory.image;
-			if (mimetypeType.equals("video"))
-				return ContentCategory.video;
-			if (mimetypeType.equals("audio"))
-				return ContentCategory.audio;
-		}
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        BinaryObject binObj = getFileObject(dip).getOriginalFile();
+        String filepath = binObj.getFilename();
+        String mimetype = binObj.getMimetype();
+        log.debug("The binary has filepath " + filepath + " and mimetype " + mimetype);
+        List<String> contentTypes = new ArrayList<String>();
+        extractContentType(filepath, mimetype, contentTypes);
+        dip.getDocument().setContentType(contentTypes);
+    }
 
-		String contentCategory = (String) contentTypeProperties.get("mime." + mimetype);
-		if (contentCategory == null)
-			contentCategory = (String) contentTypeProperties.get("ext." + extension);
-		return ContentCategory.getContentCategory(contentCategory);
-	}
+    private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
+        ContentObject obj = dip.getContentObject();
+        FileObject fileObj;
+        if (obj instanceof WorkObject) {
+            fileObj = ((WorkObject) obj).getPrimaryObject();
+        } else {
+            fileObj = (FileObject) obj;
+        }
+        return fileObj;
+    }
+
+    private String getExtension(String filepath, String mimetype) {
+        if (filepath != null) {
+            Matcher matcher = EXTENSION_REGEX.matcher(filepath);
+            if (matcher.matches()) {
+                String extension = matcher.group(1);
+                if (extension.length() <= EXTENSION_LIMIT) {
+                    return extension.toLowerCase();
+                }
+            }
+        }
+        if (mimetype != null) {
+            String extension = mimetypeToExtensionMap.getProperty(mimetype);
+            return extension;
+        }
+        return null;
+    }
+
+    private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
+        ContentCategory contentCategory = getContentCategory(mimetype, getExtension(filepath, mimetype));
+        // add string with name + display-name to list of content types
+        contentTypes.add('^' + contentCategory.getJoined());
+        StringBuilder contentType = new StringBuilder();
+        contentType.append('/').append(contentCategory.name()).append('^');
+        String extension = getExtension(filepath, mimetype);
+        if (extension == null) {
+            contentType.append("unknown,unknown");
+        } else {
+            contentType.append(extension).append(',').append(extension);
+        }
+        // add string with content category name + extension to list of content types
+        contentTypes.add(contentType.toString());
+    }
+
+    private ContentCategory getContentCategory(String mimetype, String extension) {
+        if (mimetype == null) {
+            return ContentCategory.unknown;
+        }
+        int index = mimetype.indexOf('/');
+        if (index != -1) {
+            String mimetypeType = mimetype.substring(0, index);
+            if (mimetypeType.equals("image")) {
+                return ContentCategory.image;
+            }
+            if (mimetypeType.equals("video")) {
+                return ContentCategory.video;
+            }
+            if (mimetypeType.equals("audio")) {
+                return ContentCategory.audio;
+            }
+        }
+
+        String contentCategory = (String) contentTypeProperties.get("mime." + mimetype);
+        if (contentCategory == null) {
+            contentCategory = (String) contentTypeProperties.get("ext." + extension);
+        }
+        return ContentCategory.getContentCategory(contentCategory);
+    }
 
 }
