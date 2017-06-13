@@ -32,36 +32,41 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 @RequestMapping(value = {"/", ""})
 public class DashboardController extends AbstractSolrSearchController {
-	@RequestMapping(method = RequestMethod.GET)
-	public String handleRequest(Model model, HttpServletRequest request){
-		SearchState collectionsState = this.searchStateFactory.createSearchState();
-		collectionsState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
-		collectionsState.setRowsPerPage(5000);
-		CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
-		depthFacet.setCutoff(2);
-		collectionsState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
+    @RequestMapping(method = RequestMethod.GET)
+    public String handleRequest(Model model, HttpServletRequest request) {
+        SearchState collectionsState = this.searchStateFactory.createSearchState();
+        collectionsState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
+        collectionsState.setRowsPerPage(5000);
+        CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
+        depthFacet.setCutoff(2);
+        collectionsState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
 
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		SearchRequest searchRequest = new SearchRequest();
-		searchRequest.setAccessGroups(accessGroups);
-		searchRequest.setSearchState(collectionsState);
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.setAccessGroups(accessGroups);
+        searchRequest.setSearchState(collectionsState);
 
-		SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
-		// Get children counts
-		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
+        SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
+        // Get children counts
+        queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
 
-		// Get unpublished counts
-		StringBuilder reviewFilter = new StringBuilder("isPart:false AND status:Unpublished AND roleGroup:");
-		reviewFilter.append(SolrQueryLayerService.getWriteRoleFilter(GroupsThreadStore.getGroups()));
+        // Get unpublished counts
+        StringBuilder reviewFilter = new StringBuilder("isPart:false AND status:Unpublished AND roleGroup:");
+        reviewFilter.append(SolrQueryLayerService.getWriteRoleFilter(GroupsThreadStore.getGroups()));
 
-		queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished",
-				reviewFilter.toString(), null);
+        queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished",
+                reviewFilter.toString(), null);
 
-		model.addAttribute("resultResponse", resultResponse);
+        model.addAttribute("resultResponse", resultResponse);
 
-		return "dashboard/reviewer";
-	}
+        return "dashboard/reviewer";
+    }
 }

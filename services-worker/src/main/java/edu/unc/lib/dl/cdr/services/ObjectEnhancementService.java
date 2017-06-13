@@ -26,40 +26,40 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
  */
 public interface ObjectEnhancementService {
 
-	/**
-	 * Creates a task for running this service on the object in question.
-	 * 
-	 * @param pid
-	 * @return an EnhancementTask
-	 */
-	public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException;
+     /**
+      * Creates a task for running this service on the object in question.
+      * 
+      * @param pid
+      * @return an EnhancementTask
+      */
+     public Enhancement<Element> getEnhancement(EnhancementMessage pid) throws EnhancementException;
 
-	/**
-	 * Does this service apply to this object?
-	 * 
-	 * @param pid
-	 * @return true if the service is applicable
-	 */
-	public boolean isApplicable(EnhancementMessage pid) throws EnhancementException;
+     /**
+      * Does this service apply to this object?
+      * 
+      * @param pid
+      * @return true if the service is applicable
+      */
+     public boolean isApplicable(EnhancementMessage pid) throws EnhancementException;
 
-	/**
-	 * Does this message apply to this service?
-	 * 
-	 * @param pid
-	 * @return
-	 * @throws EnhancementException
-	 */
-	public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException;
+     /**
+      * Does this message apply to this service?
+      * 
+      * @param pid
+      * @return
+      * @throws EnhancementException
+      */
+     public boolean prefilterMessage(EnhancementMessage pid) throws EnhancementException;
 
-	/**
-	 * @return true if this service is currently active
-	 */
-	public boolean isActive() throws EnhancementException;
+     /**
+      * @return true if this service is currently active
+      */
+     public boolean isActive() throws EnhancementException;
 
-	/**
-	 * Returns the name of this service
-	 * 
-	 * @return
-	 */
-	public String getName();
+     /**
+      * Returns the name of this service
+      * 
+      * @return
+      */
+     public String getName();
 }

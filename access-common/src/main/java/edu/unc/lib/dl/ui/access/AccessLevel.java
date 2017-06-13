@@ -25,45 +25,46 @@ import edu.unc.lib.dl.acl.util.UserRole;
  * 
  */
 public class AccessLevel {
-	private String username;
-	private UserRole highestRole;
-	private boolean viewAdmin;
-	private long cacheAge;
+    private String username;
+    private UserRole highestRole;
+    private boolean viewAdmin;
+    private long cacheAge;
 
-	public AccessLevel(String username) {
-		cacheAge = System.currentTimeMillis();
-		viewAdmin = false;
-		this.username = username;
-		this.highestRole = null;
-	}
+    public AccessLevel(String username) {
+        cacheAge = System.currentTimeMillis();
+        viewAdmin = false;
+        this.username = username;
+        this.highestRole = null;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public UserRole getHighestRole() {
-		return highestRole;
-	}
+    public UserRole getHighestRole() {
+        return highestRole;
+    }
 
-	public void setHighestRole(UserRole highestRole) {
-		this.highestRole = highestRole;
-		if (this.highestRole != null && this.highestRole.getPermissions().contains(Permission.viewAdminUI))
-			this.viewAdmin = true;
-	}
+    public void setHighestRole(UserRole highestRole) {
+        this.highestRole = highestRole;
+        if (this.highestRole != null && this.highestRole.getPermissions().contains(Permission.viewAdminUI)) {
+            this.viewAdmin = true;
+        }
+    }
 
-	public boolean isViewAdmin() {
-		return viewAdmin;
-	}
+    public boolean isViewAdmin() {
+        return viewAdmin;
+    }
 
-	public long getCacheAge() {
-		return cacheAge;
-	}
+    public long getCacheAge() {
+        return cacheAge;
+    }
 
-	public void setCacheAge(long cacheAge) {
-		this.cacheAge = cacheAge;
-	}
+    public void setCacheAge(long cacheAge) {
+        this.cacheAge = cacheAge;
+    }
 }

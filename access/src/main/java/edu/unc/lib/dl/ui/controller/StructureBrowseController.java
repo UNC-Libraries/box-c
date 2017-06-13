@@ -48,83 +48,91 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
  */
 @Controller
 public class StructureBrowseController extends AbstractStructureResultsController {
-	protected List<String> tierResultFieldsList = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
-			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.ROLE_GROUP.name());
-	
-	/**
-	 * Retrieves the contents of the pid specified in a structural view
-	 */
-	@RequestMapping("/structure")
-	public String getStructure(@RequestParam(value = "files", required = false) String includeFiles,
-			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
-		if (includeFiles == null)
-			includeFiles = "true";
-		return getStructureTree(null, "true".equals(includeFiles), view, false, model, request);
-	}
-	
-	@RequestMapping("/structure/{pid}")
-	public String getStructureJSON(@PathVariable("pid") String pid,
-			@RequestParam(value = "files", required = false) String includeFiles,
-			@RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
-		if (includeFiles == null)
-			includeFiles = "true";
-		return getStructureTree(pid, "true".equals(includeFiles), view, false, model, request);
-	}
-	
-	/**
-	 * Retrieves the direct children of the pid specified. If no pid is specified, then the root is used
-	 */
-	@RequestMapping("/structure/{pid}/tier")
-	public String getSingleTier(@PathVariable("pid") String pid,
-			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
-		BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
-				tierResultFieldsList));
-		if (selectedContainer == null)
-			throw new ResourceNotFoundException("Object " + pid + " was not found.");
+    protected List<String> tierResultFieldsList = Arrays.asList(SearchFieldKeys.ID.name(),
+            SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
+            SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.ROLE_GROUP.name());
 
-		SearchRequest browseRequest = new SearchRequest();
-		generateSearchRequest(request, null, browseRequest);
-		SearchState searchState = browseRequest.getSearchState();
-		searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
-		if ("only".equals(includeFiles))
-			searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeFile));
-		else if ("true".equals(includeFiles))
-			searchState.setResourceTypes(null);
-		else
-			searchState.setResourceTypes(Arrays.asList("!" + searchSettings.resourceTypeFile));
+    /**
+     * Retrieves the contents of the pid specified in a structural view
+     */
+    @RequestMapping("/structure")
+    public String getStructure(@RequestParam(value = "files", required = false) String includeFiles,
+            @RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request) {
+        if (includeFiles == null) {
+            includeFiles = "true";
+        }
+        return getStructureTree(null, "true".equals(includeFiles), view, false, model, request);
+    }
 
-		HierarchicalBrowseResultResponse resultResponse = queryLayer.getStructureTier(browseRequest);
-		model.addAttribute("structureResults", resultResponse);
+    @RequestMapping("/structure/{pid}")
+    public String getStructureJSON(@PathVariable("pid") String pid,
+            @RequestParam(value = "files", required = false) String includeFiles,
+            @RequestParam(value = "view", required = false) String view, Model model, HttpServletRequest request,
+            HttpServletResponse response) {
+        if (includeFiles == null) {
+            includeFiles = "true";
+        }
+        return getStructureTree(pid, "true".equals(includeFiles), view, false, model, request);
+    }
 
-		String searchStateUrl = SearchStateUtil.generateStateParameterString(browseRequest.getSearchState());
-		model.addAttribute("searchStateUrl", searchStateUrl);
+    /**
+     * Retrieves the direct children of the pid specified. If no pid is specified, then the root is used
+     */
+    @RequestMapping("/structure/{pid}/tier")
+    public String getSingleTier(@PathVariable("pid") String pid,
+            @RequestParam(value = "files", required = false) String includeFiles,
+            Model model, HttpServletRequest request, HttpServletResponse response) {
+        BriefObjectMetadataBean selectedContainer =
+                queryLayer.getObjectById(new SimpleIdRequest(pid, tierResultFieldsList));
+        if (selectedContainer == null) {
+            throw new ResourceNotFoundException("Object " + pid + " was not found.");
+        }
 
-		model.addAttribute("template", "ajax");
-		return "/jsp/structure/structureTree";
-	}
-	
-	private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
-			Model model, HttpServletRequest request) {
-		HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, includeFiles, collectionMode,
-				true, request);
+        SearchRequest browseRequest = new SearchRequest();
+        generateSearchRequest(request, null, browseRequest);
+        SearchState searchState = browseRequest.getSearchState();
+        searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
+        if ("only".equals(includeFiles)) {
+            searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeFile));
+        } else if ("true".equals(includeFiles)) {
+            searchState.setResourceTypes(null);
+        } else {
+            searchState.setResourceTypes(Arrays.asList("!" + searchSettings.resourceTypeFile));
+        }
 
-		SearchState searchState = resultResponse.getSearchState();
-		String searchParams = SearchStateUtil.generateSearchParameterString(searchState);
-		model.addAttribute("searchParams", searchParams);
+        HierarchicalBrowseResultResponse resultResponse = queryLayer.getStructureTier(browseRequest);
+        model.addAttribute("structureResults", resultResponse);
 
-		model.addAttribute("resultType", "structure");
-		model.addAttribute("pageSubtitle", "Browse Results");
+        String searchStateUrl = SearchStateUtil.generateStateParameterString(browseRequest.getSearchState());
+        model.addAttribute("searchStateUrl", searchStateUrl);
 
-		model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(resultResponse.getSearchState()));
-		model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(resultResponse.getSearchState()));
-		model.addAttribute("selectedContainer", resultResponse.getSelectedContainer());
-		model.addAttribute("resultResponse", resultResponse);
-		model.addAttribute("structureResults", resultResponse);
-		
-		model.addAttribute("resultJSON", SerializationUtil.structureToJSON(resultResponse, GroupsThreadStore.getGroups()));
+        model.addAttribute("template", "ajax");
+        return "/jsp/structure/structureTree";
+    }
 
-		return "structureBrowse";
-	}
+    private String getStructureTree(String pid, boolean includeFiles, String viewParam, boolean collectionMode,
+            Model model, HttpServletRequest request) {
+        HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, includeFiles, collectionMode,
+                true, request);
+
+        SearchState searchState = resultResponse.getSearchState();
+        String searchParams = SearchStateUtil.generateSearchParameterString(searchState);
+        model.addAttribute("searchParams", searchParams);
+
+        model.addAttribute("resultType", "structure");
+        model.addAttribute("pageSubtitle", "Browse Results");
+
+        model.addAttribute("searchStateUrl",
+                SearchStateUtil.generateStateParameterString(resultResponse.getSearchState()));
+        model.addAttribute("searchQueryUrl",
+                SearchStateUtil.generateSearchParameterString(resultResponse.getSearchState()));
+        model.addAttribute("selectedContainer", resultResponse.getSelectedContainer());
+        model.addAttribute("resultResponse", resultResponse);
+        model.addAttribute("structureResults", resultResponse);
+
+        model.addAttribute("resultJSON",
+                SerializationUtil.structureToJSON(resultResponse, GroupsThreadStore.getGroups()));
+
+        return "structureBrowse";
+    }
 }

@@ -17,64 +17,69 @@ package edu.unc.lib.dl.cdr.services.exception;
 
 import edu.unc.lib.dl.fedora.PID;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public class EnhancementException extends Exception {
-	private static final long serialVersionUID = 1L;
+     private static final long serialVersionUID = 1L;
 
-	private Severity severity = Severity.UNRECOVERABLE;
-	
-	public EnhancementException(Throwable cause){
-		super(cause);
-	}
-	
-	public EnhancementException(Throwable cause, Severity severity){
-		super(severity + ": " + cause.getMessage(), cause);
-		this.severity = severity;
-	}
+     private Severity severity = Severity.UNRECOVERABLE;
 
-	public EnhancementException(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
-	public EnhancementException(String message, Throwable cause, Severity severity) {
-		super(severity + ": " + message, cause);
-		this.severity = severity;
-	}
-	
-	public EnhancementException(String message, Severity severity) {
-		super(severity + ": " + message);
-		this.severity = severity;
-	}
+     public EnhancementException(Throwable cause) {
+          super(cause);
+     }
 
-	public EnhancementException(PID pid, String message) {
-		super("Enhancement failed for "+pid.getPid()+":\t"+message);
-	}
-	
-	public EnhancementException(PID pid, String message, Throwable cause, Severity severity) {
-		super(severity + ": " + "Enhancement failed for "+pid.getPid()+":\t"+message, cause);
-		this.severity = severity;
-	}
+     public EnhancementException(Throwable cause, Severity severity) {
+          super(severity + ": " + cause.getMessage(), cause);
+          this.severity = severity;
+     }
 
-	public Severity getSeverity() {
-		return severity;
-	}
+     public EnhancementException(String message, Throwable cause) {
+          super(message, cause);
+     }
 
-	public void setSeverity(Severity severity) {
-		this.severity = severity;
-	}
+     public EnhancementException(String message, Throwable cause, Severity severity) {
+          super(severity + ": " + message, cause);
+          this.severity = severity;
+     }
 
-	public static enum Severity {
-		RECOVERABLE("recoverable"),
-		UNRECOVERABLE("unrecoverable"),
-		FATAL("fatal");
-		
-		private String name;
-		
-		private Severity(String name){
-			this.name = name;
-		}
-		
-		public String toString(){
-			return name;
-		}
-	}
+     public EnhancementException(String message, Severity severity) {
+          super(severity + ": " + message);
+          this.severity = severity;
+     }
+
+     public EnhancementException(PID pid, String message) {
+          super("Enhancement failed for " + pid.getPid() + ":\t" + message);
+     }
+
+     public EnhancementException(PID pid, String message, Throwable cause, Severity severity) {
+          super(severity + ": " + "Enhancement failed for " + pid.getPid() + ":\t" + message, cause);
+          this.severity = severity;
+     }
+
+     public Severity getSeverity() {
+          return severity;
+     }
+
+     public void setSeverity(Severity severity) {
+          this.severity = severity;
+     }
+
+     public static enum Severity {
+          RECOVERABLE("recoverable"),
+          UNRECOVERABLE("unrecoverable"),
+          FATAL("fatal");
+
+          private String name;
+
+          private Severity(String name) {
+               this.name = name;
+          }
+
+          public String toString() {
+               return name;
+          }
+     }
 }

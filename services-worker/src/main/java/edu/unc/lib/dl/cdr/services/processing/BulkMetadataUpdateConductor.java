@@ -37,71 +37,71 @@ import edu.unc.lib.dl.util.RedisWorkerConstants;
  * @date Jul 31, 2015
  */
 public class BulkMetadataUpdateConductor {
-	private static final Logger log = LoggerFactory.getLogger(BulkMetadataUpdateConductor.class);
-	
-	private net.greghaines.jesque.client.Client jesqueClient;
-	private WorkerPool workerPool;
-	private String queueName;
-	private JedisPool jedisPool;
-	
-	public void add(String email, String username, Collection<String> groups, File importFile,
-			String originalFilename) {
-		add(null, email, username, groups, importFile, originalFilename);
-	}
-	
-	public void add(String updateId, String email, String username, Collection<String> groups,
-			File importFile, String originalFilename) {
-		Job job = new Job(BulkMetadataUpdateJob.class.getName(), updateId, email, username, groups,
-				importFile.getAbsolutePath(), originalFilename);
-		jesqueClient.enqueue(queueName, job);
-	}
-	
-	public void resumeIncompleteUpdates() {
-		try (Jedis jedis = jedisPool.getResource()) {
-			Set<String> incompleteUpdates = jedis.keys(RedisWorkerConstants.BULK_UPDATE_PREFIX + "*");
-			
-			for (String incomplete : incompleteUpdates) {
-				Map<String, String> updateValues = jedis.hgetAll(incomplete);
-	
-				String updateId = incomplete.split(":", 2)[1];
-				
-				// If the import file doesn't exist, then can't resume
-				File importFile = new File(updateValues.get("filePath"));
-				if (!importFile.exists()) {
-					log.warn("Failed to resume update {} for user {} because the file no longer existed",
-							updateValues.get("originalFilename"), updateValues.get("user"));
-					jedis.del(incomplete);
-					jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + updateId);
-				} else {
-					add(updateId, updateValues.get("email"), updateValues.get("user"),
-							Arrays.asList(updateValues.get("groups").split(" ")),
-							importFile, updateValues.get("originalFilename"));
-				}
-			}
-		}
-	}
-	
-	public void setJesqueClient(net.greghaines.jesque.client.Client jesqueClient) {
-		this.jesqueClient = jesqueClient;
-	}
+    private static final Logger log = LoggerFactory.getLogger(BulkMetadataUpdateConductor.class);
 
-	public void setWorkerPool(WorkerPool workerPool) {
-		this.workerPool = workerPool;
-	}
-	
-	public void setQueueName(String queueName) {
-		this.queueName = queueName;
-	}
-	
-	public void setJedisPool(JedisPool jedisPool) {
-		this.jedisPool = jedisPool;
-	}
+    private net.greghaines.jesque.client.Client jesqueClient;
+    private WorkerPool workerPool;
+    private String queueName;
+    private JedisPool jedisPool;
 
-	public void init() {
-		resumeIncompleteUpdates();
-	}
-	
-	public void destroy() {
-		workerPool.end(true);
-	}
+    public void add(String email, String username, Collection<String> groups, File importFile,
+            String originalFilename) {
+        add(null, email, username, groups, importFile, originalFilename);
+    }
+
+    public void add(String updateId, String email, String username, Collection<String> groups,
+            File importFile, String originalFilename) {
+        Job job = new Job(BulkMetadataUpdateJob.class.getName(), updateId, email, username, groups,
+                importFile.getAbsolutePath(), originalFilename);
+        jesqueClient.enqueue(queueName, job);
+    }
+
+    public void resumeIncompleteUpdates() {
+        try (Jedis jedis = jedisPool.getResource()) {
+            Set<String> incompleteUpdates = jedis.keys(RedisWorkerConstants.BULK_UPDATE_PREFIX + "*");
+
+            for (String incomplete : incompleteUpdates) {
+                Map<String, String> updateValues = jedis.hgetAll(incomplete);
+
+                String updateId = incomplete.split(":", 2)[1];
+
+                // If the import file doesn't exist, then can't resume
+                File importFile = new File(updateValues.get("filePath"));
+                if (!importFile.exists()) {
+                    log.warn("Failed to resume update {} for user {} because the file no longer existed",
+                            updateValues.get("originalFilename"), updateValues.get("user"));
+                    jedis.del(incomplete);
+                    jedis.del(RedisWorkerConstants.BULK_RESUME_PREFIX + updateId);
+                } else {
+                    add(updateId, updateValues.get("email"), updateValues.get("user"),
+                            Arrays.asList(updateValues.get("groups").split(" ")),
+                            importFile, updateValues.get("originalFilename"));
+                }
+            }
+        }
+    }
+
+    public void setJesqueClient(net.greghaines.jesque.client.Client jesqueClient) {
+        this.jesqueClient = jesqueClient;
+    }
+
+    public void setWorkerPool(WorkerPool workerPool) {
+        this.workerPool = workerPool;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
+    public void setJedisPool(JedisPool jedisPool) {
+        this.jedisPool = jedisPool;
+    }
+
+    public void init() {
+        resumeIncompleteUpdates();
+    }
+
+    public void destroy() {
+        workerPool.end(true);
+    }
 }

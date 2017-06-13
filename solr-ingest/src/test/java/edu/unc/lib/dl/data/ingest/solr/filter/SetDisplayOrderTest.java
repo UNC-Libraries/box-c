@@ -40,95 +40,95 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class SetDisplayOrderTest extends Assert {
-	
-	private DocumentIndexingPackageFactory factory;
-	private DocumentIndexingPackageDataLoader loader;
-	
-	@Mock
-	private ManagementClient managementClient;
-	
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
-		
-		loader = new DocumentIndexingPackageDataLoader();
-		loader.setManagementClient(managementClient);
-		
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-	}
 
-	@Test
-	public void fromParents() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
+    private DocumentIndexingPackageFactory factory;
+    private DocumentIndexingPackageDataLoader loader;
 
-		DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
-				"src/test/resources/foxml/aggregateSplitDepartments.xml");
-		dip.setParentDocument(parentDIP);
+    @Mock
+    private ManagementClient managementClient;
 
-		SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
-		filter.filter(dip);
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
 
-		assertEquals(2, dip.getDocument().getDisplayOrder().longValue());
-		dip.setPid(new PID("info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"));
-		filter.filter(dip);
-		assertEquals(1, dip.getDocument().getDisplayOrder().longValue());
-	}
+        loader = new DocumentIndexingPackageDataLoader();
+        loader.setManagementClient(managementClient);
 
-	@Test
-	public void fromRetrievedParent() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
+    }
 
-		DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
-				"src/test/resources/foxml/aggregateSplitDepartments.xml");
-		dip.setParentDocument(parentDIP);
+    @Test
+    public void fromParents() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
 
-		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
-		when(tsqs.fetchByPredicateAndLiteral(anyString(), any(PID.class))).thenReturn(Arrays.asList(new PID("info:fedora/uuid:parent")));
+        DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
+                "src/test/resources/foxml/aggregateSplitDepartments.xml");
+        dip.setParentDocument(parentDIP);
 
-		SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
-		filter.filter(dip);
+        SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
+        filter.filter(dip);
 
-		assertEquals(2, dip.getDocument().getDisplayOrder().longValue());
-		dip.setPid(new PID("info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"));
-	}
+        assertEquals(2, dip.getDocument().getDisplayOrder().longValue());
+        dip.setPid(new PID("info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"));
+        filter.filter(dip);
+        assertEquals(1, dip.getDocument().getDisplayOrder().longValue());
+    }
 
-	@Test
-	public void fromAncestorParent() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
+    @Test
+    public void fromRetrievedParent() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
 
-		DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
-				"src/test/resources/foxml/aggregateSplitDepartments.xml");
-		dip.setParentDocument(parentDIP);
+        DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
+                "src/test/resources/foxml/aggregateSplitDepartments.xml");
+        dip.setParentDocument(parentDIP);
 
-		SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
-		filter.filter(dip);
+        TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
+        when(tsqs.fetchByPredicateAndLiteral(anyString(), any(PID.class))).thenReturn(Arrays.asList(new PID("info:fedora/uuid:parent")));
 
-		assertEquals(2, dip.getDocument().getDisplayOrder().longValue());
-		dip.setPid(new PID("info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"));
-	}
+        SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
+        filter.filter(dip);
 
-	@Test
-	public void fromParentsNoMDContents() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
+        assertEquals(2, dip.getDocument().getDisplayOrder().longValue());
+        dip.setPid(new PID("info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"));
+    }
 
-		DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
-				"src/test/resources/foxml/folderNoMDContents.xml");
-		dip.setParentDocument(parentDIP);
+    @Test
+    public void fromAncestorParent() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
 
-		SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
-		filter.filter(dip);
+        DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
+                "src/test/resources/foxml/aggregateSplitDepartments.xml");
+        dip.setParentDocument(parentDIP);
 
-		assertNull(dip.getDocument().getDisplayOrder());
-	}
-	
-	private DocumentIndexingPackage setupDip(String pid, String foxmlFilePath) throws Exception {
-		DocumentIndexingPackage dip = factory.createDip(pid);
-		
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(foxmlFilePath)));
-		dip.setFoxml(foxml);
-		
-		return dip;
-	}
+        SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
+        filter.filter(dip);
+
+        assertEquals(2, dip.getDocument().getDisplayOrder().longValue());
+        dip.setPid(new PID("info:fedora/uuid:9a7f19d7-5f1d-44f9-9c3d-3ff4f7dac42d"));
+    }
+
+    @Test
+    public void fromParentsNoMDContents() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194");
+
+        DocumentIndexingPackage parentDIP = setupDip("uuid:parent",
+                "src/test/resources/foxml/folderNoMDContents.xml");
+        dip.setParentDocument(parentDIP);
+
+        SetDisplayOrderFilter filter = new SetDisplayOrderFilter();
+        filter.filter(dip);
+
+        assertNull(dip.getDocument().getDisplayOrder());
+    }
+
+    private DocumentIndexingPackage setupDip(String pid, String foxmlFilePath) throws Exception {
+        DocumentIndexingPackage dip = factory.createDip(pid);
+
+        SAXBuilder builder = new SAXBuilder();
+        Document foxml = builder.build(new FileInputStream(new File(foxmlFilePath)));
+        dip.setFoxml(foxml);
+
+        return dip;
+    }
 }

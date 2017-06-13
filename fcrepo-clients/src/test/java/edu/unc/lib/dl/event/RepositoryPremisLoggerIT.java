@@ -40,87 +40,87 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
-	private RepositoryPremisLogger logger;
+    private RepositoryPremisLogger logger;
 
-	private PID parentPid;
-	private RepositoryObject parentObject;
+    private PID parentPid;
+    private RepositoryObject parentObject;
 
-	@Before
-	public void init() throws Exception {
-		parentPid = repository.mintDepositRecordPid();
+    @Before
+    public void init() throws Exception {
+        parentPid = repository.mintDepositRecordPid();
 
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(parentPid.getRepositoryUri().toString());
-		resc.addProperty(RDF.type, Cdr.DepositRecord);
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(parentPid.getRepositoryUri().toString());
+        resc.addProperty(RDF.type, Cdr.DepositRecord);
 
-		parentObject = repository.createDepositRecord(parentPid, model);
+        parentObject = repository.createDepositRecord(parentPid, model);
 
-		logger = new RepositoryPremisLogger(parentObject, repository);
-	}
+        logger = new RepositoryPremisLogger(parentObject, repository);
+    }
 
-	@Test
-	public void addEventTest() throws Exception {
-		Resource eventResc = logger.buildEvent(Premis.VirusCheck)
-				.addSoftwareAgent(SoftwareAgent.clamav.toString())
-				.write();
-		PID eventPid = PIDs.get(eventResc.getURI());
+    @Test
+    public void addEventTest() throws Exception {
+        Resource eventResc = logger.buildEvent(Premis.VirusCheck)
+                .addSoftwareAgent(SoftwareAgent.clamav.toString())
+                .write();
+        PID eventPid = PIDs.get(eventResc.getURI());
 
-		// Retrieve all of the events
-		List<PID> eventPids = logger.listEvents();
+        // Retrieve all of the events
+        List<PID> eventPids = logger.listEvents();
 
-		assertTrue(eventPids.contains(eventPid));
+        assertTrue(eventPids.contains(eventPid));
 
-		List<PremisEventObject> events = logger.getEvents();
-		assertEquals(1, events.size());
+        List<PremisEventObject> events = logger.getEvents();
+        assertEquals(1, events.size());
 
-		assertTrue(events.get(0).getResource().hasProperty(Premis.hasEventType, Premis.VirusCheck));
+        assertTrue(events.get(0).getResource().hasProperty(Premis.hasEventType, Premis.VirusCheck));
 
-		try (FcrepoResponse resp = client.head(eventPid.getRepositoryUri()).perform()) {
-			assertEquals("Event object not found", HttpStatus.SC_OK, resp.getStatusCode());
-		}
-	}
+        try (FcrepoResponse resp = client.head(eventPid.getRepositoryUri()).perform()) {
+            assertEquals("Event object not found", HttpStatus.SC_OK, resp.getStatusCode());
+        }
+    }
 
-	@Test
-	public void addEventsTest() throws Exception {
-		Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
-				.addSoftwareAgent(SoftwareAgent.clamav.toString())
-				.write();
-		PID event1Pid = PIDs.get(event1Resc.getURI());
+    @Test
+    public void addEventsTest() throws Exception {
+        Resource event1Resc = logger.buildEvent(Premis.VirusCheck)
+                .addSoftwareAgent(SoftwareAgent.clamav.toString())
+                .write();
+        PID event1Pid = PIDs.get(event1Resc.getURI());
 
-		Resource event2Resc = logger.buildEvent(Premis.Ingestion)
-				.addEventDetail("Ingested")
-				.write();
-		PID event2Pid = PIDs.get(event2Resc.getURI());
+        Resource event2Resc = logger.buildEvent(Premis.Ingestion)
+                .addEventDetail("Ingested")
+                .write();
+        PID event2Pid = PIDs.get(event2Resc.getURI());
 
-		Resource event3Resc = logger.buildEvent(Premis.MessageDigestCalculation)
-				.write();
-		PID event3Pid = PIDs.get(event3Resc.getURI());
+        Resource event3Resc = logger.buildEvent(Premis.MessageDigestCalculation)
+                .write();
+        PID event3Pid = PIDs.get(event3Resc.getURI());
 
-		// Make a new logger to make sure everything is clean
-		PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, repository);
+        // Make a new logger to make sure everything is clean
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, repository);
 
-		// Retrieve all of the events
-		List<PID> eventPids = retrieveLogger.listEvents();
+        // Retrieve all of the events
+        List<PID> eventPids = retrieveLogger.listEvents();
 
-		assertTrue(eventPids.contains(event1Pid));
-		assertTrue(eventPids.contains(event2Pid));
-		assertTrue(eventPids.contains(event3Pid));
+        assertTrue(eventPids.contains(event1Pid));
+        assertTrue(eventPids.contains(event2Pid));
+        assertTrue(eventPids.contains(event3Pid));
 
-		// Get all the events from fedora in chronological order
-		List<PremisEventObject> events = retrieveLogger.getEvents();
-		Collections.sort(events);
+        // Get all the events from fedora in chronological order
+        List<PremisEventObject> events = retrieveLogger.getEvents();
+        Collections.sort(events);
 
-		assertEquals(3, events.size());
+        assertEquals(3, events.size());
 
-		// Verify that they all have the correct types set
-		assertTrue(events.get(0).getResource().hasProperty(Premis.hasEventType, Premis.VirusCheck));
-		assertTrue(events.get(1).getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
-		assertTrue(events.get(2).getResource().hasProperty(Premis.hasEventType, Premis.MessageDigestCalculation));
-	}
+        // Verify that they all have the correct types set
+        assertTrue(events.get(0).getResource().hasProperty(Premis.hasEventType, Premis.VirusCheck));
+        assertTrue(events.get(1).getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
+        assertTrue(events.get(2).getResource().hasProperty(Premis.hasEventType, Premis.MessageDigestCalculation));
+    }
 }

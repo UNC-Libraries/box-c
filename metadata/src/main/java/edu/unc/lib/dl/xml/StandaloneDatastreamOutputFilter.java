@@ -42,7 +42,7 @@ public class StandaloneDatastreamOutputFilter extends XMLFilterImpl {
     boolean inRDF = false;
 
     @Override
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
+    public void startPrefixMapping(final String prefix, final String uri) throws SAXException {
 //        if (JDOMNamespaceUtil.XSI_NS.getURI().equals(uri)) {
 //            xsiPrefix = prefix;
 //        }
@@ -55,7 +55,7 @@ public class StandaloneDatastreamOutputFilter extends XMLFilterImpl {
 
 
     @Override
-    public void endPrefixMapping(String prefix) throws SAXException {
+    public void endPrefixMapping(final String prefix) throws SAXException {
 //        if (inRDF && rdfPrefix != null && rdfPrefix.equals(prefix)) {
 //            rdfPrefix = null;
 //        }
@@ -65,8 +65,8 @@ public class StandaloneDatastreamOutputFilter extends XMLFilterImpl {
 
 
     @Override
-    public void startElement(String uri, String localName, String qName,
-                             Attributes atts) throws SAXException {
+    public void startElement(final String uri, final String localName, final String qName,
+            Attributes atts) throws SAXException {
         if ("RDF".equals(localName) && JDOMNamespaceUtil.RDF_NS.getURI().equals(uri)) {
             // manually start a prefix mapping for the "CDR" namespace, since it's
             // reasonably likely we're going
@@ -77,8 +77,8 @@ public class StandaloneDatastreamOutputFilter extends XMLFilterImpl {
             // add all expected RDF namespaces with the prefixes detected earlier.
             inRDF = true;
             getContentHandler().startPrefixMapping(
-        	    this.scopeNamespaces.get(JDOMNamespaceUtil.CDR_NS.getURI()),
-        	    JDOMNamespaceUtil.CDR_NS.getURI());
+                    this.scopeNamespaces.get(JDOMNamespaceUtil.CDR_NS.getURI()),
+                    JDOMNamespaceUtil.CDR_NS.getURI());
         }
 
         if (this.inRDF) {
@@ -86,14 +86,15 @@ public class StandaloneDatastreamOutputFilter extends XMLFilterImpl {
             for (int i = 0; i < atts.getLength(); i++) {
                 if ("about".equals(atts.getLocalName(i)) || "resource".equals(atts.getLocalName(i))) {
                     newAtts.addAttribute(
-                	    JDOMNamespaceUtil.RDF_NS.getURI(),
-                	    atts.getLocalName(i),
-                	    this.scopeNamespaces.get(JDOMNamespaceUtil.RDF_NS.getURI()) +
-                	      ":" + atts.getLocalName(i),
-                	    atts.getType(i),
-                	    atts.getValue(i));
+                        JDOMNamespaceUtil.RDF_NS.getURI(),
+                        atts.getLocalName(i),
+                        this.scopeNamespaces.get(JDOMNamespaceUtil.RDF_NS.getURI()) +
+                          ":" + atts.getLocalName(i),
+                        atts.getType(i),
+                        atts.getValue(i));
                 } else { // just copy
-                    newAtts.addAttribute(atts.getURI(i), atts.getLocalName(i), atts.getQName(i), atts.getType(i), atts.getValue(i));
+                    newAtts.addAttribute(atts.getURI(i), atts.getLocalName(i), atts.getQName(i),
+                            atts.getType(i), atts.getValue(i));
                 }
             }
             atts = newAtts;
@@ -101,15 +102,15 @@ public class StandaloneDatastreamOutputFilter extends XMLFilterImpl {
         super.startElement(uri, localName, qName, atts);
         if ("xmlContent".equals(localName)) {
             this.getContentHandler().startPrefixMapping(
-        	    this.scopeNamespaces.get(JDOMNamespaceUtil.XSI_NS.getURI()),
-        	    JDOMNamespaceUtil.XSI_NS.getURI());
+                this.scopeNamespaces.get(JDOMNamespaceUtil.XSI_NS.getURI()),
+                JDOMNamespaceUtil.XSI_NS.getURI());
         }
     }
 
 
     @Override
-    public void endElement(String uri, String localName, String name) throws SAXException {
-	super.endElement(uri, localName, name);
+    public void endElement(final String uri, final String localName, final String name) throws SAXException {
+    super.endElement(uri, localName, name);
         if ("RDF".equals(localName) && JDOMNamespaceUtil.RDF_NS.getURI().equals(uri)) {
             //this.getContentHandler().endPrefixMapping(this.scopeNamespaces.get(JDOMNamespaceUtil.RDF_NS.getURI()));
             inRDF = false;

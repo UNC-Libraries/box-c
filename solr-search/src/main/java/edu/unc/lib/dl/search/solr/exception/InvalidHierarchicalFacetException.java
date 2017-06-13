@@ -15,15 +15,20 @@
  */
 package edu.unc.lib.dl.search.solr.exception;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class InvalidHierarchicalFacetException extends InvalidFacetException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public InvalidHierarchicalFacetException(String msg, Exception e){
-		super(msg);
-		this.setStackTrace(e.getStackTrace());
-	}
-	
-	public InvalidHierarchicalFacetException(String msg) {
-		super(msg);
-	}
+    public InvalidHierarchicalFacetException(String msg, Exception e) {
+        super(msg);
+        this.setStackTrace(e.getStackTrace());
+    }
+
+    public InvalidHierarchicalFacetException(String msg) {
+        super(msg);
+    }
 }

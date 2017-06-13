@@ -15,98 +15,73 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.ADMIN_UNIT;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTENT_ROOT;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.DEPOSIT_RECORD;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.WORK;
-
 import java.util.List;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
+/**
+ * Resource Types
+ * @author bbpennel
+ *
+ */
 public enum ResourceType {
-	AdminUnit(1, Cdr.AdminUnit.getURI()),
-	Collection(2, Cdr.Collection.getURI()),
-	Folder(3, Cdr.Folder.getURI()),
-	Work(4, Cdr.Work.getURI()),
-	File(4, Cdr.FileObject.getURI()),
-	DepositRecord(5, Cdr.DepositRecord.getURI()),
-	ContentRoot(5, Cdr.ContentRoot.getURI());
+    AdminUnit(1, Cdr.AdminUnit.getURI()),
+    Collection(2, Cdr.Collection.getURI()),
+    Folder(3, Cdr.Folder.getURI()),
+    Work(4, Cdr.Work.getURI()),
+    File(4, Cdr.FileObject.getURI()),
+    DepositRecord(5, Cdr.DepositRecord.getURI()),
+    ContentRoot(5, Cdr.ContentRoot.getURI());
 
-	private int displayOrder;
-	private String uri;
-	private List<Model> contentModels;
-	
-	ResourceType(int displayOrder, String uri) {
-		this.displayOrder = displayOrder;
-		this.uri = uri;
-	}
-	
-	public int getDisplayOrder(){
-		return this.displayOrder;
-	}
-	
-	public boolean equals(String name) {
-		return this.name().equals(name);
-	}
-	
-	public List<Model> getContentModels() {
-		return contentModels;
-	}
-	
-	public static ResourceType getResourceTypeByUri(String uri) {
-		for (ResourceType type : values()) {
-			if (type.uri.equals(uri)) {
-				return type;
-			}
-		}
-		return null;
-	}
+    private int displayOrder;
+    private String uri;
+    private List<Model> contentModels;
 
-	/**
-	 * Gets the resourceType for rdf type uris
-	 * 
-	 * @param uris
-	 * @return
-	 */
-	public static ResourceType getResourceTypeForUris(List<String> uris) {
-		for (String uri : uris) {
-			ResourceType type = getResourceTypeByUri(uri);
-			if (type != null) {
-				return type;
-			}
-		}
-		return null;
-	}
-	
-	@Deprecated
-	public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
-		if (contentModels.contains(ADMIN_UNIT.getPID().getURI())) {
-			return AdminUnit;
-		}
-		if (contentModels.contains(COLLECTION.getPID().getURI())) {
-			return Collection;
-		}
-		if (contentModels.contains(WORK.getPID().getURI())) {
-			return Work;
-		}
-		if (contentModels.contains(CONTAINER.getPID().getURI())) {
-			return Folder;
-		}
-		if (contentModels.contains(SIMPLE.getPID().getURI())) {
-			return File;
-		}
-		if (contentModels.contains(DEPOSIT_RECORD.getPID().getURI())) {
-			return DepositRecord;
-		}
-		
-		if (contentModels.contains(CONTENT_ROOT.getPID().getURI())) {
-			return ContentRoot;
-		}
-		return null;
-	}
+    ResourceType(int displayOrder, String uri) {
+        this.displayOrder = displayOrder;
+        this.uri = uri;
+    }
+
+    public int getDisplayOrder() {
+        return this.displayOrder;
+    }
+
+    public boolean equals(String name) {
+        return this.name().equals(name);
+    }
+
+    public List<Model> getContentModels() {
+        return contentModels;
+    }
+
+    public static ResourceType getResourceTypeByUri(String uri) {
+        for (ResourceType type : values()) {
+            if (type.uri.equals(uri)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the resourceType for rdf type uris
+     * 
+     * @param uris
+     * @return
+     */
+    public static ResourceType getResourceTypeForUris(List<String> uris) {
+        for (String uri : uris) {
+            ResourceType type = getResourceTypeByUri(uri);
+            if (type != null) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    @Deprecated
+    public static ResourceType getResourceTypeByContentModels(List<String> contentModels) {
+        return null;
+    }
 }

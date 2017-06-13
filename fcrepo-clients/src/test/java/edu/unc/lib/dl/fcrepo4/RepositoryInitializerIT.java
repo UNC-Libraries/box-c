@@ -33,91 +33,91 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class RepositoryInitializerIT extends AbstractFedoraIT {
 
-	private RepositoryInitializer repoInitializer;
+    private RepositoryInitializer repoInitializer;
 
-	@Autowired
-	private RepositoryObjectFactory objFactory;
+    @Autowired
+    private RepositoryObjectFactory objFactory;
 
-	@Before
-	public void init() {
-		repoInitializer = new RepositoryInitializer();
-		repoInitializer.setObjFactory(objFactory);
-		repoInitializer.setRepository(repository);
-		repoInitializer.setFcrepoClient(client);
-	}
+    @Before
+    public void init() {
+        repoInitializer = new RepositoryInitializer();
+        repoInitializer.setObjFactory(objFactory);
+        repoInitializer.setRepository(repository);
+        repoInitializer.setFcrepoClient(client);
+    }
 
-	/**
-	 * Ensure that expected objects were initialized
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void fullInitializationTest() throws Exception {
-		repoInitializer.initializeRepository();
+    /**
+     * Ensure that expected objects were initialized
+     *
+     * @throws Exception
+     */
+    @Test
+    public void fullInitializationTest() throws Exception {
+        repoInitializer.initializeRepository();
 
-		URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
-		assertObjectExists(contentContainerUri);
+        URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
+        assertObjectExists(contentContainerUri);
 
-		String contentRootString = URIUtil.join(
-				contentContainerUri, RepositoryPathConstants.CONTENT_ROOT_ID);
-		URI contentRootUri = URI.create(contentRootString);
-		assertObjectExists(contentRootUri);
-		Model crModel = repository.getObjectModel(contentRootUri);
-		Resource crResc = crModel.getResource(contentRootUri.toString());
-		assertTrue(crResc.hasProperty(RDF.type, Cdr.ContentRoot));
+        String contentRootString = URIUtil.join(
+                contentContainerUri, RepositoryPathConstants.CONTENT_ROOT_ID);
+        URI contentRootUri = URI.create(contentRootString);
+        assertObjectExists(contentRootUri);
+        Model crModel = repository.getObjectModel(contentRootUri);
+        Resource crResc = crModel.getResource(contentRootUri.toString());
+        assertTrue(crResc.hasProperty(RDF.type, Cdr.ContentRoot));
 
-		URI depositContainerUri = getContainerUri(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
-		assertObjectExists(depositContainerUri);
-	}
+        URI depositContainerUri = getContainerUri(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
+        assertObjectExists(depositContainerUri);
+    }
 
-	/**
-	 * Show that additional initialization calls after the first do not cause
-	 * objects to be modified or recreated
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void multipleInitializeTest() throws Exception {
-		repoInitializer.initializeRepository();
+    /**
+     * Show that additional initialization calls after the first do not cause
+     * objects to be modified or recreated
+     *
+     * @throws Exception
+     */
+    @Test
+    public void multipleInitializeTest() throws Exception {
+        repoInitializer.initializeRepository();
 
-		URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
-		String contentContainerEtag = getEtag(contentContainerUri);
+        URI contentContainerUri = getContainerUri(RepositoryPathConstants.CONTENT_BASE);
+        String contentContainerEtag = getEtag(contentContainerUri);
 
-		String contentRootString = URIUtil.join(
-				contentContainerUri, RepositoryPathConstants.CONTENT_ROOT_ID);
-		URI contentRootUri = URI.create(contentRootString);
-		String contentRootEtag = getEtag(contentRootUri);
+        String contentRootString = URIUtil.join(
+                contentContainerUri, RepositoryPathConstants.CONTENT_ROOT_ID);
+        URI contentRootUri = URI.create(contentRootString);
+        String contentRootEtag = getEtag(contentRootUri);
 
-		URI depositContainerUri = getContainerUri(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
-		String depositContainerEtag = getEtag(depositContainerUri);
+        URI depositContainerUri = getContainerUri(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
+        String depositContainerEtag = getEtag(depositContainerUri);
 
-		repoInitializer.initializeRepository();
+        repoInitializer.initializeRepository();
 
-		assertEquals("Content Container object changed after second initialization",
-				contentContainerEtag, getEtag(contentContainerUri));
-		assertEquals("Content Root object changed after second initialization",
-				contentRootEtag, getEtag(contentRootUri));
-		assertEquals("Deposit Container object changed after second initialization",
-				depositContainerEtag, getEtag(depositContainerUri));
-	}
+        assertEquals("Content Container object changed after second initialization",
+                contentContainerEtag, getEtag(contentContainerUri));
+        assertEquals("Content Root object changed after second initialization",
+                contentRootEtag, getEtag(contentRootUri));
+        assertEquals("Deposit Container object changed after second initialization",
+                depositContainerEtag, getEtag(depositContainerUri));
+    }
 
-	private String getEtag(URI uri) throws Exception {
-		try (FcrepoResponse response = client.head(uri).perform()) {
-			assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+    private String getEtag(URI uri) throws Exception {
+        try (FcrepoResponse response = client.head(uri).perform()) {
+            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
 
-			String etag = response.getHeaderValue("ETag");
-			return etag.substring(1, etag.length() - 1);
-		}
-	}
+            String etag = response.getHeaderValue("ETag");
+            return etag.substring(1, etag.length() - 1);
+        }
+    }
 
-	private URI getContainerUri(String id) {
-		String containerString = URIUtil.join(repository.getBaseUri(), id);
-		return URI.create(containerString);
-	}
+    private URI getContainerUri(String id) {
+        String containerString = URIUtil.join(repository.getBaseUri(), id);
+        return URI.create(containerString);
+    }
 }

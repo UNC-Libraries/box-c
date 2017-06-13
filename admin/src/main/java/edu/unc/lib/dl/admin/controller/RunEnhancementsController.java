@@ -46,58 +46,57 @@ import edu.unc.lib.dl.fedora.PID;
 @Controller
 public class RunEnhancementsController {
 
-	@Autowired
-	private Client jesqueClient;
-	@Autowired
-	private String runEnhancementQueueName;
-	@Autowired
-	private AccessControlService aclService;
-	
-	@RequestMapping(value = "runEnhancements", method = RequestMethod.POST, produces = "application/json")
-	public @ResponseBody Map<String, Object> reviewJSON(@RequestBody RunEnhancementsRequest data,
-			HttpServletRequest request, HttpServletResponse response) {
+    @Autowired
+    private Client jesqueClient;
+    @Autowired
+    private String runEnhancementQueueName;
+    @Autowired
+    private AccessControlService aclService;
 
-		Map<String, Object> result = new HashMap<>();
-		
-		// Check that the user has permission to all requested objects
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		for (String pid : data.getPids()) {
-			if (!aclService.hasAccess(new PID(pid), groups, Permission.editAccessControl)) {
-				result.put("error", "Insufficient permissions to perform operation");
-				return result;
-			}
-		}
-		
-		
-		Job job = new Job(RunEnhancementsTreeJob.class.getName(), data.getPids(), data.isForce());
-		jesqueClient.enqueue(runEnhancementQueueName, job);
-		
-		result.put("message", "Enhancement of " + data.getPids().size()
-				+ " object(s) and their children has begun");
-		
-		result.put("success", true);
-		return result;
-	}
+    @RequestMapping(value = "runEnhancements", method = RequestMethod.POST, produces = "application/json")
+    public @ResponseBody Map<String, Object> reviewJSON(@RequestBody RunEnhancementsRequest data,
+            HttpServletRequest request, HttpServletResponse response) {
 
-	public static class RunEnhancementsRequest {
-		private List<String> pids;
-		private boolean force;
+        Map<String, Object> result = new HashMap<>();
 
-		public List<String> getPids() {
-			return pids;
-		}
+        // Check that the user has permission to all requested objects
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        for (String pid : data.getPids()) {
+            if (!aclService.hasAccess(new PID(pid), groups, Permission.editAccessControl)) {
+                result.put("error", "Insufficient permissions to perform operation");
+                return result;
+            }
+        }
 
-		public void setPids(List<String> pids) {
-			this.pids = pids;
-		}
+        Job job = new Job(RunEnhancementsTreeJob.class.getName(), data.getPids(), data.isForce());
+        jesqueClient.enqueue(runEnhancementQueueName, job);
 
-		public boolean isForce() {
-			return force;
-		}
+        result.put("message", "Enhancement of " + data.getPids().size()
+                + " object(s) and their children has begun");
 
-		public void setForce(boolean force) {
-			this.force = force;
-		}
+        result.put("success", true);
+        return result;
+    }
 
-	}
+    public static class RunEnhancementsRequest {
+        private List<String> pids;
+        private boolean force;
+
+        public List<String> getPids() {
+            return pids;
+        }
+
+        public void setPids(List<String> pids) {
+            this.pids = pids;
+        }
+
+        public boolean isForce() {
+            return force;
+        }
+
+        public void setForce(boolean force) {
+            this.force = force;
+        }
+
+    }
 }

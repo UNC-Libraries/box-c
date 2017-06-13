@@ -24,47 +24,49 @@ import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
  *
  */
 public enum Permission {
-	// TODO Remove old 
-	addRemoveContents, editAccessControl, moveToTrash, publish,
-	purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
-	// current acl permissions
-	viewMetadata,
-	viewAccessCopies,
-	viewOriginal,
-	// TODO replaces viewAdminUI and viewEmbargoed
-	viewHidden,
-	editDescription,
-	bulkUpdateDescription,
-	ingest,
-	move,
-	markForDeletion,
-	destroy,
-	createCollection,
-	changePatronAccess,
-	assignStaffRoles,
-	editResourceType;
-	
-	private Permission() {}
-	
-	public static Permission getPermission(String permissionName) {
-		for (Permission permission: Permission.values()) {
-			if (permission.name().equals(permissionName))
-				return permission;
-		}
-		return null;
-	}
-	
-	public static Permission getPermissionByDatastreamCategory(DatastreamCategory category) {
-		switch (category) {
-			case DERIVATIVE:
-				return Permission.viewDerivative;
-			case METADATA:
-				return Permission.viewDescription;
-			case ORIGINAL:
-				return Permission.viewOriginal;
-			case ADMINISTRATIVE:
-				return Permission.viewAdminUI;
-		}
-		return null;
-	}
+    // TODO Remove old
+    addRemoveContents, editAccessControl, moveToTrash, publish,
+    purgeForever, viewAdminUI, viewDerivative, viewDescription, viewEmbargoed,
+    // current acl permissions
+    viewMetadata,
+    viewAccessCopies,
+    viewOriginal,
+    // TODO replaces viewAdminUI and viewEmbargoed
+    viewHidden,
+    editDescription,
+    bulkUpdateDescription,
+    ingest,
+    move,
+    markForDeletion,
+    destroy,
+    createCollection,
+    changePatronAccess,
+    assignStaffRoles,
+    editResourceType;
+
+    private Permission() {
+    }
+
+    public static Permission getPermission(String permissionName) {
+        for (Permission permission: Permission.values()) {
+            if (permission.name().equals(permissionName)) {
+                return permission;
+            }
+        }
+        return null;
+    }
+
+    public static Permission getPermissionByDatastreamCategory(DatastreamCategory category) {
+        switch (category) {
+            case DERIVATIVE:
+                return Permission.viewDerivative;
+            case METADATA:
+                return Permission.viewDescription;
+            case ORIGINAL:
+                return Permission.viewOriginal;
+            case ADMINISTRATIVE:
+                return Permission.viewAdminUI;
+        }
+        return null;
+    }
 }

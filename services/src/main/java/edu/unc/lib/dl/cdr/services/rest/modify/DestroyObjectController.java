@@ -41,36 +41,36 @@ import edu.unc.lib.dl.services.DigitalObjectManager;
  */
 @Controller
 public class DestroyObjectController {
-	private static final Logger log = LoggerFactory.getLogger(DestroyObjectController.class);
+    private static final Logger log = LoggerFactory.getLogger(DestroyObjectController.class);
 
-	@Autowired(required = true)
-	private DigitalObjectManager digitalObjectManager;
-	
-	@RequestMapping(value = "edit/destroy/{id}", method = RequestMethod.POST)
-	public @ResponseBody
-	Map<String, ? extends Object> moveToTrash(@PathVariable("id") String id) {
-		PID pid = new PID(id);
-		
-		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("pid", pid);
-		result.put("action", "destroy");
-		
-		try {
-			log.debug("Destroying object {}", id);
-			digitalObjectManager.delete(pid, GroupsThreadStore.getUsername(), "Object destroyed by CDR API");
-			result.put("timestamp", System.currentTimeMillis());
-		} catch (FedoraException e) {
-			log.error("Failed to destroy object {}", pid, e);
-			result.put("error", e.toString());
-		} catch (IngestException e) {
-			log.error("Failed to destroy object {}", pid, e);
-			result.put("error", e.toString());
-		}
-		
-		return result;
-	}
+    @Autowired(required = true)
+    private DigitalObjectManager digitalObjectManager;
 
-	public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-		this.digitalObjectManager = digitalObjectManager;
-	}
+    @RequestMapping(value = "edit/destroy/{id}", method = RequestMethod.POST)
+    public @ResponseBody
+    Map<String, ? extends Object> moveToTrash(@PathVariable("id") String id) {
+        PID pid = new PID(id);
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("pid", pid);
+        result.put("action", "destroy");
+
+        try {
+            log.debug("Destroying object {}", id);
+            digitalObjectManager.delete(pid, GroupsThreadStore.getUsername(), "Object destroyed by CDR API");
+            result.put("timestamp", System.currentTimeMillis());
+        } catch (FedoraException e) {
+            log.error("Failed to destroy object {}", pid, e);
+            result.put("error", e.toString());
+        } catch (IngestException e) {
+            log.error("Failed to destroy object {}", pid, e);
+            result.put("error", e.toString());
+        }
+
+        return result;
+    }
+
+    public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
+        this.digitalObjectManager = digitalObjectManager;
+    }
 }

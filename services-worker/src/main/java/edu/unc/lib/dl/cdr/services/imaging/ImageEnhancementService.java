@@ -31,24 +31,24 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
  * @author bbpennel
  */
 public class ImageEnhancementService extends AbstractDatastreamEnhancementService {
-	public static final String enhancementName = "Image Derivative Generation";
+     public static final String enhancementName = "Image Derivative Generation";
 
-	public ImageEnhancementService() {
-		super();
-	}
+     public ImageEnhancementService() {
+          super();
+     }
 
-	public void init() {
-		mimetypePattern = Pattern.compile("^image/.*");
-		derivativeDatastream = Datastream.IMAGE_JP2000.getName();
-	}
+     public void init() {
+          mimetypePattern = Pattern.compile("^image/.*");
+          derivativeDatastream = Datastream.IMAGE_JP2000.getName();
+     }
 
-	@Override
-	public Enhancement<Element> getEnhancement(EnhancementMessage message) {
-		return new ImageEnhancement(this, message);
-	}
+     @Override
+     public Enhancement<Element> getEnhancement(EnhancementMessage message) {
+          return new ImageEnhancement(this, message);
+     }
 
-	@Override
-	public String getName() {
-		return enhancementName;
-	}
+     @Override
+     public String getName() {
+          return enhancementName;
+     }
 }

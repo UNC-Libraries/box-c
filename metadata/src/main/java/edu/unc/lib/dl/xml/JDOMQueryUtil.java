@@ -28,63 +28,80 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
+/**
+ * Convenience methods for working with JDOM
+ * @author bbpennel
+ *
+ */
 public class JDOMQueryUtil {
+    private JDOMQueryUtil() {
 
-	public static Element getElementByAttribute(List<?> elements, String attribute, String value) {
-		return getElementByAttribute(elements, attribute, null, value);
-	}
+    }
 
-	public static Element getElementByAttribute(List<?> elements, String attribute, Namespace attributeNS, String value) {
-		for (Object elementObj : elements) {
-			Element element = (Element) elementObj;
-			String attrValue = attributeNS == null ? element.getAttributeValue(attribute) : element.getAttributeValue(attribute, attributeNS);
-			if (attrValue == value || (value != null && value.equals(attrValue))) {
-				return element;
-			}
-		}
-		return null;
-	}
+    public static Element getElementByAttribute(final List<?> elements,
+            final String attribute, final String value) {
+        return getElementByAttribute(elements, attribute, null, value);
+    }
 
-	public static Element getChildByAttribute(Element parent, String childName, Namespace namespace, String attribute, String value) {
-		List<?> elements;
-		if (childName != null) {
-			if (namespace != null)
-				elements = parent.getChildren(childName, namespace);
-			else elements = parent.getChildren(childName);
-		} else {
-			elements = parent.getChildren();
-		}
-		return getElementByAttribute(elements, attribute, value);
-	}
+    public static Element getElementByAttribute(final List<?> elements,
+            final String attribute, final Namespace attributeNS, final String value) {
+        for (Object elementObj : elements) {
+            Element element = (Element) elementObj;
+            String attrValue = attributeNS == null ? element
+                    .getAttributeValue(attribute) : element.getAttributeValue(
+                    attribute, attributeNS);
+            if (attrValue == value
+                    || (value != null && value.equals(attrValue))) {
+                return element;
+            }
+        }
+        return null;
+    }
 
-	public static Date parseISO6392bDateChild(Element parent, String childName, Namespace namespace) {
-		String dateString = parent.getChildText(childName, namespace);
-		if (dateString != null) {
-			try {
-				return DateTimeUtil.parseUTCToDate(dateString);
-			} catch (ParseException e) {
-				// Wasn't a valid date, ignore it.
-			} catch (IllegalArgumentException e) {
-				// Wasn't a valid date, ignore it.
-			}
-		}
-		return null;
-	}
+    public static Element getChildByAttribute(final Element parent, final String childName,
+            final Namespace namespace, final String attribute, final String value) {
+        List<?> elements;
+        if (childName != null) {
+            if (namespace != null) {
+                elements = parent.getChildren(childName, namespace);
+            } else {
+                elements = parent.getChildren(childName);
+            }
+        } else {
+            elements = parent.getChildren();
+        }
+        return getElementByAttribute(elements, attribute, value);
+    }
 
-	/**
-	 * Returns a set of object PIDs retrieved from the provided RDF datastream
-	 *
-	 * @param rdfRoot
-	 * @param relation
-	 * @return
-	 */
-	public static Set<PID> getRelationSet(Element rdfRoot, Relationship relation) {
-		List<Element> containsEls = rdfRoot.getChild("Description", JDOMNamespaceUtil.RDF_NS).getChildren(
-				relation.name(), relation.getNamespace());
-		Set<PID> children = new HashSet<>();
-		for (Element containsEl : containsEls) {
-			children.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
-		}
-		return children;
-	}
+    public static Date parseISO6392bDateChild(final Element parent, final String childName,
+            final Namespace namespace) {
+        String dateString = parent.getChildText(childName, namespace);
+        if (dateString != null) {
+            try {
+                return DateTimeUtil.parseUTCToDate(dateString);
+            } catch (ParseException e) {
+                // Wasn't a valid date, ignore it.
+            } catch (IllegalArgumentException e) {
+                // Wasn't a valid date, ignore it.
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns a set of object PIDs retrieved from the provided RDF datastream
+     *
+     * @param rdfRoot
+     * @param relation
+     * @return
+     */
+    public static Set<PID> getRelationSet(final Element rdfRoot, final Relationship relation) {
+        List<Element> containsEls = rdfRoot.getChild("Description", JDOMNamespaceUtil.RDF_NS).getChildren(
+                relation.name(), relation.getNamespace());
+        Set<PID> children = new HashSet<>();
+        for (Element containsEl : containsEls) {
+            children.add(new PID(containsEl.getAttributeValue("resource", JDOMNamespaceUtil.RDF_NS)));
+        }
+        return children;
+    }
 }

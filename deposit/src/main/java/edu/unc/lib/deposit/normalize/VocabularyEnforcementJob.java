@@ -57,101 +57,103 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
  * @date Jun 26, 2014
  */
 public class VocabularyEnforcementJob extends AbstractDepositJob {
-	private static final Logger log = LoggerFactory.getLogger(VocabularyEnforcementJob.class);
+    private static final Logger log = LoggerFactory.getLogger(VocabularyEnforcementJob.class);
 
-	@Autowired
-	VocabularyHelperManager vocabManager;
+    @Autowired
+    VocabularyHelperManager vocabManager;
 
-	public VocabularyEnforcementJob() {
-	}
+    public VocabularyEnforcementJob() {
+    }
 
-	public VocabularyEnforcementJob(String uuid, String depositUUID) {
-		super(uuid, depositUUID);
-	}
+    public VocabularyEnforcementJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
 
-	@Override
-	public void runJob() {
-		Model model = getWritableModel();
+    @Override
+    public void runJob() {
+        Model model = getWritableModel();
 
-		// Get the list of all objects being ingested in this job
-		List<String> resourcePIDs = new ArrayList<>();
-		Bag deposit = model.getBag(getDepositPID().getURI());
-		walkChildrenDepthFirst(deposit, resourcePIDs, true);
+        // Get the list of all objects being ingested in this job
+        List<String> resourcePIDs = new ArrayList<>();
+        Bag deposit = model.getBag(getDepositPID().getURI());
+        walkChildrenDepthFirst(deposit, resourcePIDs, true);
 
-		SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+        SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
 
-		// Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
-		PID destinationPID = PIDs.get(getDepositStatus().get(DepositField.containerId.name()));
+        // Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
+        PID destinationPID = PIDs.get(getDepositStatus().get(DepositField.containerId.name()));
 
-		for (String resourcePID : resourcePIDs) {
-			PID pid = PIDs.get(resourcePID);
-			File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
+        for (String resourcePID : resourcePIDs) {
+            PID pid = PIDs.get(resourcePID);
+            File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
 
-			// Check if the resource has a description
-			if (modsFile.exists()) {
-				try {
-					Document modsDoc = sb.build(modsFile);
+            // Check if the resource has a description
+            if (modsFile.exists()) {
+                try {
+                    Document modsDoc = sb.build(modsFile);
 
-					// Update the MODS document to use approved terms when possible if the vocabularies support remapping
-					log.debug("Updating document terms for {} within destination {}", pid, destinationPID);
-					boolean modified = updateDocumentTerms(destinationPID, modsDoc.getRootElement());
+                    // Update the MODS document to use approved terms when possible
+                    // if the vocabularies support remapping
+                    log.debug("Updating document terms for {} within destination {}", pid, destinationPID);
+                    boolean modified = updateDocumentTerms(destinationPID, modsDoc.getRootElement());
 
-					// Update the mods document if it was changed
-					if (modified) {
-						try (FileOutputStream fos = new FileOutputStream(modsFile)) {
-							new XMLOutputter(Format.getPrettyFormat()).output(modsDoc.getDocument(), fos);
-						}
-					}
+                    // Update the mods document if it was changed
+                    if (modified) {
+                        try (FileOutputStream fos = new FileOutputStream(modsFile)) {
+                            new XMLOutputter(Format.getPrettyFormat()).output(modsDoc.getDocument(), fos);
+                        }
+                    }
 
-					// Capture any invalid affiliations as relations
-					log.debug("Adding invalid terms for {} within destination {}", pid, destinationPID);
-					addInvalidTerms(pid, destinationPID, modsDoc.getRootElement(), model);
+                    // Capture any invalid affiliations as relations
+                    log.debug("Adding invalid terms for {} within destination {}", pid, destinationPID);
+                    addInvalidTerms(pid, destinationPID, modsDoc.getRootElement(), model);
 
-				} catch (JDOMException | IOException e) {
-					log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
-				}
-			}
-		}
-	}
+                } catch (JDOMException | IOException e) {
+                    log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
+                }
+            }
+        }
+    }
 
-	private boolean updateDocumentTerms(PID pid, Element doc) throws JDOMException {
-		boolean result = false;
+    private boolean updateDocumentTerms(PID pid, Element doc) throws JDOMException {
+        boolean result = false;
 
-		Set<VocabularyHelper> helpers = vocabManager.getRemappingHelpers(pid);
-		if (helpers != null) {
-			for (VocabularyHelper helper : helpers) {
-				result = helper.updateDocumentTerms(doc) || result;
-			}
-		}
+        Set<VocabularyHelper> helpers = vocabManager.getRemappingHelpers(pid);
+        if (helpers != null) {
+            for (VocabularyHelper helper : helpers) {
+                result = helper.updateDocumentTerms(doc) || result;
+            }
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Adds invalid terms from applicable controlled vocabularies to the specified object as relationships.
-	 *
-	 * @param pid
-	 * @param destination
-	 * @param doc
-	 * @param model
-	 * @throws JDOMException
-	 */
-	private void addInvalidTerms(PID pid, PID destination, Element doc, Model model) throws JDOMException {
-		Map<String, Set<String>> invalidTermMap = vocabManager.getInvalidTermsWithPrefix(destination, doc);
-		if (invalidTermMap == null)
-			return;
+    /**
+     * Adds invalid terms from applicable controlled vocabularies to the specified object as relationships.
+     *
+     * @param pid
+     * @param destination
+     * @param doc
+     * @param model
+     * @throws JDOMException
+     */
+    private void addInvalidTerms(PID pid, PID destination, Element doc, Model model) throws JDOMException {
+        Map<String, Set<String>> invalidTermMap = vocabManager.getInvalidTermsWithPrefix(destination, doc);
+        if (invalidTermMap == null) {
+            return;
+        }
 
-		for (Entry<String, Set<String>> invalidTermEntry : invalidTermMap.entrySet()) {
-			Set<String> invalidTerms = invalidTermEntry.getValue();
+        for (Entry<String, Set<String>> invalidTermEntry : invalidTermMap.entrySet()) {
+            Set<String> invalidTerms = invalidTermEntry.getValue();
 
-			// Persist the list of invalid vocab terms out to the model
-			if (invalidTerms.size() > 0) {
-				Resource resource = model.getResource(pid.getURI());
-				for (String invalid : invalidTerms) {
-					model.addLiteral(resource, Cdr.invalidTerm, model.createLiteral(invalid));
-				}
-			}
-		}
-	}
+            // Persist the list of invalid vocab terms out to the model
+            if (invalidTerms.size() > 0) {
+                Resource resource = model.getResource(pid.getURI());
+                for (String invalid : invalidTerms) {
+                    model.addLiteral(resource, Cdr.invalidTerm, model.createLiteral(invalid));
+                }
+            }
+        }
+    }
 
 }

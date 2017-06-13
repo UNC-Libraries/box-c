@@ -32,31 +32,36 @@ import org.swordapp.server.ServiceDocumentManager;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 @RequestMapping(SwordConfigurationImpl.SERVICE_DOCUMENT_PATH)
 public class ServiceDocumentServlet extends BaseSwordServlet {
-	private static Logger LOG = Logger.getLogger(ServiceDocumentServlet.class);
-	@Resource
-	protected ServiceDocumentManager serviceDocumentManager;
-	protected ServiceDocumentAPI api;
+    private static Logger LOG = Logger.getLogger(ServiceDocumentServlet.class);
+    @Resource
+    protected ServiceDocumentManager serviceDocumentManager;
+    protected ServiceDocumentAPI api;
 
-	@PostConstruct
-	public void init() throws ServletException {
-		// load the api
-		this.api = new ServiceDocumentAPI(this.serviceDocumentManager, this.config);
-	}
-	
-	@RequestMapping(value = {"", "/", "/{pid}"}, method = RequestMethod.GET)
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		LOG.debug("Get request for service document " + req.getQueryString());
-		this.api.get(req, resp);
-	}
+    @PostConstruct
+    public void init() throws ServletException {
+        // load the api
+        this.api = new ServiceDocumentAPI(this.serviceDocumentManager, this.config);
+    }
 
-	public ServiceDocumentManager getServiceDocumentManager() {
-		return serviceDocumentManager;
-	}
+    @RequestMapping(value = {"", "/", "/{pid}"}, method = RequestMethod.GET)
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        LOG.debug("Get request for service document " + req.getQueryString());
+        this.api.get(req, resp);
+    }
 
-	public void setServiceDocumentManager(ServiceDocumentManager serviceDocumentManager) {
-		this.serviceDocumentManager = serviceDocumentManager;
-	}
+    public ServiceDocumentManager getServiceDocumentManager() {
+        return serviceDocumentManager;
+    }
+
+    public void setServiceDocumentManager(ServiceDocumentManager serviceDocumentManager) {
+        this.serviceDocumentManager = serviceDocumentManager;
+    }
 }

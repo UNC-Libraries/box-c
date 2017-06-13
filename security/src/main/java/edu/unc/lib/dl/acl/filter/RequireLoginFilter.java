@@ -27,35 +27,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+/**
+ * Http Filter which requires that the connection be made by an authenticated user
+ * 
+ * @author bbpennel
+ *
+ */
 public class RequireLoginFilter extends OncePerRequestFilter {
-	private static final Logger log = LoggerFactory.getLogger(RequireLoginFilter.class);
-	
-	private String notLoggedInUrl;
-	private boolean forwardRequest;
-	
-	@Override
-	public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
-			throws IOException, ServletException {
-		
-		if (request.getRemoteUser() == null || "".equals(request.getRemoteUser().trim())) {
-			if (forwardRequest) {
-				RequestDispatcher dispatcher = request.getRequestDispatcher(notLoggedInUrl);
-				dispatcher.forward(request, response);
-			} else {
-				response.sendRedirect(notLoggedInUrl);
-			}
-			return;
-		} else {
-			log.debug("User logged in as " + request.getRemoteUser());
-			chain.doFilter(request, response);
-		}
-	}
+    private static final Logger log = LoggerFactory.getLogger(RequireLoginFilter.class);
 
-	public void setNotLoggedInUrl(String notLoggedInUrl) {
-		this.notLoggedInUrl = notLoggedInUrl;
-	}
+    private String notLoggedInUrl;
+    private boolean forwardRequest;
 
-	public void setForwardRequest(boolean forwardRequest) {
-		this.forwardRequest = forwardRequest;
-	}
+    @Override
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        if (request.getRemoteUser() == null || "".equals(request.getRemoteUser().trim())) {
+            if (forwardRequest) {
+                RequestDispatcher dispatcher = request.getRequestDispatcher(notLoggedInUrl);
+                dispatcher.forward(request, response);
+            } else {
+                response.sendRedirect(notLoggedInUrl);
+            }
+            return;
+        } else {
+            log.debug("User logged in as " + request.getRemoteUser());
+            chain.doFilter(request, response);
+        }
+    }
+
+    public void setNotLoggedInUrl(String notLoggedInUrl) {
+        this.notLoggedInUrl = notLoggedInUrl;
+    }
+
+    public void setForwardRequest(boolean forwardRequest) {
+        this.forwardRequest = forwardRequest;
+    }
 }

@@ -18,14 +18,19 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import edu.unc.lib.dl.message.ActionMessage;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface MessageConductor {
-	
-	void add(ActionMessage message);
 
-	/**
-	 * Returns the identifier string for this conductor
-	 * @return
-	 */
-	public String getIdentifier();
-	
+    void add(ActionMessage message);
+
+    /**
+     * Returns the identifier string for this conductor
+     * @return
+     */
+    public String getIdentifier();
+
 }

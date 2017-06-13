@@ -20,8 +20,8 @@ import org.junit.Test;
 
 public class GroupsThreadStoreTest extends Assert {
 
-	@Test
-	public void nullGroupsTest() {
-		GroupsThreadStore.storeGroups(null);
-	}
+    @Test
+    public void nullGroupsTest() {
+        GroupsThreadStore.storeGroups(null);
+    }
 }

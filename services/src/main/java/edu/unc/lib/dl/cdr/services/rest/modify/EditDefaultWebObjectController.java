@@ -44,97 +44,98 @@ import edu.unc.lib.dl.update.UpdateException;
 @Controller
 public class EditDefaultWebObjectController {
 
-	private static final Logger log = LoggerFactory.getLogger(EditDefaultWebObjectController.class);
+    private static final Logger log = LoggerFactory.getLogger(EditDefaultWebObjectController.class);
 
-	@Autowired
-	private DigitalObjectManager dom;
+    @Autowired
+    private DigitalObjectManager dom;
 
-	@RequestMapping(value = "edit/editDefaultWebObject", method = RequestMethod.POST)
-	public @ResponseBody Object editDefaultWebObject(@RequestBody EditDWORequest editRequest,
-			HttpServletResponse response) {
+    @RequestMapping(value = "edit/editDefaultWebObject", method = RequestMethod.POST)
+    public @ResponseBody Object editDefaultWebObject(@RequestBody EditDWORequest editRequest,
+            HttpServletResponse response) {
 
-		Map<String, Object> results = new HashMap<>();
+        Map<String, Object> results = new HashMap<>();
 
-		EditDWORunnable editDWO = new EditDWORunnable(editRequest);
-		editRequest.setUser(GroupsThreadStore.getUsername());
-		editRequest.setGroupSet(GroupsThreadStore.getGroups());
-		Thread editThread = new Thread(editDWO);
-		editThread.start();
+        EditDWORunnable editDWO = new EditDWORunnable(editRequest);
+        editRequest.setUser(GroupsThreadStore.getUsername());
+        editRequest.setGroupSet(GroupsThreadStore.getGroups());
+        Thread editThread = new Thread(editDWO);
+        editThread.start();
 
-		results.put("message", "Operation to change the primary access object for  " + editRequest.getPids().size()
-				+ " objects has begun");
+        results.put("message", "Operation to change the primary access object for  " + editRequest.getPids().size()
+                + " objects has begun");
 
-		response.setStatus(200);
-		return results;
-	}
+        response.setStatus(200);
+        return results;
+    }
 
-	public static class EditDWORequest {
-		private List<PID> pids;
-		private String user;
-		private AccessGroupSet groupSet;
-		private Boolean clear = false;
+    public static class EditDWORequest {
+        private List<PID> pids;
+        private String user;
+        private AccessGroupSet groupSet;
+        private Boolean clear = false;
 
-		public void setPids(List<String> pids) {
-			this.pids = new ArrayList<PID>(pids.size());
-			for (String id : pids)
-				this.pids.add(new PID(id));
-		}
+        public void setPids(List<String> pids) {
+            this.pids = new ArrayList<PID>(pids.size());
+            for (String id : pids) {
+                this.pids.add(new PID(id));
+            }
+        }
 
-		public List<PID> getPids() {
-			return this.pids;
-		}
+        public List<PID> getPids() {
+            return this.pids;
+        }
 
-		public String getUser() {
-			return user;
-		}
+        public String getUser() {
+            return user;
+        }
 
-		public void setUser(String user) {
-			this.user = user;
-		}
+        public void setUser(String user) {
+            this.user = user;
+        }
 
-		public AccessGroupSet getGroupSet() {
-			return groupSet;
-		}
+        public AccessGroupSet getGroupSet() {
+            return groupSet;
+        }
 
-		public void setGroupSet(AccessGroupSet groupSet) {
-			this.groupSet = groupSet;
-		}
+        public void setGroupSet(AccessGroupSet groupSet) {
+            this.groupSet = groupSet;
+        }
 
-		public Boolean getClear() {
-			return clear;
-		}
+        public Boolean getClear() {
+            return clear;
+        }
 
-		public void setClear(Boolean clear) {
-			this.clear = clear;
-		}
-	}
+        public void setClear(Boolean clear) {
+            this.clear = clear;
+        }
+    }
 
-	private class EditDWORunnable implements Runnable {
+    private class EditDWORunnable implements Runnable {
 
-		private final EditDWORequest editRequest;
+        private final EditDWORequest editRequest;
 
-		public EditDWORunnable(EditDWORequest editRequest) {
-			this.editRequest = editRequest;
-		}
+        public EditDWORunnable(EditDWORequest editRequest) {
+            this.editRequest = editRequest;
+        }
 
-		@Override
-		public void run() {
-			Long start = System.currentTimeMillis();
+        @Override
+        public void run() {
+            Long start = System.currentTimeMillis();
 
-			try {
-				GroupsThreadStore.storeGroups(editRequest.getGroupSet());
-				GroupsThreadStore.storeUsername(editRequest.getUser());
+            try {
+                GroupsThreadStore.storeGroups(editRequest.getGroupSet());
+                GroupsThreadStore.storeUsername(editRequest.getUser());
 
-				dom.editDefaultWebObject(editRequest.getPids(), editRequest.getClear(), editRequest.getUser());
-			} catch (UpdateException e) {
-				log.warn("Failed to change default web object", e);
-			} finally {
-				GroupsThreadStore.clearStore();
-			}
+                dom.editDefaultWebObject(editRequest.getPids(), editRequest.getClear(), editRequest.getUser());
+            } catch (UpdateException e) {
+                log.warn("Failed to change default web object", e);
+            } finally {
+                GroupsThreadStore.clearStore();
+            }
 
-			log.info("Finished changing default web object for {} object(s) in {}ms", editRequest.pids.size(),
-					(System.currentTimeMillis() - start));
-		}
+            log.info("Finished changing default web object for {} object(s) in {}ms", editRequest.pids.size(),
+                    (System.currentTimeMillis() - start));
+        }
 
-	}
+    }
 }

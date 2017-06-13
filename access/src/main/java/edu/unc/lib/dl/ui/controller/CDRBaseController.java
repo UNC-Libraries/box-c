@@ -25,8 +25,8 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
  * @author bbpennel
  */
 public abstract class CDRBaseController {
-	protected AccessGroupSet getUserAccessGroups(HttpServletRequest request){
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		return groups;
-	}
+    protected AccessGroupSet getUserAccessGroups(HttpServletRequest request) {
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        return groups;
+    }
 }

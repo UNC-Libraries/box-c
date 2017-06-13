@@ -37,70 +37,75 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 public class TrashController extends AbstractSearchController {
-	protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
-			SearchFieldKeys.TITLE.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
-			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
-			SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name());
+    protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
+            SearchFieldKeys.TITLE.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+            SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ANCESTOR_PATH.name(),
+            SearchFieldKeys.VERSION.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name());
 
-	@RequestMapping(value = "trash", produces = "text/html")
-	public String trashForEverything() {
-		return "search/trashList";
-	}
+    @RequestMapping(value = "trash", produces = "text/html")
+    public String trashForEverything() {
+        return "search/trashList";
+    }
 
-	@RequestMapping(value = "trash/{pid}", produces = "text/html")
-	public String trashForContainer() {
-		return "search/trashList";
-	}
+    @RequestMapping(value = "trash/{pid}", produces = "text/html")
+    public String trashForContainer() {
+        return "search/trashList";
+    }
 
-	@RequestMapping(value = "trash/{pid}", produces = "application/json")
-	public @ResponseBody Map<String, Object> trashJSON(@PathVariable("pid") String pid, HttpServletRequest request,
-			HttpServletResponse response) {
-		return getResults(getRequest(pid, request));
-	}
+    @RequestMapping(value = "trash/{pid}", produces = "application/json")
+    public @ResponseBody Map<String, Object> trashJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+            HttpServletResponse response) {
+        return getResults(getRequest(pid, request));
+    }
 
-	@RequestMapping(value = "trash", produces = "application/json")
-	public @ResponseBody Map<String, Object> trashJSON(HttpServletRequest request, HttpServletResponse response) {
-		return getResults(getRequest(null, request));
-	}
+    @RequestMapping(value = "trash", produces = "application/json")
+    public @ResponseBody Map<String, Object> trashJSON(HttpServletRequest request, HttpServletResponse response) {
+        return getResults(getRequest(null, request));
+    }
 
-	private SearchRequest getRequest(String pid, HttpServletRequest request) {
-		SearchRequest searchRequest = generateSearchRequest(request);
-		searchRequest.setRootPid(pid);
+    private SearchRequest getRequest(String pid, HttpServletRequest request) {
+        SearchRequest searchRequest = generateSearchRequest(request);
+        searchRequest.setRootPid(pid);
 
-		SearchState state = searchRequest.getSearchState();
-		state.setRowsPerPage(searchSettings.maxPerPage);
-		// Force deleted status into the request
-		state.getFacets().put(SearchFieldKeys.STATUS.name(), "Deleted");
+        SearchState state = searchRequest.getSearchState();
+        state.setRowsPerPage(searchSettings.maxPerPage);
+        // Force deleted status into the request
+        state.getFacets().put(SearchFieldKeys.STATUS.name(), "Deleted");
 
-		return searchRequest;
-	}
+        return searchRequest;
+    }
 
-	private Map<String, Object> getResults(SearchRequest searchRequest) {
-		searchRequest.getSearchState().setRowsPerPage(searchSettings.maxPerPage);
-		// Force deleted status into the request
-		searchRequest.getSearchState().getFacets().put(SearchFieldKeys.STATUS.name(), "Deleted");
+    private Map<String, Object> getResults(SearchRequest searchRequest) {
+        searchRequest.getSearchState().setRowsPerPage(searchSettings.maxPerPage);
+        // Force deleted status into the request
+        searchRequest.getSearchState().getFacets().put(SearchFieldKeys.STATUS.name(), "Deleted");
 
-		SearchResultResponse resp = getSearchResults(searchRequest, resultsFieldList);
+        SearchResultResponse resp = getSearchResults(searchRequest, resultsFieldList);
 
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
-		Map<String, Object> results = new HashMap<>();
-		results.put("metadata", resultList);
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
+        Map<String, Object> results = new HashMap<>();
+        results.put("metadata", resultList);
 
-		SearchState state = resp.getSearchState();
-		results.put("pageStart", state.getStartRow());
-		results.put("resultCount", resp.getResultCount());
-		results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
-		results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
-		results.put("queryMethod", "trash");
-		results.put("resultOperation", "trash");
+        SearchState state = resp.getSearchState();
+        results.put("pageStart", state.getStartRow());
+        results.put("resultCount", resp.getResultCount());
+        results.put("searchStateUrl", SearchStateUtil.generateStateParameterString(state));
+        results.put("searchQueryUrl", SearchStateUtil.generateSearchParameterString(state));
+        results.put("queryMethod", "trash");
+        results.put("resultOperation", "trash");
 
-		if (resp.getSelectedContainer() != null) {
-			results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
-		}
+        if (resp.getSelectedContainer() != null) {
+            results.put("container", SerializationUtil.metadataToMap(resp.getSelectedContainer(), groups));
+        }
 
-		return results;
-	}
+        return results;
+    }
 }

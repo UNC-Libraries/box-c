@@ -24,22 +24,22 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 /**
  * Indexing filter that extracts Fedora-generated dates about the creation and modification state of an object
  * being indexed.
- * 
+ *
  * Sets: dateAdded, dateUpdated
  * @author bbpennel, harring
  *
  */
 public class SetRecordDatesFilter implements IndexDocumentFilter {
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		ContentObject obj = dip.getContentObject();
-		String dateAdded = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.created).toString();
-		String dateUpdated = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.lastModified).toString();
-		try {
-			dip.getDocument().setDateAdded(dateAdded);
-			dip.getDocument().setDateUpdated(dateUpdated);
-		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
-		}
-	}
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        ContentObject obj = dip.getContentObject();
+        String dateAdded = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.created).toString();
+        String dateUpdated = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.lastModified).toString();
+        try {
+            dip.getDocument().setDateAdded(dateAdded);
+            dip.getDocument().setDateUpdated(dateUpdated);
+        } catch (ParseException e) {
+            throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
+        }
+    }
 }

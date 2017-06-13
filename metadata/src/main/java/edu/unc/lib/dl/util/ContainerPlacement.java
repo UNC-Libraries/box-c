@@ -24,19 +24,19 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class ContainerPlacement implements Serializable {
-	private static final long serialVersionUID = -6481661187173513169L;
-	public PID parentPID;
-	public PID pid;
-	public String label;
+    private static final long serialVersionUID = -6481661187173513169L;
+    public PID parentPID;
+    public PID pid;
+    public String label;
 
-	/**
-	 * An explicit position number for this object within the parent's other children, designated by the submitter. May
-	 * be NULL.
-	 */
-	public Integer designatedOrder = null;
+    /**
+     * An explicit position number for this object within the parent's other
+     * children, designated by the submitter. May be NULL.
+     */
+    public Integer designatedOrder = null;
 
-	/**
-	 * The position of this object within its other incoming siblings.
-	 */
-	public Integer sipOrder = null;
+    /**
+     * The position of this object within its other incoming siblings.
+     */
+    public Integer sipOrder = null;
 }

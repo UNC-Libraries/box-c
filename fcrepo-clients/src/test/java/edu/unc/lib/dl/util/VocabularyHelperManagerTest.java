@@ -60,123 +60,123 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
  */
 public class VocabularyHelperManagerTest {
 
-	private VocabularyHelperManager manager;
+    private VocabularyHelperManager manager;
 
-	@Mock
-	private VocabularyHelper mockHelper;
+    @Mock
+    private VocabularyHelper mockHelper;
 
-	@Mock
-	private MIMETypedStream dataFile;
+    @Mock
+    private MIMETypedStream dataFile;
 
-	@Mock
-	private TripleStoreQueryService queryService;
-	@Mock
-	private ManagementClient managementClient;
-	@Mock
-	private AccessClient accessClient;
+    @Mock
+    private TripleStoreQueryService queryService;
+    @Mock
+    private ManagementClient managementClient;
+    @Mock
+    private AccessClient accessClient;
 
-	private static String COLL_PID = "info:fedora/cdr:collection";
-	private static String ITEM_PID = "info:fedora/cdr:item";
+    private static String COLL_PID = "info:fedora/cdr:collection";
+    private static String ITEM_PID = "info:fedora/cdr:item";
 
-	private static String VOCAB_PID = "info:fedora/cdr:vocab";
-	private static String VOCAB_URI = "http://example/vocab";
-	private static String VOCAB_TYPE = "vocab";
+    private static String VOCAB_PID = "info:fedora/cdr:vocab";
+    private static String VOCAB_URI = "http://example/vocab";
+    private static String VOCAB_TYPE = "vocab";
 
-	private static PID collectionsPID = new PID("cdr:collections");
+    private static PID collectionsPID = new PID("cdr:collections");
 
-	@Before
-	public void init() throws Exception {
-		initMocks(this);
+    @Before
+    public void init() throws Exception {
+        initMocks(this);
 
-		manager = new VocabularyHelperManager();
-		setField(manager, "queryService", queryService);
-		setField(manager, "managementClient", managementClient);
-		setField(manager, "accessClient", accessClient);
-		setField(manager, "collectionsPID", collectionsPID);
+        manager = new VocabularyHelperManager();
+        setField(manager, "queryService", queryService);
+        setField(manager, "managementClient", managementClient);
+        setField(manager, "accessClient", accessClient);
+        setField(manager, "collectionsPID", collectionsPID);
 
-		Map<String, Map<String, String>> vocabInfo = new HashMap<>();
-		Map<String, String> entryMap = new HashMap<>();
-		entryMap.put("vocabURI", VOCAB_URI);
-		entryMap.put("vocabType", VOCAB_TYPE);
-		vocabInfo.put(VOCAB_PID, entryMap);
+        Map<String, Map<String, String>> vocabInfo = new HashMap<>();
+        Map<String, String> entryMap = new HashMap<>();
+        entryMap.put("vocabURI", VOCAB_URI);
+        entryMap.put("vocabType", VOCAB_TYPE);
+        vocabInfo.put(VOCAB_PID, entryMap);
 
-		when(queryService.fetchVocabularyInfo()).thenReturn(vocabInfo);
+        when(queryService.fetchVocabularyInfo()).thenReturn(vocabInfo);
 
-		Map<String, Map<String, Set<String>>> vocabMapping = new HashMap<>();
-		Map<String, Set<String>> collMapping = new HashMap<>();
-		Set<String> levels = new HashSet<>(Arrays.asList(indexValidTerms.toString(), warnInvalidTerms.toString(),
-				replaceInvalidTerms.toString()));
-		collMapping.put(VOCAB_URI, levels);
-		vocabMapping.put(COLL_PID, collMapping);
+        Map<String, Map<String, Set<String>>> vocabMapping = new HashMap<>();
+        Map<String, Set<String>> collMapping = new HashMap<>();
+        Set<String> levels = new HashSet<>(Arrays.asList(indexValidTerms.toString(), warnInvalidTerms.toString(),
+                replaceInvalidTerms.toString()));
+        collMapping.put(VOCAB_URI, levels);
+        vocabMapping.put(COLL_PID, collMapping);
 
-		when(queryService.fetchVocabularyMapping()).thenReturn(vocabMapping);
+        when(queryService.fetchVocabularyMapping()).thenReturn(vocabMapping);
 
-		Map<String, String> helperClassMap = new HashMap<>();
-		helperClassMap.put("vocab", "edu.unc.lib.dl.util.TestVocabularyHelper");
-		manager.setHelperClasses(helperClassMap);
+        Map<String, String> helperClassMap = new HashMap<>();
+        helperClassMap.put("vocab", "edu.unc.lib.dl.util.TestVocabularyHelper");
+        manager.setHelperClasses(helperClassMap);
 
-		when(dataFile.getStream()).thenReturn(new byte[0]);
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq(DATA_FILE.getName()), anyString())).thenReturn(
-				dataFile);
+        when(dataFile.getStream()).thenReturn(new byte[0]);
+        when(accessClient.getDatastreamDissemination(any(PID.class), eq(DATA_FILE.getName()), anyString())).thenReturn(
+                dataFile);
 
-		when(queryService.fetchParentCollection(any(PID.class))).thenReturn(new PID(COLL_PID));
-	}
+        when(queryService.fetchParentCollection(any(PID.class))).thenReturn(new PID(COLL_PID));
+    }
 
-	@Test
-	public void getHelpersTest() {
-		manager.init();
+    @Test
+    public void getHelpersTest() {
+        manager.init();
 
-		Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
-		assertEquals("Incorrect number of helpers were found for item", helpers.size(), 1);
-		assertTrue("Wrong kind of helper was returned", helpers.iterator().next() instanceof TestVocabularyHelper);
+        Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
+        assertEquals("Incorrect number of helpers were found for item", helpers.size(), 1);
+        assertTrue("Wrong kind of helper was returned", helpers.iterator().next() instanceof TestVocabularyHelper);
 
-	}
+    }
 
-	@Test
-	public void getInvalidTermsTest() throws Exception {
-		manager.init();
+    @Test
+    public void getInvalidTermsTest() throws Exception {
+        manager.init();
 
-		// Add in some invalid terms
-		Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
-		((TestVocabularyHelper) helpers.iterator().next()).setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
+        // Add in some invalid terms
+        Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
+        ((TestVocabularyHelper) helpers.iterator().next()).setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
 
-		Element doc = mock(Element.class);
-		Map<String, Set<String>> invalidTerms = manager.getInvalidTerms(new PID(ITEM_PID), doc);
+        Element doc = mock(Element.class);
+        Map<String, Set<String>> invalidTerms = manager.getInvalidTerms(new PID(ITEM_PID), doc);
 
-		assertEquals("Incorrect number of vocabularies returned", 1, invalidTerms.size());
+        assertEquals("Incorrect number of vocabularies returned", 1, invalidTerms.size());
 
-		assertEquals("Incorrect number of invalid terms returned for vocabulary", 2, invalidTerms.get(VOCAB_URI).size());
-	}
+        assertEquals("Incorrect number of invalid terms returned for vocabulary", 2, invalidTerms.get(VOCAB_URI).size());
+    }
 
-	@Test
-	public void updateInvalidTermsTest() throws Exception {
-		manager.init();
+    @Test
+    public void updateInvalidTermsTest() throws Exception {
+        manager.init();
 
-		Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
-		TestVocabularyHelper helper = (TestVocabularyHelper) helpers.iterator().next();
-		helper.setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
-		helper.setPrefix(VOCAB_TYPE);
+        Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
+        TestVocabularyHelper helper = (TestVocabularyHelper) helpers.iterator().next();
+        helper.setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
+        helper.setPrefix(VOCAB_TYPE);
 
-		Document relsDoc = new Document()
-			.addContent(new Element("RDF", JDOMNamespaceUtil.RDF_NS)
-			.addContent(new Element("Description", JDOMNamespaceUtil.RDF_NS)
-			.addContent(new Element(invalidTerm.getPredicate(), invalidTerm.getNamespace()))
-			.setText(VOCAB_TYPE + "|term")));
-		
-		when(managementClient.getXMLDatastreamIfExists(any(PID.class), eq(RELS_EXT.getName())))
-			.thenReturn(new DatastreamDocument(relsDoc, "2015-07-29"));
+        Document relsDoc = new Document()
+            .addContent(new Element("RDF", JDOMNamespaceUtil.RDF_NS)
+            .addContent(new Element("Description", JDOMNamespaceUtil.RDF_NS)
+            .addContent(new Element(invalidTerm.getPredicate(), invalidTerm.getNamespace()))
+            .setText(VOCAB_TYPE + "|term")));
 
-		Element doc = mock(Element.class);
-		manager.updateInvalidTermsRelations(new PID(ITEM_PID), doc);
+        when(managementClient.getXMLDatastreamIfExists(any(PID.class), eq(RELS_EXT.getName())))
+            .thenReturn(new DatastreamDocument(relsDoc, "2015-07-29"));
 
-		ArgumentCaptor<Document> captor = ArgumentCaptor.forClass(Document.class);
-		verify(managementClient).modifyDatastream(any(PID.class), eq(RELS_EXT.getName()),
-				anyString(), anyString(), captor.capture());
-		
-		Document modified = captor.getValue();
-		List<Element> invTerms = modified.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS)
-			.getChildren(invalidTerm.getPredicate(), invalidTerm.getNamespace());
-		
-		assertEquals("Incorrect number of invalid terms after update", 2, invTerms.size());
-	}
+        Element doc = mock(Element.class);
+        manager.updateInvalidTermsRelations(new PID(ITEM_PID), doc);
+
+        ArgumentCaptor<Document> captor = ArgumentCaptor.forClass(Document.class);
+        verify(managementClient).modifyDatastream(any(PID.class), eq(RELS_EXT.getName()),
+                anyString(), anyString(), captor.capture());
+
+        Document modified = captor.getValue();
+        List<Element> invTerms = modified.getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS)
+            .getChildren(invalidTerm.getPredicate(), invalidTerm.getNamespace());
+
+        assertEquals("Incorrect number of invalid terms after update", 2, invTerms.size());
+    }
 }

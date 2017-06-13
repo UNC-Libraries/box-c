@@ -40,97 +40,97 @@ import org.mockito.Mock;
  */
 public class JobForwardingJMSListenerTest {
 
-	@Mock
-	private TextMessage msg;
-	@Mock
-	private ListenerJob job1;
-	@Mock
-	private ListenerJob job2;
+    @Mock
+    private TextMessage msg;
+    @Mock
+    private ListenerJob job1;
+    @Mock
+    private ListenerJob job2;
 
-	private JobForwardingJMSListener listener;
+    private JobForwardingJMSListener listener;
 
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
 
-		listener = new JobForwardingJMSListener();
+        listener = new JobForwardingJMSListener();
 
-		InputStream inStream = this.getClass().getResourceAsStream("/ingestMessage.xml");
-		String messageBody = IOUtils.toString(inStream);
+        InputStream inStream = this.getClass().getResourceAsStream("/ingestMessage.xml");
+        String messageBody = IOUtils.toString(inStream);
 
-		when(msg.getText()).thenReturn(messageBody);
+        when(msg.getText()).thenReturn(messageBody);
 
-	}
+    }
 
-	@Test
-	public void testOnMessageNoListeners() throws Exception {
+    @Test
+    public void testOnMessageNoListeners() throws Exception {
 
-		listener.onMessage(msg);
+        listener.onMessage(msg);
 
-		verify(msg, never()).getText();
+        verify(msg, never()).getText();
 
-	}
+    }
 
-	@Test
-	public void testOnMessage() throws Exception {
+    @Test
+    public void testOnMessage() throws Exception {
 
-		listener.registerListener(job1);
-		listener.registerListener(job2);
+        listener.registerListener(job1);
+        listener.registerListener(job2);
 
-		listener.onMessage(msg);
+        listener.onMessage(msg);
 
-		verify(msg).getText();
+        verify(msg).getText();
 
-		verify(job1).onEvent(any(Document.class));
-		verify(job2).onEvent(any(Document.class));
+        verify(job1).onEvent(any(Document.class));
+        verify(job2).onEvent(any(Document.class));
 
-	}
+    }
 
-	@Test
-	public void testOnMessageUnregister() throws Exception {
+    @Test
+    public void testOnMessageUnregister() throws Exception {
 
-		listener.registerListener(job1);
-		listener.unregisterListener(job1);
+        listener.registerListener(job1);
+        listener.unregisterListener(job1);
 
-		listener.onMessage(msg);
+        listener.onMessage(msg);
 
-		verify(msg, never()).getText();
+        verify(msg, never()).getText();
 
-		verify(job1, never()).onEvent(any(Document.class));
+        verify(job1, never()).onEvent(any(Document.class));
 
-	}
+    }
 
-	@Test
-	public void testOnMessageUnregisterMultipleMessages() throws Exception {
+    @Test
+    public void testOnMessageUnregisterMultipleMessages() throws Exception {
 
-		listener.registerListener(job1);
-		listener.registerListener(job2);
+        listener.registerListener(job1);
+        listener.registerListener(job2);
 
-		listener.onMessage(msg);
+        listener.onMessage(msg);
 
-		listener.unregisterListener(job1);
+        listener.unregisterListener(job1);
 
-		listener.onMessage(msg);
+        listener.onMessage(msg);
 
-		verify(msg, times(2)).getText();
+        verify(msg, times(2)).getText();
 
-		verify(job1).onEvent(any(Document.class));
-		verify(job2, times(2)).onEvent(any(Document.class));
+        verify(job1).onEvent(any(Document.class));
+        verify(job2, times(2)).onEvent(any(Document.class));
 
-	}
+    }
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testOnMessageNotText() throws Exception {
+    @Test(expected = IllegalArgumentException.class)
+    public void testOnMessageNotText() throws Exception {
 
-		listener.registerListener(job1);
+        listener.registerListener(job1);
 
-		Message badMessage = mock(Message.class);
+        Message badMessage = mock(Message.class);
 
-		try {
-			listener.onMessage(badMessage);
-		} finally {
-			verify(job1, never()).onEvent(any(Document.class));
-		}
+        try {
+            listener.onMessage(badMessage);
+        } finally {
+            verify(job1, never()).onEvent(any(Document.class));
+        }
 
-	}
+    }
 }

@@ -39,45 +39,45 @@ import edu.unc.lib.dl.ui.view.XSLViewResolver;
 @Controller
 @RequestMapping("/refreshMappings")
 public class RefreshMappingsController extends CDRBaseController {
-	private static final Logger LOG = LoggerFactory.getLogger(RefreshMappingsController.class);
-	
-	@Autowired(required=true)
-	private XSLViewResolver xslViewResolver;
-	
-	@Autowired
-	private HeaderMenuSettings headerMenuSettings;
-	
-	@RequestMapping(method = RequestMethod.GET)
-	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-		AccessGroupSet accessGroups = getUserAccessGroups(request);
-		if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)){
-			throw new ResourceNotFoundException();
-		}
-		
-		try {
-			LookupMappingsSettings.updateMappings();
-		} catch (Exception e){
-			response.getWriter().append("Failed to refresh mappings, check logs.");
-			LOG.error("Failed to refresh mappings", e);
-		}
-		
-		try {
-			xslViewResolver.refreshViews();
-		} catch (Exception e){
-			response.getWriter().append("Failed to refresh transform mappings, check logs.");
-			LOG.error("Failed to refresh transform mappings", e);
-		}
-		
-		headerMenuSettings.init();
-		
-		response.getWriter().append("Mappings refresh was successful.");
-	}
+    private static final Logger LOG = LoggerFactory.getLogger(RefreshMappingsController.class);
 
-	public void setXslViewResolver(XSLViewResolver xslViewResolver) {
-		this.xslViewResolver = xslViewResolver;
-	}
+    @Autowired(required = true)
+    private XSLViewResolver xslViewResolver;
 
-	public void setHeaderMenuSettings(HeaderMenuSettings headerMenuSettings) {
-		this.headerMenuSettings = headerMenuSettings;
-	}
+    @Autowired
+    private HeaderMenuSettings headerMenuSettings;
+
+    @RequestMapping(method = RequestMethod.GET)
+    public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        AccessGroupSet accessGroups = getUserAccessGroups(request);
+        if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+            throw new ResourceNotFoundException();
+        }
+
+        try {
+            LookupMappingsSettings.updateMappings();
+        } catch (Exception e) {
+            response.getWriter().append("Failed to refresh mappings, check logs.");
+            LOG.error("Failed to refresh mappings", e);
+        }
+
+        try {
+            xslViewResolver.refreshViews();
+        } catch (Exception e) {
+            response.getWriter().append("Failed to refresh transform mappings, check logs.");
+            LOG.error("Failed to refresh transform mappings", e);
+        }
+
+        headerMenuSettings.init();
+
+        response.getWriter().append("Mappings refresh was successful.");
+    }
+
+    public void setXslViewResolver(XSLViewResolver xslViewResolver) {
+        this.xslViewResolver = xslViewResolver;
+    }
+
+    public void setHeaderMenuSettings(HeaderMenuSettings headerMenuSettings) {
+        this.headerMenuSettings = headerMenuSettings;
+    }
 }

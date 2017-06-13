@@ -28,164 +28,163 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  *
  */
 public class SwordConfigurationImpl implements SwordConfiguration {
-	public static final String COLLECTION_PATH = "/collection";
-	public static final String SERVICE_DOCUMENT_PATH = "/serviceDocument";
-	public static final String EDIT_MEDIA_PATH = "/em";
-	public static final String EDIT_PATH = "/object";
-	public static final String STATE_PATH = "/state";
-	
-	private String authType = null;
-	private int maxUploadSize = -1;
-	private String tempDirectory = null;
-	@Resource
-	private TripleStoreQueryService tripleStoreQueryService;
-	private PID collectionsPidObject;
-	private String basePath;
-	private String swordPath;
-	private String swordVersion = null;
-	private String generator = null;
-	private String generatorVersion = null;
-	private String depositorNamespace = null;
-	private String adminDepositor = null;
+    public static final String COLLECTION_PATH = "/collection";
+    public static final String SERVICE_DOCUMENT_PATH = "/serviceDocument";
+    public static final String EDIT_MEDIA_PATH = "/em";
+    public static final String EDIT_PATH = "/object";
+    public static final String STATE_PATH = "/state";
 
-	public SwordConfigurationImpl() {
-	}
+    private String authType = null;
+    private int maxUploadSize = -1;
+    private String tempDirectory = null;
+    @Resource
+    private TripleStoreQueryService tripleStoreQueryService;
+    private PID collectionsPidObject;
+    private String basePath;
+    private String swordPath;
+    private String swordVersion = null;
+    private String generator = null;
+    private String generatorVersion = null;
+    private String depositorNamespace = null;
+    private String adminDepositor = null;
 
-	public void init() {
-		collectionsPidObject = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
-	}
+    public SwordConfigurationImpl() {
+    }
 
-	@Override
-	public boolean returnDepositReceipt() {
-		return true;
-	}
+    public void init() {
+        collectionsPidObject = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
+    }
 
-	@Override
-	public boolean returnStackTraceInError() {
-		return true;
-	}
+    @Override
+    public boolean returnDepositReceipt() {
+        return true;
+    }
 
-	@Override
-	public boolean returnErrorBody() {
-		return true;
-	}
+    @Override
+    public boolean returnStackTraceInError() {
+        return true;
+    }
 
-	@Override
-	public String generator() {
-		return this.generator;
-	}
-	
+    @Override
+    public boolean returnErrorBody() {
+        return true;
+    }
 
-	@Override
-	public String generatorVersion() {
-		return this.generatorVersion;
-	}
+    @Override
+    public String generator() {
+        return this.generator;
+    }
 
-	public void setGenerator(String generator) {
-		this.generator = generator;
-	}
+    @Override
+    public String generatorVersion() {
+        return this.generatorVersion;
+    }
 
-	public void setGeneratorVersion(String generatorVersion) {
-		this.generatorVersion = generatorVersion;
-	}
+    public void setGenerator(String generator) {
+        this.generator = generator;
+    }
 
-	@Override
-	public String administratorEmail() {
-		return null;
-	}
+    public void setGeneratorVersion(String generatorVersion) {
+        this.generatorVersion = generatorVersion;
+    }
 
-	@Override
-	public String getAuthType() {
-		return this.authType;
-	}
+    @Override
+    public String administratorEmail() {
+        return null;
+    }
 
-	public void setAuthType(String authType) {
-		this.authType = authType;
-	}
+    @Override
+    public String getAuthType() {
+        return this.authType;
+    }
 
-	@Override
-	public boolean storeAndCheckBinary() {
-		return true;
-	}
+    public void setAuthType(String authType) {
+        this.authType = authType;
+    }
 
-	@Override
-	public String getTempDirectory() {
-		return this.tempDirectory;
-	}
+    @Override
+    public boolean storeAndCheckBinary() {
+        return true;
+    }
 
-	public void setTempDirectory(String tempDirectory) {
-		this.tempDirectory = tempDirectory;
-	}
+    @Override
+    public String getTempDirectory() {
+        return this.tempDirectory;
+    }
 
-	@Override
-	public int getMaxUploadSize() {
-		return this.maxUploadSize;
-	}
+    public void setTempDirectory(String tempDirectory) {
+        this.tempDirectory = tempDirectory;
+    }
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    @Override
+    public int getMaxUploadSize() {
+        return this.maxUploadSize;
+    }
 
-	public PID getCollectionsPidObject() {
-		return collectionsPidObject;
-	}
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 
-	public void setCollectionsPidObject(PID collectionsPidObject) {
-		this.collectionsPidObject = collectionsPidObject;
-	}
+    public PID getCollectionsPidObject() {
+        return collectionsPidObject;
+    }
 
-	public String getBasePath() {
-		return basePath;
-	}
+    public void setCollectionsPidObject(PID collectionsPidObject) {
+        this.collectionsPidObject = collectionsPidObject;
+    }
 
-	public void setBasePath(String basePath) {
-		this.basePath = basePath;
-	}
+    public String getBasePath() {
+        return basePath;
+    }
 
-	public String getSwordPath() {
-		return swordPath;
-	}
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
 
-	public void setSwordPath(String swordPath) {
-		this.swordPath = swordPath;
-	}
+    public String getSwordPath() {
+        return swordPath;
+    }
 
-	public String getSwordVersion() {
-		return swordVersion;
-	}
+    public void setSwordPath(String swordPath) {
+        this.swordPath = swordPath;
+    }
 
-	public void setSwordVersion(String swordVersion) {
-		this.swordVersion = swordVersion;
-	}
+    public String getSwordVersion() {
+        return swordVersion;
+    }
 
-	public String getDepositorNamespace() {
-		return depositorNamespace;
-	}
+    public void setSwordVersion(String swordVersion) {
+        this.swordVersion = swordVersion;
+    }
 
-	public void setDepositorNamespace(String depositorNamespace) {
-		this.depositorNamespace = depositorNamespace;
-	}
+    public String getDepositorNamespace() {
+        return depositorNamespace;
+    }
 
-	@Override
-	public String getAlternateUrl() {
-		return null;
-	}
+    public void setDepositorNamespace(String depositorNamespace) {
+        this.depositorNamespace = depositorNamespace;
+    }
 
-	@Override
-	public String getAlternateUrlContentType() {
-		return null;
-	}
+    @Override
+    public String getAlternateUrl() {
+        return null;
+    }
 
-	public String getAdminDepositor() {
-		return adminDepositor;
-	}
+    @Override
+    public String getAlternateUrlContentType() {
+        return null;
+    }
 
-	public void setAdminDepositor(String adminDepositor) {
-		this.adminDepositor = adminDepositor;
-	}
+    public String getAdminDepositor() {
+        return adminDepositor;
+    }
 
-	@Override
-	public boolean allowUnauthenticatedMediaAccess() {
-		return false;
-	}
+    public void setAdminDepositor(String adminDepositor) {
+        this.adminDepositor = adminDepositor;
+    }
+
+    @Override
+    public boolean allowUnauthenticatedMediaAccess() {
+        return false;
+    }
 }

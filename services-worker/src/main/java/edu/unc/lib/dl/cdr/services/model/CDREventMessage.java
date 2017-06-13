@@ -29,95 +29,98 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author bbpennel
  */
 public class CDREventMessage extends AbstractXMLEventMessage {
-	private static final long serialVersionUID = 1L;
-	private List<String> subjects;
-	private List<String> reordered;
-	private String parent;
-	private List<String> oldParents;
-	//Additional mode information for affecting the default behavior of the given action
-	private String mode;
-	private String operation;
-	
-	public CDREventMessage(Document messageBody) {
-		super(messageBody);
-		
-		this.setNamespace(JMSMessageUtil.cdrMessageNamespace);
-		
-		Element content = messageBody.getRootElement().getChild("content", JDOMNamespaceUtil.ATOM_NS);
-		if (content == null || content.getChildren().size() == 0)
-			return;
-		Element contentBody = (Element)content.getChildren().get(0);
-		if (contentBody == null)
-			return;
-		operation = contentBody.getName();
-		subjects = populateList("subjects", contentBody);
-		reordered = populateList("reordered", contentBody);
-		oldParents = populateList("oldParents", contentBody);
-		
-		parent = contentBody.getChildText("parent", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-		mode = contentBody.getChildText("mode", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-	}
-	
-	private List<String> populateList(String field, Element contentBody){
-		List<Element> children = contentBody.getChildren(field, JDOMNamespaceUtil.CDR_MESSAGE_NS);
-		if (children == null || children.size() == 0)
-			return null;
-		List<String> list = new ArrayList<String>();
-		for (Object node: children){
-			Element element = (Element)node;
-			for (Object pid: element.getChildren()){
-				Element pidElement = (Element)pid;
-				list.add(pidElement.getTextTrim());
-			}
-		}
-		return list;
-	}
+     private static final long serialVersionUID = 1L;
+     private List<String> subjects;
+     private List<String> reordered;
+     private String parent;
+     private List<String> oldParents;
+     //Additional mode information for affecting the default behavior of the given action
+     private String mode;
+     private String operation;
 
-	public List<String> getSubjects() {
-		return subjects;
-	}
+     public CDREventMessage(Document messageBody) {
+          super(messageBody);
 
-	public void setSubjects(List<String> subjects) {
-		this.subjects = subjects;
-	}
+          this.setNamespace(JMSMessageUtil.cdrMessageNamespace);
 
-	public List<String> getReordered() {
-		return reordered;
-	}
+          Element content = messageBody.getRootElement().getChild("content", JDOMNamespaceUtil.ATOM_NS);
+          if (content == null || content.getChildren().size() == 0) {
+               return;
+          }
+          Element contentBody = (Element)content.getChildren().get(0);
+          if (contentBody == null) {
+               return;
+          }
+          operation = contentBody.getName();
+          subjects = populateList("subjects", contentBody);
+          reordered = populateList("reordered", contentBody);
+          oldParents = populateList("oldParents", contentBody);
 
-	public void setReordered(List<String> reordered) {
-		this.reordered = reordered;
-	}
+          parent = contentBody.getChildText("parent", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+          mode = contentBody.getChildText("mode", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+     }
 
-	public String getParent() {
-		return parent;
-	}
+     private List<String> populateList(String field, Element contentBody) {
+          List<Element> children = contentBody.getChildren(field, JDOMNamespaceUtil.CDR_MESSAGE_NS);
+          if (children == null || children.size() == 0) {
+               return null;
+          }
+          List<String> list = new ArrayList<String>();
+          for (Object node: children) {
+               Element element = (Element)node;
+               for (Object pid: element.getChildren()) {
+                    Element pidElement = (Element)pid;
+                    list.add(pidElement.getTextTrim());
+               }
+          }
+          return list;
+     }
 
-	public void setParent(String parent) {
-		this.parent = parent;
-	}
+     public List<String> getSubjects() {
+          return subjects;
+     }
 
-	public List<String> getOldParents() {
-		return oldParents;
-	}
+     public void setSubjects(List<String> subjects) {
+          this.subjects = subjects;
+     }
 
-	public void setOldParents(List<String> oldParents) {
-		this.oldParents = oldParents;
-	}
+     public List<String> getReordered() {
+          return reordered;
+     }
 
-	public String getMode() {
-		return mode;
-	}
+     public void setReordered(List<String> reordered) {
+          this.reordered = reordered;
+     }
 
-	public void setMode(String mode) {
-		this.mode = mode;
-	}
+     public String getParent() {
+          return parent;
+     }
 
-	public String getOperation() {
-		return operation;
-	}
+     public void setParent(String parent) {
+          this.parent = parent;
+     }
 
-	public void setOperation(String operation) {
-		this.operation = operation;
-	}
+     public List<String> getOldParents() {
+          return oldParents;
+     }
+
+     public void setOldParents(List<String> oldParents) {
+          this.oldParents = oldParents;
+     }
+
+     public String getMode() {
+          return mode;
+     }
+
+     public void setMode(String mode) {
+          this.mode = mode;
+     }
+
+     public String getOperation() {
+          return operation;
+     }
+
+     public void setOperation(String operation) {
+          this.operation = operation;
+     }
 }

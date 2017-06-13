@@ -21,58 +21,63 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public abstract class AbstractXMLEventMessage extends EnhancementMessage {
-	private static final long serialVersionUID = 1L;
-	protected Document messageBody = null;
-	private String eventTimestamp = null;
-	
-	protected AbstractXMLEventMessage(){
-	}
-	
-	protected AbstractXMLEventMessage(Document messageBody){
-		this.messageBody = messageBody;
-		this.pid = new PID(JMSMessageUtil.getPid(messageBody));
-		setAction(JMSMessageUtil.getAction(messageBody));
-		if (pid == null || action == null)
-			throw new IllegalArgumentException("Unabled to find either a PID or action in the message body.");
-		extractMessageID();
-		extractEventTimestamp();
-	}
+     private static final long serialVersionUID = 1L;
+     protected Document messageBody = null;
+     private String eventTimestamp = null;
 
-	public Document getMessageBody() {
-		return messageBody;
-	}
+     protected AbstractXMLEventMessage() {
+     }
 
-	public void setMessageBody(Document messageBody) {
-		this.messageBody = messageBody;
-	}
-	
-	public void setAction(String action){
-		this.action = action;
-		setQualifiedAction();
-	}
-	
-	public String getEventTimestamp() {
-		return eventTimestamp;
-	}
+     protected AbstractXMLEventMessage(Document messageBody) {
+          this.messageBody = messageBody;
+          this.pid = new PID(JMSMessageUtil.getPid(messageBody));
+          setAction(JMSMessageUtil.getAction(messageBody));
+          if (pid == null || action == null) {
+               throw new IllegalArgumentException("Unabled to find either a PID or action in the message body.");
+          }
+          extractEventTimestamp();
+     }
 
-	public void setEventTimestamp(String eventTimestamp) {
-		this.eventTimestamp = eventTimestamp;
-	}
+     public Document getMessageBody() {
+          return messageBody;
+     }
 
-	protected void extractMessageID() {
-		try {
-			messageID = messageBody.getRootElement().getChildTextTrim("id", JDOMNamespaceUtil.ATOM_NS);
-		} catch (NullPointerException e){
-			messageID = null; 
-		}
-	}
-	
-	protected void extractEventTimestamp(){
-		try {
-			eventTimestamp = messageBody.getRootElement().getChildTextTrim("updated", JDOMNamespaceUtil.ATOM_NS);
-		} catch (NullPointerException e){
-			eventTimestamp = null; 
-		}
-	}
+     public void setMessageBody(Document messageBody) {
+          this.messageBody = messageBody;
+     }
+
+     public void setAction(String action) {
+          this.action = action;
+          setQualifiedAction();
+     }
+
+     public String getEventTimestamp() {
+          return eventTimestamp;
+     }
+
+     public void setEventTimestamp(String eventTimestamp) {
+          this.eventTimestamp = eventTimestamp;
+     }
+
+     protected void extractMessageID() {
+          try {
+               messageID = messageBody.getRootElement().getChildTextTrim("id", JDOMNamespaceUtil.ATOM_NS);
+          } catch (NullPointerException e) {
+               messageID = null;
+          }
+     }
+
+     protected void extractEventTimestamp() {
+          try {
+               eventTimestamp = messageBody.getRootElement().getChildTextTrim("updated", JDOMNamespaceUtil.ATOM_NS);
+          } catch (NullPointerException e) {
+               eventTimestamp = null;
+          }
+     }
 }

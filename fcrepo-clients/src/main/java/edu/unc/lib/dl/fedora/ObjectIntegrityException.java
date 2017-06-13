@@ -17,19 +17,24 @@ package edu.unc.lib.dl.fedora;
 
 import org.springframework.ws.soap.client.SoapFaultClientException;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public class ObjectIntegrityException extends FedoraException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public ObjectIntegrityException(String message) {
-		super(message);
-	}
-	
-	public ObjectIntegrityException(SoapFaultClientException e) {
-		super(e);
-	}
+    public ObjectIntegrityException(String message) {
+        super(message);
+    }
+
+    public ObjectIntegrityException(SoapFaultClientException e) {
+        super(e);
+    }
 
 }

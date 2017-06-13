@@ -15,6 +15,7 @@
  */
 /**
  * Constants for use in XML processing.
+ * @author count0
  */
 
 package edu.unc.lib.dl.xml;

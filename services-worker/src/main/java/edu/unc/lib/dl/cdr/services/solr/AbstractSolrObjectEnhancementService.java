@@ -18,14 +18,19 @@ package edu.unc.lib.dl.cdr.services.solr;
 import edu.unc.lib.dl.cdr.services.AbstractFedoraEnhancementService;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public abstract class AbstractSolrObjectEnhancementService extends AbstractFedoraEnhancementService {
-	protected SolrSearchService solrSearchService;
+    protected SolrSearchService solrSearchService;
 
-	public SolrSearchService getSolrSearchService() {
-		return solrSearchService;
-	}
+    public SolrSearchService getSolrSearchService() {
+        return solrSearchService;
+    }
 
-	public void setSolrSearchService(SolrSearchService solrSearchService) {
-		this.solrSearchService = solrSearchService;
-	}
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
 }

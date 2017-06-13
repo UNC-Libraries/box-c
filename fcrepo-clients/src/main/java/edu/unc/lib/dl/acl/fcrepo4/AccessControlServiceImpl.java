@@ -25,53 +25,53 @@ import edu.unc.lib.dl.fedora.PID;
 /**
  * Implementation of the service to evaluate and retrieve CDR access controls in
  * a fcrepo4 repository.
- * 
+ *
  * @author bbpennel
  *
  */
 public class AccessControlServiceImpl implements AccessControlService {
 
-	private InheritedPermissionEvaluator permissionEvaluator;
+    private InheritedPermissionEvaluator permissionEvaluator;
 
-	private GlobalPermissionEvaluator globalPermissionEvaluator;
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
 
-	@Deprecated
-	@Override
-	public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
-		// TODO stub
-		return new ObjectAccessControlsBeanImpl();
-	}
+    @Deprecated
+    @Override
+    public ObjectAccessControlsBean getObjectAccessControls(PID pid) {
+        // TODO stub
+        return null;
+    }
 
-	@Override
-	public boolean hasAccess(PID pid, AccessGroupSet principals, Permission permission) {
-		// Check if there are any global agents, if so evaluate immediately against requested permission
-		if (globalPermissionEvaluator.hasGlobalPermission(principals, permission)) {
-			return true;
-		}
+    @Override
+    public boolean hasAccess(PID pid, AccessGroupSet principals, Permission permission) {
+        // Check if there are any global agents, if so evaluate immediately against requested permission
+        if (globalPermissionEvaluator.hasGlobalPermission(principals, permission)) {
+            return true;
+        }
 
-		return permissionEvaluator.hasPermission(pid, principals, permission);
-	}
+        return permissionEvaluator.hasPermission(pid, principals, permission);
+    }
 
-	@Override
-	public void assertHasAccess(PID pid, AccessGroupSet principals, Permission permission)
-			throws AccessRestrictionException {
-		assertHasAccess(null, pid, principals, permission);
-	}
-	
-	@Override
-	public void assertHasAccess(String message, PID pid, AccessGroupSet principals, Permission permission)
-			throws AccessRestrictionException {
-		if (!hasAccess(pid, principals, permission)) {
-			throw new AccessRestrictionException(message);
-		}
-	}
+    @Override
+    public void assertHasAccess(PID pid, AccessGroupSet principals, Permission permission)
+            throws AccessRestrictionException {
+        assertHasAccess(null, pid, principals, permission);
+    }
 
-	public void setPermissionEvaluator(InheritedPermissionEvaluator permissionEvaluator) {
-		this.permissionEvaluator = permissionEvaluator;
-	}
+    @Override
+    public void assertHasAccess(String message, PID pid, AccessGroupSet principals, Permission permission)
+            throws AccessRestrictionException {
+        if (!hasAccess(pid, principals, permission)) {
+            throw new AccessRestrictionException(message);
+        }
+    }
 
-	public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
-		this.globalPermissionEvaluator = globalPermissionEvaluator;
-	}
+    public void setPermissionEvaluator(InheritedPermissionEvaluator permissionEvaluator) {
+        this.permissionEvaluator = permissionEvaluator;
+    }
+
+    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
+        this.globalPermissionEvaluator = globalPermissionEvaluator;
+    }
 
 }

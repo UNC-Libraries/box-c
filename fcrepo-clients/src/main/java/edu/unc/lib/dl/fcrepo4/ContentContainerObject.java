@@ -28,42 +28,42 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 /**
  * Represents a generic repository object within the main content tree which can
  * contain other ContentObjects.
- * 
+ *
  * @author bbpennel
  *
  */
 public abstract class ContentContainerObject extends ContentObject {
 
-	protected ContentContainerObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    protected ContentContainerObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	/**
-	 * Add a ContentObject as a member to this container
-	 * 
-	 * @param member
-	 * @return this ContentContainerObject
-	 * @throws ObjectTypeMismatchException
-	 *             Thrown if the new member is not of a type supported by this
-	 *             container
-	 */
-	public abstract ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException;
+    /**
+     * Add a ContentObject as a member to this container
+     *
+     * @param member
+     * @return this ContentContainerObject
+     * @throws ObjectTypeMismatchException
+     *             Thrown if the new member is not of a type supported by this
+     *             container
+     */
+    public abstract ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException;
 
-	/**
-	 * Retrieve a list of member content objects for this object.
-	 * 
-	 * @return
-	 */
-	public List<ContentObject> getMembers() {
-		List<ContentObject> members = new ArrayList<>();
-		Resource resc = getResource();
+    /**
+     * Retrieve a list of member content objects for this object.
+     *
+     * @return
+     */
+    public List<ContentObject> getMembers() {
+        List<ContentObject> members = new ArrayList<>();
+        Resource resc = getResource();
 
-		for (StmtIterator it = resc.listProperties(PcdmModels.hasMember); it.hasNext(); ) {
-			String memberUri = it.nextStatement().getResource().toString();
+        for (StmtIterator it = resc.listProperties(PcdmModels.hasMember); it.hasNext(); ) {
+            String memberUri = it.nextStatement().getResource().toString();
 
-			members.add(repository.getContentObject(PIDs.get(memberUri)));
-		}
+            members.add(repository.getContentObject(PIDs.get(memberUri)));
+        }
 
-		return members;
-	}
+        return members;
+    }
 }

@@ -24,225 +24,246 @@ import org.jdom2.Element;
 
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * Convenience methods for working with JMS messages
+ * @author count0
+ *
+ */
 public class JMSMessageUtil {
-	public static final String fedoraMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/fedora";
-	public static final String cdrMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/cdrAdmin";
-	public static final String servicesMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS.getURI() + "/services";
-	
-	public JMSMessageUtil(){
+    public static final String fedoraMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS
+            .getURI() + "/fedora";
+    public static final String cdrMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS
+            .getURI() + "/cdrAdmin";
+    public static final String servicesMessageNamespace = JDOMNamespaceUtil.CDR_MESSAGE_NS
+            .getURI() + "/services";
 
-	}
-	
-	public String getFedoraMessageNamespace(){
-		return fedoraMessageNamespace;
-	}
-	
-	public String getCdrMessageNamespace(){
-		return cdrMessageNamespace;
-	}
-	
-	public String getServicesMessageNamespace(){
-		return servicesMessageNamespace;
-	}
-	
-	public static enum FedoraActions {
-		MODIFY_OBJECT ("modifyObject"),
-		MODIFY_DATASTREAM_BY_VALUE ("modifyDatastreamByValue"),
-		MODIFY_DATASTREAM_BY_REFERENCE ("modifyDatastreamByReference"),
-		ADD_DATASTREAM ("addDatastream"),
-		PURGE_OBJECT ("purgeObject"),
-		PURGE_DATASTREAM ("purgeDatastream"),
-		ADD_RELATIONSHIP ("addRelationship"),
-		PURGE_RELATIONSHIP ("purgeRelationship"),
-		INGEST ("ingest");
+    public JMSMessageUtil() {
 
-		private String name;
-		private final URI uri;
+    }
 
-		FedoraActions(String name){
-			this.name = name;
-			try {
-				this.uri = new URI(fedoraMessageNamespace + "/" + name);
-			} catch (URISyntaxException e) {
-				throw new RuntimeException("Error creating URI for " + fedoraMessageNamespace + " " + name, e);
-			}
-		}
-		
-		public String getName(){
-			return name;
-		}
+    public String getFedoraMessageNamespace() {
+        return fedoraMessageNamespace;
+    }
 
-		public boolean equals(String value){
-			return this.uri.toString().equals(value);
-		}
+    public String getCdrMessageNamespace() {
+        return cdrMessageNamespace;
+    }
 
-		@Override
-		public String toString(){
-			return this.uri.toString();
-		}
-		
-		/**
-		 * Finds an action that matches the full action uri provided.
-		 * @param value
-		 * @return
-		 */
-		public static FedoraActions getAction(String value){
-			if (value == null)
-				return null;
-			for (FedoraActions action: values()){
-				if (action.equals(value))
-					return action;
-			}
-			return null;
-		}
-	}
+    public String getServicesMessageNamespace() {
+        return servicesMessageNamespace;
+    }
 
-	public static enum CDRActions {
-		MOVE ("move"),
-		REMOVE ("remove"),
-		ADD ("add"),
-		REORDER ("reorder"),
-		PUBLISH ("publish"),
-		REINDEX ("reindex"),
-		INDEX ("index"),
-		EDIT_TYPE("editType");
+    public static enum FedoraActions {
+        MODIFY_OBJECT("modifyObject"), MODIFY_DATASTREAM_BY_VALUE(
+                "modifyDatastreamByValue"), MODIFY_DATASTREAM_BY_REFERENCE(
+                "modifyDatastreamByReference"), ADD_DATASTREAM("addDatastream"), PURGE_OBJECT(
+                "purgeObject"), PURGE_DATASTREAM("purgeDatastream"), ADD_RELATIONSHIP(
+                "addRelationship"), PURGE_RELATIONSHIP("purgeRelationship"), INGEST(
+                "ingest");
 
-		private String name;
-		private final URI uri;
+        private String name;
+        private final URI uri;
 
-		CDRActions(String name){
-			this.name = name;
-			try {
-				this.uri = new URI(cdrMessageNamespace + "/" + name);
-			} catch (URISyntaxException e) {
-				throw new RuntimeException("Error creating URI for " + cdrMessageNamespace + " " + name, e);
-			}
-		}
+        FedoraActions(String name) {
+            this.name = name;
+            try {
+                this.uri = new URI(fedoraMessageNamespace + "/" + name);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Error creating URI for "
+                        + fedoraMessageNamespace + " " + name, e);
+            }
+        }
 
-		public String getName(){
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public boolean equals(String value){
-			return this.uri.toString().equals(value);
-		}
+        public boolean equals(String value) {
+            return this.uri.toString().equals(value);
+        }
 
-		@Override
-		public String toString(){
-			return this.uri.toString();
-		}
-		
-		/**
-		 * Finds an action that matches the full action uri provided.
-		 * @param value
-		 * @return
-		 */
-		public static CDRActions getAction(String value){
-			if (value == null)
-				return null;
-			for (CDRActions action: values()){
-				if (action.equals(value))
-					return action;
-			}
-			return null;
-		}
-	}
-	
-	public static enum ServicesActions {
-		APPLY_SERVICE_STACK("APPLY_SERVICE_STACK"),
-		APPLY_SERVICE("PERFORM_SERVICE");
+        @Override
+        public String toString() {
+            return this.uri.toString();
+        }
 
-		private String name;
-		private final URI uri;
+        /**
+         * Finds an action that matches the full action uri provided.
+         * 
+         * @param value
+         * @return
+         */
+        public static FedoraActions getAction(String value) {
+            if (value == null) {
+                return null;
+            }
+            for (FedoraActions action : values()) {
+                if (action.equals(value)) {
+                    return action;
+                }
+            }
+            return null;
+        }
+    }
 
-		ServicesActions(String name){
-			this.name = name;
-			try {
-				this.uri = new URI(servicesMessageNamespace + "/" + name);
-			} catch (URISyntaxException e) {
-				throw new RuntimeException("Error creating URI for " + servicesMessageNamespace + " " + name, e);
-			}
-		}
+    public static enum CDRActions {
+        MOVE("move"), REMOVE("remove"), ADD("add"), REORDER("reorder"), PUBLISH(
+                "publish"), REINDEX("reindex"), INDEX("index"), EDIT_TYPE(
+                "editType");
 
-		public String getName(){
-			return name;
-		}
+        private String name;
+        private final URI uri;
 
-		public boolean equals(String value){
-			return this.uri.toString().equals(value);
-		}
+        CDRActions(String name) {
+            this.name = name;
+            try {
+                this.uri = new URI(cdrMessageNamespace + "/" + name);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Error creating URI for "
+                        + cdrMessageNamespace + " " + name, e);
+            }
+        }
 
-		@Override
-		public String toString(){
-			return this.uri.toString();
-		}
-		
-		/**
-		 * Finds an action that matches the full action uri provided.
-		 * @param value
-		 * @return
-		 */
-		public static ServicesActions getAction(String value){
-			if (value == null)
-				return null;
-			for (ServicesActions action: values()){
-				if (action.equals(value))
-					return action;
-			}
-			return null;
-		}
-	}
+        public String getName() {
+            return name;
+        }
 
-	public static String getPid(Document message){
-		if (message == null)
-			return null;
-		return message.getRootElement().getChild("summary", JDOMNamespaceUtil.ATOM_NS).getText();
-	}
-	
-	public static String getAction(Document message){
-		if (message == null)
-			return null;
-		return message.getRootElement().getChildTextTrim("title", JDOMNamespaceUtil.ATOM_NS);
-	}
-	
-	/**
-	 * Retrieves the affected datastream field value from the provided message.
-	 *
-	 * @param message
-	 * @return
-	 */
-	public static String getDatastream(Document message){
-	 	return getCategoryByScheme(message, "fedora-types:dsID");
-	 }
+        public boolean equals(String value) {
+            return this.uri.toString().equals(value);
+        }
 
-	/**
-	 * Retrieves the relationship of triple change messages
-	 * @param message
-	 * @return
-	 */
-	public static String getPredicate(Document message) {
-		return getCategoryByScheme(message, "fedora-types:relationship");
-	}
-	
-	/**
-	 * Retrieves the object component of triples in relationship change messages.
-	 * @param message
-	 * @return
-	 */
-	public static String getObject(Document message){
-		return getCategoryByScheme(message, "fedora-types:object");
-	}
-	
-	public static String getCategoryByScheme(Document message, String scheme){
-		if (message == null)
-			return null;
-		List<Element> categories = message.getRootElement().getChildren("category", JDOMNamespaceUtil.ATOM_NS);
-	 	for (Element category: categories){
-	 		String schemeValue = category.getAttributeValue("scheme");
-	 		if (schemeValue.equals(scheme)){
-	 			return category.getAttributeValue("term");
-	 		}
-	 	}
-	 	return null;
-	}
+        @Override
+        public String toString() {
+            return this.uri.toString();
+        }
+
+        /**
+         * Finds an action that matches the full action uri provided.
+         * 
+         * @param value
+         * @return
+         */
+        public static CDRActions getAction(String value) {
+            if (value == null) {
+                return null;
+            }
+            for (CDRActions action : values()) {
+                if (action.equals(value)) {
+                    return action;
+                }
+            }
+            return null;
+        }
+    }
+
+    public static enum ServicesActions {
+        APPLY_SERVICE_STACK("APPLY_SERVICE_STACK"), APPLY_SERVICE(
+                "PERFORM_SERVICE");
+
+        private String name;
+        private final URI uri;
+
+        ServicesActions(String name) {
+            this.name = name;
+            try {
+                this.uri = new URI(servicesMessageNamespace + "/" + name);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Error creating URI for "
+                        + servicesMessageNamespace + " " + name, e);
+            }
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public boolean equals(String value) {
+            return this.uri.toString().equals(value);
+        }
+
+        @Override
+        public String toString() {
+            return this.uri.toString();
+        }
+
+        /**
+         * Finds an action that matches the full action uri provided.
+         * 
+         * @param value
+         * @return
+         */
+        public static ServicesActions getAction(String value) {
+            if (value == null) {
+                return null;
+            }
+            for (ServicesActions action : values()) {
+                if (action.equals(value)) {
+                    return action;
+                }
+            }
+            return null;
+        }
+    }
+
+    public static String getPid(Document message) {
+        if (message == null) {
+            return null;
+        }
+        return message.getRootElement()
+                .getChild("summary", JDOMNamespaceUtil.ATOM_NS).getText();
+    }
+
+    public static String getAction(Document message) {
+        if (message == null) {
+            return null;
+        }
+        return message.getRootElement().getChildTextTrim("title",
+                JDOMNamespaceUtil.ATOM_NS);
+    }
+
+    /**
+     * Retrieves the affected datastream field value from the provided message.
+     *
+     * @param message
+     * @return
+     */
+    public static String getDatastream(Document message) {
+        return getCategoryByScheme(message, "fedora-types:dsID");
+    }
+
+    /**
+     * Retrieves the relationship of triple change messages
+     * 
+     * @param message
+     * @return
+     */
+    public static String getPredicate(Document message) {
+        return getCategoryByScheme(message, "fedora-types:relationship");
+    }
+
+    /**
+     * Retrieves the object component of triples in relationship change
+     * messages.
+     * 
+     * @param message
+     * @return
+     */
+    public static String getObject(Document message) {
+        return getCategoryByScheme(message, "fedora-types:object");
+    }
+
+    public static String getCategoryByScheme(Document message, String scheme) {
+        if (message == null) {
+            return null;
+        }
+        List<Element> categories = message.getRootElement().getChildren(
+                "category", JDOMNamespaceUtil.ATOM_NS);
+        for (Element category : categories) {
+            String schemeValue = category.getAttributeValue("scheme");
+            if (schemeValue.equals(scheme)) {
+                return category.getAttributeValue("term");
+            }
+        }
+        return null;
+    }
 }

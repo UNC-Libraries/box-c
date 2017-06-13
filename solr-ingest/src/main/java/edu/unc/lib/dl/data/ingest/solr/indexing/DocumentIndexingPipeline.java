@@ -23,33 +23,39 @@ import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelExceptio
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
-	protected Collection<IndexDocumentFilter> filters;
+    protected Collection<IndexDocumentFilter> filters;
 
-	@Override
-	public void process(DocumentIndexingPackage dip) throws IndexingException {
-		// Do not process deposit records or objects without content models
-		if (dip.getTriples() != null) {
-			List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
+    @Override
+    public void process(DocumentIndexingPackage dip) throws IndexingException {
+        // Do not process deposit records or objects without content models
+        if (dip.getTriples() != null) {
+            List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
 
-			if (contentModels == null || contentModels.size() == 0)
-				throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
-						+ " due having no content models assigned.");
+            if (contentModels == null || contentModels.size() == 0) {
+                throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
+                        + " due having no content models assigned.");
+            }
 
-			if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
-				throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
-						+ ", objects of type " + ContentModelHelper.Model.DEPOSIT_RECORD.toString()
-						+ " are not supported for indexing.");
-			}
-		}
+            if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
+                throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
+                        + ", objects of type " + ContentModelHelper.Model.DEPOSIT_RECORD.toString()
+                        + " are not supported for indexing.");
+            }
+        }
 
-		for (IndexDocumentFilter filter : filters) {
-			filter.filter(dip);
-		}
-	}
+        for (IndexDocumentFilter filter : filters) {
+            filter.filter(dip);
+        }
+    }
 
-	@Override
-	public void setFilters(List<IndexDocumentFilter> filters) {
-		this.filters = filters;
-	}
+    @Override
+    public void setFilters(List<IndexDocumentFilter> filters) {
+        this.filters = filters;
+    }
 }

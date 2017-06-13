@@ -17,37 +17,37 @@ package edu.unc.lib.dl.fedora;
 
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 public class ServiceException extends RuntimeException {
 
-	public ServiceException(String message) {
-		super(message);
-	}
-	
-	public ServiceException(Throwable cause) {
-		super(cause);
-	}
-	
-	public ServiceException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public ServiceException(String message) {
+        super(message);
+    }
 
-	public Throwable getRootCause() {
-		Throwable cause = this.getCause();
-		if (cause == null) {
-			return null;
-		}
-		while (cause.getCause() != null) {
-			cause = cause.getCause();
-		}
+    public ServiceException(Throwable cause) {
+        super(cause);
+    }
 
-		return cause;
-	}
+    public ServiceException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
+    public Throwable getRootCause() {
+        Throwable cause = this.getCause();
+        if (cause == null) {
+            return null;
+        }
+        while (cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+
+        return cause;
+    }
+
+    /**
      *
      */
-	private static final long serialVersionUID = -8344216562020118505L;
+    private static final long serialVersionUID = -8344216562020118505L;
 
 }

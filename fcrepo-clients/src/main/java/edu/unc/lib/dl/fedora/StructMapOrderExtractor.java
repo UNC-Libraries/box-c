@@ -19,8 +19,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import edu.unc.lib.dl.fedora.PID;
-
 /**
  * @author Gregory Jansen
  *
@@ -30,23 +28,23 @@ public class StructMapOrderExtractor extends DefaultHandler {
     private String order = null;
 
     StructMapOrderExtractor(PID pid) {
-	super();
-	this.pid = pid;
+    super();
+    this.pid = pid;
     }
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-	super.startElement(uri, localName, qName, attributes);
-	if ("div".equals(localName)) {
-	    String id = attributes.getValue("ID");
-	    if (pid.getPid().equals(id)) {
-		this.order = attributes.getValue("ORDER");
-	    }
-	}
+    super.startElement(uri, localName, qName, attributes);
+    if ("div".equals(localName)) {
+        String id = attributes.getValue("ID");
+        if (pid.getPid().equals(id)) {
+        this.order = attributes.getValue("ORDER");
+        }
+    }
     }
 
     public String getOrder() {
-	return this.order;
+    return this.order;
     }
 
 }

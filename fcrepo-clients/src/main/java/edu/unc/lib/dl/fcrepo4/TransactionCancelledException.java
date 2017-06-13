@@ -16,23 +16,23 @@
 package edu.unc.lib.dl.fcrepo4;
 
 /**
- * 
+ *
  * @author harring
  *
  */
 public class TransactionCancelledException extends RuntimeException {
-	
-	private static final long serialVersionUID = 1L;
 
-	public TransactionCancelledException() {
-		super();
-	}
-	
-	public TransactionCancelledException(String message) {
-		super(message);
-	}
-	
-	public TransactionCancelledException(String message, Throwable t) {
-		super(message, t);
-	}
+    private static final long serialVersionUID = 1L;
+
+    public TransactionCancelledException() {
+        super();
+    }
+
+    public TransactionCancelledException(String message) {
+        super(message);
+    }
+
+    public TransactionCancelledException(String message, Throwable t) {
+        super(message, t);
+    }
 }

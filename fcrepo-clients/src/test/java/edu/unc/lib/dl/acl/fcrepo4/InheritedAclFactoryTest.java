@@ -58,396 +58,396 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class InheritedAclFactoryTest {
 
-	private static final String PATRON_PRINC = "everyone";
-	private static final String MANAGE_PRINC = "manageGrp";
-	private static final String OWNER_PRINC = "owner";
+    private static final String PATRON_PRINC = "everyone";
+    private static final String MANAGE_PRINC = "manageGrp";
+    private static final String OWNER_PRINC = "owner";
 
-	private static final String REPO_BASE = "http://example.com/rest/";
+    private static final String REPO_BASE = "http://example.com/rest/";
 
-	@Mock
-	private ContentPathFactory pathFactory;
+    @Mock
+    private ContentPathFactory pathFactory;
 
-	@Mock
-	private ObjectPermissionEvaluator objectPermissionEvaluator;
+    @Mock
+    private ObjectPermissionEvaluator objectPermissionEvaluator;
 
-	@Mock
-	private ObjectAclFactory objectAclFactory;
+    @Mock
+    private ObjectAclFactory objectAclFactory;
 
-	@Mock
-	private Repository repository;
+    @Mock
+    private Repository repository;
 
-	private InheritedAclFactory aclFactory;
+    private InheritedAclFactory aclFactory;
 
-	private List<PID> ancestorPids;
+    private List<PID> ancestorPids;
 
-	private PID pid;
+    private PID pid;
 
-	@Before
-	public void init() {
-		initMocks(this);
+    @Before
+    public void init() {
+        initMocks(this);
 
-		when(repository.getBaseUri()).thenReturn(REPO_BASE);
-		PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn(REPO_BASE);
+        PIDs.setRepository(repository);
 
-		aclFactory = new InheritedAclFactory();
-		aclFactory.setObjectAclFactory(objectAclFactory);
-		aclFactory.setObjectPermissionEvaluator(objectPermissionEvaluator);
-		aclFactory.setPathFactory(pathFactory);
+        aclFactory = new InheritedAclFactory();
+        aclFactory.setObjectAclFactory(objectAclFactory);
+        aclFactory.setObjectPermissionEvaluator(objectPermissionEvaluator);
+        aclFactory.setPathFactory(pathFactory);
 
-		ancestorPids = new ArrayList<>();
-		ancestorPids.add(PIDs.get(CONTENT_ROOT_ID));
+        ancestorPids = new ArrayList<>();
+        ancestorPids.add(PIDs.get(CONTENT_ROOT_ID));
 
-		when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(ancestorPids);
+        when(pathFactory.getAncestorPids(any(PID.class))).thenReturn(ancestorPids);
 
-		pid = PIDs.get(UUID.randomUUID().toString());
+        pid = PIDs.get(UUID.randomUUID().toString());
 
-		Map<String, Set<String>> objPrincRoles = new HashMap<>();
-		when(objectAclFactory.getPrincipalRoles(any(PID.class)))
-				.thenReturn(objPrincRoles);
+        Map<String, Set<String>> objPrincRoles = new HashMap<>();
+        when(objectAclFactory.getPrincipalRoles(any(PID.class)))
+                .thenReturn(objPrincRoles);
 
-		when(objectAclFactory.getPatronAccess(any(PID.class)))
-				.thenReturn(PatronAccess.parent);
-	}
+        when(objectAclFactory.getPatronAccess(any(PID.class)))
+                .thenReturn(PatronAccess.parent);
+    }
 
-	@Test
-	public void unitBasePrincRolesTest() {
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+    @Test
+    public void unitBasePrincRolesTest() {
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-		assertPrincipalHasRoles("Assumed patron assignment should be present for unit",
-				princRoles, PATRON_PRINC, canViewOriginals);
-	}
+        assertPrincipalHasRoles("Assumed patron assignment should be present for unit",
+                princRoles, PATRON_PRINC, canViewOriginals);
+    }
 
-	@Test
-	public void collectionGetPrincRolesTest() {
-		addPidToAncestors();
+    @Test
+    public void collectionGetPrincRolesTest() {
+        addPidToAncestors();
 
-		Map<String, Set<String>> objPrincRoles = new HashMap<>();
-		addPrincipalRoles(objPrincRoles, MANAGE_PRINC, UserRole.canManage);
+        Map<String, Set<String>> objPrincRoles = new HashMap<>();
+        addPrincipalRoles(objPrincRoles, MANAGE_PRINC, UserRole.canManage);
 
-		when(objectAclFactory.getPrincipalRoles(eq(pid)))
-				.thenReturn(objPrincRoles);
+        when(objectAclFactory.getPrincipalRoles(eq(pid)))
+                .thenReturn(objPrincRoles);
 
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-		assertPrincipalHasRoles("Only one role should be present on collection",
-				princRoles, MANAGE_PRINC, canManage);
-	}
+        assertPrincipalHasRoles("Only one role should be present on collection",
+                princRoles, MANAGE_PRINC, canManage);
+    }
 
-	@Test
-	public void collectionInheritedGetPrincRolesTest() {
-		PID unitPid = addPidToAncestors();
+    @Test
+    public void collectionInheritedGetPrincRolesTest() {
+        PID unitPid = addPidToAncestors();
 
-		Map<String, Set<String>> unitPrincRoles = new HashMap<>();
-		addPrincipalRoles(unitPrincRoles, MANAGE_PRINC, UserRole.canManage);
+        Map<String, Set<String>> unitPrincRoles = new HashMap<>();
+        addPrincipalRoles(unitPrincRoles, MANAGE_PRINC, UserRole.canManage);
 
-		when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
-				.thenReturn(unitPrincRoles);
+        when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
+                .thenReturn(unitPrincRoles);
 
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
 
-		assertPrincipalHasRoles("Only one role should be inherited on collection",
-				princRoles, MANAGE_PRINC, canManage);
-	}
+        assertPrincipalHasRoles("Only one role should be inherited on collection",
+                princRoles, MANAGE_PRINC, canManage);
+    }
 
-	@Test
-	public void collectionMergedInheritedPrincRolesTest() {
-		PID unitPid = addPidToAncestors();
+    @Test
+    public void collectionMergedInheritedPrincRolesTest() {
+        PID unitPid = addPidToAncestors();
 
-		Map<String, Set<String>> unitPrincRoles = new HashMap<>();
-		addPrincipalRoles(unitPrincRoles, MANAGE_PRINC, UserRole.canAccess);
-		addPrincipalRoles(unitPrincRoles, OWNER_PRINC, UserRole.unitOwner);
-		when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
-				.thenReturn(unitPrincRoles);
+        Map<String, Set<String>> unitPrincRoles = new HashMap<>();
+        addPrincipalRoles(unitPrincRoles, MANAGE_PRINC, UserRole.canAccess);
+        addPrincipalRoles(unitPrincRoles, OWNER_PRINC, UserRole.unitOwner);
+        when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
+                .thenReturn(unitPrincRoles);
 
-		Map<String, Set<String>> collPrincRoles = new HashMap<>();
-		addPrincipalRoles(collPrincRoles, MANAGE_PRINC, UserRole.canManage);
-		when(objectAclFactory.getPrincipalRoles(eq(pid)))
-				.thenReturn(collPrincRoles);
-
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("Incorrect number of principal assignments on collection",
-				2, princRoles.size());
-
-		assertPrincipalHasRoles("Incorrect inherited/merged roles for the manger principal",
-				princRoles, MANAGE_PRINC, canManage, canAccess);
-		assertPrincipalHasRoles("Owner principal not set correctly",
-				princRoles, OWNER_PRINC, unitOwner);
-	}
-
-	@Test
-	public void collectionNoPrincRoles() {
-		addPidToAncestors();
-
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("No assignments should be present on collection", 0, princRoles.size());
-	}
-
-	@Test
-	public void contentInheritedRolesTest() {
-		PID unitPid = addPidToAncestors();
-		PID collPid = addPidToAncestors();
-
-		Map<String, Set<String>> unitPrincRoles = new HashMap<>();
-		addPrincipalRoles(unitPrincRoles, OWNER_PRINC, unitOwner);
-		when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
-				.thenReturn(unitPrincRoles);
-
-		Map<String, Set<String>> collPrincRoles = new HashMap<>();
-		addPrincipalRoles(collPrincRoles, MANAGE_PRINC, canManage);
-		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
-		when(objectAclFactory.getPrincipalRoles(eq(collPid)))
-				.thenReturn(collPrincRoles);
-
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
-				.thenReturn(true);
-
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("Incorrect number of principal assignments on content",
-				3, princRoles.size());
-		assertPrincipalHasRoles("Incorrect inherited roles for the manger principal",
-				princRoles, MANAGE_PRINC, canManage);
-		assertPrincipalHasRoles("Incorrect inherited patron roles for the patron principal",
-				princRoles, PATRON_PRINC, canViewMetadata);
-		assertPrincipalHasRoles("Owner principal role not set correctly",
-				princRoles, OWNER_PRINC, unitOwner);
-	}
-
-	@Test
-	public void contentRemovePatronAccessTest() {
-		addPidToAncestors();
-		PID collPid = addPidToAncestors();
-
-		Map<String, Set<String>> collPrincRoles = new HashMap<>();
-		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
-		when(objectAclFactory.getPrincipalRoles(eq(collPid)))
-				.thenReturn(collPrincRoles);
-
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), anyString(), any(Permission.class)))
-				.thenReturn(false);
-
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("All access to content object should be removed", 0, princRoles.size());
-	}
-
-	@Test
-	public void contentReducePermissionsTest() {
-		addPidToAncestors();
-		PID collectionPid = addPidToAncestors();
-
-		Map<String, Set<String>> collPrincRoles = new HashMap<>();
-		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
-		addPrincipalRoles(collPrincRoles, AUTHENTICATED_PRINC, canViewOriginals);
-		when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
-				.thenReturn(collPrincRoles);
-
-		// revoke one patron but not the other
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
-				.thenReturn(false);
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(AUTHENTICATED_PRINC), any(Permission.class)))
-				.thenReturn(true);
-
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("Only one patron principal should be present", 1, princRoles.size());
-		assertPrincipalHasRoles("Authenticated principal should still be assigned",
-				princRoles, AUTHENTICATED_PRINC, canViewOriginals);
-	}
-
-	@Test
-	public void embargoReducedRoleTest() {
-		addPidToAncestors();
-		PID collectionPid = addPidToAncestors();
-		
-		Map<String, Set<String>> collPrincRoles = new HashMap<>();
-		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewOriginals);
-		when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
-				.thenReturn(collPrincRoles);
-		
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewMetadata)))
-				.thenReturn(true);
-		when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewOriginal)))
-				.thenReturn(false);
-		
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("Only one patron principal should be present", 1, princRoles.size());
-		assertPrincipalHasRoles("Patron should be reduced to have view metadata role",
-				princRoles, PATRON_PRINC, canViewMetadata);
-	}
-
-	@Test
-	public void ignoreRolesAssignedToContentTest() {
-		PID unitPid = addPidToAncestors();
-		addPidToAncestors();
-
-		Map<String, Set<String>> unitPrincRoles = new HashMap<>();
-		addPrincipalRoles(unitPrincRoles, OWNER_PRINC, unitOwner);
-		when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
-				.thenReturn(unitPrincRoles);
-
-		Map<String, Set<String>> collPrincRoles = new HashMap<>();
-		addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
-		when(objectAclFactory.getPrincipalRoles(eq(pid)))
-				.thenReturn(collPrincRoles);
-
-		Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
-
-		assertEquals("Only owner should be returned for content object", 1, princRoles.size());
-		assertPrincipalHasRoles("Owner principal role not set correctly",
-				princRoles, OWNER_PRINC, unitOwner);
-	}
-
-	@Test
-	public void notMarkedForDeletionTest() {
-		addPidToAncestors();
-
-		when(objectAclFactory.isMarkedForDeletion(any(PID.class)))
-				.thenReturn(false);
-
-		assertFalse(aclFactory.isMarkedForDeletion(pid));
-	}
-
-	@Test
-	public void inheritMarkedForDeletionTest() {
-		addPidToAncestors();
-		PID collPid = addPidToAncestors();
-
-		when(objectAclFactory.isMarkedForDeletion(eq(collPid)))
-				.thenReturn(true);
-
-		assertTrue(aclFactory.isMarkedForDeletion(pid));
-	}
-
-	@Test
-	public void isMarkedForDeletionTest() {
-		addPidToAncestors();
-		addPidToAncestors();
-
-		when(objectAclFactory.isMarkedForDeletion(eq(pid)))
-				.thenReturn(true);
-
-		assertTrue(aclFactory.isMarkedForDeletion(pid));
-	}
-
-	@Test
-	public void noEmbargoTest() {
-		addPidToAncestors();
-
-		when(objectAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(null);
-
-		assertNull("No embargo should return null", aclFactory.getEmbargoUntil(pid));
-	}
-
-	@Test
-	public void hasEmbargoTest() {
-		addPidToAncestors();
-
-		Date embargoDate = new Date();
-		when(objectAclFactory.getEmbargoUntil(eq(pid))).thenReturn(embargoDate);
-
-		assertEquals(embargoDate, aclFactory.getEmbargoUntil(pid));
-	}
-
-	@Test
-	public void inheritEmbargoTest() {
-		addPidToAncestors();
-		PID collPid = addPidToAncestors();
-
-		Date embargoDate = new Date();
-		when(objectAclFactory.getEmbargoUntil(eq(collPid))).thenReturn(embargoDate);
-
-		assertEquals(embargoDate, aclFactory.getEmbargoUntil(pid));
-	}
-
-	@Test
-	public void overrideInheritedEmbargoTest() {
-		addPidToAncestors();
-		PID collPid = addPidToAncestors();
-
-		Date collEmbargoDate = new Date();
-		when(objectAclFactory.getEmbargoUntil(eq(collPid))).thenReturn(collEmbargoDate);
-
-		Date tomorrowEmbargo = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
-		when(objectAclFactory.getEmbargoUntil(eq(pid))).thenReturn(tomorrowEmbargo);
-
-		assertEquals(tomorrowEmbargo, aclFactory.getEmbargoUntil(pid));
-	}
-
-	@Test
-	public void overrideLocalEmbargoTest() {
-		addPidToAncestors();
-		PID collPid = addPidToAncestors();
-
-		Date collEmbargoDate = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
-		when(objectAclFactory.getEmbargoUntil(eq(collPid))).thenReturn(collEmbargoDate);
-
-		Date objEmbargoDate = new Date();
-		when(objectAclFactory.getEmbargoUntil(eq(pid))).thenReturn(objEmbargoDate);
-
-		assertEquals(collEmbargoDate, aclFactory.getEmbargoUntil(pid));
-	}
-
-	@Test
-	public void unsetPatronAccess() {
-		addPidToAncestors();
-		addPidToAncestors();
-
-		assertEquals(PatronAccess.parent, aclFactory.getPatronAccess(pid));
-	}
-
-	@Test
-	public void inheritNoPatronAccessTest() {
-		addPidToAncestors();
-		addPidToAncestors();
-		PID parentPid = addPidToAncestors();
-
-		when(objectAclFactory.getPatronAccess(eq(parentPid)))
-				.thenReturn(PatronAccess.none);
-
-		assertEquals(PatronAccess.none, aclFactory.getPatronAccess(pid));
-	}
-
-	@Test
-	public void authenticatedPatronAccessTest() {
-		addPidToAncestors();
-		addPidToAncestors();
-		PID parentPid = addPidToAncestors();
-
-		when(objectAclFactory.getPatronAccess(eq(parentPid)))
-				.thenReturn(PatronAccess.authenticated);
-
-		assertEquals(PatronAccess.authenticated, aclFactory.getPatronAccess(pid));
-	}
-
-	private static void assertPrincipalHasRoles(String message, Map<String, Set<String>> princRoles,
-			String principal, UserRole... expectedRoles) {
-		try {
-			Set<String> roles = princRoles.get(principal);
-			assertNotNull(roles);
-			assertEquals(expectedRoles.length, roles.size());
-			for (UserRole expectedRole : expectedRoles) {
-				assertTrue(roles.contains(expectedRole.getPropertyString()));
-			}
-		} catch (Error e) {
-			throw new AssertionError(message, e);
-		}
-	}
-
-	private void addPrincipalRoles(Map<String, Set<String>> objPrincRoles,
-			String princ, UserRole... roles) {
-		Set<String> roleSet = Arrays.stream(roles)
-			.map(r -> r.getPropertyString())
-			.collect(Collectors.toSet());
-		objPrincRoles.put(princ, roleSet);
-	}
-
-	private PID addPidToAncestors() {
-		PID ancestor = PIDs.get(UUID.randomUUID().toString());
-		ancestorPids.add(ancestor);
-		return ancestor;
-	}
+        Map<String, Set<String>> collPrincRoles = new HashMap<>();
+        addPrincipalRoles(collPrincRoles, MANAGE_PRINC, UserRole.canManage);
+        when(objectAclFactory.getPrincipalRoles(eq(pid)))
+                .thenReturn(collPrincRoles);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Incorrect number of principal assignments on collection",
+                2, princRoles.size());
+
+        assertPrincipalHasRoles("Incorrect inherited/merged roles for the manger principal",
+                princRoles, MANAGE_PRINC, canManage, canAccess);
+        assertPrincipalHasRoles("Owner principal not set correctly",
+                princRoles, OWNER_PRINC, unitOwner);
+    }
+
+    @Test
+    public void collectionNoPrincRoles() {
+        addPidToAncestors();
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("No assignments should be present on collection", 0, princRoles.size());
+    }
+
+    @Test
+    public void contentInheritedRolesTest() {
+        PID unitPid = addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        Map<String, Set<String>> unitPrincRoles = new HashMap<>();
+        addPrincipalRoles(unitPrincRoles, OWNER_PRINC, unitOwner);
+        when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
+                .thenReturn(unitPrincRoles);
+
+        Map<String, Set<String>> collPrincRoles = new HashMap<>();
+        addPrincipalRoles(collPrincRoles, MANAGE_PRINC, canManage);
+        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        when(objectAclFactory.getPrincipalRoles(eq(collPid)))
+                .thenReturn(collPrincRoles);
+
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
+                .thenReturn(true);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Incorrect number of principal assignments on content",
+                3, princRoles.size());
+        assertPrincipalHasRoles("Incorrect inherited roles for the manger principal",
+                princRoles, MANAGE_PRINC, canManage);
+        assertPrincipalHasRoles("Incorrect inherited patron roles for the patron principal",
+                princRoles, PATRON_PRINC, canViewMetadata);
+        assertPrincipalHasRoles("Owner principal role not set correctly",
+                princRoles, OWNER_PRINC, unitOwner);
+    }
+
+    @Test
+    public void contentRemovePatronAccessTest() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        Map<String, Set<String>> collPrincRoles = new HashMap<>();
+        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        when(objectAclFactory.getPrincipalRoles(eq(collPid)))
+                .thenReturn(collPrincRoles);
+
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), anyString(), any(Permission.class)))
+                .thenReturn(false);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("All access to content object should be removed", 0, princRoles.size());
+    }
+
+    @Test
+    public void contentReducePermissionsTest() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        Map<String, Set<String>> collPrincRoles = new HashMap<>();
+        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        addPrincipalRoles(collPrincRoles, AUTHENTICATED_PRINC, canViewOriginals);
+        when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
+                .thenReturn(collPrincRoles);
+
+        // revoke one patron but not the other
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), any(Permission.class)))
+                .thenReturn(false);
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(AUTHENTICATED_PRINC), any(Permission.class)))
+                .thenReturn(true);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Only one patron principal should be present", 1, princRoles.size());
+        assertPrincipalHasRoles("Authenticated principal should still be assigned",
+                princRoles, AUTHENTICATED_PRINC, canViewOriginals);
+    }
+
+    @Test
+    public void embargoReducedRoleTest() {
+        addPidToAncestors();
+        PID collectionPid = addPidToAncestors();
+
+        Map<String, Set<String>> collPrincRoles = new HashMap<>();
+        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewOriginals);
+        when(objectAclFactory.getPrincipalRoles(eq(collectionPid)))
+                .thenReturn(collPrincRoles);
+
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewMetadata)))
+                .thenReturn(true);
+        when(objectPermissionEvaluator.hasPatronAccess(eq(pid), eq(PATRON_PRINC), eq(Permission.viewOriginal)))
+                .thenReturn(false);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Only one patron principal should be present", 1, princRoles.size());
+        assertPrincipalHasRoles("Patron should be reduced to have view metadata role",
+                princRoles, PATRON_PRINC, canViewMetadata);
+    }
+
+    @Test
+    public void ignoreRolesAssignedToContentTest() {
+        PID unitPid = addPidToAncestors();
+        addPidToAncestors();
+
+        Map<String, Set<String>> unitPrincRoles = new HashMap<>();
+        addPrincipalRoles(unitPrincRoles, OWNER_PRINC, unitOwner);
+        when(objectAclFactory.getPrincipalRoles(eq(unitPid)))
+                .thenReturn(unitPrincRoles);
+
+        Map<String, Set<String>> collPrincRoles = new HashMap<>();
+        addPrincipalRoles(collPrincRoles, PATRON_PRINC, canViewMetadata);
+        when(objectAclFactory.getPrincipalRoles(eq(pid)))
+                .thenReturn(collPrincRoles);
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(pid);
+
+        assertEquals("Only owner should be returned for content object", 1, princRoles.size());
+        assertPrincipalHasRoles("Owner principal role not set correctly",
+                princRoles, OWNER_PRINC, unitOwner);
+    }
+
+    @Test
+    public void notMarkedForDeletionTest() {
+        addPidToAncestors();
+
+        when(objectAclFactory.isMarkedForDeletion(any(PID.class)))
+                .thenReturn(false);
+
+        assertFalse(aclFactory.isMarkedForDeletion(pid));
+    }
+
+    @Test
+    public void inheritMarkedForDeletionTest() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        when(objectAclFactory.isMarkedForDeletion(eq(collPid)))
+                .thenReturn(true);
+
+        assertTrue(aclFactory.isMarkedForDeletion(pid));
+    }
+
+    @Test
+    public void isMarkedForDeletionTest() {
+        addPidToAncestors();
+        addPidToAncestors();
+
+        when(objectAclFactory.isMarkedForDeletion(eq(pid)))
+                .thenReturn(true);
+
+        assertTrue(aclFactory.isMarkedForDeletion(pid));
+    }
+
+    @Test
+    public void noEmbargoTest() {
+        addPidToAncestors();
+
+        when(objectAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(null);
+
+        assertNull("No embargo should return null", aclFactory.getEmbargoUntil(pid));
+    }
+
+    @Test
+    public void hasEmbargoTest() {
+        addPidToAncestors();
+
+        Date embargoDate = new Date();
+        when(objectAclFactory.getEmbargoUntil(eq(pid))).thenReturn(embargoDate);
+
+        assertEquals(embargoDate, aclFactory.getEmbargoUntil(pid));
+    }
+
+    @Test
+    public void inheritEmbargoTest() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        Date embargoDate = new Date();
+        when(objectAclFactory.getEmbargoUntil(eq(collPid))).thenReturn(embargoDate);
+
+        assertEquals(embargoDate, aclFactory.getEmbargoUntil(pid));
+    }
+
+    @Test
+    public void overrideInheritedEmbargoTest() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        Date collEmbargoDate = new Date();
+        when(objectAclFactory.getEmbargoUntil(eq(collPid))).thenReturn(collEmbargoDate);
+
+        Date tomorrowEmbargo = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
+        when(objectAclFactory.getEmbargoUntil(eq(pid))).thenReturn(tomorrowEmbargo);
+
+        assertEquals(tomorrowEmbargo, aclFactory.getEmbargoUntil(pid));
+    }
+
+    @Test
+    public void overrideLocalEmbargoTest() {
+        addPidToAncestors();
+        PID collPid = addPidToAncestors();
+
+        Date collEmbargoDate = Date.from(ZonedDateTime.now().plusDays(1).toInstant());
+        when(objectAclFactory.getEmbargoUntil(eq(collPid))).thenReturn(collEmbargoDate);
+
+        Date objEmbargoDate = new Date();
+        when(objectAclFactory.getEmbargoUntil(eq(pid))).thenReturn(objEmbargoDate);
+
+        assertEquals(collEmbargoDate, aclFactory.getEmbargoUntil(pid));
+    }
+
+    @Test
+    public void unsetPatronAccess() {
+        addPidToAncestors();
+        addPidToAncestors();
+
+        assertEquals(PatronAccess.parent, aclFactory.getPatronAccess(pid));
+    }
+
+    @Test
+    public void inheritNoPatronAccessTest() {
+        addPidToAncestors();
+        addPidToAncestors();
+        PID parentPid = addPidToAncestors();
+
+        when(objectAclFactory.getPatronAccess(eq(parentPid)))
+                .thenReturn(PatronAccess.none);
+
+        assertEquals(PatronAccess.none, aclFactory.getPatronAccess(pid));
+    }
+
+    @Test
+    public void authenticatedPatronAccessTest() {
+        addPidToAncestors();
+        addPidToAncestors();
+        PID parentPid = addPidToAncestors();
+
+        when(objectAclFactory.getPatronAccess(eq(parentPid)))
+                .thenReturn(PatronAccess.authenticated);
+
+        assertEquals(PatronAccess.authenticated, aclFactory.getPatronAccess(pid));
+    }
+
+    private static void assertPrincipalHasRoles(String message, Map<String, Set<String>> princRoles,
+            String principal, UserRole... expectedRoles) {
+        try {
+            Set<String> roles = princRoles.get(principal);
+            assertNotNull(roles);
+            assertEquals(expectedRoles.length, roles.size());
+            for (UserRole expectedRole : expectedRoles) {
+                assertTrue(roles.contains(expectedRole.getPropertyString()));
+            }
+        } catch (Error e) {
+            throw new AssertionError(message, e);
+        }
+    }
+
+    private void addPrincipalRoles(Map<String, Set<String>> objPrincRoles,
+            String princ, UserRole... roles) {
+        Set<String> roleSet = Arrays.stream(roles)
+            .map(r -> r.getPropertyString())
+            .collect(Collectors.toSet());
+        objPrincRoles.put(princ, roleSet);
+    }
+
+    private PID addPidToAncestors() {
+        PID ancestor = PIDs.get(UUID.randomUUID().toString());
+        ancestorPids.add(ancestor);
+        return ancestor;
+    }
 }

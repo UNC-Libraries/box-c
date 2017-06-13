@@ -28,143 +28,152 @@ import edu.unc.lib.dl.xml.NamespaceConstants;
  * 
  */
 public class MetsHeaderScanner extends DefaultHandler {
-	Logger log = LoggerFactory.getLogger(MetsHeaderScanner.class);
-	
-	PID objID = null;
-	String label = null;
-	String createDate = null;
-	String lastModDate = null;
-	String profile = null;
-	String type = null;
-	String id = null;
-	List<String> names = new ArrayList<String>();
-	StringBuilder nameBuffer = null;
-	
-	public List<String> getNames() {
-		return names;
-	}
+    Logger log = LoggerFactory.getLogger(MetsHeaderScanner.class);
 
-	String metsURI = NamespaceConstants.METS_URI;
+    PID objID = null;
+    String label = null;
+    String createDate = null;
+    String lastModDate = null;
+    String profile = null;
+    String type = null;
+    String id = null;
+    List<String> names = new ArrayList<String>();
+    StringBuilder nameBuffer = null;
 
-	public PID getObjID() {
-		return objID;
-	}
+    public List<String> getNames() {
+        return names;
+    }
 
-	public String getLabel() {
-		return label;
-	}
+    String metsURI = NamespaceConstants.METS_URI;
 
-	public String getCreateDate() {
-		return createDate;
-	}
+    public PID getObjID() {
+        return objID;
+    }
 
-	public String getLastModDate() {
-		return lastModDate;
-	}
+    public String getLabel() {
+        return label;
+    }
 
-	public String getProfile() {
-		return profile;
-	}
+    public String getCreateDate() {
+        return createDate;
+    }
 
-	public String getType() {
-		return type;
-	}
+    public String getLastModDate() {
+        return lastModDate;
+    }
 
-	public String getId() {
-		return id;
-	}
+    public String getProfile() {
+        return profile;
+    }
 
-	@Override
-	public void startElement(String uri, String localName, String qName,
-			Attributes attr) throws SAXException {
-		if(!NamespaceConstants.METS_URI.equals(uri)) return;
-		if (localName.equals("mets")) {
-			for (int i = 0; i < attr.getLength(); i++) {
-				String n = attr.getLocalName(i);
-				if (n.equals("OBJID")) {
-					objID = new PID(attr.getValue(i));
-				} else if (n.equals("ID")) {
-					id = attr.getValue(i);
-				} else if (n.equals("LABEL")) {
-					label = attr.getValue(i);
-				} else if (n.equals("PROFILE")) {
-					profile = attr.getValue(i);
-				} else if (n.equals("TYPE")) {
-					type = attr.getValue(i);
-				}
-			}
-		} else if (localName.equals("metsHdr")) {
-			for (int i = 0; i < attr.getLength(); i++) {
-				String n = attr.getLocalName(i);
-				if (n.equals("CREATEDATE")) {
-					createDate = attr.getValue(i);
-				} else if (n.equals("LASTMODDATE")) {
-					lastModDate = attr.getValue(i);
-				}
-			}
-		} else if (localName.equals("name")) {
-			nameBuffer = new StringBuilder();
-		}
-		super.startElement(uri, localName, qName, attr);
-	}
+    public String getType() {
+        return type;
+    }
 
-	@Override
-	public void characters(char[] ch, int start, int length)
-			throws SAXException {
-		if(nameBuffer != null) nameBuffer.append(ch, start, length);
-		super.characters(ch, start, length);
-	}
+    public String getId() {
+        return id;
+    }
 
-	@Override
-	public void endElement(String uri, String localName, String qName)
-			throws SAXException {
-		if(!NamespaceConstants.METS_URI.equals(uri)) return;
-		if (localName.equals("name")) {
-			if(nameBuffer != null) {
-				names.add(nameBuffer.toString());
-				nameBuffer = null;
-			}
-		}
-		super.endElement(uri, localName, qName);
-	}
+    @Override
+    public void startElement(String uri, String localName, String qName,
+            Attributes attr) throws SAXException {
+        if (!NamespaceConstants.METS_URI.equals(uri)) {
+            return;
+        }
 
-	public void scan(File f, String filename) throws Exception {
-		@SuppressWarnings("resource")
-		InputStream toParse = null;
-		try {
-			if (filename.endsWith(".zip")) {
-				log.debug("scanning for METS within a zip file");
-				@SuppressWarnings("resource")
-				ZipArchiveInputStream zis = new ZipArchiveInputStream(
-						new FileInputStream(f));
-				ArchiveEntry entry = null;
-				while ((entry = zis.getNextZipEntry()) != null) {
-					if (!entry.isDirectory()) {
-						if (entry.getName().equals("METS.xml")
-								|| entry.getName().equals("mets.xml")) {
-							log.debug("Found METS entry in ZIP: {}", entry.getName());
-							toParse = zis;
-							break;
-						}
-					}
-				}
-			} else {
-				log.debug("scanning METS file");
-				toParse = new FileInputStream(f);
-			}
-			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature("http://xml.org/sax/features/namespaces", true);
-			SAXParser saxParser = null;
-			saxParser = factory.newSAXParser();
-			saxParser.parse(toParse, this);
-		} finally {
-			if (toParse != null) {
-				try {
-					toParse.close();
-				} catch (IOException ignored) {
-				}
-			}
-		}
-	}
+        if (localName.equals("mets")) {
+            for (int i = 0; i < attr.getLength(); i++) {
+                String n = attr.getLocalName(i);
+                if (n.equals("OBJID")) {
+                    objID = new PID(attr.getValue(i));
+                } else if (n.equals("ID")) {
+                    id = attr.getValue(i);
+                } else if (n.equals("LABEL")) {
+                    label = attr.getValue(i);
+                } else if (n.equals("PROFILE")) {
+                    profile = attr.getValue(i);
+                } else if (n.equals("TYPE")) {
+                    type = attr.getValue(i);
+                }
+            }
+        } else if (localName.equals("metsHdr")) {
+            for (int i = 0; i < attr.getLength(); i++) {
+                String n = attr.getLocalName(i);
+                if (n.equals("CREATEDATE")) {
+                    createDate = attr.getValue(i);
+                } else if (n.equals("LASTMODDATE")) {
+                    lastModDate = attr.getValue(i);
+                }
+            }
+        } else if (localName.equals("name")) {
+            nameBuffer = new StringBuilder();
+        }
+        super.startElement(uri, localName, qName, attr);
+    }
+
+    @Override
+    public void characters(char[] ch, int start, int length)
+            throws SAXException {
+        if (nameBuffer != null) {
+            nameBuffer.append(ch, start, length);
+        }
+        super.characters(ch, start, length);
+    }
+
+    @Override
+    public void endElement(String uri, String localName, String qName)
+            throws SAXException {
+        if (!NamespaceConstants.METS_URI.equals(uri)) {
+            return;
+        }
+
+        if (localName.equals("name")) {
+            if (nameBuffer != null) {
+                names.add(nameBuffer.toString());
+                nameBuffer = null;
+            }
+        }
+        super.endElement(uri, localName, qName);
+    }
+
+    public void scan(File f, String filename) throws Exception {
+        @SuppressWarnings("resource")
+        InputStream toParse = null;
+        try {
+            if (filename.endsWith(".zip")) {
+                log.debug("scanning for METS within a zip file");
+                @SuppressWarnings("resource")
+                ZipArchiveInputStream zis = new ZipArchiveInputStream(
+                        new FileInputStream(f));
+                ArchiveEntry entry = null;
+                while ((entry = zis.getNextZipEntry()) != null) {
+                    if (!entry.isDirectory()) {
+                        if (entry.getName().equals("METS.xml")
+                                || entry.getName().equals("mets.xml")) {
+                            log.debug("Found METS entry in ZIP: {}",
+                                    entry.getName());
+                            toParse = zis;
+                            break;
+                        }
+                    }
+                }
+            } else {
+                log.debug("scanning METS file");
+                toParse = new FileInputStream(f);
+            }
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setFeature("http://xml.org/sax/features/namespaces", true);
+            SAXParser saxParser = null;
+            saxParser = factory.newSAXParser();
+            saxParser.parse(toParse, this);
+        } finally {
+            if (toParse != null) {
+                try {
+                    toParse.close();
+                } catch (IOException ignored) {
+                }
+            }
+        }
+    }
 
 }

@@ -32,28 +32,28 @@ import edu.unc.lib.dl.util.XMLAttachedException;
  */
 public class IngestException extends Exception implements XMLAttachedException {
 
-	private static final long serialVersionUID = -4065348103957132332L;
+    private static final long serialVersionUID = -4065348103957132332L;
 
-	Element errorXML = null;
+    Element errorXML = null;
 
-	public IngestException(String msg) {
-		super(msg);
-	}
+    public IngestException(String msg) {
+        super(msg);
+    }
 
-	public IngestException(String msg, Throwable e) {
-		super(msg, e);
-		if (e instanceof XMLAttachedException) {
-			this.errorXML = ((XMLAttachedException) e).getErrorXML();
-		}
-	}
+    public IngestException(String msg, Throwable e) {
+        super(msg, e);
+        if (e instanceof XMLAttachedException) {
+            this.errorXML = ((XMLAttachedException) e).getErrorXML();
+        }
+    }
 
-	@Override
-	public Element getErrorXML() {
-		return errorXML;
-	}
+    @Override
+    public Element getErrorXML() {
+        return errorXML;
+    }
 
-	public void setErrorXML(Element errorXML) {
-		this.errorXML = errorXML;
-	}
+    public void setErrorXML(Element errorXML) {
+        this.errorXML = errorXML;
+    }
 
 }

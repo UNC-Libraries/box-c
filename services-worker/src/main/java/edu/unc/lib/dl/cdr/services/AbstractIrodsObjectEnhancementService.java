@@ -28,72 +28,74 @@ import org.irods.jargon.core.pub.io.IRODSFile;
  * 
  */
 public abstract class AbstractIrodsObjectEnhancementService extends AbstractFedoraEnhancementService {
-	private IRODSAccount irodsAccount = null;
-	private IRODSFileSystem irodsFileSystem = null;
+     private IRODSAccount irodsAccount = null;
+     private IRODSFileSystem irodsFileSystem = null;
 
-	public IRODSAccount getIrodsAccount() {
-		return irodsAccount;
-	}
+     public IRODSAccount getIrodsAccount() {
+          return irodsAccount;
+     }
 
-	public void setIrodsAccount(IRODSAccount irodsAccount) {
-		this.irodsAccount = irodsAccount;
-	}
+     public void setIrodsAccount(IRODSAccount irodsAccount) {
+          this.irodsAccount = irodsAccount;
+     }
 
-	public InputStream remoteExecuteWithPhysicalLocation(String command, String path) throws Exception {
-		RemoteExecutionOfCommandsAO rexecAO = null;
-		rexecAO = getIrodsFileSystem().getIRODSAccessObjectFactory().getRemoteExecutionOfCommandsAO(
-				this.getIrodsAccount());
-		try {
-			return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command, "",
-					path);
-		} catch (JargonException e) {
-			throw e;
-		} finally {
-			getIrodsFileSystem().closeAndEatExceptions();
-		}
-	}
+     public InputStream remoteExecuteWithPhysicalLocation(String command, String path) throws Exception {
+          RemoteExecutionOfCommandsAO rexecAO = null;
+          rexecAO = getIrodsFileSystem().getIRODSAccessObjectFactory().getRemoteExecutionOfCommandsAO(
+                    this.getIrodsAccount());
+          try {
+               return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(
+                       command, "", path);
+          } catch (JargonException e) {
+               throw e;
+          } finally {
+               getIrodsFileSystem().closeAndEatExceptions();
+          }
+     }
 
-	public InputStream remoteExecuteWithPhysicalLocation(String command, String arguments, String path) throws Exception {
-		LOG.debug("iexecmd -P " + path + " \"" + command + " " + arguments + "\"");
-		RemoteExecutionOfCommandsAO rexecAO = null;
-		rexecAO = getIrodsFileSystem().getIRODSAccessObjectFactory().getRemoteExecutionOfCommandsAO(
-				this.getIrodsAccount());
-		try {
-			return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command,
-					arguments, path);
-		} catch (JargonException e) {
-			throw e;
-		} finally {
-			getIrodsFileSystem().closeAndEatExceptions();
-		}
-	}
+     public InputStream remoteExecuteWithPhysicalLocation(String command, String arguments, String path)
+             throws Exception {
+          LOG.debug("iexecmd -P " + path + " \"" + command + " " + arguments + "\"");
+          RemoteExecutionOfCommandsAO rexecAO = null;
+          rexecAO = getIrodsFileSystem().getIRODSAccessObjectFactory().getRemoteExecutionOfCommandsAO(
+                    this.getIrodsAccount());
+          try {
+               return rexecAO.executeARemoteCommandAndGetStreamAddingPhysicalPathAsFirstArgumentToRemoteScript(command,
+                         arguments, path);
+          } catch (JargonException e) {
+               throw e;
+          } finally {
+               getIrodsFileSystem().closeAndEatExceptions();
+          }
+     }
 
-	// TODO Implement iRods API call to delete a file from the staging area.
-	public void deleteIRODSFile(String path) throws JargonException {
-		IRODSFile irodsFile = getIrodsFileSystem().getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
-		try {
-			getIrodsFileSystem().getIRODSAccessObjectFactory().getIRODSFileSystemAO(irodsAccount)
-					.fileDeleteForce(irodsFile);
-		} catch (JargonException e) {
-			throw e;
-		} finally {
-			getIrodsFileSystem().closeAndEatExceptions();
-		}
-	}
+     // TODO Implement iRods API call to delete a file from the staging area.
+     public void deleteIRODSFile(String path) throws JargonException {
+          IRODSFile irodsFile = getIrodsFileSystem().getIRODSFileFactory(irodsAccount).instanceIRODSFile(path);
+          try {
+               getIrodsFileSystem().getIRODSAccessObjectFactory().getIRODSFileSystemAO(irodsAccount)
+                         .fileDeleteForce(irodsFile);
+          } catch (JargonException e) {
+               throw e;
+          } finally {
+               getIrodsFileSystem().closeAndEatExceptions();
+          }
+     }
 
-	public String makeIrodsURIFromPath(String path) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("irods://").append(this.getIrodsAccount().getUserName()).append("@")
-				.append(this.getIrodsAccount().getHost()).append(":").append(this.getIrodsAccount().getPort()).append(path);
-		return sb.toString();
-	}
+     public String makeIrodsURIFromPath(String path) {
+          StringBuilder sb = new StringBuilder();
+          sb.append("irods://").append(this.getIrodsAccount().getUserName()).append("@")
+                    .append(this.getIrodsAccount().getHost()).append(":")
+                    .append(this.getIrodsAccount().getPort()).append(path);
+          return sb.toString();
+     }
 
-	public IRODSFileSystem getIrodsFileSystem() {
-		return irodsFileSystem;
-	}
+     public IRODSFileSystem getIrodsFileSystem() {
+          return irodsFileSystem;
+     }
 
-	public void setIrodsFileSystem(IRODSFileSystem irodsFileSystem) {
-		this.irodsFileSystem = irodsFileSystem;
-	}
+     public void setIrodsFileSystem(IRODSFileSystem irodsFileSystem) {
+          this.irodsFileSystem = irodsFileSystem;
+     }
 
 }

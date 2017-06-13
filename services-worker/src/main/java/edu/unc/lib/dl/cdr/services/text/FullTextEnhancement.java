@@ -51,99 +51,103 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * 
  */
 public class FullTextEnhancement extends AbstractFedoraEnhancement {
-	private static final Logger LOG = LoggerFactory.getLogger(FullTextEnhancement.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FullTextEnhancement.class);
 
-	public FullTextEnhancement(FullTextEnhancementService service, EnhancementMessage message) {
-		super(service, message);
-	}
+    public FullTextEnhancement(FullTextEnhancementService service, EnhancementMessage message) {
+        super(service, message);
+    }
 
-	@Override
-	public Element call() throws EnhancementException {
-		Element result = null;
-		LOG.debug("Called image enhancement service for {}", pid);
+    @Override
+    public Element call() throws EnhancementException {
+        Element result = null;
+        LOG.debug("Called image enhancement service for {}", pid);
 
-		String dsid = null;
-		try {
-			Document foxml = this.retrieveFoxml();
-			// get sourceData data stream IDs
-			List<String> srcDSURIs = this.getSourceData(foxml);
+        String dsid = null;
+        try {
+            Document foxml = this.retrieveFoxml();
+            // get sourceData data stream IDs
+            List<String> srcDSURIs = this.getSourceData(foxml);
 
-			// get current DS version paths in iRODS
-			for (String srcURI : srcDSURIs) {
-				dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
+            // get current DS version paths in iRODS
+            for (String srcURI : srcDSURIs) {
+                dsid = srcURI.substring(srcURI.lastIndexOf("/") + 1);
 
-				Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
-						ContentModelHelper.Datastream.getDatastream(dsid), foxml);
-				
-				if (newestSourceDS == null)
-					throw new EnhancementException("Specified source datastream " + srcURI + " was not found, the object "
-							+ this.pid.getPid() + " is most likely invalid", Severity.UNRECOVERABLE);
+                Element newestSourceDS = FOXMLJDOMUtil.getMostRecentDatastream(
+                        ContentModelHelper.Datastream.getDatastream(dsid), foxml);
 
-				String dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
-						.getAttributeValue("REF");
-				String dsIrodsPath = null;
+                if (newestSourceDS == null) {
+                    throw new EnhancementException("Specified source datastream " + srcURI +
+                            " was not found, the object " + this.pid.getPid() +
+                            " is most likely invalid", Severity.UNRECOVERABLE);
+                }
 
-				if (dsLocation != null) {
-					dsIrodsPath = client.getIrodsPath(dsLocation);
+                String dsLocation = newestSourceDS.getChild("contentLocation", JDOMNamespaceUtil.FOXML_NS)
+                        .getAttributeValue("REF");
+                String dsIrodsPath = null;
 
-					String text = this.extractText(dsIrodsPath);
-					
-					// Instead of adding an empty full text DS, add flag to indicate this object has nothing to extract some e
-					if (text == null || text.trim().length() == 0) {
-						client.setExclusiveLiteral(pid, CDRProperty.fullText.getPredicate(),
-								CDRProperty.fullText.getNamespace(), "false", null);
-						continue;
-					}
+                if (dsLocation != null) {
+                    dsIrodsPath = client.getIrodsPath(dsLocation);
 
-					// Add full text ds to object
-					String textURL = service.getManagementClient().upload(text);
-					
-					boolean exists = service.getManagementClient()
-							.getDatastream(pid, MD_FULL_TEXT.getName()) != null;
-					if (exists) {
-						String message = "Replacing full text metadata extracted by Apache Tika";
-						client.modifyDatastreamByReference(pid,
-								MD_FULL_TEXT.getName(), false, message, new ArrayList<String>(),
-								MD_FULL_TEXT.getLabel(), "text/plain", null, null, textURL);
-					} else {
-						String message = "Adding full text metadata extracted by Apache Tika";
-						client.addManagedDatastream(pid,
-								MD_FULL_TEXT.getName(), false, message, new ArrayList<String>(),
-								MD_FULL_TEXT.getLabel(), false, "text/plain", textURL);
-					}
+                    String text = this.extractText(dsIrodsPath);
 
-					// Add full text relation
-					PID textPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_FULL_TEXT.getName());
-					client.setExclusiveTripleRelation(pid, CDRProperty.fullText.getPredicate(),
-							CDRProperty.fullText.getNamespace(), textPID);
-				}
-			}
-		} catch (FileSystemException e) {
-			throw new EnhancementException(e, Severity.FATAL);
-		} catch (NotFoundException e) {
-			throw new EnhancementException(e, Severity.UNRECOVERABLE);
-		} catch (FedoraException e) {
-			throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.RECOVERABLE);
-		} catch (Exception e) {
-			throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.UNRECOVERABLE);
-		}
+                    // Instead of adding an empty full text DS, add flag to indicate
+                    // this object has nothing to extract some e
+                    if (text == null || text.trim().length() == 0) {
+                        client.setExclusiveLiteral(pid, CDRProperty.fullText.getPredicate(),
+                                CDRProperty.fullText.getNamespace(), "false", null);
+                        continue;
+                    }
 
-		return result;
-	}
+                    // Add full text ds to object
+                    String textURL = service.getManagementClient().upload(text);
 
-	private String extractText(String dsIrodsPath) throws Exception {
-		LOG.debug("Run irods script to perform text extraction on {} ", dsIrodsPath);
-		InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
-				"textextract", dsIrodsPath);
-		try(BufferedReader r = new BufferedReader(new InputStreamReader(response))) {
-			StringBuilder text = new StringBuilder();
-			String line;
-			while ((line = r.readLine()) != null) {
-				text.append(line);
-			}
-			return text.toString().trim();
-		} catch (Exception e) {
-			throw e;
-		}
-	}
+                    boolean exists = service.getManagementClient()
+                            .getDatastream(pid, MD_FULL_TEXT.getName()) != null;
+                    if (exists) {
+                        String message = "Replacing full text metadata extracted by Apache Tika";
+                        client.modifyDatastreamByReference(pid,
+                                MD_FULL_TEXT.getName(), false, message, new ArrayList<String>(),
+                                MD_FULL_TEXT.getLabel(), "text/plain", null, null, textURL);
+                    } else {
+                        String message = "Adding full text metadata extracted by Apache Tika";
+                        client.addManagedDatastream(pid,
+                                MD_FULL_TEXT.getName(), false, message, new ArrayList<String>(),
+                                MD_FULL_TEXT.getLabel(), false, "text/plain", textURL);
+                    }
+
+                    // Add full text relation
+                    PID textPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_FULL_TEXT.getName());
+                    client.setExclusiveTripleRelation(pid, CDRProperty.fullText.getPredicate(),
+                            CDRProperty.fullText.getNamespace(), textPID);
+                }
+            }
+        } catch (FileSystemException e) {
+            throw new EnhancementException(e, Severity.FATAL);
+        } catch (NotFoundException e) {
+            throw new EnhancementException(e, Severity.UNRECOVERABLE);
+        } catch (FedoraException e) {
+            throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.RECOVERABLE);
+        } catch (Exception e) {
+            throw new EnhancementException("Full Text Enhancement failed to process "
+        + dsid, e, Severity.UNRECOVERABLE);
+        }
+
+        return result;
+    }
+
+    private String extractText(String dsIrodsPath) throws Exception {
+        LOG.debug("Run irods script to perform text extraction on {} ", dsIrodsPath);
+        InputStream response = ((AbstractIrodsObjectEnhancementService) service).remoteExecuteWithPhysicalLocation(
+                "textextract", dsIrodsPath);
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(response))) {
+            StringBuilder text = new StringBuilder();
+            String line;
+            while ((line = r.readLine()) != null) {
+                text.append(line);
+            }
+            return text.toString().trim();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
 }

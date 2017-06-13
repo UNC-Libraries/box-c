@@ -21,13 +21,13 @@ package edu.unc.lib.dl.cdr.services.exception;
  *
  */
 public class RecoverableServiceException extends RuntimeException {
-	private static final long serialVersionUID = 1L;
-	
-	public RecoverableServiceException(Throwable cause){
-		this.setStackTrace(cause.getStackTrace());
-	}
-	
-	public RecoverableServiceException(String message, Throwable cause) {
-		super(message, cause);
-	}
+     private static final long serialVersionUID = 1L;
+
+     public RecoverableServiceException(Throwable cause) {
+          this.setStackTrace(cause.getStackTrace());
+     }
+
+     public RecoverableServiceException(String message, Throwable cause) {
+          super(message, cause);
+     }
 }

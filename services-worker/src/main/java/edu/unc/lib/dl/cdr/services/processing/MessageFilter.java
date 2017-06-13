@@ -25,7 +25,7 @@ import edu.unc.lib.dl.message.ActionMessage;
  * 
  */
 public interface MessageFilter {
-	public boolean filter(ActionMessage msg);
-	
-	public String getConductor();
+    public boolean filter(ActionMessage msg);
+
+    public String getConductor();
 }

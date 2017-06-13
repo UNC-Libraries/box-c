@@ -22,37 +22,37 @@ package edu.unc.lib.deposit.staging;
  *
  */
 public class StagingPolicy {
-	public static enum CleanupPolicy {
-		DELETE_INGESTED_FILES,
-		DO_NOTHING,
-		DELETE_INGESTED_FILES_EMPTY_FOLDERS
-	}
+    public static enum CleanupPolicy {
+        DELETE_INGESTED_FILES,
+        DO_NOTHING,
+        DELETE_INGESTED_FILES_EMPTY_FOLDERS
+    }
 
-	private String path;
-	private String name;
-	private CleanupPolicy cleanupPolicy;
+    private String path;
+    private String name;
+    private CleanupPolicy cleanupPolicy;
 
-	public String getPath() {
-		return path;
-	}
+    public String getPath() {
+        return path;
+    }
 
-	public void setPath(String path) {
-		this.path = path;
-	}
+    public void setPath(String path) {
+        this.path = path;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public CleanupPolicy getCleanupPolicy() {
-		return cleanupPolicy;
-	}
+    public CleanupPolicy getCleanupPolicy() {
+        return cleanupPolicy;
+    }
 
-	public void setCleanupPolicy(CleanupPolicy cleanupPolicy) {
-		this.cleanupPolicy = cleanupPolicy;
-	}
+    public void setCleanupPolicy(CleanupPolicy cleanupPolicy) {
+        this.cleanupPolicy = cleanupPolicy;
+    }
 }

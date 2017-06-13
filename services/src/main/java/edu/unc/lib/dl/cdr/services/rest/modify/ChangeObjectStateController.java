@@ -48,71 +48,72 @@ import edu.unc.lib.dl.fedora.PID;
  */
 @Controller
 public class ChangeObjectStateController {
-	private static final Logger log = LoggerFactory.getLogger(ChangeObjectStateController.class);
-	
-	@Autowired(required = true)
-	@Qualifier("managementClient")
-	private ManagementClient managementClient;
-	@Autowired
-	private AccessControlService aclService;
-	
-	@RequestMapping(value = "edit/restore/{id}", method = RequestMethod.POST)
-	public @ResponseBody
-	Map<String, ? extends Object> removeFromTrash(@PathVariable("id") String id) {
-		return this.changeObjectState(id, false);
-	}
-	
-	@RequestMapping(value = "edit/delete/{id}", method = RequestMethod.POST)
-	public @ResponseBody
-	Map<String, ? extends Object> moveToTrash(@PathVariable("id") String id) {
-		return this.changeObjectState(id, true);
-	}
-	
-	private Map<String, ? extends Object> changeObjectState(String id, boolean markAsDeleted) {
-		PID pid = new PID(id);
-		
-		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("pid", id);
-		result.put("action", (markAsDeleted) ? "delete" : "restore");
+    private static final Logger log = LoggerFactory.getLogger(ChangeObjectStateController.class);
 
-		try {
-			if (!aclService.hasAccess(pid, GroupsThreadStore.getGroups(), Permission.moveToTrash)){
-				throw new AuthorizationException("Insufficient privileges to delete/restore object " + id);
-			}
-			
-			State newState = markAsDeleted? State.DELETED : State.ACTIVE;
-			log.debug("Changing the state of object {} to {}", id, newState);
-			managementClient.modifyObject(pid, null, null, newState, null);
-			result.put("timestamp", System.currentTimeMillis());
-		} catch (AuthorizationException e) {
-			result.put("error", "Insufficient privileges to perform operation on object " + id);
-		} catch (FedoraException e) {
-			log.error("Failed to perform modifyObject on {}", pid, e);
-			result.put("error", e.toString());
-		}
+    @Autowired(required = true)
+    @Qualifier("managementClient")
+    private ManagementClient managementClient;
+    @Autowired
+    private AccessControlService aclService;
 
-		return result;
-	}
-	
-	@RequestMapping(value = "edit/restore", method = RequestMethod.POST)
-	public @ResponseBody
-	List<? extends Object> removeBatchFromTrash(@RequestParam("ids") String ids) {
-		return this.changeBatchObjectState(ids, false);
-	}
-	
-	@RequestMapping(value = "edit/delete", method = RequestMethod.POST)
-	public @ResponseBody
-	List<? extends Object> moveBatchToTrash(@RequestParam("ids") String ids) {
-		return this.changeBatchObjectState(ids, true);
-	}
-	
-	public List<? extends Object> changeBatchObjectState(String ids, boolean moveToTrash) {
-		if (ids == null)
-			return null;
-		List<Object> results = new ArrayList<Object>();
-		for (String id : ids.split("\n")) {
-			results.add(this.changeObjectState(id, moveToTrash));
-		}
-		return results;
-	}
+    @RequestMapping(value = "edit/restore/{id}", method = RequestMethod.POST)
+    public @ResponseBody
+    Map<String, ? extends Object> removeFromTrash(@PathVariable("id") String id) {
+        return this.changeObjectState(id, false);
+    }
+
+    @RequestMapping(value = "edit/delete/{id}", method = RequestMethod.POST)
+    public @ResponseBody
+    Map<String, ? extends Object> moveToTrash(@PathVariable("id") String id) {
+        return this.changeObjectState(id, true);
+    }
+
+    private Map<String, ? extends Object> changeObjectState(String id, boolean markAsDeleted) {
+        PID pid = new PID(id);
+
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("pid", id);
+        result.put("action", (markAsDeleted) ? "delete" : "restore");
+
+        try {
+            if (!aclService.hasAccess(pid, GroupsThreadStore.getGroups(), Permission.moveToTrash)) {
+                throw new AuthorizationException("Insufficient privileges to delete/restore object " + id);
+            }
+
+            State newState = markAsDeleted ? State.DELETED : State.ACTIVE;
+            log.debug("Changing the state of object {} to {}", id, newState);
+            managementClient.modifyObject(pid, null, null, newState, null);
+            result.put("timestamp", System.currentTimeMillis());
+        } catch (AuthorizationException e) {
+            result.put("error", "Insufficient privileges to perform operation on object " + id);
+        } catch (FedoraException e) {
+            log.error("Failed to perform modifyObject on {}", pid, e);
+            result.put("error", e.toString());
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = "edit/restore", method = RequestMethod.POST)
+    public @ResponseBody
+    List<? extends Object> removeBatchFromTrash(@RequestParam("ids") String ids) {
+        return this.changeBatchObjectState(ids, false);
+    }
+
+    @RequestMapping(value = "edit/delete", method = RequestMethod.POST)
+    public @ResponseBody
+    List<? extends Object> moveBatchToTrash(@RequestParam("ids") String ids) {
+        return this.changeBatchObjectState(ids, true);
+    }
+
+    public List<? extends Object> changeBatchObjectState(String ids, boolean moveToTrash) {
+        if (ids == null) {
+            return null;
+        }
+        List<Object> results = new ArrayList<Object>();
+        for (String id : ids.split("\n")) {
+            results.add(this.changeObjectState(id, moveToTrash));
+        }
+        return results;
+    }
 }

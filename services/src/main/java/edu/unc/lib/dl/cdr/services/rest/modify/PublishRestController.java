@@ -46,81 +46,87 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
+/**
+ *
+ * @author bbpennel
+ *
+ */
 @Controller
 public class PublishRestController {
-	private static final Logger log = LoggerFactory.getLogger(PublishRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(PublishRestController.class);
 
-	@Autowired(required = true)
-	@Qualifier("forwardedManagementClient")
-	private ManagementClient managementClient;
-	@Autowired(required = true)
-	private OperationsMessageSender messageSender;
-	@Autowired
-	private AccessControlService aclService;
+    @Autowired(required = true)
+    @Qualifier("forwardedManagementClient")
+    private ManagementClient managementClient;
+    @Autowired(required = true)
+    private OperationsMessageSender messageSender;
+    @Autowired
+    private AccessControlService aclService;
 
-	@RequestMapping(value = "edit/publish/{id}", method = RequestMethod.POST)
-	public @ResponseBody ResponseEntity<Object>
-	 publishObject(@PathVariable("id") String id, HttpServletRequest request) {
-		PID pid = new PID(id);
-		return this.publishObject(pid, true, request.getRemoteUser());
-	}
+    @RequestMapping(value = "edit/publish/{id}", method = RequestMethod.POST)
+    public @ResponseBody ResponseEntity<Object>
+     publishObject(@PathVariable("id") String id, HttpServletRequest request) {
+        PID pid = new PID(id);
+        return this.publishObject(pid, true, request.getRemoteUser());
+    }
 
-	@RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.POST)
-	public @ResponseBody
-	ResponseEntity<Object> unpublishObject(@PathVariable("id") String id, HttpServletRequest request) {
-		PID pid = new PID(id);
-		return this.publishObject(pid, false, request.getRemoteUser());
-	}
+    @RequestMapping(value = "edit/unpublish/{id}", method = RequestMethod.POST)
+    public @ResponseBody
+    ResponseEntity<Object> unpublishObject(@PathVariable("id") String id, HttpServletRequest request) {
+        PID pid = new PID(id);
+        return this.publishObject(pid, false, request.getRemoteUser());
+    }
 
-	private ResponseEntity<Object> publishObject(PID pid, boolean publish, String username) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		result.put("pid", pid.getPid());
-		result.put("action", (publish) ? "publish" : "unpublish");
-		log.debug("Publishing object " + pid);
+    private ResponseEntity<Object> publishObject(PID pid, boolean publish, String username) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("pid", pid.getPid());
+        result.put("action", (publish) ? "publish" : "unpublish");
+        log.debug("Publishing object " + pid);
 
-		try {
-			if (!aclService.hasAccess(pid, GroupsThreadStore.getGroups(), Permission.publish)) {
-				throw new AuthorizationException("Insufficient permissions to change publication status of " + pid);
-			}
-			
-			// Update relation
-			managementClient.setExclusiveLiteral(pid, CDRProperty.isPublished.getPredicate(),
-					CDRProperty.isPublished.getNamespace(), (publish) ? "yes" : "no", null);
-			result.put("timestamp", System.currentTimeMillis());
-			// Send message to trigger solr update
-			String messageId = messageSender.sendPublishOperation(username, Arrays.asList(pid), true);
-			result.put("messageId", messageId);
-		} catch (AuthorizationException e) {
-			result.put("error", "Insufficient privileges to publish object " + pid.getPid());
-			return new ResponseEntity<Object>(result, HttpStatus.FORBIDDEN);
-		} catch (FedoraException e) {
-			log.error("Failed to update relation on " + pid, e);
-			result.put("error", e.toString());
-			return new ResponseEntity<Object>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+        try {
+            if (!aclService.hasAccess(pid, GroupsThreadStore.getGroups(), Permission.publish)) {
+                throw new AuthorizationException("Insufficient permissions to change publication status of " + pid);
+            }
 
-		return new ResponseEntity<Object>(result, HttpStatus.OK);
-	}
+            // Update relation
+            managementClient.setExclusiveLiteral(pid, CDRProperty.isPublished.getPredicate(),
+                    CDRProperty.isPublished.getNamespace(), (publish) ? "yes" : "no", null);
+            result.put("timestamp", System.currentTimeMillis());
+            // Send message to trigger solr update
+            String messageId = messageSender.sendPublishOperation(username, Arrays.asList(pid), true);
+            result.put("messageId", messageId);
+        } catch (AuthorizationException e) {
+            result.put("error", "Insufficient privileges to publish object " + pid.getPid());
+            return new ResponseEntity<Object>(result, HttpStatus.FORBIDDEN);
+        } catch (FedoraException e) {
+            log.error("Failed to update relation on " + pid, e);
+            result.put("error", e.toString());
+            return new ResponseEntity<Object>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-	@RequestMapping(value = "edit/publish", method = RequestMethod.POST)
-	public @ResponseBody
-	List<? extends Object> publishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
-		return publishObjects(ids, true, request.getRemoteUser());
-	}
+        return new ResponseEntity<Object>(result, HttpStatus.OK);
+    }
 
-	@RequestMapping(value = "edit/unpublish", method = RequestMethod.POST)
-	public @ResponseBody
-	List<? extends Object> unpublishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
-		return publishObjects(ids, false, request.getRemoteUser());
-	}
+    @RequestMapping(value = "edit/publish", method = RequestMethod.POST)
+    public @ResponseBody
+    List<? extends Object> publishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
+        return publishObjects(ids, true, request.getRemoteUser());
+    }
 
-	public List<? extends Object> publishObjects(String ids, boolean publish, String username) {
-		if (ids == null)
-			return null;
-		List<Object> results = new ArrayList<Object>();
-		for (String id : ids.split("\n")) {
-			results.add(this.publishObject(new PID(id), publish, username));
-		}
-		return results;
-	}
+    @RequestMapping(value = "edit/unpublish", method = RequestMethod.POST)
+    public @ResponseBody
+    List<? extends Object> unpublishObjects(@RequestParam("ids") String ids, HttpServletRequest request) {
+        return publishObjects(ids, false, request.getRemoteUser());
+    }
+
+    public List<? extends Object> publishObjects(String ids, boolean publish, String username) {
+        if (ids == null) {
+            return null;
+        }
+        List<Object> results = new ArrayList<Object>();
+        for (String id : ids.split("\n")) {
+            results.add(this.publishObject(new PID(id), publish, username));
+        }
+        return results;
+    }
 }

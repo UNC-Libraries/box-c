@@ -36,65 +36,70 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
  *
  */
 public class SetRelationsFilter implements IndexDocumentFilter{
-	private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		log.debug("Applying setRelationsFilter");
+    private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        log.debug("Applying setRelationsFilter");
 
-		List<String> relations = new ArrayList<String>();
-		Map<String, List<String>> triples = dip.getTriples();
+        List<String> relations = new ArrayList<String>();
+        Map<String, List<String>> triples = dip.getTriples();
 
-		// Retrieve the default web datastream
-		String defaultWebData = dip.getDefaultWebData();
-		if (defaultWebData != null)
-			relations.add(CDRProperty.defaultWebData.getPredicate() + "|" + new PID(defaultWebData).getPid());
+        // Retrieve the default web datastream
+        String defaultWebData = dip.getDefaultWebData();
+        if (defaultWebData != null) {
+            relations.add(CDRProperty.defaultWebData.getPredicate() + "|" + new PID(defaultWebData).getPid());
+        }
 
-		// Retrieve the default web object, from the cached version if possible.
-		DocumentIndexingPackage defaultWebObjectPackage = dip.getDefaultWebObject();
-		String defaultWebObject = null;
-		if (defaultWebObjectPackage != null) {
-			defaultWebObject = defaultWebObjectPackage.getPid().getPid();
-		} else {
-			List<String> defaultWebObjectTriples = triples.get(CDRProperty.defaultWebObject.toString());
-			if (defaultWebObjectTriples != null)
-				defaultWebObject = defaultWebObjectTriples.get(0);
-		}
-		if (defaultWebObject != null)
-			relations.add(CDRProperty.defaultWebObject.getPredicate() + "|" + (new PID(defaultWebObject)).getPid());
+        // Retrieve the default web object, from the cached version if possible.
+        DocumentIndexingPackage defaultWebObjectPackage = dip.getDefaultWebObject();
+        String defaultWebObject = null;
+        if (defaultWebObjectPackage != null) {
+            defaultWebObject = defaultWebObjectPackage.getPid().getPid();
+        } else {
+            List<String> defaultWebObjectTriples = triples.get(CDRProperty.defaultWebObject.toString());
+            if (defaultWebObjectTriples != null) {
+                defaultWebObject = defaultWebObjectTriples.get(0);
+            }
+        }
+        if (defaultWebObject != null) {
+            relations.add(CDRProperty.defaultWebObject.getPredicate() + "|" + (new PID(defaultWebObject)).getPid());
+        }
 
-		// Retrieve original content datastream name for items with a main content payload
-		List<String> sourceData = triples.get(CDRProperty.sourceData.toString());
-		if (sourceData != null)
-			relations.add(CDRProperty.sourceData.getPredicate() + "|" + ((new PID(sourceData.get(0)).getPid())));
+        // Retrieve original content datastream name for items with a main content payload
+        List<String> sourceData = triples.get(CDRProperty.sourceData.toString());
+        if (sourceData != null) {
+            relations.add(CDRProperty.sourceData.getPredicate() + "|" + ((new PID(sourceData.get(0)).getPid())));
+        }
 
-		// Retrieve and store label
-		List<String> label = triples.get(FedoraProperty.label.toString());
-		if (label != null) {
-			dip.getDocument().setLabel(label.get(0));
-		}
+        // Retrieve and store label
+        List<String> label = triples.get(FedoraProperty.label.toString());
+        if (label != null) {
+            dip.getDocument().setLabel(label.get(0));
+        }
 
-		// Retrieve the default sort order for a container if specified
-		List<String> defaultSortOrder = triples.get(CDRProperty.sortOrder.toString());
-		if (defaultSortOrder != null) {
-			String sortOrder = defaultSortOrder.get(0);
-			sortOrder = sortOrder.substring(sortOrder.indexOf('#') + 1);
-			relations.add(CDRProperty.sortOrder.getPredicate() + "|" + sortOrder);
-		}
+        // Retrieve the default sort order for a container if specified
+        List<String> defaultSortOrder = triples.get(CDRProperty.sortOrder.toString());
+        if (defaultSortOrder != null) {
+            String sortOrder = defaultSortOrder.get(0);
+            sortOrder = sortOrder.substring(sortOrder.indexOf('#') + 1);
+            relations.add(CDRProperty.sortOrder.getPredicate() + "|" + sortOrder);
+        }
 
-		// Retrieve and store embargo
-		List<String> embargoUntil = triples.get(CDRProperty.embargoUntil.toString());
-		if (embargoUntil != null)
-			relations.add(CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
+        // Retrieve and store embargo
+        List<String> embargoUntil = triples.get(CDRProperty.embargoUntil.toString());
+        if (embargoUntil != null) {
+            relations.add(CDRProperty.embargoUntil.getPredicate() + "|" + embargoUntil.get(0));
+        }
 
-		// Retrieve and store invalid terms
-		List<String> invalidTerms = triples.get(CDRProperty.invalidTerm.toString());
-		String invalidTermPred = CDRProperty.invalidTerm.getPredicate();
-		if (invalidTerms != null) {
-			for (String invalidTermTriple : invalidTerms) {
-				relations.add(invalidTermPred + "|" + invalidTermTriple);
-			}
-		}
+        // Retrieve and store invalid terms
+        List<String> invalidTerms = triples.get(CDRProperty.invalidTerm.toString());
+        String invalidTermPred = CDRProperty.invalidTerm.getPredicate();
+        if (invalidTerms != null) {
+            for (String invalidTermTriple : invalidTerms) {
+                relations.add(invalidTermPred + "|" + invalidTermTriple);
+            }
+        }
 
-		dip.getDocument().setRelations(relations);
-	}
+        dip.getDocument().setRelations(relations);
+    }
 }

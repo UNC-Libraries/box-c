@@ -20,46 +20,46 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * Helper methods for classifying principals by category 
+ * Helper methods for classifying principals by category
  * 
  * @author bbpennel
  *
  */
-public class PrincipalClassifier {
+public abstract class PrincipalClassifier {
 
-	private final static Pattern PATRON_PRINC_PATTERN
-			= Pattern.compile("(everyone|authenticated|cdr:ip4:.*|cdr:ip6:.*)");
+    private final static Pattern PATRON_PRINC_PATTERN
+            = Pattern.compile("(everyone|authenticated|cdr:ip4:.*|cdr:ip6:.*)");
 
-	/**
-	 * Given a set of principals, classifies each principal by whether it is
-	 * identifiably a patron or staff principal, adding the principals to
-	 * patronPrincipals or staffPrincipals accordingly.
-	 * 
-	 * @param principals
-	 * @param patronPrincipals
-	 * @param staffPrincipals
-	 */
-	public static void classifyPrincipals(Set<String> principals, Set<String> patronPrincipals,
-			Set<String> staffPrincipals) {
-		principals.forEach(agent -> {
-			if (PATRON_PRINC_PATTERN.matcher(agent).matches()) {
-				patronPrincipals.add(agent);
-			} else {
-				staffPrincipals.add(agent);
-			}
-		});
-	}
+    /**
+     * Given a set of principals, classifies each principal by whether it is
+     * identifiably a patron or staff principal, adding the principals to
+     * patronPrincipals or staffPrincipals accordingly.
+     * 
+     * @param principals
+     * @param patronPrincipals
+     * @param staffPrincipals
+     */
+    public static void classifyPrincipals(Set<String> principals, Set<String> patronPrincipals,
+            Set<String> staffPrincipals) {
+        principals.forEach(agent -> {
+            if (PATRON_PRINC_PATTERN.matcher(agent).matches()) {
+                patronPrincipals.add(agent);
+            } else {
+                staffPrincipals.add(agent);
+            }
+        });
+    }
 
-	/**
-	 * Returns a set containing all patron principals found in the given set of
-	 * principals
-	 * 
-	 * @param principals
-	 * @return
-	 */
-	public static Set<String> getPatronPrincipals(Set<String> principals) {
-		return principals.stream()
-				.filter(agent -> PATRON_PRINC_PATTERN.matcher(agent).matches())
-				.collect(Collectors.toSet());
-	}
+    /**
+     * Returns a set containing all patron principals found in the given set of
+     * principals
+     * 
+     * @param principals
+     * @return
+     */
+    public static Set<String> getPatronPrincipals(Set<String> principals) {
+        return principals.stream()
+                .filter(agent -> PATRON_PRINC_PATTERN.matcher(agent).matches())
+                .collect(Collectors.toSet());
+    }
 }

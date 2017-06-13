@@ -31,36 +31,36 @@ import edu.unc.lib.cdr.BinaryMetadataProcessor;
  *
  */
 public class MetaServicesRouter extends RouteBuilder {
-	@BeanInject(value = "binaryMetadataProcessor")
-	private BinaryMetadataProcessor mdProcessor;
+    @BeanInject(value = "binaryMetadataProcessor")
+    private BinaryMetadataProcessor mdProcessor;
 
-	@PropertyInject(value = "cdr.enhancement.processingThreads")
-	private Integer enhancementThreads;
+    @PropertyInject(value = "cdr.enhancement.processingThreads")
+    private Integer enhancementThreads;
 
-	public void configure() throws Exception {
-		from("{{fcrepo.stream}}")
-			.routeId("CdrMetaServicesRouter")
-			.to("direct-vm:index.start")
-			.to("direct:process.enhancement");
+    public void configure() throws Exception {
+        from("{{fcrepo.stream}}")
+            .routeId("CdrMetaServicesRouter")
+            .to("direct-vm:index.start")
+            .to("direct:process.enhancement");
 
-		from("direct:process.enhancement")
-			.routeId("ProcessEnhancement")
-			.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-					+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
-					+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-				// Trigger binary processing after an asynchronously
-				.threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
-				.delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-				.to("direct:process.binary.original");
+        from("direct:process.enhancement")
+            .routeId("ProcessEnhancement")
+            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
+                    + " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
+                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+                // Trigger binary processing after an asynchronously
+                .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
+                .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
+                .to("direct:process.binary.original");
 
-		from("direct:process.binary.original")
-			.routeId("ProcessOriginalBinary")
-			.log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-			.removeHeaders("CamelHttp*")
-			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-			.process(mdProcessor)
-			.multicast()
-				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
-	}
+        from("direct:process.binary.original")
+            .routeId("ProcessOriginalBinary")
+            .log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+            .removeHeaders("CamelHttp*")
+            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+            .process(mdProcessor)
+            .multicast()
+                .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+    }
 
 }

@@ -46,7 +46,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
- * 
+ *
  * @author lfarrell
  *
  */
@@ -67,7 +67,7 @@ public class SetPathFilterTest {
     private FileObject fileObject;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
-    
+
     private SetPathFilter filter;
 
     private int WORK_OBJECT_DEPTH = 4;
@@ -75,14 +75,14 @@ public class SetPathFilterTest {
     @Before
     public void setUp() throws Exception {
         initMocks(this);
-        
+
         when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
-        
+
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObject);
         when(contentObject.getPid()).thenReturn(pid);
-        
+
         filter = new SetPathFilter();
         filter.setPathFactory(pathFactory);
     }
@@ -98,7 +98,7 @@ public class SetPathFilterTest {
         List<String> ancestorPath = listCaptor.getValue();
         ancestorPathCheck(ancestorPath, pids);
         assertEquals(1, ancestorPath.size());
-        
+
         verify(idb, never()).setParentUnit(anyString());
         verify(idb, never()).setParentCollection(anyString());
     }

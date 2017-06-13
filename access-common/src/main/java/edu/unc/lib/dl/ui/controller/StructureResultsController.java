@@ -39,67 +39,70 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
  */
 @Controller
 public class StructureResultsController extends AbstractStructureResultsController {
-	@RequestMapping("/structure/json")
-	public @ResponseBody
-	String getStructureJSON(@RequestParam(value = "files", required = false) String includeFiles, Model model,
-			HttpServletRequest request, HttpServletResponse response) {
-		response.setContentType("application/json");
-		HierarchicalBrowseResultResponse result = getStructureResult(null, "true".equals(includeFiles), false, false,
-				request);
-		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
-	}
+    @RequestMapping("/structure/json")
+    public @ResponseBody
+    String getStructureJSON(@RequestParam(value = "files", required = false) String includeFiles, Model model,
+            HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("application/json");
+        HierarchicalBrowseResultResponse result = getStructureResult(null, "true".equals(includeFiles), false, false,
+                request);
+        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+    }
 
-	@RequestMapping("/structure/{pid}/json")
-	public @ResponseBody
-	String getStructureJSON(@PathVariable("pid") String pid,
-			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
-		response.setContentType("application/json");
-		HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), false, false,
-				request);
-		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
-	}
+    @RequestMapping("/structure/{pid}/json")
+    public @ResponseBody
+    String getStructureJSON(@PathVariable("pid") String pid,
+            @RequestParam(value = "files", required = false) String includeFiles,
+            Model model, HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("application/json");
+        HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), false, false,
+                request);
+        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+    }
 
-	@RequestMapping("/structure/path")
-	public @ResponseBody String getPathStructure(
-			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
-		response.setContentType("application/json");
-		HierarchicalBrowseResultResponse result = getStructureResult(null, "true".equals(includeFiles), true, false,
-				request);
-		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
-	}
+    @RequestMapping("/structure/path")
+    public @ResponseBody String getPathStructure(
+            @RequestParam(value = "files", required = false) String includeFiles,
+            Model model, HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("application/json");
+        HierarchicalBrowseResultResponse result = getStructureResult(null, "true".equals(includeFiles), true, false,
+                request);
+        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+    }
 
-	/**
-	 * Retrieves the structure path leading up to the specified pid, returning expanded containers starting at the
-	 * collections object up to the selected container
-	 */
-	@RequestMapping("/structure/{pid}/path")
-	public @ResponseBody String getPathStructure(@PathVariable("pid") String pid,
-			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request,
-			HttpServletResponse response) {
-		response.setContentType("application/json");
-		HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), true, false,
-				request);
-		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
-	}
+    /**
+     * Retrieves the structure path leading up to the specified pid, returning expanded containers starting at the
+     * collections object up to the selected container
+     */
+    @RequestMapping("/structure/{pid}/path")
+    public @ResponseBody String getPathStructure(@PathVariable("pid") String pid,
+            @RequestParam(value = "files", required = false) String includeFiles,
+            Model model, HttpServletRequest request, HttpServletResponse response) {
+        response.setContentType("application/json");
+        HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), true, false,
+                request);
+        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+    }
 
-	/**
-	 * Retrieves the structure of the contents of the parent of the specified pid.
-	 */
-	@RequestMapping("/structure/{pid}/parent")
-	public @ResponseBody String getParentChildren(@PathVariable("pid") String pid,
-			@RequestParam(value = "files", required = false) String includeFiles, Model model, HttpServletRequest request, HttpServletResponse response) {
-		// Get the parent pid for the selected object and get its structure view
-		BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
-				tierResultFieldsList));
-		if (selectedContainer == null)
-			throw new ResourceNotFoundException("Object " + pid + " was not found.");
+    /**
+     * Retrieves the structure of the contents of the parent of the specified pid.
+     */
+    @RequestMapping("/structure/{pid}/parent")
+    public @ResponseBody String getParentChildren(@PathVariable("pid") String pid,
+            @RequestParam(value = "files", required = false) String includeFiles,
+            Model model, HttpServletRequest request, HttpServletResponse response) {
+        // Get the parent pid for the selected object and get its structure view
+        BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
+                tierResultFieldsList));
+        if (selectedContainer == null) {
+            throw new ResourceNotFoundException("Object " + pid + " was not found.");
+        }
 
+        response.setContentType("application/json");
+        HierarchicalBrowseResultResponse result = getStructureResult(
+                selectedContainer.getAncestorPathFacet().getSearchKey(),
+                "true".equals(includeFiles), false, false, request);
 
-		response.setContentType("application/json");
-		HierarchicalBrowseResultResponse result = getStructureResult(selectedContainer.getAncestorPathFacet().getSearchKey(), "true".equals(includeFiles), false, false,
-				request);
-		return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
-	}
+        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+    }
 }

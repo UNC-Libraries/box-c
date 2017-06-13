@@ -25,84 +25,84 @@ import edu.unc.lib.dl.rdf.Cdr;
 /**
  * A repository object which represents a Folder. Folders are containers which
  * may hold work objects or folder objects directly inside of them.
- * 
+ *
  * @author bbpennel
  *
  */
 public class FolderObject extends ContentContainerObject {
 
-	protected FolderObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		super(pid, repository, dataLoader);
-	}
+    protected FolderObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repository, dataLoader);
+    }
 
-	@Override
-	public FolderObject validateType() throws FedoraException {
-		if (!isType(Cdr.Folder.toString())) {
-			throw new ObjectTypeMismatchException("Object " + pid + " is not a Folder object.");
-		}
-		return this;
-	}
+    @Override
+    public FolderObject validateType() throws FedoraException {
+        if (!isType(Cdr.Folder.toString())) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a Folder object.");
+        }
+        return this;
+    }
 
-	@Override
-	public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-		if (!(member instanceof FolderObject || member instanceof WorkObject)) {
-			throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
-					+ " as a member of WorkObject " + pid.getQualifiedId());
-		}
+    @Override
+    public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
+        if (!(member instanceof FolderObject || member instanceof WorkObject)) {
+            throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
+                    + " as a member of WorkObject " + pid.getQualifiedId());
+        }
 
-		repository.addMember(this, member);
-		return this;
-	}
+        repository.addMember(this, member);
+        return this;
+    }
 
-	/**
-	 * Creates and adds a new folder to this folder.
-	 * 
-	 * @return the newly created folder object
-	 */
-	public FolderObject addFolder() {
-		return addFolder(repository.mintContentPid(), null);
-	}
+    /**
+     * Creates and adds a new folder to this folder.
+     *
+     * @return the newly created folder object
+     */
+    public FolderObject addFolder() {
+        return addFolder(repository.mintContentPid(), null);
+    }
 
-	/**
-	 * Creates and adds a new folder with the provided pid and properties to this
-	 * folder.
-	 * 
-	 * @param pid
-	 *            pid for the new folder
-	 * @param model
-	 *            properties for the new folder
-	 * @return the newly created folder object
-	 */
-	public FolderObject addFolder(PID childPid, Model model) {
-		FolderObject work = repository.createFolderObject(childPid, model);
-		repository.addMember(this, work);
+    /**
+     * Creates and adds a new folder with the provided pid and properties to this
+     * folder.
+     *
+     * @param pid
+     *            pid for the new folder
+     * @param model
+     *            properties for the new folder
+     * @return the newly created folder object
+     */
+    public FolderObject addFolder(PID childPid, Model model) {
+        FolderObject work = repository.createFolderObject(childPid, model);
+        repository.addMember(this, work);
 
-		return work;
-	}
+        return work;
+    }
 
-	/**
-	 * Creates and adds a new work to this folder.
-	 * 
-	 * @return the newly created work object
-	 */
-	public WorkObject addWork() {
-		return addWork(repository.mintContentPid(), null);
-	}
+    /**
+     * Creates and adds a new work to this folder.
+     *
+     * @return the newly created work object
+     */
+    public WorkObject addWork() {
+        return addWork(repository.mintContentPid(), null);
+    }
 
-	/**
-	 * Creates and adds a new work with the provided pid and properties to this
-	 * folder.
-	 * 
-	 * @param pid
-	 *            pid for the new work
-	 * @param model
-	 *            optional additional properties for the work
-	 * @return the newly created work object
-	 */
-	public WorkObject addWork(PID childPid, Model model) {
-		WorkObject work = repository.createWorkObject(childPid, model);
-		repository.addMember(this, work);
+    /**
+     * Creates and adds a new work with the provided pid and properties to this
+     * folder.
+     *
+     * @param pid
+     *            pid for the new work
+     * @param model
+     *            optional additional properties for the work
+     * @return the newly created work object
+     */
+    public WorkObject addWork(PID childPid, Model model) {
+        WorkObject work = repository.createWorkObject(childPid, model);
+        repository.addMember(this, work);
 
-		return work;
-	}
+        return work;
+    }
 }

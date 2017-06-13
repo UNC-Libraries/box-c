@@ -33,43 +33,43 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
  */
 public class BulkMetadataUIPTest {
 
-	@Test
-	public void test () throws Exception {
-		File importFile = new File("src/test/resources/md_import.xml");
-		
-		BulkMetadataUIP uip = new BulkMetadataUIP(null, "", "", new AccessGroupSet(),
-				importFile, "file");
-		
-		BulkMetadataDatastreamUIP next = uip.getNextUpdate();
-		assertNotNull(next);
-		assertEquals("Did not retrieve the correct object update pid",
-				"uuid:76240153-300b-4e90-9c55-94c64f4a24de", next.getPID().getPid());
-		assertNotNull(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName()));
-		// System.out.println("|" + new XMLOutputter(Format.getRawFormat()).outputString(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName())) + "|");
-		
-		next = uip.getNextUpdate();
-		assertNotNull(next);
-		assertEquals("Incorrect second object pid retrieved",
-				"uuid:d7e8f997-e9f5-4c8c-9869-c0898f7d08a9", next.getPID().getPid());
-		assertNotNull(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName()));
-		
-		assertNull("Only two updates should be present", uip.getNextUpdate());
-	}
-	
-	@Test
-	public void resumeTest () throws Exception {
-		File importFile = new File("src/test/resources/md_import.xml");
-		
-		BulkMetadataUIP uip = new BulkMetadataUIP("testid", "", "", new AccessGroupSet(),
-				importFile, "file");
-		
-		uip.seekNextUpdate(new PID("uuid:76240153-300b-4e90-9c55-94c64f4a24de"), Datastream.MD_DESCRIPTIVE.toString());
-		
-		BulkMetadataDatastreamUIP next = uip.getNextUpdate();
-		assertNotNull(next);
-		assertEquals("Did not resume from the correct point",
-				"uuid:d7e8f997-e9f5-4c8c-9869-c0898f7d08a9", next.getPID().getPid());
-		assertNotNull(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName()));
-		
-	}
+    @Test
+    public void test () throws Exception {
+        File importFile = new File("src/test/resources/md_import.xml");
+
+        BulkMetadataUIP uip = new BulkMetadataUIP(null, "", "", new AccessGroupSet(),
+                importFile, "file");
+
+        BulkMetadataDatastreamUIP next = uip.getNextUpdate();
+        assertNotNull(next);
+        assertEquals("Did not retrieve the correct object update pid",
+                "uuid:76240153-300b-4e90-9c55-94c64f4a24de", next.getPID().getPid());
+        assertNotNull(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName()));
+        // System.out.println("|" + new XMLOutputter(Format.getRawFormat()).outputString(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName())) + "|");
+
+        next = uip.getNextUpdate();
+        assertNotNull(next);
+        assertEquals("Incorrect second object pid retrieved",
+                "uuid:d7e8f997-e9f5-4c8c-9869-c0898f7d08a9", next.getPID().getPid());
+        assertNotNull(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName()));
+
+        assertNull("Only two updates should be present", uip.getNextUpdate());
+    }
+
+    @Test
+    public void resumeTest () throws Exception {
+        File importFile = new File("src/test/resources/md_import.xml");
+
+        BulkMetadataUIP uip = new BulkMetadataUIP("testid", "", "", new AccessGroupSet(),
+                importFile, "file");
+
+        uip.seekNextUpdate(new PID("uuid:76240153-300b-4e90-9c55-94c64f4a24de"), Datastream.MD_DESCRIPTIVE.toString());
+
+        BulkMetadataDatastreamUIP next = uip.getNextUpdate();
+        assertNotNull(next);
+        assertEquals("Did not resume from the correct point",
+                "uuid:d7e8f997-e9f5-4c8c-9869-c0898f7d08a9", next.getPID().getPid());
+        assertNotNull(next.getIncomingData().get(Datastream.MD_DESCRIPTIVE.getName()));
+
+    }
 }
