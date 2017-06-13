@@ -5,16 +5,24 @@ import static org.junit.Assert.*;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.List;
+
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.anyListOf;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -39,9 +47,14 @@ public class SetContentTypeFilterTest {
 	@Mock
 	private WorkObject workObj;
 	@Mock
+	private BinaryObject binObj;
+	@Mock
 	private Resource resource;
-	
+	@Mock
 	private IndexDocumentBean idb;
+	@Captor
+	private ArgumentCaptor<List<String>> listCaptor;
+	
 	private SetContentTypeFilter filter;
 	
 	@Before
@@ -65,15 +78,36 @@ public class SetContentTypeFilterTest {
 //			.thenReturn(ResourceFactory.createResource(DATE_MODIFIED));
 
 		filter = new SetContentTypeFilter();
+		//idb = new IndexDocumentBean();
 	}
 
 	@Test
-	public void testWorkObject() throws Exception {
-		
+	public void testGetContentTypeFromWorkObject() throws Exception {
 		when(dip.getContentObject()).thenReturn(workObj);
+		when(workObj.getPrimaryObject()).thenReturn(fileObj);
+		when(fileObj.getOriginalFile()).thenReturn(binObj);
+		when(binObj.getFilename()).thenReturn("primary.xml");
+		when(binObj.getMimetype()).thenReturn("text/xml");
 		
 		filter.filter(dip);
-		verify(workObj.getPrimaryObject());
+		
+		verify(idb).setContentType(listCaptor.capture());
+		assertEquals("^text,Text", listCaptor.getValue().get(0));
+		assertEquals("/text^xml,xml", listCaptor.getValue().get(1));
+	}
+	
+	@Test
+	public void testGetContentTypeFromFileObject() throws Exception {
+		when(dip.getContentObject()).thenReturn(fileObj);
+		when(fileObj.getOriginalFile()).thenReturn(binObj);
+		when(binObj.getFilename()).thenReturn("data.csv");
+		when(binObj.getMimetype()).thenReturn("ext.csv");
+		
+		filter.filter(dip);
+		
+		verify(idb).setContentType(listCaptor.capture());
+		assertEquals("^dataset,Dataset", listCaptor.getValue().get(0));
+		assertEquals("/dataset^csv,csv", listCaptor.getValue().get(1));
 	}
 
 }

@@ -95,7 +95,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 			}
 		}
 		if (mimetype != null) {
-			String extension = this.mimetypeToExtensionMap.getProperty(mimetype);
+			String extension = mimetypeToExtensionMap.getProperty(mimetype);
 			return extension;
 		}
 		return null;
@@ -103,6 +103,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
 	private void extractContentType(String filepath, String mimetype, List<String> contentTypes) {
 		ContentCategory contentCategory = getContentCategory(mimetype, getExtension(filepath, mimetype));
+		// add string with name + display-name to list of content types
 		contentTypes.add('^' + contentCategory.getJoined());
 		StringBuilder contentType = new StringBuilder();
 		contentType.append('/').append(contentCategory.name()).append('^');
@@ -111,6 +112,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 			contentType.append("unknown,unknown");
 		else
 			contentType.append(extension).append(',').append(extension);
+		// add string with content category name + extension to list of content types
 		contentTypes.add(contentType.toString());
 	}
 
@@ -128,9 +130,9 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 				return ContentCategory.audio;
 		}
 
-		String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
+		String contentCategory = (String) contentTypeProperties.get("mime." + mimetype);
 		if (contentCategory == null)
-			contentCategory = (String)this.contentTypeProperties.get("ext." + extension);
+			contentCategory = (String) contentTypeProperties.get("ext." + extension);
 		return ContentCategory.getContentCategory(contentCategory);
 	}
 
