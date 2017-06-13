@@ -1,3 +1,18 @@
+/**
+ * Copyright 2017 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static org.junit.Assert.*;
@@ -13,16 +28,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.List;
 
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.anyListOf;
-
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -59,7 +69,6 @@ public class SetContentTypeFilterTest {
 	
 	@Before
 	public void setup() throws Exception {
-		idb = new IndexDocumentBean();
 		initMocks(this);
 
 		when(pid.getPid()).thenReturn(PID_STRING);
@@ -68,24 +77,16 @@ public class SetContentTypeFilterTest {
 		when(dip.getPid()).thenReturn(pid);
 		
 		when(workObj.getPrimaryObject()).thenReturn(fileObj);
-//		when(dip.getContentObject()).thenReturn(contentObj);
-//		
-//		when(contentObj.getResource()).thenReturn(resource);
-//		
-//		when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
-//			.thenReturn(ResourceFactory.createResource(DATE_ADDED));
-//		when(resource.getPropertyResourceValue(Fcrepo4Repository.lastModified))
-//			.thenReturn(ResourceFactory.createResource(DATE_MODIFIED));
-
+		when(fileObj.getOriginalFile()).thenReturn(binObj);
+		
 		filter = new SetContentTypeFilter();
-		//idb = new IndexDocumentBean();
 	}
 
 	@Test
 	public void testGetContentTypeFromWorkObject() throws Exception {
 		when(dip.getContentObject()).thenReturn(workObj);
 		when(workObj.getPrimaryObject()).thenReturn(fileObj);
-		when(fileObj.getOriginalFile()).thenReturn(binObj);
+		
 		when(binObj.getFilename()).thenReturn("primary.xml");
 		when(binObj.getMimetype()).thenReturn("text/xml");
 		
