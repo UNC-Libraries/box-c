@@ -51,26 +51,32 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     private Properties mimetypeToExtensionMap;
     private Properties contentTypeProperties;
 
-    public SetContentTypeFilter() {
-        try {
-            mimetypeToExtensionMap = new Properties();
-            mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
-                    "mimetypeToExtension.txt")));
-            contentTypeProperties = new Properties();
-            contentTypeProperties.load(new InputStreamReader(this.getClass().getResourceAsStream(
-                    "toContentType.properties")));
-        } catch (IOException e) {
-            log.error("Failed to load mimetype mappings", e);
-        }
+    public SetContentTypeFilter() throws IOException {
+        mimetypeToExtensionMap = new Properties();
+        mimetypeToExtensionMap.load(new InputStreamReader(this.getClass().getResourceAsStream(
+                "mimetypeToExtension.txt")));
+        contentTypeProperties = new Properties();
+        contentTypeProperties.load(new InputStreamReader(this.getClass().getResourceAsStream(
+                "toContentType.properties")));
     }
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        BinaryObject binObj = getFileObject(dip).getOriginalFile();
+    	    ContentObject contentObj = dip.getContentObject();
+    	    // object being indexed must be a work or a file object
+    	    if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
+    	    	    return;
+    	    }
+    	    FileObject fileObj = getFileObject(dip);
+    	    BinaryObject binObj;
+    	    if (fileObj == null) {
+    	    	    return;
+    	    }
+    	    binObj = fileObj.getOriginalFile();
         String filepath = binObj.getFilename();
         String mimetype = binObj.getMimetype();
-        log.debug("The binary has filepath " + filepath + " and mimetype " + mimetype);
-        List<String> contentTypes = new ArrayList<String>();
+        log.debug("The binary has filepath {} and mimetype {}", filepath, mimetype);
+        ArrayList<String> contentTypes = new ArrayList<String>();
         extractContentType(filepath, mimetype, contentTypes);
         dip.getDocument().setContentType(contentTypes);
     }
@@ -123,24 +129,10 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         if (mimetype == null) {
             return ContentCategory.unknown;
         }
-        int index = mimetype.indexOf('/');
-        if (index != -1) {
-            String mimetypeType = mimetype.substring(0, index);
-            if (mimetypeType.equals("image")) {
-                return ContentCategory.image;
-            }
-            if (mimetypeType.equals("video")) {
-                return ContentCategory.video;
-            }
-            if (mimetypeType.equals("audio")) {
-                return ContentCategory.audio;
-            }
-        }
-
+        
         String contentCategory = (String) contentTypeProperties.get("mime." + mimetype);
-        if (contentCategory == null) {
-            contentCategory = (String) contentTypeProperties.get("ext." + extension);
-        }
+        contentCategory = (String) contentTypeProperties.get("ext." + extension);
+        
         return ContentCategory.getContentCategory(contentCategory);
     }
 

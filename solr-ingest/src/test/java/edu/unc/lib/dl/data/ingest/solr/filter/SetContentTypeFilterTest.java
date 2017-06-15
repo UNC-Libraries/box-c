@@ -29,10 +29,13 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.util.List;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.anyListOf;
+import static org.mockito.Mockito.never;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
@@ -58,6 +61,8 @@ public class SetContentTypeFilterTest {
     private WorkObject workObj;
     @Mock
     private BinaryObject binObj;
+    @Mock
+    private FolderObject folderObj;
     @Mock
     private Resource resource;
     @Mock
@@ -109,5 +114,24 @@ public class SetContentTypeFilterTest {
         verify(idb).setContentType(listCaptor.capture());
         assertEquals("^dataset,Dataset", listCaptor.getValue().get(0));
         assertEquals("/dataset^csv,csv", listCaptor.getValue().get(1));
+    }
+    
+    @Test
+    public void testNotWorkAndNotFileObject() throws Exception {
+    	when(dip.getContentObject()).thenReturn(folderObj);
+    	
+    	filter.filter(dip);
+    	
+    	verify(idb, never()).setContentType(anyListOf(String.class));
+    }
+    
+    @Test
+    public void testWorkWithoutPrimaryObject() throws Exception {
+    	    when(dip.getContentObject()).thenReturn(workObj);
+    	    when(workObj.getPrimaryObject()).thenReturn(null);
+    	    
+    	    filter.filter(dip);
+    	    
+    	    verify(idb, never()).setContentType(anyListOf(String.class));
     }
 }
