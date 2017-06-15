@@ -17,7 +17,6 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static org.junit.Assert.*;
 
-import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,7 +31,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.anyListOf;
 import static org.mockito.Mockito.never;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
@@ -50,8 +48,6 @@ public class SetContentTypeFilterTest {
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
     
     @Mock
-    private DocumentIndexingPackageDataLoader loader;
-    @Mock
     private DocumentIndexingPackage dip;
     @Mock
     private PID pid;
@@ -64,8 +60,6 @@ public class SetContentTypeFilterTest {
     @Mock
     private FolderObject folderObj;
     @Mock
-    private Resource resource;
-    @Mock
     private IndexDocumentBean idb;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
@@ -75,7 +69,7 @@ public class SetContentTypeFilterTest {
     @Before
     public void setup() throws Exception {
         initMocks(this);
-
+        
         when(pid.getPid()).thenReturn(PID_STRING);
         
         when(dip.getDocument()).thenReturn(idb);
@@ -117,21 +111,36 @@ public class SetContentTypeFilterTest {
     }
     
     @Test
+    public void testExtensionNotFoundInMapping() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getOriginalFile()).thenReturn(binObj);
+        // use filename with raw image extension not found in our mapping
+        when(binObj.getFilename()).thenReturn("image.x3f");
+        when(binObj.getMimetype()).thenReturn("some_wacky_type");
+        
+        filter.filter(dip);
+        
+        verify(idb).setContentType(listCaptor.capture());
+        assertEquals("^unknown,Unknown", listCaptor.getValue().get(0));
+        assertEquals("/unknown^x3f,x3f", listCaptor.getValue().get(1));
+    }
+    
+    @Test
     public void testNotWorkAndNotFileObject() throws Exception {
-    	when(dip.getContentObject()).thenReturn(folderObj);
-    	
-    	filter.filter(dip);
-    	
-    	verify(idb, never()).setContentType(anyListOf(String.class));
+        when(dip.getContentObject()).thenReturn(folderObj);
+        
+        filter.filter(dip);
+        
+        verify(idb, never()).setContentType(anyListOf(String.class));
     }
     
     @Test
     public void testWorkWithoutPrimaryObject() throws Exception {
-    	    when(dip.getContentObject()).thenReturn(workObj);
-    	    when(workObj.getPrimaryObject()).thenReturn(null);
-    	    
-    	    filter.filter(dip);
-    	    
-    	    verify(idb, never()).setContentType(anyListOf(String.class));
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getPrimaryObject()).thenReturn(null);
+        
+        filter.filter(dip);
+        
+        verify(idb, never()).setContentType(anyListOf(String.class));
     }
 }

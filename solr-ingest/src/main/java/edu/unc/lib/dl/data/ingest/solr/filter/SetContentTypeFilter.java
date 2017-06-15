@@ -62,17 +62,17 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-            ContentObject contentObj = dip.getContentObject();
-            // object being indexed must be a work or a file object
-            if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
-                    return;
-            }
-            FileObject fileObj = getFileObject(dip);
-            BinaryObject binObj;
-            if (fileObj == null) {
-                    return;
-            }
-            binObj = fileObj.getOriginalFile();
+        ContentObject contentObj = dip.getContentObject();
+        // object being indexed must be a work or a file object
+        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
+                return;
+        }
+        FileObject fileObj = getFileObject(dip);
+        BinaryObject binObj;
+        if (fileObj == null) {
+                return;
+        }
+        binObj = fileObj.getOriginalFile();
         String filepath = binObj.getFilename();
         String mimetype = binObj.getMimetype();
         log.debug("The binary has filepath {} and mimetype {}", filepath, mimetype);
@@ -128,6 +128,19 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
     private ContentCategory getContentCategory(String mimetype, String extension) {
         if (mimetype == null) {
             return ContentCategory.unknown;
+        }
+        int index = mimetype.indexOf('/');
+        if (index != -1) {
+            String mimetypeType = mimetype.substring(0, index);
+            if (mimetypeType.equals("image")) {
+                return ContentCategory.image;
+            }
+            if (mimetypeType.equals("video")) {
+                return ContentCategory.video;
+            }
+            if (mimetypeType.equals("audio")) {
+                return ContentCategory.audio;
+            }
         }
 
         String contentCategory = (String) contentTypeProperties.get("mime." + mimetype);
