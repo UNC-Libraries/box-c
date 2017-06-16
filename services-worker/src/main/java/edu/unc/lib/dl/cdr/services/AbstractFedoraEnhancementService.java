@@ -27,59 +27,64 @@ import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
+/**
+ * 
+ * @author mdaines
+ *
+ */
 public abstract class AbstractFedoraEnhancementService implements ObjectEnhancementService, ApplicationContextAware {
-	protected static final Logger LOG = LoggerFactory.getLogger(AbstractFedoraEnhancementService.class);
+     protected static final Logger LOG = LoggerFactory.getLogger(AbstractFedoraEnhancementService.class);
 
-	protected TripleStoreQueryService tripleStoreQueryService = null;
-	protected ManagementClient managementClient = null;
-	protected boolean active = false;
+     protected TripleStoreQueryService tripleStoreQueryService = null;
+     protected ManagementClient managementClient = null;
+     protected boolean active = false;
 
-	private ApplicationContext applicationContext;
+     private ApplicationContext applicationContext;
 
-	@Override
-	public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction())) {
-			return true;
-		}
+     @Override
+     public boolean prefilterMessage(EnhancementMessage message) throws EnhancementException {
+          if (JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.equals(message.getQualifiedAction())) {
+               return true;
+          }
 
-		if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction())
-				&& this.getClass().getName().equals(message.getServiceName())) {
-			return true;
-		}
-		return false;
-	}
+          if (JMSMessageUtil.ServicesActions.APPLY_SERVICE.equals(message.getQualifiedAction())
+                    && this.getClass().getName().equals(message.getServiceName())) {
+               return true;
+          }
+          return false;
+     }
 
-	@Override
-	public boolean isActive() {
-		return active;
-	}
+     @Override
+     public boolean isActive() {
+          return active;
+     }
 
-	public void setActive(boolean active) {
-		this.active = active;
-	}
+     public void setActive(boolean active) {
+          this.active = active;
+     }
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-	}
+     @Override
+     public void setApplicationContext(ApplicationContext applicationContext) {
+          this.applicationContext = applicationContext;
+     }
 
-	public MessageDirector getMessageDirector() {
-		return this.applicationContext.getBean(MessageDirector.class);
-	}
+     public MessageDirector getMessageDirector() {
+          return this.applicationContext.getBean(MessageDirector.class);
+     }
 
-	public TripleStoreQueryService getTripleStoreQueryService() {
-		return tripleStoreQueryService;
-	}
+     public TripleStoreQueryService getTripleStoreQueryService() {
+          return tripleStoreQueryService;
+     }
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+     public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+          this.tripleStoreQueryService = tripleStoreQueryService;
+     }
 
-	public ManagementClient getManagementClient() {
-		return managementClient;
-	}
+     public ManagementClient getManagementClient() {
+          return managementClient;
+     }
 
-	public void setManagementClient(ManagementClient managementClient) {
-		this.managementClient = managementClient;
-	}
+     public void setManagementClient(ManagementClient managementClient) {
+          this.managementClient = managementClient;
+     }
 }

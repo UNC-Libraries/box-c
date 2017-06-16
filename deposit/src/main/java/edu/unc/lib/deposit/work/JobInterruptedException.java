@@ -21,13 +21,13 @@ package edu.unc.lib.deposit.work;
  */
 public class JobInterruptedException extends RuntimeException {
 
-	private static final long serialVersionUID = 718488999114016706L;
+    private static final long serialVersionUID = 718488999114016706L;
 
-	public JobInterruptedException(String message) {
-		super(message);
-	}
+    public JobInterruptedException(String message) {
+        super(message);
+    }
 
-	public JobInterruptedException(String message, Throwable cause) {
-		super(message, cause);
-	}
+    public JobInterruptedException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -34,77 +34,82 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public class RecursiveTreeIndexer {
-	private static final Logger log = LoggerFactory.getLogger(RecursiveTreeIndexer.class);
+    private static final Logger log = LoggerFactory.getLogger(RecursiveTreeIndexer.class);
 
-	private final UpdateTreeAction action;
-	private final SolrUpdateRequest updateRequest;
-	private boolean addDocumentMode = true;
+    private final UpdateTreeAction action;
+    private final SolrUpdateRequest updateRequest;
+    private boolean addDocumentMode = true;
 
-	public RecursiveTreeIndexer(SolrUpdateRequest updateRequest, UpdateTreeAction action) {
-		this.updateRequest = updateRequest;
-		this.action = action;
-	}
+    public RecursiveTreeIndexer(SolrUpdateRequest updateRequest, UpdateTreeAction action) {
+        this.updateRequest = updateRequest;
+        this.action = action;
+    }
 
-	public RecursiveTreeIndexer(SolrUpdateRequest updateRequest, UpdateTreeAction action, boolean addDocumentMode) {
-		this.updateRequest = updateRequest;
-		this.action = action;
-		this.addDocumentMode = addDocumentMode;
-	}
+    public RecursiveTreeIndexer(SolrUpdateRequest updateRequest, UpdateTreeAction action, boolean addDocumentMode) {
+        this.updateRequest = updateRequest;
+        this.action = action;
+        this.addDocumentMode = addDocumentMode;
+    }
 
-	public void index(PID pid, DocumentIndexingPackage parent) throws IndexingException {
-		DocumentIndexingPackage dip = null;
-		try {
-			// Force wait before each document being indexed
-			if (this.action.getUpdateDelay() > 0)
-				Thread.sleep(this.action.getUpdateDelay());
+    public void index(PID pid, DocumentIndexingPackage parent) throws IndexingException {
+        DocumentIndexingPackage dip = null;
+        try {
+            // Force wait before each document being indexed
+            if (this.action.getUpdateDelay() > 0) {
+                Thread.sleep(this.action.getUpdateDelay());
+            }
 
-			// Get the DIP for the next object being indexed
-			dip = this.action.getDocumentIndexingPackage(pid, parent);
-			if (dip == null)
-				throw new IndexingException("No document indexing package was retrieved for " + pid.getPid());
+            // Get the DIP for the next object being indexed
+            dip = this.action.getDocumentIndexingPackage(pid, parent);
+            if (dip == null) {
+                throw new IndexingException("No document indexing package was retrieved for " + pid.getPid());
+            }
 
-			// Perform document populating pipeline
-			this.action.getPipeline().process(dip);
+            // Perform document populating pipeline
+            this.action.getPipeline().process(dip);
 
-			// Update the current target in solr
-			if (addDocumentMode)
-				this.action.getSolrUpdateDriver().addDocument(dip.getDocument());
-			else
-				this.action.getSolrUpdateDriver().updateDocument("set", dip.getDocument());
+            // Update the current target in solr
+            if (addDocumentMode) {
+                this.action.getSolrUpdateDriver().addDocument(dip.getDocument());
+            } else {
+                this.action.getSolrUpdateDriver().updateDocument("set", dip.getDocument());
+            }
 
-			// Update the number of objects processed in this action
-			this.updateRequest.incrementChildrenProcessed();
+            // Update the number of objects processed in this action
+            this.updateRequest.incrementChildrenProcessed();
 
-		} catch (InterruptedException e) {
-			log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
-			return;
-		} catch (UnsupportedContentModelException e) {
-			log.info("Invalid content model on object {}, skipping its children", pid.getPid(), e);
-			return;
-		} catch (OrphanedObjectException e) {
-			log.info("Object {} was orphaned, skipping its children", pid.getPid(), e);
-			return;
-		} catch (IndexingException e) {
-			log.warn("Failed to index {}", pid.getPid(), e);
-		} catch (Exception e) {
-			log.error("An unexpected exception occurred while indexing {}, skipping its children", pid.getPid(), e);
-			return;
-		} finally {
-			// Clear parent bond to allow memory cleanup
-			if (dip != null)
-				dip.setParentDocument((DocumentIndexingPackage) null);
-		}
+        } catch (InterruptedException e) {
+            log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
+            return;
+        } catch (UnsupportedContentModelException e) {
+            log.info("Invalid content model on object {}, skipping its children", pid.getPid(), e);
+            return;
+        } catch (OrphanedObjectException e) {
+            log.info("Object {} was orphaned, skipping its children", pid.getPid(), e);
+            return;
+        } catch (IndexingException e) {
+            log.warn("Failed to index {}", pid.getPid(), e);
+        } catch (Exception e) {
+            log.error("An unexpected exception occurred while indexing {}, skipping its children", pid.getPid(), e);
+            return;
+        } finally {
+            // Clear parent bond to allow memory cleanup
+            if (dip != null) {
+                dip.setParentDocument((DocumentIndexingPackage) null);
+            }
+        }
 
-		// Start indexing the children
-		if (dip != null)
-			this.indexChildren(dip, dip.getChildren());
-	}
+        // Start indexing the children
+        if (dip != null) {
+            this.indexChildren(dip, dip.getChildren());
+        }
+    }
 
-	public void indexChildren(DocumentIndexingPackage parent, List<PID> children) throws IndexingException {
-		if (children != null) {
-			for (PID child : children) {
-				this.index(child, parent);
-			}
-		}
-	}
+    public void indexChildren(DocumentIndexingPackage parent, List<PID> children) throws IndexingException {
+        if (children != null) {
+            for (PID child : children) {
+                this.index(child, parent);
+            }
+        }
+    }
 }

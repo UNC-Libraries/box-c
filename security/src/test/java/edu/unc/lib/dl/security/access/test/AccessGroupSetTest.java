@@ -24,91 +24,91 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 public class AccessGroupSetTest extends Assert {
 
-	@Test
-	public void testGroups(){
-		String testGroup = "this:is:a:test:group";
-		
-		AccessGroupSet groups = new AccessGroupSet();
-		assertEquals(groups.size(), 0);
-		groups.add(testGroup);
-		
-		assertTrue(groups.contains(testGroup));
-		assertFalse(groups.contains("this:is:not:a:group"));
-		
-		groups.add("another:group");
-		groups.add("third:group");
-		groups.add(testGroup);
-		assertEquals(groups.size(), 3);
-		
-		String testGroupSlashes = "this\\:is\\:a\\:test\\:group";
-		groups.add(testGroupSlashes);
-		assertEquals(groups.size(), 4);
-		
-		ArrayList<String> groupList = new ArrayList<String>();
-		groupList.add("nonmatching:group:1");
-		groupList.add("nonmatching:group:2");
-		groupList.add("nonmatching:group:3");
-		assertFalse(groups.containsAny(groupList));
-		
-		groupList.add(testGroup);
-		assertTrue(groups.containsAny(groupList));
-		
-		groups = new AccessGroupSet();
-		groups.add(testGroupSlashes);
-		assertFalse(groups.contains(testGroup));
-		assertTrue(groups.contains(testGroupSlashes));
-		
-		groups = new AccessGroupSet(new String[]{"group:1","group:2","group:3","group:1"});
-		assertEquals(groups.size(), 3);
-	}
-	
-	@Test
-	public void accessGroupTests(){
-		ArrayList<String> groups = new ArrayList<String>();
-		groups.add("oddGroup");groups.add("testGroup1");
-		groups.add("nonmatchingGroup");groups.add("edu:unc:lib:cdr:admin");
+    @Test
+    public void testGroups() {
+        String testGroup = "this:is:a:test:group";
 
-		AccessGroupSet groupSet = new AccessGroupSet();
-		//groupSet.addAll(groups);
+        AccessGroupSet groups = new AccessGroupSet();
+        assertEquals(groups.size(), 0);
+        groups.add(testGroup);
 
-		String members = "testGroup1";
-		groupSet = new AccessGroupSet(members);
-		Assert.assertTrue(groupSet.size() == 1);
+        assertTrue(groups.contains(testGroup));
+        assertFalse(groups.contains("this:is:not:a:group"));
 
-		Assert.assertTrue(groupSet.contains("testGroup1"));
+        groups.add("another:group");
+        groups.add("third:group");
+        groups.add(testGroup);
+        assertEquals(groups.size(), 3);
 
-		members = "testGroup1;testGroup2;testGroup3;oddGroup";
-		groupSet = new AccessGroupSet(members);
-		Assert.assertEquals(4, groupSet.size());
-		Assert.assertTrue(groupSet.contains("testGroup1"));
-		Assert.assertTrue(groupSet.contains("oddGroup"));
+        String testGroupSlashes = "this\\:is\\:a\\:test\\:group";
+        groups.add(testGroupSlashes);
+        assertEquals(groups.size(), 4);
 
-		Assert.assertTrue(groupSet.containsAny(groups));
+        ArrayList<String> groupList = new ArrayList<String>();
+        groupList.add("nonmatching:group:1");
+        groupList.add("nonmatching:group:2");
+        groupList.add("nonmatching:group:3");
+        assertFalse(groups.containsAny(groupList));
 
-		members = "testGroup1:testGroupExtended;testGroup2";
-		groupSet = new AccessGroupSet(members);
-		Assert.assertTrue(groupSet.size() == 2);
+        groupList.add(testGroup);
+        assertTrue(groups.containsAny(groupList));
 
-		members = ";testGroup1;";
-		groupSet = new AccessGroupSet(members);
-		Assert.assertTrue(groupSet.size() == 1);
+        groups = new AccessGroupSet();
+        groups.add(testGroupSlashes);
+        assertFalse(groups.contains(testGroup));
+        assertTrue(groups.contains(testGroupSlashes));
 
-		members = "";
-		groupSet = new AccessGroupSet(members);
-		Assert.assertTrue(groupSet.size() == 0);
-		Assert.assertFalse(groupSet.containsAny(groups));
-		Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)));
+        groups = new AccessGroupSet(new String[]{"group:1","group:2","group:3","group:1"});
+        assertEquals(groups.size(), 3);
+    }
 
-		members = "edu:unc:lib:cdr:admin;edu:unc:lib:cdr:sfc";
-		groupSet = new AccessGroupSet(members);
-		Assert.assertTrue(groupSet.size() == 2);
-		Assert.assertTrue(groupSet.containsAny(groups));
+    @Test
+    public void accessGroupTests() {
+        ArrayList<String> groups = new ArrayList<String>();
+        groups.add("oddGroup");groups.add("testGroup1");
+        groups.add("nonmatchingGroup");groups.add("edu:unc:lib:cdr:admin");
 
-		Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)) ||
-				"edu:unc:lib:cdr:sfc;edu:unc:lib:cdr:admin".equals(groupSet.joinAccessGroups(";", "", false)));
+        AccessGroupSet groupSet = new AccessGroupSet();
+        //groupSet.addAll(groups);
 
-		groupSet.remove("edu:unc:lib:cdr:admin");
-		Assert.assertTrue(groupSet.size() == 1);
+        String members = "testGroup1";
+        groupSet = new AccessGroupSet(members);
+        Assert.assertTrue(groupSet.size() == 1);
 
-	}
+        Assert.assertTrue(groupSet.contains("testGroup1"));
+
+        members = "testGroup1;testGroup2;testGroup3;oddGroup";
+        groupSet = new AccessGroupSet(members);
+        Assert.assertEquals(4, groupSet.size());
+        Assert.assertTrue(groupSet.contains("testGroup1"));
+        Assert.assertTrue(groupSet.contains("oddGroup"));
+
+        Assert.assertTrue(groupSet.containsAny(groups));
+
+        members = "testGroup1:testGroupExtended;testGroup2";
+        groupSet = new AccessGroupSet(members);
+        Assert.assertTrue(groupSet.size() == 2);
+
+        members = ";testGroup1;";
+        groupSet = new AccessGroupSet(members);
+        Assert.assertTrue(groupSet.size() == 1);
+
+        members = "";
+        groupSet = new AccessGroupSet(members);
+        Assert.assertTrue(groupSet.size() == 0);
+        Assert.assertFalse(groupSet.containsAny(groups));
+        Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)));
+
+        members = "edu:unc:lib:cdr:admin;edu:unc:lib:cdr:sfc";
+        groupSet = new AccessGroupSet(members);
+        Assert.assertTrue(groupSet.size() == 2);
+        Assert.assertTrue(groupSet.containsAny(groups));
+
+        Assert.assertTrue(members.equals(groupSet.joinAccessGroups(";", "", false)) ||
+                "edu:unc:lib:cdr:sfc;edu:unc:lib:cdr:admin".equals(groupSet.joinAccessGroups(";", "", false)));
+
+        groupSet.remove("edu:unc:lib:cdr:admin");
+        Assert.assertTrue(groupSet.size() == 1);
+
+    }
 }

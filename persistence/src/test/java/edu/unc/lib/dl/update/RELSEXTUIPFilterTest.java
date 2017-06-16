@@ -40,39 +40,39 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 public class RELSEXTUIPFilterTest extends Assert {
-	
-	@Test
-	public void replaceTest() throws Exception {
-		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataFullRELSEXTAndACL.xml"));
-		Abdera abdera = new Abdera();
-		Parser parser = abdera.getParser();
-		Document<Entry> entryDoc = parser.parse(entryPart);
-		Entry entry = entryDoc.getRoot();
-		Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
-		
-		SAXBuilder builder = new SAXBuilder();
-		InputStream inStream = new FileInputStream(new File("src/test/resources/fedora/exampleRELSEXT.xml"));
-		org.jdom2.Document doc = builder.build(inStream);
-		org.jdom2.Element baseElement = doc.detachRootElement();
-		
-		originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), baseElement);
-		Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
-		MetadataUIP uip = mock(MetadataUIP.class);
-		when(uip.getPID()).thenReturn(new DatastreamPID("uuid:test"));
-		when(uip.getOperation()).thenReturn(UpdateOperation.REPLACE);
-		when(uip.getOriginalData()).thenReturn(originalMap);
-		when(uip.getModifiedData()).thenReturn(new HashMap<String, org.jdom2.Element>());
-		when(uip.getIncomingData()).thenReturn(datastreamMap);
+    @Test
+    public void replaceTest() throws Exception {
+        InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataFullRELSEXTAndACL.xml"));
+        Abdera abdera = new Abdera();
+        Parser parser = abdera.getParser();
+        Document<Entry> entryDoc = parser.parse(entryPart);
+        Entry entry = entryDoc.getRoot();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
 
-		RELSEXTUIPFilter filter = new RELSEXTUIPFilter();
-		filter.doFilter(uip);
+        SAXBuilder builder = new SAXBuilder();
+        InputStream inStream = new FileInputStream(new File("src/test/resources/fedora/exampleRELSEXT.xml"));
+        org.jdom2.Document doc = builder.build(inStream);
+        org.jdom2.Element baseElement = doc.detachRootElement();
 
-		org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
-		org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+        originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), baseElement);
+        Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
-		assertEquals(11, description.getChildren().size());
-		assertEquals("Very small mp3", description.getChildText("slug", JDOMNamespaceUtil.CDR_NS));
-	}
-  
+        MetadataUIP uip = mock(MetadataUIP.class);
+        when(uip.getPID()).thenReturn(new DatastreamPID("uuid:test"));
+        when(uip.getOperation()).thenReturn(UpdateOperation.REPLACE);
+        when(uip.getOriginalData()).thenReturn(originalMap);
+        when(uip.getModifiedData()).thenReturn(new HashMap<String, org.jdom2.Element>());
+        when(uip.getIncomingData()).thenReturn(datastreamMap);
+
+        RELSEXTUIPFilter filter = new RELSEXTUIPFilter();
+        filter.doFilter(uip);
+
+        org.jdom2.Element relsExtDS = uip.getModifiedData().get(ContentModelHelper.Datastream.RELS_EXT.getName());
+        org.jdom2.Element description = relsExtDS.getChild("Description", JDOMNamespaceUtil.RDF_NS);
+
+        assertEquals(11, description.getChildren().size());
+        assertEquals("Very small mp3", description.getChildText("slug", JDOMNamespaceUtil.CDR_NS));
+    }
+
 }

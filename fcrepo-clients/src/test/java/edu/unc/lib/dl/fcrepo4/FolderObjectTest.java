@@ -42,93 +42,93 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class FolderObjectTest extends AbstractFedoraTest {
 
-	private PID pid;
+    private PID pid;
 
-	private PID childPid;
+    private PID childPid;
 
-	private FolderObject folder;
+    private FolderObject folder;
 
-	@Before
-	public void init() {
-		initMocks(this);
+    @Before
+    public void init() {
+        initMocks(this);
 
-		pid = PIDs.get(UUID.randomUUID().toString());
+        pid = PIDs.get(UUID.randomUUID().toString());
 
-		folder = new FolderObject(pid, repository, dataLoader);
+        folder = new FolderObject(pid, repository, dataLoader);
 
-		childPid = PIDs.get(UUID.randomUUID().toString());
-		when(repository.mintContentPid()).thenReturn(childPid);
-	}
+        childPid = PIDs.get(UUID.randomUUID().toString());
+        when(repository.mintContentPid()).thenReturn(childPid);
+    }
 
-	@Test
-	public void isValidTypeTest() {
-		// Return the correct RDF types
-		List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-		when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-			@Override
-			public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-				folder.setTypes(types);
-				return dataLoader;
-			}
-		});
+    @Test
+    public void isValidTypeTest() {
+        // Return the correct RDF types
+        List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
+        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+            @Override
+            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+                folder.setTypes(types);
+                return dataLoader;
+            }
+        });
 
-		folder.validateType();
-	}
+        folder.validateType();
+    }
 
-	@Test(expected = ObjectTypeMismatchException.class)
-	public void invalidTypeTest() {
-		when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-			@Override
-			public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-				folder.setTypes(Arrays.asList());
-				return dataLoader;
-			}
-		});
+    @Test(expected = ObjectTypeMismatchException.class)
+    public void invalidTypeTest() {
+        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+            @Override
+            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+                folder.setTypes(Arrays.asList());
+                return dataLoader;
+            }
+        });
 
-		folder.validateType();
-	}
+        folder.validateType();
+    }
 
-	@Test
-	public void addFolderTest() {
-		FolderObject childFolder = new FolderObject(childPid, repository, dataLoader);
+    @Test
+    public void addFolderTest() {
+        FolderObject childFolder = new FolderObject(childPid, repository, dataLoader);
 
-		when(repository.createFolderObject(any(PID.class), any(Model.class)))
-				.thenReturn(childFolder);
+        when(repository.createFolderObject(any(PID.class), any(Model.class)))
+                .thenReturn(childFolder);
 
-		folder.addFolder();
+        folder.addFolder();
 
-		verify(repository).createFolderObject(eq(childPid), (Model) isNull());
+        verify(repository).createFolderObject(eq(childPid), (Model) isNull());
 
-		ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-		verify(repository).addMember(eq(folder), captor.capture());
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
+        verify(repository).addMember(eq(folder), captor.capture());
 
-		ContentObject child = captor.getValue();
-		assertTrue("Incorrect type of child added", child instanceof FolderObject);
-		assertEquals("Child did not have the expected pid", childPid, child.getPid());
-	}
+        ContentObject child = captor.getValue();
+        assertTrue("Incorrect type of child added", child instanceof FolderObject);
+        assertEquals("Child did not have the expected pid", childPid, child.getPid());
+    }
 
-	@Test
-	public void addWorkTest() {
-		WorkObject childObj = new WorkObject(childPid, repository, dataLoader);
+    @Test
+    public void addWorkTest() {
+        WorkObject childObj = new WorkObject(childPid, repository, dataLoader);
 
-		when(repository.createWorkObject(any(PID.class), any(Model.class)))
-				.thenReturn(childObj);
+        when(repository.createWorkObject(any(PID.class), any(Model.class)))
+                .thenReturn(childObj);
 
-		folder.addWork();
+        folder.addWork();
 
-		verify(repository).createWorkObject(eq(childPid), (Model) isNull());
+        verify(repository).createWorkObject(eq(childPid), (Model) isNull());
 
-		ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-		verify(repository).addMember(eq(folder), captor.capture());
+        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
+        verify(repository).addMember(eq(folder), captor.capture());
 
-		ContentObject child = captor.getValue();
-		assertTrue("Incorrect type of child added", child instanceof WorkObject);
-		assertEquals("Child did not have the expected pid", childPid, child.getPid());
-	}
+        ContentObject child = captor.getValue();
+        assertTrue("Incorrect type of child added", child instanceof WorkObject);
+        assertEquals("Child did not have the expected pid", childPid, child.getPid());
+    }
 }

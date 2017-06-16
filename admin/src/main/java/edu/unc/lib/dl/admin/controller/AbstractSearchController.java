@@ -33,44 +33,50 @@ import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class AbstractSearchController extends AbstractSolrSearchController {
-	protected @Resource(name = "tagProviders")
-	List<TagProvider> tagProviders;
+    protected @Resource(name = "tagProviders")
+    List<TagProvider> tagProviders;
 
-	@Autowired
-	protected PID collectionsPid;
+    @Autowired
+    protected PID collectionsPid;
 
-	protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
-			SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),
-			SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
-			SearchFieldKeys.CONTENT_MODEL.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.VERSION.name(),
-			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.CONTENT_TYPE.name(),
-			SearchFieldKeys.CONTENT_STATUS.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.TIMESTAMP.name(),
-			SearchFieldKeys.ANCESTOR_PATH.name(),
-			SearchFieldKeys.IS_PART.name(), SearchFieldKeys.ROLLUP_ID.name());
+    protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
+            SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),
+            SearchFieldKeys.DATE_ADDED.name(), SearchFieldKeys.DATE_UPDATED.name(),
+            SearchFieldKeys.RESOURCE_TYPE.name(), SearchFieldKeys.CONTENT_MODEL.name(),
+            SearchFieldKeys.STATUS.name(), SearchFieldKeys.VERSION.name(),SearchFieldKeys.ROLE_GROUP.name(),
+            SearchFieldKeys.RELATIONS.name(), SearchFieldKeys.CONTENT_TYPE.name(),
+            SearchFieldKeys.CONTENT_STATUS.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.TIMESTAMP.name(),
+            SearchFieldKeys.ANCESTOR_PATH.name(),
+            SearchFieldKeys.IS_PART.name(), SearchFieldKeys.ROLLUP_ID.name());
 
-	@Override
-	protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {
-		return this.getSearchResults(searchRequest, resultsFieldList);
-	}
+    @Override
+    protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {
+        return this.getSearchResults(searchRequest, resultsFieldList);
+    }
 
-	protected SearchResultResponse getSearchResults(SearchRequest searchRequest, List<String> resultsFieldList) {
-		SearchState searchState = searchRequest.getSearchState();
-		searchState.setResultFields(resultsFieldList);
+    protected SearchResultResponse getSearchResults(SearchRequest searchRequest, List<String> resultsFieldList) {
+        SearchState searchState = searchRequest.getSearchState();
+        searchState.setResultFields(resultsFieldList);
 
-		SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		
-		List<BriefObjectMetadata> objects = resultResponse.getResultList();
-		queryLayer.getChildrenCounts(objects, searchRequest);
+        SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
-		// Add tags
-		for (BriefObjectMetadata record : objects) {
-			for (TagProvider provider : this.tagProviders) {
-				provider.addTags(record, accessGroups);
-			}
-		}
+        List<BriefObjectMetadata> objects = resultResponse.getResultList();
+        queryLayer.getChildrenCounts(objects, searchRequest);
 
-		return resultResponse;
-	}
+        // Add tags
+        for (BriefObjectMetadata record : objects) {
+            for (TagProvider provider : this.tagProviders) {
+                provider.addTags(record, accessGroups);
+            }
+        }
+
+        return resultResponse;
+    }
 }

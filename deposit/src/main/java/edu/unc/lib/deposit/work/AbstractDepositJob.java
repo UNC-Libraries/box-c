@@ -68,332 +68,332 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
  *
  */
 public abstract class AbstractDepositJob implements Runnable {
-	private static final Logger log = LoggerFactory
-			.getLogger(AbstractDepositJob.class);
-	public static final String DEPOSIT_QUEUE = "Deposit";
+    private static final Logger log = LoggerFactory
+            .getLogger(AbstractDepositJob.class);
+    public static final String DEPOSIT_QUEUE = "Deposit";
 
-	@Autowired
-	private JobStatusFactory jobStatusFactory;
+    @Autowired
+    private JobStatusFactory jobStatusFactory;
 
-	@Autowired
-	private DepositStatusFactory depositStatusFactory;
+    @Autowired
+    private DepositStatusFactory depositStatusFactory;
 
-	@Autowired
-	protected Repository repository;
-	
-	@Autowired
-	protected PremisLoggerFactory premisLoggerFactory;
-	
-	// UUID for this deposit and its deposit record
-	private String depositUUID;
-	
-	private PID depositPID;
+    @Autowired
+    protected Repository repository;
 
-	// UUID for this ingest job
-	private String jobUUID;
+    @Autowired
+    protected PremisLoggerFactory premisLoggerFactory;
 
-	// Root directory where all deposits are stored
-	@Autowired
-	private File depositsDirectory;
+    // UUID for this deposit and its deposit record
+    private String depositUUID;
 
-	// Directory for this deposit
-	private File depositDirectory;
+    private PID depositPID;
 
-	// Directory for local data files
-	private File dataDirectory;
+    // UUID for this ingest job
+    private String jobUUID;
 
-	// Directory containing PREMIS event files for individual objects in this
-	// deposit
-	private File eventsDirectory;
-	
-	private File techmdDir;
+    // Root directory where all deposits are stored
+    @Autowired
+    private File depositsDirectory;
 
-	@Autowired
-	private Dataset dataset;
+    // Directory for this deposit
+    private File depositDirectory;
 
-	public AbstractDepositJob() {
-	}
+    // Directory for local data files
+    private File dataDirectory;
 
-	public AbstractDepositJob(String uuid, String depositUUID) {
-		log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
-		this.jobUUID = uuid;
-		this.setDepositUUID(depositUUID);
-	}
+    // Directory containing PREMIS event files for individual objects in this
+    // deposit
+    private File eventsDirectory;
 
-	@PostConstruct
-	public void init() {
-		this.depositDirectory = new File(depositsDirectory, depositUUID);
-		this.dataDirectory = new File(depositDirectory,
-				DepositConstants.DATA_DIR);
-		this.eventsDirectory = new File(depositDirectory,
-				DepositConstants.EVENTS_DIR);
-		
-		this.techmdDir = new File(depositDirectory, TECHMD_DIR);
-	}
+    private File techmdDir;
 
-	@Override
-	public final void run() {
-		try {
-			runJob();
-			if (dataset.isInTransaction()) {
-				dataset.commit();
-			}
-		} catch (Throwable e) {
-			if (dataset.isInTransaction()) {
-				dataset.abort();
-			}
-			throw e;
-		} finally {
-			dataset.end();
-		}
-	}
+    @Autowired
+    private Dataset dataset;
 
-	public abstract void runJob();
+    public AbstractDepositJob() {
+    }
 
-	public String getDepositUUID() {
-		return depositUUID;
-	}
+    public AbstractDepositJob(String uuid, String depositUUID) {
+        log.debug("Deposit job created: job:{} deposit:{}", uuid, depositUUID);
+        this.jobUUID = uuid;
+        this.setDepositUUID(depositUUID);
+    }
 
-	public void setDepositUUID(String depositUUID) {
-		this.depositUUID = depositUUID;
-		this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
-	}
+    @PostConstruct
+    public void init() {
+        this.depositDirectory = new File(depositsDirectory, depositUUID);
+        this.dataDirectory = new File(depositDirectory,
+                DepositConstants.DATA_DIR);
+        this.eventsDirectory = new File(depositDirectory,
+                DepositConstants.EVENTS_DIR);
 
-	public PID getDepositPID() {
-		return depositPID;
-	}
+        this.techmdDir = new File(depositDirectory, TECHMD_DIR);
+    }
 
-	public String getJobUUID() {
-		return jobUUID;
-	}
+    @Override
+    public final void run() {
+        try {
+            runJob();
+            if (dataset.isInTransaction()) {
+                dataset.commit();
+            }
+        } catch (Throwable e) {
+            if (dataset.isInTransaction()) {
+                dataset.abort();
+            }
+            throw e;
+        } finally {
+            dataset.end();
+        }
+    }
 
-	public void setJobUUID(String uuid) {
-		this.jobUUID = uuid;
-	}
+    public abstract void runJob();
 
-	protected JobStatusFactory getJobStatusFactory() {
-		return jobStatusFactory;
-	}
+    public String getDepositUUID() {
+        return depositUUID;
+    }
 
-	public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
-		this.jobStatusFactory = jobStatusFactory;
-	}
+    public void setDepositUUID(String depositUUID) {
+        this.depositUUID = depositUUID;
+        this.depositPID = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
+    }
 
-	protected DepositStatusFactory getDepositStatusFactory() {
-		return depositStatusFactory;
-	}
+    public PID getDepositPID() {
+        return depositPID;
+    }
 
-	public void setDepositStatusFactory(
-			DepositStatusFactory depositStatusFactory) {
-		this.depositStatusFactory = depositStatusFactory;
-	}
+    public String getJobUUID() {
+        return jobUUID;
+    }
 
-	public Map<String, String> getDepositStatus() {
-		Map<String, String> result = this.getDepositStatusFactory().get(
-				depositUUID);
-		return Collections.unmodifiableMap(result);
-	}
+    public void setJobUUID(String uuid) {
+        this.jobUUID = uuid;
+    }
 
-	public File getDescriptionDir() {
-		return new File(getDepositDirectory(), DESCRIPTION_DIR);
-	}
+    protected JobStatusFactory getJobStatusFactory() {
+        return jobStatusFactory;
+    }
 
-	public File getDepositsDirectory() {
-		return depositsDirectory;
-	}
+    public void setJobStatusFactory(JobStatusFactory jobStatusFactory) {
+        this.jobStatusFactory = jobStatusFactory;
+    }
 
-	public File getDepositDirectory() {
-		return depositDirectory;
-	}
+    protected DepositStatusFactory getDepositStatusFactory() {
+        return depositStatusFactory;
+    }
 
-	public File getTechMdDirectory() {
-		return techmdDir;
-	}
+    public void setDepositStatusFactory(
+            DepositStatusFactory depositStatusFactory) {
+        this.depositStatusFactory = depositStatusFactory;
+    }
 
-	public void setDepositDirectory(File depositDirectory) {
-		this.depositDirectory = depositDirectory;
-	}
+    public Map<String, String> getDepositStatus() {
+        Map<String, String> result = this.getDepositStatusFactory().get(
+                depositUUID);
+        return Collections.unmodifiableMap(result);
+    }
 
-	public File getDataDirectory() {
-		return dataDirectory;
-	}
+    public File getDescriptionDir() {
+        return new File(getDepositDirectory(), DESCRIPTION_DIR);
+    }
 
-	public File getEventsDirectory() {
-		return eventsDirectory;
-	}
+    public File getDepositsDirectory() {
+        return depositsDirectory;
+    }
 
-	public Repository getRepository() {
-		return repository;
-	}
+    public File getDepositDirectory() {
+        return depositDirectory;
+    }
 
-	public void setRepository(Repository repository) {
-		this.repository = repository;
-	}
-	
-	public PremisLoggerFactory getPremisLoggerFactory() {
-		return premisLoggerFactory;
-	}
-	
-	public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
-		this.premisLoggerFactory = premisLoggerFactory;
-	}
+    public File getTechMdDirectory() {
+        return techmdDir;
+    }
 
-	/**
-	 * Returns the manifest URIs for this deposit, or an empty list in case there are no manifests.
-	 *
-	 * @return
-	 */
-	public List<String> getManifestFileURIs() {
-		List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
-		return filePaths;
-	}
+    public void setDepositDirectory(File depositDirectory) {
+        this.depositDirectory = depositDirectory;
+    }
 
-	/**
-	 * Resolves a staged file href and returns a URI for that href.
-	 * 
-	 * @param href
-	 * @return
-	 * @throws StagingException
-	 *             thrown if the href is not a valid staging location uri
-	 */
-	protected URI getStagedUri(String href) throws StagingException {
-		URI manifestUri = null;
-		try {
-			manifestUri = new URI(href);
-		} catch (URISyntaxException e) {
-			throw new StagingException("Unable to parse manifest URI: " + href);
-		}
+    public File getDataDirectory() {
+        return dataDirectory;
+    }
 
-		// Only supporting local file uris at this time
-		if (manifestUri.getScheme() == null || manifestUri.getScheme().contains("file")) {
-			// If the uri is relative, then resolve it against the deposit directory
-			if (!manifestUri.isAbsolute()) {
-				manifestUri = getDepositDirectory().toURI().resolve(manifestUri);
-			}
+    public File getEventsDirectory() {
+        return eventsDirectory;
+    }
 
-			return manifestUri;
-		} else {
-			throw new StagingException(
-					"Unsupported uri scheme encountered while attempting to resolve staged file: " + href);
-		}
-	}
+    public Repository getRepository() {
+        return repository;
+    }
 
-	public void failJob(String message, String details) {
-		log.debug("failed deposit: {}", message);
-		throw new JobFailedException(message, details);
-	}
+    public void setRepository(Repository repository) {
+        this.repository = repository;
+    }
 
-	public void failJob(Throwable throwable, String messageformat, Object... args) {
-		String message = MessageFormat.format(messageformat, args);
-		log.debug("failed deposit: {}", message, throwable);
-		throw new JobFailedException(message, throwable);
-	}
+    public PremisLoggerFactory getPremisLoggerFactory() {
+        return premisLoggerFactory;
+    }
 
-	protected void verifyRunning() {
-		DepositState state = getDepositStatusFactory().getState(getDepositUUID());
+    public void setPremisLoggerFactory(PremisLoggerFactory premisLoggerFactory) {
+        this.premisLoggerFactory = premisLoggerFactory;
+    }
 
-		if (!DepositState.running.equals(state)) {
-			throw new JobInterruptedException("State for job " + getDepositUUID()
-					+ " is no longer running, interrupting");
-		}
-	}
+    /**
+     * Returns the manifest URIs for this deposit, or an empty list in case there are no manifests.
+     *
+     * @return
+     */
+    public List<String> getManifestFileURIs() {
+        List<String> filePaths = depositStatusFactory.getManifestURIs(getDepositUUID());
+        return filePaths;
+    }
 
-	/**
-	 * Creates new PremisLogger object from which instances can build and write Premis events to a file
-	 *
-	 * @param pid
-	 * @return PremisLogger object
-	 */
-	public PremisLogger getPremisLogger(PID pid) {
-		File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
+    /**
+     * Resolves a staged file href and returns a URI for that href.
+     * 
+     * @param href
+     * @return
+     * @throws StagingException
+     *             thrown if the href is not a valid staging location uri
+     */
+    protected URI getStagedUri(String href) throws StagingException {
+        URI manifestUri = null;
+        try {
+            manifestUri = new URI(href);
+        } catch (URISyntaxException e) {
+            throw new StagingException("Unable to parse manifest URI: " + href);
+        }
 
-		try {
-			if (!file.exists()) {
-				file.getParentFile().mkdirs();
-			} 
-			return premisLoggerFactory.createPremisLogger(pid, file, repository);
-		} catch (Exception e) {
-			failJob(e, "Unexpected problem with deposit events file {0}.", file.getAbsoluteFile().toString());
-		}
+        // Only supporting local file uris at this time
+        if (manifestUri.getScheme() == null || manifestUri.getScheme().contains("file")) {
+            // If the uri is relative, then resolve it against the deposit directory
+            if (!manifestUri.isAbsolute()) {
+                manifestUri = getDepositDirectory().toURI().resolve(manifestUri);
+            }
 
-		return null;
-	}
+            return manifestUri;
+        } else {
+            throw new StagingException(
+                    "Unsupported uri scheme encountered while attempting to resolve staged file: " + href);
+        }
+    }
 
-	public Model getWritableModel() {
-		String uri = getDepositPID().getURI();
-		this.dataset.begin(ReadWrite.WRITE);
-		if (!this.dataset.containsNamedModel(uri)) {
-			this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
-		}
-		return this.dataset.getNamedModel(uri).begin();
-	}
+    public void failJob(String message, String details) {
+        log.debug("failed deposit: {}", message);
+        throw new JobFailedException(message, details);
+    }
 
-	public Model getReadOnlyModel() {
-		String uri = getDepositPID().getURI();
-		this.dataset.begin(ReadWrite.READ);
-		return this.dataset.getNamedModel(uri).begin();
-	}
+    public void failJob(Throwable throwable, String messageformat, Object... args) {
+        String message = MessageFormat.format(messageformat, args);
+        log.debug("failed deposit: {}", message, throwable);
+        throw new JobFailedException(message, throwable);
+    }
 
-	public void closeModel() {
-		if (dataset.isInTransaction()) {
-			dataset.commit();
-			dataset.end();
-		}
-	}
+    protected void verifyRunning() {
+        DepositState state = getDepositStatusFactory().getState(getDepositUUID());
 
-	public void destroyModel() {
-		String uri = getDepositPID().getURI();
-		if (!dataset.isInTransaction()) {
-			getWritableModel();
-		}
-		if (this.dataset.containsNamedModel(uri)) {
-			this.dataset.removeNamedModel(uri);
-		}
-	}
+        if (!DepositState.running.equals(state)) {
+            throw new JobInterruptedException("State for job " + getDepositUUID()
+                    + " is no longer running, interrupting");
+        }
+    }
 
-	protected void setTotalClicks(int totalClicks) {
-		getJobStatusFactory().setTotalCompletion(getJobUUID(), totalClicks);
-	}
+    /**
+     * Creates new PremisLogger object from which instances can build and write Premis events to a file
+     *
+     * @param pid
+     * @return PremisLogger object
+     */
+    public PremisLogger getPremisLogger(PID pid) {
+        File file = new File(depositDirectory, DepositConstants.EVENTS_DIR + "/" + pid.getUUID() + ".ttl");
 
-	protected void addClicks(int clicks) {
-		getJobStatusFactory().incrCompletion(getJobUUID(), clicks);
-	}
+        try {
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+            }
+            return premisLoggerFactory.createPremisLogger(pid, file, repository);
+        } catch (Exception e) {
+            failJob(e, "Unexpected problem with deposit events file {0}.", file.getAbsoluteFile().toString());
+        }
 
-	public File getSubdir(String subpath) {
-		return new File(getDepositDirectory(), subpath);
-	}
-	
-	protected void serializeObjectModel(PID pid, Model objModel) {
-		File propertiesFile = new File(getSubdir(DepositConstants.AIPS_DIR), pid.getUUID() + ".ttl");
-		
-		try {
-			RDFModelUtil.serializeModel(objModel, propertiesFile);
-		} catch (IOException e) {
-			failJob(e, "Failed to serialize properties for object {0} to {1}",
-					pid, propertiesFile.getAbsolutePath());
-		}
-	}
-	
-	/**
-	 * Retrieve a list of PID to value pairs for the given property
-	 * 
-	 * @param model
-	 * @param property
-	 * @return
-	 */
-	protected List<Entry<PID, String>> getPropertyPairList(Model model, Property property) {
-		List<Entry<PID, String>> results = new ArrayList<>();
+        return null;
+    }
 
-		Selector stageSelector = new SimpleSelector((Resource) null, property, (RDFNode) null);
-		StmtIterator i = model.listStatements(stageSelector);
-		while (i.hasNext()) {
-			Statement s = i.nextStatement();
-			PID p = PIDs.get(s.getSubject().getURI());
-			String href = s.getObject().asLiteral().getString();
-			Entry<PID, String> entry = new SimpleEntry<>(p, href);
-			results.add(entry);
-		}
+    public Model getWritableModel() {
+        String uri = getDepositPID().getURI();
+        this.dataset.begin(ReadWrite.WRITE);
+        if (!this.dataset.containsNamedModel(uri)) {
+            this.dataset.addNamedModel(uri, ModelFactory.createDefaultModel());
+        }
+        return this.dataset.getNamedModel(uri).begin();
+    }
 
-		return results;
-	}
+    public Model getReadOnlyModel() {
+        String uri = getDepositPID().getURI();
+        this.dataset.begin(ReadWrite.READ);
+        return this.dataset.getNamedModel(uri).begin();
+    }
+
+    public void closeModel() {
+        if (dataset.isInTransaction()) {
+            dataset.commit();
+            dataset.end();
+        }
+    }
+
+    public void destroyModel() {
+        String uri = getDepositPID().getURI();
+        if (!dataset.isInTransaction()) {
+            getWritableModel();
+        }
+        if (this.dataset.containsNamedModel(uri)) {
+            this.dataset.removeNamedModel(uri);
+        }
+    }
+
+    protected void setTotalClicks(int totalClicks) {
+        getJobStatusFactory().setTotalCompletion(getJobUUID(), totalClicks);
+    }
+
+    protected void addClicks(int clicks) {
+        getJobStatusFactory().incrCompletion(getJobUUID(), clicks);
+    }
+
+    public File getSubdir(String subpath) {
+        return new File(getDepositDirectory(), subpath);
+    }
+
+    protected void serializeObjectModel(PID pid, Model objModel) {
+        File propertiesFile = new File(getSubdir(DepositConstants.AIPS_DIR), pid.getUUID() + ".ttl");
+
+        try {
+            RDFModelUtil.serializeModel(objModel, propertiesFile);
+        } catch (IOException e) {
+            failJob(e, "Failed to serialize properties for object {0} to {1}",
+                    pid, propertiesFile.getAbsolutePath());
+        }
+    }
+
+    /**
+     * Retrieve a list of PID to value pairs for the given property
+     * 
+     * @param model
+     * @param property
+     * @return
+     */
+    protected List<Entry<PID, String>> getPropertyPairList(Model model, Property property) {
+        List<Entry<PID, String>> results = new ArrayList<>();
+
+        Selector stageSelector = new SimpleSelector((Resource) null, property, (RDFNode) null);
+        StmtIterator i = model.listStatements(stageSelector);
+        while (i.hasNext()) {
+            Statement s = i.nextStatement();
+            PID p = PIDs.get(s.getSubject().getURI());
+            String href = s.getObject().asLiteral().getString();
+            Entry<PID, String> entry = new SimpleEntry<>(p, href);
+            results.add(entry);
+        }
+
+        return results;
+    }
 }

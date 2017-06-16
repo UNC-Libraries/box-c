@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,34 +32,35 @@ import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
  * @author bbpennel
  *
  */
-public class SetFullTextFilter extends AbstractIndexDocumentFilter{
-	private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
+public class SetFullTextFilter implements IndexDocumentFilter {
+    private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
 
-	private AccessClient accessClient = null;
+    private AccessClient accessClient = null;
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
 
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
 
-		String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
+        if (fullTextDS == null || "false".equals(fullTextDS)) {
+            return;
+        }
 
-		if (fullTextDS == null || "false".equals(fullTextDS))
-			return;
+        try {
+            MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(),
+                    ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
+            dip.getDocument().setFullText(new String(stream.getStream()));
+        } catch (FedoraException e) {
+            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+        } catch (ServiceException e) {
+            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+        }
+    }
 
-		try {
-			MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(), ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
-			dip.getDocument().setFullText(new String(stream.getStream()));
-		} catch (FedoraException e) {
-			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
-		} catch (ServiceException e) {
-			log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
-		}
-	}
+    public AccessClient getAccessClient() {
+        return accessClient;
+    }
 
-	public AccessClient getAccessClient() {
-		return accessClient;
-	}
-
-	public void setAccessClient(AccessClient accessClient) {
-		this.accessClient = accessClient;
-	}
+    public void setAccessClient(AccessClient accessClient) {
+        this.accessClient = accessClient;
+    }
 }

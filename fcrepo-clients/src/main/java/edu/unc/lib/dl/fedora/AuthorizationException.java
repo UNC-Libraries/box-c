@@ -17,39 +17,44 @@ package edu.unc.lib.dl.fedora;
 
 import org.springframework.ws.soap.client.SoapFaultClientException;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class AuthorizationException extends FedoraException {
-	private static final long serialVersionUID = 2177327948413175683L;
+    private static final long serialVersionUID = 2177327948413175683L;
 
-	private AuthorizationErrorType type = AuthorizationErrorType.DENIED;
+    private AuthorizationErrorType type = AuthorizationErrorType.DENIED;
 
-	public AuthorizationException(String message) {
-		super(message);
-	}
-	
-	public AuthorizationException(Exception e) {
-		super(e);
-	}
+    public AuthorizationException(String message) {
+        super(message);
+    }
 
-	public AuthorizationException(SoapFaultClientException e) {
-		super(e);
+    public AuthorizationException(Exception e) {
+        super(e);
+    }
 
-		String reason = e.getFaultStringOrReason();
-		if (reason.contains("NotApplicable")) {
-			type = AuthorizationErrorType.NOT_APPLICABLE;
-		} else if (reason.contains("Indeterminate")) {
-			type = AuthorizationErrorType.INDETERMINATE;
-		}
-	}
+    public AuthorizationException(SoapFaultClientException e) {
+        super(e);
 
-	public AuthorizationErrorType getType() {
-		return type;
-	}
+        String reason = e.getFaultStringOrReason();
+        if (reason.contains("NotApplicable")) {
+            type = AuthorizationErrorType.NOT_APPLICABLE;
+        } else if (reason.contains("Indeterminate")) {
+            type = AuthorizationErrorType.INDETERMINATE;
+        }
+    }
 
-	public void setType(AuthorizationErrorType type) {
-		this.type = type;
-	}
+    public AuthorizationErrorType getType() {
+        return type;
+    }
 
-	public static enum AuthorizationErrorType {
-		NOT_APPLICABLE, DENIED, INDETERMINATE
-	}
+    public void setType(AuthorizationErrorType type) {
+        this.type = type;
+    }
+
+    public static enum AuthorizationErrorType {
+        NOT_APPLICABLE, DENIED, INDETERMINATE
+    }
 }

@@ -19,7 +19,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -29,108 +28,117 @@ import java.nio.charset.StandardCharsets;
  */
 public class StringFormatUtil {
 
-	private static String[] filesizeSuffixes = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    private static String[] filesizeSuffixes = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
-	/**
-	 * Formats a file size string if it is a numeric representation stored in bytes.  If there 
-	 * are non-numeric characters in the file size, then the filesize is returned.  Numeric file sizes
-	 * are labeled with the highest applicable unit which returns a whole number, plus decimalPlaces 
-	 * number of digits after the decimal.  If the value after the decimal would be 0, then no decimal
-	 * point is returned. 
-	 * @param filesize
-	 * @param decimalPlaces
-	 * @return
-	 */
-	public static String formatFilesize(String filesize, int decimalPlaces){
-		try {
-			int multipleCount = 0;
-			long filesizeValue = Long.parseLong(filesize);
-			long filesizeRemainder = 0;
-			while (filesizeValue > 1024 && multipleCount < filesizeSuffixes.length){
-				filesizeRemainder = filesizeValue % 1024;
-				filesizeValue /= 1024;
-				multipleCount++;
-			}
-			StringBuilder filesizeBuilder = new StringBuilder();
-			filesizeBuilder.append(filesizeValue);
-			if (filesizeRemainder > 0 && decimalPlaces > 0){
-				int decimalMultiplier = 1;
-				for (int i=0; i<decimalPlaces; i++){
-					decimalMultiplier *= 10;
-				}
-				filesizeRemainder = (filesizeRemainder * decimalMultiplier)/1024;
-				if (filesizeRemainder > 0)
-					filesizeBuilder.append(".").append(filesizeRemainder);
-			}
-			
-			filesizeBuilder.append(" ");
-			if (multipleCount < filesizeSuffixes.length)
-				filesizeBuilder.append(filesizeSuffixes[multipleCount]);
-			else filesizeBuilder.append(filesizeSuffixes[filesizeSuffixes.length - 1]);
-			return filesizeBuilder.toString();
-		} catch (NumberFormatException e){
-		}
-		return filesize;
-	}
-	
-	
-	public static String truncateText(String text, int length){
-		if (length < 0)
-			throw new IndexOutOfBoundsException();
-		
-		if (text == null || text.length() <= length){
-			return text;
-		}
-		Matcher m = Pattern.compile("(.|\n){0," + length + "}\\b").matcher(text);
-		m.find();
-		return m.group(0);
-	}
-	
-	public static String urlEncode(String value) throws UnsupportedEncodingException {
-		return URLEncoder.encode(value, "UTF-8");
-	}
-	
-	public static String removeQueryParameter(String query, String key) {
-		int index = query.indexOf("&" + key + "=");
-		boolean isFirstParameter = false;
-		if (index == -1) {
-			index = query.indexOf(key + "=");
-			if (index == -1)
-				return query;
-			isFirstParameter = index > 0 && query.charAt(index - 1) == '?';
-			if (!isFirstParameter)
-				return query;
-		}
-		
-		int end = query.indexOf('&', index + 1);
-		if (end == -1)
-			return query.substring(0, index - (isFirstParameter? 1 : 0));
-		return query.substring(0, index) + query.substring(end + (isFirstParameter? 1 : 0));
-	}
+    private StringFormatUtil() {
+    }
 
-	/**
-	 * Given a string as input, convert it to US-ASCII and replace any characters which would
-	 * prevent it from being parsed as a "token" as defined by RFC 1521 and RFC 2045.
-	 * @param input
-	 * @param replacement
-	 * @return
-	 */
-	public static String makeToken(String input, String replacement) {
-		String result = input;
-		
-		// Encode as US-ASCII, replacing malformed or unmappable input
-		result = new String(StandardCharsets.US_ASCII.encode(result).array(), StandardCharsets.US_ASCII);
-		
-		// No space characters (includes newlines, etc. as well as just space and tab)
-		result = result.replaceAll("\\s", replacement);
-		
-		// No control characters
-		result = result.replaceAll("[^\\x20-\\x7f]", replacement);
-		
-		// No "tspecial" characters
-		result = result.replaceAll("[()<>@,;:\\\\\\\"/\\[\\]?=]", replacement);
-		
-		return result;
-	}
-	
+    /**
+     * Formats a file size string if it is a numeric representation stored in bytes.  If there
+     * are non-numeric characters in the file size, then the filesize is returned.  Numeric file sizes
+     * are labeled with the highest applicable unit which returns a whole number, plus decimalPlaces
+     * number of digits after the decimal.  If the value after the decimal would be 0, then no decimal
+     * point is returned.
+     * @param filesize
+     * @param decimalPlaces
+     * @return
+     */
+    public static String formatFilesize(String filesize, int decimalPlaces) {
+        try {
+            int multipleCount = 0;
+            long filesizeValue = Long.parseLong(filesize);
+            long filesizeRemainder = 0;
+            while (filesizeValue > 1024 && multipleCount < filesizeSuffixes.length) {
+                filesizeRemainder = filesizeValue % 1024;
+                filesizeValue /= 1024;
+                multipleCount++;
+            }
+            StringBuilder filesizeBuilder = new StringBuilder();
+            filesizeBuilder.append(filesizeValue);
+            if (filesizeRemainder > 0 && decimalPlaces > 0) {
+                int decimalMultiplier = 1;
+                for (int i = 0; i < decimalPlaces; i++) {
+                    decimalMultiplier *= 10;
+                }
+                filesizeRemainder = (filesizeRemainder * decimalMultiplier) / 1024;
+                if (filesizeRemainder > 0) {
+                    filesizeBuilder.append(".").append(filesizeRemainder);
+                }
+            }
+
+            filesizeBuilder.append(" ");
+            if (multipleCount < filesizeSuffixes.length) {
+                filesizeBuilder.append(filesizeSuffixes[multipleCount]);
+            } else {
+                filesizeBuilder.append(filesizeSuffixes[filesizeSuffixes.length - 1]);
+            }
+            return filesizeBuilder.toString();
+        } catch (NumberFormatException e) {
+        }
+        return filesize;
+    }
+
+    public static String truncateText(String text, int length) {
+        if (length < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+
+        if (text == null || text.length() <= length) {
+            return text;
+        }
+        Matcher m = Pattern.compile("(.|\n) {0," + length + "}\\b").matcher(text);
+        m.find();
+        return m.group(0);
+    }
+
+    public static String urlEncode(String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(value, "UTF-8");
+    }
+
+    public static String removeQueryParameter(String query, String key) {
+        int index = query.indexOf("&" + key + "=");
+        boolean isFirstParameter = false;
+        if (index == -1) {
+            index = query.indexOf(key + "=");
+            if (index == -1) {
+                return query;
+            }
+            isFirstParameter = index > 0 && query.charAt(index - 1) == '?';
+            if (!isFirstParameter) {
+                return query;
+            }
+        }
+
+        int end = query.indexOf('&', index + 1);
+        if (end == -1) {
+            return query.substring(0, index - (isFirstParameter ? 1 : 0));
+        }
+        return query.substring(0, index) + query.substring(end + (isFirstParameter ? 1 : 0));
+    }
+
+    /**
+     * Given a string as input, convert it to US-ASCII and replace any characters which would
+     * prevent it from being parsed as a "token" as defined by RFC 1521 and RFC 2045.
+     * @param input
+     * @param replacement
+     * @return
+     */
+    public static String makeToken(String input, String replacement) {
+        String result = input;
+
+        // Encode as US-ASCII, replacing malformed or unmappable input
+        result = new String(StandardCharsets.US_ASCII.encode(result).array(), StandardCharsets.US_ASCII);
+
+        // No space characters (includes newlines, etc. as well as just space and tab)
+        result = result.replaceAll("\\s", replacement);
+
+        // No control characters
+        result = result.replaceAll("[^\\x20-\\x7f]", replacement);
+
+        // No "tspecial" characters
+        result = result.replaceAll("[()<>@,;:\\\\\\\"/\\[\\]?=]", replacement);
+
+        return result;
+    }
+
 }

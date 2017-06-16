@@ -46,194 +46,194 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
  * Data loader which retrieves repository data for objects.
- * 
+ *
  * @author bbpennel, harring
  *
  */
 public class RepositoryObjectDataLoader {
-	private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
+    private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
 
-	private Repository repository;
+    private Repository repository;
 
-	private AccessControlService aclService;
+    private AccessControlService aclService;
 
-	private FcrepoClient client;
-	
-	private TripleStoreQueryService tripleStoreQueryService;
+    private FcrepoClient client;
 
-	/**
-	 * Loads and assigns the RDF types for the given object
-	 * 
-	 * @param obj
-	 * @return
-	 * @throws FedoraException
-	 */
-	public RepositoryObjectDataLoader loadTypes(RepositoryObject obj) throws FedoraException {
-		List<String> types = new ArrayList<>();
-		// Iterate through all type properties and add to list
-		Resource resc = obj.getModel().getResource(obj.getPid().getRepositoryUri().toString());
-		StmtIterator it = resc.listProperties(RDF.type);
-		while (it.hasNext()) {
-			types.add(it.nextStatement().getResource().getURI());
-		}
+    private TripleStoreQueryService tripleStoreQueryService;
 
-		obj.setTypes(types);
+    /**
+     * Loads and assigns the RDF types for the given object
+     *
+     * @param obj
+     * @return
+     * @throws FedoraException
+     */
+    public RepositoryObjectDataLoader loadTypes(RepositoryObject obj) throws FedoraException {
+        List<String> types = new ArrayList<>();
+        // Iterate through all type properties and add to list
+        Resource resc = obj.getModel().getResource(obj.getPid().getRepositoryUri().toString());
+        StmtIterator it = resc.listProperties(RDF.type);
+        while (it.hasNext()) {
+            types.add(it.nextStatement().getResource().getURI());
+        }
 
-		return this;
-	}
+        obj.setTypes(types);
 
-	/**
-	 * Loads and assigns the model for direct relationships of the given
-	 * repository object
-	 * 
-	 * @param obj
-	 * @return
-	 * @throws FedoraException
-	 */
-	public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
-		URI metadataUri = obj.getMetadataUri();
-		// If the object is up to date and has already loaded the model then we're done
-		if (obj.hasModel() && obj.isUnmodified()) {
-			log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
-			return this;
-		}
+        return this;
+    }
 
-		// Need to load the model from fedora
-		try (FcrepoResponse response = getClient().get(metadataUri)
-				.accept(TURTLE_MIMETYPE)
-				.perform()) {
+    /**
+     * Loads and assigns the model for direct relationships of the given
+     * repository object
+     *
+     * @param obj
+     * @return
+     * @throws FedoraException
+     */
+    public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
+        URI metadataUri = obj.getMetadataUri();
+        // If the object is up to date and has already loaded the model then we're done
+        if (obj.hasModel() && obj.isUnmodified()) {
+            log.debug("Object unchanged, reusing existing model for {}", obj.getPid());
+            return this;
+        }
 
-			log.debug("Retrieving new model for {}", obj.getPid());
-			Model model = ModelFactory.createDefaultModel();
-			model.read(response.getBody(), null, Lang.TURTLE.getName());
+        // Need to load the model from fedora
+        try (FcrepoResponse response = getClient().get(metadataUri)
+                .accept(TURTLE_MIMETYPE)
+                .perform()) {
 
-			// Store the fresh model
-			obj.storeModel(model);
+            log.debug("Retrieving new model for {}", obj.getPid());
+            Model model = ModelFactory.createDefaultModel();
+            model.read(response.getBody(), null, Lang.TURTLE.getName());
 
-			// Store updated modification info to track if the object changes 
-			obj.setEtag(parseEtag(response));
+            // Store the fresh model
+            obj.storeModel(model);
 
-			return this;
-		} catch (IOException e) {
-			throw new FedoraException("Failed to read model for " + metadataUri, e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
-	}
+            // Store updated modification info to track if the object changes
+            obj.setEtag(parseEtag(response));
 
-	/**
-	 * Retrieve the binary content for the given BinaryObject as an inputstream
-	 * 
-	 * @param obj
-	 * @return
-	 * @throws FedoraException
-	 */
-	public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
-		PID pid = obj.getPid();
+            return this;
+        } catch (IOException e) {
+            throw new FedoraException("Failed to read model for " + metadataUri, e);
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+    }
 
-		try {
-			FcrepoResponse response = getClient().get(pid.getRepositoryUri()).perform();
-			return response.getBody();
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
-	}
-	
-	/**
-	 * 
-	 * @param obj
-	 * @return
-	 */
-	public RepositoryObject getParentObject(RepositoryObject obj) {
-		Resource resourceType = null;
-		final Model model = obj.getModel();
+    /**
+     * Retrieve the binary content for the given BinaryObject as an inputstream
+     *
+     * @param obj
+     * @return
+     * @throws FedoraException
+     */
+    public InputStream getBinaryStream(BinaryObject obj) throws FedoraException {
+        PID pid = obj.getPid();
 
-		if (model.containsResource(Fcrepo4Repository.Binary)) {
-			resourceType = PcdmModels.hasFile;
-		} else if (model.containsResource(Fcrepo4Repository.Container)) {
-			resourceType = PcdmModels.hasMember;
-		}
+        try {
+            FcrepoResponse response = getClient().get(pid.getRepositoryUri()).perform();
+            return response.getBody();
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+    }
 
-		PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
+    /**
+     *
+     * @param obj
+     * @return
+     */
+    public RepositoryObject getParentObject(RepositoryObject obj) {
+        Resource resourceType = null;
+        final Model model = obj.getModel();
 
-		return repository.getContentObject(pid);
-	}
+        if (model.containsResource(Fcrepo4Repository.Binary)) {
+            resourceType = PcdmModels.hasFile;
+        } else if (model.containsResource(Fcrepo4Repository.Container)) {
+            resourceType = PcdmModels.hasMember;
+        }
 
-	/**
-	 * Retrieves the etag for the provided object
-	 * 
-	 * @param obj
-	 * @return
-	 */
-	public String getEtag(RepositoryObject obj) {
-		try (FcrepoResponse response = getClient().head(obj.getMetadataUri()).perform()) {
-			if (response.getStatusCode() != HttpStatus.SC_OK) {
-				throw new FedoraException("Received " + response.getStatusCode()
-						+ " response while retrieving headers for " + obj.getPid().getRepositoryUri());
-			}
+        PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
 
-			return parseEtag(response);
-		} catch (IOException e) {
-			throw new FedoraException("Unable to create deposit record at "
-					+ obj.getPid().getRepositoryUri(), e);
-		} catch (FcrepoOperationFailedException e) {
-			throw ClientFaultResolver.resolve(e);
-		}
-	}
+        return repository.getContentObject(pid);
+    }
 
-	/**
-	 * Retrieve the ETag of the response, with surrounding quotes stripped.
-	 * 
-	 * @param response
-	 * @return
-	 */
-	private static String parseEtag(FcrepoResponse response) {
-		String etag = response.getHeaderValue("ETag");
-		if (etag != null) {
-			return etag.substring(1, etag.length() - 1);
-		}
-		return null;
-	}
+    /**
+     * Retrieves the etag for the provided object
+     *
+     * @param obj
+     * @return
+     */
+    public String getEtag(RepositoryObject obj) {
+        try (FcrepoResponse response = getClient().head(obj.getMetadataUri()).perform()) {
+            if (response.getStatusCode() != HttpStatus.SC_OK) {
+                throw new FedoraException("Received " + response.getStatusCode()
+                        + " response while retrieving headers for " + obj.getPid().getRepositoryUri());
+            }
 
-	/**
-	 * Retrieve access control information for the given object
-	 * 
-	 * @param obj
-	 * @return
-	 */
-	public ObjectAccessControlsBean getAccessControls(RepositoryObject obj) {
-		return aclService.getObjectAccessControls(obj.getPid());
-	}
+            return parseEtag(response);
+        } catch (IOException e) {
+            throw new FedoraException("Unable to create deposit record at "
+                    + obj.getPid().getRepositoryUri(), e);
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
+    }
 
-	public void setClient(FcrepoClient client) {
-		this.client = client;
-	}
+    /**
+     * Retrieve the ETag of the response, with surrounding quotes stripped.
+     *
+     * @param response
+     * @return
+     */
+    private static String parseEtag(FcrepoResponse response) {
+        String etag = response.getHeaderValue("ETag");
+        if (etag != null) {
+            return etag.substring(1, etag.length() - 1);
+        }
+        return null;
+    }
 
-	public FcrepoClient getClient() {
-		return client;
-	}
+    /**
+     * Retrieve access control information for the given object
+     *
+     * @param obj
+     * @return
+     */
+    public ObjectAccessControlsBean getAccessControls(RepositoryObject obj) {
+        return aclService.getObjectAccessControls(obj.getPid());
+    }
 
-	public Repository getRepository() {
-		return repository;
-	}
+    public void setClient(FcrepoClient client) {
+        this.client = client;
+    }
 
-	public void setRepository(Repository repository) {
-		this.repository = repository;
-	}
+    public FcrepoClient getClient() {
+        return client;
+    }
 
-	public AccessControlService getAclService() {
-		return aclService;
-	}
+    public Repository getRepository() {
+        return repository;
+    }
 
-	public void setAclService(AccessControlService aclService) {
-		this.aclService = aclService;
-	}
-	
-	public TripleStoreQueryService getTripleStoreQueryService() {
-		return tripleStoreQueryService;
-	}
-	
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    public void setRepository(Repository repository) {
+        this.repository = repository;
+    }
+
+    public AccessControlService getAclService() {
+        return aclService;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public TripleStoreQueryService getTripleStoreQueryService() {
+        return tripleStoreQueryService;
+    }
+
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 }

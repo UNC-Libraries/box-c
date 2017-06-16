@@ -162,12 +162,12 @@ public final class NamespaceConstants {
      * The usual PREMIS (v3) namespace prefix.
      */
     public static final String PREMIS_V3_PREFIX = "premis3";
-    
+
     /**
      * The PREMIS v3 namespace URI.
      */
     public static final String PREMIS_V3_URI = "http://www.loc.gov/premis/v3";
-    
+
     /**
      * The RDF namespace prefix.
      */
@@ -236,29 +236,29 @@ public final class NamespaceConstants {
 
     public static final String CDR_MESSAGE_AUTHOR_URI = "http://cdr.lib.unc.edu/schema/message#author";
 
-	public static final String CDR_ROLES_PREFIX = "cdr-role";
+    public static final String CDR_ROLES_PREFIX = "cdr-role";
 
-	public static final String CDR_ROLE_NS_URI = "http://cdr.unc.edu/definitions/roles#";
+    public static final String CDR_ROLE_NS_URI = "http://cdr.unc.edu/definitions/roles#";
 
-	public static final String CDR_ACL_PREFIX = "cdr-acl";
+    public static final String CDR_ACL_PREFIX = "cdr-acl";
 
-	public static final String CDR_ACL_NS_URI = "http://cdr.unc.edu/definitions/acl#";
+    public static final String CDR_ACL_NS_URI = "http://cdr.unc.edu/definitions/acl#";
 
-	public static final String EPDCX_PREFIX = "epdcx";
+    public static final String EPDCX_PREFIX = "epdcx";
 
-	public static final String EPDCX_URI = "http://purl.org/eprint/epdcx/2006-11-16/";
+    public static final String EPDCX_URI = "http://purl.org/eprint/epdcx/2006-11-16/";
 
-	public static final String DEPOSIT_PREFIX = "deposit";
+    public static final String DEPOSIT_PREFIX = "deposit";
 
-	public static final String DEPOSIT_URI = "http://cdr.unc.edu/definitions/deposit/";
+    public static final String DEPOSIT_URI = "http://cdr.unc.edu/definitions/deposit/";
 
-	public static final String SKOS_PREFIX = "skos";
+    public static final String SKOS_PREFIX = "skos";
 
-	public static final String SKOS_URI = "http://www.w3.org/2004/02/skos/core#";
+    public static final String SKOS_URI = "http://www.w3.org/2004/02/skos/core#";
 
-	public static final String SIMPLE_METS_PROFILE_URI = "http://cdr.unc.edu/METS/profiles/Simple";
+    public static final String SIMPLE_METS_PROFILE_URI = "http://cdr.unc.edu/METS/profiles/Simple";
 
-	public static final String SIMPLE_METS_PROFILE_PREFIX = "simple";
+    public static final String SIMPLE_METS_PROFILE_PREFIX = "simple";
 
     // Prevent instantiation.
     private NamespaceConstants() {

@@ -29,231 +29,231 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * A generic repository object, with properties common to objects in the repository.
- * 
+ *
  * @author bbpennel
  *
  */
 public abstract class RepositoryObject {
 
-	// Repository which produced and manages this object
-	protected Repository repository;
-	// Loader for lazy loading data about this object when requested
-	protected RepositoryObjectDataLoader dataLoader;
+    // Repository which produced and manages this object
+    protected Repository repository;
+    // Loader for lazy loading data about this object when requested
+    protected RepositoryObjectDataLoader dataLoader;
 
-	// The identifier and path information for this object
-	protected PID pid;
+    // The identifier and path information for this object
+    protected PID pid;
 
-	protected Model model;
+    protected Model model;
 
-	protected Date lastModified;
-	protected String etag;
+    protected Date lastModified;
+    protected String etag;
 
-	protected List<String> types;
-	
-	protected PremisLogger premisLog;
+    protected List<String> types;
 
-	protected RepositoryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-		this.repository = repository;
-		this.pid = pid;
-		this.dataLoader = dataLoader;
-	}
+    protected PremisLogger premisLog;
 
-	/**
-	 * Get the URI of this object in the repository
-	 * 
-	 * @return
-	 */
-	public URI getUri() {
-		return pid.getRepositoryUri();
-	}
+    protected RepositoryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
+        this.repository = repository;
+        this.pid = pid;
+        this.dataLoader = dataLoader;
+    }
 
-	/**
-	 * Get a model containing properties and relations held by this object. 
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public Model getModel() throws FedoraException {
-		dataLoader.loadModel(this);
-		return model;
-	}
+    /**
+     * Get the URI of this object in the repository
+     *
+     * @return
+     */
+    public URI getUri() {
+        return pid.getRepositoryUri();
+    }
 
-	/**
-	 * Return true if the model for this object has been populated
-	 * 
-	 * @return
-	 */
-	public boolean hasModel() {
-		return model != null;
-	}
+    /**
+     * Get a model containing properties and relations held by this object.
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public Model getModel() throws FedoraException {
+        dataLoader.loadModel(this);
+        return model;
+    }
 
-	/**
-	 * Store the relationships and properties belonging to this object
-	 * 
-	 * @param model
-	 * @return
-	 */
-	public void storeModel(Model model) {
-		this.model = model;
-		// Clear the cached types list
-		this.types = null;
-	}
+    /**
+     * Return true if the model for this object has been populated
+     *
+     * @return
+     */
+    public boolean hasModel() {
+        return model != null;
+    }
 
-	public Resource getResource() throws FedoraException {
-		return getModel().getResource(getUri().toString());
-	}
+    /**
+     * Store the relationships and properties belonging to this object
+     *
+     * @param model
+     * @return
+     */
+    public void storeModel(Model model) {
+        this.model = model;
+        // Clear the cached types list
+        this.types = null;
+    }
 
-	/**
-	 * Adds each event to this object.
-	 * 
-	 * @param events
-	 * @return this object
-	 * @throws FedoraException 
-	 */
-	public RepositoryObject addPremisEvents(List<PremisEventObject> events) throws FedoraException {
-		for (PremisEventObject event: events) {
-			repository.createPremisEvent(event.getPid(), event.getModel());
-		}
+    public Resource getResource() throws FedoraException {
+        return getModel().getResource(getUri().toString());
+    }
 
-		return this;
-	}
+    /**
+     * Adds each event to this object.
+     *
+     * @param events
+     * @return this object
+     * @throws FedoraException
+     */
+    public RepositoryObject addPremisEvents(List<PremisEventObject> events) throws FedoraException {
+        for (PremisEventObject event: events) {
+            repository.createPremisEvent(event.getPid(), event.getModel());
+        }
 
-	/**
-	 * Get the PREMIS event log for this object
-	 * 
-	 * @return
-	 */
-	public PremisLogger getPremisLog() {
-		if (premisLog == null) {
-			premisLog = new RepositoryPremisLogger(this, repository);
-		}
-		return premisLog;
-	}
+        return this;
+    }
 
-	/**
-	 * Returns true if this object is assigned the given RDF type
-	 * 
-	 * @param type
-	 *            URI for the RDF type being checked for
-	 * @return
-	 * @throws FedoraException
-	 */
-	protected boolean isType(String type) throws FedoraException {
-		return getTypes().contains(type);
-	}
+    /**
+     * Get the PREMIS event log for this object
+     *
+     * @return
+     */
+    public PremisLogger getPremisLog() {
+        if (premisLog == null) {
+            premisLog = new RepositoryPremisLogger(this, repository);
+        }
+        return premisLog;
+    }
 
-	/**
-	 * Throws a Fedora exception if the object does not match the expected RDF types
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public abstract RepositoryObject validateType() throws FedoraException;
+    /**
+     * Returns true if this object is assigned the given RDF type
+     *
+     * @param type
+     *            URI for the RDF type being checked for
+     * @return
+     * @throws FedoraException
+     */
+    protected boolean isType(String type) throws FedoraException {
+        return getTypes().contains(type);
+    }
 
-	/**
-	 * Get the PID of this object
-	 * 
-	 * @return
-	 */
-	public PID getPid() {
-		return pid;
-	}
+    /**
+     * Throws a Fedora exception if the object does not match the expected RDF types
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public abstract RepositoryObject validateType() throws FedoraException;
 
-	/**
-	 * Set the PID
-	 * 
-	 * @param pid
-	 */
-	public void setPid(PID pid) {
-		this.pid = pid;
-	}
-	
-	/**
-	 * Get the parent of the current object
-	 * @return
-	 */
-	public abstract RepositoryObject getParent();
+    /**
+     * Get the PID of this object
+     *
+     * @return
+     */
+    public PID getPid() {
+        return pid;
+    }
 
-	/**
-	 * Get the last modified date
-	 * 
-	 * @return
-	 */
-	public Date getLastModified() {
-		return lastModified;
-	}
+    /**
+     * Set the PID
+     *
+     * @param pid
+     */
+    public void setPid(PID pid) {
+        this.pid = pid;
+    }
 
-	/**
-	 * Set the last modified date
-	 * 
-	 * @param lastModified
-	 */
-	public void setLastModified(Date lastModified) {
-		this.lastModified = lastModified;
-	}
+    /**
+     * Get the parent of the current object
+     * @return
+     */
+    public abstract RepositoryObject getParent();
 
-	/**
-	 * Get the ETag representing the version of the object retrieved
-	 * 
-	 * @return
-	 */
-	public String getEtag() {
-		return etag;
-	}
+    /**
+     * Get the last modified date
+     *
+     * @return
+     */
+    public Date getLastModified() {
+        return lastModified;
+    }
 
-	/**
-	 * Set the etag
-	 * 
-	 * @param etag
-	 */
-	public void setEtag(String etag) {
-		this.etag = etag;
-	}
+    /**
+     * Set the last modified date
+     *
+     * @param lastModified
+     */
+    public void setLastModified(Date lastModified) {
+        this.lastModified = lastModified;
+    }
 
-	/**
-	 * Get a list of the RDF types for this object
-	 * 
-	 * @return
-	 * @throws FedoraException
-	 */
-	public List<String> getTypes() throws FedoraException {
-		if (types == null) {
-			dataLoader.loadTypes(this);
-		}
-		return types;
-	}
+    /**
+     * Get the ETag representing the version of the object retrieved
+     *
+     * @return
+     */
+    public String getEtag() {
+        return etag;
+    }
 
-	/**
-	 * Set the list of RDF types
-	 * 
-	 * @param types
-	 */
-	public void setTypes(List<String> types) {
-		this.types = types;
-	}
+    /**
+     * Set the etag
+     *
+     * @param etag
+     */
+    public void setEtag(String etag) {
+        this.etag = etag;
+    }
 
-	/**
-	 * The URI where RDF metadata about this object can be retrieved from.
-	 * 
-	 * @return
-	 */
-	public URI getMetadataUri() {
-		return pid.getRepositoryUri();
-	}
+    /**
+     * Get a list of the RDF types for this object
+     *
+     * @return
+     * @throws FedoraException
+     */
+    public List<String> getTypes() throws FedoraException {
+        if (types == null) {
+            dataLoader.loadTypes(this);
+        }
+        return types;
+    }
 
-	/**
-	 * Returns true if this object  is unmodified according to etag by
-	 * verifying if the locally held etag matches the current one in the
-	 * repository
-	 * 
-	 * @return
-	 */
-	public boolean isUnmodified() {
-		if (getEtag() == null) {
-			return false;
-		}
+    /**
+     * Set the list of RDF types
+     *
+     * @param types
+     */
+    public void setTypes(List<String> types) {
+        this.types = types;
+    }
 
-		String remoteEtag = dataLoader.getEtag(this);
-		return remoteEtag.equals(getEtag());
-	}
+    /**
+     * The URI where RDF metadata about this object can be retrieved from.
+     *
+     * @return
+     */
+    public URI getMetadataUri() {
+        return pid.getRepositoryUri();
+    }
+
+    /**
+     * Returns true if this object  is unmodified according to etag by
+     * verifying if the locally held etag matches the current one in the
+     * repository
+     *
+     * @return
+     */
+    public boolean isUnmodified() {
+        if (getEtag() == null) {
+            return false;
+        }
+
+        String remoteEtag = dataLoader.getEtag(this);
+        return remoteEtag.equals(getEtag());
+    }
 }

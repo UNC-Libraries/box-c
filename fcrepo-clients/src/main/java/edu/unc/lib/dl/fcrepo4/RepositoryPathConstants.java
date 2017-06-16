@@ -19,62 +19,63 @@ import java.util.regex.Pattern;
 
 /**
  * Constants for constructing standard paths within the repository.
- * 
+ *
  * @author bbpennel
  *
  */
-public class RepositoryPathConstants {
+public abstract class RepositoryPathConstants {
 
-	// Repository base paths
+    // Repository base paths
 
-	public static final String CONTENT_BASE = "content";
+    public static final String CONTENT_BASE = "content";
 
-	public static final String DEPOSIT_RECORD_BASE = "deposits";
+    public static final String DEPOSIT_RECORD_BASE = "deposits";
 
-	// Container identifiers
+    // Container identifiers
 
-	public static final String DEPOSIT_MANIFEST_CONTAINER = "manifest";
+    public static final String DEPOSIT_MANIFEST_CONTAINER = "manifest";
 
-	public static final String EVENTS_CONTAINER = "event";
+    public static final String EVENTS_CONTAINER = "event";
 
-	public static final String DATA_FILE_FILESET = "datafs";
+    public static final String DATA_FILE_FILESET = "datafs";
 
-	public static final String MEMBER_CONTAINER = "member";
+    public static final String MEMBER_CONTAINER = "member";
 
-	// Named objects
-	
-	public static final String SMALL_THUMBNAIL = "small_thumbnail";
-	
-	public static final String LARGE_THUMBNAIL = "large_thumbnail";
-	
-	public static final String FULLTEXT_EXTRACTION = "fulltext_extraction";
+    // Named objects
 
-	public static final String JPEG_2000 = "jp2_access_copy";
+    public static final String SMALL_THUMBNAIL = "small_thumbnail";
 
-	public static final String ORIGINAL_FILE = "original_file";
-	
-	public static final String TECHNICAL_METADATA = "techmd_fits";
+    public static final String LARGE_THUMBNAIL = "large_thumbnail";
 
-	public static final String CONTENT_ROOT_ID = "collections";
+    public static final String FULLTEXT_EXTRACTION = "fulltext_extraction";
 
-	// Special Fedora paths
+    public static final String JPEG_2000 = "jp2_access_copy";
 
-	public static final String FCR_METADATA = "fcr:metadata";
+    public static final String ORIGINAL_FILE = "original_file";
 
-	// Base path generation and decomposition values 
+    public static final String TECHNICAL_METADATA = "techmd_fits";
 
-	// Number of levels of hierarchy to generate when create a hashed path
-	public static final int HASHED_PATH_DEPTH = 4;
+    public static final String CONTENT_ROOT_ID = "collections";
 
-	// Number of characters to use per level of hierarchy in a hashed path
-	public static final int HASHED_PATH_SIZE = 2;
+    // Special Fedora paths
 
-	// Regex pattern for decomposing a repository URI for an object or component of an object
-	public static final Pattern repositoryPathPattern = Pattern
-			.compile("/?(tx:[a-f0-9\\-]+/)?([a-zA-Z]+)/(([a-f0-9]{" + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
-					+ "([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+    public static final String FCR_METADATA = "fcr:metadata";
 
-	// Regex pattern for decomposing an identifier for an object or component
-	public static final Pattern identifierPattern = Pattern
-			.compile("(([a-zA-Z]+)/)?(uuid:)?(([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+    // Base path generation and decomposition values
+
+    // Number of levels of hierarchy to generate when create a hashed path
+    public static final int HASHED_PATH_DEPTH = 4;
+
+    // Number of characters to use per level of hierarchy in a hashed path
+    public static final int HASHED_PATH_SIZE = 2;
+
+    // Regex pattern for decomposing a repository URI for an object or component of an object
+    public static final Pattern repositoryPathPattern = Pattern
+            .compile("/?(tx:[a-f0-9\\-]+/)?([a-zA-Z]+)/(([a-f0-9]{"
+                    + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"
+                    + "([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
+
+    // Regex pattern for decomposing an identifier for an object or component
+    public static final Pattern identifierPattern = Pattern
+            .compile("(([a-zA-Z]+)/)?(uuid:)?(([a-f0-9\\-]+)|(" + CONTENT_ROOT_ID + "))(/(.+)?)?");
 }

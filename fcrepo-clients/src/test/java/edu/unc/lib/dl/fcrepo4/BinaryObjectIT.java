@@ -33,43 +33,43 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class BinaryObjectIT extends AbstractFedoraIT {
 
-	@Test
-	public void createBinaryTest() throws Exception {
-		// Create a parent object to put the binary into
-		URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-		PID parentPid;
-		try (FcrepoResponse response = client.post(contentBase).perform()) {
-			parentPid = PIDs.get(response.getLocation());
-		}
+    @Test
+    public void createBinaryTest() throws Exception {
+        // Create a parent object to put the binary into
+        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        PID parentPid;
+        try (FcrepoResponse response = client.post(contentBase).perform()) {
+            parentPid = PIDs.get(response.getLocation());
+        }
 
-		URI uri = parentPid.getRepositoryUri();
+        URI uri = parentPid.getRepositoryUri();
 
-		String bodyString = "Test text";
-		String filename = "test.txt";
-		String mimetype = "text/plain";
-		String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
-		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        String bodyString = "Test text";
+        String filename = "test.txt";
+        String mimetype = "text/plain";
+        String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		BinaryObject obj = repository.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
+        BinaryObject obj = repository.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
 
-		// Verify that the body of the binary is retrieved
-		InputStream resultStream = obj.getBinaryStream();
-		String respString = new BufferedReader(new InputStreamReader(resultStream)).lines()
-				.collect(Collectors.joining("\n"));
-		assertEquals("Binary content did not match submitted value", bodyString, respString);
+        // Verify that the body of the binary is retrieved
+        InputStream resultStream = obj.getBinaryStream();
+        String respString = new BufferedReader(new InputStreamReader(resultStream)).lines()
+                .collect(Collectors.joining("\n"));
+        assertEquals("Binary content did not match submitted value", bodyString, respString);
 
-		// Check that metadata is retrieved
-		assertEquals(filename, obj.getFilename());
-		assertEquals(mimetype, obj.getMimetype());
-		assertEquals(9L, obj.getFilesize().longValue());
-		assertEquals("urn:sha1:" + checksum, obj.getChecksum());
+        // Check that metadata is retrieved
+        assertEquals(filename, obj.getFilename());
+        assertEquals(mimetype, obj.getMimetype());
+        assertEquals(9L, obj.getFilesize().longValue());
+        assertEquals("urn:sha1:" + checksum, obj.getChecksum());
 
-		assertTrue(obj.getResource().hasProperty(RDF.type, Fcrepo4Repository.Binary));
-	}
+        assertTrue(obj.getResource().hasProperty(RDF.type, Fcrepo4Repository.Binary));
+    }
 }

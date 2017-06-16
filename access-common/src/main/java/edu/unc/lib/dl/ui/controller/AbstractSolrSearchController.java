@@ -42,121 +42,122 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
  * @author bbpennel
  */
 public abstract class AbstractSolrSearchController {
-	private final Logger LOG = LoggerFactory.getLogger(AbstractSolrSearchController.class);
-	
-	@Autowired(required=true)
-	protected SolrQueryLayerService queryLayer;
-	//@Autowired(required=true)
-	//protected SearchStateValidator briefSearchRequestValidator;
-	@Autowired(required=true)
-	protected SearchActionService searchActionService;
-	@Autowired
-	protected SearchSettings searchSettings;
-	@Autowired
-	protected SearchStateFactory searchStateFactory;
-	
-	protected SearchRequest generateSearchRequest(HttpServletRequest request){
-		return this.generateSearchRequest(request, null, new SearchRequest());
-	}
-	
-	protected SearchRequest generateSearchRequest(HttpServletRequest request, SearchState searchState){
-		return this.generateSearchRequest(request, searchState, new SearchRequest());
-	}
-	
-	/**
-	 * Builds a search request model object from the provided http servlet request and the provided 
-	 * search state.  If the search state is null, then it will attempt to retrieve it from first
-	 * the session and if that fails, then from current GET parameters.  Validates the search state
-	 * and applies any actions provided as well.
-	 * @param request
-	 * @return
-	 */
-	protected SearchRequest generateSearchRequest(HttpServletRequest request, SearchState searchState, SearchRequest searchRequest){
-		
-		//Get user access groups.  Fill this in later, for now just set to public
-		HttpSession session = request.getSession();
-		//Get the access group list
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		searchRequest.setAccessGroups(accessGroups);
-		
-		//Retrieve the last search state
-		if (searchState == null){
-			searchState = (SearchState)session.getAttribute("searchState");
-			if (searchState == null){
-				if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest){
-					searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
-				} else {
-					searchState = searchStateFactory.createSearchState(request.getParameterMap());
-				}
-			} else {
-				session.removeAttribute("searchState");
-			}
-		}
-		
-		//Perform actions on search state
-		try {
-			searchActionService.executeActions(searchState, request.getParameterMap());
-		} catch (InvalidHierarchicalFacetException e){
-			LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
-		}
-		
-		//Store the search state into the search request
-		searchRequest.setSearchState(searchState);
-		
-		return searchRequest;
-	}
-	
-	
-	private Pattern oldFacetPath = Pattern.compile("(setFacet:)?path[,:]\"?\\d+,(uuid:[a-f0-9\\-]+)(!\\d+)?");
-	/**
-	 * Extracts and sets paths which follow the previous syntax for backwards compatibility.
-	 * Pulls from either the action or facet parameter, in that order 
-	 * 
-	 * @param request
-	 * @param searchRequest
-	 */
-	protected boolean extractOldPathSyntax(HttpServletRequest request, SearchRequest searchRequest) {
-		String action = request.getParameter("action");
-		boolean added = this.getOldPath(action, searchRequest);
-		if (added)
-			return true;
-		String facet = request.getParameter("facets");
-		return this.getOldPath(facet, searchRequest);
-	}
-	
-	protected boolean getOldPath(String parameter, SearchRequest searchRequest) {
-		if (parameter != null) {
-			Matcher matches = oldFacetPath.matcher(parameter);
-			if (matches.find()) {
-				searchRequest.setRootPid(matches.group(2));
-				searchRequest.setApplyCutoffs(matches.group(3) != null);
-				return true;
-			}
-		}
-		return false;
-	}
-	
-	protected SearchResultResponse getSearchResults(SearchRequest searchRequest){
-		return queryLayer.getSearchResults(searchRequest);
-	}
+    private final Logger LOG = LoggerFactory.getLogger(AbstractSolrSearchController.class);
 
-	public SearchActionService getSearchActionService() {
-		return searchActionService;
-	}
+    @Autowired(required = true)
+    protected SolrQueryLayerService queryLayer;
+    //@Autowired(required=true)
+    //protected SearchStateValidator briefSearchRequestValidator;
+    @Autowired(required = true)
+    protected SearchActionService searchActionService;
+    @Autowired
+    protected SearchSettings searchSettings;
+    @Autowired
+    protected SearchStateFactory searchStateFactory;
 
-	public void setSearchActionService(SearchActionService searchActionService) {
-		this.searchActionService = searchActionService;
-	}
+    protected SearchRequest generateSearchRequest(HttpServletRequest request) {
+        return this.generateSearchRequest(request, null, new SearchRequest());
+    }
 
-	public SolrQueryLayerService getQueryLayer() {
-		return queryLayer;
-	}
+    protected SearchRequest generateSearchRequest(HttpServletRequest request, SearchState searchState) {
+        return this.generateSearchRequest(request, searchState, new SearchRequest());
+    }
 
-	public void setQueryLayer(SolrQueryLayerService queryLayer) {
-		this.queryLayer = queryLayer;
-	}
+    /**
+     * Builds a search request model object from the provided http servlet request and the provided
+     * search state.  If the search state is null, then it will attempt to retrieve it from first
+     * the session and if that fails, then from current GET parameters.  Validates the search state
+     * and applies any actions provided as well.
+     * @param request
+     * @return
+     */
+    protected SearchRequest generateSearchRequest(
+            HttpServletRequest request, SearchState searchState, SearchRequest searchRequest) {
 
-	public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
-		this.searchStateFactory = searchStateFactory;
-	}
+        //Get user access groups.  Fill this in later, for now just set to public
+        HttpSession session = request.getSession();
+        //Get the access group list
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        searchRequest.setAccessGroups(accessGroups);
+
+        //Retrieve the last search state
+        if (searchState == null) {
+            searchState = (SearchState)session.getAttribute("searchState");
+            if (searchState == null) {
+                if (searchRequest != null && searchRequest instanceof HierarchicalBrowseRequest) {
+                    searchState = searchStateFactory.createHierarchicalBrowseSearchState(request.getParameterMap());
+                } else {
+                    searchState = searchStateFactory.createSearchState(request.getParameterMap());
+                }
+            } else {
+                session.removeAttribute("searchState");
+            }
+        }
+
+        //Perform actions on search state
+        try {
+            searchActionService.executeActions(searchState, request.getParameterMap());
+        } catch (InvalidHierarchicalFacetException e) {
+            LOG.debug("An invalid facet was provided: " + request.getQueryString(), e);
+        }
+
+        //Store the search state into the search request
+        searchRequest.setSearchState(searchState);
+
+        return searchRequest;
+    }
+
+    private Pattern oldFacetPath = Pattern.compile("(setFacet:)?path[,:]\"?\\d+,(uuid:[a-f0-9\\-]+)(!\\d+)?");
+    /**
+     * Extracts and sets paths which follow the previous syntax for backwards compatibility.
+     * Pulls from either the action or facet parameter, in that order
+     *
+     * @param request
+     * @param searchRequest
+     */
+    protected boolean extractOldPathSyntax(HttpServletRequest request, SearchRequest searchRequest) {
+        String action = request.getParameter("action");
+        boolean added = this.getOldPath(action, searchRequest);
+        if (added) {
+            return true;
+        }
+        String facet = request.getParameter("facets");
+        return this.getOldPath(facet, searchRequest);
+    }
+
+    protected boolean getOldPath(String parameter, SearchRequest searchRequest) {
+        if (parameter != null) {
+            Matcher matches = oldFacetPath.matcher(parameter);
+            if (matches.find()) {
+                searchRequest.setRootPid(matches.group(2));
+                searchRequest.setApplyCutoffs(matches.group(3) != null);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected SearchResultResponse getSearchResults(SearchRequest searchRequest) {
+        return queryLayer.getSearchResults(searchRequest);
+    }
+
+    public SearchActionService getSearchActionService() {
+        return searchActionService;
+    }
+
+    public void setSearchActionService(SearchActionService searchActionService) {
+        this.searchActionService = searchActionService;
+    }
+
+    public SolrQueryLayerService getQueryLayer() {
+        return queryLayer;
+    }
+
+    public void setQueryLayer(SolrQueryLayerService queryLayer) {
+        this.queryLayer = queryLayer;
+    }
+
+    public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
+        this.searchStateFactory = searchStateFactory;
+    }
 }

@@ -22,20 +22,20 @@ import org.jdom2.Document;
  * @date Jul 2, 2015
  */
 public class DatastreamDocument {
-	private final Document document;
-	private final String lastModified;
+    private final Document document;
+    private final String lastModified;
 
-	public DatastreamDocument(Document document, String lastModified) {
-		super();
-		this.document = document;
-		this.lastModified = lastModified;
-	}
+    public DatastreamDocument(Document document, String lastModified) {
+        super();
+        this.document = document;
+        this.lastModified = lastModified;
+    }
 
-	public Document getDocument() {
-		return document;
-	}
+    public Document getDocument() {
+        return document;
+    }
 
-	public String getLastModified() {
-		return lastModified;
-	}
+    public String getLastModified() {
+        return lastModified;
+    }
 }

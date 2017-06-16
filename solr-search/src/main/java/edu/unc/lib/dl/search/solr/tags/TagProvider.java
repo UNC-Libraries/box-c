@@ -18,6 +18,11 @@ package edu.unc.lib.dl.search.solr.tags;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public interface TagProvider {
-	public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups); 
+    public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups);
 }

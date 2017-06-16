@@ -50,40 +50,41 @@ import edu.unc.lib.dl.update.BulkMetadataUpdateJob;
  */
 @Controller
 public class ImportXMLController {
-	private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
-	
-	@Autowired
-	private net.greghaines.jesque.client.Client jesqueClient;
-	@Autowired
-	private String bulkMetadataQueueName;
-	@Autowired
-	private String dataDir;
-	private Path storagePath;
-	
-	@PostConstruct
-	public void init() throws IOException {
-		storagePath = Paths.get(dataDir + "/metadataImport/");
-		// Create the directory if it doesn't already exist
-		Files.createDirectories(storagePath);
-	}
-	
-	@RequestMapping(value = "importXML", method = RequestMethod.POST)
-	public @ResponseBody Object importXML(@RequestParam("file") MultipartFile xmlFile, HttpServletRequest request) throws Exception {
-		log.info("User {} has submitted a bulk metadata update package", GroupsThreadStore.getUsername());
-		Map<String, String> result = new HashMap<>();
-		
-		File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
-		FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
-		
-		String emailAddress = GroupsThreadStore.getEmail();
-		
-		Job job = new Job(BulkMetadataUpdateJob.class.getName(), null, emailAddress, GroupsThreadStore.getUsername(),
-				GroupsThreadStore.getGroups(), importFile.getAbsolutePath(), xmlFile.getOriginalFilename());
-		jesqueClient.enqueue(bulkMetadataQueueName, job);
-		
-		result.put("message", "Import of metadata has begun, " + emailAddress
-				+ " will be emailed when the update completes");
-		
-		return result;
-	}
+    private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
+
+    @Autowired
+    private net.greghaines.jesque.client.Client jesqueClient;
+    @Autowired
+    private String bulkMetadataQueueName;
+    @Autowired
+    private String dataDir;
+    private Path storagePath;
+
+    @PostConstruct
+    public void init() throws IOException {
+        storagePath = Paths.get(dataDir + "/metadataImport/");
+        // Create the directory if it doesn't already exist
+        Files.createDirectories(storagePath);
+    }
+
+    @RequestMapping(value = "importXML", method = RequestMethod.POST)
+    public @ResponseBody Object importXML(@RequestParam("file") MultipartFile xmlFile,
+            HttpServletRequest request) throws Exception {
+        log.info("User {} has submitted a bulk metadata update package", GroupsThreadStore.getUsername());
+        Map<String, String> result = new HashMap<>();
+
+        File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
+        FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
+
+        String emailAddress = GroupsThreadStore.getEmail();
+
+        Job job = new Job(BulkMetadataUpdateJob.class.getName(), null, emailAddress, GroupsThreadStore.getUsername(),
+                GroupsThreadStore.getGroups(), importFile.getAbsolutePath(), xmlFile.getOriginalFilename());
+        jesqueClient.enqueue(bulkMetadataQueueName, job);
+
+        result.put("message", "Import of metadata has begun, " + emailAddress
+                + " will be emailed when the update completes");
+
+        return result;
+    }
 }

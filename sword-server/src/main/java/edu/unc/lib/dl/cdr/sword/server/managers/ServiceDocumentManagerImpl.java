@@ -48,108 +48,110 @@ import edu.unc.lib.dl.util.PackagingType;
  * @author bbpennel
  */
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
-	private static final Logger LOG = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ServiceDocumentManagerImpl.class);
 
-	private Collection<PackagingType> acceptedPackaging;
+    private Collection<PackagingType> acceptedPackaging;
 
-	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
-			throws SwordError, SwordServerException, SwordAuthException {
+    public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
+            throws SwordError, SwordServerException, SwordAuthException {
 
-		ServiceDocument sd = new ServiceDocument();
-		SwordWorkspace workspace = new SwordWorkspace();
-		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
+        ServiceDocument sd = new ServiceDocument();
+        SwordWorkspace workspace = new SwordWorkspace();
+        SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		sd.setVersion(configImpl.getSwordVersion());
-		if (config.getMaxUploadSize() != -1)
-			sd.setMaxUploadSize(config.getMaxUploadSize());
+        sd.setVersion(configImpl.getSwordVersion());
+        if (config.getMaxUploadSize() != -1) {
+            sd.setMaxUploadSize(config.getMaxUploadSize());
+        }
 
-		String pidString = null;
-		PID pid = null;
-		if (sdUri != null) {
-			try {
-				pidString = sdUri.substring(sdUri.lastIndexOf("/") + 1);
-				pid = new PID(pidString);
-			} catch (IndexOutOfBoundsException e) {
-				// Ignore, if there is no trailing / then no pid is set.
-			}
-		}
-		if (pidString == null || "".equals(pidString.trim())) {
-			pid = collectionsPidObject;
-		}
+        String pidString = null;
+        PID pid = null;
+        if (sdUri != null) {
+            try {
+                pidString = sdUri.substring(sdUri.lastIndexOf("/") + 1);
+                pid = new PID(pidString);
+            } catch (IndexOutOfBoundsException e) {
+                // Ignore, if there is no trailing / then no pid is set.
+            }
+        }
+        if (pidString == null || "".equals(pidString.trim())) {
+            pid = collectionsPidObject;
+        }
 
-		if (!hasAccess(auth, pid, Permission.viewDescription, configImpl)) {
-			LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
-			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to access the service document for " + pid.getPid());
-		}
+        if (!hasAccess(auth, pid, Permission.viewDescription, configImpl)) {
+            LOG.debug("Insufficient privileges to access the service document for " + pid.getPid());
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+                    "Insufficient privileges to access the service document for " + pid.getPid());
+        }
 
-		LOG.debug("Retrieving service document for " + pid);
+        LOG.debug("Retrieving service document for " + pid);
 
-		List<SwordCollection> collections;
-		try {
-			collections = this.getImmediateContainerChildren(pid, auth, configImpl);
-			for (SwordCollection collection : collections) {
-				workspace.addCollection(collection);
-			}
-			sd.addWorkspace(workspace);
+        List<SwordCollection> collections;
+        try {
+            collections = this.getImmediateContainerChildren(pid, auth, configImpl);
+            for (SwordCollection collection : collections) {
+                workspace.addCollection(collection);
+            }
+            sd.addWorkspace(workspace);
 
-			return sd;
-		} catch (Exception e) {
-			LOG.error("An exception occurred while generating the service document for " + pid, e);
-			throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500,
-					"An unexpected exception occurred while retrieving service document.");
-		}
-	}
+            return sd;
+        } catch (Exception e) {
+            LOG.error("An exception occurred while generating the service document for " + pid, e);
+            throw new SwordError(ErrorURIRegistry.RETRIEVAL_EXCEPTION, 500,
+                    "An unexpected exception occurred while retrieving service document.");
+        }
+    }
 
-	/**
-	 * Retrieves a list of SwordCollection objects representing all the children containers of container pid which the
-	 * groups in groupList have curator access to.
-	 * 
-	 * @param pid
-	 *           pid of the container to retrieve the children of.
-	 * @param groupList
-	 *           list of permission groups
-	 * @param config
-	 * @return
-	 * @throws IOException
-	 */
-	protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
-			SwordConfigurationImpl config) throws IOException {
-		String query = this.readFileAsString("immediateContainerChildren.sparql");
-		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI());
-		List<SwordCollection> result = new ArrayList<SwordCollection>();
+    /**
+     * Retrieves a list of SwordCollection objects representing all the children containers of container pid which the
+     * groups in groupList have curator access to.
+     * 
+     * @param pid
+     *           pid of the container to retrieve the children of.
+     * @param groupList
+     *           list of permission groups
+     * @param config
+     * @return
+     * @throws IOException
+     */
+    protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
+            SwordConfigurationImpl config) throws IOException {
+        String query = this.readFileAsString("immediateContainerChildren.sparql");
+        query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI());
+        List<SwordCollection> result = new ArrayList<SwordCollection>();
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results")).get("bindings");
-		for (Map<?, ?> binding : bindings) {
-			SwordCollection collection = new SwordCollection();
-			PID containerPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
-			String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query)
+                .get("results")).get("bindings");
+        for (Map<?, ?> binding : bindings) {
+            SwordCollection collection = new SwordCollection();
+            PID containerPID = new PID((String) ((Map<?, ?>) binding.get("pid")).get("value"));
+            String slug = (String) ((Map<?, ?>) binding.get("slug")).get("value");
 
-			// Check that the user has curator access to this collection
-			if (hasAccess(auth, containerPID, Permission.addRemoveContents, config)) {
-				collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
-						+ containerPID.getPid());
-				collection.setTitle(slug);
-				collection.addAccepts("application/zip");
-				collection.addAccepts("text/xml");
-				collection.addAccepts("application/xml");
-				for (PackagingType packaging : acceptedPackaging) {
-					collection.addAcceptPackaging(packaging.getUri());
-				}
-				collection.setMediation(true);
-				//
-				IRI iri = new IRI(config.getSwordPath() + SwordConfigurationImpl.SERVICE_DOCUMENT_PATH + "/"
-						+ containerPID.getPid());
-				collection.addSubService(iri);
-				result.add(collection);
-			}
-		}
-		return result;
-	}
-	
-	public void setAcceptedPackaging(Map<PackagingType, DepositHandler> packageTypeHandlers) {
-		this.acceptedPackaging = packageTypeHandlers.keySet();
-	}
+            // Check that the user has curator access to this collection
+            if (hasAccess(auth, containerPID, Permission.addRemoveContents, config)) {
+                collection.setHref(config.getSwordPath() + SwordConfigurationImpl.COLLECTION_PATH + "/"
+                        + containerPID.getPid());
+                collection.setTitle(slug);
+                collection.addAccepts("application/zip");
+                collection.addAccepts("text/xml");
+                collection.addAccepts("application/xml");
+                for (PackagingType packaging : acceptedPackaging) {
+                    collection.addAcceptPackaging(packaging.getUri());
+                }
+                collection.setMediation(true);
+                //
+                IRI iri = new IRI(config.getSwordPath() + SwordConfigurationImpl.SERVICE_DOCUMENT_PATH + "/"
+                        + containerPID.getPid());
+                collection.addSubService(iri);
+                result.add(collection);
+            }
+        }
+        return result;
+    }
+
+    public void setAcceptedPackaging(Map<PackagingType, DepositHandler> packageTypeHandlers) {
+        this.acceptedPackaging = packageTypeHandlers.keySet();
+    }
 
 }

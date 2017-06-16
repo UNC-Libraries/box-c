@@ -189,7 +189,6 @@
 			<artifactId>bagit</artifactId>
 			<version>4.9.0</version>
 		</dependency>
-		
 		<!-- integration testing -->
 		<dependency>
 			<groupId>org.fcrepo</groupId>
@@ -313,6 +312,7 @@
 				<configuration>
 					<systemPropertyVariables>
 						<deposit.properties.uri>file:${project.basedir}/src/test/resources/deposit.properties</deposit.properties.uri>
+						<acl.properties.uri>file:etc/acl-config.properties</acl.properties.uri>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>

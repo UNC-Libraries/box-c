@@ -33,47 +33,47 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 
 public class BaseEmbeddedSolrTest extends Assert {
-	private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
+    private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
 
-	protected EmbeddedSolrServer server;
+    protected EmbeddedSolrServer server;
 
-	protected CoreContainer container;
+    protected CoreContainer container;
 
-	protected SolrUpdateDriver driver;
+    protected SolrUpdateDriver driver;
 
-	@Before
-	public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
 
-		File home = new File( "src/test/resources/config" );
-		File configFile = new File( home, "solr.xml" );
+        File home = new File( "src/test/resources/config" );
+        File configFile = new File( home, "solr.xml" );
 
-		System.setProperty("solr.data.dir", "src/test/resources/config/data/");
-		container = new CoreContainer("src/test/resources/config", configFile);
+        System.setProperty("solr.data.dir", "src/test/resources/config/data/");
+        container = new CoreContainer("src/test/resources/config", configFile);
 
-		server = new EmbeddedSolrServer(container, "access-master");
+        server = new EmbeddedSolrServer(container, "access-master");
 
-		driver = new SolrUpdateDriver();
-		driver.setSolrServer(server);
-		driver.setUpdateSolrServer(server);
-	}
+        driver = new SolrUpdateDriver();
+        driver.setSolrServer(server);
+        driver.setUpdateSolrServer(server);
+    }
 
-	protected SolrDocumentList getDocumentList(String query, String fieldList) throws SolrServerException {
-		ModifiableSolrParams params = new ModifiableSolrParams();
-		params.set("q", query);
-		params.set("fl", fieldList);
-		QueryResponse qResp = server.query(params);
-		return qResp.getResults();
-	}
+    protected SolrDocumentList getDocumentList(String query, String fieldList) throws SolrServerException {
+        ModifiableSolrParams params = new ModifiableSolrParams();
+        params.set("q", query);
+        params.set("fl", fieldList);
+        QueryResponse qResp = server.query(params);
+        return qResp.getResults();
+    }
 
-	protected SolrDocumentList getDocumentList() throws SolrServerException {
-		return getDocumentList("*:*", "id,resourceType,_version_");
-	}
+    protected SolrDocumentList getDocumentList() throws SolrServerException {
+        return getDocumentList("*:*", "id,resourceType,_version_");
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		server.shutdown();
-		log.debug("Cleaning up data directory");
-		File dataDir = new File("src/test/resources/config/data");
-		FileUtils.deleteDirectory(dataDir);
-	}
+    @After
+    public void tearDown() throws Exception {
+        server.shutdown();
+        log.debug("Cleaning up data directory");
+        File dataDir = new File("src/test/resources/config/data");
+        FileUtils.deleteDirectory(dataDir);
+    }
 }

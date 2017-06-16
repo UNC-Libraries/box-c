@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+/**
+ * @author bbpennel
+ */
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
@@ -26,72 +29,82 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 public class AccessUtil {
+    private AccessUtil() {
 
-	public static boolean permitDatastreamAccess(AccessGroupSet groups, String datastream, BriefObjectMetadata metadata) {
-		return AccessUtil.permitDatastreamAccess(groups, Datastream.getDatastream(datastream), metadata);
-	}
+    }
+    public static boolean permitDatastreamAccess(AccessGroupSet groups, String datastream,
+            BriefObjectMetadata metadata) {
+        return AccessUtil.permitDatastreamAccess(groups, Datastream.getDatastream(datastream), metadata);
+    }
 
-	public static boolean permitDatastreamAccess(AccessGroupSet groups, Datastream datastream,
-			BriefObjectMetadata metadata) {
-		if (groups == null || datastream == null || metadata == null)
-			return false;
+    public static boolean permitDatastreamAccess(AccessGroupSet groups, Datastream datastream,
+            BriefObjectMetadata metadata) {
+        if (groups == null || datastream == null || metadata == null) {
+            return false;
+        }
 
-		if (!metadata.getDatastreamObjects().contains(datastream.getName()))
-			return false;
-		
-		if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
-			return true;
-		}
-		
-		// Thumbnails are accessible to users with the list role
-		if ((Datastream.THUMB_LARGE.equals(datastream) || Datastream.THUMB_SMALL.equals(datastream)) 
-				&& metadata.getAccessControlBean().getRoles(groups).contains(UserRole.list)) {
-			return true;
-		}
+        if (!metadata.getDatastreamObjects().contains(datastream.getName())) {
+            return false;
+        }
 
-		return metadata.getAccessControlBean().hasPermission(groups,
-				Permission.getPermissionByDatastreamCategory(datastream.getCategory()));
-	}
-	
-	public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, String permissionName) {
-		if (metadata == null)
-			return false;
-		Permission permission = Permission.getPermission(permissionName);
-		if (permission == null)
-			return false;
-		return hasAccess(groups, metadata, permission);
-	}
-	
-	public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, Permission permission) {
-		if (metadata == null)
-			return false;
-		ObjectAccessControlsBean accessControlBean = metadata.getAccessControlBean();
-		if (metadata.getAccessControlBean() == null)
-			return false;
-		return accessControlBean.hasPermission(groups, permission);
-	}
+        if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+            return true;
+        }
 
-	/**
-	 * Returns true if the user has list and no higher permissions for the given object
-	 * 
-	 * @param groups group membership
-	 * @param metadata object to determine permissions against
-	 * @return
-	 */
-	public static boolean hasListAccessOnly(AccessGroupSet groups, BriefObjectMetadata metadata) {
-		if (groups.contains(AccessGroupConstants.ADMIN_GROUP))
-			return false;
-		
-		Set<UserRole> userRoles = metadata.getAccessControlBean().getRoles(groups);
-		if (userRoles.size() == 0 || !userRoles.contains(UserRole.list)) {
-			return false;
-		}
+        // Thumbnails are accessible to users with the list role
+        if ((Datastream.THUMB_LARGE.equals(datastream) || Datastream.THUMB_SMALL.equals(datastream))
+                && metadata.getAccessControlBean().getRoles(groups).contains(UserRole.list)) {
+            return true;
+        }
 
-		// If the user has view description, the lowest level patron access, then they have more than list
-		return !ObjectAccessControlsBean.hasPermission(groups, Permission.viewDescription, userRoles);
-	}
+        return metadata.getAccessControlBean().hasPermission(groups,
+                Permission.getPermissionByDatastreamCategory(datastream.getCategory()));
+    }
 
-	public static boolean hasPatronRoleForPublicGroup(BriefObjectMetadata metadata) {
-		return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP)).contains(UserRole.patron);
-	}
+    public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, String permissionName) {
+        if (metadata == null) {
+            return false;
+        }
+        Permission permission = Permission.getPermission(permissionName);
+        if (permission == null) {
+            return false;
+        }
+        return hasAccess(groups, metadata, permission);
+    }
+
+    public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, Permission permission) {
+        if (metadata == null) {
+            return false;
+        }
+        ObjectAccessControlsBean accessControlBean = metadata.getAccessControlBean();
+        if (metadata.getAccessControlBean() == null) {
+            return false;
+        }
+        return accessControlBean.hasPermission(groups, permission);
+    }
+
+    /**
+     * Returns true if the user has list and no higher permissions for the given object
+     *     * @param groups group membership
+     * @param metadata object to determine permissions against
+     * @return
+     */
+    public static boolean hasListAccessOnly(AccessGroupSet groups, BriefObjectMetadata metadata) {
+        if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+            return false;
+        }
+
+        Set<UserRole> userRoles = metadata.getAccessControlBean().getRoles(groups);
+        if (userRoles.size() == 0 || !userRoles.contains(UserRole.list)) {
+            return false;
+        }
+
+        // If the user has view description, the lowest level patron access, then they have more than list
+        return !ObjectAccessControlsBean.hasPermission(groups, Permission.viewDescription, userRoles);
+    }
+
+    public static boolean hasPatronRoleForPublicGroup(BriefObjectMetadata metadata) {
+        return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP))
+                .contains(UserRole.patron);
+    }
 }

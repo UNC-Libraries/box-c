@@ -23,20 +23,20 @@ import edu.unc.lib.dl.fedora.PID;
  * 
  */
 public abstract class Enhancement<Element> {
-	protected PID pid = null;
+     protected PID pid = null;
 
-	/**
-	 * @param pid
-	 */
-	public Enhancement(PID pid) {
-		this.pid = pid;
-	}
+     /**
+      * @param pid
+      */
+     public Enhancement(PID pid) {
+          this.pid = pid;
+     }
 
-	public PID getPid() {
-		return pid;
-	}
+     public PID getPid() {
+          return pid;
+     }
 
-	public Element call() throws EnhancementException {
-		return null;
-	}
+     public Element call() throws EnhancementException {
+          return null;
+     }
 }

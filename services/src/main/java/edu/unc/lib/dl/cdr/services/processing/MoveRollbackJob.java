@@ -39,59 +39,59 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  */
 public class MoveRollbackJob {
 
-	private static final Logger log = LoggerFactory.getLogger(MoveRollbackJob.class);
+    private static final Logger log = LoggerFactory.getLogger(MoveRollbackJob.class);
 
-	@Autowired
-	private TripleStoreQueryService queryService;
-	@Autowired
-	private DigitalObjectManager objectManager;
+    @Autowired
+    private TripleStoreQueryService queryService;
+    @Autowired
+    private DigitalObjectManager objectManager;
 
-	private final String REMOVE_CHILD_QUERY = "select $parent $child from <%1$s> where $parent <%2$s> $child;";
+    private final String REMOVE_CHILD_QUERY = "select $parent $child from <%1$s> where $parent <%2$s> $child;";
 
-	/**
-	 * Seeks out containers with leftover removed children placeholders and attempts to roll back move operations
-	 */
-	public void rollbackAllFailed() {
+    /**
+     * Seeks out containers with leftover removed children placeholders and attempts to roll back move operations
+     */
+    public void rollbackAllFailed() {
 
-		Map<PID, List<PID>> removedMap = getRemovedMap();
-		if (removedMap.size() == 0) {
-			log.info("No failed move operations were found");
-		}
-		log.info("Attempting to rollback move operations from {} sources", removedMap.size());
+        Map<PID, List<PID>> removedMap = getRemovedMap();
+        if (removedMap.size() == 0) {
+            log.info("No failed move operations were found");
+        }
+        log.info("Attempting to rollback move operations from {} sources", removedMap.size());
 
-		for (Entry<PID, List<PID>> removedEntry : removedMap.entrySet()) {
-			try {
-				objectManager.rollbackMove(removedEntry.getKey(), removedEntry.getValue());
-			} catch (IngestException e) {
-				log.error("Failed to rollback previous move operation from {}", removedEntry.getKey(), e);
-			}
-		}
+        for (Entry<PID, List<PID>> removedEntry : removedMap.entrySet()) {
+            try {
+                objectManager.rollbackMove(removedEntry.getKey(), removedEntry.getValue());
+            } catch (IngestException e) {
+                log.error("Failed to rollback previous move operation from {}", removedEntry.getKey(), e);
+            }
+        }
 
-	}
+    }
 
-	private Map<PID, List<PID>> getRemovedMap() {
-		String query = String.format(
-				REMOVE_CHILD_QUERY,
-				queryService.getResourceIndexModelUri(),
-				ContentModelHelper.Relationship.removedChild.toString());
+    private Map<PID, List<PID>> getRemovedMap() {
+        String query = String.format(
+                REMOVE_CHILD_QUERY,
+                queryService.getResourceIndexModelUri(),
+                ContentModelHelper.Relationship.removedChild.toString());
 
-		Map<PID, List<PID>> parentToRemoved = new HashMap<>();
-		List<List<String>> response = queryService.queryResourceIndex(query);
+        Map<PID, List<PID>> parentToRemoved = new HashMap<>();
+        List<List<String>> response = queryService.queryResourceIndex(query);
 
-		if (!response.isEmpty()) {
-			for (List<String> values : response) {
-				PID parent = new PID(values.get(0));
-				PID child = new PID(values.get(1));
+        if (!response.isEmpty()) {
+            for (List<String> values : response) {
+                PID parent = new PID(values.get(0));
+                PID child = new PID(values.get(1));
 
-				List<PID> removed = parentToRemoved.get(parent);
-				if (removed == null) {
-					removed = new ArrayList<>();
-					parentToRemoved.put(parent, removed);
-				}
-				removed.add(child);
-			}
-		}
-		return parentToRemoved;
-	}
+                List<PID> removed = parentToRemoved.get(parent);
+                if (removed == null) {
+                    removed = new ArrayList<>();
+                    parentToRemoved.put(parent, removed);
+                }
+                removed.add(child);
+            }
+        }
+        return parentToRemoved;
+    }
 
 }

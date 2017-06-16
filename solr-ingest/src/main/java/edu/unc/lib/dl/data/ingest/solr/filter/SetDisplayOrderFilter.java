@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,26 +24,26 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
  * Filter which retrieves an item's default display order from its parent if the parent has an MD_CONTENTS datastream.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
-public class SetDisplayOrderFilter extends AbstractIndexDocumentFilter {
-	private static final Logger log = LoggerFactory.getLogger(SetDisplayOrderFilter.class);
+public class SetDisplayOrderFilter implements IndexDocumentFilter {
+    private static final Logger log = LoggerFactory.getLogger(SetDisplayOrderFilter.class);
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        IndexDocumentBean idb = dip.getDocument();
 
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		IndexDocumentBean idb = dip.getDocument();
+        DocumentIndexingPackage parentDIP = dip.getParentDocument();
 
-		DocumentIndexingPackage parentDIP = dip.getParentDocument();
-
-		try {
-			Long order = parentDIP.getDisplayOrder(dip.getPid().getPid());
-			idb.setDisplayOrder(order);
-			if (order == null)
-				log.debug("No parent MD contents, display order is null");
-		} catch (NumberFormatException e) {
-			throw new IndexingException("Unable to parse order number for " + dip.getPid().getPid(), e);
-		}
-	}
+        try {
+            Long order = parentDIP.getDisplayOrder(dip.getPid().getPid());
+            idb.setDisplayOrder(order);
+            if (order == null) {
+                log.debug("No parent MD contents, display order is null");
+            }
+        } catch (NumberFormatException e) {
+            throw new IndexingException("Unable to parse order number for " + dip.getPid().getPid(), e);
+        }
+    }
 }

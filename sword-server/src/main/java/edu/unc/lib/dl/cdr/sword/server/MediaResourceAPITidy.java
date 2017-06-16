@@ -30,18 +30,18 @@ import org.swordapp.server.SwordConfiguration;
  */
 public class MediaResourceAPITidy extends MediaResourceAPI {
 
-	public MediaResourceAPITidy(MediaResourceManager mrm, SwordConfiguration config) {
-		super(mrm, config);
-	}
+    public MediaResourceAPITidy(MediaResourceManager mrm, SwordConfiguration config) {
+        super(mrm, config);
+    }
 
-	@Override
-	protected void copyInputToOutput(InputStream in, OutputStream out) throws IOException {
-		try {
-			super.copyInputToOutput(in, out);
-		} finally {
-			if (in != null){
-				in.close();
-			}
-		}
-	}
+    @Override
+    protected void copyInputToOutput(InputStream in, OutputStream out) throws IOException {
+        try {
+            super.copyInputToOutput(in, out);
+        } finally {
+            if (in != null) {
+                in.close();
+            }
+        }
+    }
 }

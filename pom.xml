@@ -90,6 +90,7 @@
 		<mock.server.version>3.10.2</mock.server.version>
 		<commons-io.version>2.4</commons-io.version>
 		<jena.version>3.1.1</jena.version>
+		<jena.fuseki.version>2.4.1</jena.fuseki.version>
 	</properties>
 
 	<distributionManagement>
@@ -229,6 +230,27 @@
 					<downloadSources>true</downloadSources>
 					<downloadJavadocs>true</downloadJavadocs>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>2.17</version>
+				<executions>
+					<execution>
+						<id>check-style</id>
+						<phase>verify</phase>
+						<configuration>
+							<configLocation>checkstyle.xml</configLocation>
+							<encoding>UTF-8</encoding>
+							<consoleOutput>true</consoleOutput>
+							<failsOnError>true</failsOnError>
+							<linkXRef>false</linkXRef>
+						</configuration>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<inherited>false</inherited>
@@ -513,6 +535,22 @@
 				<groupId>org.jdom</groupId>
 				<artifactId>jdom</artifactId>
 				<version>2.0.2</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.jena</groupId>
+				<artifactId>jena-fuseki-embedded</artifactId>
+				<version>${jena.fuseki.version}</version>
+				<scope>test</scope>
+				<exclusions>
+					<exclusion>
+						<groupId>org.slf4j</groupId>
+						<artifactId>slf4j-log4j12</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>log4j</groupId>
+						<artifactId>log4j</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

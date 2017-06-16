@@ -57,184 +57,193 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 public class MODSController extends AbstractSwordController {
-	private static final Logger log = LoggerFactory.getLogger(MODSController.class);
+    private static final Logger log = LoggerFactory.getLogger(MODSController.class);
 
-	@Autowired
-	private String swordUrl;
-	@Autowired
-	private String swordUsername;
-	@Autowired
-	private String swordPassword;
-	@Autowired
-	private TripleStoreQueryService tripleStoreQueryService;
-	
-	private Map<String, String> namespaces;
+    @Autowired
+    private String swordUrl;
+    @Autowired
+    private String swordUsername;
+    @Autowired
+    private String swordPassword;
+    @Autowired
+    private TripleStoreQueryService tripleStoreQueryService;
 
-	@Autowired
-	private VocabularyHelperManager vocabularies;
+    private Map<String, String> namespaces;
 
-	protected @Resource(name = "tagProviders")
-	List<TagProvider> tagProviders;
-	
-	@PostConstruct
-	public void init() {
-		namespaces = new HashMap<>();
-		namespaces.put(JDOMNamespaceUtil.MODS_V3_NS.getPrefix(), JDOMNamespaceUtil.MODS_V3_NS.getURI());
-	}
+    @Autowired
+    private VocabularyHelperManager vocabularies;
 
-	/**
-	 * Forwards user to the MODS editor page with the
-	 *
-	 * @param idPrefix
-	 * @param id
-	 * @param model
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
-	public String editDescription(@PathVariable("pid") String pid, Model model,
-			HttpServletRequest request) {
+    protected @Resource(name = "tagProviders")
+    List<TagProvider> tagProviders;
 
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		// Retrieve the record for the object being edited
-		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
-		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
-		if (resultObject == null) {
-			throw new InvalidRecordRequestException();
-		}
+    @PostConstruct
+    public void init() {
+        namespaces = new HashMap<>();
+        namespaces.put(JDOMNamespaceUtil.MODS_V3_NS.getPrefix(), JDOMNamespaceUtil.MODS_V3_NS.getURI());
+    }
 
-		model.addAttribute("resultObject", resultObject);
-		return "edit/description";
-	}
+    /**
+     * Forwards user to the MODS editor page with the
+     *
+     * @param idPrefix
+     * @param id
+     * @param model
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "describe/{pid}", method = RequestMethod.GET)
+    public String editDescription(@PathVariable("pid") String pid, Model model,
+            HttpServletRequest request) {
 
-	@RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET, produces = {"application/json; text/*; charset=UTF-8"})
-	public @ResponseBody
-	Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
-		response.setContentType("application/json");
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        // Retrieve the record for the object being edited
+        SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
+        BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
+        if (resultObject == null) {
+            throw new InvalidRecordRequestException();
+        }
 
-		Map<String, Object> results = new LinkedHashMap<String, Object>();
+        model.addAttribute("resultObject", resultObject);
+        return "edit/description";
+    }
 
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+    @RequestMapping(value = "describeInfo/{pid}", method = RequestMethod.GET,
+            produces = {"application/json; text/*; charset=UTF-8"})
+    public @ResponseBody
+    Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
+        response.setContentType("application/json");
 
-		// Retrieve the record for the object being edited
-		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
-		BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
-		if (resultObject == null) {
-			throw new InvalidRecordRequestException();
-		}
+        Map<String, Object> results = new LinkedHashMap<String, Object>();
 
-		for (TagProvider provider : tagProviders) {
-			provider.addTags(resultObject, accessGroups);
-		}
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
-		results.put("resultObject", resultObject);
-		
-		// Structure vocabulary info into a map usable by the editor
-		Map<String, Object> vocabConfigs = new HashMap<>();
-		// xpath selectors for each vocabulary
-		Map<String, String> selectors = new HashMap<>();
-		// map of vocabulary names to their term values
-		Map<String, Object> perVocabConfigs = new HashMap<>();
-		Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(pid));
-		if (helpers != null) {
-			for (VocabularyHelper helper : helpers) {
-				Map<String, Object> vocabConfig = new HashMap<>();
-				vocabConfig.put("values", helper.getVocabularyTerms());
-				perVocabConfigs.put(helper.getVocabularyURI(), vocabConfig);
-				if (helper.getSelector() != null) {
-					selectors.put(helper.getSelector(), helper.getVocabularyURI());
-				}
-			}
-		}
-		vocabConfigs.put("xpathSelectors", selectors);
-		vocabConfigs.put("vocabularies", perVocabConfigs);
-		vocabConfigs.put("xpathNamespaces", namespaces);
+        // Retrieve the record for the object being edited
+        SimpleIdRequest objectRequest = new SimpleIdRequest(pid, accessGroups);
+        BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
+        if (resultObject == null) {
+            throw new InvalidRecordRequestException();
+        }
 
-		results.put("vocabularyConfigs", vocabConfigs);
+        for (TagProvider provider : tagProviders) {
+            provider.addTags(resultObject, accessGroups);
+        }
 
-		return results;
-	}
+        results.put("resultObject", resultObject);
 
-	/**
-	 * Retrieves the MD_DESCRIPTIVE datastream, containing MODS, for this item if one is present. If it is not present,
-	 * then returns a blank MODS document.
-	 *
-	 * @param idPrefix
-	 * @param id
-	 * @return
-	 */
-	@RequestMapping(value = "{pid}/mods", method = RequestMethod.GET, produces = {"application/json; text/*; charset=UTF-8"})
-	public @ResponseBody
-	String getMods(@PathVariable("pid") String pid) {
-		String mods = "";
-		String dataUrl = swordUrl + "em/" + pid + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE;
+        // Structure vocabulary info into a map usable by the editor
+        Map<String, Object> vocabConfigs = new HashMap<>();
+        // xpath selectors for each vocabulary
+        Map<String, String> selectors = new HashMap<>();
+        // map of vocabulary names to their term values
+        Map<String, Object> perVocabConfigs = new HashMap<>();
+        Set<VocabularyHelper> helpers = vocabularies.getHelpers(new PID(pid));
+        if (helpers != null) {
+            for (VocabularyHelper helper : helpers) {
+                Map<String, Object> vocabConfig = new HashMap<>();
+                vocabConfig.put("values", helper.getVocabularyTerms());
+                perVocabConfigs.put(helper.getVocabularyURI(), vocabConfig);
+                if (helper.getSelector() != null) {
+                    selectors.put(helper.getSelector(), helper.getVocabularyURI());
+                }
+            }
+        }
+        vocabConfigs.put("xpathSelectors", selectors);
+        vocabConfigs.put("vocabularies", perVocabConfigs);
+        vocabConfigs.put("xpathNamespaces", namespaces);
 
-		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(null, swordUsername, swordPassword);
-		HttpGet method = new HttpGet(dataUrl);
+        results.put("vocabularyConfigs", vocabConfigs);
 
-		// Pass the users groups along with the request
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
+        return results;
+    }
 
-		try (CloseableHttpResponse httpResp = client.execute(method)) {
-			int statusCode = httpResp.getStatusLine().getStatusCode();
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				try {
-					mods = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
-				} catch (IOException e) {
-					log.info("Problem uploading MODS for " + pid + ": " + e.getMessage());
-				}
-			} else {
-				if (statusCode == HttpStatus.SC_BAD_REQUEST || statusCode == HttpStatus.SC_NOT_FOUND) {
-					// Ensure that the object actually exists
-					PID existingPID = tripleStoreQueryService.verify(new PID(pid));
-					if (existingPID == null) {
-						throw new Exception("Unable to retrieve MODS.  Object " + pid + " does not exist in the repository.");
-					}
-				} else {
-					throw new Exception("Failure to retrieve fedora content due to response of: "
-							+ httpResp.getStatusLine() + "\nPath was: " + method.getURI());
-				}
-			}
-		} catch (Exception e) {
-			log.error("Error while attempting to stream Fedora content for " + pid, e);
-		}
-		return mods;
-	}
+    /**
+     * Retrieves the MD_DESCRIPTIVE datastream, containing MODS, for this item if one is present. If it is not present,
+     * then returns a blank MODS document.
+     *
+     * @param idPrefix
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "{pid}/mods", method = RequestMethod.GET,
+            produces = {"application/json; text/*; charset=UTF-8"})
+    public @ResponseBody
+    String getMods(@PathVariable("pid") String pid) {
+        String mods = "";
+        String dataUrl = swordUrl + "em/" + pid + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE;
 
-	/**
-	 * Pushes a MODS document to the target object
-	 *
-	 * @param idPrefix
-	 * @param id
-	 * @param model
-	 * @param request
-	 * @return
-	 */
-	@RequestMapping(value = "describe/{pid}", method = RequestMethod.POST, produces = {"application/json; text/*; charset=UTF-8"})
-	public @ResponseBody
-	String updateDescription(@PathVariable("pid") String pid, Model model,
-			HttpServletRequest request, HttpServletResponse response) {
-		String datastream = Datastream.MD_DESCRIPTIVE.getName();
-		return this.updateDatastream(pid, datastream, request, response);
-	}
+        CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(null, swordUsername, swordPassword);
+        HttpGet method = new HttpGet(dataUrl);
 
-	public void setSwordUrl(String swordUrl) {
-		this.swordUrl = swordUrl;
-	}
+        // Pass the users groups along with the request
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
 
-	public void setSwordUsername(String swordUsername) {
-		this.swordUsername = swordUsername;
-	}
+        try (CloseableHttpResponse httpResp = client.execute(method)) {
+            int statusCode = httpResp.getStatusLine().getStatusCode();
 
-	public void setSwordPassword(String swordPassword) {
-		this.swordPassword = swordPassword;
-	}
+            if (statusCode == HttpStatus.SC_OK) {
+                try {
+                    mods = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
+                } catch (IOException e) {
+                    log.info("Problem uploading MODS for " + pid + ": " + e.getMessage());
+                }
+            } else {
+                if (statusCode == HttpStatus.SC_BAD_REQUEST || statusCode == HttpStatus.SC_NOT_FOUND) {
+                    // Ensure that the object actually exists
+                    PID existingPID = tripleStoreQueryService.verify(new PID(pid));
+                    if (existingPID == null) {
+                        throw new Exception(
+                                "Unable to retrieve MODS.  Object " + pid + " does not exist in the repository.");
+                    }
+                } else {
+                    throw new Exception("Failure to retrieve fedora content due to response of: "
+                            + httpResp.getStatusLine() + "\nPath was: " + method.getURI());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error while attempting to stream Fedora content for " + pid, e);
+        }
+        return mods;
+    }
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    /**
+     * Pushes a MODS document to the target object
+     *
+     * @param idPrefix
+     * @param id
+     * @param model
+     * @param request
+     * @return
+     */
+    @RequestMapping(value = "describe/{pid}", method = RequestMethod.POST,
+            produces = {"application/json; text/*; charset=UTF-8"})
+    public @ResponseBody
+    String updateDescription(@PathVariable("pid") String pid, Model model,
+            HttpServletRequest request, HttpServletResponse response) {
+        String datastream = Datastream.MD_DESCRIPTIVE.getName();
+        return this.updateDatastream(pid, datastream, request, response);
+    }
+
+    public void setSwordUrl(String swordUrl) {
+        this.swordUrl = swordUrl;
+    }
+
+    public void setSwordUsername(String swordUsername) {
+        this.swordUsername = swordUsername;
+    }
+
+    public void setSwordPassword(String swordPassword) {
+        this.swordPassword = swordPassword;
+    }
+
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 }

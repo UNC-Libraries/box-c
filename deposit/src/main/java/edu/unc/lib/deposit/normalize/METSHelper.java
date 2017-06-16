@@ -19,137 +19,143 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class METSHelper {
 
-	protected Document mets;
+    protected Document mets;
 
-	public METSHelper(Document mets) {
-		this.mets = mets;
-		initIdMap();
-	}
+    public METSHelper(Document mets) {
+        this.mets = mets;
+        initIdMap();
+    }
 
-	protected Map<String, Element> elementsById = null;
+    protected Map<String, Element> elementsById = null;
 
-	protected static String getPIDURI(Element div) {
-		String cids = div.getAttributeValue("CONTENTIDS");
-		for (String s : cids.split("\\s")) {
-			if (PIDs.get(s) != null) {
-				return s;
-			}
-		}
-		return null;
-	}
-	
-	protected static String getOriginalURI(Element div) {
-		String cids = div.getAttributeValue("CONTENTIDS");
-		for (String s : cids.split("\\s")) {
-			if (PIDs.get(s) != null) {
-				return s;
-			}
-		}
-		return null;
-	}
+    protected static String getPIDURI(Element div) {
+        String cids = div.getAttributeValue("CONTENTIDS");
+        for (String s : cids.split("\\s")) {
+            if (PIDs.get(s) != null) {
+                return s;
+            }
+        }
+        return null;
+    }
 
-	protected void initIdMap() {
-		elementsById = new HashMap<String, Element>();
-		Iterator<Element> els = (Iterator<Element>) mets.getRootElement()
-				.getDescendants(new ElementFilter());
-		while (els.hasNext()) {
-			Element el = els.next();
-			String id = el.getAttributeValue("ID");
-			if (id != null)
-				elementsById.put(id, el);
-		}
-	}
-	
-	protected Element getElement(String id) {
-		return elementsById.get(id);
-	}
+    protected static String getOriginalURI(Element div) {
+        String cids = div.getAttributeValue("CONTENTIDS");
+        for (String s : cids.split("\\s")) {
+            if (PIDs.get(s) != null) {
+                return s;
+            }
+        }
+        return null;
+    }
 
-	protected Iterator<Element> getDivs() {
-		// add deposit-level parent (represented as structMap or bag div)
-		Element topContainer = (Element) mets.getRootElement().getChild(
-				"structMap", METS_NS);
-		Element firstdiv = topContainer.getChild("div", METS_NS);
-		if (firstdiv != null
-				&& "Bag".equals(firstdiv.getAttributeValue("TYPE"))) {
-			topContainer = firstdiv;
-		}
-		Iterator<Element> divs = (Iterator<Element>) topContainer
-				.getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
-		return divs;
-	}
+    protected void initIdMap() {
+        elementsById = new HashMap<String, Element>();
+        Iterator<Element> els = (Iterator<Element>) mets.getRootElement()
+                .getDescendants(new ElementFilter());
+        while (els.hasNext()) {
+            Element el = els.next();
+            String id = el.getAttributeValue("ID");
+            if (id != null) {
+                elementsById.put(id, el);
+            }
+        }
+    }
 
-	protected Iterator<Element> getFptrs() {
-		Iterator<Element> fptrs = (Iterator<Element>) mets.getRootElement()
-				.getChild("structMap", METS_NS)
-				.getDescendants(new ElementFilter("fptr", JDOMNamespaceUtil.METS_NS));
-		return fptrs;
-	}
+    protected Element getElement(String id) {
+        return elementsById.get(id);
+    }
 
-	protected String getPIDURI(String id) {
-		return getPIDURI(elementsById.get(id));
-	}
+    protected Iterator<Element> getDivs() {
+        // add deposit-level parent (represented as structMap or bag div)
+        Element topContainer = (Element) mets.getRootElement().getChild(
+                "structMap", METS_NS);
+        Element firstdiv = topContainer.getChild("div", METS_NS);
+        if (firstdiv != null
+                && "Bag".equals(firstdiv.getAttributeValue("TYPE"))) {
+            topContainer = firstdiv;
+        }
+        Iterator<Element> divs = (Iterator<Element>) topContainer
+                .getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
+        return divs;
+    }
 
-	public void addFileAssociations(Model m, boolean prependDataPath) {
-		// for every fptr
-		Iterator<Element> fptrs = getFptrs();
-		while(fptrs.hasNext()) {
-			Element fptr = fptrs.next();
-			String fileId = fptr.getAttributeValue("FILEID");
-			Element div = fptr.getParentElement();
-			String pid = METSHelper.getPIDURI(div);
-			Element fileEl = getElement(fileId);
-			@SuppressWarnings("unused") // only 1 USE supported
-			String use = fileEl.getAttributeValue("USE"); // may be null
-			Element flocat = fileEl.getChild("FLocat", METS_NS);
-			String href = flocat.getAttributeValue("href", XLINK_NS);
-			if(prependDataPath && !href.contains(":")) {
-				href = "data/"+href;
-			}
-			Resource object = m.createResource(pid);
-			
-			// record object source data file
-			// only supporting one USE in fileSec, i.e. source data
-			
-			// record file location
-			m.add(object, CdrDeposit.stagingLocation, href);
-			
-			// record mimetype
-			if(fileEl.getAttributeValue("MIMETYPE") != null) {
-				m.add(object, CdrDeposit.mimetype, fileEl.getAttributeValue("MIMETYPE"));
-			}
-			
-			// record File checksum if supplied, we only support MD5 in Simple profile
-			if(fileEl.getAttributeValue("CHECKSUM") != null) {
-				m.add(object, CdrDeposit.md5sum, fileEl.getAttributeValue("CHECKSUM"));
-			}
-			
-			// record SIZE (bytes/octets)
-			if(fileEl.getAttributeValue("SIZE") != null) {
-				m.add(object, CdrDeposit.size, fileEl.getAttributeValue("SIZE"));
-			}
-			
-			// record CREATED (iso8601)
-			if(fileEl.getAttributeValue("CREATED") != null) {
-				m.add(object, CdrDeposit.createTime, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
-			}
-				
-		}
-	}
+    protected Iterator<Element> getFptrs() {
+        Iterator<Element> fptrs = (Iterator<Element>) mets.getRootElement()
+                .getChild("structMap", METS_NS)
+                .getDescendants(new ElementFilter("fptr", JDOMNamespaceUtil.METS_NS));
+        return fptrs;
+    }
 
-	public String getPIDURIForDIVID(String ref) {
-		if(ref.startsWith("#")) {
-			ref = ref.substring(1);
-		}
-		Iterator<Element> i = getDivs();
-		while(i.hasNext()) {
-			Element div = i.next();
-			if(ref.equals(div.getAttributeValue("ID"))) {
-				return getPIDURI(div);
-			}
-		}
-		return null;
-	}
+    protected String getPIDURI(String id) {
+        return getPIDURI(elementsById.get(id));
+    }
+
+    public void addFileAssociations(Model m, boolean prependDataPath) {
+        // for every fptr
+        Iterator<Element> fptrs = getFptrs();
+        while (fptrs.hasNext()) {
+            Element fptr = fptrs.next();
+            String fileId = fptr.getAttributeValue("FILEID");
+            Element div = fptr.getParentElement();
+            String pid = METSHelper.getPIDURI(div);
+            Element fileEl = getElement(fileId);
+            @SuppressWarnings("unused") // only 1 USE supported
+            String use = fileEl.getAttributeValue("USE"); // may be null
+            Element flocat = fileEl.getChild("FLocat", METS_NS);
+            String href = flocat.getAttributeValue("href", XLINK_NS);
+            if (prependDataPath && !href.contains(":")) {
+                href = "data/" + href;
+            }
+            Resource object = m.createResource(pid);
+
+            // record object source data file
+            // only supporting one USE in fileSec, i.e. source data
+
+            // record file location
+            m.add(object, CdrDeposit.stagingLocation, href);
+
+            // record mimetype
+            if (fileEl.getAttributeValue("MIMETYPE") != null) {
+                m.add(object, CdrDeposit.mimetype, fileEl.getAttributeValue("MIMETYPE"));
+            }
+
+            // record File checksum if supplied, we only support MD5 in Simple profile
+            if (fileEl.getAttributeValue("CHECKSUM") != null) {
+                m.add(object, CdrDeposit.md5sum, fileEl.getAttributeValue("CHECKSUM"));
+            }
+
+            // record SIZE (bytes/octets)
+            if (fileEl.getAttributeValue("SIZE") != null) {
+                m.add(object, CdrDeposit.size, fileEl.getAttributeValue("SIZE"));
+            }
+
+            // record CREATED (iso8601)
+            if (fileEl.getAttributeValue("CREATED") != null) {
+                m.add(object, CdrDeposit.createTime, fileEl.getAttributeValue("CREATED"), XSDDatatype.XSDdateTime);
+            }
+
+        }
+    }
+
+    public String getPIDURIForDIVID(String ref) {
+        if (ref.startsWith("#")) {
+            ref = ref.substring(1);
+        }
+        Iterator<Element> i = getDivs();
+        while (i.hasNext()) {
+            Element div = i.next();
+            if (ref.equals(div.getAttributeValue("ID"))) {
+                return getPIDURI(div);
+            }
+        }
+        return null;
+    }
 
 }

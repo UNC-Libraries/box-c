@@ -47,62 +47,63 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
  * 
  */
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
-	private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
+    private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
 
-	private Map<PackagingType, DepositHandler> packageHandlers;
-	private List<String> priorityDepositors;
+    private Map<PackagingType, DepositHandler> packageHandlers;
+    private List<String> priorityDepositors;
 
-	@Override
-	public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
-			SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
+    @Override
+    public DepositReceipt createNew(String collectionURI, Deposit deposit, AuthCredentials auth,
+            SwordConfiguration config) throws SwordError, SwordServerException, SwordAuthException {
 
-		log.debug("Preparing to do collection deposit to " + collectionURI);
-		if (collectionURI == null)
-			throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "No collection URI was provided");
+        log.debug("Preparing to do collection deposit to " + collectionURI);
+        if (collectionURI == null) {
+            throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404, "No collection URI was provided");
+        }
 
-		String depositor = auth.getUsername();
-		String owner = (auth.getOnBehalfOf() != null)? auth.getOnBehalfOf() : depositor;
+        String depositor = auth.getUsername();
+        String owner = (auth.getOnBehalfOf() != null) ? auth.getOnBehalfOf() : depositor;
 
-		SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
+        SwordConfigurationImpl configImpl = (SwordConfigurationImpl) config;
 
-		PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
+        PID containerPID = extractPID(collectionURI, SwordConfigurationImpl.COLLECTION_PATH + "/");
 
-		if (!hasAccess(auth, containerPID, Permission.addRemoveContents, configImpl)) {
-			throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
-					"Insufficient privileges to deposit to container " + containerPID.getPid());
-		}
+        if (!hasAccess(auth, containerPID, Permission.addRemoveContents, configImpl)) {
+            throw new SwordError(ErrorURIRegistry.INSUFFICIENT_PRIVILEGES, 403,
+                    "Insufficient privileges to deposit to container " + containerPID.getPid());
+        }
 
-		// Get the enum for the provided packaging type. Null can be a legitimate type
-		PackagingType type = PackagingType.getPackagingType(deposit.getPackaging());
-		try {
-			DepositHandler depositHandler = packageHandlers.get(type);
-			// Check to see if the depositor is in the list to receive higher priority
-			Priority priority = priorityDepositors.contains(depositor)? Priority.high : Priority.normal;
-			
-			return depositHandler.doDeposit(containerPID, deposit, type, priority, config, depositor, owner);
-		} catch (JDOMException e) {
-			log.warn("Failed to deposit", e);
-			throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
-					"A problem occurred while attempting to parse your deposit: " + e.getMessage());
-		} catch (IngestException e) {
-			log.warn("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
-					+ deposit.getPackaging(), e);
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-					"An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
-							+ deposit.getPackaging(), e);
-		} catch (SwordError e) {
-			throw e;
-		} catch (Exception e) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-					"Unexpected exception occurred while attempting to perform a METS deposit", e);
-		}
-	}
+        // Get the enum for the provided packaging type. Null can be a legitimate type
+        PackagingType type = PackagingType.getPackagingType(deposit.getPackaging());
+        try {
+            DepositHandler depositHandler = packageHandlers.get(type);
+            // Check to see if the depositor is in the list to receive higher priority
+            Priority priority = priorityDepositors.contains(depositor) ? Priority.high : Priority.normal;
 
-	public void setPackageHandlers(Map<PackagingType, DepositHandler> packageHandlers) {
-		this.packageHandlers = packageHandlers;
-	}
-	
-	public void setPriorityDepositors(String depositors) {
-		priorityDepositors = Arrays.asList(depositors.split(","));
-	}
+            return depositHandler.doDeposit(containerPID, deposit, type, priority, config, depositor, owner);
+        } catch (JDOMException e) {
+            log.warn("Failed to deposit", e);
+            throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
+                    "A problem occurred while attempting to parse your deposit: " + e.getMessage());
+        } catch (IngestException e) {
+            log.warn("An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
+                    + deposit.getPackaging(), e);
+            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
+                    "An exception occurred while attempting to ingest package " + deposit.getFilename() + " of type "
+                            + deposit.getPackaging(), e);
+        } catch (SwordError e) {
+            throw e;
+        } catch (Exception e) {
+            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
+                    "Unexpected exception occurred while attempting to perform a METS deposit", e);
+        }
+    }
+
+    public void setPackageHandlers(Map<PackagingType, DepositHandler> packageHandlers) {
+        this.packageHandlers = packageHandlers;
+    }
+
+    public void setPriorityDepositors(String depositors) {
+        priorityDepositors = Arrays.asList(depositors.split(","));
+    }
 }

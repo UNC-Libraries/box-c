@@ -28,32 +28,34 @@ import edu.unc.lib.dl.fedora.PID;
  * @date Jun 29, 2015
  */
 public class UpdateTreeSetAction extends UpdateTreeAction {
-	
-	private static final Logger log = LoggerFactory.getLogger(UpdateTreeSetAction.class);
 
-	@Override
-	public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-		if (!(updateRequest instanceof ChildSetRequest))
-			throw new IndexingException("ChildSetRequest required to perform TreeSet update, received "
-					+ updateRequest.getClass().getName());
-		ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
+    private static final Logger log = LoggerFactory.getLogger(UpdateTreeSetAction.class);
 
-		// Calculate total number of objects to be indexed
-		int indexTargetTotal = 0;
-		for (PID pid : childSetRequest.getChildren()) {
-			indexTargetTotal += this.countDescendants(pid) + 1;
-		}
-		updateRequest.setChildrenPending(indexTargetTotal);
+    @Override
+    public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
+        if (!(updateRequest instanceof ChildSetRequest)) {
+            throw new IndexingException("ChildSetRequest required to perform TreeSet update, received "
+                    + updateRequest.getClass().getName());
+        }
+        ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
 
-		// Index the tree for each pid in the set
-		RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
-		for (PID pid : childSetRequest.getChildren()) {
-			treeIndexer.index(pid, null);
-		}
+        // Calculate total number of objects to be indexed
+        int indexTargetTotal = 0;
+        for (PID pid : childSetRequest.getChildren()) {
+            indexTargetTotal += this.countDescendants(pid) + 1;
+        }
+        updateRequest.setChildrenPending(indexTargetTotal);
 
-		if (log.isDebugEnabled())
-			log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
-					updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
-					(System.currentTimeMillis() - updateRequest.getTimeStarted()) });
-	}
+        // Index the tree for each pid in the set
+        RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
+        for (PID pid : childSetRequest.getChildren()) {
+            treeIndexer.index(pid, null);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
+                    updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
+                    (System.currentTimeMillis() - updateRequest.getTimeStarted()) });
+        }
+    }
 }

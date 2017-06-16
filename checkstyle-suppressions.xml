@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suppressions PUBLIC
+     "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+     "http://www.puppycrawl.com/dtds/suppressions_1_1.dtd">
+<suppressions>
+    <suppress checks=".*" files="/fcrepo-cdr-fesl/" />
+    <suppress checks=".*" files="/fcrepo-irods-storage/" />
+    <suppress checks=".*" files="/jaxb/" />
+    <suppress checks="JavadocMethod" files=".*\.java$" />
+    <suppress checks="JavadocPackage" files=".*\.java$" />
+    <suppress checks="JavadocVariable" files=".*\.java$" />
+    <suppress checks="JavadocType" files=".*\.java$" />
+    <suppress checks="JavadocStyleCheck" files=".*\.java$" />
+    <suppress checks="IndentationCheck" files=".*\.java$" />
+</suppressions>

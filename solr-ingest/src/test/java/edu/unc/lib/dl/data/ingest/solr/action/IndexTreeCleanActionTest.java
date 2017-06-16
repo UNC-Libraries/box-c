@@ -41,60 +41,60 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  */
 public class IndexTreeCleanActionTest {
 
-	@Mock
-	private TripleStoreQueryService tsqs;
-	@Mock
-	private SolrUpdateDriver driver;
-	@Mock
-	private DocumentIndexingPipeline pipeline;
-	@Mock
-	private DeleteSolrTreeAction deleteAction;
-	@Mock
-	private SolrUpdateRequest request;
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
+    @Mock
+    private TripleStoreQueryService tsqs;
+    @Mock
+    private SolrUpdateDriver driver;
+    @Mock
+    private DocumentIndexingPipeline pipeline;
+    @Mock
+    private DeleteSolrTreeAction deleteAction;
+    @Mock
+    private SolrUpdateRequest request;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackageFactory factory;
 
-	private IndexTreeCleanAction action;
+    private IndexTreeCleanAction action;
 
-	@Before
-	public void setup() throws Exception {
+    @Before
+    public void setup() throws Exception {
 
-		initMocks(this);
+        initMocks(this);
 
-		when(request.getPid()).thenReturn(new PID("pid"));
-		
-		action = new IndexTreeCleanAction();
-		action.setDeleteAction(deleteAction);
-		action.setTsqs(tsqs);
-		action.setPipeline(pipeline);
-		action.setSolrUpdateDriver(driver);
-		action.setCollectionsPid(new PID("uuid:1"));
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-		action.setFactory(factory);
-		action.init();
-	}
+        when(request.getPid()).thenReturn(new PID("pid"));
 
-	@Test
-	public void testPerformAction() throws Exception {
+        action = new IndexTreeCleanAction();
+        action.setDeleteAction(deleteAction);
+        action.setTsqs(tsqs);
+        action.setPipeline(pipeline);
+        action.setSolrUpdateDriver(driver);
+        action.setCollectionsPid(new PID("uuid:1"));
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
+        action.setFactory(factory);
+        action.init();
+    }
 
-		action.performAction(request);
+    @Test
+    public void testPerformAction() throws Exception {
 
-		verify(deleteAction).performAction(any(SolrUpdateRequest.class));
-		verify(driver).commit();
-		verify(driver).addDocument(any(IndexDocumentBean.class));
-	}
+        action.performAction(request);
 
-	@Test
-	public void testPerformActionChangeAddMode() throws Exception {
+        verify(deleteAction).performAction(any(SolrUpdateRequest.class));
+        verify(driver).commit();
+        verify(driver).addDocument(any(IndexDocumentBean.class));
+    }
 
-		action.setAddDocumentMode(false);
+    @Test
+    public void testPerformActionChangeAddMode() throws Exception {
 
-		action.performAction(request);
+        action.setAddDocumentMode(false);
 
-		// IndexTreeClean must be performed in addMode
-		verify(driver).addDocument(any(IndexDocumentBean.class));
-		verify(driver, never()).updateDocument(anyString(), any(IndexDocumentBean.class));
-	}
+        action.performAction(request);
+
+        // IndexTreeClean must be performed in addMode
+        verify(driver).addDocument(any(IndexDocumentBean.class));
+        verify(driver, never()).updateDocument(anyString(), any(IndexDocumentBean.class));
+    }
 }

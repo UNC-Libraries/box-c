@@ -23,121 +23,125 @@ import edu.unc.lib.dl.util.IndexingActionType;
  * @author bbpennel
  */
 public class SolrUpdateRequest extends UpdateNodeRequest {
-	private static final long serialVersionUID = 1L;
-	protected PID pid;
-	protected String targetLabel;
-	protected IndexingActionType action; 
-	protected SolrUpdateRequest linkedRequest;
-	
-	public SolrUpdateRequest(String pid, IndexingActionType action) {
-		this(pid, action, null, null);
-	}
-	
-	public SolrUpdateRequest(String pid, IndexingActionType action, String messageID) {
-		this(pid, action, messageID, null);
-	}
-	
-	public SolrUpdateRequest(PID pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
-		super(messageID);
-		if (pid == null || action == null)
-			throw new IllegalArgumentException("Both a target pid and an action are required.");
-		this.pid = pid;
-		this.action = action;
-		linkedRequest = null;
-	}
-	
-	public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent){
-		this(new PID(pid), action, messageID, parent);
-	}
-	
-	public SolrUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
-		this(new PID(pid), action, linkedRequest, messageID, parent);
-	}
-	
-	public SolrUpdateRequest(PID pid, IndexingActionType action, SolrUpdateRequest linkedRequest, String messageID, UpdateNodeRequest parent){
-		this(pid, action, messageID, parent);
-		this.setLinkedRequest(linkedRequest);
-	}
-	
-	public PID getPid() {
-		return pid;
-	}
+    private static final long serialVersionUID = 1L;
+    protected PID pid;
+    protected String targetLabel;
+    protected IndexingActionType action;
+    protected SolrUpdateRequest linkedRequest;
 
-	public void setPid(String pid) {
-		this.pid = new PID(pid);
-	}
-	
-	public IndexingActionType getUpdateAction() {
-		return action;
-	}
+    public SolrUpdateRequest(String pid, IndexingActionType action) {
+        this(pid, action, null, null);
+    }
 
-	public void setUpdateAction(IndexingActionType action) {
-		this.action = action;
-	}
-	
-	public boolean isBlocked(){
-		return false;
-	}
-	
-	public void linkedRequestEstablished(SolrUpdateRequest linkerRequest){
-	}
-	
-	public void setLinkedRequest(SolrUpdateRequest linkedRequest){
-		this.linkedRequest = linkedRequest;
-		if (linkedRequest != null)
-			linkedRequest.linkedRequestEstablished(this);
-	}
-	
-	public SolrUpdateRequest getLinkedRequest(){
-		return this.linkedRequest;
-	}
-	
-	public void linkedRequestCompleted(SolrUpdateRequest completedRequest){
-	}
-	
-	public void requestCompleted(){
-		super.requestCompleted();
-		if (linkedRequest != null){
-			linkedRequest.linkedRequestCompleted(this);
-		}
-	}
+    public SolrUpdateRequest(String pid, IndexingActionType action, String messageID) {
+        this(pid, action, messageID, null);
+    }
 
-	public void setMessageID(String messageID) {
-		this.messageID = messageID;
-	}
-	
-	@Override
-	public String getTargetID() {
-		return pid.getPid();
-	}
+    public SolrUpdateRequest(PID pid, IndexingActionType action, String messageID, UpdateNodeRequest parent) {
+        super(messageID);
+        if (pid == null || action == null) {
+            throw new IllegalArgumentException("Both a target pid and an action are required.");
+        }
+        this.pid = pid;
+        this.action = action;
+        linkedRequest = null;
+    }
 
-	@Override
-	public String getTargetLabel() {
-		return targetLabel;
-	}
+    public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent) {
+        this(new PID(pid), action, messageID, parent);
+    }
 
-	@Override
-	public void setTargetLabel(String targetLabel) {
-		this.targetLabel = targetLabel;
-	}
+    public SolrUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest,
+            String messageID, UpdateNodeRequest parent) {
+        this(new PID(pid), action, linkedRequest, messageID, parent);
+    }
 
-	@Override
-	public String getAction() {
-		return this.action.getName();
-	}
+    public SolrUpdateRequest(PID pid, IndexingActionType action, SolrUpdateRequest linkedRequest,
+            String messageID, UpdateNodeRequest parent) {
+        this(pid, action, messageID, parent);
+        this.setLinkedRequest(linkedRequest);
+    }
 
-	@Override
-	public String getNamespace() {
-		return IndexingActionType.namespace;
-	}
+    public PID getPid() {
+        return pid;
+    }
 
-	@Override
-	public String getQualifiedAction() {
-		return this.action.getURI().toString();
-	}
+    public void setPid(String pid) {
+        this.pid = new PID(pid);
+    }
 
-	@Override
-	public long getTimeCreated() {
-		return timeCreated;
-	}
+    public IndexingActionType getUpdateAction() {
+        return action;
+    }
+
+    public void setUpdateAction(IndexingActionType action) {
+        this.action = action;
+    }
+
+    public boolean isBlocked() {
+        return false;
+    }
+
+    public void linkedRequestEstablished(SolrUpdateRequest linkerRequest) {
+    }
+
+    public void setLinkedRequest(SolrUpdateRequest linkedRequest) {
+        this.linkedRequest = linkedRequest;
+        if (linkedRequest != null) {
+            linkedRequest.linkedRequestEstablished(this);
+        }
+    }
+
+    public SolrUpdateRequest getLinkedRequest() {
+        return this.linkedRequest;
+    }
+
+    public void linkedRequestCompleted(SolrUpdateRequest completedRequest) {
+    }
+
+    public void requestCompleted() {
+        super.requestCompleted();
+        if (linkedRequest != null) {
+            linkedRequest.linkedRequestCompleted(this);
+        }
+    }
+
+    public void setMessageID(String messageID) {
+        this.messageID = messageID;
+    }
+
+    @Override
+    public String getTargetID() {
+        return pid.getPid();
+    }
+
+    @Override
+    public String getTargetLabel() {
+        return targetLabel;
+    }
+
+    @Override
+    public void setTargetLabel(String targetLabel) {
+        this.targetLabel = targetLabel;
+    }
+
+    @Override
+    public String getAction() {
+        return this.action.getName();
+    }
+
+    @Override
+    public String getNamespace() {
+        return IndexingActionType.namespace;
+    }
+
+    @Override
+    public String getQualifiedAction() {
+        return this.action.getURI().toString();
+    }
+
+    @Override
+    public long getTimeCreated() {
+        return timeCreated;
+    }
 }

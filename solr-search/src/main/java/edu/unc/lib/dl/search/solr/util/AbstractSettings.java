@@ -27,119 +27,122 @@ import java.util.Set;
 
 /**
  * Base class for settings configuration objects.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public abstract class AbstractSettings {
 
-	/**
-	 * Creates a hashmap with the key and values flipped Note: This method is only safe for 1:1 maps. If there are
-	 * collisions, the last one will win.
-	 * 
-	 * @param map
-	 * @return
-	 */
-	protected HashMap<String, String> getInvertedHashMap(Map<String, String> map) {
-		HashMap<String, String> inverted = new HashMap<String, String>();
-		Iterator<Map.Entry<String, String>> pairIt = map.entrySet().iterator();
-		while (pairIt.hasNext()) {
-			Map.Entry<String, String> pair = pairIt.next();
-			// Prevent the search form of a field from becoming the representative field
-			if (!pair.getKey().endsWith("_LC")) {
-				inverted.put(pair.getValue(), pair.getKey());
-			}
-		}
-		return inverted;
-	}
+    /**
+     * Creates a hashmap with the key and values flipped Note: This method is only safe for 1:1 maps. If there are
+     * collisions, the last one will win.
+     *
+     * @param map
+     * @return
+     */
+    protected HashMap<String, String> getInvertedHashMap(Map<String, String> map) {
+        HashMap<String, String> inverted = new HashMap<String, String>();
+        Iterator<Map.Entry<String, String>> pairIt = map.entrySet().iterator();
+        while (pairIt.hasNext()) {
+            Map.Entry<String, String> pair = pairIt.next();
+            // Prevent the search form of a field from becoming the representative field
+            if (!pair.getKey().endsWith("_LC")) {
+                inverted.put(pair.getValue(), pair.getKey());
+            }
+        }
+        return inverted;
+    }
 
-	protected String getKey(Map<String, String> map, String value) {
-		Iterator<Map.Entry<String, String>> pairIt = map.entrySet().iterator();
-		while (pairIt.hasNext()) {
-			Map.Entry<String, String> pair = pairIt.next();
-			if (pair.getValue().equals(value))
-				return pair.getKey();
-		}
-		return null;
-	}
+    protected String getKey(Map<String, String> map, String value) {
+        Iterator<Map.Entry<String, String>> pairIt = map.entrySet().iterator();
+        while (pairIt.hasNext()) {
+            Map.Entry<String, String> pair = pairIt.next();
+            if (pair.getValue().equals(value)) {
+                return pair.getKey();
+            }
+        }
+        return null;
+    }
 
-	protected void populateMapFromProperty(String propertyPrefix, Map<String, String> map, Properties properties) {
-		Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
-		while (propIt.hasNext()) {
-			Map.Entry<Object, Object> propEntry = propIt.next();
-			String propertyKey = (String) propEntry.getKey();
+    protected void populateMapFromProperty(String propertyPrefix, Map<String, String> map, Properties properties) {
+        Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
+        while (propIt.hasNext()) {
+            Map.Entry<Object, Object> propEntry = propIt.next();
+            String propertyKey = (String) propEntry.getKey();
 
-			// Field name mappings
-			if (propertyKey.indexOf(propertyPrefix) == 0) {
-				map.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1), (String) propEntry.getValue());
-			}
-		}
-	}
-	
-	protected void populateListMapFromProperty(String propertyPrefix, Map<String, List<String>> map, Properties properties) {
-		Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
-		while (propIt.hasNext()) {
-			Map.Entry<Object, Object> propEntry = propIt.next();
-			String propertyKey = (String) propEntry.getKey();
+            // Field name mappings
+            if (propertyKey.indexOf(propertyPrefix) == 0) {
+                map.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1), (String) propEntry.getValue());
+            }
+        }
+    }
 
-			// Field name mappings
-			if (propertyKey.indexOf(propertyPrefix) == 0) {
-				String key = propertyKey.substring(propertyKey.lastIndexOf(".") + 1);
-				List<String> values = Arrays.asList(((String)propEntry.getValue()).split(","));
-				map.put(key, values);
-			}
-		}
-	}
+    protected void populateListMapFromProperty(String propertyPrefix, Map<String, List<String>> map,
+            Properties properties) {
+        Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
+        while (propIt.hasNext()) {
+            Map.Entry<Object, Object> propEntry = propIt.next();
+            String propertyKey = (String) propEntry.getKey();
 
-	protected void populateClassMapFromProperty(String propertyPrefix, String packagePath, Map<String, Class<?>> map, Properties properties) throws ClassNotFoundException {
-		Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
-		while (propIt.hasNext()) {
-			Map.Entry<Object, Object> propEntry = propIt.next();
-			String propertyKey = (String) propEntry.getKey();
+            // Field name mappings
+            if (propertyKey.indexOf(propertyPrefix) == 0) {
+                String key = propertyKey.substring(propertyKey.lastIndexOf(".") + 1);
+                List<String> values = Arrays.asList(((String)propEntry.getValue()).split(","));
+                map.put(key, values);
+            }
+        }
+    }
 
-			// Field name mappings
-			if (propertyKey.indexOf(propertyPrefix) == 0) {
-				map.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1),
-						Class.forName(packagePath + propEntry.getValue()));
-			}
-		}
-	}
+    protected void populateClassMapFromProperty(String propertyPrefix, String packagePath,
+            Map<String, Class<?>> map, Properties properties) throws ClassNotFoundException {
+        Iterator<Map.Entry<Object, Object>> propIt = properties.entrySet().iterator();
+        while (propIt.hasNext()) {
+            Map.Entry<Object, Object> propEntry = propIt.next();
+            String propertyKey = (String) propEntry.getKey();
 
-	/**
-	 * Populates a collection object with all entries in the string array generated by splitting the value of the
-	 * property provided, if it matches the property name provided.
-	 * 
-	 * @param propertyName
-	 * @param c
-	 * @param propEntry
-	 * @param delimiter
-	 */
-	protected void populateCollectionFromProperty(String propertyName, Collection<String> c, Properties properties,
-			String delimiter) {
-		String value = properties.getProperty(propertyName, null);
-		if (value != null) {
-			String searchable[] = value.split(delimiter);
-			for (String field : searchable) {
-				c.add(field);
-			}
-		}
-	}
+            // Field name mappings
+            if (propertyKey.indexOf(propertyPrefix) == 0) {
+                map.put(propertyKey.substring(propertyKey.lastIndexOf(".") + 1),
+                        Class.forName(packagePath + propEntry.getValue()));
+            }
+        }
+    }
 
-	protected Collection<String> getUnmodifiableCollectionFromProperty(String propertyName, Collection<String> c,
-			Properties properties, String delimiter) {
-		populateCollectionFromProperty(propertyName, c, properties, delimiter);
-		return Collections.unmodifiableCollection(c);
-	}
+    /**
+     * Populates a collection object with all entries in the string array generated by splitting the value of the
+     * property provided, if it matches the property name provided.
+     *
+     * @param propertyName
+     * @param c
+     * @param propEntry
+     * @param delimiter
+     */
+    protected void populateCollectionFromProperty(String propertyName, Collection<String> c, Properties properties,
+            String delimiter) {
+        String value = properties.getProperty(propertyName, null);
+        if (value != null) {
+            String searchable[] = value.split(delimiter);
+            for (String field : searchable) {
+                c.add(field);
+            }
+        }
+    }
 
-	protected Set<String> getUnmodifiableSetFromProperty(String propertyName, Set<String> c, Properties properties,
-			String delimiter) {
-		populateCollectionFromProperty(propertyName, c, properties, delimiter);
-		return Collections.unmodifiableSet(c);
-	}
+    protected Collection<String> getUnmodifiableCollectionFromProperty(String propertyName, Collection<String> c,
+            Properties properties, String delimiter) {
+        populateCollectionFromProperty(propertyName, c, properties, delimiter);
+        return Collections.unmodifiableCollection(c);
+    }
 
-	protected Map<String, String> getUnmodifiableMapFromProperty(String propertyPrefix, Map<String, String> map,
-			Properties properties) {
-		populateMapFromProperty(propertyPrefix, map, properties);
-		return Collections.unmodifiableMap(map);
-	}
+    protected Set<String> getUnmodifiableSetFromProperty(String propertyName, Set<String> c, Properties properties,
+            String delimiter) {
+        populateCollectionFromProperty(propertyName, c, properties, delimiter);
+        return Collections.unmodifiableSet(c);
+    }
+
+    protected Map<String, String> getUnmodifiableMapFromProperty(String propertyPrefix, Map<String, String> map,
+            Properties properties) {
+        populateMapFromProperty(propertyPrefix, map, properties);
+        return Collections.unmodifiableMap(map);
+    }
 }

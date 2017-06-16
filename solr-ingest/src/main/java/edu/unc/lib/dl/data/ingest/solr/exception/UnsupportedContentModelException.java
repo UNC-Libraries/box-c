@@ -15,11 +15,16 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.exception;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class UnsupportedContentModelException extends IndexingException {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public UnsupportedContentModelException(String message) {
-		super(message);
-	}
+    public UnsupportedContentModelException(String message) {
+        super(message);
+    }
 
 }

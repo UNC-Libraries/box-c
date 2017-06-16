@@ -58,159 +58,168 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 public class AccessControlController extends AbstractSwordController {
-	private static final Logger log = LoggerFactory.getLogger(AccessControlController.class);
+    private static final Logger log = LoggerFactory.getLogger(AccessControlController.class);
 
-	@Autowired
-	SolrSettings solrSettings;
-	@Autowired
-	private String swordUrl;
-	@Autowired
-	private String swordUsername;
-	@Autowired
-	private String swordPassword;
+    @Autowired
+    SolrSettings solrSettings;
+    @Autowired
+    private String swordUrl;
+    @Autowired
+    private String swordUsername;
+    @Autowired
+    private String swordPassword;
 
-	private final List<String> targetResultFields = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.TITLE.name(),
-			SearchFieldKeys.STATUS.name(), SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.ANCESTOR_PATH.name());
+    private final List<String> targetResultFields = Arrays.asList(SearchFieldKeys.ID.name(),
+            SearchFieldKeys.TITLE.name(),  SearchFieldKeys.STATUS.name(),
+            SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.ANCESTOR_PATH.name());
 
-	private final List<String> parentResultFields = Arrays.asList(SearchFieldKeys.ID.name(), SearchFieldKeys.STATUS.name(),
-			SearchFieldKeys.ROLE_GROUP.name());
-	
-	private String[] accessGroupFields;
-	
-	@PostConstruct
-	public void init() {
-		accessGroupFields = new String[] { solrSettings.getFieldName(SearchFieldKeys.ADMIN_GROUP.name()),
-				solrSettings.getFieldName(SearchFieldKeys.READ_GROUP.name()) };
-	}
+    private final List<String> parentResultFields = Arrays.asList(SearchFieldKeys.ID.name(),
+            SearchFieldKeys.STATUS.name(), SearchFieldKeys.ROLE_GROUP.name());
 
-	@RequestMapping(value = "acl/{pid}", method = RequestMethod.GET)
-	public String getAccessControl(@PathVariable("pid") String pid, Model model,
-			HttpServletResponse response) {
-		model.addAttribute("pid", pid);
+    private String[] accessGroupFields;
 
-		// Retrieve ancestor information about the targeted object
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		SimpleIdRequest objectRequest = new SimpleIdRequest(pid, targetResultFields, accessGroups);
-		BriefObjectMetadataBean targetObject = queryLayer.getObjectById(objectRequest);
-		if (targetObject == null)
-			throw new InvalidRecordRequestException();
-		model.addAttribute("targetMetadata", targetObject);
+    @PostConstruct
+    public void init() {
+        accessGroupFields = new String[] { solrSettings.getFieldName(SearchFieldKeys.ADMIN_GROUP.name()),
+                solrSettings.getFieldName(SearchFieldKeys.READ_GROUP.name()) };
+    }
 
-		// Get access information for the target's parent
-		BriefObjectMetadataBean parentObject = null;
-		if (targetObject.getAncestorPathFacet() != null) {
-			objectRequest = new SimpleIdRequest(targetObject.getAncestorPathFacet().getSearchKey(), parentResultFields,
-					accessGroups);
-			parentObject = queryLayer.getObjectById(objectRequest);
-			if (parentObject == null)
-				throw new InvalidRecordRequestException();
-			model.addAttribute("parentMetadata", parentObject);
-		}
+    @RequestMapping(value = "acl/{pid}", method = RequestMethod.GET)
+    public String getAccessControl(@PathVariable("pid") String pid, Model model,
+            HttpServletResponse response) {
+        model.addAttribute("pid", pid);
 
-		// Retrieve the targeted objects directly attributed ACL document
-		String dataUrl = swordUrl + "em/" + pid + "/ACL";
-		CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(null, swordUsername, swordPassword);
-		HttpGet method = new HttpGet(dataUrl);
-		// Pass the users groups along with the request
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
+        // Retrieve ancestor information about the targeted object
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        SimpleIdRequest objectRequest = new SimpleIdRequest(pid, targetResultFields, accessGroups);
+        BriefObjectMetadataBean targetObject = queryLayer.getObjectById(objectRequest);
+        if (targetObject == null) {
+            throw new InvalidRecordRequestException();
+        }
+        model.addAttribute("targetMetadata", targetObject);
 
-		Element accessControlElement;
-		try (CloseableHttpResponse httpResp = client.execute(method)) {
-			int statusCode = httpResp.getStatusLine().getStatusCode();
-			
-			if (statusCode == HttpStatus.SC_OK) {
-				String accessControlXML = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
-				log.debug(accessControlXML);
-				SAXBuilder saxBuilder = new SAXBuilder();
-				accessControlElement = saxBuilder.build(new StringReader(accessControlXML)).getRootElement();
-				model.addAttribute("accessControlXML", accessControlXML);
-				model.addAttribute("targetACLs", accessControlElement);
-			} else {
-				log.error("Failed to retrieve access control document for " + pid + ": "
-						+ httpResp.getStatusLine());
-				response.setStatus(statusCode);
-				return null;
-			}
-		} catch (IOException | JDOMException e) {
-			response.setStatus(500);
-			log.error("Failed to retrieve access control document for " + pid, e);
-			return null;
-		}
+        // Get access information for the target's parent
+        BriefObjectMetadataBean parentObject = null;
+        if (targetObject.getAncestorPathFacet() != null) {
+            objectRequest = new SimpleIdRequest(targetObject.getAncestorPathFacet().getSearchKey(), parentResultFields,
+                    accessGroups);
+            parentObject = queryLayer.getObjectById(objectRequest);
+            if (parentObject == null) {
+                throw new InvalidRecordRequestException();
+            }
+            model.addAttribute("parentMetadata", parentObject);
+        }
 
-		Map<String, List<RoleGrant>> rolesGranted = new LinkedHashMap<String, List<RoleGrant>>();
-		for (Object elementObject : accessControlElement.getChildren()) {
-			Element childElement = (Element) elementObject;
-			if (childElement.getNamespace().equals(JDOMNamespaceUtil.CDR_ACL_NS)) {
-				String group = childElement.getAttributeValue("group", JDOMNamespaceUtil.CDR_ACL_NS);
-				String role = childElement.getAttributeValue("role", JDOMNamespaceUtil.CDR_ACL_NS);
+        // Retrieve the targeted objects directly attributed ACL document
+        String dataUrl = swordUrl + "em/" + pid + "/ACL";
+        CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(null, swordUsername, swordPassword);
+        HttpGet method = new HttpGet(dataUrl);
+        // Pass the users groups along with the request
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, groups.joinAccessGroups(";"));
 
-				List<RoleGrant> groupList = rolesGranted.get(role);
-				if (groupList == null) {
-					groupList = new ArrayList<RoleGrant>();
-					rolesGranted.put(role, groupList);
-				}
-				groupList.add(new RoleGrant(group, false));
-			}
-		}
+        Element accessControlElement;
+        try (CloseableHttpResponse httpResp = client.execute(method)) {
+            int statusCode = httpResp.getStatusLine().getStatusCode();
 
-		if (parentObject != null) {
-			for (String parentRoles : parentObject.getRoleGroup()) {
-				String[] roleParts = parentRoles.split("\\|");
-				if (roleParts.length < 2)
-					continue;
-				String role = roleParts[0];
-	
-				List<RoleGrant> groupList = rolesGranted.get(role);
-				if (groupList == null) {
-					groupList = new ArrayList<RoleGrant>();
-					rolesGranted.put(role, groupList);
-				}
-				String group = roleParts[1];
-				// If the map already contains this group, then it is marked explicitly as not inherited
-				groupList.add(new RoleGrant(group, true));
-			}
-		}
+            if (statusCode == HttpStatus.SC_OK) {
+                String accessControlXML = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
+                log.debug(accessControlXML);
+                SAXBuilder saxBuilder = new SAXBuilder();
+                accessControlElement = saxBuilder.build(new StringReader(accessControlXML)).getRootElement();
+                model.addAttribute("accessControlXML", accessControlXML);
+                model.addAttribute("targetACLs", accessControlElement);
+            } else {
+                log.error("Failed to retrieve access control document for " + pid + ": "
+                        + httpResp.getStatusLine());
+                response.setStatus(statusCode);
+                return null;
+            }
+        } catch (IOException | JDOMException e) {
+            response.setStatus(500);
+            log.error("Failed to retrieve access control document for " + pid, e);
+            return null;
+        }
 
-		model.addAttribute("rolesGranted", rolesGranted);
+        Map<String, List<RoleGrant>> rolesGranted = new LinkedHashMap<String, List<RoleGrant>>();
+        for (Object elementObject : accessControlElement.getChildren()) {
+            Element childElement = (Element) elementObject;
+            if (childElement.getNamespace().equals(JDOMNamespaceUtil.CDR_ACL_NS)) {
+                String group = childElement.getAttributeValue("group", JDOMNamespaceUtil.CDR_ACL_NS);
+                String role = childElement.getAttributeValue("role", JDOMNamespaceUtil.CDR_ACL_NS);
 
-		model.addAttribute("template", "ajax");
-		return "edit/accessControl";
-	}
+                List<RoleGrant> groupList = rolesGranted.get(role);
+                if (groupList == null) {
+                    groupList = new ArrayList<RoleGrant>();
+                    rolesGranted.put(role, groupList);
+                }
+                groupList.add(new RoleGrant(group, false));
+            }
+        }
 
-	@RequestMapping(value = "acl/{pid}", method = RequestMethod.PUT)
-	public @ResponseBody
-	String saveAccessControl(@PathVariable("pid") String pid,
-			HttpServletRequest request, HttpServletResponse response) {
-		String datastream = "ACL";
+        if (parentObject != null) {
+            for (String parentRoles : parentObject.getRoleGroup()) {
+                String[] roleParts = parentRoles.split("\\|");
+                if (roleParts.length < 2) {
+                    continue;
+                }
+                String role = roleParts[0];
 
-		return this.updateDatastream(pid, datastream, request, response);
-	}
+                List<RoleGrant> groupList = rolesGranted.get(role);
+                if (groupList == null) {
+                    groupList = new ArrayList<RoleGrant>();
+                    rolesGranted.put(role, groupList);
+                }
+                String group = roleParts[1];
+                // If the map already contains this group, then it is marked explicitly as not inherited
+                groupList.add(new RoleGrant(group, true));
+            }
+        }
 
-	@RequestMapping(value = "acl/getGroups", method = RequestMethod.GET)
-	public @ResponseBody
-	Collection<String> getAllAccessGroups() throws AccessRestrictionException, SolrServerException {
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-		return this.queryLayer.getDistinctFieldValues(accessGroupFields, 500, accessGroups);
-	}
+        model.addAttribute("rolesGranted", rolesGranted);
 
-	public static class RoleGrant {
-		public String roleName;
-		public boolean inherited;
+        model.addAttribute("template", "ajax");
+        return "edit/accessControl";
+    }
 
-		public RoleGrant(String roleName, boolean inherited) {
-			this.roleName = roleName;
-			this.inherited = inherited;
-		}
+    @RequestMapping(value = "acl/{pid}", method = RequestMethod.PUT)
+    public @ResponseBody
+    String saveAccessControl(@PathVariable("pid") String pid,
+            HttpServletRequest request, HttpServletResponse response) {
+        String datastream = "ACL";
 
-		public String getRoleName() {
-			return roleName;
-		}
+        return this.updateDatastream(pid, datastream, request, response);
+    }
 
-		public boolean isInherited() {
-			return inherited;
-		}
-	}
+    @RequestMapping(value = "acl/getGroups", method = RequestMethod.GET)
+    public @ResponseBody
+    Collection<String> getAllAccessGroups() throws AccessRestrictionException, SolrServerException {
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        return this.queryLayer.getDistinctFieldValues(accessGroupFields, 500, accessGroups);
+    }
+
+    public static class RoleGrant {
+        public String roleName;
+        public boolean inherited;
+
+        public RoleGrant(String roleName, boolean inherited) {
+            this.roleName = roleName;
+            this.inherited = inherited;
+        }
+
+        public String getRoleName() {
+            return roleName;
+        }
+
+        public boolean isInherited() {
+            return inherited;
+        }
+    }
 }

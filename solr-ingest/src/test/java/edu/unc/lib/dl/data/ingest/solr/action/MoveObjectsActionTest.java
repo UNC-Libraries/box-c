@@ -47,97 +47,97 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class MoveObjectsActionTest extends Assert {
 
-	@Mock
-	private DocumentIndexingPipeline pipeline;
-	@Mock
-	private TripleStoreQueryService tsqs;
-	@Mock
-	private SolrUpdateDriver driver;
-	@Mock
-	private Element mdContents;
-	@Mock
-	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
+    @Mock
+    private DocumentIndexingPipeline pipeline;
+    @Mock
+    private TripleStoreQueryService tsqs;
+    @Mock
+    private SolrUpdateDriver driver;
+    @Mock
+    private Element mdContents;
+    @Mock
+    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackageFactory factory;
 
-	@Mock
-	private DocumentIndexingPackage parentDip;
+    @Mock
+    private DocumentIndexingPackage parentDip;
 
-	private MoveObjectsAction action;
+    private MoveObjectsAction action;
 
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
 
-		when(parentDip.getMdContents()).thenReturn(mdContents);
+        when(parentDip.getMdContents()).thenReturn(mdContents);
 
-		when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("0")));
-		
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
+        when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("0")));
 
-		// Perform action
-		action = new MoveObjectsAction();
-		action.setTsqs(tsqs);
-		action.setPipeline(pipeline);
-		action.setSolrUpdateDriver(driver);
-		action.setAddDocumentMode(false);
-		action.setFactory(factory);
-		action.init();
-	}
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testMove() throws Exception {
+        // Perform action
+        action = new MoveObjectsAction();
+        action.setTsqs(tsqs);
+        action.setPipeline(pipeline);
+        action.setSolrUpdateDriver(driver);
+        action.setAddDocumentMode(false);
+        action.setFactory(factory);
+        action.init();
+    }
 
-		when(parentDip.getDisplayOrder(anyString())).thenReturn(2L, 5L, 1L);
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testMove() throws Exception {
 
-		DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
-		IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);
-		when(dipRoot.getDocument()).thenReturn(idbRoot);
-		List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"), new PID("c4"));
-		when(dipRoot.getChildren()).thenReturn(children1);
+        when(parentDip.getDisplayOrder(anyString())).thenReturn(2L, 5L, 1L);
 
-		List<PID> children2 = Arrays.asList(new PID("c3"));
-		when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenReturn(children2, (List<PID>) null);
+        DocumentIndexingPackage dipRoot = mock(DocumentIndexingPackage.class);
+        IndexDocumentBean idbRoot = mock(IndexDocumentBean.class);
+        when(dipRoot.getDocument()).thenReturn(idbRoot);
+        List<PID> children1 = Arrays.asList(new PID("c1"), new PID("c2"), new PID("c4"));
+        when(dipRoot.getChildren()).thenReturn(children1);
 
-		ChildSetRequest request = new ChildSetRequest("c0", Arrays.asList("c1", "c2"),
-				IndexingActionType.MOVE);
-		action.performAction(request);
+        List<PID> children2 = Arrays.asList(new PID("c3"));
+        when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenReturn(children2, (List<PID>) null);
 
-		// Check that pipeline ran on the parent, 2 immediate children, and 1 nested child
-		verify(pipeline, times(4)).process(any(DocumentIndexingPackage.class));
+        ChildSetRequest request = new ChildSetRequest("c0", Arrays.asList("c1", "c2"),
+                IndexingActionType.MOVE);
+        action.performAction(request);
 
-		verify(loader, times(3)).loadChildren(any(DocumentIndexingPackage.class));
-		assertEquals(3, request.getChildrenProcessed());
+        // Check that pipeline ran on the parent, 2 immediate children, and 1 nested child
+        verify(pipeline, times(4)).process(any(DocumentIndexingPackage.class));
 
-		ArgumentCaptor<IndexDocumentBean> idbCaptor = ArgumentCaptor.forClass(IndexDocumentBean.class);
-		verify(driver, times(3)).updateDocument(eq("set"), idbCaptor.capture());
+        verify(loader, times(3)).loadChildren(any(DocumentIndexingPackage.class));
+        assertEquals(3, request.getChildrenProcessed());
 
-		List<IndexDocumentBean> idbs = idbCaptor.getAllValues();
+        ArgumentCaptor<IndexDocumentBean> idbCaptor = ArgumentCaptor.forClass(IndexDocumentBean.class);
+        verify(driver, times(3)).updateDocument(eq("set"), idbCaptor.capture());
 
-		assertEquals("Must be 3 index documents submitted", 3, idbs.size());
+        List<IndexDocumentBean> idbs = idbCaptor.getAllValues();
 
-//		assertEquals("c1", idbs.get(0).getId());
-//		assertEquals(2L, idbs.get(0).getDisplayOrder().longValue());
-//		assertEquals("c2", idbs.get(2).getId());
-//		assertEquals(5L, idbs.get(2).getDisplayOrder().longValue());
-//		assertEquals("c3", idbs.get(1).getId());
-//		assertNull("Display order should not have changed for child of child", idbs.get(1).getDisplayOrder());
+        assertEquals("Must be 3 index documents submitted", 3, idbs.size());
 
-	}
+//        assertEquals("c1", idbs.get(0).getId());
+//        assertEquals(2L, idbs.get(0).getDisplayOrder().longValue());
+//        assertEquals("c2", idbs.get(2).getId());
+//        assertEquals(5L, idbs.get(2).getDisplayOrder().longValue());
+//        assertEquals("c3", idbs.get(1).getId());
+//        assertNull("Display order should not have changed for child of child", idbs.get(1).getDisplayOrder());
 
-	@Test
-	public void testMoveNoMdContents() throws Exception {
+    }
 
-		parentDip.setMdContents(null);
+    @Test
+    public void testMoveNoMdContents() throws Exception {
 
-		ChildSetRequest request = new ChildSetRequest("uuid:2", Arrays.asList("uuid:6", "uuid:7"),
-				IndexingActionType.MOVE);
-		action.performAction(request);
+        parentDip.setMdContents(null);
 
-		verify(pipeline, times(3)).process(any(DocumentIndexingPackage.class));
-		//verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
-		assertEquals(2, request.getChildrenProcessed());
+        ChildSetRequest request = new ChildSetRequest("uuid:2", Arrays.asList("uuid:6", "uuid:7"),
+                IndexingActionType.MOVE);
+        action.performAction(request);
 
-	}
+        verify(pipeline, times(3)).process(any(DocumentIndexingPackage.class));
+        //verify(dipFactory).createDocumentIndexingPackage(any(PID.class));
+        assertEquals(2, request.getChildrenProcessed());
+
+    }
 }

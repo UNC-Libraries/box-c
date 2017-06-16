@@ -25,45 +25,45 @@ import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Logs and provides access to PREMIS events for a repository object
- * 
+ *
  * @author bbpennel
  *
  */
 public interface PremisLogger {
 
-	/**
-	 * Allows for an arbitrary timestamp to be set for a premis event
-	 * @param eventType
-	 * @return PremisEventBuilder
-	 */
-	public PremisEventBuilder buildEvent(Resource eventType, Date date);
+    /**
+     * Allows for an arbitrary timestamp to be set for a premis event
+     * @param eventType
+     * @return PremisEventBuilder
+     */
+    public PremisEventBuilder buildEvent(Resource eventType, Date date);
 
-	/**
-	 * Returns an instance of buildEvent with the timestamp automatically set to the current time
-	 * @param eventType
-	 * @return PremisEventBuilder
-	 */
-	public PremisEventBuilder buildEvent(Resource eventType);
+    /**
+     * Returns an instance of buildEvent with the timestamp automatically set to the current time
+     * @param eventType
+     * @return PremisEventBuilder
+     */
+    public PremisEventBuilder buildEvent(Resource eventType);
 
-	/**
-	 * Adds an event to this log
-	 * 
-	 * @param eventResc
-	 * @return
-	 */
-	public PremisLogger writeEvent(Resource eventResc);
+    /**
+     * Adds an event to this log
+     *
+     * @param eventResc
+     * @return
+     */
+    public PremisLogger writeEvent(Resource eventResc);
 
-	/**
-	 * Return a list of PID objects for each event in this logger
-	 *
-	 * @return
-	 */
-	public List<PID> listEvents();
+    /**
+     * Return a list of PID objects for each event in this logger
+     *
+     * @return
+     */
+    public List<PID> listEvents();
 
-	/**
-	 * Return a list of PremisEventObjects for each event in this logger
-	 * 
-	 * @return
-	 */
-	public List<PremisEventObject> getEvents();
+    /**
+     * Return a list of PremisEventObjects for each event in this logger
+     *
+     * @return
+     */
+    public List<PremisEventObject> getEvents();
 }

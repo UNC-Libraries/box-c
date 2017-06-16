@@ -60,204 +60,207 @@ import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
  * @author bbpennel
  */
 public class FedoraContentService {
-	private static final Logger LOG = LoggerFactory.getLogger(FedoraContentService.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FedoraContentService.class);
 
-	private AccessClient accessClient;
+    private AccessClient accessClient;
 
-	private FedoraUtil fedoraUtil;
-	
-	private String fedoraHost;
+    private FedoraUtil fedoraUtil;
 
-	@Autowired
-	private SearchSettings searchSettings;
-	@Autowired
-	protected SolrQueryLayerService queryLayer;
+    private String fedoraHost;
 
-	@Autowired(required = false)
-	protected AnalyticsTrackerUtil analyticsTracker;
+    @Autowired
+    private SearchSettings searchSettings;
+    @Autowired
+    protected SolrQueryLayerService queryLayer;
 
-	private final int numberOfRetries = 1;
+    @Autowired(required = false)
+    protected AnalyticsTrackerUtil analyticsTracker;
 
-	private static List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name(),
-			SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
-			SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.PARENT_COLLECTION.name(),
-			SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.TITLE.name());
+    private final int numberOfRetries = 1;
 
-	public void streamData(String pid, String datastream, boolean download, AnalyticsUserData userData,
-			HttpServletResponse response) {
-		AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+    private static List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name(),
+            SearchFieldKeys.DATASTREAM.name(), SearchFieldKeys.LABEL.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+            SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.PARENT_COLLECTION.name(),
+            SearchFieldKeys.ANCESTOR_PATH.name(), SearchFieldKeys.TITLE.name());
 
-		// Default datastream is DATA_FILE
-		if (datastream == null) {
-			datastream = ContentModelHelper.Datastream.DATA_FILE.toString();
-		}
+    public void streamData(String pid, String datastream, boolean download, AnalyticsUserData userData,
+            HttpServletResponse response) {
+        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
-		// Use solr to check if the user is allowed to view this item.
-		SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
+        // Default datastream is DATA_FILE
+        if (datastream == null) {
+            datastream = ContentModelHelper.Datastream.DATA_FILE.toString();
+        }
 
-		BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
-		// If the record isn't accessible then invalid record exception.
-		if (briefObject == null) {
-			throw new InvalidRecordRequestException();
-		}
-		// Block access to thumbnails for non-containers,
-		if (AccessUtil.hasListAccessOnly(accessGroups, briefObject)
-				&& (searchSettings.resourceTypeFile.equals(briefObject.getResourceType()) || searchSettings.resourceTypeAggregate
-						.equals(briefObject.getResourceType())))
-			throw new InvalidRecordRequestException();
+        // Use solr to check if the user is allowed to view this item.
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
 
-		// If a label is available, use it for the filename
-		String filename = briefObject.getLabel();
-		
-		try {
-			edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
-			if (datastreamResult == null)
-				throw new ResourceNotFoundException("Datastream " + datastream + " was not found on object " + pid);
+        BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
+        // If the record isn't accessible then invalid record exception.
+        if (briefObject == null) {
+            throw new InvalidRecordRequestException();
+        }
+        // Block access to thumbnails for non-containers,
+        if (AccessUtil.hasListAccessOnly(accessGroups, briefObject)
+                && (searchSettings.resourceTypeFile.equals(briefObject.getResourceType())
+                        || searchSettings.resourceTypeAggregate.equals(briefObject.getResourceType()))) {
+            throw new InvalidRecordRequestException();
+        }
 
-			// Track the download event if the request is for the original content
-			if (analyticsTracker != null && datastreamResult.getDatastreamCategory() != null
-					&& datastreamResult.getDatastreamCategory().equals(DatastreamCategory.ORIGINAL)) {
-				analyticsTracker.trackEvent(userData, briefObject.getParentCollection() == null ? "(no collection)"
-						: briefObject.getParentCollectionName(),
-						"download", briefObject.getTitle() + "|" + pid, null);
-			}
+        // If a label is available, use it for the filename
+        String filename = briefObject.getLabel();
 
-			this.streamData(pid, datastreamResult, filename, response, download, numberOfRetries);
-		} catch (AuthorizationException e) {
-			throw new InvalidRecordRequestException(e);
-		} catch (ResourceNotFoundException e) {
-			LOG.info("Resource not found while attempting to stream datastream", e);
-			throw e;
-		} catch (Exception e) {
-			LOG.error("Failed to retrieve content for " + pid + " datastream: " + datastream, e);
-			throw new ResourceNotFoundException();
-		}
-	}
+        try {
+            edu.unc.lib.dl.search.solr.model.Datastream datastreamResult = briefObject.getDatastreamObject(datastream);
+            if (datastreamResult == null) {
+                throw new ResourceNotFoundException("Datastream " + datastream + " was not found on object " + pid);
+            }
 
-	private void streamData(String simplepid, Datastream datastream, String filename, HttpServletResponse response,
-			boolean asAttachment, int retryServerError) throws FedoraException, IOException {
-		OutputStream outStream = response.getOutputStream();
+            // Track the download event if the request is for the original content
+            if (analyticsTracker != null && datastreamResult.getDatastreamCategory() != null
+                    && datastreamResult.getDatastreamCategory().equals(DatastreamCategory.ORIGINAL)) {
+                analyticsTracker.trackEvent(userData, briefObject.getParentCollection() == null ? "(no collection)"
+                        : briefObject.getParentCollectionName(),
+                        "download", briefObject.getTitle() + "|" + pid, null);
+            }
 
-		String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream.getName()
-				+ "/content";
+            this.streamData(pid, datastreamResult, filename, response, download, numberOfRetries);
+        } catch (AuthorizationException e) {
+            throw new InvalidRecordRequestException(e);
+        } catch (ResourceNotFoundException e) {
+            LOG.info("Resource not found while attempting to stream datastream", e);
+            throw e;
+        } catch (Exception e) {
+            LOG.error("Failed to retrieve content for " + pid + " datastream: " + datastream, e);
+            throw new ResourceNotFoundException();
+        }
+    }
 
-		CloseableHttpClient client = HttpClientUtil
-				.getAuthenticatedClient(fedoraHost, accessClient.getUsername(),
-				accessClient.getPassword());
-		HttpGet method = new HttpGet(dataUrl);
-		method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
+    private void streamData(String simplepid, Datastream datastream, String filename, HttpServletResponse response,
+            boolean asAttachment, int retryServerError) throws FedoraException, IOException {
+        OutputStream outStream = response.getOutputStream();
 
-		try (CloseableHttpResponse httpResp = client.execute(method)) {
+        String dataUrl = fedoraUtil.getFedoraUrl() + "/objects/" + simplepid + "/datastreams/" + datastream.getName()
+                + "/content";
 
-			if (httpResp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-				if (response != null) {
-					PID pid = new PID(simplepid);
+        CloseableHttpClient client = HttpClientUtil
+                .getAuthenticatedClient(fedoraHost, accessClient.getUsername(),
+                accessClient.getPassword());
+        HttpGet method = new HttpGet(dataUrl);
+        method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
 
-					// Adjusting content related headers
+        try (CloseableHttpResponse httpResp = client.execute(method)) {
 
-					// Use the content length from Fedora it is not provided or negative, in which case use solr's
-					long contentLength;
-					try {
-						String contentLengthString = httpResp.getFirstHeader("content-length").getValue();
-						contentLength = Long.parseLong(contentLengthString);
-					} catch (Exception e) {
-						// If the content length wasn't provided or wasn't a number, set it to -1
-						contentLength = -1L;
-					}
-					if (contentLength < 0L) {
-						contentLength = datastream.getFilesize();
-					}
-					response.setHeader("Content-Length", Long.toString(contentLength));
+            if (httpResp.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+                if (response != null) {
+                    PID pid = new PID(simplepid);
 
-					// Use Fedora's content type unless it is unset or octet-stream
-					String mimeType;
-					try {
-						mimeType = httpResp.getFirstHeader("content-type").getValue();
-						if (mimeType == null || "application/octet-stream".equals(mimeType)) {
-							if ("mp3".equals(datastream.getExtension())) {
-								mimeType = "audio/mpeg";
-							} else {
-								mimeType = datastream.getMimetype();
-							}
-						}
-					} catch (Exception e) {
-						mimeType = datastream.getMimetype();
-					}
-					response.setHeader("Content-Type", mimeType);
+                    // Adjusting content related headers
 
-					// Setting the filename header for the response
-					if (filename != null) {
-						filename = StringFormatUtil.makeToken(filename, "_");
-					} else {
-						filename = pid.getPid();
-					}
+                    // Use the content length from Fedora it is not provided or negative, in which case use solr's
+                    long contentLength;
+                    try {
+                        String contentLengthString = httpResp.getFirstHeader("content-length").getValue();
+                        contentLength = Long.parseLong(contentLengthString);
+                    } catch (Exception e) {
+                        // If the content length wasn't provided or wasn't a number, set it to -1
+                        contentLength = -1L;
+                    }
+                    if (contentLength < 0L) {
+                        contentLength = datastream.getFilesize();
+                    }
+                    response.setHeader("Content-Length", Long.toString(contentLength));
 
-					// For metadata types files, append the datastream name
-					if (datastream.getDatastreamCategory().equals(DatastreamCategory.METADATA)
-							|| datastream.getDatastreamCategory().equals(DatastreamCategory.ADMINISTRATIVE)) {
-						filename += "_" + datastream.getName();
-					}
-					// Add the file extension unless its already in there.
-					if (datastream.getExtension() != null && datastream.getExtension().length() > 0
-							&& !filename.toLowerCase().endsWith("." + datastream.getExtension())
-							&& !"unknown".equals(datastream.getExtension())) {
-						filename += "." + datastream.getExtension();
-					}
-					if (asAttachment) {
-						response.setHeader("content-disposition", "attachment; filename=\"" + filename + "\"");
-					} else {
-						response.setHeader("content-disposition", "inline; filename=\"" + filename + "\"");
-					}
-				}
+                    // Use Fedora's content type unless it is unset or octet-stream
+                    String mimeType;
+                    try {
+                        mimeType = httpResp.getFirstHeader("content-type").getValue();
+                        if (mimeType == null || "application/octet-stream".equals(mimeType)) {
+                            if ("mp3".equals(datastream.getExtension())) {
+                                mimeType = "audio/mpeg";
+                            } else {
+                                mimeType = datastream.getMimetype();
+                            }
+                        }
+                    } catch (Exception e) {
+                        mimeType = datastream.getMimetype();
+                    }
+                    response.setHeader("Content-Type", mimeType);
 
-				// Stream the content
-				FileIOUtil.stream(outStream, httpResp);
-			} else if (httpResp.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN) {
-				throw new AuthorizationException(
-						"User does not have sufficient permissions to retrieve the specified object");
-			} else {
-				// Retry server errors
-				if (httpResp.getStatusLine().getStatusCode() == 500 && retryServerError > 0) {
-					LOG.warn("Failed to retrieve " + dataUrl + ", retrying.");
-					this.streamData(simplepid, datastream, filename, response, asAttachment, retryServerError - 1);
-				} else {
-					throw new ResourceNotFoundException("Failure to stream fedora content due to response of: "
-							+ httpResp.getStatusLine().toString() + "\nPath was: " + dataUrl);
-				}
-			}
-		} catch (ClientAbortException e) {
-			if (LOG.isDebugEnabled())
-				LOG.debug("User client aborted request to stream Fedora content for " + simplepid, e);
-		} catch (IOException e) {
-			LOG.warn("Problem retrieving " + dataUrl + " for " + simplepid, e);
-		}
-	}
+                    // Setting the filename header for the response
+                    if (filename != null) {
+                        filename = StringFormatUtil.makeToken(filename, "_");
+                    } else {
+                        filename = pid.getPid();
+                    }
 
-	public void setAccessClient(edu.unc.lib.dl.fedora.AccessClient accessClient) {
-		this.accessClient = accessClient;
-	}
+                    // For metadata types files, append the datastream name
+                    if (datastream.getDatastreamCategory().equals(DatastreamCategory.METADATA)
+                            || datastream.getDatastreamCategory().equals(DatastreamCategory.ADMINISTRATIVE)) {
+                        filename += "_" + datastream.getName();
+                    }
+                    // Add the file extension unless its already in there.
+                    if (datastream.getExtension() != null && datastream.getExtension().length() > 0
+                            && !filename.toLowerCase().endsWith("." + datastream.getExtension())
+                            && !"unknown".equals(datastream.getExtension())) {
+                        filename += "." + datastream.getExtension();
+                    }
+                    if (asAttachment) {
+                        response.setHeader("content-disposition", "attachment; filename=\"" + filename + "\"");
+                    } else {
+                        response.setHeader("content-disposition", "inline; filename=\"" + filename + "\"");
+                    }
+                }
 
-	public void setFedoraUtil(FedoraUtil fedoraUtil) {
-		this.fedoraUtil = fedoraUtil;
-	}
+                // Stream the content
+                FileIOUtil.stream(outStream, httpResp);
+            } else if (httpResp.getStatusLine().getStatusCode() == HttpStatus.SC_FORBIDDEN) {
+                throw new AuthorizationException(
+                        "User does not have sufficient permissions to retrieve the specified object");
+            } else {
+                // Retry server errors
+                if (httpResp.getStatusLine().getStatusCode() == 500 && retryServerError > 0) {
+                    LOG.warn("Failed to retrieve " + dataUrl + ", retrying.");
+                    this.streamData(simplepid, datastream, filename, response, asAttachment, retryServerError - 1);
+                } else {
+                    throw new ResourceNotFoundException("Failure to stream fedora content due to response of: "
+                            + httpResp.getStatusLine().toString() + "\nPath was: " + dataUrl);
+                }
+            }
+        } catch (ClientAbortException e) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("User client aborted request to stream Fedora content for " + simplepid, e);
+            }
+        } catch (IOException e) {
+            LOG.warn("Problem retrieving " + dataUrl + " for " + simplepid, e);
+        }
+    }
 
-	public void setSearchSettings(SearchSettings searchSettings) {
-		this.searchSettings = searchSettings;
-	}
+    public void setAccessClient(edu.unc.lib.dl.fedora.AccessClient accessClient) {
+        this.accessClient = accessClient;
+    }
 
-	public void setQueryLayer(SolrQueryLayerService queryLayer) {
-		this.queryLayer = queryLayer;
-	}
+    public void setFedoraUtil(FedoraUtil fedoraUtil) {
+        this.fedoraUtil = fedoraUtil;
+    }
 
-	public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
-		this.analyticsTracker = analyticsTracker;
-	}
+    public void setSearchSettings(SearchSettings searchSettings) {
+        this.searchSettings = searchSettings;
+    }
 
-	public String getFedoraHost() {
-		return fedoraHost;
-	}
+    public void setQueryLayer(SolrQueryLayerService queryLayer) {
+        this.queryLayer = queryLayer;
+    }
 
-	public void setFedoraHost(String fedoraHost) {
-		this.fedoraHost = fedoraHost;
-	}
+    public void setAnalyticsTracker(AnalyticsTrackerUtil analyticsTracker) {
+        this.analyticsTracker = analyticsTracker;
+    }
+
+    public String getFedoraHost() {
+        return fedoraHost;
+    }
+
+    public void setFedoraHost(String fedoraHost) {
+        this.fedoraHost = fedoraHost;
+    }
 }

@@ -37,110 +37,110 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class StagingPolicyManager {
 
-	private String basePath;
+    private String basePath;
 
-	private String configPath;
+    private String configPath;
 
-	private List<StagingPolicy> policies;
+    private List<StagingPolicy> policies;
 
-	public StagingPolicyManager() {
-	}
+    public StagingPolicyManager() {
+    }
 
-	public void init() {
-		loadConfig();
-	}
+    public void init() {
+        loadConfig();
+    }
 
-	private void loadConfig() throws StagingException {
-		File configFile = new File(configPath);
+    private void loadConfig() throws StagingException {
+        File configFile = new File(configPath);
 
-		ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
 
-		try {
-			// Load the policy configuration from the provided json
-			policies = mapper.readValue(configFile, mapper.getTypeFactory()
-					.constructCollectionType(List.class, StagingPolicy.class));
-		} catch (IOException e) {
-			throw new StagingException("Failed to load staging configuration from " + configPath, e);
-		}
+        try {
+            // Load the policy configuration from the provided json
+            policies = mapper.readValue(configFile, mapper.getTypeFactory()
+                    .constructCollectionType(List.class, StagingPolicy.class));
+        } catch (IOException e) {
+            throw new StagingException("Failed to load staging configuration from " + configPath, e);
+        }
 
-		// Verify and resolve any staging location paths
-		for (StagingPolicy policy : policies) {
-			String path = policy.getPath();
+        // Verify and resolve any staging location paths
+        for (StagingPolicy policy : policies) {
+            String path = policy.getPath();
 
-			// If path was not absolute, resolve it against the base path
-			if (!Paths.get(path).isAbsolute()) {
-				policy.setPath(URIUtil.join(basePath, path));
-			}
+            // If path was not absolute, resolve it against the base path
+            if (!Paths.get(path).isAbsolute()) {
+                policy.setPath(URIUtil.join(basePath, path));
+            }
 
-			// Abort loading if one of the paths is invalid
-			if (!Paths.get(policy.getPath()).toFile().exists()) {
-				throw new StagingException("Unable to resolve staging location " + policy.getPath());
-			}
-		}
-	}
+            // Abort loading if one of the paths is invalid
+            if (!Paths.get(policy.getPath()).toFile().exists()) {
+                throw new StagingException("Unable to resolve staging location " + policy.getPath());
+            }
+        }
+    }
 
-	/**
-	 * Get the staging policy which applies to the given file uri, or throw a
-	 * staging exception if no policy is found
-	 * 
-	 * @param fileUri
-	 * @return
-	 * @throws StagingException
-	 */
-	public StagingPolicy getStagingPolicy(URI fileUri) throws StagingException {
-		String path = fileUri.getPath();
+    /**
+     * Get the staging policy which applies to the given file uri, or throw a
+     * staging exception if no policy is found
+     * 
+     * @param fileUri
+     * @return
+     * @throws StagingException
+     */
+    public StagingPolicy getStagingPolicy(URI fileUri) throws StagingException {
+        String path = fileUri.getPath();
 
-		for (StagingPolicy policy : policies) {
-			String policyPath = policy.getPath();
-			if (path.startsWith(policyPath)) {
-				return policy;
-			}
-		}
+        for (StagingPolicy policy : policies) {
+            String policyPath = policy.getPath();
+            if (path.startsWith(policyPath)) {
+                return policy;
+            }
+        }
 
-		throw new StagingException("No staging policy available for " + fileUri);
-	}
+        throw new StagingException("No staging policy available for " + fileUri);
+    }
 
-	/**
-	 * Get the cleanup policy which applies to the given file uri, or throw a
-	 * staging exception if no policy is found
-	 * 
-	 * @param fileUri
-	 * @return
-	 * @throws StagingException
-	 */
-	public CleanupPolicy getCleanupPolicy(URI fileUri) throws StagingException {
-		return getStagingPolicy(fileUri).getCleanupPolicy();
-	}
+    /**
+     * Get the cleanup policy which applies to the given file uri, or throw a
+     * staging exception if no policy is found
+     * 
+     * @param fileUri
+     * @return
+     * @throws StagingException
+     */
+    public CleanupPolicy getCleanupPolicy(URI fileUri) throws StagingException {
+        return getStagingPolicy(fileUri).getCleanupPolicy();
+    }
 
-	/**
-	 * Returns true if the given file uri is contained by at least one of the
-	 * staging locations registered with this manager
-	 * 
-	 * @param fileUri
-	 * @return
-	 */
-	public boolean isValidStagingLocation(URI fileUri) {
-		try {
-			getStagingPolicy(fileUri);
-			return true;
-		} catch (StagingException e) {
-			return false;
-		}
-	}
-	
-	public String getBasePath() {
-		return basePath;
-	}
+    /**
+     * Returns true if the given file uri is contained by at least one of the
+     * staging locations registered with this manager
+     * 
+     * @param fileUri
+     * @return
+     */
+    public boolean isValidStagingLocation(URI fileUri) {
+        try {
+            getStagingPolicy(fileUri);
+            return true;
+        } catch (StagingException e) {
+            return false;
+        }
+    }
 
-	public void setBasePath(String basePath) {
-		this.basePath = basePath;
-	}
+    public String getBasePath() {
+        return basePath;
+    }
 
-	public String getConfigPath() {
-		return configPath;
-	}
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
 
-	public void setConfigPath(String configPath) {
-		this.configPath = configPath;
-	}
+    public String getConfigPath() {
+        return configPath;
+    }
+
+    public void setConfigPath(String configPath) {
+        this.configPath = configPath;
+    }
 }

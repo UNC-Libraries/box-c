@@ -25,37 +25,37 @@ import java.util.List;
  * @author bbpennel
  */
 public class FacetFieldObject {
-	private String name;
-	private List<GenericFacet> values;
-	private boolean hierarchical;
+    private String name;
+    private List<GenericFacet> values;
+    private boolean hierarchical;
 
-	public FacetFieldObject(String name, List<GenericFacet> values) {
-		this.name = name;
-		this.values = values;
-	}
+    public FacetFieldObject(String name, List<GenericFacet> values) {
+        this.name = name;
+        this.values = values;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public List<GenericFacet> getValues() {
-		return values;
-	}
+    public List<GenericFacet> getValues() {
+        return values;
+    }
 
-	public void setValues(Collection<GenericFacet> values) {
-		this.values = new ArrayList<GenericFacet>(values);
-	}
+    public void setValues(Collection<GenericFacet> values) {
+        this.values = new ArrayList<GenericFacet>(values);
+    }
 
-	public boolean isHierarchical() {
-		return hierarchical;
-	}
+    public boolean isHierarchical() {
+        return hierarchical;
+    }
 
-	public void setHierarchical(boolean hierarchical) {
-		this.hierarchical = hierarchical;
-	}
+    public void setHierarchical(boolean hierarchical) {
+        this.hierarchical = hierarchical;
+    }
 
 }

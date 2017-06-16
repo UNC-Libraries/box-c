@@ -44,64 +44,65 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
  *
  */
 public class AtomPubEntryDepositHandler extends AbstractDepositHandler {
-	private static Logger log = Logger
-			.getLogger(AtomPubEntryDepositHandler.class);
+    private static Logger log = Logger
+            .getLogger(AtomPubEntryDepositHandler.class);
 
-	@Override
-	public DepositReceipt doDeposit(PID destination, Deposit deposit,
-			PackagingType type, Priority priority, SwordConfiguration config,
-			String depositor, String owner) throws SwordError {
-		log.debug("Preparing to perform an Atom Pub entry metadata only deposit to "
-				+ destination.getPid());
+    @Override
+    public DepositReceipt doDeposit(PID destination, Deposit deposit,
+            PackagingType type, Priority priority, SwordConfiguration config,
+            String depositor, String owner) throws SwordError {
+        log.debug("Preparing to perform an Atom Pub entry metadata only deposit to "
+                + destination.getPid());
 
-		if (deposit.getSwordEntry() == null
-				|| deposit.getSwordEntry().getEntry() == null)
-			throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
-					"No AtomPub entry was included in the submission");
+        if (deposit.getSwordEntry() == null
+                || deposit.getSwordEntry().getEntry() == null) {
+            throw new SwordError(UriRegistry.ERROR_CONTENT, 415,
+                    "No AtomPub entry was included in the submission");
+        }
 
-		if (log.isDebugEnabled()) {
-			Abdera abdera = new Abdera();
-			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
-			try {
-				writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
-			} catch (IOException e) {
-				throw new Error(e);
-			}
-		}
+        if (log.isDebugEnabled()) {
+            Abdera abdera = new Abdera();
+            Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
+            try {
+                writer.writeTo(deposit.getSwordEntry().getEntry(), System.out);
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+        }
 
-		PID depositPID = null;
-		UUID depositUUID = UUID.randomUUID();
-		depositPID = new PID("uuid:" + depositUUID.toString());
-		File dir = makeNewDepositDirectory(depositPID.getUUID());
-		dir.mkdir();
+        PID depositPID = null;
+        UUID depositUUID = UUID.randomUUID();
+        depositPID = new PID("uuid:" + depositUUID.toString());
+        File dir = makeNewDepositDirectory(depositPID.getUUID());
+        dir.mkdir();
 
-		// write SWORD Atom entry to file
-		File atomFile = new File(dir, "atom.xml");
-		Abdera abdera = new Abdera();
-		
-		try(FileOutputStream fos = new FileOutputStream(atomFile)) {
-			Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
-			writer.writeTo(deposit.getSwordEntry().getEntry(), fos);
-		} catch (IOException e) {
-			throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
-					"Unable to unpack your deposit: " + deposit.getFilename(),
-					e);
-		}
+        // write SWORD Atom entry to file
+        File atomFile = new File(dir, "atom.xml");
+        Abdera abdera = new Abdera();
 
-		// write deposit file to data directory
-		if (deposit.getFile() != null) {
-			File dataDir = new File(dir, "data");
-			dataDir.mkdirs();
-			File depositFile = new File(dataDir, deposit.getFilename());
-			try {
-				FileUtils.moveFile(deposit.getFile(), depositFile);
-			} catch (IOException e) {
-				throw new Error(e);
-			}
-		}
-		
-		registerDeposit(depositPID, destination, deposit,
-				type, priority, depositor, owner, Collections.<String, String> emptyMap());
-		return buildReceipt(depositPID, config);
-	}
+        try (FileOutputStream fos = new FileOutputStream(atomFile)) {
+            Writer writer = abdera.getWriterFactory().getWriter("prettyxml");
+            writer.writeTo(deposit.getSwordEntry().getEntry(), fos);
+        } catch (IOException e) {
+            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 400,
+                    "Unable to unpack your deposit: " + deposit.getFilename(),
+                    e);
+        }
+
+        // write deposit file to data directory
+        if (deposit.getFile() != null) {
+            File dataDir = new File(dir, "data");
+            dataDir.mkdirs();
+            File depositFile = new File(dataDir, deposit.getFilename());
+            try {
+                FileUtils.moveFile(deposit.getFile(), depositFile);
+            } catch (IOException e) {
+                throw new Error(e);
+            }
+        }
+
+        registerDeposit(depositPID, destination, deposit,
+                type, priority, depositor, owner, Collections.<String, String>emptyMap());
+        return buildReceipt(depositPID, config);
+    }
 }

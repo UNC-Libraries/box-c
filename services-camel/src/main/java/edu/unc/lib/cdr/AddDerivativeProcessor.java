@@ -45,61 +45,62 @@ import edu.unc.lib.dl.rdf.PcdmUse;
  *
  */
 public class AddDerivativeProcessor implements Processor {
-	private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
-	private final Repository repository;
-	private final String slug;
-	private final String fileExtension;
-	private final String mimetype;
+    private final Repository repository;
+    private final String slug;
+    private final String fileExtension;
+    private final String mimetype;
 
-	private final int maxRetries;
-	private final long retryDelay;
+    private final int maxRetries;
+    private final long retryDelay;
 
-	public AddDerivativeProcessor(Repository repository, String slug, String fileExtension,
-			String mimetype, int maxRetries, long retryDelay) {
-		this.repository = repository;
-		this.slug = slug;
-		this.fileExtension = fileExtension;
-		this.maxRetries = maxRetries;
-		this.retryDelay = retryDelay;
-		this.mimetype = mimetype;
-	}
+    public AddDerivativeProcessor(Repository repository, String slug, String fileExtension,
+            String mimetype, int maxRetries, long retryDelay) {
+        this.repository = repository;
+        this.slug = slug;
+        this.fileExtension = fileExtension;
+        this.maxRetries = maxRetries;
+        this.retryDelay = retryDelay;
+        this.mimetype = mimetype;
+    }
 
-	@Override
-	public void process(Exchange exchange) throws Exception {
-		Message in = exchange.getIn();
-		String binaryUri = (String) in.getHeader(FCREPO_URI);
-		int retryAttempt = 0;
+    @Override
+    public void process(Exchange exchange) throws Exception {
+        Message in = exchange.getIn();
+        String binaryUri = (String) in.getHeader(FCREPO_URI);
+        int retryAttempt = 0;
 
-		final ExecResult result = (ExecResult) in.getBody();
+        final ExecResult result = (ExecResult) in.getBody();
 
-		String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
-				.lines().collect(Collectors.joining("\n"));
+        String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
+                .lines().collect(Collectors.joining("\n"));
 
-		while (true) {
-			try {
-				ingestFile(binaryUri, mimetype, derivativePath);
-				break;
-			} catch (Exception e) {
-				if (retryAttempt == maxRetries) {
-					throw e;
-				}
+        while (true) {
+            try {
+                ingestFile(binaryUri, mimetype, derivativePath);
+                break;
+            } catch (Exception e) {
+                if (retryAttempt == maxRetries) {
+                    throw e;
+                }
 
-				retryAttempt++;
-				log.info("Unable to add derivative for {} from {}. Retrying, attempt {}",
-						binaryUri, derivativePath, retryAttempt);
-				TimeUnit.MILLISECONDS.sleep(retryDelay);
-			}
-		}
-	}
+                retryAttempt++;
+                log.info("Unable to add derivative for {} from {}. Retrying, attempt {}",
+                        binaryUri, derivativePath, retryAttempt);
+                TimeUnit.MILLISECONDS.sleep(retryDelay);
+            }
+        }
+    }
 
-	private void ingestFile(String binaryUri, String binaryMimeType, String derivativePath) throws FileNotFoundException {
-		InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
+    private void ingestFile(String binaryUri, String binaryMimeType, String derivativePath)
+            throws FileNotFoundException {
+        InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
 
-		BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
-		FileObject parent = (FileObject) binary.getParent();
-		parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
+        BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
+        FileObject parent = (FileObject) binary.getParent();
+        parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
 
-		log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
-	}
+        log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
+    }
 }

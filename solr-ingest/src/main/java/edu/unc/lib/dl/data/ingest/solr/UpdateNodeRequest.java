@@ -20,134 +20,140 @@ import java.util.concurrent.atomic.AtomicInteger;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.message.ActionMessage;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 public class UpdateNodeRequest implements ActionMessage {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	protected String messageID;
-	protected long timeCreated = System.currentTimeMillis();
-	protected long timeStarted;
-	protected long timeFinished;
+    protected String messageID;
+    protected long timeCreated = System.currentTimeMillis();
+    protected long timeStarted;
+    protected long timeFinished;
 
-	protected DocumentIndexingPackage documentIndexingPackage;
+    protected DocumentIndexingPackage documentIndexingPackage;
 
-	protected ProcessingStatus status;
-	protected AtomicInteger childrenPending;
-	protected AtomicInteger childrenProcessed;
+    protected ProcessingStatus status;
+    protected AtomicInteger childrenPending;
+    protected AtomicInteger childrenProcessed;
 
-	public UpdateNodeRequest(String messageID) {
-		this.messageID = messageID;
+    public UpdateNodeRequest(String messageID) {
+        this.messageID = messageID;
 
-		childrenPending = new AtomicInteger(0);
-		childrenProcessed = new AtomicInteger(0);
-	}
+        childrenPending = new AtomicInteger(0);
+        childrenProcessed = new AtomicInteger(0);
+    }
 
-	public UpdateNodeRequest(String messageID, ProcessingStatus status) {
-		this(messageID);
-		this.status = status;
-	}
-	
-	public void requestCompleted() {
-		timeFinished = System.currentTimeMillis();
-		this.cleanupExternalReferences();
-		
-		if (ProcessingStatus.ACTIVE.equals(this.status))
-			this.status = ProcessingStatus.FINISHED;
-	}
+    public UpdateNodeRequest(String messageID, ProcessingStatus status) {
+        this(messageID);
+        this.status = status;
+    }
 
-	/**
-	 * Cleans up or allows for cleanup of references to external resources that are no longer needed after
-	 * this message has finished being processed, but is still being retained.
-	 */
-	protected void cleanupExternalReferences() {
-		this.documentIndexingPackage = null;
-	}
-	
-	public void setChildrenPending(int newValue) {
-		this.childrenPending.set(newValue);
-	}
+    public void requestCompleted() {
+        timeFinished = System.currentTimeMillis();
+        this.cleanupExternalReferences();
 
-	public int getChildrenPending() {
-		return childrenPending.get();
-	}
+        if (ProcessingStatus.ACTIVE.equals(this.status)) {
+            this.status = ProcessingStatus.FINISHED;
+        }
+    }
 
-	public int incrementChildrenProcessed() {
-		return this.childrenProcessed.incrementAndGet();
-	}
-	
-	public int getChildrenProcessed() {
-		return childrenProcessed.get();
-	}
+    /**
+     * Cleans up or allows for cleanup of references to external resources that are no longer needed after
+     * this message has finished being processed, but is still being retained.
+     */
+    protected void cleanupExternalReferences() {
+        this.documentIndexingPackage = null;
+    }
 
-	@Override
-	public String getMessageID() {
-		return messageID;
-	}
+    public void setChildrenPending(int newValue) {
+        this.childrenPending.set(newValue);
+    }
 
-	@Override
-	public String getTargetID() {
-		return messageID;
-	}
+    public int getChildrenPending() {
+        return childrenPending.get();
+    }
 
-	@Override
-	public String getTargetLabel() {
-		return messageID;
-	}
+    public int incrementChildrenProcessed() {
+        return this.childrenProcessed.incrementAndGet();
+    }
 
-	@Override
-	public void setTargetLabel(String targetLabel) {
-	}
+    public int getChildrenProcessed() {
+        return childrenProcessed.get();
+    }
 
-	@Override
-	public String getAction() {
-		return null;
-	}
+    @Override
+    public String getMessageID() {
+        return messageID;
+    }
 
-	@Override
-	public String getNamespace() {
-		return null;
-	}
+    @Override
+    public String getTargetID() {
+        return messageID;
+    }
 
-	@Override
-	public String getQualifiedAction() {
-		return null;
-	}
+    @Override
+    public String getTargetLabel() {
+        return messageID;
+    }
 
-	@Override
-	public long getTimeCreated() {
-		return this.timeCreated;
-	}
+    @Override
+    public void setTargetLabel(String targetLabel) {
+    }
 
-	public long getTimeFinished() {
-		return timeFinished;
-	}
-	
-	public long getTimeStarted() {
-		return this.timeStarted;
-	}
-	
-	public long getActiveDuration() {
-		return this.timeFinished - this.timeStarted;
-	}
+    @Override
+    public String getAction() {
+        return null;
+    }
 
-	public ProcessingStatus getStatus() {
-		return status;
-	}
+    @Override
+    public String getNamespace() {
+        return null;
+    }
 
-	public void setStatus(ProcessingStatus status) {
-		this.status = status;
-		if (this.status == ProcessingStatus.FINISHED || this.status == ProcessingStatus.FAILED) {
-			this.timeFinished = System.currentTimeMillis();
-		}
-		if (this.status == ProcessingStatus.ACTIVE) {
-			this.timeStarted = System.currentTimeMillis();
-		}
-	}
+    @Override
+    public String getQualifiedAction() {
+        return null;
+    }
 
-	public DocumentIndexingPackage getDocumentIndexingPackage() {
-		return documentIndexingPackage;
-	}
+    @Override
+    public long getTimeCreated() {
+        return this.timeCreated;
+    }
 
-	public void setDocumentIndexingPackage(DocumentIndexingPackage documentIndexingPackage) {
-		this.documentIndexingPackage = documentIndexingPackage;
-	}
+    public long getTimeFinished() {
+        return timeFinished;
+    }
+
+    public long getTimeStarted() {
+        return this.timeStarted;
+    }
+
+    public long getActiveDuration() {
+        return this.timeFinished - this.timeStarted;
+    }
+
+    public ProcessingStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ProcessingStatus status) {
+        this.status = status;
+        if (this.status == ProcessingStatus.FINISHED || this.status == ProcessingStatus.FAILED) {
+            this.timeFinished = System.currentTimeMillis();
+        }
+        if (this.status == ProcessingStatus.ACTIVE) {
+            this.timeStarted = System.currentTimeMillis();
+        }
+    }
+
+    public DocumentIndexingPackage getDocumentIndexingPackage() {
+        return documentIndexingPackage;
+    }
+
+    public void setDocumentIndexingPackage(DocumentIndexingPackage documentIndexingPackage) {
+        this.documentIndexingPackage = documentIndexingPackage;
+    }
 }

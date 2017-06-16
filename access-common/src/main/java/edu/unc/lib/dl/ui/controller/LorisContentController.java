@@ -41,95 +41,96 @@ import edu.unc.lib.dl.util.ContentModelHelper;
  */
 @Controller
 public class LorisContentController extends AbstractSolrSearchController {
-	private static final Logger LOG = LoggerFactory.getLogger(LorisContentController.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LorisContentController.class);
 
-	@Autowired
-	private LorisContentService lorisContentService;
+    @Autowired
+    private LorisContentService lorisContentService;
 
-	@Autowired
-	@Qualifier("lorisUserAccessUtil")
-	private UserAccessUtil userAccessUtil;
+    @Autowired
+    @Qualifier("lorisUserAccessUtil")
+    private UserAccessUtil userAccessUtil;
 
-	/**
-	 * Determines if the user is allowed to access a specific datastream on the selected object. If so, then the result
-	 * is cached for future use.
-	 * 
-	 * @param id
-	 * @param datastream
-	 * @param request
-	 * @return
-	 */
-	private boolean hasAccess(String id, String datastream) {
-		// Defaults to jp2 surrogate if no datastream specified
-		if (datastream == null) {
-			datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
-		}
-		
-		id = id + "/" + datastream;
+    /**
+     * Determines if the user is allowed to access a specific datastream on the selected object. If so, then the result
+     * is cached for future use.
+     * 
+     * @param id
+     * @param datastream
+     * @param request
+     * @return
+     */
+    private boolean hasAccess(String id, String datastream) {
+        // Defaults to jp2 surrogate if no datastream specified
+        if (datastream == null) {
+            datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
+        }
 
-		LOG.debug("Checking if user " + GroupsThreadStore.getUsername() + " with groups " + GroupsThreadStore.getGroups() + " has access to " + id);
-		// TODO check publication status in Solr
-		return userAccessUtil.hasAccess(id, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
-	}
-	
-	/**
-	 * Handles requests for individual region tiles.
-	 * 
-	 * @param model
-	 * @param request
-	 * @param response
-	 */
-	@RequestMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
-	public void getRegion(@PathVariable("id") String id,
-			@PathVariable("datastream") String datastream, @PathVariable("region") String region,
-			@PathVariable("size") String size, @PathVariable("rotation") String rotation,
-			@PathVariable("qualityFormat") String qualityFormat, HttpServletResponse response) {
-		// Check if the user is allowed to view this object
-		if (this.hasAccess(id, datastream)) {
-			try {
-				String[] qualityFormatArray = qualityFormat.split("\\.");
-				String quality = qualityFormatArray[0];
-				String format = qualityFormatArray[1];
-				
-				lorisContentService
-						.streamJP2(id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
-			} catch (IOException e) {
-				LOG.error("Error retrieving streaming JP2 content for " + id, e);
-			}
-		} else {
-			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
-			response.setStatus(HttpStatus.FORBIDDEN.value());
-		}
-	}
+        id = id + "/" + datastream;
 
-	/**
-	 * Handles requests for jp2 metadata
-	 * 
-	 * @param model
-	 * @param request
-	 * @param response
-	 */
-	@RequestMapping("/jp2Proxy/{id}/{datastream}")
-	public void getMetadata(@PathVariable("id") String id,
-			@PathVariable("datastream") String datastream, HttpServletResponse response) {
-		// Check if the user is allowed to view this object
-		if (this.hasAccess(id, datastream)) {
-			try {
-				lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
-			} catch (IOException e) {
-				LOG.error("Error retrieving JP2 metadata content for " + id, e);
-			}
-		} else {
-			LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
-			response.setStatus(HttpStatus.FORBIDDEN.value());
-		}
-	}
+        LOG.debug("Checking if user " + GroupsThreadStore.getUsername() +
+                " with groups " + GroupsThreadStore.getGroups() + " has access to " + id);
+        // TODO check publication status in Solr
+        return userAccessUtil.hasAccess(id, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
+    }
 
-	public void setlorisContentService(LorisContentService lorisContentService) {
-		this.lorisContentService = lorisContentService;
-	}
+    /**
+     * Handles requests for individual region tiles.
+     * 
+     * @param model
+     * @param request
+     * @param response
+     */
+    @RequestMapping("/jp2Proxy/{id}/{datastream}/{region}/{size}/{rotation}/{qualityFormat:.+}")
+    public void getRegion(@PathVariable("id") String id,
+            @PathVariable("datastream") String datastream, @PathVariable("region") String region,
+            @PathVariable("size") String size, @PathVariable("rotation") String rotation,
+            @PathVariable("qualityFormat") String qualityFormat, HttpServletResponse response) {
+        // Check if the user is allowed to view this object
+        if (this.hasAccess(id, datastream)) {
+            try {
+                String[] qualityFormatArray = qualityFormat.split("\\.");
+                String quality = qualityFormatArray[0];
+                String format = qualityFormatArray[1];
 
-	public void setUserAccessUtil(UserAccessUtil userAccessUtil) {
-		this.userAccessUtil = userAccessUtil;
-	}
+                lorisContentService.streamJP2(
+                        id, region, size, rotation, quality, format, datastream, response.getOutputStream(), response);
+            } catch (IOException e) {
+                LOG.error("Error retrieving streaming JP2 content for " + id, e);
+            }
+        } else {
+            LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+        }
+    }
+
+    /**
+     * Handles requests for jp2 metadata
+     * 
+     * @param model
+     * @param request
+     * @param response
+     */
+    @RequestMapping("/jp2Proxy/{id}/{datastream}")
+    public void getMetadata(@PathVariable("id") String id,
+            @PathVariable("datastream") String datastream, HttpServletResponse response) {
+        // Check if the user is allowed to view this object
+        if (this.hasAccess(id, datastream)) {
+            try {
+                lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
+            } catch (IOException e) {
+                LOG.error("Error retrieving JP2 metadata content for " + id, e);
+            }
+        } else {
+            LOG.debug("Access was forbidden to " + id + " for user " + GroupsThreadStore.getUsername());
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+        }
+    }
+
+    public void setlorisContentService(LorisContentService lorisContentService) {
+        this.lorisContentService = lorisContentService;
+    }
+
+    public void setUserAccessUtil(UserAccessUtil userAccessUtil) {
+        this.userAccessUtil = userAccessUtil;
+    }
 }

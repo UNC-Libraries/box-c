@@ -35,32 +35,32 @@ import org.springframework.web.filter.OncePerRequestFilter;
  *
  */
 public class SpoofShibbolethFilter extends OncePerRequestFilter implements ServletContextAware {
-	private static final Logger log = LoggerFactory.getLogger(SpoofShibbolethFilter.class);
-	
-	private boolean spoofEnabled = false;
-	
-	@PostConstruct
-	public void init() {
-		if (spoofEnabled) {
-			log.warn("****Warning: Application started with spoofing filter enabled****");
-		}
-	}
+    private static final Logger log = LoggerFactory.getLogger(SpoofShibbolethFilter.class);
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
-		if (spoofEnabled) {
-			filterChain.doFilter(new SpoofShibbolethRequestWrapper(request), response);
-		} else {
-			filterChain.doFilter(request, response);
-		}
-	}
+    private boolean spoofEnabled = false;
 
-	public boolean isSpoofEnabled() {
-		return spoofEnabled;
-	}
+    @PostConstruct
+    public void init() {
+        if (spoofEnabled) {
+            log.warn("****Warning: Application started with spoofing filter enabled****");
+        }
+    }
 
-	public void setSpoofEnabled(boolean spoofEnabled) {
-		this.spoofEnabled = spoofEnabled;
-	}
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        if (spoofEnabled) {
+            filterChain.doFilter(new SpoofShibbolethRequestWrapper(request), response);
+        } else {
+            filterChain.doFilter(request, response);
+        }
+    }
+
+    public boolean isSpoofEnabled() {
+        return spoofEnabled;
+    }
+
+    public void setSpoofEnabled(boolean spoofEnabled) {
+        this.spoofEnabled = spoofEnabled;
+    }
 }

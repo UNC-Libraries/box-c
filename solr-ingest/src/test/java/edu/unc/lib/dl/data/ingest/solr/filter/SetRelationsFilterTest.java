@@ -40,86 +40,86 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
  */
 public class SetRelationsFilterTest extends Assert {
 
-	private DocumentIndexingPackageDataLoader loader;
-	private DocumentIndexingPackageFactory factory;
-	@Mock
-	private TripleStoreQueryService tsqs;
-	
-	@Before
-	public void setup() throws Exception {
-		initMocks(this);
-		loader = new DocumentIndexingPackageDataLoader();
-		factory = new DocumentIndexingPackageFactory();
-		factory.setDataLoader(loader);
-		loader.setFactory(factory);
-		loader.setTsqs(tsqs);
-	}
-	
-	@Test
-	public void aggregateRelations() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/aggregateSplitDepartments.xml")));
-		dip.setFoxml(foxml);
+    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackageFactory factory;
+    @Mock
+    private TripleStoreQueryService tsqs;
 
-		IndexDocumentBean idb = dip.getDocument();
-		SetRelationsFilter filter = new SetRelationsFilter();
-		filter.filter(dip);
+    @Before
+    public void setup() throws Exception {
+        initMocks(this);
+        loader = new DocumentIndexingPackageDataLoader();
+        factory = new DocumentIndexingPackageFactory();
+        factory.setDataLoader(loader);
+        loader.setFactory(factory);
+        loader.setTsqs(tsqs);
+    }
 
-		assertTrue(idb.getRelations().contains("defaultWebObject|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
-		assertEquals(
-				idb.getLabel(),
-				"A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model");
-	}
+    @Test
+    public void aggregateRelations() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
+        SAXBuilder builder = new SAXBuilder();
+        Document foxml = builder.build(new FileInputStream(new File(
+                "src/test/resources/foxml/aggregateSplitDepartments.xml")));
+        dip.setFoxml(foxml);
 
-	@Test
-	public void itemWithOriginalRelations() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/imageNoMODS.xml")));
-		dip.setFoxml(foxml);
+        IndexDocumentBean idb = dip.getDocument();
+        SetRelationsFilter filter = new SetRelationsFilter();
+        filter.filter(dip);
 
-		IndexDocumentBean idb = dip.getDocument();
-		SetRelationsFilter filter = new SetRelationsFilter();
-		filter.filter(dip);
+        assertTrue(idb.getRelations().contains("defaultWebObject|uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194"));
+        assertEquals(
+                idb.getLabel(),
+                "A Comparison of Machine Learning Algorithms for Chemical Toxicity Classification Using a Simulated Multi-Scale Data Model");
+    }
 
-		assertTrue(idb.getRelations().contains("defaultWebData|uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"));
-		assertEquals(idb.getLabel(), "A1100-A800 NS final.jpg");
-		assertTrue(idb.getRelations().contains("sourceData|uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"));
-	}
+    @Test
+    public void itemWithOriginalRelations() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
+        SAXBuilder builder = new SAXBuilder();
+        Document foxml = builder.build(new FileInputStream(new File(
+                "src/test/resources/foxml/imageNoMODS.xml")));
+        dip.setFoxml(foxml);
 
-	@Test
-	public void embargoedRelation() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/embargoed.xml")));
-		dip.setFoxml(foxml);
+        IndexDocumentBean idb = dip.getDocument();
+        SetRelationsFilter filter = new SetRelationsFilter();
+        filter.filter(dip);
 
-		IndexDocumentBean idb = dip.getDocument();
-		SetRelationsFilter filter = new SetRelationsFilter();
-		filter.filter(dip);
+        assertTrue(idb.getRelations().contains("defaultWebData|uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"));
+        assertEquals(idb.getLabel(), "A1100-A800 NS final.jpg");
+        assertTrue(idb.getRelations().contains("sourceData|uuid:37c23b03-0ca4-4487-a1c5-92c28cadc71b/DATA_FILE"));
+    }
 
-		assertTrue(idb.getRelations().contains("embargo-until|2074-02-03T00:00:00"));
-		assertTrue(idb.getRelations().size() > 1);
-	}
+    @Test
+    public void embargoedRelation() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
+        SAXBuilder builder = new SAXBuilder();
+        Document foxml = builder.build(new FileInputStream(new File(
+                "src/test/resources/foxml/embargoed.xml")));
+        dip.setFoxml(foxml);
+
+        IndexDocumentBean idb = dip.getDocument();
+        SetRelationsFilter filter = new SetRelationsFilter();
+        filter.filter(dip);
+
+        assertTrue(idb.getRelations().contains("embargo-until|2074-02-03T00:00:00"));
+        assertTrue(idb.getRelations().size() > 1);
+    }
 
 
-	@Test
-	public void orderedContainerRelations() throws Exception {
-		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
-		SAXBuilder builder = new SAXBuilder();
-		Document foxml = builder.build(new FileInputStream(new File(
-				"src/test/resources/foxml/folderSmall.xml")));
-		dip.setFoxml(foxml);
+    @Test
+    public void orderedContainerRelations() throws Exception {
+        DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:aggregate");
+        SAXBuilder builder = new SAXBuilder();
+        Document foxml = builder.build(new FileInputStream(new File(
+                "src/test/resources/foxml/folderSmall.xml")));
+        dip.setFoxml(foxml);
 
-		IndexDocumentBean idb = dip.getDocument();
-		SetRelationsFilter filter = new SetRelationsFilter();
-		filter.filter(dip);
+        IndexDocumentBean idb = dip.getDocument();
+        SetRelationsFilter filter = new SetRelationsFilter();
+        filter.filter(dip);
 
-		assertTrue(idb.getRelations().contains("sortOrder|ordered"));
-		assertEquals(idb.getLabel(), "Field notes");
-	}
+        assertTrue(idb.getRelations().contains("sortOrder|ordered"));
+        assertEquals(idb.getLabel(), "Field notes");
+    }
 }

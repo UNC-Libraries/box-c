@@ -86,351 +86,351 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class DigitalObjectManagerImplTest {
 
-	@Resource
-	private final DigitalObjectManagerImpl digitalObjectManagerImpl = null;
+    @Resource
+    private final DigitalObjectManagerImpl digitalObjectManagerImpl = null;
 
-	@Resource
-	ManagementClient forwardedManagementClient = null;
-	
-	@Resource
-	ManagementClient managementClient = null;
+    @Resource
+    ManagementClient forwardedManagementClient = null;
 
-	@Resource
-	AccessClient accessClient = null;
-	
-	@Resource
-	FedoraAccessControlService aclService = null;
+    @Resource
+    ManagementClient managementClient = null;
 
-	@Resource
-	TripleStoreQueryService tripleStoreQueryService = null;
+    @Resource
+    AccessClient accessClient = null;
 
-	private static final String MD_CONTENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-			+ "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\">" + "<m:div TYPE=\"Container\">"
-			+ "<m:div ID=\"test:delete\" ORDER=\"0\"/>" + "</m:div>" + "</m:structMap>";
+    @Resource
+    FedoraAccessControlService aclService = null;
 
-	private static final String MD_EVENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			+ "<premis xmlns=\"info:lc/xmlns/premis-v2\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-			+ "<object xsi:type=\"representation\">" + "<objectIdentifier>"
-			+ "<objectIdentifierType>PID</objectIdentifierType>"
-			+ "<objectIdentifierValue>test:container</objectIdentifierValue>" + "</objectIdentifier>" + "</object>"
-			+ "</premis>";
+    @Resource
+    TripleStoreQueryService tripleStoreQueryService = null;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
+    private static final String MD_CONTENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+            + "<m:structMap xmlns:m=\"http://www.loc.gov/METS/\">" + "<m:div TYPE=\"Container\">"
+            + "<m:div ID=\"test:delete\" ORDER=\"0\"/>" + "</m:div>" + "</m:structMap>";
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    private static final String MD_EVENTS = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<premis xmlns=\"info:lc/xmlns/premis-v2\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
+            + "<object xsi:type=\"representation\">" + "<objectIdentifier>"
+            + "<objectIdentifierType>PID</objectIdentifierType>"
+            + "<objectIdentifierValue>test:container</objectIdentifierValue>" + "</objectIdentifier>" + "</object>"
+            + "</premis>";
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {
-		reset(forwardedManagementClient);
-		reset(accessClient);
-		reset(tripleStoreQueryService);
+    /**
+     * @throws java.lang.Exception
+     */
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+    }
 
-		this.getDigitalObjectManagerImpl().setAvailable(true, "available");
-		// setup default MD_CONTENTS stream
-		MIMETypedStream mts = mock(MIMETypedStream.class);
-		when(mts.getStream()).thenReturn(MD_CONTENTS.getBytes());
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_CONTENTS"), anyString())).thenReturn(mts);
+    /**
+     * @throws java.lang.Exception
+     */
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-		// setup default MD_EVENTS stream
-		MIMETypedStream mts2 = mock(MIMETypedStream.class);
-		when(mts2.getStream()).thenReturn(MD_EVENTS.getBytes());
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_EVENTS"), any(String.class)))
-				.thenReturn(mts2);
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
+        reset(forwardedManagementClient);
+        reset(accessClient);
+        reset(tripleStoreQueryService);
 
-		// management client upload responses
-		Answer<String> upload = new Answer<String>() {
-			@Override
-			public String answer(InvocationOnMock invocation) throws Throwable {
-				return "upload://" + UUID.randomUUID();
-			}
-		};
-		when(this.forwardedManagementClient.upload(any(File.class))).thenAnswer(upload);
-		when(this.forwardedManagementClient.upload(any(Document.class))).thenAnswer(upload);
-	}
+        this.getDigitalObjectManagerImpl().setAvailable(true, "available");
+        // setup default MD_CONTENTS stream
+        MIMETypedStream mts = mock(MIMETypedStream.class);
+        when(mts.getStream()).thenReturn(MD_CONTENTS.getBytes());
+        when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_CONTENTS"), anyString())).thenReturn(mts);
 
-	/**
-	 * @return
-	 */
-	private DigitalObjectManagerImpl getDigitalObjectManagerImpl() {
-		return this.digitalObjectManagerImpl;
-	}
+        // setup default MD_EVENTS stream
+        MIMETypedStream mts2 = mock(MIMETypedStream.class);
+        when(mts2.getStream()).thenReturn(MD_EVENTS.getBytes());
+        when(accessClient.getDatastreamDissemination(any(PID.class), eq("MD_EVENTS"), any(String.class)))
+                .thenReturn(mts2);
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-	}
+        // management client upload responses
+        Answer<String> upload = new Answer<String>() {
+            @Override
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                return "upload://" + UUID.randomUUID();
+            }
+        };
+        when(this.forwardedManagementClient.upload(any(File.class))).thenAnswer(upload);
+        when(this.forwardedManagementClient.upload(any(Document.class))).thenAnswer(upload);
+    }
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * .
-	 */
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testDelete() throws Exception {
-		// verify works with references internal to delete contents
-		// verify works with container reference
-		// setup mocks
-		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
-		PID container = new PID("test:container");
-		ArrayList<PID> refs = new ArrayList<PID>();
-		refs.add(container);
-		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
+    /**
+     * @return
+     */
+    private DigitalObjectManagerImpl getDigitalObjectManagerImpl() {
+        return this.digitalObjectManagerImpl;
+    }
 
-		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
-				any(Namespace.class), any(PID.class))).thenReturn(true);
+    /**
+     * @throws java.lang.Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+    }
 
-		ArrayList<URI> cms = new ArrayList<URI>();
-		cms.add(ContentModelHelper.Model.CONTAINER.getURI());
-		when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * .
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDelete() throws Exception {
+        // verify works with references internal to delete contents
+        // verify works with container reference
+        // setup mocks
+        when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
+        PID container = new PID("test:container");
+        ArrayList<PID> refs = new ArrayList<PID>();
+        refs.add(container);
+        when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
+        when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		PID test = new PID("test:delete");
-		this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
+        when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
+                any(Namespace.class), any(PID.class))).thenReturn(true);
 
-		verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
-				eq(false),
-				any(String.class), (ArrayList<String>) any(), any(String.class), any(Document.class));
-		verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
-				eq(container));
-		verify(forwardedManagementClient, times(1)).purgeObject(eq(test), any(String.class), eq(false));
-		verify(forwardedManagementClient, times(0)).purgeObject(any(PID.class), any(String.class), eq(true));
-		verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
-	}
+        ArrayList<URI> cms = new ArrayList<URI>();
+        cms.add(ContentModelHelper.Model.CONTAINER.getURI());
+        when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * . verify exception when referenced by PIDs not being deleted and not container, verify exception cites the
-	 * referencing PID.
-	 */
-	@Test(expected = IngestException.class)
-	public void testDeleteReferencedPIDException() throws Exception {
-		// setup mocks
-		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
-		PID container = new PID("test:container");
-		ArrayList<PID> refs = new ArrayList<PID>();
-		refs.add(container);
-		refs.add(new PID("test:randomReference"));
-		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container);
+        PID test = new PID("test:delete");
+        this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
 
-		this.getDigitalObjectManagerImpl().delete(new PID("test:delete"), "tron", "testing delete");
-	}
+        verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
+                eq(false),
+                any(String.class), (ArrayList<String>) any(), any(String.class), any(Document.class));
+        verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
+                eq(container));
+        verify(forwardedManagementClient, times(1)).purgeObject(eq(test), any(String.class), eq(false));
+        verify(forwardedManagementClient, times(0)).purgeObject(any(PID.class), any(String.class), eq(true));
+        verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
+    }
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * .
-	 */
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testDeleteForFedoraFault() throws Exception {
-		// verify works with references internal to delete contents
-		// verify works with container reference
-		// setup mocks
-		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
-		PID container = new PID("test:container");
-		ArrayList<PID> refs = new ArrayList<PID>();
-		refs.add(container);
-		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * . verify exception when referenced by PIDs not being deleted and not container, verify exception cites the
+     * referencing PID.
+     */
+    @Test(expected = IngestException.class)
+    public void testDeleteReferencedPIDException() throws Exception {
+        // setup mocks
+        when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
+        PID container = new PID("test:container");
+        ArrayList<PID> refs = new ArrayList<PID>();
+        refs.add(container);
+        refs.add(new PID("test:randomReference"));
+        when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
+        when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container);
 
-		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
-				any(Namespace.class), any(PID.class))).thenReturn(true);
+        this.getDigitalObjectManagerImpl().delete(new PID("test:delete"), "tron", "testing delete");
+    }
 
-		ArrayList<URI> cms = new ArrayList<URI>();
-		cms.add(ContentModelHelper.Model.CONTAINER.getURI());
-		when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * .
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDeleteForFedoraFault() throws Exception {
+        // verify works with references internal to delete contents
+        // verify works with container reference
+        // setup mocks
+        when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
+        PID container = new PID("test:container");
+        ArrayList<PID> refs = new ArrayList<PID>();
+        refs.add(container);
+        when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
+        when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		PID test = new PID("test:delete");
-		FedoraException fe = mock(FedoraException.class);
-		when(forwardedManagementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
-		Throwable thrown = null;
-		try {
-			this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
-		} catch (IngestException e) {
-			thrown = e;
-		}
-		assertNotNull("An exception must be thrown", thrown);
-		assertTrue("Exception must be an IngestException", thrown instanceof IngestException);
+        when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
+                any(Namespace.class), any(PID.class))).thenReturn(true);
 
-		// delete failures always result in a log dump (probably not necessary
-		// unless PID are uncontained)
+        ArrayList<URI> cms = new ArrayList<URI>();
+        cms.add(ContentModelHelper.Model.CONTAINER.getURI());
+        when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
-		// verify container was updated
-		verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
-				eq(false),
-				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
-		verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
-				eq(container));
+        PID test = new PID("test:delete");
+        FedoraException fe = mock(FedoraException.class);
+        when(forwardedManagementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
+        Throwable thrown = null;
+        try {
+            this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
+        } catch (IngestException e) {
+            thrown = e;
+        }
+        assertNotNull("An exception must be thrown", thrown);
+        assertTrue("Exception must be an IngestException", thrown instanceof IngestException);
 
-		// purge call will fail resulting in a log dump of rollback info
-		verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
+        // delete failures always result in a log dump (probably not necessary
+        // unless PID are uncontained)
 
-		// TODO also test failure of "remove from container" operation
-	}
+        // verify container was updated
+        verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
+                eq(false),
+                any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
+        verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
+                eq(container));
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * .
-	 */
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testDeleteForFedoraGone() throws Exception {
-		// verify works with references internal to delete contents
-		// verify works with container reference
-		// setup mocks
-		when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
-		PID container = new PID("test:container");
-		ArrayList<PID> refs = new ArrayList<PID>();
-		refs.add(container);
-		when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
-		when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
+        // purge call will fail resulting in a log dump of rollback info
+        verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
 
-		when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
-				any(Namespace.class), any(PID.class))).thenReturn(true);
+        // TODO also test failure of "remove from container" operation
+    }
 
-		ArrayList<URI> cms = new ArrayList<URI>();
-		cms.add(ContentModelHelper.Model.CONTAINER.getURI());
-		when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#delete(edu.unc.lib.dl.fedora.PID, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * .
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDeleteForFedoraGone() throws Exception {
+        // verify works with references internal to delete contents
+        // verify works with container reference
+        // setup mocks
+        when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
+        PID container = new PID("test:container");
+        ArrayList<PID> refs = new ArrayList<PID>();
+        refs.add(container);
+        when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
+        when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
 
-		PID test = new PID("test:delete");
-		ServiceException fe = mock(ServiceException.class);
-		when(forwardedManagementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
-		Throwable thrown = null;
-		try {
-			this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
-		} catch (IngestException e) {
-			thrown = e;
-		}
-		assertNotNull("An exception must be thrown", thrown);
-		assertTrue("Exception must be an IngestException", thrown instanceof IngestException);
+        when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
+                any(Namespace.class), any(PID.class))).thenReturn(true);
 
-		// delete failures always result in a log dump (probably not necessary
-		// unless PID are uncontained)
+        ArrayList<URI> cms = new ArrayList<URI>();
+        cms.add(ContentModelHelper.Model.CONTAINER.getURI());
+        when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
-		// verify container was updated
-		verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
-				eq(false),
-				any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
-		verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
-				eq(container));
+        PID test = new PID("test:delete");
+        ServiceException fe = mock(ServiceException.class);
+        when(forwardedManagementClient.purgeObject(any(PID.class), any(String.class), eq(false))).thenThrow(fe);
+        Throwable thrown = null;
+        try {
+            this.getDigitalObjectManagerImpl().delete(test, "tron", "testing delete");
+        } catch (IngestException e) {
+            thrown = e;
+        }
+        assertNotNull("An exception must be thrown", thrown);
+        assertTrue("Exception must be an IngestException", thrown instanceof IngestException);
 
-		// purge call will fail resulting in a log dump of rollback info
-		verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
-		assertTrue("DOM must be made unavailable after a service exception", !this.getDigitalObjectManagerImpl()
-				.isAvailable());
-	}
+        // delete failures always result in a log dump (probably not necessary
+        // unless PID are uncontained)
 
-	// TODO test fedora fault and ccessful rollback of a failed move
-	// TODO test fedora fault and successful rollback of a failed update
-	// TODO test fedora gone and successful log dump of rollback info for a
-	// failed move
-	// TODO test fedora gone and successful log dump of rollback info for a
-	// failed update
-	// TODO wrap mock around JavaMailSender with debug, verify email always sent
-	// TODO testMailSendFailureLogging
+        // verify container was updated
+        verify(forwardedManagementClient, times(1)).modifyInlineXMLDatastream(any(PID.class), eq("MD_CONTENTS"),
+                eq(false),
+                any(String.class), any(new ArrayList<String>().getClass()), any(String.class), any(Document.class));
+        verify(forwardedManagementClient, times(1)).writePremisEventsToFedoraObject(any(PremisEventLogger.class),
+                eq(container));
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#updateSourceData(edu.unc.lib.dl.fedora.PID, java.lang.String, java.io.File, java.lang.String, java.lang.String, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * .
-	 */
-	// @Test
-	public void testUpdateSourceData() {
-		fail("Not yet implemented"); // TODO
-	}
+        // purge call will fail resulting in a log dump of rollback info
+        verify(forwardedManagementClient, times(1)).purgeObject(any(PID.class), any(String.class), anyBoolean());
+        assertTrue("DOM must be made unavailable after a service exception", !this.getDigitalObjectManagerImpl()
+                .isAvailable());
+    }
 
-	/**
-	 * Test method for {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#checkAvailable()} .
-	 */
-	@Test(expected = IngestException.class)
-	public void testAvailabilityException() throws Exception {
-		this.getDigitalObjectManagerImpl().setAvailable(false,
-				"The repository manager is unavailable for a test of the availability check.");
-		this.getDigitalObjectManagerImpl().delete(new PID("foo"), "Delete", "user");
-	}
-	
-	@Ignore
-	@Test(expected = UpdateException.class)
-	public void testChangeResourceTypeInvalidNewType() throws Exception {
-		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), null, "user");
-	}
-	
-	@Ignore
-	@Test
-	public void testChangeResourceType() throws Exception {
-		String relsName = ContentModelHelper.Datastream.RELS_EXT.toString();
-		
-		DatastreamDocument dsDoc = mock(DatastreamDocument.class);
-		when(dsDoc.getLastModified()).thenReturn("2015-06-03");
-		when(managementClient.getXMLDatastreamIfExists(any(PID.class), eq(relsName)))
-			.thenReturn(dsDoc);
-		
-		when(dsDoc.getDocument()).thenReturn(ClientUtils.parseXML(
-				IOUtils.toByteArray(getClass().getResourceAsStream("/datastream/collectionRels.xml"))));
-		
-		when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editResourceType)))
-		.thenReturn(true);
-		
-		this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), ResourceType.Aggregate, "user");
-		
-		ArgumentCaptor<Document> newRelsCaptor = ArgumentCaptor.forClass(Document.class);
-		verify(managementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),
-				eq("2015-06-03"), newRelsCaptor.capture());
-		
-		Document newRels = newRelsCaptor.getValue();
-		
-		XPathFactory xFactory = XPathFactory.instance();
-		
-		XPathExpression<Attribute> expr = xFactory.compile("//fedModel:hasModel/@rdf:resource", Filters.attribute(),
-				null, JDOMNamespaceUtil.RDF_NS, JDOMNamespaceUtil.FEDORA_MODEL_NS);
-		List<Attribute> modelAttrs = expr.evaluate(newRels);
-		List<String> modelValues = new ArrayList<>();
-		for (Attribute attr : modelAttrs) {
-			modelValues.add(attr.getValue());
-		}
+    // TODO test fedora fault and ccessful rollback of a failed move
+    // TODO test fedora fault and successful rollback of a failed update
+    // TODO test fedora gone and successful log dump of rollback info for a
+    // failed move
+    // TODO test fedora gone and successful log dump of rollback info for a
+    // failed update
+    // TODO wrap mock around JavaMailSender with debug, verify email always sent
+    // TODO testMailSendFailureLogging
 
-		assertTrue(modelValues.contains(Model.CONTAINER.toString()));
-		assertTrue(modelValues.contains(Model.AGGREGATE_WORK.toString()));
-		assertFalse(modelValues.contains(Model.COLLECTION.toString()));
-		assertTrue(modelValues.contains(Model.PRESERVEDOBJECT.toString()));
-	}
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#updateSourceData(edu.unc.lib.dl.fedora.PID, java.lang.String, java.io.File, java.lang.String, java.lang.String, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * .
+     */
+    // @Test
+    public void testUpdateSourceData() {
+        fail("Not yet implemented"); // TODO
+    }
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#updateDescription(edu.unc.lib.dl.fedora.PID, java.io.File, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * .
-	 */
-	// @Test
-	public void testUpdateDescription() {
-		fail("Not yet implemented"); // TODO
-	}
+    /**
+     * Test method for {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#checkAvailable()} .
+     */
+    @Test(expected = IngestException.class)
+    public void testAvailabilityException() throws Exception {
+        this.getDigitalObjectManagerImpl().setAvailable(false,
+                "The repository manager is unavailable for a test of the availability check.");
+        this.getDigitalObjectManagerImpl().delete(new PID("foo"), "Delete", "user");
+    }
 
-	/**
-	 * Test method for
-	 * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#move(java.util.List, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
-	 * .
-	 */
-	// @Test
-	public void testMove() {
-		fail("Not yet implemented"); // TODO
-	}
+    @Ignore
+    @Test(expected = UpdateException.class)
+    public void testChangeResourceTypeInvalidNewType() throws Exception {
+        this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), null, "user");
+    }
+
+    @Ignore
+    @Test
+    public void testChangeResourceType() throws Exception {
+        String relsName = ContentModelHelper.Datastream.RELS_EXT.toString();
+
+        DatastreamDocument dsDoc = mock(DatastreamDocument.class);
+        when(dsDoc.getLastModified()).thenReturn("2015-06-03");
+        when(managementClient.getXMLDatastreamIfExists(any(PID.class), eq(relsName)))
+            .thenReturn(dsDoc);
+
+        when(dsDoc.getDocument()).thenReturn(ClientUtils.parseXML(
+                IOUtils.toByteArray(getClass().getResourceAsStream("/datastream/collectionRels.xml"))));
+
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editResourceType)))
+        .thenReturn(true);
+
+        this.digitalObjectManagerImpl.editResourceType(Arrays.asList(new PID("pid")), ResourceType.Work, "user");
+
+        ArgumentCaptor<Document> newRelsCaptor = ArgumentCaptor.forClass(Document.class);
+        verify(managementClient).modifyDatastream(any(PID.class), eq(relsName), anyString(),
+                eq("2015-06-03"), newRelsCaptor.capture());
+
+        Document newRels = newRelsCaptor.getValue();
+
+        XPathFactory xFactory = XPathFactory.instance();
+
+        XPathExpression<Attribute> expr = xFactory.compile("//fedModel:hasModel/@rdf:resource", Filters.attribute(),
+                null, JDOMNamespaceUtil.RDF_NS, JDOMNamespaceUtil.FEDORA_MODEL_NS);
+        List<Attribute> modelAttrs = expr.evaluate(newRels);
+        List<String> modelValues = new ArrayList<>();
+        for (Attribute attr : modelAttrs) {
+            modelValues.add(attr.getValue());
+        }
+
+        assertTrue(modelValues.contains(Model.CONTAINER.toString()));
+        assertTrue(modelValues.contains(Model.AGGREGATE_WORK.toString()));
+        assertFalse(modelValues.contains(Model.COLLECTION.toString()));
+        assertTrue(modelValues.contains(Model.PRESERVEDOBJECT.toString()));
+    }
+
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#updateDescription(edu.unc.lib.dl.fedora.PID, java.io.File, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * .
+     */
+    // @Test
+    public void testUpdateDescription() {
+        fail("Not yet implemented"); // TODO
+    }
+
+    /**
+     * Test method for
+     * {@link edu.unc.lib.dl.services.DigitalObjectManagerImpl#move(java.util.List, java.lang.String, edu.unc.lib.dl.agents.Agent, java.lang.String)}
+     * .
+     */
+    // @Test
+    public void testMove() {
+        fail("Not yet implemented"); // TODO
+    }
 }

@@ -34,70 +34,90 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * 
  */
 public class JDOMXPathUtil {
-    private static final String __p = JDOMNamespaceUtil.PREMIS_V2_NS.getPrefix();
+    private static final String __p = JDOMNamespaceUtil.PREMIS_V2_NS
+            .getPrefix();
 
     private static XPath _dcFieldsXpath;
     private static XPath _guidXpath;
     private static XPath _isMemberOfCollectionXpath;
     private static XPath _isPartOfIDTYPEXpath;
     private static XPath _isPartOfIDVALUEXpath;
-    private static final String _isPartOfRelationshipXpath = "//" + __p + ":relationship" + "[" + __p
-		    + ":relationshipType = '" + JDOMNamespaceUtil.RELSEXT_NS.getURI() + "isPartOf']";
+    private static final String _isPartOfRelationshipXpath = "//" + __p
+            + ":relationship" + "[" + __p + ":relationshipType = '"
+            + JDOMNamespaceUtil.RELSEXT_NS.getURI() + "isPartOf']";
     private static XPath _pathInCollectionXpath;
     private static XPath _repoPathXpath;
-    private static final String dcFieldsXpath = "//" + JDOMNamespaceUtil.DC_NS.getPrefix() + ":*";
+    private static final String dcFieldsXpath = "//"
+            + JDOMNamespaceUtil.DC_NS.getPrefix() + ":*";
 
-    private static final String guidXpath = "//" + JDOMNamespaceUtil.CDR_NS.getPrefix() + ":uid";
-    private static final String isMemberOfCollectionXpath = "//" + JDOMNamespaceUtil.RELSEXT_NS.getPrefix()
-		    + ":isMemberOfCollection/@resource";
-    private static final String isPartOfIDTYPEXpath = _isPartOfRelationshipXpath + "/" + __p
-		    + ":relatedObjectIdentification/" + __p + ":relatedObjectIdentifierType";
-    private static final String isPartOfIDVALUEXpath = _isPartOfRelationshipXpath + "/" + __p
-		    + ":relatedObjectIdentification/" + __p + ":relatedObjectIdentifierValue";
+    private static final String guidXpath = "//"
+            + JDOMNamespaceUtil.CDR_NS.getPrefix() + ":uid";
+    private static final String isMemberOfCollectionXpath = "//"
+            + JDOMNamespaceUtil.RELSEXT_NS.getPrefix()
+            + ":isMemberOfCollection/@resource";
+    private static final String isPartOfIDTYPEXpath = _isPartOfRelationshipXpath
+            + "/"
+            + __p
+            + ":relatedObjectIdentification/"
+            + __p
+            + ":relatedObjectIdentifierType";
+    private static final String isPartOfIDVALUEXpath = _isPartOfRelationshipXpath
+            + "/"
+            + __p
+            + ":relatedObjectIdentification/"
+            + __p
+            + ":relatedObjectIdentifierValue";
     private static final Log log = LogFactory.getLog(JDOMXPathUtil.class);
-    private static final String pathInCollectionXpath = "//" + JDOMNamespaceUtil.CDR_NS.getPrefix()
-		    + ":pathInCollection";
-    private static final String repoPathXpath = "//" + JDOMNamespaceUtil.CDR_NS.getPrefix() + ":repositoryPath";
+    private static final String pathInCollectionXpath = "//"
+            + JDOMNamespaceUtil.CDR_NS.getPrefix() + ":pathInCollection";
+    private static final String repoPathXpath = "//"
+            + JDOMNamespaceUtil.CDR_NS.getPrefix() + ":repositoryPath";
+
+    private JDOMXPathUtil() {
+    }
 
     static {
-	try {
-	    _isMemberOfCollectionXpath = XPath.newInstance(isMemberOfCollectionXpath);
-	    _isMemberOfCollectionXpath.addNamespace(JDOMNamespaceUtil.RELSEXT_NS);
-	    _isMemberOfCollectionXpath.addNamespace(JDOMNamespaceUtil.RDF_NS);
-	    _isPartOfIDTYPEXpath = XPath.newInstance(isPartOfIDTYPEXpath);
-	    _isPartOfIDTYPEXpath.addNamespace(JDOMNamespaceUtil.PREMIS_V2_NS);
-	    _isPartOfIDVALUEXpath = XPath.newInstance(isPartOfIDVALUEXpath);
-	    _isPartOfIDVALUEXpath.addNamespace(JDOMNamespaceUtil.PREMIS_V2_NS);
-	    _pathInCollectionXpath = XPath.newInstance(pathInCollectionXpath);
-	    _pathInCollectionXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
-	    _guidXpath = XPath.newInstance(guidXpath);
-	    _guidXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
-	    _repoPathXpath = XPath.newInstance(repoPathXpath);
-	    _repoPathXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
-	    _dcFieldsXpath = XPath.newInstance(dcFieldsXpath);
-	    _dcFieldsXpath.addNamespace(JDOMNamespaceUtil.DC_NS);
-	    _dcFieldsXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
-	} catch (JDOMException e) {
-	    log.error("Bad Configuration for JDOMXPathUtil", e);
-	    throw new IllegalArgumentException("Bad Configuration for JDOMXPathUtil", e);
-	}
+        try {
+            _isMemberOfCollectionXpath = XPath
+                    .newInstance(isMemberOfCollectionXpath);
+            _isMemberOfCollectionXpath
+                    .addNamespace(JDOMNamespaceUtil.RELSEXT_NS);
+            _isMemberOfCollectionXpath.addNamespace(JDOMNamespaceUtil.RDF_NS);
+            _isPartOfIDTYPEXpath = XPath.newInstance(isPartOfIDTYPEXpath);
+            _isPartOfIDTYPEXpath.addNamespace(JDOMNamespaceUtil.PREMIS_V2_NS);
+            _isPartOfIDVALUEXpath = XPath.newInstance(isPartOfIDVALUEXpath);
+            _isPartOfIDVALUEXpath.addNamespace(JDOMNamespaceUtil.PREMIS_V2_NS);
+            _pathInCollectionXpath = XPath.newInstance(pathInCollectionXpath);
+            _pathInCollectionXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
+            _guidXpath = XPath.newInstance(guidXpath);
+            _guidXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
+            _repoPathXpath = XPath.newInstance(repoPathXpath);
+            _repoPathXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
+            _dcFieldsXpath = XPath.newInstance(dcFieldsXpath);
+            _dcFieldsXpath.addNamespace(JDOMNamespaceUtil.DC_NS);
+            _dcFieldsXpath.addNamespace(JDOMNamespaceUtil.CDR_NS);
+        } catch (JDOMException e) {
+            log.error("Bad Configuration for JDOMXPathUtil", e);
+            throw new IllegalArgumentException(
+                    "Bad Configuration for JDOMXPathUtil", e);
+        }
     }
 
     public static Map<String, String> getDCFields(Document doc) {
-	HashMap<String, String> result = new HashMap<String, String>();
-	try {
-	    for (Object con : _dcFieldsXpath.selectNodes(doc)) {
-		if (con instanceof Element) {
-		    Element el = (Element) con;
-		    String value = el.getTextTrim();
-		    String name = el.getName();
-		    result.put(name, value);
-		}
-	    }
-	} catch (JDOMException e) {
-	    throw new Error("Programming error, XPath should be valid", e);
-	}
-	return result;
+        HashMap<String, String> result = new HashMap<String, String>();
+        try {
+            for (Object con : _dcFieldsXpath.selectNodes(doc)) {
+                if (con instanceof Element) {
+                    Element el = (Element) con;
+                    String value = el.getTextTrim();
+                    String name = el.getName();
+                    result.put(name, value);
+                }
+            }
+        } catch (JDOMException e) {
+            throw new Error("Programming error, XPath should be valid", e);
+        }
+        return result;
     }
 
     /**
@@ -107,17 +127,18 @@ public class JDOMXPathUtil {
      * @return either an identifier or null
      */
     public static String getGUID(Document foxml) {
-	String guid = null;
-	try {
-	    guid = _guidXpath.valueOf(foxml).trim();
-	    if ("".equals(guid)) {
-		guid = null;
-		log.info("Object is missing it's GUID: " + _guidXpath.getXPath());
-	    }
-	} catch (JDOMException e) {
-	    log.info("Problem finding collection identifier XPaths", e);
-	}
-	return guid;
+        String guid = null;
+        try {
+            guid = _guidXpath.valueOf(foxml).trim();
+            if ("".equals(guid)) {
+                guid = null;
+                log.info("Object is missing it's GUID: "
+                        + _guidXpath.getXPath());
+            }
+        } catch (JDOMException e) {
+            log.info("Problem finding collection identifier XPaths", e);
+        }
+        return guid;
     }
 
     /**
@@ -131,21 +152,21 @@ public class JDOMXPathUtil {
      * null; try { path = _repoPathXpath.valueOf(foxml).trim(); if
      * ("".equals(path)) { path = null; log.info("Object is missing it's
      * repository path: " + _repoPathXpath.getXPath()); } } catch (JDOMException
-     * e) { log.info("Problem finding repository path in FOXML via XPath.", e); }
-     * return path; }
+     * e) { log.info("Problem finding repository path in FOXML via XPath.", e);
+     * } return path; }
      */
 
     public static String getIsMemberOfCollectionPID(Document foxml) {
-	String result = null;
-	try {
-	    result = _isMemberOfCollectionXpath.valueOf(foxml).trim();
-	} catch (JDOMException e) {
-	    log.warn("JDOMException trying to get collection from foxml", e);
-	}
-	if ("".equals(result)) {
-	    result = null;
-	}
-	return result;
+        String result = null;
+        try {
+            result = _isMemberOfCollectionXpath.valueOf(foxml).trim();
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to get collection from foxml", e);
+        }
+        if ("".equals(result)) {
+            result = null;
+        }
+        return result;
     }
 
     /**
@@ -157,33 +178,35 @@ public class JDOMXPathUtil {
      *         SIP to it's containing object in the repository.
      */
     public static String[] getIsPartOfRelatedObject(Document foxml) {
-	String[] result = new String[2];
-	String type = null;
-	String value = null;
-	try {
-	    type = _isPartOfIDTYPEXpath.valueOf(foxml).trim();
-	    value = _isPartOfIDVALUEXpath.valueOf(foxml).trim();
-	    result[0] = type;
-	    result[1] = value;
-	} catch (JDOMException e) {
-	    log.warn("JDOMException trying to get collection from foxml", e);
-	}
-	if ("".equals(type) || "".equals(value)) {
-	    result = null;
-	}
-	return result;
+        String[] result = new String[2];
+        String type = null;
+        String value = null;
+        try {
+            type = _isPartOfIDTYPEXpath.valueOf(foxml).trim();
+            value = _isPartOfIDVALUEXpath.valueOf(foxml).trim();
+            result[0] = type;
+            result[1] = value;
+        } catch (JDOMException e) {
+            log.warn("JDOMException trying to get collection from foxml", e);
+        }
+        if ("".equals(type) || "".equals(value)) {
+            result = null;
+        }
+        return result;
     }
 
     public static String getPathInCollection(Document foxml) {
-	String result = null;
-	try {
-	    result = _pathInCollectionXpath.valueOf(foxml).trim();
-	} catch (JDOMException e) {
-	    log.warn("JDOMException trying to get path in collection from foxml", e);
-	}
-	if ("".equals(result)) {
-	    result = null;
-	}
-	return result;
+        String result = null;
+        try {
+            result = _pathInCollectionXpath.valueOf(foxml).trim();
+        } catch (JDOMException e) {
+            log.warn(
+                    "JDOMException trying to get path in collection from foxml",
+                    e);
+        }
+        if ("".equals(result)) {
+            result = null;
+        }
+        return result;
     }
 }

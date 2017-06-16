@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,30 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.text.ParseException;
-
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
- * Indexing filter which extracts Fedora generated dates about the creation and modification state of the object
+ * Indexing filter that extracts Fedora-generated dates about the creation and modification state of an object
  * being indexed.
- * 
+ *
  * Sets: dateAdded, dateUpdated
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
-public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
-	
-	@Override
-	public void filter(DocumentIndexingPackage dip) throws IndexingException {
-		try {
-			dip.getDocument().setDateAdded(dip.getFirstTriple(FedoraProperty.createdDate.toString()));
-		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
-		}
-		
-		try {
-			dip.getDocument().setDateUpdated(dip.getFirstTriple(FedoraProperty.lastModifiedDate.toString()));
-		} catch (ParseException e) {
-			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
-		}
-	}
+public class SetRecordDatesFilter implements IndexDocumentFilter {
+    @Override
+    public void filter(DocumentIndexingPackage dip) throws IndexingException {
+        ContentObject obj = dip.getContentObject();
+        String dateAdded = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.created).toString();
+        String dateUpdated = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.lastModified).toString();
+        try {
+            dip.getDocument().setDateAdded(dateAdded);
+            dip.getDocument().setDateUpdated(dateUpdated);
+        } catch (ParseException e) {
+            throw new IndexingException("Failed to parse record dates from " + dip.getPid(), e);
+        }
+    }
 }

@@ -32,80 +32,87 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 
+/**
+ * 
+ * @author bbpennel
+ *
+ */
 @Controller
 public class IndexingController {
-	private static final Logger log = LoggerFactory.getLogger(IndexingController.class);
+    private static final Logger log = LoggerFactory.getLogger(IndexingController.class);
 
-	@Autowired
-	private OperationsMessageSender operationsMessageSender;
-	@Autowired
-	private AccessControlService accessControlService;
+    @Autowired
+    private OperationsMessageSender operationsMessageSender;
+    @Autowired
+    private AccessControlService accessControlService;
 
-	/**
-	 * Perform a deep reindexing operation on the specified id and all of its children.
-	 * 
-	 * @param id
-	 * @param inplace
-	 * @return
-	 */
-	@RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
-	public void reindex(@PathVariable("id") String id, @RequestParam(value = "inplace", required = false) Boolean inplace,
-			HttpServletResponse response) {
-		PID pid = new PID(id);
-		
-		if (!hasPermission(id)) {
-			response.setStatus(401);
-			return;
-		}
+    /**
+     * Perform a deep reindexing operation on the specified id and all of its children.
+     * 
+     * @param id
+     * @param inplace
+     * @return
+     */
+    @RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
+    public void reindex(@PathVariable("id") String id,
+            @RequestParam(value = "inplace", required = false) Boolean inplace, HttpServletResponse response) {
+        PID pid = new PID(id);
 
-		if (inplace == null || inplace) {
-			log.info("Reindexing " + id + ", inplace reindex mode");
-			operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid), IndexingActionType.RECURSIVE_REINDEX);
-		} else {
-			log.info("Reindexing " + id + ", clean reindex mode");
-			operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid), IndexingActionType.CLEAN_REINDEX);
-		}
-	}
-	
-	/**
-	 * Perform a shallow reindexing of the object specified by id
-	 * 
-	 * @param id
-	 * @param response
-	 * @return
-	 */
-	@RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
-	public void reindex(@PathVariable("id") String id, HttpServletResponse response) {
-		PID pid = new PID(id);
-		
-		if (!hasPermission(id)) {
-			response.setStatus(401);
-			return;
-		}
+        if (!hasPermission(id)) {
+            response.setStatus(401);
+            return;
+        }
 
-		log.info("Updating " + id);
-		operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid), IndexingActionType.ADD);
-	}
+        if (inplace == null || inplace) {
+            log.info("Reindexing " + id + ", inplace reindex mode");
+            operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid),
+                    IndexingActionType.RECURSIVE_REINDEX);
+        } else {
+            log.info("Reindexing " + id + ", clean reindex mode");
+            operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid),
+                    IndexingActionType.CLEAN_REINDEX);
+        }
+    }
 
-	private boolean hasPermission(String id) {
-		// Disallow requests by users that are not at least curators for pid
-		AccessGroupSet groups = GroupsThreadStore.getGroups();
-		if (log.isDebugEnabled()) {
-			log.debug("hasPermission for groups " + groups.joinAccessGroups(";"));
-		}
-		return groups.contains(AccessGroupConstants.ADMIN_GROUP);
-	}
+    /**
+     * Perform a shallow reindexing of the object specified by id
+     * 
+     * @param id
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
+    public void reindex(@PathVariable("id") String id, HttpServletResponse response) {
+        PID pid = new PID(id);
 
-	public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
-		this.operationsMessageSender = operationsMessageSender;
-	}
+        if (!hasPermission(id)) {
+            response.setStatus(401);
+            return;
+        }
 
-	public void setAccessControlService(AccessControlService accessControlService) {
-		this.accessControlService = accessControlService;
-	}
+        log.info("Updating " + id);
+        operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(),
+                Arrays.asList(pid), IndexingActionType.ADD);
+    }
+
+    private boolean hasPermission(String id) {
+        // Disallow requests by users that are not at least curators for pid
+        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        if (log.isDebugEnabled()) {
+            log.debug("hasPermission for groups " + groups.joinAccessGroups(";"));
+        }
+        return groups.contains(AccessGroupConstants.ADMIN_GROUP);
+    }
+
+    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+        this.operationsMessageSender = operationsMessageSender;
+    }
+
+    public void setAccessControlService(AccessControlService accessControlService) {
+        this.accessControlService = accessControlService;
+    }
 }

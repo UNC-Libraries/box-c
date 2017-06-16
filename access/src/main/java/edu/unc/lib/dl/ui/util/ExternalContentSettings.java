@@ -26,76 +26,85 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ * @author count0
+ *
+ */
 public class ExternalContentSettings {
-	private static final Logger LOG = LoggerFactory.getLogger(ExternalContentSettings.class);
-	public static Properties properties;
-	
-	public ExternalContentSettings(){
-		
-	}
+    private static final Logger LOG = LoggerFactory.getLogger(ExternalContentSettings.class);
+    public static Properties properties;
 
-	public static String getUrl(String key){
-		if (key == null)
-			return null;
-		return properties.getProperty("external." + key + ".url");
-	}
-	
-	public List<String> list(String key){
-		return getList(key);
-	}
-	
-	public static List<String> getList(String key){
-		if (key == null)
-			return null;
-		List<String> matches = new ArrayList<String>();
-		Iterator<Entry<Object,Object>> propertiesIt = properties.entrySet().iterator();
-		while (propertiesIt.hasNext()){
-			Entry<Object,Object> property = propertiesIt.next();
-			if (((String)property.getKey()).indexOf("external." + key) == 0){
-				matches.add((String)property.getValue());
-			}
-		}
-		return matches;
-	}
-	
-	public static Map<String,String> getMap(String key){
-		if (key == null)
-			return null;
-		Map<String,String> matches = new HashMap<String,String>();
-		Iterator<Entry<Object,Object>> propertiesIt = properties.entrySet().iterator();
-		while (propertiesIt.hasNext()){
-			Entry<Object,Object> property = propertiesIt.next();
-			if (((String)property.getKey()).indexOf("external." + key) == 0){
-				matches.put((String)property.getKey(), (String)property.getValue());
-			}
-		}
-		return matches;
-	}
-	
-	public Map<String,String> map(String key){
-		return getMap(key);
-	}
+    public ExternalContentSettings() {
+    }
 
-	public static String get(String key){
-		if (key == null)
-			return null;
-		return properties.getProperty(key);
-	}
+    public static String getUrl(String key) {
+        if (key == null) {
+            return null;
+        }
+        return properties.getProperty("external." + key + ".url");
+    }
 
-	public Properties getProperties() {
-		return properties;
-	}
+    public List<String> list(String key) {
+        return getList(key);
+    }
 
-	public void setProperties(Properties properties) {
-		LOG.debug("Settings properties for ExternalContentSettings");
-		ExternalContentSettings.properties = properties;
-		for (Entry<Object,Object> property: properties.entrySet()){
-			if (((String)property.getKey()).contains(".url") 
-					&& !((String)property.getValue()).contains("http://") && !((String)property.getValue()).contains("https://")
-					&& !((String)property.getValue()).contains("redirect:")){
-				property.setValue(properties.getProperty("external.base.url") + property.getValue());
-			}
-			LOG.debug(property.getKey() + ": " + property.getValue());
-		}
-	}
+    public static List<String> getList(String key) {
+        if (key == null) {
+            return null;
+        }
+        List<String> matches = new ArrayList<String>();
+        Iterator<Entry<Object,Object>> propertiesIt = properties.entrySet().iterator();
+        while (propertiesIt.hasNext()) {
+            Entry<Object,Object> property = propertiesIt.next();
+            if (((String)property.getKey()).indexOf("external." + key) == 0) {
+                matches.add((String)property.getValue());
+            }
+        }
+        return matches;
+    }
+
+    public static Map<String,String> getMap(String key) {
+        if (key == null) {
+            return null;
+        }
+        Map<String,String> matches = new HashMap<String,String>();
+        Iterator<Entry<Object,Object>> propertiesIt = properties.entrySet().iterator();
+        while (propertiesIt.hasNext()) {
+            Entry<Object,Object> property = propertiesIt.next();
+            if (((String)property.getKey()).indexOf("external." + key) == 0) {
+                matches.put((String)property.getKey(), (String)property.getValue());
+            }
+        }
+        return matches;
+    }
+
+    public Map<String,String> map(String key) {
+        return getMap(key);
+    }
+
+    public static String get(String key) {
+        if (key == null) {
+            return null;
+        }
+        return properties.getProperty(key);
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        LOG.debug("Settings properties for ExternalContentSettings");
+        ExternalContentSettings.properties = properties;
+        for (Entry<Object,Object> property: properties.entrySet()) {
+            if (((String)property.getKey()).contains(".url")
+                    && !((String)property.getValue()).contains("http://")
+                    && !((String)property.getValue()).contains("https://")
+                    && !((String)property.getValue()).contains("redirect:")) {
+                property.setValue(properties.getProperty("external.base.url") + property.getValue());
+            }
+            LOG.debug(property.getKey() + ": " + property.getValue());
+        }
+    }
 }
