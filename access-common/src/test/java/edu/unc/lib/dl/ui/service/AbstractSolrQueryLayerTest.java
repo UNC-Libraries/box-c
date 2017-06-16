@@ -40,63 +40,63 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  * @date Jan 23, 2015
  */
 public class AbstractSolrQueryLayerTest {
-	protected EmbeddedSolrServer server;
+    protected EmbeddedSolrServer server;
 
-	protected CoreContainer container;
+    protected CoreContainer container;
 
-	protected SolrQueryLayerService queryLayer;
+    protected SolrQueryLayerService queryLayer;
 
-	protected SearchStateFactory stateFactory;
-	protected SearchSettings searchSettings;
-	protected SolrSettings solrSettings;
-	protected FacetFieldUtil facetUtil;
+    protected SearchStateFactory stateFactory;
+    protected SearchSettings searchSettings;
+    protected SolrSettings solrSettings;
+    protected FacetFieldUtil facetUtil;
 
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
-	public final String COLLECTIONS_PID = "uuid:Collections";
+    public final String COLLECTIONS_PID = "uuid:Collections";
 
-	@Before
-	public void setUp() throws Exception {
-		initMocks(this);
+    @Before
+    public void setUp() throws Exception {
+        initMocks(this);
 
-		File home = new File("src/test/resources/config");
-		File configFile = new File(home, "solr.xml");
+        File home = new File("src/test/resources/config");
+        File configFile = new File(home, "solr.xml");
 
-		File dataDir = tmpFolder.newFolder("solrdata");
-		System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-		container = new CoreContainer("src/test/resources/config", configFile);
+        File dataDir = tmpFolder.newFolder("solrdata");
+        System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
+        container = new CoreContainer("src/test/resources/config", configFile);
 
-		server = new EmbeddedSolrServer(container, "access-master");
+        server = new EmbeddedSolrServer(container, "access-master");
 
-		searchSettings = new SearchSettings();
-		Properties properties = new Properties();
-		properties.load(new FileInputStream(new File("src/test/resources/search.properties")));
-		searchSettings.setProperties(properties);
+        searchSettings = new SearchSettings();
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(new File("src/test/resources/search.properties")));
+        searchSettings.setProperties(properties);
 
-		solrSettings = new SolrSettings();
-		Properties solrProperties = new Properties();
-		solrProperties.load(new FileInputStream(new File("src/test/resources/solr.properties")));
-		solrSettings.setProperties(solrProperties);
+        solrSettings = new SolrSettings();
+        Properties solrProperties = new Properties();
+        solrProperties.load(new FileInputStream(new File("src/test/resources/solr.properties")));
+        solrSettings.setProperties(solrProperties);
 
-		stateFactory = new SearchStateFactory();
-		stateFactory.setSearchSettings(searchSettings);
+        stateFactory = new SearchStateFactory();
+        stateFactory.setSearchSettings(searchSettings);
 
-		facetUtil = new FacetFieldUtil();
-		facetUtil.setSearchSettings(searchSettings);
-		facetUtil.setSolrSettings(solrSettings);
+        facetUtil = new FacetFieldUtil();
+        facetUtil.setSearchSettings(searchSettings);
+        facetUtil.setSolrSettings(solrSettings);
 
-		queryLayer = new SolrQueryLayerService();
-		queryLayer.setCollectionsPid(new PID("cdr:Collections"));
-		queryLayer.setSearchSettings(searchSettings);
-		queryLayer.setSolrSettings(solrSettings);
-		queryLayer.setSearchStateFactory(stateFactory);
-		queryLayer.setFacetFieldUtil(facetUtil);
-		setField(queryLayer, "server", server);
-	}
+        queryLayer = new SolrQueryLayerService();
+        queryLayer.setCollectionsPid(new PID("cdr:Collections"));
+        queryLayer.setSearchSettings(searchSettings);
+        queryLayer.setSolrSettings(solrSettings);
+        queryLayer.setSearchStateFactory(stateFactory);
+        queryLayer.setFacetFieldUtil(facetUtil);
+        setField(queryLayer, "server", server);
+    }
 
-	@After
-	public void tearDown() throws Exception {
-		server.shutdown();
-	}
+    @After
+    public void tearDown() throws Exception {
+        server.shutdown();
+    }
 }

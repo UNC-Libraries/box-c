@@ -37,278 +37,278 @@ import org.junit.Test;
  */
 public class DepartmentOntologyUtilTest {
 
-	private DepartmentOntologyUtil job;
+    private DepartmentOntologyUtil job;
 
-	@Before
-	public void init() throws Exception {
-		job = new DepartmentOntologyUtil();
-		job.setContent(Files.readAllBytes(Paths.get("src/test/resources/samples/dept-ontology.xml")));
-	}
+    @Before
+    public void init() throws Exception {
+        job = new DepartmentOntologyUtil();
+        job.setContent(Files.readAllBytes(Paths.get("src/test/resources/samples/dept-ontology.xml")));
+    }
 
-	@Test
-	public void getDepartmentExactTest() {
+    @Test
+    public void getDepartmentExactTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("College of Arts and Sciences");
+        List<List<String>> result = job.getAuthoritativeForm("College of Arts and Sciences");
 
-		assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
-	}
+        assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
+    }
 
-	@Test
-	public void getDepartmentHierarchyTest() {
+    @Test
+    public void getDepartmentHierarchyTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Folklore Program");
+        List<List<String>> result = job.getAuthoritativeForm("Folklore Program");
 
-		assertEquals("Incorrect number of paths returned", 1, result.size());
-		assertEquals("Incorrect number of path items returned", 3, result.get(0).size());
-		assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Incorrect second tier", "Department of American Studies", result.get(0).get(1));
-		assertEquals("Folklore Program", result.get(0).get(2));
+        assertEquals("Incorrect number of paths returned", 1, result.size());
+        assertEquals("Incorrect number of path items returned", 3, result.get(0).size());
+        assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Incorrect second tier", "Department of American Studies", result.get(0).get(1));
+        assertEquals("Folklore Program", result.get(0).get(2));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentInvertedTest() {
+    @Test
+    public void getDepartmentInvertedTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Nutrition Department");
+        List<List<String>> result = job.getAuthoritativeForm("Nutrition Department");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
-		assertEquals("Department of Nutrition", result.get(0).get(1));
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Department of Nutrition", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAltLabelTest() {
+    @Test
+    public void getDepartmentAltLabelTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("School of Public Health");
+        List<List<String>> result = job.getAuthoritativeForm("School of Public Health");
 
-		assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentWithoutPrefixTest() {
+    @Test
+    public void getDepartmentWithoutPrefixTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Public Health");
+        List<List<String>> result = job.getAuthoritativeForm("Public Health");
 
-		assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAbbreviatedTest() {
+    @Test
+    public void getDepartmentAbbreviatedTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Dept of Nutrition");
+        List<List<String>> result = job.getAuthoritativeForm("Dept of Nutrition");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
-		assertEquals("Department of Nutrition", result.get(0).get(1));
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Department of Nutrition", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentParenFormatTest() {
+    @Test
+    public void getDepartmentParenFormatTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Public Health (Nutrition)");
+        List<List<String>> result = job.getAuthoritativeForm("Public Health (Nutrition)");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
-		assertEquals("Department of Nutrition", result.get(0).get(1));
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Department of Nutrition", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentColonFormatTest() {
+    @Test
+    public void getDepartmentColonFormatTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Public Health: Nutrition");
+        List<List<String>> result = job.getAuthoritativeForm("Public Health: Nutrition");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
-		assertEquals("Department of Nutrition", result.get(0).get(1));
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Department of Nutrition", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentParenInvalidTest() {
+    @Test
+    public void getDepartmentParenInvalidTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Public Health (joint)");
+        List<List<String>> result = job.getAuthoritativeForm("Public Health (joint)");
 
-		assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentParenColonFormatTest() {
+    @Test
+    public void getDepartmentParenColonFormatTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Public Health: Doctoral (residential)");
+        List<List<String>> result = job.getAuthoritativeForm("Public Health: Doctoral (residential)");
 
-		assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAddressTest() {
+    @Test
+    public void getDepartmentAddressTest() {
 
-		List<List<String>> result = job
-				.getAuthoritativeForm("Department of Nutrition, Gillings School of Global Public Health, University of North Carolina at Chapel Hill, Chapel Hill, NC, USA");
+        List<List<String>> result = job
+                .getAuthoritativeForm("Department of Nutrition, Gillings School of Global Public Health, University of North Carolina at Chapel Hill, Chapel Hill, NC, USA");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
-		assertEquals("Department of Nutrition", result.get(0).get(1));
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Department of Nutrition", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAddressUnknownTopLevelTest() {
+    @Test
+    public void getDepartmentAddressUnknownTopLevelTest() {
 
-		List<List<String>> result = job
-				.getAuthoritativeForm("Department of Stuff, University of North Carolina at Chapel Hill, Gillings School of Global Public Health, Chapel Hill, NC, USA");
+        List<List<String>> result = job
+                .getAuthoritativeForm("Department of Stuff, University of North Carolina at Chapel Hill, Gillings School of Global Public Health, Chapel Hill, NC, USA");
 
-		assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Incorrect number of path entries returned", 1, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAddressUnknownTest() {
+    @Test
+    public void getDepartmentAddressUnknownTest() {
 
-		List<List<String>> result = job
-				.getAuthoritativeForm("Department of Stuff, University of North Carolina at Chapel Hill, Chapel Hill, NC, USA");
+        List<List<String>> result = job
+                .getAuthoritativeForm("Department of Stuff, University of North Carolina at Chapel Hill, Chapel Hill, NC, USA");
 
-		assertNull("Unknown department should return null", result);
+        assertNull("Unknown department should return null", result);
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAddressMissingCommaTest() {
+    @Test
+    public void getDepartmentAddressMissingCommaTest() {
 
-		List<List<String>> result = job
-				.getAuthoritativeForm("Department of Nutrition University of North Carolina at Chapel Hill, Chapel Hill, NC, USA");
+        List<List<String>> result = job
+                .getAuthoritativeForm("Department of Nutrition University of North Carolina at Chapel Hill, Chapel Hill, NC, USA");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Department of Nutrition", result.get(0).get(1));
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Department of Nutrition", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentInvalidAddressTest() {
+    @Test
+    public void getDepartmentInvalidAddressTest() {
 
-		List<List<String>> result = job
-				.getAuthoritativeForm("Department of Chemistry, Roanoke College, Salem, VA 24153, USA");
+        List<List<String>> result = job
+                .getAuthoritativeForm("Department of Chemistry, Roanoke College, Salem, VA 24153, USA");
 
-		assertNull("No result should be returned for an address outside of UNC", result);
+        assertNull("No result should be returned for an address outside of UNC", result);
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAddressOtherUniTest() {
+    @Test
+    public void getDepartmentAddressOtherUniTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Department of Nutrition, New York University");
+        List<List<String>> result = job.getAuthoritativeForm("Department of Nutrition, New York University");
 
-		assertNull("No result should be returned for an address outside of UNC", result);
+        assertNull("No result should be returned for an address outside of UNC", result);
 
-	}
+    }
 
-	@Test
-	public void getDepartmentAddressOtherNCTest() {
+    @Test
+    public void getDepartmentAddressOtherNCTest() {
 
-		List<List<String>> result = job
-				.getAuthoritativeForm("Department of Nutrition, University of North Carolina at Charlotte");
+        List<List<String>> result = job
+                .getAuthoritativeForm("Department of Nutrition, University of North Carolina at Charlotte");
 
-		assertNull("No result should be returned for an address outside of UNC", result);
+        assertNull("No result should be returned for an address outside of UNC", result);
 
-	}
+    }
 
-	@Test
-	public void getDepartmentExtraUNCTest() {
+    @Test
+    public void getDepartmentExtraUNCTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("UNC Center for European Studies");
+        List<List<String>> result = job.getAuthoritativeForm("UNC Center for European Studies");
 
-		assertEquals("Incorrect number of paths returned", 1, result.size());
-		assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
-		assertEquals("College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Center for European Studies", result.get(0).get(1));
+        assertEquals("Incorrect number of paths returned", 1, result.size());
+        assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
+        assertEquals("College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Center for European Studies", result.get(0).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentMultiplePathsTest() {
+    @Test
+    public void getDepartmentMultiplePathsTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Joint Department of Biomedical Engineering");
+        List<List<String>> result = job.getAuthoritativeForm("Joint Department of Biomedical Engineering");
 
-		assertEquals("Incorrect number of paths returned", 2, result.size());
-		assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
-		assertEquals("College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Joint Department of Biomedical Engineering", result.get(0).get(1));
+        assertEquals("Incorrect number of paths returned", 2, result.size());
+        assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
+        assertEquals("College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Joint Department of Biomedical Engineering", result.get(0).get(1));
 
-		assertEquals("Joint Department of Biomedical Engineering", result.get(1).get(0));
+        assertEquals("Joint Department of Biomedical Engineering", result.get(1).get(0));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentMultipleDeptsTest() {
+    @Test
+    public void getDepartmentMultipleDeptsTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Department of History and Department of Music");
+        List<List<String>> result = job.getAuthoritativeForm("Department of History and Department of Music");
 
-		assertEquals("Incorrect number of paths returned", 2, result.size());
-		assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
-		assertEquals("College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Department of History", result.get(0).get(1));
+        assertEquals("Incorrect number of paths returned", 2, result.size());
+        assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
+        assertEquals("College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Department of History", result.get(0).get(1));
 
-		assertEquals("College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Department of Music", result.get(1).get(1));
+        assertEquals("College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Department of Music", result.get(1).get(1));
 
-	}
+    }
 
-	@Test
-	public void getDepartmentMultipleTest() {
+    @Test
+    public void getDepartmentMultipleTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Departments of History and Music");
+        List<List<String>> result = job.getAuthoritativeForm("Departments of History and Music");
 
-		assertEquals("Incorrect number of paths returned", 2, result.size());
-		assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
-		assertEquals("College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Department of History", result.get(0).get(1));
+        assertEquals("Incorrect number of paths returned", 2, result.size());
+        assertEquals("Incorrect number of path items returned", 2, result.get(0).size());
+        assertEquals("College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Department of History", result.get(0).get(1));
 
-		assertEquals("College of Arts and Sciences", result.get(0).get(0));
-		assertEquals("Department of Music", result.get(1).get(1));
+        assertEquals("College of Arts and Sciences", result.get(0).get(0));
+        assertEquals("Department of Music", result.get(1).get(1));
 
-	}
+    }
 
-	@Test
-	public void getInvalidTermsTest() throws Exception {
-		SAXBuilder builder = new SAXBuilder();
+    @Test
+    public void getInvalidTermsTest() throws Exception {
+        SAXBuilder builder = new SAXBuilder();
 
-		InputStream modsStream = new FileInputStream(new File("src/test/resources/samples/mods.xml"));
-		Document modsDoc = builder.build(modsStream);
+        InputStream modsStream = new FileInputStream(new File("src/test/resources/samples/mods.xml"));
+        Document modsDoc = builder.build(modsStream);
 
-		Set<String> invalids = job.getInvalidTerms(modsDoc.getRootElement());
+        Set<String> invalids = job.getInvalidTerms(modsDoc.getRootElement());
 
-		assertEquals("Did not detect invalid affiliation", 1, invalids.size());
-	}
-	
-	@Test
-	public void getDepartmentInvertedLongTest() {
+        assertEquals("Did not detect invalid affiliation", 1, invalids.size());
+    }
+    
+    @Test
+    public void getDepartmentInvertedLongTest() {
 
-		List<List<String>> result = job.getAuthoritativeForm("Nutrition, Department of");
+        List<List<String>> result = job.getAuthoritativeForm("Nutrition, Department of");
 
-		assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
-		assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
-		assertEquals("Department of Nutrition", result.get(0).get(1));
-		
-		result = job.getAuthoritativeForm("Business School, Kenan-Flagler");
-		assertEquals("Kenan-Flagler Business School", result.get(0).get(0));
-	}
-	
-	@Test
-	public void getDepartmentAmpersandSubstitution() {
+        assertEquals("Incorrect number of path entries returned", 2, result.get(0).size());
+        assertEquals("Gillings School of Global Public Health", result.get(0).get(0));
+        assertEquals("Department of Nutrition", result.get(0).get(1));
+        
+        result = job.getAuthoritativeForm("Business School, Kenan-Flagler");
+        assertEquals("Kenan-Flagler Business School", result.get(0).get(0));
+    }
+    
+    @Test
+    public void getDepartmentAmpersandSubstitution() {
 
-		List<List<String>> result = job.getAuthoritativeForm("College of Arts & Sciences");
+        List<List<String>> result = job.getAuthoritativeForm("College of Arts & Sciences");
 
-		assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
-	}
+        assertEquals("Exact match did not return a result", "College of Arts and Sciences", result.get(0).get(0));
+    }
 }

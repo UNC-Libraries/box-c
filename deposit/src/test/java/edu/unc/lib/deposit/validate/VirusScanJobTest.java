@@ -66,163 +66,163 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class VirusScanJobTest extends AbstractDepositJobTest {
 
-	private PID depositPid;
+    private PID depositPid;
 
-	private VirusScanJob job;
+    private VirusScanJob job;
 
-	@Mock
-	private ClamScan clamScan;
+    @Mock
+    private ClamScan clamScan;
 
-	@Mock
-	private ScanResult scanResult;
+    @Mock
+    private ScanResult scanResult;
 
-	@Before
-	public void init() throws Exception {
+    @Before
+    public void init() throws Exception {
 
-		job = new VirusScanJob();
-		job.setJobUUID(jobUUID);
-		job.setDepositUUID(depositUUID);
-		job.setDepositDirectory(depositDir);
-		job.setRepository(repository);
-		job.setClamScan(clamScan);
-		job.setPremisLoggerFactory(premisLoggerFactory);
-		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
-		setField(job, "jobStatusFactory", jobStatusFactory);
-		job.init();
+        job = new VirusScanJob();
+        job.setJobUUID(jobUUID);
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        job.setRepository(repository);
+        job.setClamScan(clamScan);
+        job.setPremisLoggerFactory(premisLoggerFactory);
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
+        job.init();
 
-		when(depositStatusFactory.getState(anyString()))
-				.thenReturn(DepositState.running);
+        when(depositStatusFactory.getState(anyString()))
+                .thenReturn(DepositState.running);
 
-		depositPid = job.getDepositPID();
+        depositPid = job.getDepositPID();
 
-		when(repository.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
-			@Override
-			public PID answer(InvocationOnMock invocation) throws Throwable {
-				PID pid = mock(PID.class);
-				String path = URIUtil.join(FEDORA_BASE, "event", UUID.randomUUID().toString());
-				when(pid.getRepositoryPath()).thenReturn(path);
-				return pid;
-			}
-		});
+        when(repository.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
+            @Override
+            public PID answer(InvocationOnMock invocation) throws Throwable {
+                PID pid = mock(PID.class);
+                String path = URIUtil.join(FEDORA_BASE, "event", UUID.randomUUID().toString());
+                when(pid.getRepositoryPath()).thenReturn(path);
+                return pid;
+            }
+        });
 
-		when(clamScan.scan(any(File.class))).thenReturn(scanResult);
+        when(clamScan.scan(any(File.class))).thenReturn(scanResult);
 
-		File examplesFile = new File("src/test/resources/examples");
-		FileUtils.copyDirectory(examplesFile, depositDir);
-	}
+        File examplesFile = new File("src/test/resources/examples");
+        FileUtils.copyDirectory(examplesFile, depositDir);
+    }
 
-	@Test
-	public void passScanTest() throws Exception {
-		when(scanResult.getStatus()).thenReturn(Status.PASSED);
+    @Test
+    public void passScanTest() throws Exception {
+        when(scanResult.getStatus()).thenReturn(Status.PASSED);
 
-		Model model = job.getWritableModel();
-		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-		PID file1Pid = addFileObject(depBag, "pdf.pdf");
-		PID file2Pid = addFileObject(depBag, "text.txt");
+        PID file1Pid = addFileObject(depBag, "pdf.pdf");
+        PID file2Pid = addFileObject(depBag, "text.txt");
 
-		job.closeModel();
+        job.closeModel();
 
-		job.run();
+        job.run();
 
-		verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
-		verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+        verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+        verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
-		verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
-		verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
-		verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class), any(Repository.class));
-		verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class), any(Repository.class));
-	}
+        verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
+        verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class), any(Repository.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class), any(Repository.class));
+    }
 
-	@Test
-	public void failOneScanTest() throws Exception {
-		// Fail the text scan, but not the pdf
-		when(scanResult.getStatus()).thenReturn(Status.PASSED);
-		ScanResult result2 = mock(ScanResult.class);
-		when(result2.getStatus()).thenReturn(Status.FAILED);
-		File pdfFile = new File(depositDir, "pdf.pdf");
-		File textFile = new File(depositDir, "text.txt");
-		doReturn(scanResult).when(clamScan).scan(argThat(new FileArgumentMatcher(pdfFile)));
-		doReturn(result2).when(clamScan).scan(argThat(new FileArgumentMatcher(textFile)));
+    @Test
+    public void failOneScanTest() throws Exception {
+        // Fail the text scan, but not the pdf
+        when(scanResult.getStatus()).thenReturn(Status.PASSED);
+        ScanResult result2 = mock(ScanResult.class);
+        when(result2.getStatus()).thenReturn(Status.FAILED);
+        File pdfFile = new File(depositDir, "pdf.pdf");
+        File textFile = new File(depositDir, "text.txt");
+        doReturn(scanResult).when(clamScan).scan(argThat(new FileArgumentMatcher(pdfFile)));
+        doReturn(result2).when(clamScan).scan(argThat(new FileArgumentMatcher(textFile)));
 
-		Model model = job.getWritableModel();
-		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-		PID file1Pid = addFileObject(depBag, pdfFile.getName());
-		addFileObject(depBag, textFile.getName());
+        PID file1Pid = addFileObject(depBag, pdfFile.getName());
+        addFileObject(depBag, textFile.getName());
 
-		job.closeModel();
+        job.closeModel();
 
-		try {
-			job.run();
-			fail();
-		} catch(JobFailedException e) {
-			// Both files should have been scanned
-			verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
-			verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
+        try {
+            job.run();
+            fail();
+        } catch(JobFailedException e) {
+            // Both files should have been scanned
+            verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(2));
+            verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
-			// Only the file that passed should have a premis log
-			verify(premisLogger).buildEvent(eq(Premis.VirusCheck));
-			verify(premisLoggerFactory).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
-			verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
-		}
-	}
+            // Only the file that passed should have a premis log
+            verify(premisLogger).buildEvent(eq(Premis.VirusCheck));
+            verify(premisLoggerFactory).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
+            verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
+        }
+    }
 
-	@Test
-	public void errorScanTest() throws Exception {
-		// Fail the text scan, but not the pdf
-		when(scanResult.getStatus()).thenReturn(Status.ERROR);
-		Exception mockE = mock(Exception.class);
-		when(mockE.getLocalizedMessage()).thenReturn("Something isn't work");
-		when(scanResult.getException()).thenReturn(mockE);
+    @Test
+    public void errorScanTest() throws Exception {
+        // Fail the text scan, but not the pdf
+        when(scanResult.getStatus()).thenReturn(Status.ERROR);
+        Exception mockE = mock(Exception.class);
+        when(mockE.getLocalizedMessage()).thenReturn("Something isn't work");
+        when(scanResult.getException()).thenReturn(mockE);
 
-		Model model = job.getWritableModel();
-		Bag depBag = model.createBag(depositPid.getRepositoryPath());
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-		File pdfFile = new File(depositDir, "pdf.pdf");
-		addFileObject(depBag, pdfFile.getName());
+        File pdfFile = new File(depositDir, "pdf.pdf");
+        addFileObject(depBag, pdfFile.getName());
 
-		job.closeModel();
+        job.closeModel();
 
-		try {
-			job.run();
-			fail();
-		} catch(Error e) {
-			// No files should have completed scanning
-			verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
-			verify(jobStatusFactory, never()).incrCompletion(anyString(), anyInt());
+        try {
+            job.run();
+            fail();
+        } catch(Error e) {
+            // No files should have completed scanning
+            verify(jobStatusFactory).setTotalCompletion(eq(jobUUID), eq(1));
+            verify(jobStatusFactory, never()).incrCompletion(anyString(), anyInt());
 
-			// No premis logs should have been created
-			verify(premisLoggerFactory, never()).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
-		}
-	}
+            // No premis logs should have been created
+            verify(premisLoggerFactory, never()).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
+        }
+    }
 
-	private PID addFileObject(Bag parent, String stagingLocation) {
-		PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
+    private PID addFileObject(Bag parent, String stagingLocation) {
+        PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
-		Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
-		fileResc.addProperty(RDF.type, Cdr.FileObject);
-		fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+        Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
 
-		parent.add(fileResc);
+        parent.add(fileResc);
 
-		return filePid;
-	}
+        return filePid;
+    }
 
-	private class FileArgumentMatcher extends ArgumentMatcher<File> {
-		private File file;
+    private class FileArgumentMatcher extends ArgumentMatcher<File> {
+        private File file;
 
-		public FileArgumentMatcher(File file) {
-			this.file = file;
-		}
+        public FileArgumentMatcher(File file) {
+            this.file = file;
+        }
 
-		@Override
-		public boolean matches(Object argument) {
-			File compareFile = (File) argument;
-			return file.getAbsolutePath().equals(compareFile.getAbsolutePath());
-		}
+        @Override
+        public boolean matches(Object argument) {
+            File compareFile = (File) argument;
+            return file.getAbsolutePath().equals(compareFile.getAbsolutePath());
+        }
 
-	}
+    }
 }

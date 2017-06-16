@@ -33,46 +33,46 @@ import edu.unc.lib.dl.util.PackagingType;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class AtomPubEntryDepositHandlerTest {
-	@Mock
-	private DepositStatusFactory depositStatusFactory;
-	@Before
-	public void setup() {
-	    // Initialize mocks created above
-	    MockitoAnnotations.initMocks(this);
-	}
-	
-	@Rule
-	public TemporaryFolder tmpDir = new TemporaryFolder();
-	
-	@InjectMocks
-	@Autowired
-	private AtomPubEntryDepositHandler atomPubEntryDepositHandler;
+    @Mock
+    private DepositStatusFactory depositStatusFactory;
+    @Before
+    public void setup() {
+        // Initialize mocks created above
+        MockitoAnnotations.initMocks(this);
+    }
+    
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
+    
+    @InjectMocks
+    @Autowired
+    private AtomPubEntryDepositHandler atomPubEntryDepositHandler;
 
-	@Autowired
-	private SwordConfigurationImpl swordConfiguration;
+    @Autowired
+    private SwordConfigurationImpl swordConfiguration;
 
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testDoDepositBagit() throws SwordError, IOException {
-		File testPayload = tmpDir.newFile("dcDocument.xml");
-		FileUtils.copyFile(new File("src/test/resources/dcDocument.xml"), testPayload);
-		Deposit d = new Deposit();
-		d.setFile(testPayload);
-		d.setMd5("ce812d38aec998c6f3a163994b81bb3a");
-		d.setFilename("dcDocument.xml");
-		d.setMimeType("application/xml");
-		d.setSlug("atomPubEntryTest");
-		d.setPackaging(PackagingType.ATOM.getUri());
-		Parser parser = Abdera.getInstance().getParser();
-		FileInputStream in = new FileInputStream("src/test/resources/atompubMODS.xml");
-		Document<Entry> doc = parser.<Entry>parse(in);
-		d.setEntry(doc.getRoot());
-		PID dest = new PID("uuid:destination");
-		
-		atomPubEntryDepositHandler.doDeposit(dest, d, PackagingType.ATOM, null,
-				swordConfiguration, "test-depositor", "test-owner");
-				
-		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
-	}
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDoDepositBagit() throws SwordError, IOException {
+        File testPayload = tmpDir.newFile("dcDocument.xml");
+        FileUtils.copyFile(new File("src/test/resources/dcDocument.xml"), testPayload);
+        Deposit d = new Deposit();
+        d.setFile(testPayload);
+        d.setMd5("ce812d38aec998c6f3a163994b81bb3a");
+        d.setFilename("dcDocument.xml");
+        d.setMimeType("application/xml");
+        d.setSlug("atomPubEntryTest");
+        d.setPackaging(PackagingType.ATOM.getUri());
+        Parser parser = Abdera.getInstance().getParser();
+        FileInputStream in = new FileInputStream("src/test/resources/atompubMODS.xml");
+        Document<Entry> doc = parser.<Entry>parse(in);
+        d.setEntry(doc.getRoot());
+        PID dest = new PID("uuid:destination");
+        
+        atomPubEntryDepositHandler.doDeposit(dest, d, PackagingType.ATOM, null,
+                swordConfiguration, "test-depositor", "test-owner");
+                
+        verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
+    }
 
 }

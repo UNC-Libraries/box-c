@@ -31,19 +31,19 @@ public class NamespaceConstantsTest extends TestCase {
      * constructor.
      */
     public void testConstantURIs() {
-	Class<NamespaceConstants> nsClass = NamespaceConstants.class;
-	for (Field field : nsClass.getDeclaredFields()) {
-	    if (field.getName().endsWith("URI")) {
-		try {
-		    new URI((String) field.get(null));
-		    assertTrue(true);
-		} catch (URISyntaxException e) {
-		    fail("URI constant '" + field.getName() + "' is not a valid URI");
-		} catch (IllegalAccessException e) {
-		    fail("URI constant " + field.getName() + " is not accessible!");
-		}
-	    }
+    Class<NamespaceConstants> nsClass = NamespaceConstants.class;
+    for (Field field : nsClass.getDeclaredFields()) {
+        if (field.getName().endsWith("URI")) {
+        try {
+            new URI((String) field.get(null));
+            assertTrue(true);
+        } catch (URISyntaxException e) {
+            fail("URI constant '" + field.getName() + "' is not a valid URI");
+        } catch (IllegalAccessException e) {
+            fail("URI constant " + field.getName() + " is not accessible!");
+        }
+        }
 
-	}
+    }
     }
 }

@@ -53,42 +53,42 @@ public class ModsXmlHelperTest extends Assert {
 
     @Test
     public void testGetFormattedLabelText() {
-	Document mods = null;
-	SAXBuilder builder = new SAXBuilder();
-	try {
-	    mods = builder.build("src/test/resources/samples/mods.xml");
-	} catch (JDOMException e) {
-	    throw new Error(e);
-	} catch (IOException e) {
-	    throw new Error(e);
-	}
-	String result = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
-	assertTrue("Must match expected output", "The SCHOLARLY COMMUNICATIONS CONVOCATION: Final Report"
-			.equals(result));
-	log.info(result);
+    Document mods = null;
+    SAXBuilder builder = new SAXBuilder();
+    try {
+        mods = builder.build("src/test/resources/samples/mods.xml");
+    } catch (JDOMException e) {
+        throw new Error(e);
+    } catch (IOException e) {
+        throw new Error(e);
+    }
+    String result = ModsXmlHelper.getFormattedLabelText(mods.getRootElement());
+    assertTrue("Must match expected output", "The SCHOLARLY COMMUNICATIONS CONVOCATION: Final Report"
+            .equals(result));
+    log.info(result);
     }
 
     @Test
     public void testTransform() {
-	Document mods = null;
-	Document result = null;
-	SAXBuilder builder = new SAXBuilder();
-	try {
-	    mods = builder.build("src/test/resources/samples/mods.xml");
-	    result = ModsXmlHelper.transform(mods.getRootElement());
-	} catch (JDOMException e) {
-	    throw new Error(e);
-	} catch (IOException e) {
-	    throw new Error(e);
-	} catch (TransformerException e) {
-	    throw new Error(e);
-	}
-	if (log.isInfoEnabled()) {
-	    XMLOutputter out = new XMLOutputter();
-	    String str = out.outputString(result);
-	    log.info(str);
-	}
-	assertTrue("Must have proper number of DC elements", 5 == result.getRootElement().getChildren().size());
+    Document mods = null;
+    Document result = null;
+    SAXBuilder builder = new SAXBuilder();
+    try {
+        mods = builder.build("src/test/resources/samples/mods.xml");
+        result = ModsXmlHelper.transform(mods.getRootElement());
+    } catch (JDOMException e) {
+        throw new Error(e);
+    } catch (IOException e) {
+        throw new Error(e);
+    } catch (TransformerException e) {
+        throw new Error(e);
+    }
+    if (log.isInfoEnabled()) {
+        XMLOutputter out = new XMLOutputter();
+        String str = out.outputString(result);
+        log.info(str);
+    }
+    assertTrue("Must have proper number of DC elements", 5 == result.getRootElement().getChildren().size());
     }
 
 }

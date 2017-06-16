@@ -49,102 +49,102 @@ import edu.unc.lib.dl.rdf.PcdmUse;
 
 public class AddDerivativeProcessorTest {
 
-	private final String fileName = "small_thumb";
-	private final String slug = "small_thumbnail";
-	private final String fileExtension = "PNG";
-	private final String mimetype = "image/png";
-	private int maxRetries = 3;
-	private long retryDelay = 10;
-	private File file;
+    private final String fileName = "small_thumb";
+    private final String slug = "small_thumbnail";
+    private final String fileExtension = "PNG";
+    private final String mimetype = "image/png";
+    private int maxRetries = 3;
+    private long retryDelay = 10;
+    private File file;
 
-	private AddDerivativeProcessor processor;
+    private AddDerivativeProcessor processor;
 
-	private String extensionlessPath;
+    private String extensionlessPath;
 
-	@Mock
-	private BinaryObject binary;
-	@Mock
-	private FileObject parent;
-	@Mock
-	private ExecResult result;
+    @Mock
+    private BinaryObject binary;
+    @Mock
+    private FileObject parent;
+    @Mock
+    private ExecResult result;
 
-	@Mock
-	private Repository repository;
+    @Mock
+    private Repository repository;
 
-	@Mock
-	private Exchange exchange;
+    @Mock
+    private Exchange exchange;
 
-	@Mock
-	private Message message;
+    @Mock
+    private Message message;
 
-	@Before
-	public void init() throws Exception {
-		initMocks(this);
-		processor = new AddDerivativeProcessor(repository, slug, fileExtension, mimetype, maxRetries, retryDelay);
-		file = File.createTempFile(fileName, ".PNG");
-		file.deleteOnExit();
-		when(exchange.getIn()).thenReturn(message);
-		PIDs.setRepository(repository);
-		when(repository.getBaseUri()).thenReturn("http://fedora");
+    @Before
+    public void init() throws Exception {
+        initMocks(this);
+        processor = new AddDerivativeProcessor(repository, slug, fileExtension, mimetype, maxRetries, retryDelay);
+        file = File.createTempFile(fileName, ".PNG");
+        file.deleteOnExit();
+        when(exchange.getIn()).thenReturn(message);
+        PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn("http://fedora");
 
-		when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(repository.getBinary(any(PID.class))).thenReturn(binary);
 
-		when(message.getHeader(eq(FCREPO_URI)))
-				.thenReturn("http://fedora/test/original_file");
+        when(message.getHeader(eq(FCREPO_URI)))
+                .thenReturn("http://fedora/test/original_file");
 
-		when(message.getHeader(eq(CdrBinaryMimeType)))
-				.thenReturn("image/png");
+        when(message.getHeader(eq(CdrBinaryMimeType)))
+                .thenReturn("image/png");
 
-		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-			writeFile.write("fake image");
-		}
+        try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
+            writeFile.write("fake image");
+        }
 
-		extensionlessPath = file.getAbsolutePath().split("\\.")[0];
-		when(message.getHeader(eq(CdrBinaryPath)))
-				.thenReturn(extensionlessPath);
+        extensionlessPath = file.getAbsolutePath().split("\\.")[0];
+        when(message.getHeader(eq(CdrBinaryPath)))
+                .thenReturn(extensionlessPath);
 
-		when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
-		when(message.getBody()).thenReturn(result);
-	}
+        when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
+        when(message.getBody()).thenReturn(result);
+    }
 
-	@Test
-	public void createEnhancementTest() throws Exception {
+    @Test
+    public void createEnhancementTest() throws Exception {
 
-		when(repository.getBinary(any(PID.class))).thenReturn(binary);
-		when(binary.getParent()).thenReturn(parent);
-		when(message.getBody()).thenReturn(result);
+        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(binary.getParent()).thenReturn(parent);
+        when(message.getBody()).thenReturn(result);
 
-		processor.process(exchange);
+        processor.process(exchange);
 
-		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
-	}
+        ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
+        verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
+    }
 
-	@Test
-	public void createEnhancementRetryTest() throws Exception {
+    @Test
+    public void createEnhancementRetryTest() throws Exception {
 
-		when(binary.getParent())
-				.thenThrow(new MockitoException("Can't add derivative"))
-				.thenReturn(parent);;
+        when(binary.getParent())
+                .thenThrow(new MockitoException("Can't add derivative"))
+                .thenReturn(parent);;
 
-		processor.process(exchange);
+        processor.process(exchange);
 
-		ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
+        ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
 
-		verify(binary, times(2)).getParent();
-		verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
-	}
+        verify(binary, times(2)).getParent();
+        verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
+    }
 
-	@Test(expected = RuntimeException.class)
-	public void createEnhancementRetryFailTest() throws Exception {
+    @Test(expected = RuntimeException.class)
+    public void createEnhancementRetryFailTest() throws Exception {
 
-		when(binary.getParent())
-				.thenThrow(new RuntimeException());
+        when(binary.getParent())
+                .thenThrow(new RuntimeException());
 
-		try {
-			processor.process(exchange);
-		} finally {
-			verify(binary, times(maxRetries + 1)).getParent();
-		}
-	}
+        try {
+            processor.process(exchange);
+        } finally {
+            verify(binary, times(maxRetries + 1)).getParent();
+        }
+    }
 }
