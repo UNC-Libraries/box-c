@@ -32,43 +32,43 @@ import edu.unc.lib.dl.util.PackagingType;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class DSPACEMETSDepositHandlerTest {
-	@Mock
-	private DepositStatusFactory depositStatusFactory;
-	@Before
-	public void setup() {
-	    // Initialize mocks created above
-	    MockitoAnnotations.initMocks(this);
-	}
-	
-	@Rule
-	public TemporaryFolder tmpDir = new TemporaryFolder();
-	
-	@InjectMocks
-	@Autowired
-	private DSPACEMETSDepositHandler metsDepositHandler;
-	@Autowired
-	private SwordConfigurationImpl swordConfiguration;
-	
-	@SuppressWarnings("unchecked")
-	@Test
-	public void testDoDepositMETSBiomed() throws SwordError, IOException {
-		Deposit d = new Deposit();
-		File testPayload = tmpDir.newFile("biomedWithSupplements.zip");
-		FileUtils.copyFile(new File("src/test/resources/biomedWithSupplements.zip"), testPayload);
-		d.setFile(testPayload);
-		d.setMd5("7ca5899e938e385c4ad61087bd834a0e");
-		d.setFilename("biomedWithSupplements.zip");
-		d.setMimeType("application/zip");
-		d.setSlug("biomedtest");
-		d.setPackaging(PackagingType.METS_DSPACE_SIP_1.getUri());
-		Entry entry = Abdera.getInstance().getFactory().newEntry();
-		d.setEntry(entry);
-		
-		PID dest = new PID("uuid:destination");
-		metsDepositHandler.doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, null,
-				swordConfiguration, "test-depositor", "test-owner");
+    @Mock
+    private DepositStatusFactory depositStatusFactory;
+    @Before
+    public void setup() {
+        // Initialize mocks created above
+        MockitoAnnotations.initMocks(this);
+    }
+    
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
+    
+    @InjectMocks
+    @Autowired
+    private DSPACEMETSDepositHandler metsDepositHandler;
+    @Autowired
+    private SwordConfigurationImpl swordConfiguration;
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testDoDepositMETSBiomed() throws SwordError, IOException {
+        Deposit d = new Deposit();
+        File testPayload = tmpDir.newFile("biomedWithSupplements.zip");
+        FileUtils.copyFile(new File("src/test/resources/biomedWithSupplements.zip"), testPayload);
+        d.setFile(testPayload);
+        d.setMd5("7ca5899e938e385c4ad61087bd834a0e");
+        d.setFilename("biomedWithSupplements.zip");
+        d.setMimeType("application/zip");
+        d.setSlug("biomedtest");
+        d.setPackaging(PackagingType.METS_DSPACE_SIP_1.getUri());
+        Entry entry = Abdera.getInstance().getFactory().newEntry();
+        d.setEntry(entry);
+        
+        PID dest = new PID("uuid:destination");
+        metsDepositHandler.doDeposit(dest, d, PackagingType.METS_DSPACE_SIP_1, null,
+                swordConfiguration, "test-depositor", "test-owner");
 
-		verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
-	}
+        verify(depositStatusFactory, atLeastOnce()).save(anyString(), anyMap());
+    }
 
 }

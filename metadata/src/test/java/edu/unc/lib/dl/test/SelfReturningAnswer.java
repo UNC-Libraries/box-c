@@ -26,13 +26,13 @@ import org.mockito.stubbing.Answer;
  */
 public class SelfReturningAnswer implements Answer<Object> {
 
-	public Object answer(InvocationOnMock invocation) throws Throwable {
-		Object mock = invocation.getMock();
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+        Object mock = invocation.getMock();
 
-		if (invocation.getMethod().getReturnType().isInstance(mock)) {
-			return mock;
-		} else {
-			return RETURNS_DEFAULTS.answer(invocation);
-		}
-	}
+        if (invocation.getMethod().getReturnType().isInstance(mock)) {
+            return mock;
+        } else {
+            return RETURNS_DEFAULTS.answer(invocation);
+        }
+    }
 }

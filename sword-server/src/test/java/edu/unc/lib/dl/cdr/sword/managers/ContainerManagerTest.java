@@ -49,73 +49,73 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class ContainerManagerTest extends Assert {
 
-	private SwordConfigurationImpl config;
-	
-	public ContainerManagerTest(){
-		config = new SwordConfigurationImpl();
-		config.setBasePath("http://localhost");
-		config.setSwordPath("http://localhost/sword");
-		config.setAdminDepositor("admin");
-	}
-	
-	
-	@Test
-	public void getEntryCredentials() throws Exception {
-		DepositReceipt resultReceipt = mock(DepositReceipt.class);
-		
-		DepositReportingUtil depositReportingUtil = mock(DepositReportingUtil.class);
-		when(depositReportingUtil.retrieveDepositReceipt(any(PID.class), any(SwordConfigurationImpl.class))).thenReturn(resultReceipt);
-		
-		PID pid = new PID("uuid:test");
-		
-		TripleStoreQueryService tripleStoreQueryService = mock(TripleStoreQueryService.class);
-		
-		Map<String,String> disseminations = new HashMap<String,String>();
-		disseminations.put(pid.getURI() + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), "text/xml");
-		disseminations.put(pid.getURI() + "/" + ContentModelHelper.Datastream.DATA_FILE.getName(), "image/jpg");
-		
-		when(tripleStoreQueryService.fetchDisseminatorMimetypes(any(PID.class))).thenReturn(disseminations);
-		
-		File modsFile = new File("src/test/resources/modsDocument.xml");
-		byte[] modsBytes = FileUtils.readFileToByteArray(modsFile);
-		MIMETypedStream mimeStream = new MIMETypedStream();
-		mimeStream.setStream(modsBytes);
-		
-		GroupsThreadStore.storeGroups(new AccessGroupSet());
-		AccessControlService aclService = mock(AccessControlService.class);
-		ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
-		when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
-		when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
-		
-		AccessClient accessClient = mock(AccessClient.class);
-		when(accessClient.getDatastreamDissemination(any(PID.class), eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(mimeStream);
-		
-		ContainerManagerImpl containerManager = new ContainerManagerImpl();
-		containerManager.setDepositReportingUtil(depositReportingUtil);
-		containerManager.setTripleStoreQueryService(tripleStoreQueryService);
-		containerManager.setAccessClient(accessClient);
-		containerManager.setAclService(aclService);
-		
-		String editIRI = "http://localhost"  + SwordConfigurationImpl.EDIT_PATH + "/" + pid.getPid();
-		
-		AuthCredentials auth = new AuthCredentials("testuser", "", null);
-		
-		// Check to make sure that not finding the user's onyen is not the end of the world
-		when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
-		try {
-			DepositReceipt receipt = containerManager.getEntry(editIRI, null, auth, config);
-			assertNotNull(receipt);
-		} catch (SwordAuthException e){
-			fail();
-		}
-		
-		when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(false);
-		try {
-			containerManager.getEntry(editIRI, null, auth, config);
-			fail();
-		} catch (SwordError e){
-			//pass
-		}
-		GroupsThreadStore.clearGroups();
-	}
+    private SwordConfigurationImpl config;
+    
+    public ContainerManagerTest(){
+        config = new SwordConfigurationImpl();
+        config.setBasePath("http://localhost");
+        config.setSwordPath("http://localhost/sword");
+        config.setAdminDepositor("admin");
+    }
+    
+    
+    @Test
+    public void getEntryCredentials() throws Exception {
+        DepositReceipt resultReceipt = mock(DepositReceipt.class);
+        
+        DepositReportingUtil depositReportingUtil = mock(DepositReportingUtil.class);
+        when(depositReportingUtil.retrieveDepositReceipt(any(PID.class), any(SwordConfigurationImpl.class))).thenReturn(resultReceipt);
+        
+        PID pid = new PID("uuid:test");
+        
+        TripleStoreQueryService tripleStoreQueryService = mock(TripleStoreQueryService.class);
+        
+        Map<String,String> disseminations = new HashMap<String,String>();
+        disseminations.put(pid.getURI() + "/" + ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), "text/xml");
+        disseminations.put(pid.getURI() + "/" + ContentModelHelper.Datastream.DATA_FILE.getName(), "image/jpg");
+        
+        when(tripleStoreQueryService.fetchDisseminatorMimetypes(any(PID.class))).thenReturn(disseminations);
+        
+        File modsFile = new File("src/test/resources/modsDocument.xml");
+        byte[] modsBytes = FileUtils.readFileToByteArray(modsFile);
+        MIMETypedStream mimeStream = new MIMETypedStream();
+        mimeStream.setStream(modsBytes);
+        
+        GroupsThreadStore.storeGroups(new AccessGroupSet());
+        AccessControlService aclService = mock(AccessControlService.class);
+        ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
+        when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
+        when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
+        
+        AccessClient accessClient = mock(AccessClient.class);
+        when(accessClient.getDatastreamDissemination(any(PID.class), eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(mimeStream);
+        
+        ContainerManagerImpl containerManager = new ContainerManagerImpl();
+        containerManager.setDepositReportingUtil(depositReportingUtil);
+        containerManager.setTripleStoreQueryService(tripleStoreQueryService);
+        containerManager.setAccessClient(accessClient);
+        containerManager.setAclService(aclService);
+        
+        String editIRI = "http://localhost"  + SwordConfigurationImpl.EDIT_PATH + "/" + pid.getPid();
+        
+        AuthCredentials auth = new AuthCredentials("testuser", "", null);
+        
+        // Check to make sure that not finding the user's onyen is not the end of the world
+        when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
+        try {
+            DepositReceipt receipt = containerManager.getEntry(editIRI, null, auth, config);
+            assertNotNull(receipt);
+        } catch (SwordAuthException e){
+            fail();
+        }
+        
+        when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(false);
+        try {
+            containerManager.getEntry(editIRI, null, auth, config);
+            fail();
+        } catch (SwordError e){
+            //pass
+        }
+        GroupsThreadStore.clearGroups();
+    }
 }

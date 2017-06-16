@@ -24,57 +24,57 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
 public class ZipFileUtilTest {
-	
-	/*
-	 * Test that entries with relative paths pointing outside the directory to
-	 * which we're unzipping will cause an IOException.
-	 */
-	@Test
-	public void testUnzipRelativePathsOutsideDir() throws IOException {
-		
-		File zipFile;
-		
-		ClassPathResource resource = new ClassPathResource("/samples/bad-zip-with-relative-path.zip");
-		
-		zipFile = resource.getFile();
-		
-		File tempDir = File.createTempFile("test", null);
-		tempDir.delete();
-		tempDir.mkdir();
-		tempDir.deleteOnExit();
-		
-		try {
-			ZipFileUtil.unzipToDir(zipFile, tempDir);
-			fail("Expected IOException to be thrown");
-		} catch (IOException e) {
-		}
-		
-	}
-	
-	/*
-	 * Test that entries not pointing outside the directory to which we're unzipping
-	 * will NOT cause an IOException.
-	 */
-	@Test
-	public void testUnzipInsideDir() throws IOException {
-		
-		File zipFile;
-		
-		ClassPathResource resource = new ClassPathResource("/samples/test-mets-zip.zip");
-		
-		zipFile = resource.getFile();
-		
-		File tempDir = File.createTempFile("test", null);
-		tempDir.delete();
-		tempDir.mkdir();
-		tempDir.deleteOnExit();
-		
-		try {
-			ZipFileUtil.unzipToDir(zipFile, tempDir);
-		} catch (IOException e) {
-			fail("Expected IOException to not be thrown");
-		}
-		
-	}
+    
+    /*
+     * Test that entries with relative paths pointing outside the directory to
+     * which we're unzipping will cause an IOException.
+     */
+    @Test
+    public void testUnzipRelativePathsOutsideDir() throws IOException {
+        
+        File zipFile;
+        
+        ClassPathResource resource = new ClassPathResource("/samples/bad-zip-with-relative-path.zip");
+        
+        zipFile = resource.getFile();
+        
+        File tempDir = File.createTempFile("test", null);
+        tempDir.delete();
+        tempDir.mkdir();
+        tempDir.deleteOnExit();
+        
+        try {
+            ZipFileUtil.unzipToDir(zipFile, tempDir);
+            fail("Expected IOException to be thrown");
+        } catch (IOException e) {
+        }
+        
+    }
+    
+    /*
+     * Test that entries not pointing outside the directory to which we're unzipping
+     * will NOT cause an IOException.
+     */
+    @Test
+    public void testUnzipInsideDir() throws IOException {
+        
+        File zipFile;
+        
+        ClassPathResource resource = new ClassPathResource("/samples/test-mets-zip.zip");
+        
+        zipFile = resource.getFile();
+        
+        File tempDir = File.createTempFile("test", null);
+        tempDir.delete();
+        tempDir.mkdir();
+        tempDir.deleteOnExit();
+        
+        try {
+            ZipFileUtil.unzipToDir(zipFile, tempDir);
+        } catch (IOException e) {
+            fail("Expected IOException to not be thrown");
+        }
+        
+    }
 
 }

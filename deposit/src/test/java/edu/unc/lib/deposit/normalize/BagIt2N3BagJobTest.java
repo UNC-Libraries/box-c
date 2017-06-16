@@ -53,102 +53,102 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
-	private BagIt2N3BagJob job;
+    private BagIt2N3BagJob job;
 
-	private Map<String, String> status;
+    private Map<String, String> status;
 
-	@Before
-	public void setup() throws Exception {
-		status = new HashMap<String, String>();
-		when(depositStatusFactory.get(anyString())).thenReturn(status);
-		Dataset dataset = TDBFactory.createDataset();
+    @Before
+    public void setup() throws Exception {
+        status = new HashMap<String, String>();
+        when(depositStatusFactory.get(anyString())).thenReturn(status);
+        Dataset dataset = TDBFactory.createDataset();
 
-		job = new BagIt2N3BagJob();
-		job.setDepositUUID(depositUUID);
-		job.setDepositDirectory(depositDir);
-		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
-		job.init();
-	}
+        job = new BagIt2N3BagJob();
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        job.init();
+    }
 
-	@Test
-	public void testConversion() throws Exception {
-		String sourcePath = "src/test/resources/paths/valid-bag";
-		status.put(DepositField.sourcePath.name(), sourcePath);
-		status.put(DepositField.fileName.name(), "Test File");
-		status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
-		String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
-		
-		job.run();
+    @Test
+    public void testConversion() throws Exception {
+        String sourcePath = "src/test/resources/paths/valid-bag";
+        status.put(DepositField.sourcePath.name(), sourcePath);
+        status.put(DepositField.fileName.name(), "Test File");
+        status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
+        String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
+        
+        job.run();
 
-		Model model = job.getReadOnlyModel();
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		
-		assertEquals(depositBag.size(), 1);
-		
-		Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
-		assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
-		assertTrue("Missing RDF type", bagFolder.hasProperty(RDF.type, Cdr.Folder ));
-		
-		Resource folder = (Resource) bagFolder.iterator().next();
-		
-		assertEquals("Folder label was not set", folder.getProperty(CdrDeposit.label).getString(), "test");
-		assertTrue("Missing RDF type", folder.hasProperty(RDF.type, Cdr.Folder));
-		
-		Bag childrenBag = model.getBag(folder.getURI());
-		
-		assertEquals(childrenBag.size(), 2);
+        Model model = job.getReadOnlyModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        
+        assertEquals(depositBag.size(), 1);
+        
+        Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
+        assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
+        assertTrue("Missing RDF type", bagFolder.hasProperty(RDF.type, Cdr.Folder ));
+        
+        Resource folder = (Resource) bagFolder.iterator().next();
+        
+        assertEquals("Folder label was not set", folder.getProperty(CdrDeposit.label).getString(), "test");
+        assertTrue("Missing RDF type", folder.hasProperty(RDF.type, Cdr.Folder));
+        
+        Bag childrenBag = model.getBag(folder.getURI());
+        
+        assertEquals(childrenBag.size(), 2);
 
-		// Put children into a map since we can't guarantee order from jena
-		Map<String, Resource> children = new HashMap<>(2);
-		NodeIterator childIt = childrenBag.iterator();
-		while (childIt.hasNext()) {
-			Resource file = (Resource) childIt.next();
-			children.put(file.getProperty(CdrDeposit.label).getString(), file);
-		}
-		
-		ArgumentCaptor<String> filePathCaptor = ArgumentCaptor.forClass(String.class);
-		verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
-		List<String> capturedFilePaths = Arrays.asList(absoluteSourcePath + "/bagit.txt",
-				absoluteSourcePath + "/manifest-md5.txt");
-		assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
-		
-		Resource file = children.get("lorem.txt");
-		assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
-		assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
-				file.getProperty(CdrDeposit.md5sum).getString());
-		assertEquals("File location not set", absoluteSourcePath + "/data/test/lorem.txt",
-				file.getProperty(CdrDeposit.stagingLocation).getString());
-		
-		Resource file2 = children.get("ipsum.txt");
-		assertTrue("Missing RDF type", file2.hasProperty(RDF.type, Cdr.FileObject));
-		assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
-				file2.getProperty(CdrDeposit.md5sum).getString());
-		assertEquals("File location not set", absoluteSourcePath + "/data/test/ipsum.txt",
-				file2.getProperty(CdrDeposit.stagingLocation).getString());
-		
-		File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
-		assertTrue(modsFile.exists());
-		
-		Set<String> cleanupSet = new HashSet<>();
-		StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);
-		while (it.hasNext()) {
-			Statement stmt = it.nextStatement();
-			cleanupSet.add(stmt.getString());
-		}
-		
-		assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
-		assertTrue("Cleanup of bag not set", cleanupSet.contains(absoluteSourcePath + "/"));
-		assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(0)));
-		assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
-	}
+        // Put children into a map since we can't guarantee order from jena
+        Map<String, Resource> children = new HashMap<>(2);
+        NodeIterator childIt = childrenBag.iterator();
+        while (childIt.hasNext()) {
+            Resource file = (Resource) childIt.next();
+            children.put(file.getProperty(CdrDeposit.label).getString(), file);
+        }
+        
+        ArgumentCaptor<String> filePathCaptor = ArgumentCaptor.forClass(String.class);
+        verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
+        List<String> capturedFilePaths = Arrays.asList(absoluteSourcePath + "/bagit.txt",
+                absoluteSourcePath + "/manifest-md5.txt");
+        assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
+        
+        Resource file = children.get("lorem.txt");
+        assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
+        assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
+                file.getProperty(CdrDeposit.md5sum).getString());
+        assertEquals("File location not set", absoluteSourcePath + "/data/test/lorem.txt",
+                file.getProperty(CdrDeposit.stagingLocation).getString());
+        
+        Resource file2 = children.get("ipsum.txt");
+        assertTrue("Missing RDF type", file2.hasProperty(RDF.type, Cdr.FileObject));
+        assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
+                file2.getProperty(CdrDeposit.md5sum).getString());
+        assertEquals("File location not set", absoluteSourcePath + "/data/test/ipsum.txt",
+                file2.getProperty(CdrDeposit.stagingLocation).getString());
+        
+        File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
+        assertTrue(modsFile.exists());
+        
+        Set<String> cleanupSet = new HashSet<>();
+        StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);
+        while (it.hasNext()) {
+            Statement stmt = it.nextStatement();
+            cleanupSet.add(stmt.getString());
+        }
+        
+        assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
+        assertTrue("Cleanup of bag not set", cleanupSet.contains(absoluteSourcePath + "/"));
+        assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(0)));
+        assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
+    }
 
-	@Test(expected = JobFailedException.class)
-	public void testInvalid() throws Exception {
-		status.put(DepositField.sourcePath.name(), "src/test/resources/paths/invalid-bag");
+    @Test(expected = JobFailedException.class)
+    public void testInvalid() throws Exception {
+        status.put(DepositField.sourcePath.name(), "src/test/resources/paths/invalid-bag");
 
-		job.run();
-	}
+        job.run();
+    }
 
 }

@@ -20,8 +20,8 @@ import org.junit.Test;
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration(locations = {"/solr-search-context.xml",  "/uiapp-servlet.xml"/*, "/service-context.xml" */})
 public class SpringContextTest {
-	@Test
-	public void testLoadSpringContext() {
-		// nothing to do here
-	}
+    @Test
+    public void testLoadSpringContext() {
+        // nothing to do here
+    }
 }

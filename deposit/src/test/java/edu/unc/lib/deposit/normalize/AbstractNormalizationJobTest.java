@@ -51,76 +51,76 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTest {
 
-	@Before
-	public void initNorm() throws Exception {
-		String pidString =  UUID.randomUUID().toString();
-		PID premisEventPid = PIDs.get(pidString);
-		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
-		Answer<PID> answer = new Answer<PID>() {
-			public PID answer(InvocationOnMock invocation) throws Throwable {
-				return PIDs.get(UUID.randomUUID().toString());
-			}
-		};
-		when(repository.mintContentPid()).thenAnswer(answer);
-	}
+    @Before
+    public void initNorm() throws Exception {
+        String pidString =  UUID.randomUUID().toString();
+        PID premisEventPid = PIDs.get(pidString);
+        when(repository.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
+        Answer<PID> answer = new Answer<PID>() {
+            public PID answer(InvocationOnMock invocation) throws Throwable {
+                return PIDs.get(UUID.randomUUID().toString());
+            }
+        };
+        when(repository.mintContentPid()).thenAnswer(answer);
+    }
 
-	protected File verifyStagingLocationExists(Resource resource, File depositDirectory,
-			String fileLabel) {
-		String filePath = resource.getProperty(CdrDeposit.stagingLocation).getLiteral().getString();
-		File file = new File(depositDirectory, filePath);
-		assertTrue(fileLabel + " file did not exist", file.exists());
+    protected File verifyStagingLocationExists(Resource resource, File depositDirectory,
+            String fileLabel) {
+        String filePath = resource.getProperty(CdrDeposit.stagingLocation).getLiteral().getString();
+        File file = new File(depositDirectory, filePath);
+        assertTrue(fileLabel + " file did not exist", file.exists());
 
-		return file;
-	}
+        return file;
+    }
 
-	protected void verifyMetadataSourceAssigned(Model model, Resource primaryResource, File depositDirectory,
-			String sourceType, String fileSuffix) {
+    protected void verifyMetadataSourceAssigned(Model model, Resource primaryResource, File depositDirectory,
+            String sourceType, String fileSuffix) {
 
-		assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(Cdr.hasSourceMetadataProfile)
-				.getLiteral().getString());
+        assertEquals("Did not have metadata source type", sourceType, primaryResource.getProperty(Cdr.hasSourceMetadataProfile)
+                .getLiteral().getString());
 
-		// Verify that the metadata source attribute is present and transitively points to the file
-		Resource sourceMDResource = primaryResource.getProperty(CdrDeposit.hasSourceMetadata).getResource();
-		assertNotNull("Source metdata was not assigned to main resource", sourceMDResource);
+        // Verify that the metadata source attribute is present and transitively points to the file
+        Resource sourceMDResource = primaryResource.getProperty(CdrDeposit.hasSourceMetadata).getResource();
+        assertNotNull("Source metdata was not assigned to main resource", sourceMDResource);
 
-		File sourceMDFile = verifyStagingLocationExists(sourceMDResource, depositDirectory,
-				"Original metadata");
-		assertTrue("Original metadata file did not have the correct suffix, most likely the wrong file", sourceMDFile
-				.getName().endsWith(fileSuffix));
+        File sourceMDFile = verifyStagingLocationExists(sourceMDResource, depositDirectory,
+                "Original metadata");
+        assertTrue("Original metadata file did not have the correct suffix, most likely the wrong file", sourceMDFile
+                .getName().endsWith(fileSuffix));
 
-		// Verify that the extra datastream being added is the same as the source metadata
-		String sourceMDDatastream = primaryResource.getProperty(CdrDeposit.hasDatastream).getResource().getURI();
-		assertEquals("Source datastream path did not match the sourceMetadata", sourceMDResource.getURI(),
-				sourceMDDatastream);
-	}
+        // Verify that the extra datastream being added is the same as the source metadata
+        String sourceMDDatastream = primaryResource.getProperty(CdrDeposit.hasDatastream).getResource().getURI();
+        assertEquals("Source datastream path did not match the sourceMetadata", sourceMDResource.getURI(),
+                sourceMDDatastream);
+    }
 
-	protected void copyTestPackage(String filename, AbstractDepositJob job) {
-		copyTestPackage(filename, null, job);
-	}
+    protected void copyTestPackage(String filename, AbstractDepositJob job) {
+        copyTestPackage(filename, null, job);
+    }
 
-	protected void copyTestPackage(String filename, String destFilename, AbstractDepositJob job) {
-		job.getDataDirectory().mkdir();
-		Path packagePath = Paths.get(filename);
-		try {
-			Path destPath;
-			if (destFilename == null) {
-				destPath = job.getDataDirectory().toPath().resolve(packagePath.getFileName());
-			} else {
-				destPath = job.getDataDirectory().toPath().resolve(destFilename);
-			}
-			Files.copy(packagePath, destPath);
-		} catch (Exception e) {
-		}
-	}
+    protected void copyTestPackage(String filename, String destFilename, AbstractDepositJob job) {
+        job.getDataDirectory().mkdir();
+        Path packagePath = Paths.get(filename);
+        try {
+            Path destPath;
+            if (destFilename == null) {
+                destPath = job.getDataDirectory().toPath().resolve(packagePath.getFileName());
+            } else {
+                destPath = job.getDataDirectory().toPath().resolve(destFilename);
+            }
+            Files.copy(packagePath, destPath);
+        } catch (Exception e) {
+        }
+    }
 
-	protected Element element(String xpathString, Object xmlObject) throws Exception {
-		return (Element) xpath(xpathString, xmlObject).get(0);
-	}
+    protected Element element(String xpathString, Object xmlObject) throws Exception {
+        return (Element) xpath(xpathString, xmlObject).get(0);
+    }
 
-	protected List<?> xpath(String xpath, Object xmlObject) throws Exception {
-		org.jdom2.xpath.XPathFactory xpfac = org.jdom2.xpath.XPathFactory.instance();
-		org.jdom2.xpath.XPathExpression<Content> xpe = xpfac.compile(xpath, Filters.content(), null,
-				JDOMNamespaceUtil.MODS_V3_NS);
-		return xpe.evaluate(xmlObject);
-	}
+    protected List<?> xpath(String xpath, Object xmlObject) throws Exception {
+        org.jdom2.xpath.XPathFactory xpfac = org.jdom2.xpath.XPathFactory.instance();
+        org.jdom2.xpath.XPathExpression<Content> xpe = xpfac.compile(xpath, Filters.content(), null,
+                JDOMNamespaceUtil.MODS_V3_NS);
+        return xpe.evaluate(xmlObject);
+    }
 }

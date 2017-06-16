@@ -61,109 +61,109 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  */
 public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 
-	@Mock
-	private DepositRecord depositRecord;
+    @Mock
+    private DepositRecord depositRecord;
 
-	private IngestDepositRecordJob job;
+    private IngestDepositRecordJob job;
 
-	@Before
-	public void setup() throws Exception {
-		when(repository.createDepositRecord(any(PID.class), any(Model.class)))
-				.thenReturn(depositRecord);
-		PID eventPid = makePid("content");
-		when(repository.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
-		when(depositRecord.addPremisEvents(anyListOf(PremisEventObject.class))).thenReturn(depositRecord);
-		
-		when(premisEventBuilder.addAuthorizingAgent(anyString())).thenReturn(premisEventBuilder);
-	}
+    @Before
+    public void setup() throws Exception {
+        when(repository.createDepositRecord(any(PID.class), any(Model.class)))
+                .thenReturn(depositRecord);
+        PID eventPid = makePid("content");
+        when(repository.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
+        when(depositRecord.addPremisEvents(anyListOf(PremisEventObject.class))).thenReturn(depositRecord);
+        
+        when(premisEventBuilder.addAuthorizingAgent(anyString())).thenReturn(premisEventBuilder);
+    }
 
-	private void initializeJob(String depositUUID, String packagePath, String n3File) throws Exception {
-		depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
+    private void initializeJob(String depositUUID, String packagePath, String n3File) throws Exception {
+        depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + depositUUID);
 
-		depositDir = new File(depositsDirectory, depositUUID);
-		depositDir.mkdir();
-		FileUtils.copyDirectory(new File(packagePath), depositDir);
+        depositDir = new File(depositsDirectory, depositUUID);
+        depositDir.mkdir();
+        FileUtils.copyDirectory(new File(packagePath), depositDir);
 
-		Dataset dataset = TDBFactory.createDataset();
+        Dataset dataset = TDBFactory.createDataset();
 
-		job = new IngestDepositRecordJob();
-		job.setDepositUUID(depositUUID);
-		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
-		job.setPremisLoggerFactory(premisLoggerFactory);
-		job.setRepository(repository);
+        job = new IngestDepositRecordJob();
+        job.setDepositUUID(depositUUID);
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        job.setPremisLoggerFactory(premisLoggerFactory);
+        job.setRepository(repository);
 
-		job.init();
+        job.init();
 
-		Model model = job.getWritableModel();
-		model.read(new File(n3File).getAbsolutePath());
-		job.closeModel();
-	}
+        Model model = job.getWritableModel();
+        model.read(new File(n3File).getAbsolutePath());
+        job.closeModel();
+    }
 
-	@Test
-	public void testProquestAggregateBag() throws Exception {
+    @Test
+    public void testProquestAggregateBag() throws Exception {
 
-		initializeJob(depositUUID, "src/test/resources/ingest-bags/fcrepo4/proquest-bag",
-				"src/test/resources/ingest-bags/fcrepo4/proquest-bag/everything.n3");
+        initializeJob(depositUUID, "src/test/resources/ingest-bags/fcrepo4/proquest-bag",
+                "src/test/resources/ingest-bags/fcrepo4/proquest-bag/everything.n3");
 
-		Map<String, String> depositStatus = new HashMap<>();
-		depositStatus.put(DepositField.fileName.name(), "proquest-bag");
-		depositStatus.put(DepositField.packagingType.name(), PackagingType.PROQUEST_ETD.getUri());
+        Map<String, String> depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.fileName.name(), "proquest-bag");
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.PROQUEST_ETD.getUri());
 
-		when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
+        when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
 
-		job.run();
+        job.run();
 
-		// Verifying that the deposit record was created correctly
-		Resource depositResc = getAIPResource();
-		assertEquals(PackagingType.PROQUEST_ETD.getUri(), depositResc.getProperty(Cdr.depositPackageType).getString());
-		assertEquals("Deposit record for proquest-bag", depositResc.getProperty(DcElements.title).getString());
-		assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
+        // Verifying that the deposit record was created correctly
+        Resource depositResc = getAIPResource();
+        assertEquals(PackagingType.PROQUEST_ETD.getUri(), depositResc.getProperty(Cdr.depositPackageType).getString());
+        assertEquals("Deposit record for proquest-bag", depositResc.getProperty(DcElements.title).getString());
+        assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
 
-		verify(depositRecord).addPremisEvents(anyListOf(PremisEventObject.class));
-	}
+        verify(depositRecord).addPremisEvents(anyListOf(PremisEventObject.class));
+    }
 
-	@Test
-	public void testWithManifests() throws Exception {
+    @Test
+    public void testWithManifests() throws Exception {
 
-		initializeJob(depositUUID, "src/test/resources/paths/valid-bag",
-				"src/test/resources/ingest-bags/fcrepo4/valid-bag.n3");
+        initializeJob(depositUUID, "src/test/resources/paths/valid-bag",
+                "src/test/resources/ingest-bags/fcrepo4/valid-bag.n3");
 
-		Map<String, String> depositStatus = new HashMap<>();
-		depositStatus.put(DepositField.fileName.name(), "valid-bag");
-		depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
-		when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
-		List<String> manifestPaths = Arrays.asList(
-				Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toString(),
-				Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toString());
-		when(depositStatusFactory.getManifestURIs(eq(depositUUID))).thenReturn(manifestPaths);
+        Map<String, String> depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.fileName.name(), "valid-bag");
+        depositStatus.put(DepositField.packagingType.name(), PackagingType.BAGIT.getUri());
+        when(depositStatusFactory.get(eq(depositUUID))).thenReturn(depositStatus);
+        List<String> manifestPaths = Arrays.asList(
+                Paths.get(depositDir.getAbsolutePath(), "manifest-md5.txt").toString(),
+                Paths.get(depositDir.getAbsolutePath(), "bagit.txt").toString());
+        when(depositStatusFactory.getManifestURIs(eq(depositUUID))).thenReturn(manifestPaths);
 
-		job.run();
+        job.run();
 
-		// Check that the deposit record model was given the correct properties
-		Resource depositResc = getAIPResource();
-		assertEquals(PackagingType.BAGIT.getUri(), depositResc.getProperty(Cdr.depositPackageType).getString());
-		assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
+        // Check that the deposit record model was given the correct properties
+        Resource depositResc = getAIPResource();
+        assertEquals(PackagingType.BAGIT.getUri(), depositResc.getProperty(Cdr.depositPackageType).getString());
+        assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
 
-		// Check that the deposit record was created
-		verify(repository).createDepositRecord(eq(depositPid), any(Model.class));
+        // Check that the deposit record was created
+        verify(repository).createDepositRecord(eq(depositPid), any(Model.class));
 
-		// Check that all manifests were added to the record
-		ArgumentCaptor<File> manifestCaptor = ArgumentCaptor.forClass(File.class);
-		verify(depositRecord, times(2)).addManifest(manifestCaptor.capture(), anyString());
+        // Check that all manifests were added to the record
+        ArgumentCaptor<File> manifestCaptor = ArgumentCaptor.forClass(File.class);
+        verify(depositRecord, times(2)).addManifest(manifestCaptor.capture(), anyString());
 
-		List<File> manifests = manifestCaptor.getAllValues();
+        List<File> manifests = manifestCaptor.getAllValues();
 
-		assertTrue(manifests.contains(new File(depositDir, "manifest-md5.txt")));
-		assertTrue(manifests.contains(new File(depositDir, "bagit.txt")));
-	}
+        assertTrue(manifests.contains(new File(depositDir, "manifest-md5.txt")));
+        assertTrue(manifests.contains(new File(depositDir, "bagit.txt")));
+    }
 
-	private Resource getAIPResource() throws Exception {
-		ArgumentCaptor<Model> depositRecordModelCaptor = ArgumentCaptor.forClass(Model.class);
-		verify(repository).createDepositRecord(any(PID.class), depositRecordModelCaptor.capture());
-		Model recordModel = depositRecordModelCaptor.getValue();
+    private Resource getAIPResource() throws Exception {
+        ArgumentCaptor<Model> depositRecordModelCaptor = ArgumentCaptor.forClass(Model.class);
+        verify(repository).createDepositRecord(any(PID.class), depositRecordModelCaptor.capture());
+        Model recordModel = depositRecordModelCaptor.getValue();
 
-		return recordModel.getResource(depositPid.getRepositoryPath());
-	}
+        return recordModel.getResource(depositPid.getRepositoryPath());
+    }
 }

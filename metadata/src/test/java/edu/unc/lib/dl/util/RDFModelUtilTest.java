@@ -39,60 +39,60 @@ import edu.unc.lib.dl.rdf.Premis;
  */
 public class RDFModelUtilTest {
 
-	@Test
-	public void createSparqlInsertTest() {
-		String rescUri = "http://example.com/resource";
-		Property booleanProperty = createProperty("http://example.com/booleanProperty");
+    @Test
+    public void createSparqlInsertTest() {
+        String rescUri = "http://example.com/resource";
+        Property booleanProperty = createProperty("http://example.com/booleanProperty");
 
-		// Define a set of properties to add to a resource
-		Model insertModel = ModelFactory.createDefaultModel();
-		Resource resc = insertModel.createResource(rescUri);
-		resc.addProperty(RDF.type, Cdr.Collection);
-		resc.addLiteral(booleanProperty, false);
-		resc.addProperty(DcElements.title, "Title");
+        // Define a set of properties to add to a resource
+        Model insertModel = ModelFactory.createDefaultModel();
+        Resource resc = insertModel.createResource(rescUri);
+        resc.addProperty(RDF.type, Cdr.Collection);
+        resc.addLiteral(booleanProperty, false);
+        resc.addProperty(DcElements.title, "Title");
 
-		// Define a hash uri resource off of the main resource
-		String hashUri = rescUri + "#event";
-		Resource hashResc = insertModel.createResource(hashUri);
-		hashResc.addProperty(Premis.hasEventType, Premis.Capture);
-		hashResc.addProperty(Premis.hasEventDetail, "Success");
+        // Define a hash uri resource off of the main resource
+        String hashUri = rescUri + "#event";
+        Resource hashResc = insertModel.createResource(hashUri);
+        hashResc.addProperty(Premis.hasEventType, Premis.Capture);
+        hashResc.addProperty(Premis.hasEventDetail, "Success");
 
-		// Build the update query
-		String query = RDFModelUtil.createSparqlInsert(insertModel);
+        // Build the update query
+        String query = RDFModelUtil.createSparqlInsert(insertModel);
 
-		// Make a model that the query will be applied to
-		Model destModel = ModelFactory.createDefaultModel();
-		Resource destResc = destModel.createResource(rescUri);
-		destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
+        // Make a model that the query will be applied to
+        Model destModel = ModelFactory.createDefaultModel();
+        Resource destResc = destModel.createResource(rescUri);
+        destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
 
-		// Execute the query on the destination model to see that it works
-		UpdateAction.parseExecute(query, destModel);
+        // Execute the query on the destination model to see that it works
+        UpdateAction.parseExecute(query, destModel);
 
-		// Verify that the new properties were added to the destination objects
-		assertTrue(destResc.hasProperty(RDF.type, Cdr.Collection));
-		assertTrue(destResc.hasProperty(DcElements.title, "Title"));
-		destResc.getProperty(booleanProperty).getBoolean();
+        // Verify that the new properties were added to the destination objects
+        assertTrue(destResc.hasProperty(RDF.type, Cdr.Collection));
+        assertTrue(destResc.hasProperty(DcElements.title, "Title"));
+        destResc.getProperty(booleanProperty).getBoolean();
 
-		// Make sure the hash uri got added too
-		Resource destHash = destModel.getResource(hashUri);
-		assertTrue(destHash.hasProperty(Premis.hasEventType, Premis.Capture));
-	}
+        // Make sure the hash uri got added too
+        Resource destHash = destModel.getResource(hashUri);
+        assertTrue(destHash.hasProperty(Premis.hasEventType, Premis.Capture));
+    }
 
-	@Test
-	public void createSparqlSingleResourceInsertTest() {
-		String rescUri = "http://example.com/resource";
-		
-		String query = RDFModelUtil.createSparqlInsert(rescUri, RDF.type, PcdmModels.Object);
-		
-		// Make a model that the query will be applied to
-		Model destModel = ModelFactory.createDefaultModel();
-		Resource destResc = destModel.createResource(rescUri);
-		destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
-		
-		// Execute the query on the destination model to see that it works
-		UpdateAction.parseExecute(query, destModel);
-		
-		assertTrue(destResc.hasProperty(RDF.type, Fcrepo4Repository.Container));
-		assertTrue(destResc.hasProperty(RDF.type, PcdmModels.Object));
-	}
+    @Test
+    public void createSparqlSingleResourceInsertTest() {
+        String rescUri = "http://example.com/resource";
+        
+        String query = RDFModelUtil.createSparqlInsert(rescUri, RDF.type, PcdmModels.Object);
+        
+        // Make a model that the query will be applied to
+        Model destModel = ModelFactory.createDefaultModel();
+        Resource destResc = destModel.createResource(rescUri);
+        destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
+        
+        // Execute the query on the destination model to see that it works
+        UpdateAction.parseExecute(query, destModel);
+        
+        assertTrue(destResc.hasProperty(RDF.type, Fcrepo4Repository.Container));
+        assertTrue(destResc.hasProperty(RDF.type, PcdmModels.Object));
+    }
 }

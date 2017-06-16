@@ -33,30 +33,30 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class UnpackDepositJobTest extends AbstractDepositJobTest {
 
-	private UnpackDepositJob job;
+    private UnpackDepositJob job;
 
-	@Before
-	public void setup() {
-		job = new UnpackDepositJob(jobUUID, depositUUID);
-		job.setDepositStatusFactory(depositStatusFactory);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "dataset", dataset);
-		job.init();
-	}
+    @Before
+    public void setup() {
+        job = new UnpackDepositJob(jobUUID, depositUUID);
+        job.setDepositStatusFactory(depositStatusFactory);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "dataset", dataset);
+        job.init();
+    }
 
-	@Test
-	public void test() {
-		String workDir = DepositTestUtils.makeTestDir(
-				depositsDirectory,
-				depositUUID, new File("src/test/resources/depositFileZipped.zip"));
+    @Test
+    public void test() {
+        String workDir = DepositTestUtils.makeTestDir(
+                depositsDirectory,
+                depositUUID, new File("src/test/resources/depositFileZipped.zip"));
 
-		Map<String, String> status = new HashMap<>();
-		status.put(DepositField.fileName.name(), "cdrMETS.zip");
-		when(depositStatusFactory.get(anyString())).thenReturn(status);
+        Map<String, String> status = new HashMap<>();
+        status.put(DepositField.fileName.name(), "cdrMETS.zip");
+        when(depositStatusFactory.get(anyString())).thenReturn(status);
 
-		job.run();
+        job.run();
 
-		File metsFile = new File(workDir, "data/mets.xml");
-		assertTrue("METS file must exist after unpacking", metsFile.exists());
-	}
+        File metsFile = new File(workDir, "data/mets.xml");
+        assertTrue("METS file must exist after unpacking", metsFile.exists());
+    }
 }

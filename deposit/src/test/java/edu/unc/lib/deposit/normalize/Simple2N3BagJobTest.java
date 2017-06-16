@@ -44,57 +44,57 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  */
 public class Simple2N3BagJobTest extends AbstractNormalizationJobTest {
 
-	private Simple2N3BagJob job;
+    private Simple2N3BagJob job;
 
-	private Map<String, String> status;
+    private Map<String, String> status;
 
-	@Before
-	public void setup() throws Exception {
-		
-		status = new HashMap<String, String>();
+    @Before
+    public void setup() throws Exception {
+        
+        status = new HashMap<String, String>();
 
-		when(depositStatusFactory.get(anyString())).thenReturn(status);
-		
-		Dataset dataset = TDBFactory.createDataset();
+        when(depositStatusFactory.get(anyString())).thenReturn(status);
+        
+        Dataset dataset = TDBFactory.createDataset();
 
-		job = new Simple2N3BagJob();
-		job.setDepositUUID(depositUUID);
-		job.setDepositDirectory(depositDir);
-		job.setRepository(repository);
-		job.setPremisLoggerFactory(premisLoggerFactory);
-		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
+        job = new Simple2N3BagJob();
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        job.setRepository(repository);
+        job.setPremisLoggerFactory(premisLoggerFactory);
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
 
-		job.init();
-	}
+        job.init();
+    }
 
-	@Test
-	public void depositSimple() throws Exception {
-		String name = "objectName";
-		copyTestPackage("src/test/resources/simpleMods.xml", "data_file.xml", job);
+    @Test
+    public void depositSimple() throws Exception {
+        String name = "objectName";
+        copyTestPackage("src/test/resources/simpleMods.xml", "data_file.xml", job);
 
-		status.put(DepositField.depositSlug.name(), name);
-		status.put(DepositField.fileName.name(), "data_file.xml");
+        status.put(DepositField.depositSlug.name(), name);
+        status.put(DepositField.fileName.name(), "data_file.xml");
 
-		job.run();
+        job.run();
 
-		Model model = job.getWritableModel();
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource mainResource = (Resource) depositBag.iterator().next();
+        Model model = job.getWritableModel();
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Resource mainResource = (Resource) depositBag.iterator().next();
 
-		assertEquals("Folder label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
+        assertEquals("Folder label was not set", mainResource.getProperty(CdrDeposit.label).getString(), name);
 
-		assertFalse("No RDF types assigned", mainResource.hasProperty(RDF.type));
-	}
+        assertFalse("No RDF types assigned", mainResource.hasProperty(RDF.type));
+    }
 
-	@Test(expected = JobFailedException.class)
-	public void depositSimpleMissingFile() throws Exception {
+    @Test(expected = JobFailedException.class)
+    public void depositSimpleMissingFile() throws Exception {
 
-		status.put(DepositField.depositSlug.name(), "name");
-		status.put(DepositField.fileName.name(), "data_file.xml");
+        status.put(DepositField.depositSlug.name(), "name");
+        status.put(DepositField.fileName.name(), "data_file.xml");
 
-		job.run();
+        job.run();
 
-	}
+    }
 }
