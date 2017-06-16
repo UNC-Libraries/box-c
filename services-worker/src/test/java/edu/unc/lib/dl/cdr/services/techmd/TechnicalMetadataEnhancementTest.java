@@ -107,4 +107,55 @@ public class TechnicalMetadataEnhancementTest extends Assert {
 		verify(managementClient).setExclusiveLiteral(any(PID.class), eq(CDRProperty.hasSourceMimeType.getPredicate()),
 				eq(CDRProperty.hasSourceMimeType.getNamespace()), eq("text/plain"), anyString());
 	}
+	
+	@Test
+	public void singleMimetypeResultTest() throws Exception {
+		
+		InputStream inStream = this.getClass().getResourceAsStream("fitsSingleResult.xml");
+		when(service.remoteExecuteWithPhysicalLocation(anyString(), anyString())).thenReturn(inStream);
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(this.getClass().getResourceAsStream("unknownTypeFOXML.xml"));
+		when(message.getFoxml()).thenReturn(foxml);
+		
+		enhance.call();
+		
+		// Check that a single 
+		verify(managementClient).setExclusiveLiteral(any(PID.class), eq(CDRProperty.hasSourceMimeType.getPredicate()),
+				eq(CDRProperty.hasSourceMimeType.getNamespace()), eq("audio/mp3"), anyString());
+	}
+	
+	@Test
+	public void exifMimetypeResultTest() throws Exception {
+		
+		InputStream inStream = this.getClass().getResourceAsStream("fitsExifResult.xml");
+		when(service.remoteExecuteWithPhysicalLocation(anyString(), anyString())).thenReturn(inStream);
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(this.getClass().getResourceAsStream("unknownTypeFOXML.xml"));
+		when(message.getFoxml()).thenReturn(foxml);
+		
+		enhance.call();
+		
+		// Check that it uses the exif mimetype
+		verify(managementClient).setExclusiveLiteral(any(PID.class), eq(CDRProperty.hasSourceMimeType.getPredicate()),
+				eq(CDRProperty.hasSourceMimeType.getNamespace()), eq("video/mp4"), anyString());
+	}
+	
+	@Test
+	public void symlinkConflictTest() throws Exception {
+		
+		InputStream inStream = this.getClass().getResourceAsStream("fitsSymlinkConflict.xml");
+		when(service.remoteExecuteWithPhysicalLocation(anyString(), anyString())).thenReturn(inStream);
+		
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(this.getClass().getResourceAsStream("unknownTypeFOXML.xml"));
+		when(message.getFoxml()).thenReturn(foxml);
+		
+		enhance.call();
+		
+		// Check that it uses the exif mimetype
+		verify(managementClient).setExclusiveLiteral(any(PID.class), eq(CDRProperty.hasSourceMimeType.getPredicate()),
+				eq(CDRProperty.hasSourceMimeType.getNamespace()), eq("audio/mp3"), anyString());
+	}
 }

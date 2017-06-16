@@ -64,6 +64,8 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 	private static final Logger LOG = LoggerFactory.getLogger(TechnicalMetadataEnhancement.class);
 	private static final int MAX_EXTENSION_LENGTH = 8;
 
+	private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -153,8 +155,9 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					Element identity = null;
 					Element idn = fits.getRootElement().getChild("identification", ns);
 					
+					String identityStatus = idn.getAttributeValue("status");
 					// If there was no conflict, use the first identity
-					if (idn.getAttributeValue("status") == null) {
+					if (identityStatus == null || FITS_SINGLE_STATUS.equals(identityStatus)) {
 						identity = idn.getChild("identity", ns);
 					} else {
 						// otherwise, find the first identity set where multiple tools agreed or Exif was not the sole
@@ -162,8 +165,8 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						for (Object child : idn.getChildren("identity", ns)) {
 							Element el = (Element) child;
 							if (el.getChildren("tool", ns).size() > 1
-									|| (!"Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname"))
-											&& !"application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
+									|| !("Exiftool".equals(el.getChild("tool", ns).getAttributeValue("toolname"))
+											&& "application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
 								identity = el;
 								break;
 							}
