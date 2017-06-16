@@ -61,238 +61,278 @@ import edu.unc.lib.dl.util.DepositConstants;
  */
 public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
-	private final static String FITS_BASE_URI = "http://example.com/fits";
+    private final static String FITS_BASE_URI = "http://example.com/fits";
 
-	private final static String OCTET_MIMETYPE = "application/octet-stream";
+    private final static String OCTET_MIMETYPE = "application/octet-stream";
 
-	private final static String IMAGE_FILEPATH = "/path/image.jpg";
-	private final static String IMAGE_MD5 = "2b8dac0b2c0ca845dc8d517a2792dcf4";
-	private final static String IMAGE_MIMETYPE = "image/jpeg";
-	private final static String IMAGE_FORMAT = "JPEG File Interchange Format";
+    private final static String IMAGE_FILEPATH = "/path/image.jpg";
+    private final static String IMAGE_MD5 = "2b8dac0b2c0ca845dc8d517a2792dcf4";
+    private final static String IMAGE_MIMETYPE = "image/jpeg";
+    private final static String IMAGE_FORMAT = "JPEG File Interchange Format";
 
-	private final static String CONFLICT_FILEPATH = "/path/conflict.wav";
-	private final static String CONFLICT_MD5 = "1d442d115b472b21437893000b79c97a";
-	private final static String CONFLICT_MIMETYPE = "audio/x-wave";
-	private final static String CONFLICT_FORMAT = "Waveform Audio";
+    private final static String CONFLICT_FILEPATH = "/path/conflict.wav";
+    private final static String CONFLICT_MD5 = "1d442d115b472b21437893000b79c97a";
+    private final static String CONFLICT_MIMETYPE = "audio/x-wave";
+    private final static String CONFLICT_FORMAT = "Waveform Audio";
 
-	private final static String UNKNOWN_FILEPATH = "/path/unknown.stuff";
-	private final static String UNKNOWN_MD5 = "2748ba561254b629c2103cb2e1be3fc2";
-	private final static String UNKNOWN_FORMAT = "Unknown";
+    private final static String UNKNOWN_FILEPATH = "/path/unknown.stuff";
+    private final static String UNKNOWN_MD5 = "2748ba561254b629c2103cb2e1be3fc2";
+    private final static String UNKNOWN_FORMAT = "Unknown";
 
-	@Mock
-	private CloseableHttpClient httpClient;
-	@Mock
-	private CloseableHttpResponse httpResp;
-	@Mock
-	private HttpEntity respEntity;
+    @Mock
+    private CloseableHttpClient httpClient;
+    @Mock
+    private CloseableHttpResponse httpResp;
+    @Mock
+    private HttpEntity respEntity;
 
-	private ExtractTechnicalMetadataJob job;
+    private ExtractTechnicalMetadataJob job;
 
-	private Bag depositBag;
-	private Model model;
+    private Bag depositBag;
+    private Model model;
 
-	private File techmdDir;
+    private File techmdDir;
 
-	@Before
-	public void init() throws Exception {
-		job = new ExtractTechnicalMetadataJob(jobUUID, depositUUID);
-		job.setDepositDirectory(depositDir);
-		job.setRepository(repository);
-		job.setHttpClient(httpClient);
-		job.setProcessFilesLocally(true);
-		job.setBaseFitsUri(FITS_BASE_URI);
+    @Before
+    public void init() throws Exception {
+        job = new ExtractTechnicalMetadataJob(jobUUID, depositUUID);
+        job.setDepositDirectory(depositDir);
+        job.setRepository(repository);
+        job.setHttpClient(httpClient);
+        job.setProcessFilesLocally(true);
+        job.setBaseFitsUri(FITS_BASE_URI);
 
-		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
-		job.initJob();
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        job.initJob();
 
-		model = job.getWritableModel();
-		depositBag = model.createBag(depositPid.getRepositoryPath());
+        model = job.getWritableModel();
+        depositBag = model.createBag(depositPid.getRepositoryPath());
 
-		when(httpClient.execute(any(HttpGet.class))).thenReturn(httpResp);
-		when(httpResp.getEntity()).thenReturn(respEntity);
+        when(httpClient.execute(any(HttpGet.class))).thenReturn(httpResp);
+        when(httpResp.getEntity()).thenReturn(respEntity);
 
-		techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
-	}
+        techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
+    }
 
-	private void respondWithFile(String path) throws Exception {
-		when(respEntity.getContent()).thenReturn(
-				ExtractTechnicalMetadataJobTest.class.getResourceAsStream(path));
-	}
+    private void respondWithFile(String path) throws Exception {
+        when(respEntity.getContent()).thenReturn(
+                ExtractTechnicalMetadataJobTest.class.getResourceAsStream(path));
+    }
 
-	@Test
-	public void nestedFileTest() throws Exception {
-		respondWithFile("/fitsReports/imageReport.xml");
+    @Test
+    public void nestedFileTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
 
-		// Create the work object which nests the file
-		PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-		Bag workBag = model.createBag(workPid.getRepositoryPath());
-		workBag.addProperty(RDF.type, Cdr.Work);
-		depositBag.add(workBag);
-		PID filePid = addFileObject(workBag, IMAGE_FILEPATH, IMAGE_MIMETYPE, IMAGE_MD5);
+        // Create the work object which nests the file
+        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        depositBag.add(workBag);
+        PID filePid = addFileObject(workBag, IMAGE_FILEPATH, IMAGE_MIMETYPE, IMAGE_MD5);
 
-		job.closeModel();
+        job.closeModel();
 
-		job.run();
+        job.run();
 
-		verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
-	}
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+    }
 
-	@Test
-	public void resolveConflictingMimetypeTest() throws Exception {
-		respondWithFile("/fitsReports/conflictTypeReport.xml");
+    @Test
+    public void resolveConflictingMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/conflictTypeReport.xml");
 
-		// Providing octet stream mimetype to be overrridden
-		PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
-		job.closeModel();
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
 
-		job.run();
+        job.run();
 
-		verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
-	}
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
 
-	@Test
-	public void overrideProvidedMimetypeTest() throws Exception {
-		respondWithFile("/fitsReports/imageReport.xml");
+    @Test
+    public void exifSymlinkConflictMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/exifSymlinkConflict.xml");
 
-		// Providing octet stream mimetype to be overrridden
-		PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, OCTET_MIMETYPE, null);
-		job.closeModel();
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
 
-		job.run();
+        job.run();
 
-		verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
-	}
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
+    
+    @Test
+    public void exifMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/exifReport.xml");
 
-	@Test
-	public void addMissingMimetypeTest() throws Exception {
-		respondWithFile("/fitsReports/imageReport.xml");
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
 
-		// Providing no mimetype
-		PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, null, null);
-		job.closeModel();
+        job.run();
 
-		job.run();
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
+    
+    @Test
+    public void singleResultExifMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/exifSingleResult.xml");
 
-		verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
-	}
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
 
-	@Test(expected = JobFailedException.class)
-	public void md5MismatchTest() throws Exception {
-		respondWithFile("/fitsReports/imageReport.xml");
+        job.run();
 
-		// Providing incorrect checksum value
-		addFileObject(depositBag, IMAGE_FILEPATH, null, "111111111111");
-		job.closeModel();
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
+    
+    
+    @Test
+    public void overrideProvidedMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
 
-		job.run();
-	}
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
 
-	@Test
-	public void resumeJobTest() throws Exception {
-		respondWithFile("/fitsReports/imageReport.xml");
+        job.run();
 
-		techmdDir.mkdir();
-		PID skippedPid = addFileObject(depositBag, "/skipped/object.jpg", null, null);
-		File skippedFile = new File(techmdDir, skippedPid.getUUID() + ".xml");
-		skippedFile.createNewFile();
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+    }
 
-		PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, null, null);
+    @Test
+    public void addMissingMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
 
-		when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
+        // Providing no mimetype
+        PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, null, null);
+        job.closeModel();
 
-		job.closeModel();
+        job.run();
 
-		job.run();
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+    }
 
-		verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 2);
-	}
+    @Test(expected = JobFailedException.class)
+    public void md5MismatchTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
 
-	@Test
-	public void unknownFormatTest() throws Exception {
-		respondWithFile("/fitsReports/unknownReport.xml");
+        // Providing incorrect checksum value
+        addFileObject(depositBag, IMAGE_FILEPATH, null, "111111111111");
+        job.closeModel();
 
-		// Providing octet stream mimetype to be overrridden
-		PID filePid = addFileObject(depositBag, UNKNOWN_FILEPATH, null, null);
-		job.closeModel();
+        job.run();
+    }
 
-		job.run();
+    @Test
+    public void resumeJobTest() throws Exception {
+        respondWithFile("/fitsReports/imageReport.xml");
 
-		verifyFileResults(filePid, OCTET_MIMETYPE, UNKNOWN_FORMAT, UNKNOWN_MD5, UNKNOWN_FILEPATH, 1);
-	}
+        techmdDir.mkdir();
+        PID skippedPid = addFileObject(depositBag, "/skipped/object.jpg", null, null);
+        File skippedFile = new File(techmdDir, skippedPid.getUUID() + ".xml");
+        skippedFile.createNewFile();
 
-	private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
-			String expectedChecksum, String expectedFilepath, int numberReports) throws Exception {
-		model = job.getReadOnlyModel();
-		// Post-run model info for the file object
-		Resource fileResc = model.getResource(filePid.getRepositoryPath());
+        PID filePid = addFileObject(depositBag, IMAGE_FILEPATH, null, null);
 
-		ArgumentCaptor<HttpUriRequest> requestCaptor = ArgumentCaptor.forClass(HttpUriRequest.class);
-		verify(httpClient).execute(requestCaptor.capture());
-		HttpUriRequest request = requestCaptor.getValue();
+        when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
 
-		assertEquals("FITS service not called with the expected path",
-				FITS_BASE_URI + "/examine?file=" + expectedFilepath.replace("/", "%2F"),
-				request.getURI().toString());
+        job.closeModel();
 
-		assertEquals("Incorrect number of reports in output dir",
-				numberReports, techmdDir.list().length);
+        job.run();
 
-		File reportFile = new File(techmdDir, filePid.getUUID() + ".xml");
-		assertTrue("Report file not created", reportFile.exists());
+        verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 2);
+    }
 
-		Document premisDoc = new SAXBuilder().build(new FileInputStream(reportFile));
-		Element premisEl = premisDoc.getRootElement();
-		Element premisObjEl = premisEl.getChild("object", PREMIS_V3_NS);
-		String identifier = premisObjEl.getChild("objectIdentifier", PREMIS_V3_NS)
-				.getChildText("objectIdentifierValue", PREMIS_V3_NS);
-		assertEquals(identifier, filePid.getRepositoryPath());
+    @Test
+    public void unknownFormatTest() throws Exception {
+        respondWithFile("/fitsReports/unknownReport.xml");
 
-		Element premisObjCharsEl = premisObjEl.getChild("objectCharacteristics", PREMIS_V3_NS);
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, UNKNOWN_FILEPATH, null, null);
+        job.closeModel();
 
-		String checksum = premisObjCharsEl.getChild("fixity", PREMIS_V3_NS)
-				.getChildText("messageDigest", PREMIS_V3_NS);
-		assertEquals("Checksum not recorded in premis report", expectedChecksum, checksum);
+        job.run();
 
-		assertEquals("Checksum not set in deposit model", expectedChecksum,
-				fileResc.getProperty(CdrDeposit.md5sum).getString());
+        verifyFileResults(filePid, OCTET_MIMETYPE, UNKNOWN_FORMAT, UNKNOWN_MD5, UNKNOWN_FILEPATH, 1);
+    }
 
-		// Test that the size property is set and a numeric value
-		Long.parseLong(premisObjCharsEl.getChildText("size", PREMIS_V3_NS));
+    private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
+            String expectedChecksum, String expectedFilepath, int numberReports) throws Exception {
+        model = job.getReadOnlyModel();
+        // Post-run model info for the file object
+        Resource fileResc = model.getResource(filePid.getRepositoryPath());
 
-		// Verify that the FITS result report was added to the premis
-		Element fitsEl = premisObjCharsEl.getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
-				.getChild("fits", FITS_NS);
-		assertNotNull("FITS results not added to report", fitsEl);
-		assertNotNull("FITS contents missing from report",
-				fitsEl.getChild("identification", FITS_NS));
+        ArgumentCaptor<HttpUriRequest> requestCaptor = ArgumentCaptor.forClass(HttpUriRequest.class);
+        verify(httpClient).execute(requestCaptor.capture());
+        HttpUriRequest request = requestCaptor.getValue();
 
-		// Check that the format got set
-		String formatName = premisObjCharsEl.getChild("format", PREMIS_V3_NS)
-				.getChild("formatDesignation", PREMIS_V3_NS)
-				.getChildText("formatName", PREMIS_V3_NS);
-		assertEquals("Format not set in premis report", expectedFormat, formatName);
+        assertEquals("FITS service not called with the expected path",
+                FITS_BASE_URI + "/examine?file=" + expectedFilepath.replace("/", "%2F"),
+                request.getURI().toString());
 
-		assertEquals("Mimetype not set in deposit model", expectedMimetype,
-				fileResc.getProperty(CdrDeposit.mimetype).getString());
-	}
+        assertEquals("Incorrect number of reports in output dir",
+                numberReports, techmdDir.list().length);
 
-	private PID addFileObject(Bag parent, String stagingLocation, String mimetype, String md5sum) {
-		PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        File reportFile = new File(techmdDir, filePid.getUUID() + ".xml");
+        assertTrue("Report file not created", reportFile.exists());
 
-		Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
-		fileResc.addProperty(RDF.type, Cdr.FileObject);
-		fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
-		if (mimetype != null) {
-			fileResc.addProperty(CdrDeposit.mimetype, mimetype);
-		}
-		if (md5sum != null) {
-			fileResc.addProperty(CdrDeposit.md5sum, md5sum);
-		}
+        Document premisDoc = new SAXBuilder().build(new FileInputStream(reportFile));
+        Element premisEl = premisDoc.getRootElement();
+        Element premisObjEl = premisEl.getChild("object", PREMIS_V3_NS);
+        String identifier = premisObjEl.getChild("objectIdentifier", PREMIS_V3_NS)
+                .getChildText("objectIdentifierValue", PREMIS_V3_NS);
+        assertEquals(identifier, filePid.getRepositoryPath());
 
-		parent.add(fileResc);
+        Element premisObjCharsEl = premisObjEl.getChild("objectCharacteristics", PREMIS_V3_NS);
 
-		return filePid;
-	}
+        String checksum = premisObjCharsEl.getChild("fixity", PREMIS_V3_NS)
+                .getChildText("messageDigest", PREMIS_V3_NS);
+        assertEquals("Checksum not recorded in premis report", expectedChecksum, checksum);
+
+        assertEquals("Checksum not set in deposit model", expectedChecksum,
+                fileResc.getProperty(CdrDeposit.md5sum).getString());
+
+        // Test that the size property is set and a numeric value
+        Long.parseLong(premisObjCharsEl.getChildText("size", PREMIS_V3_NS));
+
+        // Verify that the FITS result report was added to the premis
+        Element fitsEl = premisObjCharsEl.getChild("objectCharacteristicsExtension", PREMIS_V3_NS)
+                .getChild("fits", FITS_NS);
+        assertNotNull("FITS results not added to report", fitsEl);
+        assertNotNull("FITS contents missing from report",
+                fitsEl.getChild("identification", FITS_NS));
+
+        // Check that the format got set
+        String formatName = premisObjCharsEl.getChild("format", PREMIS_V3_NS)
+                .getChild("formatDesignation", PREMIS_V3_NS)
+                .getChildText("formatName", PREMIS_V3_NS);
+        assertEquals("Format not set in premis report", expectedFormat, formatName);
+
+        assertEquals("Mimetype not set in deposit model", expectedMimetype,
+                fileResc.getProperty(CdrDeposit.mimetype).getString());
+    }
+
+    private PID addFileObject(Bag parent, String stagingLocation, String mimetype, String md5sum) {
+        PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
+
+        Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
+        fileResc.addProperty(RDF.type, Cdr.FileObject);
+        fileResc.addProperty(CdrDeposit.stagingLocation, stagingLocation);
+        if (mimetype != null) {
+            fileResc.addProperty(CdrDeposit.mimetype, mimetype);
+        }
+        if (md5sum != null) {
+            fileResc.addProperty(CdrDeposit.md5sum, md5sum);
+        }
+
+        parent.add(fileResc);
+
+        return filePid;
+    }
 }
