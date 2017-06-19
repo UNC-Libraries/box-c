@@ -71,6 +71,7 @@ import edu.unc.lib.dl.util.URIUtil;
 public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
 
+    private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
     private final static String FITS_EXAMINE_PATH = "examine";
 
     private CloseableHttpClient httpClient;
@@ -261,8 +262,9 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      */
     private Element getFitsIdentificationInformation(Document fitsDoc) {
         Element identification = fitsDoc.getRootElement().getChild("identification", FITS_NS);
+        String identityStatus = identification.getAttributeValue("status");
         // If there was no conflict, use the first identity
-        if (identification.getAttributeValue("status") == null) {
+        if (identityStatus == null || FITS_SINGLE_STATUS.equals(identityStatus)) { 
             return identification.getChild("identity", FITS_NS);
         } else {
             if ("UNKNOWN".equals(identification.getAttributeValue("status"))) {
@@ -274,8 +276,8 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             // Trust any answer agreed on by multiple tools
             for (Element el : identification.getChildren("identity", FITS_NS)) {
                 if (el.getChildren("tool", FITS_NS).size() > 1
-                        || (!"Exiftool".equals(el.getChild("tool", FITS_NS).getAttributeValue("toolname"))
-                                && !"application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
+                        || !("Exiftool".equals(el.getChild("tool", FITS_NS).getAttributeValue("toolname"))
+                                && "application/x-symlink".equals(el.getAttributeValue("mimetype")))) {
                     return el;
                 }
             }

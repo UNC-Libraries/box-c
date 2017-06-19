@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fits xmlns="http://hul.harvard.edu/ois/xml/ns/fits/fits_output" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://hul.harvard.edu/ois/xml/ns/fits/fits_output http://hul.harvard.edu/ois/xml/xsd/fits/fits_output.xsd" version="0.8.5" timestamp="3/23/17 11:24 AM">
+  <identification status="SINGLE_RESULT">
+    <identity format="Waveform Audio" mimetype="audio/x-wave" toolname="FITS" toolversion="0.8.5">
+      <tool toolname="Exiftool" toolversion="9.13" />
+    </identity>
+  </identification>
+  <fileinfo>
+    <size toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">5176233</size>
+    <fslastmodified toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1490282624000</fslastmodified>
+    <filepath toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">/path/conflict.wav</filepath>
+    <filename toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">conflict.wav</filename>
+    <md5checksum toolname="OIS File Information" toolversion="0.2" status="SINGLE_RESULT">1d442d115b472b21437893000b79c97a</md5checksum>
+  </fileinfo>
+</fits>

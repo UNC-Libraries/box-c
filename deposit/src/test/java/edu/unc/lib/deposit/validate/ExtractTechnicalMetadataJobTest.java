@@ -153,6 +153,45 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     }
 
     @Test
+    public void exifSymlinkConflictMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/exifSymlinkConflict.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
+
+    @Test
+    public void exifMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/exifReport.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
+
+    @Test
+    public void singleResultExifMimetypeTest() throws Exception {
+        respondWithFile("/fitsReports/exifSingleResult.xml");
+
+        // Providing octet stream mimetype to be overrridden
+        PID filePid = addFileObject(depositBag, CONFLICT_FILEPATH, OCTET_MIMETYPE, null);
+        job.closeModel();
+
+        job.run();
+
+        verifyFileResults(filePid, CONFLICT_MIMETYPE, CONFLICT_FORMAT, CONFLICT_MD5, CONFLICT_FILEPATH, 1);
+    }
+
+    @Test
     public void overrideProvidedMimetypeTest() throws Exception {
         respondWithFile("/fitsReports/imageReport.xml");
 
