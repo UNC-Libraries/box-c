@@ -50,117 +50,117 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 
 public class ReplicationProcessorTest {
-	private ReplicationProcessor processor; 
-	private final String replicationLocations = "/tmp";
-	private final String badReplicationLocations = "/no_replicate";
-	private final String fileName = "replication_text.txt";
-	private final String testText = "Test text, see if it can be replicated.";
-	private int maxRetries = 3; 
-	private long retryDelay = 10;
-	private File file;
-	private String filePath;
-	private String localChecksum;
-	private InputStream binaryStream;
-	@Mock
-	private BinaryObject binary;
-	
-	@Mock
-	private BinaryObject binaryFcrepo;
+    private ReplicationProcessor processor; 
+    private final String replicationLocations = "/tmp";
+    private final String badReplicationLocations = "/no_replicate";
+    private final String fileName = "replication_text.txt";
+    private final String testText = "Test text, see if it can be replicated.";
+    private int maxRetries = 3; 
+    private long retryDelay = 10;
+    private File file;
+    private String filePath;
+    private String localChecksum;
+    private InputStream binaryStream;
+    @Mock
+    private BinaryObject binary;
 
-	@Mock
-	private Repository repository;
-	
-	@Mock
-	private Exchange exchange;
-	
-	@Mock
-	private Message message;
+    @Mock
+    private BinaryObject binaryFcrepo;
 
-	@Before
-	public void init() throws Exception {
-		initMocks(this);
-		
-		processor = new ReplicationProcessor(repository, replicationLocations, maxRetries, retryDelay);
-		
-		file = File.createTempFile(fileName, "txt");
-		file.deleteOnExit();
-		
-		binaryStream = new ByteArrayInputStream(testText.getBytes());
+    @Mock
+    private Repository repository;
 
-		when(exchange.getIn()).thenReturn(message);
-		when(exchange.getOut()).thenReturn(message);
-	
-		PIDs.setRepository(repository);
-		when(repository.getBaseUri()).thenReturn("http://fedora");
-		
-		when(repository.getBinary(any(PID.class))).thenReturn(binary);
-		
-		when(message.getHeader(eq(FCREPO_URI)))
-				.thenReturn("http://fedora/test/replicate");
-		
-		when(message.getHeader(eq(CdrBinaryUri)))
-				.thenReturn("http://fedora/test/uuid:1234");
-		
-		when(message.getHeader(eq(CdrBinaryMimeType)))
-				.thenReturn("text/plain");
-		
-		try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
-			writeFile.write(testText);
-		}
-		
-		filePath = file.getAbsolutePath().toString();
-		
-		localChecksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
-		
-		when(message.getHeader(eq(CdrBinaryChecksum)))
-		.thenReturn(localChecksum);
-		
-		when(binary.getBinaryStream())
-				.thenReturn(binaryStream);
-	}
-	
-	@Test
-	public void replicateFile() throws Exception {
-		when(message.getHeader(eq(CdrBinaryPath)))
-		.thenReturn(filePath);
-		
-		processor.process(exchange);
-		
-		String remoteChecksum = DigestUtils.sha1Hex(binaryStream);
-		assertEquals(localChecksum, remoteChecksum);
-	}
-	
-	@Test
-	public void replicateFileFromFedora() throws Exception {
-		when(message.getHeader(eq(CdrBinaryPath)))
-		.thenReturn(badReplicationLocations);
+    @Mock
+    private Exchange exchange;
 
-		processor.process(exchange);
+    @Mock
+    private Message message;
 
-		String remoteChecksum = DigestUtils.sha1Hex(new ByteArrayInputStream(testText.getBytes()));
-		assertEquals(localChecksum, remoteChecksum);
-	}
-	
-	@Test(expected = ReplicationDestinationUnavailableException.class)
-	public void replicationLocations() throws Exception {
-		processor = new ReplicationProcessor(repository, badReplicationLocations, maxRetries, retryDelay);
-		
-		try {
-			processor.process(exchange);
-		} finally {
-			verify(processor).equals(ReplicationDestinationUnavailableException.class);
-		}
-	}
-	
-	@Test(expected = RuntimeException.class)
-	public void replicationtFailTest() throws Exception {
-		when(binaryStream)
-				.thenThrow(new IOException());
+    @Before
+    public void init() throws Exception {
+        initMocks(this);
 
-		try {
-			processor.process(exchange);
-		} finally {
-			verify(binaryStream, times(maxRetries + 1));
-		}
-	}
+        processor = new ReplicationProcessor(repository, replicationLocations, maxRetries, retryDelay);
+
+        file = File.createTempFile(fileName, "txt");
+        file.deleteOnExit();
+
+        binaryStream = new ByteArrayInputStream(testText.getBytes());
+
+        when(exchange.getIn()).thenReturn(message);
+        when(exchange.getOut()).thenReturn(message);
+
+        PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn("http://fedora");
+
+        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+
+        when(message.getHeader(eq(FCREPO_URI)))
+                .thenReturn("http://fedora/test/replicate");
+
+        when(message.getHeader(eq(CdrBinaryUri)))
+                .thenReturn("http://fedora/test/uuid:1234");
+
+        when(message.getHeader(eq(CdrBinaryMimeType)))
+                .thenReturn("text/plain");
+
+        try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
+            writeFile.write(testText);
+        }
+
+        filePath = file.getAbsolutePath().toString();
+
+        localChecksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
+
+        when(message.getHeader(eq(CdrBinaryChecksum)))
+        .thenReturn(localChecksum);
+
+        when(binary.getBinaryStream())
+                .thenReturn(binaryStream);
+    }
+
+    @Test
+    public void replicateFile() throws Exception {
+        when(message.getHeader(eq(CdrBinaryPath)))
+        .thenReturn(filePath);
+
+        processor.process(exchange);
+
+        String remoteChecksum = DigestUtils.sha1Hex(binaryStream);
+        assertEquals(localChecksum, remoteChecksum);
+    }
+
+    @Test
+    public void replicateFileFromFedora() throws Exception {
+        when(message.getHeader(eq(CdrBinaryPath)))
+        .thenReturn(badReplicationLocations);
+
+        processor.process(exchange);
+
+        String remoteChecksum = DigestUtils.sha1Hex(new ByteArrayInputStream(testText.getBytes()));
+        assertEquals(localChecksum, remoteChecksum);
+    }
+
+    @Test(expected = ReplicationDestinationUnavailableException.class)
+    public void replicationLocations() throws Exception {
+        processor = new ReplicationProcessor(repository, badReplicationLocations, maxRetries, retryDelay);
+
+        try {
+            processor.process(exchange);
+        } finally {
+            verify(processor).equals(ReplicationDestinationUnavailableException.class);
+        }
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void replicationtFailTest() throws Exception {
+        when(binaryStream)
+                .thenThrow(new IOException());
+
+        try {
+            processor.process(exchange);
+        } finally {
+            verify(binaryStream, times(maxRetries + 1));
+        }
+    }
 }

@@ -21,24 +21,16 @@ package edu.unc.lib.cdr.headers;
  *
  */
 public class CdrFcrepoHeaders {
-<<<<<<< HEAD
-	public static final String CdrBinaryMimeType = "CdrMimeType";
-	
-	public static final String CdrBinaryPath = "CdrBinaryPath";
-	
-	public static final String CdrBinaryChecksum = "CdrChecksum";
-	
-	public static final String CdrBinaryUri = "CdrBinaryUri";
-	
-=======
+
+    public static final String CdrBinaryMimeType = "CdrMimeType";
+
+    public static final String CdrBinaryPath = "CdrBinaryPath";
+
+    public static final String CdrBinaryChecksum = "CdrChecksum";
+
+    public static final String CdrBinaryUri = "CdrBinaryUri";
+
     private CdrFcrepoHeaders() {
     }
 
-    public static final String CdrBinaryMimeType = "MimeType";
-
-    public static final String CdrBinaryPath = "BinaryPath";
-
-    public static final String CdrBinaryChecksum = "Checksum";
-
->>>>>>> fcrepo4
 }

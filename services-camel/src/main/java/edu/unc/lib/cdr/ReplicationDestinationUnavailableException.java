@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 package edu.unc.lib.cdr;
-
+/**
+ * 
+ * @author harring
+ *
+ */
 public class ReplicationDestinationUnavailableException extends ReplicationException {
-	private static final long serialVersionUID = 8L;
-	
-	public ReplicationDestinationUnavailableException(String message) {
-		super(message);
-	}
+    private static final long serialVersionUID = 8L;
+
+    public ReplicationDestinationUnavailableException(String message) {
+        super(message);
+    }
 }

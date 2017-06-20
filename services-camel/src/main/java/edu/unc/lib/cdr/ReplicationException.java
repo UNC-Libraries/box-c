@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 package edu.unc.lib.cdr;
-
+/**
+ * 
+ * @author harring
+ *
+ */
 public class ReplicationException extends RuntimeException {
-	private static final long serialVersionUID = 7L; 
+    private static final long serialVersionUID = 7L;
 
-	public ReplicationException(String message) {
-		super(message);
-	}
-	
-	public ReplicationException(String message, Exception e) {
-		super(message, e);
-	}
+    public ReplicationException(String message) {
+        super(message);
+    }
+
+    public ReplicationException(String message, Exception e) {
+        super(message, e);
+    }
 }

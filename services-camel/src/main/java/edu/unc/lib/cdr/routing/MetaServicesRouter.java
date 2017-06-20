@@ -37,73 +37,44 @@ public class MetaServicesRouter extends RouteBuilder {
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
-<<<<<<< HEAD
-	public void configure() throws Exception {
-		from("{{fcrepo.stream}}")
-			.routeId("CdrMetaServicesRouter")
-			.to("direct-vm:index.start")
-			.to("direct:process.ingest");
-
-		from("direct:process.ingest")
-			.routeId("ProcessIngest")
-			.filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-					+ " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
-					+ " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-					
-				// Trigger binary processing after an asynchronously
-				.threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
-				.delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-				.to("direct:process.creation");
-
-		from("direct:process.creation")
-			.routeId("ProcessCreationEvent")
-			.log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-			.removeHeaders("CamelHttp*")
-			.to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-			.process(mdProcessor)
-			.choice()
-				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
-					.to("direct-vm:replication")
-					.log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
-					.to("direct:process.enhancements")
-				.when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
-					.to("direct-vm:replication")
-					.log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
-				.otherwise()
-					.log(LoggingLevel.WARN, "Unable to process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-			.end();
-		
-		from("direct:process.enhancements")
-			.routeId("ProcessEnhancements")
-			.multicast()
-				.to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
-	}
-=======
     public void configure() throws Exception {
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
             .to("direct-vm:index.start")
-            .to("direct:process.enhancement");
+            .to("direct:process.ingest");
 
-        from("direct:process.enhancement")
-            .routeId("ProcessEnhancement")
+        from("direct:process.ingest")
+            .routeId("ProcessIngest")
             .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-                    + " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
+                    + " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+
                 // Trigger binary processing after an asynchronously
                 .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-                .to("direct:process.binary.original");
+                .to("direct:process.creation");
 
-        from("direct:process.binary.original")
-            .routeId("ProcessOriginalBinary")
+        from("direct:process.creation")
+            .routeId("ProcessCreationEvent")
             .log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
             .removeHeaders("CamelHttp*")
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .process(mdProcessor)
+            .choice()
+                .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
+                    .to("direct-vm:replication")
+                    .log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
+                    .to("direct:process.enhancements")
+                .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
+                    .to("direct-vm:replication")
+                    .log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
+                .otherwise()
+                    .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+            .end();
+
+        from("direct:process.enhancements")
+            .routeId("ProcessEnhancements")
             .multicast()
                 .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
     }
->>>>>>> fcrepo4
-
 }
