@@ -145,7 +145,7 @@ public class BinCollectorController {
 
             Datastream thumbDS = entryBean.getDatastreamObject(THUMB_LARGE.getName());
             if (thumbDS != null) {
-                String thumbPID = thumbDS.getOwner() == null ? entryBean.getId() : thumbDS.getOwner().getPid();
+                String thumbPID = thumbDS.getOwner() == null ? entryBean.getId() : thumbDS.getOwner();
 
                 collectorEntry.put("collectionThumb", thumbPID);
             }

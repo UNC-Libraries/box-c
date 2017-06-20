@@ -63,7 +63,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         DocumentIndexingPackage dip = setupDip("uuid:item",
                 "src/test/resources/foxml/imageNoMODS.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
@@ -88,7 +88,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         DocumentIndexingPackage dip = setupDip("uuid:item",
                 "src/test/resources/foxml/fileOctetStream.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
@@ -108,7 +108,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         setupDip("uuid:a4fa0296-1ce7-42a1-b74d-0222afd98194",
                 "src/test/resources/foxml/imageNoMODS.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
@@ -144,7 +144,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         DocumentIndexingPackage dip = setupDip("uuid:folder",
                 "src/test/resources/foxml/folderSmall.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
@@ -162,7 +162,7 @@ public class SetDatastreamContentFilterTest extends Assert {
     public void extractDatastreamsNoFOXML() throws Exception {
         DocumentIndexingPackage dip = factory.createDip("uuid:aggregate");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
     }
 
@@ -174,7 +174,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         ManagementClient managementClient = mock(ManagementClient.class);
         loader.setManagementClient(managementClient);
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
     }
 
@@ -183,7 +183,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
                 "src/test/resources/foxml/extensionDifficulty.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
@@ -206,7 +206,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
                 "src/test/resources/foxml/punctuationContentFileName.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         assertTrue(dip.getDocument().getDatastream().contains("DATA_FILE|image/png|png|560384|6f0961c59c5ebeb7bc931f0830f5a80e|"));
@@ -217,7 +217,7 @@ public class SetDatastreamContentFilterTest extends Assert {
         DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
                 "src/test/resources/foxml/noExtension.xml");
 
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
@@ -231,7 +231,7 @@ public class SetDatastreamContentFilterTest extends Assert {
     public void noDatastreamSize() throws Exception {
         DocumentIndexingPackage dip = setupDip("uuid:c19067ff-77af-4954-8aec-454d213846d8",
                 "src/test/resources/foxml/noDatastreamSize.xml");
-        SetDatastreamContentFilter filter = new SetDatastreamContentFilter();
+        SetDatastreamFilter filter = new SetDatastreamFilter();
         filter.filter(dip);
 
         IndexDocumentBean idb = dip.getDocument();
