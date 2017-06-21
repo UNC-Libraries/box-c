@@ -55,10 +55,273 @@
 		<property name="serverUri" value="${fcrepo.serverUri}" />
 	</bean>
 
-	<bean id="pids" class="edu.unc.lib.dl.fcrepo4.PIDs">
-		<property name="repository" ref="repository" />
+	<bean id="pids"
+		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetClass" value="edu.unc.lib.dl.fcrepo4.PIDs" />
+		<property name="targetMethod" value="setRepository" />
+		<property name="arguments">
+			<list>
+				<ref bean="repository" />
+			</list>
+		</property>
+	</bean>
+	
+	<!-- Solr settings -->
+	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="targetObject">
+			<ref bean="tripleStoreQueryService" />
+		</property>
+		<property name="targetMethod">
+			<value>fetchByRepositoryPath</value>
+		</property>
+		<property name="arguments">
+			<list>
+				<value>/Collections</value>
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="factory"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+		<property name="dataLoader" ref="dataLoader" />
 	</bean>
 
+	<bean id="solrFullUpdatePipeline"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+		<property name="filters">
+			<list>
+				<ref bean="setDisplayOrderFilter" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="solrUpdateDriver"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver"
+		init-method="init">
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="autoPushCount" value="1000" />
+		<property name="updateThreads" value="2" />
+	</bean>
+
+	<bean id="dataLoader"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+		<property name="repository" ref="repository"></property>
+	</bean>
+	
+	<util:properties id="searchProperties" location="classpath:search.properties" />
+	<util:properties id="solrProperties" location="classpath:solr.properties">
+		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
+		</prop>
+	</util:properties>
+			
+	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
+		<property name="properties" ref="searchProperties" />
+	</bean>
+
+	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
+		<property name="properties" ref="solrProperties" />
+	</bean>
+	
+	<bean id="searchStateUtil" class="edu.unc.lib.dl.search.solr.util.SearchStateUtil">
+		<property name="searchSettings" ref="searchSettings" />
+	</bean>
+	
+	<bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="solrSettings" ref="solrSettings" />
+	</bean>
+	
+	<bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="solrSettings" ref="solrSettings" />
+	</bean>
+
+	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="facetFieldFactory" ref="facetFieldFactory" />
+	</bean>
+
+	<bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="facetFieldFactory" ref="facetFieldFactory" />
+	</bean>
+	
+	<bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
+		<property name="search" ref="queryLayer" />
+		<property name="cacheSize" value="1000" />
+		<property name="timeToLiveMilli" value="10000" />
+		<property name="solrSettings" ref="solrSettings" />
+	</bean>
+	
+	<bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
+		init-method="initializeSolrServer">
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="searchStateFactory" ref="searchStateFactory" />
+		<property name="facetFieldUtil" ref="facetFieldUtil" />
+		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="pathFactory" ref="pathFactory" />
+	</bean>
+	
+	<!-- Solr ingest filters -->
+	<bean id="setDatastreamContentFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
+	</bean>
+	<bean id="setDisplayOrderFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
+	</bean>
+	<bean id="setRelationsFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+	</bean>
+	<!-- <bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="tsqs" ref="tripleStoreQueryService" />
+	</bean>
+	<bean id="setDescriptiveMetadataFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+	</bean>
+	<bean id="setRecordDatesFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+	</bean>
+	<bean id="setAccessControlFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+	</bean>
+	<bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
+	</bean>
+	<bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
+		<property name="accessClient" ref="accessClient" />
+	</bean>
+	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+	</bean>-->
+	
+	<!-- Ingest Actions -->
+	<bean id="updateObjectAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+	</bean>
+	
+<!--	<bean id="updateDescriptionAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrDescriptionUpdatePipeline" />
+		<property name="addDocumentMode" value="false" />
+	</bean>
+	
+	<bean id="updateDatastreamsAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrDatastreamUpdatePipeline" />
+		<property name="addDocumentMode" value="false" />
+	</bean>
+	
+	<bean id="updateFullTextAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+		<property name="pipeline" ref="solrFullTextUpdatePipeline" />
+		<property name="addDocumentMode" value="false" />
+	</bean>
+	
+	<bean id="updateTreeAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="accessGroups" ref="accessGroups" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+	</bean>
+	
+	<bean id="indexTreeInplaceAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="accessGroups" ref="accessGroups" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+	</bean>
+	
+	<bean id="indexTreeCleanAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
+		<property name="deleteAction" ref="deleteSolrTreeAction" />
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="accessGroups" ref="accessGroups" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+	</bean>
+
+	<bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">
+	</bean>
+
+	<bean id="deleteObjectAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
+	</bean>
+
+	<bean id="deleteSolrTreeAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
+		<property name="solrSearchService" ref="queryLayer" />
+		<property name="searchSettings" ref="searchSettings" />
+		<property name="solrSettings" ref="solrSettings" />
+		<property name="accessGroups" ref="accessGroups" />
+	</bean>
+
+	<bean id="commitAction" class="edu.unc.lib.dl.data.ingest.solr.action.CommitAction">
+	</bean>
+	
+	<bean id="updateAccessControlAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+		<property name="pipeline" ref="solrAccessControlUpdatePipeline" />
+		<property name="addDocumentMode" value="false" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+	</bean>
+	
+	<bean id="addSetToParentAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateChildSetAction">
+		<property name="pipeline" ref="solrFullUpdatePipeline" />
+		<property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+	</bean>
+	
+	<bean id="moveObjectsAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.MoveObjectsAction">
+		<property name="pipeline" ref="solrMoveUpdatePipeline" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+	</bean>
+	
+	<bean id="updateTypeAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+		<property name="pipeline" ref="solrUpdateTypePipeline" />
+		<property name="addDocumentMode" value="false" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+	</bean>
+
+	<bean id="updateDWOAction"
+		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+		<property name="pipeline" ref="solrSetDWOPipeline" />
+		<property name="addDocumentMode" value="false" />
+		<property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+	</bean> -->
+	
+	<util:map id="solrIndexingActionMap"
+		key-type="edu.unc.lib.dl.util.IndexingActionType"
+		value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
+		<entry key="ADD" value-ref="updateObjectAction" />
+	<!--  	<entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
+		<entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
+		<entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
+		<entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
+		<entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
+		<entry key="CLEAN_REINDEX" value-ref="indexTreeCleanAction" />
+		<entry key="CLEAR_INDEX" value-ref="clearIndexAction" />
+		<entry key="DELETE" value-ref="deleteObjectAction" />
+		<entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
+		<entry key="COMMIT" value-ref="commitAction" />
+		<entry key="UPDATE_STATUS" value-ref="updateAccessControlAction" />
+		<entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
+		<entry key="MOVE" value-ref="moveObjectsAction" />
+		<entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
+		<entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
+		<entry key="SET_DEFAULT_WEB_OBJECT" value-ref="updateDWOAction" />-->
+	</util:map>
+	
+	<!-- Processors -->
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
 		<constructor-arg value="${fcrepo.binaryBase}"/>
 	</bean>
@@ -101,8 +364,16 @@
 	<bean id="replicationProcessor" class="edu.unc.lib.cdr.ReplicationProcessor">
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="${cdr.replication.locations}" />
+	</bean>
+	
+	<bean id="solrIngestProcessor" class="edu.unc.lib.cdr.SolrIngestProcessor">
+		<constructor-arg ref="repository"/>
 		<constructor-arg value="${error.maxRedeliveries}" />
 		<constructor-arg value="${error.retryDelay}" />
+		<constructor-arg ref="factory" />
+		<constructor-arg ref="solrFullUpdatePipeline" />
+		<constructor-arg ref="solrUpdateDriver" />
+		<constructor-arg ref="dataLoader" />
 	</bean>
 	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
@@ -126,6 +397,10 @@
 	
 	<camel:camelContext id="CdrServiceReplication">
 		<camel:package>edu.unc.lib.cdr.replication</camel:package>
+	</camel:camelContext>
+	
+	<camel:camelContext id="CdrServiceSolr">
+		<camel:package>edu.unc.lib.cdr.solr</camel:package>
 	</camel:camelContext>
 	
 	<camel:camelContext id="FcrepoTriplestoreIndexer">

@@ -42,10 +42,10 @@ public class MetaServicesRouter extends RouteBuilder {
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
             .to("direct-vm:index.start")
-            .to("direct:process.ingest");
+            .to("direct:process.enhancement");
 
-        from("direct:process.ingest")
-            .routeId("ProcessIngest")
+        from("direct:process.enhancement")
+            .routeId("ProcessEnhancement")
             .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
                     + " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
@@ -53,14 +53,14 @@ public class MetaServicesRouter extends RouteBuilder {
                 // Trigger binary processing after an asynchronously
                 .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-                .to("direct:process.creation");
+                .removeHeaders("CamelHttp*")
+                .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+                .process(mdProcessor)
+                .multicast()
+                .to("direct:process.binary.original", "direct:process.solr");
 
-        from("direct:process.creation")
-            .routeId("ProcessCreationEvent")
-            .log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-            .removeHeaders("CamelHttp*")
-            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-            .process(mdProcessor)
+        from("direct:process.binary.original")
+            .routeId("ProcessOriginalBinary")
             .choice()
                 .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
                     .to("direct-vm:replication")
@@ -70,10 +70,16 @@ public class MetaServicesRouter extends RouteBuilder {
                 .otherwise()
                     .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
             .end();
-
+        
         from("direct:process.enhancements")
-            .routeId("ProcessEnhancements")
+            .routeId("AddBinaryEnhancements")
             .multicast()
-                .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+            .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+
+        from("direct:process.solr")
+            .routeId("IngestSolrIndexing")
+            .log(LoggingLevel.DEBUG, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '" + Binary.getURI() + "'"))
+                .to("direct-vm:solrIndexing");
     }
 }

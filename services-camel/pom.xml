@@ -118,6 +118,12 @@
 		<artifactId>fcrepo-clients</artifactId>
 	</dependency>
 
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>solr-ingest</artifactId>
+		<version>${cdr.version}</version>
+	</dependency>
+
 	<!-- Testing -->
 	<dependency>
 		<groupId>org.apache.camel</groupId>
