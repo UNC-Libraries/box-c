@@ -45,22 +45,32 @@ public class MetaServicesRouter extends RouteBuilder {
 
         from("direct:process.enhancement")
             .routeId("ProcessEnhancement")
-            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-                    + " && ${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
-                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
                 // Trigger binary processing after an asynchronously
                 .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-                .to("direct:process.binary.original");
+                .multicast()
+                .to("direct:process.binary.original", "direct:process.solr");
 
         from("direct:process.binary.original")
             .routeId("ProcessOriginalBinary")
             .log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+            .filter(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"
+                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
             .removeHeaders("CamelHttp*")
             .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
             .process(mdProcessor)
             .multicast()
                 .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+
+        from("direct:process.solr")
+            .routeId("IngestSolrIndexing")
+            .log("Dean: ${headers}")
+            .log(LoggingLevel.DEBUG, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '" + Binary.getURI() + "'"))
+            .removeHeaders("CamelHttp*")
+            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+            .to("direct-vm:solrIndexing");
     }
 
 }

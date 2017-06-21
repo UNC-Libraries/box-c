@@ -98,6 +98,12 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
+	<bean id="solrIngestProcessor" class="edu.unc.lib.cdr.SolrIngestProcessor">
+		<constructor-arg ref="repository"/>
+		<constructor-arg value="${error.maxRedeliveries}" />
+		<constructor-arg value="${error.retryDelay}" />
+	</bean>
+	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
 		<property name="authUsername" value="${fcrepo.authUsername}"/>
 		<property name="authPassword" value="${fcrepo.authPassword}"/>
@@ -115,6 +121,10 @@
 	
 	<camel:camelContext id="CdrServiceFulltextExtraction">
 		<camel:package>edu.unc.lib.cdr.fulltext</camel:package>
+	</camel:camelContext>
+	
+	<camel:camelContext id="CdrServiceSolr">
+		<camel:package>edu.unc.lib.cdr.solr</camel:package>
 	</camel:camelContext>
 	
 	<camel:camelContext id="FcrepoTriplestoreIndexer">
