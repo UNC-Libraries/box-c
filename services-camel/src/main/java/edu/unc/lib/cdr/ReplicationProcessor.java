@@ -108,7 +108,7 @@ public class ReplicationProcessor implements Processor {
             throws ReplicationDestinationUnavailableException {
         for (String replicationPath : replicationPaths) {
             if (!Files.exists(Paths.get(replicationPath))) {
-                    String errorMsg = String.format("Unable to find replication destination %s",replicationPath);
+                String errorMsg = String.format("Unable to find replication destination %s", replicationPath);
                 throw new ReplicationDestinationUnavailableException(errorMsg);
             }
         }
@@ -178,9 +178,9 @@ public class ReplicationProcessor implements Processor {
     }
 
     private void replicate(String binaryPath, String originalFileChecksum, String[] replicationLocations,
-                String binaryMimeType, String binaryUri) throws InterruptedException {
+        String binaryMimeType, String binaryUri) throws InterruptedException {
 
-            String destinationFullPath = null;
+        String destinationFullPath = null;
         String localBinary = null;
         File fcrepoBinary = null;
 

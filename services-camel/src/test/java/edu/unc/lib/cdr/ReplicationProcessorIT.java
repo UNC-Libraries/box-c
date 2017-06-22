@@ -48,63 +48,63 @@ import edu.unc.lib.dl.util.URIUtil;
 @ContextConfiguration({"/spring-test/test-fedora-container.xml","/spring-test/cdr-client-container.xml"})
 public class ReplicationProcessorIT extends CamelTestSupport {
 
-	@Autowired
-	protected String baseAddress;
+    @Autowired
+    protected String baseAddress;
 
-	@Autowired
-	protected FcrepoClient client;
-	
-	@Autowired
-	protected Repository repository;
-	
-	ReplicationProcessor processor;
-	
-	@Mock
-	Exchange exchange;
+    @Autowired
+    protected FcrepoClient client;
+    
+    @Autowired
+    protected Repository repository;
+    
+    ReplicationProcessor processor;
+    
+    @Mock
+    Exchange exchange;
 
-	@Before
-	public void init() {
-		PIDs.setRepository(repository);
-		processor = new ReplicationProcessor(repository, "/tmp", 3, 100L);
-		initMocks(this);
-	}
-		
-	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(URIUtil.join(baseAddress, name));
-		// Create a parent object to put the binary into
-		try (FcrepoResponse response = client.put(baseUri).perform()) {
-			return response.getLocation();
-		} catch(FcrepoOperationFailedException e) {
-			if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
-				throw e;
-			}
-			// Ignore duplicate creation of base container
-			return baseUri;
-		}
-	}
-	
-	@Test
-	public void replicationTest() throws Exception {
-		// Create a parent object to put the binary into
-		URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-		PID parentPid;
-		try (FcrepoResponse response = client.post(contentBase).perform()) {
-			parentPid = PIDs.get(response.getLocation());
-		}
+    @Before
+    public void init() {
+        PIDs.setRepository(repository);
+        processor = new ReplicationProcessor(repository, "/tmp", 3, 100L);
+        initMocks(this);
+    }
+        
+    private URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+        URI baseUri = URI.create(URIUtil.join(baseAddress, name));
+        // Create a parent object to put the binary into
+        try (FcrepoResponse response = client.put(baseUri).perform()) {
+            return response.getLocation();
+        } catch(FcrepoOperationFailedException e) {
+            if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+                throw e;
+            }
+            // Ignore duplicate creation of base container
+            return baseUri;
+        }
+    }
+    
+    @Test
+    public void replicationTest() throws Exception {
+        // Create a parent object to put the binary into
+        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        PID parentPid;
+        try (FcrepoResponse response = client.post(contentBase).perform()) {
+            parentPid = PIDs.get(response.getLocation());
+        }
 
-		URI uri = parentPid.getRepositoryUri();
+        URI uri = parentPid.getRepositoryUri();
 
-		String bodyString = "Test text";
-		String filename = "test.txt";
-		String mimetype = "text/plain";
-		String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
-		InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        String bodyString = "Test text";
+        String filename = "test.txt";
+        String mimetype = "text/plain";
+        String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-		BinaryObject internalObj = repository.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
-		
-		//processor.replicate(uri, checksum, "/tmp", mimetype, );
-		processor.process(exchange);
-		
-	}
+        BinaryObject internalObj = repository.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
+        
+        //processor.replicate(uri, checksum, "/tmp", mimetype, );
+        processor.process(exchange);
+        
+    }
 
 }
