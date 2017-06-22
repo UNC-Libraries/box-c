@@ -50,7 +50,7 @@ public class Datastream {
         }
 
         String[] dsParts = datastream.split("\\|", -1);
-        
+
         this.name = dsParts[0];
         this.mimetype = dsParts[1];
         this.extension = dsParts[2];
