@@ -44,22 +44,23 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  */
 public class SetDatastreamFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetDatastreamFilter.class);
-    
+
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Performing Datastream filter for object", dip.getPid());
-        
+
         ContentObject contentObj = dip.getContentObject();
-        
+
         FileObject fileObj = getFileObject(contentObj);
         if (fileObj == null) {
             return;
         }
-        
-        List<Datastream> datastreams = getDatastreams(fileObj);
-        
+
+        boolean ownedByOtherObject = contentObj instanceof WorkObject;
+        List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
+
         IndexDocumentBean doc = dip.getDocument();
-        
+
         doc.setDatastream(getDatastreamStrings(datastreams));
         doc.setFilesizeTotal(getFilesizeTotal(datastreams));
         doc.setFilesizeSort(getFilesize(datastreams));
@@ -77,49 +78,68 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
     }
 
-    private List<Datastream> getDatastreams(FileObject fileObj) {
+    /**
+     * Generates a list of Datastream objects from each binary belonging to the
+     * provided FileObject. If the datastreams are being recorded on an object
+     * other than their owning file object, the pid of the owning file object is
+     * recorded
+     * 
+     * @param fileObj
+     * @param ownedByOtherObject
+     * @return
+     */
+    private List<Datastream> getDatastreams(FileObject fileObj, boolean ownedByOtherObject) {
         return fileObj.getBinaryObjects().stream()
             .map(binary -> {
                 Resource binaryResc = binary.getResource();
-                
+
                 String name = binaryResc.getURI();
                 name = name.substring(name.lastIndexOf('/') + 1);
-                
+
                 String mimetype = binaryResc.getProperty(Ebucore.hasMimeType).getString();
                 long filesize = binaryResc.getProperty(Premis.hasSize).getLong();
                 // Making assumption that there is only one checksum
                 String checksum = binaryResc.getProperty(Premis.hasMessageDigest).getResource().getURI();
-                
+
                 String filename = binaryResc.getProperty(Ebucore.filename).getString();
                 int extensionIndex = filename.lastIndexOf('.');
                 String extension = extensionIndex == -1 ? "" : filename.substring(extensionIndex + 1);
-                
-                return new Datastream(null, name, filesize, mimetype, filename, extension, checksum);
+
+                String owner = ownedByOtherObject ? fileObj.getPid().getId() : null;
+
+                return new Datastream(owner, name, filesize, mimetype, filename, extension, checksum);
             }).collect(Collectors.toList());
     }
-    
+
     private List<String> getDatastreamStrings(List<Datastream> datastreams) {
         return datastreams.stream()
                 .map(Datastream::toString)
                 .collect(Collectors.toList());
     }
-    
+
+    /**
+     * Returns the sum of filesizes for all datastreams which do no belong to
+     * other objects
+     * 
+     * @param datastreams
+     * @return
+     */
     private long getFilesizeTotal(List<Datastream> datastreams) {
         return datastreams.stream()
             .filter(ds -> ds.getFilesize() != null && ds.getOwner() == null)
             .mapToLong(ds -> ds.getFilesize())
             .sum();
     }
-    
+
     private long getFilesize(List<Datastream> datastreams) throws IndexingException {
         Optional<Datastream> original = datastreams.stream()
                 .filter(ds -> RepositoryPathConstants.ORIGINAL_FILE.equals(ds.getName()))
                 .findFirst();
-        
+
         if (!original.isPresent()) {
             throw new IndexingException("File object in invalid state, cannot find original file binary");
         }
-        
+
         return original.get().getFilesize();
     }
 }

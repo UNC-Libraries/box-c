@@ -66,6 +66,7 @@ public class PID implements Serializable {
         return false;
     }
 
+    @Deprecated
     public String getPid() {
         return pid;
     }

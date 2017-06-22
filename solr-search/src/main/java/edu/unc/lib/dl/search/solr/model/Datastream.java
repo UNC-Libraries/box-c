@@ -74,6 +74,10 @@ public class Datastream {
             sb.append(mimetype);
         }
         sb.append('|');
+        if (filename != null) {
+            sb.append(filename);
+        }
+        sb.append('|');
         if (extension != null) {
             sb.append(extension);
         }
