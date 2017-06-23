@@ -186,7 +186,7 @@ public class SetDatastreamFilterTest {
         assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE,
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId);
 
-        // Sort size is based off primary objects size
+        // Sort size is based off primary object's size
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
         // Work has no datastreams of its own
         verify(idb).setFilesizeTotal(eq(0l));
