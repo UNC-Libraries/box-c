@@ -120,7 +120,7 @@ public class ReplicationProcessorTest {
     }
 
     @Test
-    public void replicateFile() throws Exception {
+    public void testReplicateExternalFile() throws Exception {
         when(message.getHeader(eq(CdrBinaryPath)))
         .thenReturn(filePath);
 
@@ -131,7 +131,7 @@ public class ReplicationProcessorTest {
     }
 
     @Test
-    public void replicateFileFromFedora() throws Exception {
+    public void testReplicateFileFromFedora() throws Exception {
         when(message.getHeader(eq(CdrBinaryPath)))
         .thenReturn(badReplicationLocations);
 
@@ -142,7 +142,7 @@ public class ReplicationProcessorTest {
     }
 
     @Test(expected = ReplicationDestinationUnavailableException.class)
-    public void replicationLocations() throws Exception {
+    public void testBadReplicationLocations() throws Exception {
         processor = new ReplicationProcessor(repository, badReplicationLocations, maxRetries, retryDelay);
 
         try {
@@ -153,7 +153,7 @@ public class ReplicationProcessorTest {
     }
 
     @Test(expected = RuntimeException.class)
-    public void replicationtFailTest() throws Exception {
+    public void testReplicationtFail() throws Exception {
         when(binaryStream)
                 .thenThrow(new IOException());
 
