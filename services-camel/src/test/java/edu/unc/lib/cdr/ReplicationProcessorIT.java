@@ -15,7 +15,10 @@
  */
 package edu.unc.lib.cdr;
 
-import static org.junit.Assert.*;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +26,7 @@ import java.net.URI;
 
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
@@ -33,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -56,19 +61,21 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     
     @Autowired
     protected Repository repository;
-    
+
     ReplicationProcessor processor;
-    
+
     @Mock
     Exchange exchange;
+    @Mock
+    Message message;
 
     @Before
-    public void init() {
+    public void init() throws IOException {
         PIDs.setRepository(repository);
         processor = new ReplicationProcessor(repository, "/tmp", 3, 100L);
         initMocks(this);
     }
-        
+
     private URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
         // Create a parent object to put the binary into
@@ -82,7 +89,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
             return baseUri;
         }
     }
-    
+
     @Test
     public void replicationTest() throws Exception {
         // Create a parent object to put the binary into
@@ -101,10 +108,15 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
         BinaryObject internalObj = repository.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
-        
-        //processor.replicate(uri, checksum, "/tmp", mimetype, );
+
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(CdrBinaryPath)).thenReturn("path/to/bin");
+        when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
+        when(message.getHeader(CdrBinaryMimeType)).thenReturn(mimetype);
+        when(message.getHeader(CdrBinaryUri)).thenReturn(internalObj.getUri().toString());
+
         processor.process(exchange);
-        
+
     }
 
 }
