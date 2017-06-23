@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
@@ -25,60 +24,43 @@ import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
  *
  */
 public class Datastream {
-    private PID owner;
+    private String owner;
     private String name;
     private Long filesize;
     private String mimetype;
+    private String filename;
     private String extension;
     private String checksum;
     private ContentModelHelper.Datastream datastreamClass;
+
+    public Datastream(String owner, String name, Long filesize, String mimetype, String filename, String extension,
+            String checksum) {
+        this.owner = owner;
+        this.name = name;
+        this.filesize = filesize;
+        this.mimetype = mimetype;
+        this.filename = filename;
+        this.extension = extension;
+        this.checksum = checksum;
+    }
 
     public Datastream(String datastream) {
         if (datastream == null) {
             throw new IllegalArgumentException("Datastream value must not be null");
         }
 
-        String[] dsParts = datastream.split("\\|");
+        String[] dsParts = datastream.split("\\|", -1);
 
-        if (dsParts.length > 0 && dsParts[0].length() > 0) {
-            this.name = dsParts[0];
-        } else {
-            this.name = null;
-        }
-
-        if (dsParts.length > 1 && dsParts[1].length() > 0) {
-            this.mimetype = dsParts[1];
-        } else {
-            this.mimetype = null;
-        }
-
-        if (dsParts.length > 2 && dsParts[2].length() > 0) {
-            this.extension = dsParts[2];
-        } else {
-            this.extension = null;
-        }
-
-        if (dsParts.length > 3 && dsParts[3].length() > 0) {
-            try {
-                this.filesize = new Long(dsParts[3]);
-            } catch (NumberFormatException e) {
-                this.filesize = null;
-            }
-        } else {
+        this.name = dsParts[0];
+        this.mimetype = dsParts[1];
+        this.extension = dsParts[2];
+        try {
+            this.filesize = new Long(dsParts[3]);
+        } catch (NumberFormatException e) {
             this.filesize = null;
         }
-
-        if (dsParts.length > 4 && dsParts[4].length() > 0) {
-            this.checksum = dsParts[4];
-        } else {
-            this.checksum = null;
-        }
-
-        if (dsParts.length > 5 && dsParts[5].length() > 0) {
-            this.owner = new PID(dsParts[5]);
-        } else {
-            this.owner = null;
-        }
+        this.checksum = dsParts[4];
+        this.owner = dsParts[5];
     }
 
     public String toString() {
@@ -90,6 +72,10 @@ public class Datastream {
         sb.append('|');
         if (mimetype != null) {
             sb.append(mimetype);
+        }
+        sb.append('|');
+        if (filename != null) {
+            sb.append(filename);
         }
         sb.append('|');
         if (extension != null) {
@@ -105,7 +91,7 @@ public class Datastream {
         }
         sb.append('|');
         if (owner != null) {
-            sb.append(owner.getPid());
+            sb.append(owner);
         }
         return sb.toString();
     }
@@ -144,14 +130,14 @@ public class Datastream {
         if (owner == null) {
             return name;
         }
-        return owner.getPid() + "/" + name;
+        return owner + "/" + name;
     }
 
     public String getName() {
         return name;
     }
 
-    public PID getOwner() {
+    public String getOwner() {
         return owner;
     }
 
@@ -171,6 +157,14 @@ public class Datastream {
         return checksum;
     }
 
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
     public void setChecksum(String checksum) {
         this.checksum = checksum;
     }
@@ -183,7 +177,7 @@ public class Datastream {
         this.extension = extension;
     }
 
-    public void setOwner(PID owner) {
+    public void setOwner(String owner) {
         this.owner = owner;
     }
 
