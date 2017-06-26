@@ -30,7 +30,7 @@ import edu.unc.lib.cdr.SolrIngestProcessor;
 public class SolrRouter extends RouteBuilder {
     @BeanInject(value = "solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
-    
+
     public void configure() throws Exception {
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")

@@ -33,4 +33,6 @@ public class CdrFcrepoHeaders {
     private CdrFcrepoHeaders() {
     }
 
+    public static final String CdrBinaryUri = "CdrBinaryUri";
+
 }

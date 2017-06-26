@@ -194,7 +194,7 @@
 	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
 		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
 	</bean>-->
-	
+
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
 		class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
@@ -320,7 +320,7 @@
 		<entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
 		<entry key="SET_DEFAULT_WEB_OBJECT" value-ref="updateDWOAction" />-->
 	</util:map>
-	
+
 	<!-- Processors -->
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
 		<constructor-arg value="${fcrepo.binaryBase}"/>
