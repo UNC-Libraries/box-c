@@ -30,4 +30,6 @@ public class CdrFcrepoHeaders {
 
     public static final String CdrBinaryChecksum = "Checksum";
 
+    public static final String CdrBinaryUri = "CdrBinaryUri";
+
 }
