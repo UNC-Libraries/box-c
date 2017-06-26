@@ -20,6 +20,8 @@ import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -91,7 +93,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     }
 
     @Test
-    public void replicationTest() throws Exception {
+    public void replicateFileFromFedoraTest() throws Exception {
         // Create a parent object to put the binary into
         URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
         PID parentPid;
@@ -114,6 +116,35 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
         when(message.getHeader(CdrBinaryMimeType)).thenReturn(mimetype);
         when(message.getHeader(CdrBinaryUri)).thenReturn(internalObj.getUri().toString());
+
+        processor.process(exchange);
+
+    }
+    
+    @Test
+    public void replicateExternalFileTest() throws Exception {
+        // Create a parent object to put the binary into
+        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        PID parentPid;
+        try (FcrepoResponse response = client.post(contentBase).perform()) {
+            parentPid = PIDs.get(response.getLocation());
+        }
+
+        URI uri = parentPid.getRepositoryUri();
+
+        String filename = "src/test/resources/external_file.txt";
+        File testFile = new File(filename);
+        InputStream contentStream = new FileInputStream(testFile);
+        String mimetype = "text/plain";
+        String checksum = "9db3fcbaec92b9ccf9aa16f820184813080e77d2";
+
+        BinaryObject externalObj = repository.createBinary(uri, "external_binary_test", contentStream, filename, mimetype, null, null);
+
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(CdrBinaryPath)).thenReturn("path/to/bin");
+        when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
+        when(message.getHeader(CdrBinaryMimeType)).thenReturn(mimetype);
+        when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
 
         processor.process(exchange);
 
