@@ -51,6 +51,9 @@ import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
+/**
+ * @author harring
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml","/spring-test/cdr-client-container.xml"})
 public class ReplicationProcessorIT extends CamelTestSupport {
@@ -76,6 +79,8 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         PIDs.setRepository(repository);
         processor = new ReplicationProcessor(repository, "/tmp", 3, 100L);
         initMocks(this);
+        
+        when(exchange.getOut()).thenReturn(message);
     }
 
     private URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
@@ -118,7 +123,6 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         when(message.getHeader(CdrBinaryUri)).thenReturn(internalObj.getUri().toString());
 
         processor.process(exchange);
-
     }
     
     @Test
@@ -136,18 +140,17 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         File testFile = new File(filename);
         InputStream contentStream = new FileInputStream(testFile);
         String mimetype = "text/plain";
-        String checksum = "9db3fcbaec92b9ccf9aa16f820184813080e77d2";
+        String checksum = "41cfe91611de4f56689ca6258237c448d3f91a84";
 
         BinaryObject externalObj = repository.createBinary(uri, "external_binary_test", contentStream, filename, mimetype, null, null);
 
         when(exchange.getIn()).thenReturn(message);
-        when(message.getHeader(CdrBinaryPath)).thenReturn("path/to/bin");
+        when(message.getHeader(CdrBinaryPath)).thenReturn("src/test/resources/external_file.txt");
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
         when(message.getHeader(CdrBinaryMimeType)).thenReturn(mimetype);
         when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
 
         processor.process(exchange);
-
     }
 
 }

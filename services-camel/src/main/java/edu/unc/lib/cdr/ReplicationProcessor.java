@@ -96,8 +96,8 @@ public class ReplicationProcessor implements Processor {
             }
         }
 
-        // Pass mime type and checksum headers along to enhancements
-        //exchange.getOut().setHeaders(in.getHeaders());
+        // Pass mimetype and checksum headers along to enhancements
+        exchange.getOut().setHeaders(in.getHeaders());
     }
 
     private String[] splitReplicationLocations(String replicationLocations) {
