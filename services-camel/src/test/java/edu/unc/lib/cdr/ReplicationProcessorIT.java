@@ -57,6 +57,7 @@ import edu.unc.lib.dl.util.URIUtil;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml","/spring-test/cdr-client-container.xml"})
 public class ReplicationProcessorIT extends CamelTestSupport {
+    private static final String MIMETYPE = "text/plain";
 
     @Autowired
     protected String baseAddress;
@@ -80,6 +81,8 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         processor = new ReplicationProcessor(repository, "/tmp", 3, 100L);
         initMocks(this);
         
+        when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(CdrBinaryMimeType)).thenReturn(MIMETYPE);
         when(exchange.getOut()).thenReturn(message);
     }
 
@@ -96,30 +99,34 @@ public class ReplicationProcessorIT extends CamelTestSupport {
             return baseUri;
         }
     }
+    
+    private URI determineRepositoryPath(URI baseUri) throws IOException, FcrepoOperationFailedException {
+    	    PID parentPid = null;
+        try (FcrepoResponse response = client.post(baseUri).perform()) {
+            parentPid = PIDs.get(response.getLocation());
+        } catch(FcrepoOperationFailedException e) {
+            if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+                throw e;
+            }
+        }
+        return parentPid.getRepositoryUri();
+    }
 
     @Test
     public void replicateFileFromFedoraTest() throws Exception {
         // Create a parent object to put the binary into
         URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-        PID parentPid;
-        try (FcrepoResponse response = client.post(contentBase).perform()) {
-            parentPid = PIDs.get(response.getLocation());
-        }
-
-        URI uri = parentPid.getRepositoryUri();
+        URI binaryUri = determineRepositoryPath(contentBase);
 
         String bodyString = "Test text";
         String filename = "test.txt";
-        String mimetype = "text/plain";
         String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject internalObj = repository.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
+        BinaryObject internalObj = repository.createBinary(binaryUri, "binary_test", contentStream, filename, MIMETYPE, checksum, null);
 
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(CdrBinaryPath)).thenReturn("path/to/bin");
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
-        when(message.getHeader(CdrBinaryMimeType)).thenReturn(mimetype);
         when(message.getHeader(CdrBinaryUri)).thenReturn(internalObj.getUri().toString());
 
         processor.process(exchange);
@@ -128,26 +135,38 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     @Test
     public void replicateExternalFileTest() throws Exception {
         // Create a parent object to put the binary into
-        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-        PID parentPid;
-        try (FcrepoResponse response = client.post(contentBase).perform()) {
-            parentPid = PIDs.get(response.getLocation());
-        }
-
-        URI uri = parentPid.getRepositoryUri();
+    	    URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        URI binaryUri = determineRepositoryPath(contentBase);
 
         String filename = "src/test/resources/external_file.txt";
         File testFile = new File(filename);
         InputStream contentStream = new FileInputStream(testFile);
-        String mimetype = "text/plain";
-        String checksum = "41cfe91611de4f56689ca6258237c448d3f91a84";
+        String checksum = "9db3fcbaec92b9ccf9aa16f820184813080e77d2";
 
-        BinaryObject externalObj = repository.createBinary(uri, "external_binary_test", contentStream, filename, mimetype, null, null);
+        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream, filename, MIMETYPE, null, null);
 
-        when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(CdrBinaryPath)).thenReturn("src/test/resources/external_file.txt");
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
-        when(message.getHeader(CdrBinaryMimeType)).thenReturn(mimetype);
+        when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
+
+        processor.process(exchange);
+    }
+    
+    @Test (expected = ReplicationException.class)
+    public void checksumMismatchTest() throws Exception {
+        // Create a parent object to put the binary into
+    	    URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        URI binaryUri = determineRepositoryPath(contentBase);
+
+        String filename = "src/test/resources/external_file.txt";
+        File testFile = new File(filename);
+        InputStream contentStream = new FileInputStream(testFile);
+        String badChecksum = "41cfe91611de4f56689ca6258237c448d3f91a84";
+
+        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream, filename, MIMETYPE, null, null);
+
+        when(message.getHeader(CdrBinaryPath)).thenReturn("src/test/resources/external_file.txt");
+        when(message.getHeader(CdrBinaryChecksum)).thenReturn(badChecksum);
         when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
 
         processor.process(exchange);
