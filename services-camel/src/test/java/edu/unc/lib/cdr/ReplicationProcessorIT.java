@@ -82,6 +82,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         initMocks(this);
         
         when(exchange.getIn()).thenReturn(message);
+        when(message.getHeader(CdrBinaryPath)).thenReturn("path/to/bin");
         when(message.getHeader(CdrBinaryMimeType)).thenReturn(MIMETYPE);
         when(exchange.getOut()).thenReturn(message);
     }
@@ -125,7 +126,6 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
         BinaryObject internalObj = repository.createBinary(binaryUri, "binary_test", contentStream, filename, MIMETYPE, checksum, null);
 
-        when(message.getHeader(CdrBinaryPath)).thenReturn("path/to/bin");
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
         when(message.getHeader(CdrBinaryUri)).thenReturn(internalObj.getUri().toString());
 
@@ -145,7 +145,6 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
         BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream, filename, MIMETYPE, null, null);
 
-        when(message.getHeader(CdrBinaryPath)).thenReturn("src/test/resources/external_file.txt");
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
         when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
 
@@ -165,7 +164,26 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
         BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream, filename, MIMETYPE, null, null);
 
-        when(message.getHeader(CdrBinaryPath)).thenReturn("src/test/resources/external_file.txt");
+        when(message.getHeader(CdrBinaryChecksum)).thenReturn(badChecksum);
+        when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
+
+        processor.process(exchange);
+    }
+    
+    @Test (expected = ReplicationDestinationUnavailableException.class)
+    public void badReplicationLocationTest() throws Exception {
+    	    processor = new ReplicationProcessor(repository, "/some/bad/location", 3, 100L);
+        // Create a parent object to put the binary into
+    	    URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        URI binaryUri = determineRepositoryPath(contentBase);
+
+        String filename = "src/test/resources/external_file.txt";
+        File testFile = new File(filename);
+        InputStream contentStream = new FileInputStream(testFile);
+        String badChecksum = "9db3fcbaec92b9ccf9aa16f820184813080e77d2";
+
+        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream, filename, MIMETYPE, null, null);
+
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(badChecksum);
         when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
 
