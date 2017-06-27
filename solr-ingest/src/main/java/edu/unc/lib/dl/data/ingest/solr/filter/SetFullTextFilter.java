@@ -16,8 +16,6 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,6 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ServiceException;
 
 /**
  * Retrieves full text data for object being indexed and stores it to the indexing document
@@ -43,27 +40,30 @@ public class SetFullTextFilter implements IndexDocumentFilter {
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
 
-    	    ContentObject contentObj = dip.getContentObject();
+        ContentObject contentObj = dip.getContentObject();
         // object being indexed must be a work or a file object
         if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
-                return;
+            return;
         }
         FileObject fileObj = getFileObject(dip);
         if (fileObj == null) {
-                return;
+            return;
         }
         BinaryObject binObj;
         binObj = fileObj.getOriginalFile();
+        if (!binObj.getMimetype().contains("text")) {
+            return;
+        }
 
         try {
-        	    String fullText = IOUtils.toString(binObj.getBinaryStream(), StandardCharsets.UTF_8);
+            String fullText = IOUtils.toString(binObj.getBinaryStream(), "UTF-8");
             dip.getDocument().setFullText(fullText);
-        } catch (FedoraException | ServiceException | IOException e) {
+        } catch (FedoraException | IOException e) {
             log.error("Failed to retrieve full text datastream for {}", dip.getPid().getId(), e);
             throw new IndexingException("Failed to retrieve full text datastream for {}" + dip.getPid(), e);
         }
     }
-    
+
     private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject obj = dip.getContentObject();
         FileObject fileObj;
