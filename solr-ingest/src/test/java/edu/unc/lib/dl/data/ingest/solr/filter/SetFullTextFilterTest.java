@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,92 +15,119 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
-import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
+import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
- *
- * @author bbpennel
- * @date Mar 12, 2014
+ * @author harring
  */
 public class SetFullTextFilterTest extends Assert {
 
     @Mock
     private DocumentIndexingPackageDataLoader loader;
     @Mock
-    private AccessClient accessClient;
-    private DocumentIndexingPackageFactory factory;
     private DocumentIndexingPackage dip;
     @Mock
-    private MIMETypedStream stream;
-    Map<String, List<String>> triples;
+    private IndexDocumentBean idb;
+    @Mock
+    private PID pid;
+    @Mock
+    private WorkObject workObj;
+    @Mock
+    private FileObject fileObj;
+    @Mock
+    private BinaryObject binObj;
+    @Captor
+    private ArgumentCaptor<String> stringCaptor;
+
+    private InputStream stream;
+    private String fullText = "some text";
+
+    private DocumentIndexingPackageFactory factory;
 
     private SetFullTextFilter filter;
 
     @Before
     public void setup() throws Exception {
-
         initMocks(this);
 
         factory = new DocumentIndexingPackageFactory();
         factory.setDataLoader(loader);
+        stream = new ByteArrayInputStream(fullText.getBytes("UTF-8"));
 
-        triples = new HashMap<>();
-
-        when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
+        when(dip.getDocument()).thenReturn(idb);
+        when(dip.getPid()).thenReturn(pid);
+        when(pid.getId()).thenReturn("id");
+        when(fileObj.getOriginalFile()).thenReturn(binObj);
+        when(binObj.getMimetype()).thenReturn("text/plain");
+        when(binObj.getBinaryStream()).thenReturn(stream);
 
         filter = new SetFullTextFilter();
-        filter.setAccessClient(accessClient);
-
-        when(stream.getStream()).thenReturn("Full text value".getBytes());
-        when(accessClient.getDatastreamDissemination(any(PID.class), eq(Datastream.MD_FULL_TEXT.name()), anyString()))
-                .thenReturn(stream);
-
-        dip = factory.createDip("uuid:item");
     }
 
     @Test
-    public void testFullText() throws Exception {
-        triples.put(CDRProperty.fullText.toString(), Arrays.asList("pid/MD_FULL_TEXT"));
+    public void testFullTextWithWorkObject() throws Exception {
+    	    when(dip.getContentObject()).thenReturn(workObj);
+    	    when(workObj.getPrimaryObject()).thenReturn(fileObj);
+
+        filter.filter(dip);
+        
+        verify(idb).setFullText(stringCaptor.capture());
+        assertEquals(fullText, stringCaptor.getValue());
+
+    }
+    
+    @Test
+    public void testFullTextWithFileObject() throws Exception {
+    	    when(dip.getContentObject()).thenReturn(fileObj);
 
         filter.filter(dip);
 
-        verify(stream).getStream();
-        assertNotNull(dip.getDocument().getFullText());
-
+        verify(idb).setFullText(stringCaptor.capture());
+        assertEquals(fullText, stringCaptor.getValue());
     }
 
     @Test
     public void testNoFullText() throws Exception {
+    	when(dip.getContentObject()).thenReturn(fileObj);
+    	    when(binObj.getMimetype()).thenReturn("application/json");
+
         filter.filter(dip);
 
-        verify(stream, never()).getStream();
-        assertNull(dip.getDocument().getFullText());
+        verify(idb, never()).setFullText(anyString());
+    }
+    
+    @Test (expected = IndexingException.class)
+    public void testBadInputStream() throws Exception {
+    	    when(dip.getContentObject()).thenReturn(fileObj);
 
+    	    doThrow(new FedoraException("Mocking error getting binary stream")).when(binObj).getBinaryStream();
+
+    	    filter.filter(dip);
     }
 
 }
