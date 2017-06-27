@@ -264,7 +264,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
         Element identification = fitsDoc.getRootElement().getChild("identification", FITS_NS);
         String identityStatus = identification.getAttributeValue("status");
         // If there was no conflict, use the first identity
-        if (identityStatus == null || FITS_SINGLE_STATUS.equals(identityStatus)) { 
+        if (identityStatus == null || FITS_SINGLE_STATUS.equals(identityStatus)) {
             return identification.getChild("identity", FITS_NS);
         } else {
             if ("UNKNOWN".equals(identification.getAttributeValue("status"))) {

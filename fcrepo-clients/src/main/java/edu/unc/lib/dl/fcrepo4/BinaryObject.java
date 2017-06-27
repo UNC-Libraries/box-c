@@ -52,7 +52,7 @@ public class BinaryObject extends RepositoryObject {
     @Override
     public BinaryObject validateType() throws FedoraException {
         if (!isType(Fcrepo4Repository.Binary.getURI())) {
-            throw new ObjectTypeMismatchException("Object " + pid + " is not a Deposit Record.");
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a binary.");
         }
         return this;
     }
