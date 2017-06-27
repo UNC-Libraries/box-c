@@ -15,52 +15,63 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import java.io.IOException;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ServiceException;
-import edu.unc.lib.dl.fedora.types.MIMETypedStream;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 
 /**
  * Retrieves full text data for object being indexed and stores it to the indexing document
  * @author bbpennel
+ * @author harring
  *
  */
 public class SetFullTextFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
 
-    private AccessClient accessClient = null;
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
 
-        String fullTextDS = dip.getFirstTriple(CDRProperty.fullText.toString());
-
-        if (fullTextDS == null || "false".equals(fullTextDS)) {
+        ContentObject contentObj = dip.getContentObject();
+        // object being indexed must be a work or a file object
+        if (!(contentObj instanceof WorkObject) && !(contentObj instanceof FileObject)) {
+            return;
+        }
+        FileObject fileObj = getFileObject(dip);
+        if (fileObj == null) {
+            return;
+        }
+        BinaryObject binObj;
+        binObj = fileObj.getOriginalFile();
+        if (!binObj.getMimetype().contains("text")) {
             return;
         }
 
         try {
-            MIMETypedStream stream = accessClient.getDatastreamDissemination(dip.getPid(),
-                    ContentModelHelper.Datastream.MD_FULL_TEXT.name(), null);
-            dip.getDocument().setFullText(new String(stream.getStream()));
-        } catch (FedoraException e) {
-            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
-        } catch (ServiceException e) {
-            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getPid(), e);
+            String fullText = IOUtils.toString(binObj.getBinaryStream(), "UTF-8");
+            dip.getDocument().setFullText(fullText);
+        } catch (FedoraException | IOException e) {
+            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getId(), e);
+            throw new IndexingException("Failed to retrieve full text datastream for {}" + dip.getPid(), e);
         }
     }
 
-    public AccessClient getAccessClient() {
-        return accessClient;
-    }
-
-    public void setAccessClient(AccessClient accessClient) {
-        this.accessClient = accessClient;
+    private FileObject getFileObject(DocumentIndexingPackage dip) throws IndexingException {
+        ContentObject obj = dip.getContentObject();
+        FileObject fileObj;
+        if (obj instanceof WorkObject) {
+            fileObj = ((WorkObject) obj).getPrimaryObject();
+        } else {
+            fileObj = (FileObject) obj;
+        }
+        return fileObj;
     }
 }
