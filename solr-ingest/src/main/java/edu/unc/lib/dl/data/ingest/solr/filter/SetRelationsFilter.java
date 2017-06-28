@@ -36,33 +36,33 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class SetRelationsFilter implements IndexDocumentFilter{
     private static final Logger log = LoggerFactory.getLogger(SetRelationsFilter.class);
-    
+
     private FileObject primaryObj;
-    
+
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Applying setRelationsFilter");
-        
+
         List<String> relations = new ArrayList<String>();
 
         ContentObject contentObj = dip.getContentObject();
         // the object being indexed must be either a work object or a file object
         if (!(contentObj instanceof WorkObject || contentObj instanceof FileObject)) {
-        	    return;
+            return;
         }
         if (contentObj instanceof FileObject) {
-        	    primaryObj = (FileObject) contentObj;
+            primaryObj = (FileObject) contentObj;
         } else {
             primaryObj = ((WorkObject) contentObj).getPrimaryObject();
         }
         // store primary object relation
         relations.add(Cdr.primaryObject.toString() + "|" + primaryObj.getPid().getId());
-        
+
         // retrieve and store invalid terms
         List<String> invalidTerms = new ArrayList<>();
         StmtIterator it = contentObj.getResource().listProperties(Cdr.invalidTerm);
         while (it.hasNext()) {
-        	    invalidTerms.add(it.nextStatement().getLiteral().getString());
+            invalidTerms.add(it.nextStatement().getLiteral().getString());
         }
         String invalidTermPred = Cdr.invalidTerm.toString();
         if (invalidTerms != null) {
