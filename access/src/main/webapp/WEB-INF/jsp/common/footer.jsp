@@ -32,7 +32,8 @@
 				<a href="http://blogs.lib.unc.edu/cdr/">About</a> |
 				<a href="${contactUrl}">Contact Us</a> |
 				<a href="http://www.lib.unc.edu">Library Home</a> |
-				<a href="http://library.unc.edu/privacy-policy/">Privacy Policy</a>
+				<a href="http://library.unc.edu/privacy-policy/">Privacy Policy</a> |
+				<a href="http://digitalaccess.unc.edu/report">Accessibility</a>
 			</p>
 		</div>
             </div>
