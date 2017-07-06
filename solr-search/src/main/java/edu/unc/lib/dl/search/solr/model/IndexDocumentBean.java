@@ -68,6 +68,7 @@ public class IndexDocumentBean {
     protected List<String> adminGroup;
     protected List<String> status;
     protected List<String> contentStatus;
+    protected Map<String, Object> statusTags;
 
     protected List<String> identifier;
     protected String identifierSort;
@@ -344,6 +345,15 @@ public class IndexDocumentBean {
 
     public List<String> getContentStatus() {
         return contentStatus;
+    }
+    
+    @Field
+    public void setStatusTags(Map<String, Object> statusTags) {
+        this.statusTags = statusTags;
+    }
+    
+    public Map<String, Object> getStatusTags() {
+        return statusTags;
     }
 
     @Field
