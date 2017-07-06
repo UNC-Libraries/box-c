@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
  * 
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class IndexDocumentBean {
@@ -346,12 +346,12 @@ public class IndexDocumentBean {
     public List<String> getContentStatus() {
         return contentStatus;
     }
-    
+
     @Field
     public void setStatusTags(Map<String, Object> statusTags) {
         this.statusTags = statusTags;
     }
-    
+
     public Map<String, Object> getStatusTags() {
         return statusTags;
     }
