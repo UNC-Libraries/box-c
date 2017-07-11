@@ -48,7 +48,7 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
 
         dip.getDocument().setContentStatus(contentStatus);
 
-        log.debug("Content status for {} set to {}", dip.getPid().getPid(), contentStatus);
+        log.debug("Content status for {} set to {}", dip.getPid().toString(), contentStatus);
     }
 
     private void setContentStatus(DocumentIndexingPackage dip, Map<String, List<String>> triples, List<String> status)
