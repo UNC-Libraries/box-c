@@ -17,6 +17,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,17 +47,16 @@ public class SetRelationsFilter implements IndexDocumentFilter{
         List<String> relations = new ArrayList<String>();
 
         ContentObject contentObj = dip.getContentObject();
-        // the object being indexed must be either a work object or a file object
-        if (!(contentObj instanceof WorkObject || contentObj instanceof FileObject)) {
-            return;
+        // determine whether the content object has/is a primary object
+        if (contentObj instanceof WorkObject || contentObj instanceof FileObject) {
+            if (contentObj instanceof FileObject) {
+                primaryObj = (FileObject) contentObj;
+            } else {
+                primaryObj = ((WorkObject) contentObj).getPrimaryObject();
+            }
+            // store primary object relation
+            relations.add(Cdr.primaryObject.toString() + "|" + primaryObj.getPid().getId());
         }
-        if (contentObj instanceof FileObject) {
-            primaryObj = (FileObject) contentObj;
-        } else {
-            primaryObj = ((WorkObject) contentObj).getPrimaryObject();
-        }
-        // store primary object relation
-        relations.add(Cdr.primaryObject.toString() + "|" + primaryObj.getPid().getId());
 
         // retrieve and store invalid terms
         List<String> invalidTerms = new ArrayList<>();
