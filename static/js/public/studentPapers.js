@@ -14,18 +14,29 @@ define('studentPapers', ['module', 'jquery'], function(module, $) {
 	var selector = $("#mp-dept");
 
 	selector.on('click', function() {
+		redirectLink(this, null); // Required for Safari to redirect the page
+
 		$(this).on('change', function() {
-			if ($(this).val() !== '') {
-				location.href = $(this).val();
-			}
+			redirectLink(this, null); // Required for Chrome and FireFox to redirect the page
 		});
 	});
 
 	selector.on('keypress', function(e) {
-		var code = e.keyCode || e.which;
-
-		if ($(this).val() !== '' && code === 13) {
-			location.href = $(this).val();
-		}
+		var key_code = e.keyCode || e.which;
+		redirectLink(this, key_code)
 	});
+
+	function redirectLink(context, key_code) {
+		var link = $(context).val();
+
+		if (key_code !== null) {
+			if (link !== '' && key_code === 13) {
+				location.href = link;
+			}
+		} else {
+			if (link !== '') {
+				location.href = link;
+			}
+		}
+	}
 });
