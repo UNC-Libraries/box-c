@@ -28,13 +28,16 @@ define('studentPapers', ['module', 'jquery'], function(module, $) {
 
 	function redirectLink(context, key_code) {
 		var link = $(context).val();
+		var reset = link;
 
 		if (key_code !== null) {
 			if (link !== '' && key_code === 13) {
+				reset.val('');
 				location.href = link;
 			}
 		} else {
 			if (link !== '') {
+				reset.val('');
 				location.href = link;
 			}
 		}
