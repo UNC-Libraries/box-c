@@ -26,7 +26,7 @@ import edu.unc.lib.cdr.BinaryMetadataProcessor;
 
 /**
  * Meta router which sequences all service routes to run on events.
- * 
+ *
  * @author bbpennel
  *
  */
@@ -37,7 +37,8 @@ public class MetaServicesRouter extends RouteBuilder {
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
 
-    public void configure() throws Exception {
+    @Override
+	public void configure() throws Exception {
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
             .to("direct-vm:index.start")
@@ -63,11 +64,9 @@ public class MetaServicesRouter extends RouteBuilder {
             .choice()
                 .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
                     .to("direct-vm:replication")
-                    .log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
                     .to("direct:process.enhancements")
                 .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
                     .to("direct-vm:replication")
-                    .log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
                 .otherwise()
                     .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
             .end();

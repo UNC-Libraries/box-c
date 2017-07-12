@@ -50,12 +50,12 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 
 public class ReplicationProcessorTest {
-    private ReplicationProcessor processor; 
+    private ReplicationProcessor processor;
     private final String replicationLocations = "/tmp";
     private final String badReplicationLocations = "/no_replicate";
     private final String fileName = "replication_text.txt";
     private final String testText = "Test text, see if it can be replicated.";
-    private int maxRetries = 3; 
+    private int maxRetries = 3;
     private long retryDelay = 10;
     private File file;
     private String filePath;
@@ -144,16 +144,10 @@ public class ReplicationProcessorTest {
     @Test(expected = ReplicationDestinationUnavailableException.class)
     public void testBadReplicationLocations() throws Exception {
         processor = new ReplicationProcessor(repository, badReplicationLocations, maxRetries, retryDelay);
-
-        try {
-            processor.process(exchange);
-        } finally {
-            verify(processor).equals(ReplicationDestinationUnavailableException.class);
-        }
     }
 
     @Test(expected = RuntimeException.class)
-    public void testReplicationtFail() throws Exception {
+    public void testReplicationFail() throws Exception {
         when(binaryStream)
                 .thenThrow(new IOException());
 

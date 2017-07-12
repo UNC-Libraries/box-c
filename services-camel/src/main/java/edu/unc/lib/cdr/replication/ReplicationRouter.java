@@ -23,7 +23,7 @@ import edu.unc.lib.cdr.ReplicationProcessor;
 
 /**
  * Routes binary files for replication to remote storage devices
- * 
+ *
  * @author lfarrell
  *
  */
@@ -31,7 +31,8 @@ public class ReplicationRouter extends RouteBuilder {
     @BeanInject(value = "replicationProcessor")
     private ReplicationProcessor replicationProcessor;
 
-    public void configure() throws Exception {
+    @Override
+	public void configure() throws Exception {
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")
@@ -41,6 +42,7 @@ public class ReplicationRouter extends RouteBuilder {
         from("direct-vm:replication")
             .routeId("CdrReplicationRoute")
             .log(LoggingLevel.INFO, "Calling replication route for ${headers[org.fcrepo.jms.identifier]}")
+            .log(LoggingLevel.INFO, "Replication completed for ${headers[org.fcrepo.jms.identifier]}")
             .to("direct:file.replication");
 
         from("direct:file.replication")
