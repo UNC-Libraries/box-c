@@ -12,6 +12,7 @@ require.config({
 
 define('studentPapers', ['module', 'jquery'], function(module, $) {
 	var selector = $("#mp-dept");
+	var reset = selector.clone();
 
 	selector.on('click', function() {
 		redirectLink(this, null); // Required for Safari to redirect the page
@@ -28,7 +29,6 @@ define('studentPapers', ['module', 'jquery'], function(module, $) {
 
 	function redirectLink(context, key_code) {
 		var link = $(context).val();
-		var reset = link;
 
 		if (key_code !== null) {
 			if (link !== '' && key_code === 13) {
