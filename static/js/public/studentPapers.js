@@ -27,18 +27,20 @@ define('studentPapers', ['module', 'jquery'], function(module, $) {
 	});
 
 	function redirectLink(context, key_code) {
-		var link = { uri: $(context).val() };
+		var link = { uri: $(context) };
+		var url = link.uri.val();
 		var reset = $.extend(true, {}, link);
 
+
 		if (key_code !== null) {
-			if (link.uri !== '' && key_code === 13) {
+			if (url !== '' && key_code === 13) {
 				reset.uri.val('');
-				location.href =link.uri;
+				location.href = url;
 			}
 		} else {
-			if (link.uri !== '') {
+			if (url !== '') {
 				reset.uri.val('');
-				location.href =link.uri;
+				location.href = url;
 			}
 		}
 	}
