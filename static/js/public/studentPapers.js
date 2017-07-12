@@ -23,7 +23,7 @@ define('studentPapers', ['module', 'jquery'], function(module, $) {
 
 	selector.on('keypress', function(e) {
 		var key_code = e.keyCode || e.which;
-		redirectLink(this, key_code)
+		redirectLink(this, key_code);
 	});
 
 	function redirectLink(context, key_code) {
