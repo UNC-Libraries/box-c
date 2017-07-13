@@ -30,9 +30,9 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 /**
- * Sets content related status tags
+ * Sets content-related status tags
  *
- * @author bbpennel
+ * @author harring
  *
  */
 public class SetContentStatusFilter implements IndexDocumentFilter{
@@ -59,17 +59,17 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         }
 
         if (resc.hasProperty(Cdr.invalidTerm)) {
-                status.add(FacetConstants.INVALID_VOCAB_TERM);
+            status.add(FacetConstants.INVALID_VOCAB_TERM);
         }
 
         if (obj instanceof WorkObject) {
-                if (((WorkObject) obj).getPrimaryObject() == null) {
-                        status.add(FacetConstants.NO_PRIMARY_OBJECT);
-                }
+            if (((WorkObject) obj).getPrimaryObject() == null) {
+                status.add(FacetConstants.NO_PRIMARY_OBJECT);
+            }
         }
 
         if (resc.hasProperty(Cdr.unpublished)) {
-                status.add(FacetConstants.UNPUBLISHED);
+            status.add(FacetConstants.UNPUBLISHED);
         }
 
         return status;
