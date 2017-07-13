@@ -35,7 +35,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,161 +46,161 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
-	private static final String FILE_ID = "/file1/original_file";
-	private static final String FITS_ID = "/file1/techmd_fits";
-	private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
+    private static final String FILE_ID = "/file1/original_file";
+    private static final String FITS_ID = "/file1/techmd_fits";
+    private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
 
-	private static final String META_ROUTE = "CdrMetaServicesRouter";
-	private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessCreationEvent";
-	private static final String ORIGINAL_BINARY_ROUTE = "ProcessEnhancements";
+    private static final String META_ROUTE = "CdrMetaServicesRouter";
+    private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessCreationEvent";
+    private static final String ORIGINAL_BINARY_ROUTE = "ProcessEnhancements";
 
-	@PropertyInject(value = "fcrepo.baseUri")
-	private static String baseUri;
+    @PropertyInject(value = "fcrepo.baseUri")
+    private static String baseUri;
 
-	@EndpointInject(uri = "mock:fcrepo")
-	private MockEndpoint resultEndpoint;
+    @EndpointInject(uri = "mock:fcrepo")
+    private MockEndpoint resultEndpoint;
 
-	@BeanInject(value = "repository")
-	private Repository repo;
+    @BeanInject(value = "repository")
+    private Repository repo;
 
-	@Produce(uri = "direct:start")
-	private ProducerTemplate template;
+    @Produce(uri = "direct:start")
+    private ProducerTemplate template;
 
-	@BeanInject(value = "binaryMetadataProcessor")
-	private BinaryMetadataProcessor mdProcessor;
+    @BeanInject(value = "binaryMetadataProcessor")
+    private BinaryMetadataProcessor mdProcessor;
 
-	@Before
-	public void init() {
-		PIDs.setRepository(repo);
-		when(repo.getBaseUri()).thenReturn(baseUri);
-	}
+    @Before
+    public void init() {
+        PIDs.setRepository(repo);
+        when(repo.getBaseUri()).thenReturn(baseUri);
+    }
 
-	@Override
-	protected AbstractApplicationContext createApplicationContext() {
-		return new ClassPathXmlApplicationContext("/service-context.xml", "/metaservices-context.xml");
-	}
+    @Override
+    protected AbstractApplicationContext createApplicationContext() {
+        return new ClassPathXmlApplicationContext("/service-context.xml", "/metaservices-context.xml");
+    }
 
-	@Test
-	public void testRouteStartContainer() throws Exception {
-		getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-		getMockEndpoint("mock:direct:process.ingest").expectedMessageCount(1);
+    @Test
+    public void testRouteStartContainer() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.ingest").expectedMessageCount(1);
 
-		createContext(META_ROUTE);
+        createContext(META_ROUTE);
 
-		template.sendBodyAndHeaders("", createEvent(CONTAINER_ID));
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID));
 
-		assertMockEndpointsSatisfied();
-	}
+        assertMockEndpointsSatisfied();
+    }
 
-	@Test
-	public void testProcessEnhancementContainer() throws Exception {
-		getMockEndpoint("mock:direct:process.creation").expectedMessageCount(0);
+    @Test
+    public void testProcessEnhancementContainer() throws Exception {
+        getMockEndpoint("mock:direct:process.creation").expectedMessageCount(0);
 
-		createContext(PROCESS_ENHANCEMENT_ROUTE);
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
 
-		final Map<String, Object> headers = createEvent(CONTAINER_ID);
-		headers.put(RESOURCE_TYPE, Container.getURI());
-		template.sendBodyAndHeaders("", headers);
+        final Map<String, Object> headers = createEvent(CONTAINER_ID);
+        headers.put(RESOURCE_TYPE, Container.getURI());
+        template.sendBodyAndHeaders("", headers);
 
-		assertMockEndpointsSatisfied();
-	}
+        assertMockEndpointsSatisfied();
+    }
 
-	@Test
-	public void testProcessEnhancementOriginalBinary() throws Exception {
-		getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(0);
-		getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(1);
+    @Test
+    public void testProcessEnhancementOriginalBinary() throws Exception {
+        getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(1);
 
-		createContext(PROCESS_ENHANCEMENT_ROUTE);
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
 
-		final Map<String, Object> headers = createEvent(FILE_ID);
-		template.sendBodyAndHeaders("", headers);
+        final Map<String, Object> headers = createEvent(FILE_ID);
+        template.sendBodyAndHeaders("", headers);
 
-		assertMockEndpointsSatisfied();
-		
-		verify(mdProcessor).process(any(Exchange.class));
-	}
-	
-	@Test
-	public void testProcessFits() throws Exception {
-		getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
-		getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(0);
+        assertMockEndpointsSatisfied();
 
-		createContext(PROCESS_ENHANCEMENT_ROUTE);
+        verify(mdProcessor).process(any(Exchange.class));
+    }
 
-		final Map<String, Object> headers = createEvent(FITS_ID);
-		template.sendBodyAndHeaders("", headers);
+    @Test
+    public void testProcessFits() throws Exception {
+        getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(0);
 
-		assertMockEndpointsSatisfied();
-		
-		verify(mdProcessor).process(any(Exchange.class));
-	}
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
 
-	@Test
-	public void testEventTypeFilter() throws Exception {
-		getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-		getMockEndpoint("mock:direct:process.creation").expectedMessageCount(0);
+        final Map<String, Object> headers = createEvent(FITS_ID);
+        template.sendBodyAndHeaders("", headers);
 
-		createContext(META_ROUTE);
+        assertMockEndpointsSatisfied();
 
-		Map<String, Object> headers = createEvent(FILE_ID);
-		headers.put(EVENT_TYPE, "ResourceDeletion");
+        verify(mdProcessor).process(any(Exchange.class));
+    }
 
-		template.sendBodyAndHeaders("", headers);
+    @Test
+    public void testEventTypeFilter() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.creation").expectedMessageCount(0);
 
-		assertMockEndpointsSatisfied();
-	}
+        createContext(META_ROUTE);
 
-	@Test
-	public void testIdentifierFilter() throws Exception {
-		getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-		getMockEndpoint("mock:direct:direct:process.creation").expectedMessageCount(0);
+        Map<String, Object> headers = createEvent(FILE_ID);
+        headers.put(EVENT_TYPE, "ResourceDeletion");
 
-		createContext(META_ROUTE);
+        template.sendBodyAndHeaders("", headers);
 
-		Map<String, Object> headers = createEvent("other_file");
-		template.sendBodyAndHeaders("", headers);
+        assertMockEndpointsSatisfied();
+    }
 
-		assertMockEndpointsSatisfied();
-	}
+    @Test
+    public void testIdentifierFilter() throws Exception {
+        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:direct:process.creation").expectedMessageCount(0);
 
-	@Test
-	public void testProcessBinary() throws Exception {
-		getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
-		getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
-		getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
+        createContext(META_ROUTE);
 
-		createContext(ORIGINAL_BINARY_ROUTE);
+        Map<String, Object> headers = createEvent("other_file");
+        template.sendBodyAndHeaders("", headers);
 
-		Map<String, Object> headers = createEvent(FILE_ID);
-		template.sendBodyAndHeaders("", headers);
+        assertMockEndpointsSatisfied();
+    }
 
-		assertMockEndpointsSatisfied();
-	}
+    @Test
+    public void testProcessBinary() throws Exception {
+        getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
 
-	private void createContext(String routeName) throws Exception {
-		context.getRouteDefinition(routeName).adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
-			@Override
-			public void configure() throws Exception {
-				replaceFromWith("direct:start");
-				mockEndpointsAndSkip("*");
-			}
-		});
+        createContext(ORIGINAL_BINARY_ROUTE);
 
-		context.start();
-	}
+        Map<String, Object> headers = createEvent(FILE_ID);
+        template.sendBodyAndHeaders("", headers);
 
-	private static Map<String, Object> createEvent(final String identifier) {
-		final Map<String, Object> headers = new HashMap<>();
-		headers.put(EVENT_TYPE, "ResourceCreation");
-		headers.put(IDENTIFIER, identifier);
-		headers.put(RESOURCE_TYPE, Binary.getURI());
+        assertMockEndpointsSatisfied();
+    }
 
-		return headers;
-	}
+    private void createContext(String routeName) throws Exception {
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
+            @Override
+            public void configure() throws Exception {
+                replaceFromWith("direct:start");
+                mockEndpointsAndSkip("*");
+            }
+        });
+
+        context.start();
+    }
+
+    private static Map<String, Object> createEvent(final String identifier) {
+        final Map<String, Object> headers = new HashMap<>();
+        headers.put(EVENT_TYPE, "ResourceCreation");
+        headers.put(IDENTIFIER, identifier);
+        headers.put(RESOURCE_TYPE, Binary.getURI());
+
+        return headers;
+    }
 }
