@@ -32,7 +32,7 @@ public class ReplicationRouter extends RouteBuilder {
     private ReplicationProcessor replicationProcessor;
 
     @Override
-	public void configure() throws Exception {
+    public void configure() throws Exception {
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")

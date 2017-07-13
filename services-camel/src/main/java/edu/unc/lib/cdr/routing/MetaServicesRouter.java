@@ -38,7 +38,7 @@ public class MetaServicesRouter extends RouteBuilder {
     private Integer enhancementThreads;
 
     @Override
-	public void configure() throws Exception {
+    public void configure() throws Exception {
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
             .to("direct-vm:index.start")
