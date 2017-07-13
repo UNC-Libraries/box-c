@@ -47,14 +47,12 @@ public class SetRelationsFilter implements IndexDocumentFilter{
         List<String> relations = new ArrayList<String>();
 
         ContentObject contentObj = dip.getContentObject();
-        // determine whether the content object has/is a primary object
-        if (contentObj instanceof WorkObject || contentObj instanceof FileObject) {
-            if (contentObj instanceof FileObject) {
-                primaryObj = (FileObject) contentObj;
-            } else {
-                primaryObj = ((WorkObject) contentObj).getPrimaryObject();
-            }
-            // store primary object relation
+
+        // if the content obj is a work obj, set relation on its primary object
+        if (contentObj instanceof WorkObject) {
+            primaryObj = ((WorkObject) contentObj).getPrimaryObject();
+
+            // store primary-object relation
             relations.add(Cdr.primaryObject.toString() + "|" + primaryObj.getPid().getId());
         }
 
@@ -67,6 +65,7 @@ public class SetRelationsFilter implements IndexDocumentFilter{
         String invalidTermPred = Cdr.invalidTerm.toString();
         if (invalidTerms != null) {
             for (String invalidTermTriple : invalidTerms) {
+                // store invalid-term relation
                 relations.add(invalidTermPred + "|" + invalidTermTriple);
             }
         }

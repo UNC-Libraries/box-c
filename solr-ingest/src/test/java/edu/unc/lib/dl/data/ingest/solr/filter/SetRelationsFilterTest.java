@@ -88,7 +88,7 @@ public class SetRelationsFilterTest {
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
         when(pid.getId()).thenReturn("id");
-        
+
         when(workObj.getPrimaryObject()).thenReturn(fileObj);
         when(workObj.getPid()).thenReturn(pid);
         when(fileObj.getPid()).thenReturn(pid);
@@ -115,18 +115,6 @@ public class SetRelationsFilterTest {
         assertTrue(listCaptor.getValue().contains("http://cdr.unc.edu/definitions/model#primaryObject|" + primObjPid));
     }
 
-    @Test
-    public void setPrimaryObjectFromFileObjectTest() throws Exception {
-        when(dip.getContentObject()).thenReturn(fileObj);
-        String primObjPid = "pofromfileobj";
-        when(pid.getId()).thenReturn(primObjPid);
-
-        filter.filter(dip);
-
-        verify(idb).setRelations(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("http://cdr.unc.edu/definitions/model#primaryObject|" + primObjPid));
-    }
-    
     @Test
     public void setInvalidTermsTest() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
