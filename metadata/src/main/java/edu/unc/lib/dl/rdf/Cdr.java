@@ -90,6 +90,11 @@ public class Cdr {
      */
     public static final Property replaceInvalidTerms = createProperty(
             "http://cdr.unc.edu/definitions/model#replaceInvalidTerms" );
+    /**
+     *
+     */
+    public static final Property unpublished = createProperty(
+            "http://cdr.unc.edu/definitions/model#unpublished" );
 
     /** Selector for identifying fields within descriptive metadata records which
      *  this vocabulary applies to.
