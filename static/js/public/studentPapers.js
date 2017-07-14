@@ -12,6 +12,7 @@ require.config({
 
 define('studentPapers', ['module', 'jquery'], function(module, $) {
 	var selector = $("#mp-dept");
+	selector .val('');
 
 	selector.on('click', function() {
 		redirectLink(this, null); // Required for Safari to redirect the page
@@ -27,19 +28,14 @@ define('studentPapers', ['module', 'jquery'], function(module, $) {
 	});
 
 	function redirectLink(context, key_code) {
-		var link = { uri: $(context) };
-		var url = link.uri.val();
-		var reset = $.extend(true, {}, link);
-
+		var url = $(context).val();
 
 		if (key_code !== null) {
 			if (url !== '' && key_code === 13) {
-				reset.uri.val('');
 				location.href = url;
 			}
 		} else {
 			if (url !== '') {
-				reset.uri.val('');
 				location.href = url;
 			}
 		}
