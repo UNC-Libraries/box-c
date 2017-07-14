@@ -63,7 +63,7 @@ public class SetContentStatusFilter implements IndexDocumentFilter{
         }
 
         if (obj instanceof WorkObject) {
-            if (((WorkObject) obj).getPrimaryObject() == null) {
+            if (!resc.hasProperty(Cdr.primaryObject)) {
                 status.add(FacetConstants.NO_PRIMARY_OBJECT);
             }
         }

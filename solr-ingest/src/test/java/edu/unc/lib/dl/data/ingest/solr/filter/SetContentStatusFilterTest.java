@@ -127,7 +127,7 @@ public class SetContentStatusFilterTest {
     public void testWorkWithPrimaryObject() throws Exception {
         when(dip.getContentObject()).thenReturn(workObj);
         when(workObj.getResource()).thenReturn(resc);
-        when(workObj.getPrimaryObject()).thenReturn(fileObj);
+        when(resc.hasProperty(Cdr.primaryObject)).thenReturn(true);
 
         filter.filter(dip);
 
