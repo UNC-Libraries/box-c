@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.headers;
-
+package edu.unc.lib.cdr;
 /**
- * Constants for Apache Camel object enhancement services
- * @author lfarrell
+ * 
+ * @author harring
  *
  */
-public class CdrFcrepoHeaders {
+public class ReplicationException extends RuntimeException {
+    private static final long serialVersionUID = 7L;
 
-    public static final String CdrBinaryMimeType = "CdrMimeType";
-
-    public static final String CdrBinaryPath = "CdrBinaryPath";
-
-    public static final String CdrBinaryChecksum = "CdrChecksum";
-
-    public static final String CdrBinaryUri = "CdrBinaryUri";
-
-    private CdrFcrepoHeaders() {
+    public ReplicationException(String message) {
+        super(message);
     }
 
+    public ReplicationException(String message, Exception e) {
+        super(message, e);
+    }
 }

@@ -51,7 +51,7 @@ import edu.unc.lib.dl.rdf.PcdmUse;
  *
  */
 public class FulltextProcessor implements Processor {
-    private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(FulltextProcessor.class);
 
     private final Repository repository;
     private final String slug;

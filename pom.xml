@@ -135,7 +135,7 @@
 		<module>deposit</module>
 		<module>clamavj</module>
 		<module>spoof</module>
-	</modules>
+  </modules>
 
 	<reporting>
 		<plugins>
@@ -536,6 +536,12 @@
 				<artifactId>jdom</artifactId>
 				<version>2.0.2</version>
 			</dependency>
+			<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.10</version>
+			<scope>compile</scope>
+		</dependency>
 			<dependency>
 				<groupId>org.apache.jena</groupId>
 				<artifactId>jena-fuseki-embedded</artifactId>

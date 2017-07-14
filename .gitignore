@@ -14,15 +14,14 @@
 /static.tar.gz
 /puppet.tar.gz
 */fcrepo4-data
-target
 .idea
 static/js/cdr-admin.js
 static/css/cdr_admin.css
 static/js/cdr-access.js
 static/css/cdr_access.css
-*.log
+*.log*
 *.iml
 dump.rdb
 authorized_keys
 staging-areas
-*.iml
+target
