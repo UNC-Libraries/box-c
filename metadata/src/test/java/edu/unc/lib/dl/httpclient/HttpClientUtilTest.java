@@ -29,25 +29,25 @@ public class HttpClientUtilTest {
 
     @Test
     public void testGetAuthenticationScope() {
-	Map<String, Integer> urlsAndPorts = new HashMap<String, Integer>();
-	urlsAndPorts.put("http://www.unc.edu", 80);
-	urlsAndPorts.put("https://www.unc.edu", 443);
-	urlsAndPorts.put("http://www.unc.edu:5143", 5143);
-	urlsAndPorts.put("https://www.unc.edu:17", 17);
-	for (Map.Entry<String, Integer> entry : urlsAndPorts.entrySet()) {
-	    AuthScope scope = HttpClientUtil.getAuthenticationScope(entry.getKey());
-	    Assert.assertEquals(entry.getValue().intValue(), scope.getPort());
-	}
+    Map<String, Integer> urlsAndPorts = new HashMap<String, Integer>();
+    urlsAndPorts.put("http://www.unc.edu", 80);
+    urlsAndPorts.put("https://www.unc.edu", 443);
+    urlsAndPorts.put("http://www.unc.edu:5143", 5143);
+    urlsAndPorts.put("https://www.unc.edu:17", 17);
+    for (Map.Entry<String, Integer> entry : urlsAndPorts.entrySet()) {
+        AuthScope scope = HttpClientUtil.getAuthenticationScope(entry.getKey());
+        Assert.assertEquals(entry.getValue().intValue(), scope.getPort());
+    }
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testGetAuthenticationBadURL() {
-	HttpClientUtil.getAuthenticationScope("call me snake");
+    HttpClientUtil.getAuthenticationScope("call me snake");
     }
 
     @Test(expected = NullPointerException.class)
     public void testGetAuthenticationNullURL() {
-	HttpClientUtil.getAuthenticationScope(null);
+    HttpClientUtil.getAuthenticationScope(null);
     }
 
 }

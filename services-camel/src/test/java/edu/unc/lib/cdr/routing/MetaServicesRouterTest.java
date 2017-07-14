@@ -181,6 +181,8 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
+        
+        verify(mdProcessor).process(any(Exchange.class));
     }
 
     private void createContext(String routeName) throws Exception {

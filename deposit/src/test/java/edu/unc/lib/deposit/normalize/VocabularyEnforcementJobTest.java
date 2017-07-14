@@ -59,97 +59,97 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
  */
 public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
-	private VocabularyEnforcementJob job;
+    private VocabularyEnforcementJob job;
 
-	private Map<String, String> depositStatus;
+    private Map<String, String> depositStatus;
 
-	@Mock
-	private VocabularyHelperManager vocabManager;
+    @Mock
+    private VocabularyHelperManager vocabManager;
 
-	@Mock
-	private VocabularyHelper mockHelper;
-	
-	private PID rescPid;
+    @Mock
+    private VocabularyHelper mockHelper;
+    
+    private PID rescPid;
 
-	@Before
-	public void setup() throws Exception {
-		Dataset dataset = TDBFactory.createDataset();
+    @Before
+    public void setup() throws Exception {
+        Dataset dataset = TDBFactory.createDataset();
 
-		job = new VocabularyEnforcementJob();
-		job.setDepositUUID(depositUUID);
-		job.setDepositDirectory(depositDir);
-		job.setRepository(repository);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "jobStatusFactory", jobStatusFactory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
-		setField(job, "vocabManager", vocabManager);
-		setField(job, "dataset", dataset);
+        job = new VocabularyEnforcementJob();
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        job.setRepository(repository);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        setField(job, "vocabManager", vocabManager);
+        setField(job, "dataset", dataset);
 
-		PID depositPid = repository.mintContentPid();
-		depositStatus = new HashMap<>();
-		depositStatus.put(DepositField.containerId.name(), depositPid.toString());
-		when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
+        PID depositPid = repository.mintContentPid();
+        depositStatus = new HashMap<>();
+        depositStatus.put(DepositField.containerId.name(), depositPid.toString());
+        when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
 
-		job.getDescriptionDir().mkdir();
+        job.getDescriptionDir().mkdir();
 
-		Model model = job.getWritableModel();
-		Bag depositBag = model.createBag(job.getDepositPID().getURI());
-		rescPid = repository.mintContentPid();
-		Resource mainResource = model.createResource(rescPid.getURI());
-		depositBag.add(mainResource);
-		job.closeModel();
-	}
+        Model model = job.getWritableModel();
+        Bag depositBag = model.createBag(job.getDepositPID().getURI());
+        rescPid = repository.mintContentPid();
+        Resource mainResource = model.createResource(rescPid.getURI());
+        depositBag.add(mainResource);
+        job.closeModel();
+    }
 
-	@Test
-	public void rewriteMODSTest() throws Exception {
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
-				job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml"));
+    @Test
+    public void rewriteMODSTest() throws Exception {
+        Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"),
+                job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml"));
 
-		Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
-		when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
+        Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
+        when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
 
-		doAnswer(new Answer<Boolean>() {
-			@Override
-			public Boolean answer(InvocationOnMock invocation) throws Throwable {
-				Element doc = (Element) invocation.getArguments()[0];
-				doc.addContent(new Element("testElement"));
-				return true;
-			}
+        doAnswer(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                Element doc = (Element) invocation.getArguments()[0];
+                doc.addContent(new Element("testElement"));
+                return true;
+            }
 
-		}).when(mockHelper).updateDocumentTerms(any(Element.class));
+        }).when(mockHelper).updateDocumentTerms(any(Element.class));
 
-		job.run();
+        job.run();
 
-		verify(mockHelper).updateDocumentTerms(any(Element.class));
+        verify(mockHelper).updateDocumentTerms(any(Element.class));
 
-		Document modsDoc = getMODSDocument(rescPid.getUUID());
-		Element testElement = element("/mods:mods/testElement", modsDoc);
-		assertTrue("Document was not modified", testElement != null);
-	}
+        Document modsDoc = getMODSDocument(rescPid.getUUID());
+        Element testElement = element("/mods:mods/testElement", modsDoc);
+        assertTrue("Document was not modified", testElement != null);
+    }
 
-	@Test
-	public void noRewriteMODSTest() throws Exception {
-		Path path = job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml");
-		Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), path);
-		long modified = path.toFile().lastModified();
+    @Test
+    public void noRewriteMODSTest() throws Exception {
+        Path path = job.getDescriptionDir().toPath().resolve(rescPid.getUUID() + ".xml");
+        Files.copy(Paths.get("src/test/resources/mods/singleAffiliationMods.xml"), path);
+        long modified = path.toFile().lastModified();
 
-		Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
-		when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
-		when(mockHelper.updateDocumentTerms(any(Element.class))).thenReturn(false);
+        Set<VocabularyHelper> helpers = new HashSet<>(Arrays.asList(mockHelper));
+        when(vocabManager.getRemappingHelpers(any(PID.class))).thenReturn(helpers);
+        when(mockHelper.updateDocumentTerms(any(Element.class))).thenReturn(false);
 
-		Thread.sleep(100L);
+        Thread.sleep(100L);
 
-		job.run();
+        job.run();
 
-		verify(mockHelper).updateDocumentTerms(any(Element.class));
-		assertTrue("Timestamp on MODS file changed", modified == path.toFile().lastModified());
-	}
+        verify(mockHelper).updateDocumentTerms(any(Element.class));
+        assertTrue("Timestamp on MODS file changed", modified == path.toFile().lastModified());
+    }
 
-	@SuppressWarnings("deprecation")
-	private Document getMODSDocument(String uuid) throws Exception {
-		File modsFile = new File(job.getDescriptionDir(), uuid + ".xml");
+    @SuppressWarnings("deprecation")
+    private Document getMODSDocument(String uuid) throws Exception {
+        File modsFile = new File(job.getDescriptionDir(), uuid + ".xml");
 
-		SAXBuilder sb = new SAXBuilder(false);
-		return sb.build(modsFile);
-	}
+        SAXBuilder sb = new SAXBuilder(false);
+        return sb.build(modsFile);
+    }
 }

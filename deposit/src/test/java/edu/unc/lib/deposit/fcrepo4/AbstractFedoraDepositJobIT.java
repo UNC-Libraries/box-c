@@ -52,59 +52,59 @@ import edu.unc.lib.dl.util.JobStatusFactory;
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public class AbstractFedoraDepositJobIT {
 
-	@Autowired
-	protected String serverAddress;
-	@Autowired
-	protected Repository repository;
-	@Autowired
-	protected Dataset dataset;
-	@Autowired
-	protected JobStatusFactory jobStatusFactory;
-	@Autowired
-	protected DepositStatusFactory depositStatusFactory;
-	@Autowired
-	protected PremisLoggerFactory premisLoggerFactory;
-	@Autowired
-	protected FcrepoClient client;
-	@Autowired
-	protected ActivityMetricsClient metricsClient;
-	@Rule
-	public final TemporaryFolder tmpFolder = new TemporaryFolder();
-	
-	protected File depositsDirectory;
-	protected File depositDir;
-	protected String jobUUID;
-	protected String depositUUID;
-	protected PID depositPid;
-	
-	@Before
-	public void initBase() throws Exception {
-		depositsDirectory = tmpFolder.newFolder("deposits");
-		
-		jobUUID = UUID.randomUUID().toString();
+    @Autowired
+    protected String serverAddress;
+    @Autowired
+    protected Repository repository;
+    @Autowired
+    protected Dataset dataset;
+    @Autowired
+    protected JobStatusFactory jobStatusFactory;
+    @Autowired
+    protected DepositStatusFactory depositStatusFactory;
+    @Autowired
+    protected PremisLoggerFactory premisLoggerFactory;
+    @Autowired
+    protected FcrepoClient client;
+    @Autowired
+    protected ActivityMetricsClient metricsClient;
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+    
+    protected File depositsDirectory;
+    protected File depositDir;
+    protected String jobUUID;
+    protected String depositUUID;
+    protected PID depositPid;
+    
+    @Before
+    public void initBase() throws Exception {
+        depositsDirectory = tmpFolder.newFolder("deposits");
+        
+        jobUUID = UUID.randomUUID().toString();
 
-		depositPid = repository.mintDepositRecordPid();
-		depositUUID = depositPid.getId();
-		depositDir = new File(depositsDirectory, depositUUID);
-		depositDir.mkdir();
-	}
+        depositPid = repository.mintDepositRecordPid();
+        depositUUID = depositPid.getId();
+        depositDir = new File(depositsDirectory, depositUUID);
+        depositDir.mkdir();
+    }
 
-	protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
-		URI baseUri = URI.create(serverAddress + name);
-		// Create a parent object to put the binary into
-		try (FcrepoResponse response = client.put(baseUri).perform()) {
-			return response.getLocation();
-		} catch (FcrepoOperationFailedException e) {
-			// Eat conflict exceptions since this will run multiple times
-			if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
-				throw e;
-			}
-			return baseUri;
-		}
-	}
-	
-	protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
-		return objs.stream()
-				.filter(p -> p.getPid().equals(pid)).findAny().get();
-	}
+    protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+        URI baseUri = URI.create(serverAddress + name);
+        // Create a parent object to put the binary into
+        try (FcrepoResponse response = client.put(baseUri).perform()) {
+            return response.getLocation();
+        } catch (FcrepoOperationFailedException e) {
+            // Eat conflict exceptions since this will run multiple times
+            if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+                throw e;
+            }
+            return baseUri;
+        }
+    }
+    
+    protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
+        return objs.stream()
+                .filter(p -> p.getPid().equals(pid)).findAny().get();
+    }
 }

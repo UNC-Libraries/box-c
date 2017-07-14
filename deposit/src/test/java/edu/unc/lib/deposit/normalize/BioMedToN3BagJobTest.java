@@ -61,136 +61,136 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 @ContextConfiguration({ "/dspacemets-context.xml" })
 public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
-	private static final Logger log = LoggerFactory.getLogger(BioMedToN3BagJobTest.class);
+    private static final Logger log = LoggerFactory.getLogger(BioMedToN3BagJobTest.class);
 
-	@Autowired
-	private Transformer epdcx2modsTransformer;
-	@Autowired
-	private Schema metsSipSchema;
-	@Autowired
-	private SchematronValidator validator;
+    @Autowired
+    private Transformer epdcx2modsTransformer;
+    @Autowired
+    private Schema metsSipSchema;
+    @Autowired
+    private SchematronValidator validator;
 
-	private BioMedToN3BagJob job;
+    private BioMedToN3BagJob job;
 
-	@Before
-	public void init() throws Exception {
-		
-		Dataset dataset = TDBFactory.createDataset();
+    @Before
+    public void init() throws Exception {
+        
+        Dataset dataset = TDBFactory.createDataset();
 
-		job = new BioMedToN3BagJob(jobUUID, depositUUID);
-		job.setEpdcx2modsTransformer(epdcx2modsTransformer);
-		job.setDepositUUID(depositUUID);
-		job.setDepositDirectory(depositDir);
-		job.setMetsSipSchema(metsSipSchema);
-		job.setSchematronValidator(validator);
-		job.setRepository(repository);
-		job.setPremisLoggerFactory(premisLoggerFactory);
-		setField(job, "dataset", dataset);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "jobStatusFactory", jobStatusFactory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
+        job = new BioMedToN3BagJob(jobUUID, depositUUID);
+        job.setEpdcx2modsTransformer(epdcx2modsTransformer);
+        job.setDepositUUID(depositUUID);
+        job.setDepositDirectory(depositDir);
+        job.setMetsSipSchema(metsSipSchema);
+        job.setSchematronValidator(validator);
+        job.setRepository(repository);
+        job.setPremisLoggerFactory(premisLoggerFactory);
+        setField(job, "dataset", dataset);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "jobStatusFactory", jobStatusFactory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
 
-		job.init();
-	}
+        job.init();
+    }
 
-	@Test
-	public void test() {
+    @Test
+    public void test() {
 
-		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(),
-				new File("src/test/resources/biomedDspaceMETS.zip"));
+        DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(),
+                new File("src/test/resources/biomedDspaceMETS.zip"));
 
-		long start = System.currentTimeMillis();
-		job.run();
-		log.info("Run dspace mets: {}", (System.currentTimeMillis() - start));
+        long start = System.currentTimeMillis();
+        job.run();
+        log.info("Run dspace mets: {}", (System.currentTimeMillis() - start));
 
-		Model model = job.getWritableModel();
-		assertFalse("Model was empty", model.isEmpty());
+        Model model = job.getWritableModel();
+        assertFalse("Model was empty", model.isEmpty());
 
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		assertNotNull("Deposit object not found", depositBag);
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        assertNotNull("Deposit object not found", depositBag);
 
-		Resource primaryResource = (Resource) depositBag.iterator().next();
-		assertNotNull("Main object from the deposit not found", primaryResource);
-		assertTrue("Main object is not a work", primaryResource.hasProperty(RDF.type, Cdr.Work));
+        Resource primaryResource = (Resource) depositBag.iterator().next();
+        assertNotNull("Main object from the deposit not found", primaryResource);
+        assertTrue("Main object is not a work", primaryResource.hasProperty(RDF.type, Cdr.Work));
 
-		NodeIterator childIt = model.getBag(primaryResource).iterator();
-		int childCount = 0;
-		while (childIt.hasNext()) {
-			childCount++;
+        NodeIterator childIt = model.getBag(primaryResource).iterator();
+        int childCount = 0;
+        while (childIt.hasNext()) {
+            childCount++;
 
-			Resource child = (Resource) childIt.next();
-			verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
-		}
+            Resource child = (Resource) childIt.next();
+            verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
+        }
 
-		assertEquals("Incorrect aggregate child count", 5, childCount);
-	}
-	
-	@Test
-	public void testSuccessful() throws Exception {
+        assertEquals("Incorrect aggregate child count", 5, childCount);
+    }
+    
+    @Test
+    public void testSuccessful() throws Exception {
 
-		job.setDepositUUID("ad42cdd6-69c1-444b-9291-9374b40bf7fb");
+        job.setDepositUUID("ad42cdd6-69c1-444b-9291-9374b40bf7fb");
 
-		job.init();
+        job.init();
 
-		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
-				"src/test/resources/biomedDspaceMETS.zip"));
+        DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
+                "src/test/resources/biomedDspaceMETS.zip"));
 
-		long start = System.currentTimeMillis();
-		job.run();
-		log.info("Successful: {}", (System.currentTimeMillis() - start));
+        long start = System.currentTimeMillis();
+        job.run();
+        log.info("Successful: {}", (System.currentTimeMillis() - start));
 
-		//assertTrue("N3 model file must exist after conversion", everythingFile.exists());
+        //assertTrue("N3 model file must exist after conversion", everythingFile.exists());
 
-		Model model = job.getReadOnlyModel();
-		
-		assertFalse("Model was empty", model.isEmpty());
+        Model model = job.getReadOnlyModel();
+        
+        assertFalse("Model was empty", model.isEmpty());
 
-		Bag depositBag = model.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = (Resource) depositBag.iterator().next();
+        Bag depositBag = model.getBag(job.getDepositPID().getURI());
+        Resource primaryResource = (Resource) depositBag.iterator().next();
 
-		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
-		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
+        File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
+        assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		// Check that labels were assigned to the children
-		NodeIterator childIt = model.getBag(primaryResource).iterator();
-		while (childIt.hasNext()) {
-			Resource child = childIt.nextNode().asResource();
+        // Check that labels were assigned to the children
+        NodeIterator childIt = model.getBag(primaryResource).iterator();
+        while (childIt.hasNext()) {
+            Resource child = childIt.nextNode().asResource();
 
-			assertNotNull("Supplemental should have been assigned a label", child.getProperty(CdrDeposit.label));
-		}
-	}
+            assertNotNull("Supplemental should have been assigned a label", child.getProperty(CdrDeposit.label));
+        }
+    }
 
-	@Test
-	public void testExistingMODS() throws Exception {
-		job.setDepositUUID("ad42cdd6-69c1-444b-9291-9374b40bf7fb");
+    @Test
+    public void testExistingMODS() throws Exception {
+        job.setDepositUUID("ad42cdd6-69c1-444b-9291-9374b40bf7fb");
 
-		job.init();
+        job.init();
 
-		DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
-				"src/test/resources/biomedDspaceMETS.zip"));
+        DepositTestUtils.makeTestDir(depositsDirectory, job.getDepositUUID(), new File(
+                "src/test/resources/biomedDspaceMETS.zip"));
 
-		long start = System.currentTimeMillis();
-		job.run();
-		log.info("Existing mods: {}", (System.currentTimeMillis() - start));
-		
-		Model m = job.getReadOnlyModel();
-		Bag depositBag = m.getBag(job.getDepositPID().getURI());
-		Resource primaryResource = depositBag.iterator().nextNode().asResource();
-		
-		File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
+        long start = System.currentTimeMillis();
+        job.run();
+        log.info("Existing mods: {}", (System.currentTimeMillis() - start));
+        
+        Model m = job.getReadOnlyModel();
+        Bag depositBag = m.getBag(job.getDepositPID().getURI());
+        Resource primaryResource = depositBag.iterator().nextNode().asResource();
+        
+        File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 
-		assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
+        assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());
 
-		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
-		Document modsDoc = sb.build(descriptionFile);
+        SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
+        Document modsDoc = sb.build(descriptionFile);
 
-		List<?> originalNameObjects = xpath("//mods:namePart[text()='Test']", modsDoc);
-		assertEquals("Original name element should have been removed", 0, originalNameObjects.size());
+        List<?> originalNameObjects = xpath("//mods:namePart[text()='Test']", modsDoc);
+        assertEquals("Original name element should have been removed", 0, originalNameObjects.size());
 
-		List<?> nameObjects = xpath("//mods:namePart", modsDoc);
-		assertTrue(nameObjects.size() > 0);
+        List<?> nameObjects = xpath("//mods:namePart", modsDoc);
+        assertTrue(nameObjects.size() > 0);
 
-		List<?> languageTerms = xpath("//mods:languageTerm", modsDoc);
-		assertEquals("Original language should have been retained", 1, languageTerms.size());
-	}
+        List<?> languageTerms = xpath("//mods:languageTerm", modsDoc);
+        assertEquals("Original language should have been retained", 1, languageTerms.size());
+    }
 }

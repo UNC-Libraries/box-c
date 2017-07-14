@@ -50,68 +50,68 @@ import edu.unc.lib.dl.rdf.Premis;
  */
 public class BinaryMetadataProcessorTest {
 
-	private BinaryMetadataProcessor processor;
+    private BinaryMetadataProcessor processor;
 
-	private static final String FEDORA_BASE = "http://example.com/";
+    private static final String FEDORA_BASE = "http://example.com/";
 
-	private static final String BINARY_BASE = "/binary/base/";
+    private static final String BINARY_BASE = "/binary/base/";
 
-	private static final String RESC_ID = FEDORA_BASE + "de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    private static final String RESC_ID = FEDORA_BASE + "de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
-	@Mock
-	private Exchange exchange;
-	@Mock
-	private Message message;
+    @Mock
+    private Exchange exchange;
+    @Mock
+    private Message message;
 
-	@Before
-	public void init() throws Exception {
-		initMocks(this);
+    @Before
+    public void init() throws Exception {
+        initMocks(this);
 
-		processor = new BinaryMetadataProcessor(BINARY_BASE);
+        processor = new BinaryMetadataProcessor(BINARY_BASE);
 
-		when(exchange.getIn()).thenReturn(message);
-	}
+        when(exchange.getIn()).thenReturn(message);
+    }
 
-	@Test
-	public void validTest() throws Exception {
-		String mimetype = "text/plain";
-		String checksumPrefix = "urn:sha1:";
-		String checksum = "61673dacf6c6eea104e77b151584ed7215388ea3";
+    @Test
+    public void validTest() throws Exception {
+        String mimetype = "text/plain";
+        String checksumPrefix = "urn:sha1:";
+        String checksum = "61673dacf6c6eea104e77b151584ed7215388ea3";
 
-		Model model = ModelFactory.createDefaultModel();
+        Model model = ModelFactory.createDefaultModel();
 
-		Resource resc = model.createResource(RESC_ID);
-		resc.addProperty(RDF.type, Fcrepo4Repository.Binary);
-		resc.addProperty(Ebucore.hasMimeType, mimetype);
-		resc.addProperty(Premis.hasMessageDigest, checksumPrefix + checksum);
+        Resource resc = model.createResource(RESC_ID);
+        resc.addProperty(RDF.type, Fcrepo4Repository.Binary);
+        resc.addProperty(Ebucore.hasMimeType, mimetype);
+        resc.addProperty(Premis.hasMessageDigest, checksumPrefix + checksum);
 
-		setMessageBody(model);
+        setMessageBody(model);
 
-		processor.process(exchange);
+        processor.process(exchange);
 
-		verify(message).setHeader("Checksum", checksum);
-		verify(message).setHeader("MimeType", mimetype);
-		verify(message).setHeader("BinaryPath", BINARY_BASE + "61/67/3d/" + checksum);
-	}
+        verify(message).setHeader("Checksum", checksum);
+        verify(message).setHeader("MimeType", mimetype);
+        verify(message).setHeader("BinaryPath", BINARY_BASE + "61/67/3d/" + checksum);
+    }
 
-	@Test
-	public void nonbinaryTest() throws Exception {
-		Model model = ModelFactory.createDefaultModel();
-		Resource resc = model.createResource(RESC_ID);
-		resc.addProperty(RDF.type, createResource(Fcrepo4Repository.Resource.getURI()));
+    @Test
+    public void nonbinaryTest() throws Exception {
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(RESC_ID);
+        resc.addProperty(RDF.type, createResource(Fcrepo4Repository.Resource.getURI()));
 
-		setMessageBody(model);
+        setMessageBody(model);
 
-		processor.process(exchange);
+        processor.process(exchange);
 
-		verify(message, never()).setHeader(anyString(), anyString());
-	}
+        verify(message, never()).setHeader(anyString(), anyString());
+    }
 
-	private void setMessageBody(Model model) throws Exception {
-		try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-			RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
-			when(message.getBody(eq(InputStream.class)))
-					.thenReturn(new ByteArrayInputStream(bos.toByteArray()));
-		}
-	}
+    private void setMessageBody(Model model) throws Exception {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            RDFDataMgr.write(bos, model, RDFFormat.TURTLE_PRETTY);
+            when(message.getBody(eq(InputStream.class)))
+                    .thenReturn(new ByteArrayInputStream(bos.toByteArray()));
+        }
+    }
 }

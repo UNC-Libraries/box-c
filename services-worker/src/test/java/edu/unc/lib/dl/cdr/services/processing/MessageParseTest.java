@@ -35,69 +35,69 @@ import edu.unc.lib.dl.util.JMSMessageUtil;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context-minimal.xml" })
 public class MessageParseTest extends Assert {
-	private static final Logger LOG = LoggerFactory.getLogger(MessageParseTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MessageParseTest.class);
 
 
-	@Before
-	public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
 
-	}
+    }
 
-	private Document readFileAsString(String filePath) throws Exception {
-		return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
-	}
+    private Document readFileAsString(String filePath) throws Exception {
+        return new SAXBuilder().build(new InputStreamReader(this.getClass().getResourceAsStream(filePath)));
+    }
 
-	@Test
-	public void cdrAddMessageTest(){
+    @Test
+    public void cdrAddMessageTest(){
 
-		try {
-			Document doc = readFileAsString("cdrAddMessage.xml");
-			CDREventMessage message = new CDREventMessage(doc);
-			assertTrue(message.getTargetID().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
-			assertTrue(JMSMessageUtil.CDRActions.ADD.equals(message.getQualifiedAction()));
-			assertTrue("2011-04-28T18:55:32.220Z".equals(message.getEventTimestamp()));
-			assertNull(message.getServiceName());
-			
-			assertTrue(message.getParent().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
-			assertTrue(message.getSubjects().size() == 3);
-			assertNull(message.getOldParents());
-			assertTrue(JMSMessageUtil.CDRActions.ADD.getName().equals(message.getOperation()));
-			assertTrue(message.getReordered().size() == 0);
-			assertNull(message.getMode());
+        try {
+            Document doc = readFileAsString("cdrAddMessage.xml");
+            CDREventMessage message = new CDREventMessage(doc);
+            assertTrue(message.getTargetID().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
+            assertTrue(JMSMessageUtil.CDRActions.ADD.equals(message.getQualifiedAction()));
+            assertTrue("2011-04-28T18:55:32.220Z".equals(message.getEventTimestamp()));
+            assertNull(message.getServiceName());
+            
+            assertTrue(message.getParent().equals("uuid:7c740ac5-5685-4be1-9008-9a8be5f54744"));
+            assertTrue(message.getSubjects().size() == 3);
+            assertNull(message.getOldParents());
+            assertTrue(JMSMessageUtil.CDRActions.ADD.getName().equals(message.getOperation()));
+            assertTrue(message.getReordered().size() == 0);
+            assertNull(message.getMode());
 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-	}
+    }
 
-	@Test
-	public void moveMessageTest(){
+    @Test
+    public void moveMessageTest(){
 
-		try {
-			Document doc = readFileAsString("cdrMoveMessage.xml");
-			CDREventMessage message = new CDREventMessage(doc);
-			assertTrue(JMSMessageUtil.CDRActions.MOVE.equals(message.getQualifiedAction()));
-			assertTrue(message.getParent().equals("uuid:a7ac047d-7991-462c-a024-897c36280b83"));
-			assertTrue(message.getOldParents().size() == 2);
-			assertTrue(message.getSubjects().size() == 2);
-			assertTrue(message.getReordered().size() == 1);
-			LOG.debug("");
+        try {
+            Document doc = readFileAsString("cdrMoveMessage.xml");
+            CDREventMessage message = new CDREventMessage(doc);
+            assertTrue(JMSMessageUtil.CDRActions.MOVE.equals(message.getQualifiedAction()));
+            assertTrue(message.getParent().equals("uuid:a7ac047d-7991-462c-a024-897c36280b83"));
+            assertTrue(message.getOldParents().size() == 2);
+            assertTrue(message.getSubjects().size() == 2);
+            assertTrue(message.getReordered().size() == 1);
+            LOG.debug("");
 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-	}
+    }
 
-	@Test
-	public void datastreamNameTest() {
-		Assert.assertTrue(ContentModelHelper.Datastream.DATA_FILE.equals("DATA_FILE"));
-		Assert.assertTrue(ContentModelHelper.Datastream.DATA_FILE.getName().equals("DATA_FILE"));
-		Assert.assertTrue(ContentModelHelper.Datastream.DATA_FILE.equals(ContentModelHelper.Datastream.DATA_FILE));
-		Assert.assertFalse(ContentModelHelper.Datastream.DATA_FILE.equals("RELS-EXT"));
-		Assert.assertFalse(ContentModelHelper.Datastream.DATA_FILE.equals(ContentModelHelper.Datastream.RELS_EXT));
-	}
+    @Test
+    public void datastreamNameTest() {
+        Assert.assertTrue(ContentModelHelper.Datastream.DATA_FILE.equals("DATA_FILE"));
+        Assert.assertTrue(ContentModelHelper.Datastream.DATA_FILE.getName().equals("DATA_FILE"));
+        Assert.assertTrue(ContentModelHelper.Datastream.DATA_FILE.equals(ContentModelHelper.Datastream.DATA_FILE));
+        Assert.assertFalse(ContentModelHelper.Datastream.DATA_FILE.equals("RELS-EXT"));
+        Assert.assertFalse(ContentModelHelper.Datastream.DATA_FILE.equals(ContentModelHelper.Datastream.RELS_EXT));
+    }
 }

@@ -66,128 +66,128 @@ import edu.unc.lib.dl.xml.METSProfile;
  *
  */
 public class CDRMETS2N3BagJobTest extends AbstractNormalizationJobTest {
-	@Mock
-	private Schema metsSipSchema;
-	@Mock
-	private Validator metsValidator;
-	@Mock
-	private SchematronValidator schematronValidator;
-	
-	private CDRMETS2N3BagJob job;
+    @Mock
+    private Schema metsSipSchema;
+    @Mock
+    private Validator metsValidator;
+    @Mock
+    private SchematronValidator schematronValidator;
+    
+    private CDRMETS2N3BagJob job;
 
-	private Map<String, String> status;
-	
-	private File data;
-	
+    private Map<String, String> status;
+    
+    private File data;
+    
 
-	@Before
-	public void setup() throws Exception {
-		status = new HashMap<String, String>();
-		status.put(DepositField.fileName.name(), "src/test/resources/mets.xml");
-		
-		when(depositStatusFactory.get(anyString())).thenReturn(status);
-		when(metsSipSchema.newValidator()).thenReturn(metsValidator);
-		Dataset dataset = TDBFactory.createDataset();
-		makePid(RepositoryPathConstants.CONTENT_BASE);
-		
-		data = new File(depositDir, "data");
-		data.mkdir();
-    		
-		job = new CDRMETS2N3BagJob(jobUUID, depositUUID);
-		setField(job, "dataset", dataset);
-		job.setDepositDirectory(depositDir);
-		setField(job, "depositsDirectory", depositsDirectory);
-		setField(job, "depositStatusFactory", depositStatusFactory);
-		setField(job, "metsSipSchema", metsSipSchema);
-		setField(job, "premisLoggerFactory", premisLoggerFactory);
-		job.setRepository(repository);
-		job.setSchematronValidator(schematronValidator);
-		when(schematronValidator.validateReportErrors(any(StreamSource.class), eq(METSProfile.CDR_SIMPLE.name())))
-			.thenReturn(new ArrayList<String>());
-		
-		when(premisLogger.buildEvent(eq(Premis.Validation))).thenReturn(premisEventBuilder);
-		when(premisLogger.buildEvent(eq(Premis.Normalization))).thenReturn(premisEventBuilder);
-		
-		job.init();
-	}
+    @Before
+    public void setup() throws Exception {
+        status = new HashMap<String, String>();
+        status.put(DepositField.fileName.name(), "src/test/resources/mets.xml");
+        
+        when(depositStatusFactory.get(anyString())).thenReturn(status);
+        when(metsSipSchema.newValidator()).thenReturn(metsValidator);
+        Dataset dataset = TDBFactory.createDataset();
+        makePid(RepositoryPathConstants.CONTENT_BASE);
+        
+        data = new File(depositDir, "data");
+        data.mkdir();
+            
+        job = new CDRMETS2N3BagJob(jobUUID, depositUUID);
+        setField(job, "dataset", dataset);
+        job.setDepositDirectory(depositDir);
+        setField(job, "depositsDirectory", depositsDirectory);
+        setField(job, "depositStatusFactory", depositStatusFactory);
+        setField(job, "metsSipSchema", metsSipSchema);
+        setField(job, "premisLoggerFactory", premisLoggerFactory);
+        job.setRepository(repository);
+        job.setSchematronValidator(schematronValidator);
+        when(schematronValidator.validateReportErrors(any(StreamSource.class), eq(METSProfile.CDR_SIMPLE.name())))
+            .thenReturn(new ArrayList<String>());
+        
+        when(premisLogger.buildEvent(eq(Premis.Validation))).thenReturn(premisEventBuilder);
+        when(premisLogger.buildEvent(eq(Premis.Normalization))).thenReturn(premisEventBuilder);
+        
+        job.init();
+    }
 
-	@Test
-	public void testSimpleDeposit() throws Exception {
-		Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
-		job.run();
-	}
-	
-	@Test(expected = JobFailedException.class)
-	public void testMissingFile() throws Exception {
-		// checks case where no file is provided
-		job.run();
-	}
+    @Test
+    public void testSimpleDeposit() throws Exception {
+        Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+        job.run();
+    }
+    
+    @Test(expected = JobFailedException.class)
+    public void testMissingFile() throws Exception {
+        // checks case where no file is provided
+        job.run();
+    }
 
-	@Test(expected = JobFailedException.class)
-	public void testMETSInvalid() throws Exception {
-		try {
-			doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
-			Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
-			job.run();
-		} finally {
-			verify(metsValidator).validate(any(StreamSource.class));
-		}
-	}
-	
-	@Test
-	public void testPidsAssigned() throws Exception {
-		try {
-			Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
-			job.run();
-		} finally {
-			// check that relevant events were created in AbstractMETS and CDRMETS jobs)
-			// test case assumes one object belonging to one work in the mets.xml
-			verify(premisLogger).buildEvent(eq(Premis.Validation));
-			verify(premisLogger, times(4)).buildEvent(eq(Premis.Normalization));
-			verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
-			verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
-			verify(premisEventBuilder, times(5)).create();
-		}
-	}
-	
-	@Test
-	public void testObjectAdded() throws Exception {
-		Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
-		job.run();
-		Model model = job.getReadOnlyModel();
-		Bag bag = model.getBag(depositPid.getURI());
-		NodeIterator childIt = bag.iterator();
-		Resource child = (Resource) childIt.next();
-		// check that parent is a work and has acl set
-		assertTrue(child.hasProperty(RDF.type, Cdr.Work));
-		assertEquals(child.getProperty(CdrAcl.embargoUntil).getObject().toString(),
-				"2018-01-19T00:00:00^^http://www.w3.org/2001/XMLSchema#dateTime");
-		
-		// check that properties get set on child object of work
-		Bag childBag = model.getBag(child);
-		NodeIterator workIt = childBag.iterator();
-		Resource workChild = (Resource) workIt.next();
-		assertTrue(workChild.hasProperty(CdrDeposit.stagingLocation,
-				"data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
-		assertTrue(workChild.hasProperty(CdrDeposit.mimetype, "application/pdf"));
-		assertTrue(workChild.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
-		assertTrue(workChild.hasProperty(CdrDeposit.size, "43129"));
-	}
-	
-	@Test
-	public void testObjectOnlyAdded() throws Exception {
-		Files.copy(new File("src/test/resources/mets_object_only.xml"), new File(data, "mets.xml"));
-		job.run();
-		Model model = job.getReadOnlyModel();
-		Bag bag = model.getBag(depositPid.getURI());
-		NodeIterator childIt = bag.iterator();
-		Resource res = (Resource) childIt.next();
-		assertTrue(res.hasProperty(CdrDeposit.label, "David_Romani_response.pdf"));
-		assertTrue(res.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
-		assertTrue(res.hasProperty(CdrDeposit.mimetype, "application/pdf"));
-		assertTrue(res.hasProperty(CdrDeposit.stagingLocation,
-				"data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
-		assertTrue(res.hasProperty(CdrDeposit.size, "43129"));
-	}
-	
+    @Test(expected = JobFailedException.class)
+    public void testMETSInvalid() throws Exception {
+        try {
+            doThrow(new SAXException()).when(metsValidator).validate(any(StreamSource.class));
+            Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+            job.run();
+        } finally {
+            verify(metsValidator).validate(any(StreamSource.class));
+        }
+    }
+    
+    @Test
+    public void testPidsAssigned() throws Exception {
+        try {
+            Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+            job.run();
+        } finally {
+            // check that relevant events were created in AbstractMETS and CDRMETS jobs)
+            // test case assumes one object belonging to one work in the mets.xml
+            verify(premisLogger).buildEvent(eq(Premis.Validation));
+            verify(premisLogger, times(4)).buildEvent(eq(Premis.Normalization));
+            verify(premisEventBuilder, times(5)).addEventDetail(anyString(), Matchers.<Object>anyVararg());
+            verify(premisEventBuilder, times(4)).addSoftwareAgent(anyString());
+            verify(premisEventBuilder, times(5)).create();
+        }
+    }
+    
+    @Test
+    public void testObjectAdded() throws Exception {
+        Files.copy(new File("src/test/resources/mets.xml"), new File(data, "mets.xml"));
+        job.run();
+        Model model = job.getReadOnlyModel();
+        Bag bag = model.getBag(depositPid.getURI());
+        NodeIterator childIt = bag.iterator();
+        Resource child = (Resource) childIt.next();
+        // check that parent is a work and has acl set
+        assertTrue(child.hasProperty(RDF.type, Cdr.Work));
+        assertEquals(child.getProperty(CdrAcl.embargoUntil).getObject().toString(),
+                "2018-01-19T00:00:00^^http://www.w3.org/2001/XMLSchema#dateTime");
+        
+        // check that properties get set on child object of work
+        Bag childBag = model.getBag(child);
+        NodeIterator workIt = childBag.iterator();
+        Resource workChild = (Resource) workIt.next();
+        assertTrue(workChild.hasProperty(CdrDeposit.stagingLocation,
+                "data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
+        assertTrue(workChild.hasProperty(CdrDeposit.mimetype, "application/pdf"));
+        assertTrue(workChild.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
+        assertTrue(workChild.hasProperty(CdrDeposit.size, "43129"));
+    }
+    
+    @Test
+    public void testObjectOnlyAdded() throws Exception {
+        Files.copy(new File("src/test/resources/mets_object_only.xml"), new File(data, "mets.xml"));
+        job.run();
+        Model model = job.getReadOnlyModel();
+        Bag bag = model.getBag(depositPid.getURI());
+        NodeIterator childIt = bag.iterator();
+        Resource res = (Resource) childIt.next();
+        assertTrue(res.hasProperty(CdrDeposit.label, "David_Romani_response.pdf"));
+        assertTrue(res.hasProperty(CdrDeposit.md5sum, "4cc5eaafcad970174e44c5194b5afab9"));
+        assertTrue(res.hasProperty(CdrDeposit.mimetype, "application/pdf"));
+        assertTrue(res.hasProperty(CdrDeposit.stagingLocation,
+                "data/_c19064b2-983f-4b55-90f5-8d4b890055e4"));
+        assertTrue(res.hasProperty(CdrDeposit.size, "43129"));
+    }
+    
 }

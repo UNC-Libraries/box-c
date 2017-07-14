@@ -78,144 +78,144 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 @ContextConfiguration(locations = { "/service-context-it.xml" })
 public class ImageEnhancementServiceITCase {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancementServiceITCase.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImageEnhancementServiceITCase.class);
 
-	@Resource
-	private TripleStoreQueryService tripleStoreQueryService = null;
+    @Resource
+    private TripleStoreQueryService tripleStoreQueryService = null;
 
-	@Resource
-	private ManagementClient managementClient = null;
+    @Resource
+    private ManagementClient managementClient = null;
 
-	@Resource
-	private ImageEnhancementService imageEnhancementService = null;
+    @Resource
+    private ImageEnhancementService imageEnhancementService = null;
 
-	private final Set<PID> samples = new HashSet<PID>();
+    private final Set<PID> samples = new HashSet<PID>();
 
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @BeforeClass
+    public static void setUpBeforeClass() throws Exception {
+    }
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@AfterClass
-	public static void tearDownAfterClass() throws Exception {
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @AfterClass
+    public static void tearDownAfterClass() throws Exception {
+    }
 
-	private EnhancementMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
-		File file = new File("src/test/resources", filename);
-		Document doc = new SAXBuilder().build(new FileReader(file));
-		PID pid = this.getManagementClient().ingest(doc, Format.FOXML_1_1, "ingesting test object");
-		if (dataFilename != null) {
-			File dataFile = new File("src/test/resources", dataFilename);
-			String uploadURI = this.getManagementClient().upload(dataFile);
-			this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Image Enhancement Test",
-					Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
-			PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
-			this.getManagementClient().addObjectRelationship(pid,
-					CDRProperty.sourceData.getPredicate(), CDRProperty.sourceData.getNamespace(), dataFilePID);
-			this.getManagementClient().addLiteralStatement(pid, CDRProperty.hasSourceMimeType.getPredicate(),
-					CDRProperty.hasSourceMimeType.getNamespace(), mimetype, null);
-		}
-		EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
-		samples.add(pid);
-		return result;
-	}
+    private EnhancementMessage ingestSample(String filename, String dataFilename, String mimetype) throws Exception {
+        File file = new File("src/test/resources", filename);
+        Document doc = new SAXBuilder().build(new FileReader(file));
+        PID pid = this.getManagementClient().ingest(doc, Format.FOXML_1_1, "ingesting test object");
+        if (dataFilename != null) {
+            File dataFile = new File("src/test/resources", dataFilename);
+            String uploadURI = this.getManagementClient().upload(dataFile);
+            this.getManagementClient().addManagedDatastream(pid, "DATA_FILE", false, "Image Enhancement Test",
+                    Collections.<String>emptyList(), dataFilename, true, mimetype, uploadURI);
+            PID dataFilePID = new PID(pid.getPid() + "/DATA_FILE");
+            this.getManagementClient().addObjectRelationship(pid,
+                    CDRProperty.sourceData.getPredicate(), CDRProperty.sourceData.getNamespace(), dataFilePID);
+            this.getManagementClient().addLiteralStatement(pid, CDRProperty.hasSourceMimeType.getPredicate(),
+                    CDRProperty.hasSourceMimeType.getNamespace(), mimetype, null);
+        }
+        EnhancementMessage result = new EnhancementMessage(pid, JMSMessageUtil.servicesMessageNamespace,
+                JMSMessageUtil.ServicesActions.APPLY_SERVICE_STACK.getName());
+        samples.add(pid);
+        return result;
+    }
 
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		try {
-			for(PID p : samples) {
-				this.getManagementClient().purgeObject(p, "removing test object", false);
-			}
-			samples.clear();
-		} catch (FedoraException e) {
-			e.printStackTrace();
-			throw new Error("Cannot purge test object", e);
-		}
-	}
+    /**
+     * @throws java.lang.Exception
+     */
+    @After
+    public void tearDown() throws Exception {
+        try {
+            for(PID p : samples) {
+                this.getManagementClient().purgeObject(p, "removing test object", false);
+            }
+            samples.clear();
+        } catch (FedoraException e) {
+            e.printStackTrace();
+            throw new Error("Cannot purge test object", e);
+        }
+    }
 
-	@Test
-	public void testIsApplicable() throws Exception {
-		EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
-		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
-		EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
-		EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
-		// return false for a PID w/o sourcedata
-		// return true for a PID w/o techData
-		// return true for a PID w/techData older than sourceData
-		// return false for a PID w/techData younger than sourceData
-		assertTrue("The PID " + pidTIFF + " must be applicable.",
-				this.getImageEnhancementService().isApplicable(pidTIFF));
-		assertFalse("The PID " + pidDOC + " must not be applicable.",
-				this.getImageEnhancementService().isApplicable(pidDOC));
-		assertFalse("The PID " + pidPDF + " must not be applicable.",
-				this.getImageEnhancementService().isApplicable(pidPDF));
-		assertFalse("The PID " + pidCollYes + " must not be applicable.",
-				this.getImageEnhancementService().isApplicable(pidCollYes));
-		assertFalse("The PID " + pidCollNo + " must not be applicable.", this.getImageEnhancementService()
-				.isApplicable(pidCollNo));
-	}
+    @Test
+    public void testIsApplicable() throws Exception {
+        EnhancementMessage pidPDF = ingestSample("thumbnail-PDF.xml", "sample.pdf", "application/pdf");
+        EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+        EnhancementMessage pidDOC = ingestSample("thumbnail-DOC.xml", "sample.doc", "application/msword");
+        EnhancementMessage pidCollYes = ingestSample("thumbnail-Coll-yes.xml", "sample.tiff", "image/tiff");
+        EnhancementMessage pidCollNo = ingestSample("thumbnail-Coll-no.xml", null, null);
+        // return false for a PID w/o sourcedata
+        // return true for a PID w/o techData
+        // return true for a PID w/techData older than sourceData
+        // return false for a PID w/techData younger than sourceData
+        assertTrue("The PID " + pidTIFF + " must be applicable.",
+                this.getImageEnhancementService().isApplicable(pidTIFF));
+        assertFalse("The PID " + pidDOC + " must not be applicable.",
+                this.getImageEnhancementService().isApplicable(pidDOC));
+        assertFalse("The PID " + pidPDF + " must not be applicable.",
+                this.getImageEnhancementService().isApplicable(pidPDF));
+        assertFalse("The PID " + pidCollYes + " must not be applicable.",
+                this.getImageEnhancementService().isApplicable(pidCollYes));
+        assertFalse("The PID " + pidCollNo + " must not be applicable.", this.getImageEnhancementService()
+                .isApplicable(pidCollNo));
+    }
 
-	@Test
-	public void testExtractionWorksAndNoLongerApplicable() throws EnhancementException, Exception {
-		EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
-		Enhancement<Element> en = this.getImageEnhancementService().getEnhancement(pidTIFF);
-		try {
-			en.call();
-			Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPid(), ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-			assertNotNull(ContentModelHelper.Datastream.IMAGE_JP2000.getName()+" datastream must not be null", thb);
-		} catch (Exception e) {
-			throw new Error(e);
-		}
-		assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
-				.getImageEnhancementService().isApplicable(pidTIFF));
+    @Test
+    public void testExtractionWorksAndNoLongerApplicable() throws EnhancementException, Exception {
+        EnhancementMessage pidTIFF = ingestSample("thumbnail-TIFF.xml", "sample.tiff", "image/tiff");
+        Enhancement<Element> en = this.getImageEnhancementService().getEnhancement(pidTIFF);
+        try {
+            en.call();
+            Datastream thb = this.getManagementClient().getDatastream(pidTIFF.getPid(), ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+            assertNotNull(ContentModelHelper.Datastream.IMAGE_JP2000.getName()+" datastream must not be null", thb);
+        } catch (Exception e) {
+            throw new Error(e);
+        }
+        assertFalse("The PID " + pidTIFF + " must not be applicable after service has run.", this
+                .getImageEnhancementService().isApplicable(pidTIFF));
 
-		// now update source
-		File dataFile = new File("src/test/resources", "sample.tiff");
-		String uploadURI = this.getManagementClient().upload(dataFile);
-		this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPid(), "DATA_FILE", false, "Thumbnail Test",
-				Collections.<String>emptyList(), "sample.pdf", "image/tiff", null, ChecksumType.DEFAULT, uploadURI);
-		assertTrue("The test pid should be applicable again after source DS is updated: " + pidTIFF, this
-				.getImageEnhancementService().isApplicable(pidTIFF));
+        // now update source
+        File dataFile = new File("src/test/resources", "sample.tiff");
+        String uploadURI = this.getManagementClient().upload(dataFile);
+        this.getManagementClient().modifyDatastreamByReference(pidTIFF.getPid(), "DATA_FILE", false, "Thumbnail Test",
+                Collections.<String>emptyList(), "sample.pdf", "image/tiff", null, ChecksumType.DEFAULT, uploadURI);
+        assertTrue("The test pid should be applicable again after source DS is updated: " + pidTIFF, this
+                .getImageEnhancementService().isApplicable(pidTIFF));
 
-		LOG.debug("Adding JP2 relationship again for kicks");
-		PID newDSPID = new PID(pidTIFF.getPid().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-		this.getManagementClient().addObjectRelationship(pidTIFF.getPid(), CDRProperty.derivedJP2.getPredicate(),
-				CDRProperty.derivedJP2.getNamespace(), newDSPID);
-	}
+        LOG.debug("Adding JP2 relationship again for kicks");
+        PID newDSPID = new PID(pidTIFF.getPid().getPid()+"/"+ ContentModelHelper.Datastream.IMAGE_JP2000.getName());
+        this.getManagementClient().addObjectRelationship(pidTIFF.getPid(), CDRProperty.derivedJP2.getPredicate(),
+                CDRProperty.derivedJP2.getNamespace(), newDSPID);
+    }
 
-	public TripleStoreQueryService getTripleStoreQueryService() {
-		return tripleStoreQueryService;
-	}
+    public TripleStoreQueryService getTripleStoreQueryService() {
+        return tripleStoreQueryService;
+    }
 
-	public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-		this.tripleStoreQueryService = tripleStoreQueryService;
-	}
+    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
+        this.tripleStoreQueryService = tripleStoreQueryService;
+    }
 
-	public ManagementClient getManagementClient() {
-		return managementClient;
-	}
+    public ManagementClient getManagementClient() {
+        return managementClient;
+    }
 
-	public void setManagementClient(ManagementClient managementClient) {
-		this.managementClient = managementClient;
-	}
+    public void setManagementClient(ManagementClient managementClient) {
+        this.managementClient = managementClient;
+    }
 
-	public ImageEnhancementService getImageEnhancementService() {
-		return imageEnhancementService;
-	}
+    public ImageEnhancementService getImageEnhancementService() {
+        return imageEnhancementService;
+    }
 
-	public void setImageEnhancementService(ImageEnhancementService imageEnhancementService) {
-		this.imageEnhancementService = imageEnhancementService;
-	}
+    public void setImageEnhancementService(ImageEnhancementService imageEnhancementService) {
+        this.imageEnhancementService = imageEnhancementService;
+    }
 
 }

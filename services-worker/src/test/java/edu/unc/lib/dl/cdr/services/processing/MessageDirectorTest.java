@@ -37,87 +37,87 @@ import static org.mockito.Mockito.*;
 
 public class MessageDirectorTest extends Assert {
 
-	private MessageDirector messageDirector;
-	private SolrUpdateConductor solrConductor;
-	private EnhancementConductor enhancementConductor;
-	private List<ObjectEnhancementService> services;
+    private MessageDirector messageDirector;
+    private SolrUpdateConductor solrConductor;
+    private EnhancementConductor enhancementConductor;
+    private List<ObjectEnhancementService> services;
 
-	public MessageDirectorTest(){
-		services = new ArrayList<ObjectEnhancementService>();
-		services.add(new TechnicalMetadataEnhancementService());
-		services.add(new ThumbnailEnhancementService());
-		services.add(new ImageEnhancementService());
-	}
+    public MessageDirectorTest(){
+        services = new ArrayList<ObjectEnhancementService>();
+        services.add(new TechnicalMetadataEnhancementService());
+        services.add(new ThumbnailEnhancementService());
+        services.add(new ImageEnhancementService());
+    }
 
-	@Before
-	public void setup(){
-		this.messageDirector = new MessageDirector();
-		
-		List<MessageConductor> conductors = new ArrayList<MessageConductor>();
-		
-		solrConductor = mock(SolrUpdateConductor.class);
-		when(solrConductor.getIdentifier()).thenReturn(SolrUpdateConductor.identifier);
-		enhancementConductor = mock(EnhancementConductor.class);
-		when(enhancementConductor.getIdentifier()).thenReturn(EnhancementConductor.identifier);
-		
-		conductors.add(enhancementConductor);
-		conductors.add(solrConductor);
-		
-		List<MessageFilter> filters = new ArrayList<MessageFilter>();
-		filters.add(new SolrUpdateMessageFilter());
-		EnhancementMessageFilter servicesFilter = new EnhancementMessageFilter();
-		servicesFilter.setServices(services);
-		filters.add(servicesFilter);
-		messageDirector.setFilters(filters);
-		
-		messageDirector.setConductorsList(conductors);
-	}
-	
-	class IsMatchingPID extends ArgumentMatcher<EnhancementMessage> {
-		private String pid;
-		
-		public IsMatchingPID(String pid){
-			this.pid = pid;
-		}
-		
+    @Before
+    public void setup(){
+        this.messageDirector = new MessageDirector();
+        
+        List<MessageConductor> conductors = new ArrayList<MessageConductor>();
+        
+        solrConductor = mock(SolrUpdateConductor.class);
+        when(solrConductor.getIdentifier()).thenReturn(SolrUpdateConductor.identifier);
+        enhancementConductor = mock(EnhancementConductor.class);
+        when(enhancementConductor.getIdentifier()).thenReturn(EnhancementConductor.identifier);
+        
+        conductors.add(enhancementConductor);
+        conductors.add(solrConductor);
+        
+        List<MessageFilter> filters = new ArrayList<MessageFilter>();
+        filters.add(new SolrUpdateMessageFilter());
+        EnhancementMessageFilter servicesFilter = new EnhancementMessageFilter();
+        servicesFilter.setServices(services);
+        filters.add(servicesFilter);
+        messageDirector.setFilters(filters);
+        
+        messageDirector.setConductorsList(conductors);
+    }
+    
+    class IsMatchingPID extends ArgumentMatcher<EnhancementMessage> {
+        private String pid;
+        
+        public IsMatchingPID(String pid){
+            this.pid = pid;
+        }
+        
       public boolean matches(Object pid) {
-      	return ((EnhancementMessage) pid).getTargetID().startsWith(this.pid);
+          return ((EnhancementMessage) pid).getTargetID().startsWith(this.pid);
       }
    }
-	
-	@Test
-	public void noServiceMessage(){
-		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), "");
-		messageDirector.direct(message);
-		
-		verify(solrConductor, never()).add(any(EnhancementMessage.class));
-		verify(enhancementConductor, never()).add(any(EnhancementMessage.class));
-	}
-	
-	@Test
-	public void techmdServiceMessage(){
-		EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
-				JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
-		messageDirector.direct(message);
-		
-		verify(solrConductor, never()).add(any(EnhancementMessage.class));
-		verify(enhancementConductor).add(any(EnhancementMessage.class));
-	}
-	
-	@Test
-	public void solrAddMessage(){
-		ActionMessage message = new SolrUpdateRequest("cdr:test", IndexingActionType.ADD, null);
-		messageDirector.direct(message);
-		verify(solrConductor).add(any(ActionMessage.class));
-		verify(enhancementConductor, never()).add(any(ActionMessage.class));
-	}
-	
-	@Test
-	public void nullMessage(){
-		EnhancementMessage message = null;
-		messageDirector.direct(message);
-		verify(solrConductor, never()).add(any(EnhancementMessage.class));
-		verify(enhancementConductor, never()).add(any(EnhancementMessage.class));
-	}
+    
+    @Test
+    public void noServiceMessage(){
+        EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+                JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), "");
+        messageDirector.direct(message);
+        
+        verify(solrConductor, never()).add(any(EnhancementMessage.class));
+        verify(enhancementConductor, never()).add(any(EnhancementMessage.class));
+    }
+    
+    @Test
+    public void techmdServiceMessage(){
+        EnhancementMessage message = new EnhancementMessage("cdr:test", JMSMessageUtil.servicesMessageNamespace, 
+                JMSMessageUtil.ServicesActions.APPLY_SERVICE.getName(), TechnicalMetadataEnhancementService.class.getName());
+        messageDirector.direct(message);
+        
+        verify(solrConductor, never()).add(any(EnhancementMessage.class));
+        verify(enhancementConductor).add(any(EnhancementMessage.class));
+    }
+    
+    @Test
+    public void solrAddMessage(){
+        ActionMessage message = new SolrUpdateRequest("cdr:test", IndexingActionType.ADD, null);
+        messageDirector.direct(message);
+        verify(solrConductor).add(any(ActionMessage.class));
+        verify(enhancementConductor, never()).add(any(ActionMessage.class));
+    }
+    
+    @Test
+    public void nullMessage(){
+        EnhancementMessage message = null;
+        messageDirector.direct(message);
+        verify(solrConductor, never()).add(any(EnhancementMessage.class));
+        verify(enhancementConductor, never()).add(any(EnhancementMessage.class));
+    }
 }
