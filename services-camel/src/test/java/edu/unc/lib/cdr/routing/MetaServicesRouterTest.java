@@ -60,6 +60,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     private static final String META_ROUTE = "CdrMetaServicesRouter";
     private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
     private static final String ORIGINAL_BINARY_ROUTE = "ProcessOriginalBinary";
+    private static final String ADD_BINARY_ENHANCEMENTS_ROUTE = "AddBinaryEnhancements";
     private static final String SOLR_INGEST_ROUTE = "IngestSolrIndexing";
 
     @PropertyInject(value = "fcrepo.baseUri")
@@ -91,7 +92,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartContainer() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.ingest").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
@@ -116,33 +117,16 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testProcessEnhancementOriginalBinary() throws Exception {
-        getMockEndpoint("mock:direct:process.binary.original").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.solr").expectedMessageCount(1);
-
-        createContext(PROCESS_ENHANCEMENT_ROUTE);
-
-        final Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
-        assertMockEndpointsSatisfied();
-
-        verify(mdProcessor).process(any(Exchange.class));
-    }
-
-    @Test
     public void testProcessFits() throws Exception {
         getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(0);
 
-        createContext(PROCESS_ENHANCEMENT_ROUTE);
+        createContext(ORIGINAL_BINARY_ROUTE);
 
         final Map<String, Object> headers = createEvent(FITS_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
-
-        verify(mdProcessor).process(any(Exchange.class));
     }
 
     @Test
@@ -171,26 +155,13 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         assertMockEndpointsSatisfied();
     }
-
-    @Test
-    public void testEnhancmentIdentifierFilter() throws Exception {
-        getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(0);
-        getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(0);
-
-        createContext(ORIGINAL_BINARY_ROUTE);
-
-        Map<String, Object> headers = createEvent("other_file", Binary.getURI());
-        template.sendBodyAndHeaders("", headers);
-
-        assertMockEndpointsSatisfied();
-    }
     
     @Test
-    public void testEnhancmentIdentifierFilterValid() throws Exception {
+    public void testEnhancementIdentifierFilterValid() throws Exception {
         getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
 
-        createContext(ORIGINAL_BINARY_ROUTE);
+        createContext(ADD_BINARY_ENHANCEMENTS_ROUTE);
 
         Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
@@ -200,8 +171,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     
     @Test
     public void testProcessBinaryOriginal() throws Exception {
-        getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(1);
         getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
 
         createContext(ORIGINAL_BINARY_ROUTE);

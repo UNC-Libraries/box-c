@@ -46,10 +46,7 @@ public class MetaServicesRouter extends RouteBuilder {
 
         from("direct:process.enhancement")
             .routeId("ProcessEnhancement")
-            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-                    + " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
-                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-
+            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
                 // Trigger binary processing after an asynchronously
                 .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
@@ -61,15 +58,17 @@ public class MetaServicesRouter extends RouteBuilder {
 
         from("direct:process.binary.original")
             .routeId("ProcessOriginalBinary")
-            .choice()
-                .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
-                    .to("direct-vm:replication")
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
-                    .to("direct-vm:replication")
-                .otherwise()
-                    .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-            .end();
+            .filter(simple("${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
+                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+                .choice()
+                    .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
+                        .to("direct-vm:replication")
+                        .to("direct:process.enhancements")
+                    .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
+                        .to("direct-vm:replication")
+                    .otherwise()
+                        .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+                .end();
         
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")
