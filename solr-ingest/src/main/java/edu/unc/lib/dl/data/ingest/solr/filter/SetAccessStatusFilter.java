@@ -22,7 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -36,7 +38,8 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
  */
 public class SetAccessStatusFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetAccessStatusFilter.class);
-    private InheritedAclFactory aclFactory;
+    private InheritedAclFactory inheritedAclFactory;
+    private ObjectAclFactory objAclFactory;
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -45,12 +48,21 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
     }
 
     /**
-     * Sets acl factory
+     * Sets inherited acl factory
      *
      * @param aclFactory an inherited acl factory
      */
-    public void setAclFactory(InheritedAclFactory aclFactory) {
-        this.aclFactory = aclFactory;
+    public void setInheritedAclFactory(InheritedAclFactory iaf) {
+        this.inheritedAclFactory = iaf;
+    }
+
+    /**
+     * Sets non-inherited acl factory
+     *
+     * @param aclFactory an inherited acl factory
+     */
+    public void setObjectAclFactory(ObjectAclFactory oaf) {
+        this.objAclFactory = oaf;
     }
 
     private List<String> determineAccessStatus(DocumentIndexingPackage dip)
@@ -60,21 +72,24 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
         PID pid = obj.getPid();
         List<String> status = new ArrayList<>();
 
-        if (aclFactory.isMarkedForDeletion(pid)) {
+        PatronAccess inheritedAccess = inheritedAclFactory.getPatronAccess(pid);
+        PatronAccess objAccess = objAclFactory.getPatronAccess(pid);
+
+        if (inheritedAclFactory.isMarkedForDeletion(pid)) {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
-        if (aclFactory.getEmbargoUntil(pid) != null) {
+        if (inheritedAclFactory.getEmbargoUntil(pid) != null) {
             status.add(FacetConstants.EMBARGOED);
         }
 
-        if (aclFactory.getPatronAccess(pid).equals(PatronAccess.everyone)) {
-            status.add(FacetConstants.PUBLIC_ACCESS);
-        } else if (aclFactory.getPatronAccess(pid).equals(PatronAccess.authenticated)) {
+        if (inheritedAccess.equals(PatronAccess.none)) {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
+        } else if (inheritedAclFactory.getPrincipalRoles(pid).containsKey(AccessPrincipalConstants.PUBLIC_PRINC)) {
+            status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        if (aclFactory.getPatronAccess(obj.getParent().getPid()).equals(PatronAccess.authenticated)) {
+        if (inheritedAccess.equals(PatronAccess.none) && !objAccess.equals(PatronAccess.none)) {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
         }
 
