@@ -89,9 +89,9 @@ public class BinaryMetadataProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader("Checksum", checksum);
-        verify(message).setHeader("MimeType", mimetype);
-        verify(message).setHeader("BinaryPath", BINARY_BASE + "61/67/3d/" + checksum);
+        verify(message).setHeader("CdrChecksum", checksum);
+        verify(message).setHeader("CdrMimeType", mimetype);
+        verify(message).setHeader("CdrBinaryPath", BINARY_BASE + "61/67/3d/" + checksum);
     }
 
     @Test
