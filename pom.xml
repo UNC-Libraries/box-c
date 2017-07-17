@@ -253,6 +253,78 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>3.0</version>
+				<configuration>
+					<header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+					<mapping>
+						<java>JAVADOC_STYLE</java>
+					</mapping>
+					<includes>
+						<include>**/src/main/java/**</include>
+						<include>**/src/test/java/**</include>
+					</includes>
+					<excludes>
+						<exclude>clamavj/**</exclude>
+						<exclude>oai4solr/**</exclude>
+						<exclude>staging-areas/**</exclude>
+						<exclude>target/**</exclude>
+						<exclude>**/src/test/resources/**</exclude>
+						<exclude>**/src/main/resources/**</exclude>
+						<exclude>**/*.properties</exclude>
+						<exclude>README</exclude>
+						<exclude>.git/**</exclude>
+						<exclude>**/.gitignore</exclude>
+						<exclude>**/*.md</exclude>
+						<exclude>Makefile</exclude>
+						<exclude>**/header.txt</exclude>
+						<exclude>**/bin/**</exclude>
+						<exclude>**/bundled/**</exclude>
+						<exclude>**/standards/**</exclude>
+						<exclude>**/resources/**</exclude>
+						<exclude>**/solr-config/**</exclude>
+						<exclude>static/**</exclude>
+						<exclude>**/*.css</exclude>
+						<exclude>**/add_to_maven/**</exclude>
+						<exclude>**/for_tomcat_common_endorsed/**</exclude>
+						<exclude>**/js/**</exclude>
+						<exclude>**/*.tld</exclude>
+						<exclude>**/*.zip</exclude>
+						<exclude>**/*.springBeans</exclude>
+						<exclude>**/jaxb-*/**</exclude>
+						<exclude>**/src/jaxb/**</exclude>
+						<exclude>**/*.xsd</exclude>
+						<exclude>**/*.patch</exclude>
+						<exclude>**/*.r</exclude>
+						<exclude>**/*.ir</exclude>
+						<exclude>**/*.xcf</exclude>
+						<exclude>**/*.pl</exclude>
+						<exclude>**/*.xml</exclude>
+						<exclude>**/*.xsl</exclude>
+						<exclude>**/*.txt</exclude>
+						<exclude>**/*.html</exclude>
+						<exclude>**/*.properties</exclude>
+						<exclude>**/robots.txt</exclude>
+					</excludes>
+					<properties>
+						<year>${project.copyrightYear}</year>
+						<holder>${project.organization.name}</holder>
+						<owner>The University of North Carolina at Chapel Hill</owner>
+						<email>cdr@unc.edu</email>
+					</properties>
+					<encoding>UTF-8</encoding>
+					<strictCheck>true</strictCheck>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+            </plugin>
+			<plugin>
 				<inherited>false</inherited>
 				<groupId>com.google.code.maven-license-plugin</groupId>
 				<artifactId>maven-license-plugin</artifactId>
