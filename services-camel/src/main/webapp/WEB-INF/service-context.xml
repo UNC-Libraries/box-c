@@ -80,11 +80,6 @@
 			</list>
 		</property>
 	</bean>
-	
-	<bean id="factory"
-		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
-		<property name="dataLoader" ref="dataLoader" />
-	</bean>
 
 	<bean id="solrFullUpdatePipeline"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
@@ -101,25 +96,6 @@
 		<property name="solrSettings" ref="solrSettings" />
 		<property name="autoPushCount" value="1000" />
 		<property name="updateThreads" value="2" />
-	</bean>
-
-	<bean id="dataLoader"
-		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
-		<property name="repository" ref="repository"></property>
-	</bean>
-	
-	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<util:properties id="solrProperties" location="classpath:solr.properties">
-		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-		</prop>
-	</util:properties>
-			
-	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
-		<property name="properties" ref="searchProperties" />
-	</bean>
-
-	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
-		<property name="properties" ref="solrProperties" />
 	</bean>
 	
 	<bean id="searchStateUtil" class="edu.unc.lib.dl.search.solr.util.SearchStateUtil">
@@ -373,7 +349,6 @@
 		<constructor-arg ref="factory" />
 		<constructor-arg ref="solrFullUpdatePipeline" />
 		<constructor-arg ref="solrUpdateDriver" />
-		<constructor-arg ref="dataLoader" />
 	</bean>
 	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">

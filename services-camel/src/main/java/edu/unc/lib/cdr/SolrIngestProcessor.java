@@ -25,18 +25,14 @@ import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -54,23 +50,16 @@ public class SolrIngestProcessor implements Processor {
     private DocumentIndexingPackageFactory factory;
     private DocumentIndexingPipeline pipeline;
     private SolrUpdateDriver solrUpdateDriver;
-    private DocumentIndexingPackageDataLoader loader;
-
-    @Autowired
-    protected SolrSettings solrSettings;
-    @Autowired
-    protected SearchSettings searchSettings;
 
     public SolrIngestProcessor(Repository repository, int maxRetries, long retryDelay,
                 DocumentIndexingPackageFactory factory, DocumentIndexingPipeline pipeline,
-                SolrUpdateDriver solrUpdateDriver, DocumentIndexingPackageDataLoader loader) {
+                SolrUpdateDriver solrUpdateDriver) {
         this.repository = repository;
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;
         this.factory = factory;
         this.pipeline = pipeline;
         this.solrUpdateDriver = solrUpdateDriver;
-        this.loader = loader;
     }
 
     @Override
@@ -86,10 +75,8 @@ public class SolrIngestProcessor implements Processor {
                 SolrUpdateRequest updateRequest = new SolrUpdateRequest(fcrepoBinaryUri, IndexingActionType.ADD);
                 DocumentIndexingPackage dip = updateRequest.getDocumentIndexingPackage();
 
-                if (dip == null) {
-                    dip = factory.createDip(updateRequest.getPid());
-                    updateRequest.setDocumentIndexingPackage(dip);
-                }
+                dip = factory.createDip(updateRequest.getPid());
+                updateRequest.setDocumentIndexingPackage(dip);
 
                 pipeline.process(dip);
                 solrUpdateDriver.addDocument(dip.getDocument());
