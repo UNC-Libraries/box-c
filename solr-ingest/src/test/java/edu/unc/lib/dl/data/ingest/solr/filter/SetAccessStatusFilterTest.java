@@ -31,10 +31,7 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 public class SetAccessStatusFilterTest {
 
-	private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
-
-    private static final String PRINC1 = "group1";
-    private static final String PRINC2 = "group2";
+    private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
 
     @Mock
     private DocumentIndexingPackage dip;
@@ -71,26 +68,67 @@ public class SetAccessStatusFilterTest {
         when(contentObj.getPid()).thenReturn(pid);
 
         when(inheritedAclFactory.isMarkedForDeletion(any(PID.class))).thenReturn(true);
-        when(inheritedAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(date);
 
         principalRoles = new HashMap<>();
         principalRoles.put(AccessPrincipalConstants.PUBLIC_PRINC, new HashSet<String>());
         when(inheritedAclFactory.getPrincipalRoles(any(PID.class))).thenReturn(principalRoles);
+        // default for test suite is staff-only access; changes made within test cases as required
+        when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
+        when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
 
         filter = new SetAccessStatusFilter();
         filter.setObjectAclFactory(objAclFactory);
         filter.setInheritedAclFactory(inheritedAclFactory);
     }
 
+    @Test
+    public void testIsMarkedForDeletion() throws Exception {
 
-	@Test
-	public void testIsMarkedForDeletion() throws Exception {
-		when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
-		when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
-		filter.filter(dip);
+        filter.filter(dip);
 
-		verify(idb).setStatus(listCaptor.capture());
-		assertTrue(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
-	}
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.MARKED_FOR_DELETION));
+    }
+
+    @Test
+    public void testIsEmbargoed() throws Exception {
+
+        when(inheritedAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(date);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
+    }
+
+    @Test
+    public void testHasStaffOnlyAccess() throws Exception {
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+    }
+
+    @Test
+    public void testHasPublicAccess() throws Exception {
+        when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.everyone);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PUBLIC_ACCESS));
+    }
+
+    @Test
+    public void testParentHasStaffOnlyAccess() throws Exception {
+
+        when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
+
+        filter.filter(dip);
+
+        verify(idb).setStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
+    }
 
 }
