@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
- * 
+ *
  * @author bbpennel, harring
  *
  */
@@ -68,7 +69,7 @@ public class IndexDocumentBean {
     protected List<String> adminGroup;
     protected List<String> status;
     protected List<String> contentStatus;
-    protected Map<String, Object> statusTags;
+    protected HashSet<String> statusTags;
 
     protected List<String> identifier;
     protected String identifierSort;
@@ -348,11 +349,11 @@ public class IndexDocumentBean {
     }
 
     @Field
-    public void setStatusTags(Map<String, Object> statusTags) {
+    public void setStatusTags(HashSet<String> statusTags) {
         this.statusTags = statusTags;
     }
 
-    public Map<String, Object> getStatusTags() {
+    public HashSet<String> getStatusTags() {
         return statusTags;
     }
 
