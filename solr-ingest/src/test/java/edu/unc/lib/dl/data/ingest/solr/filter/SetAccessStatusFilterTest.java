@@ -44,6 +44,9 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
+/**
+ * @author harring
+ */
 public class SetAccessStatusFilterTest {
 
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
