@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 /**
@@ -68,8 +68,7 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
     private List<String> determineAccessStatus(DocumentIndexingPackage dip)
             throws IndexingException {
 
-        ContentObject obj = dip.getContentObject();
-        PID pid = obj.getPid();
+        PID pid = dip.getPid();
         List<String> status = new ArrayList<>();
 
         PatronAccess inheritedAccess = inheritedAclFactory.getPatronAccess(pid);
@@ -79,8 +78,15 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.MARKED_FOR_DELETION);
         }
 
-        if (inheritedAclFactory.getEmbargoUntil(pid) != null) {
+        Date objEmbargo = objAclFactory.getEmbargoUntil(pid);
+        Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(pid);
+        if (parentEmbargo != null && objEmbargo != null) {
+            status.add(FacetConstants.EMBARGOED_PARENT);
             status.add(FacetConstants.EMBARGOED);
+        } else if (parentEmbargo != null) {
+            status.add(FacetConstants.EMBARGOED_PARENT);
+        } else if (objEmbargo != null) {
+                status.add(FacetConstants.EMBARGOED);
         }
 
         if (inheritedAccess.equals(PatronAccess.none)) {

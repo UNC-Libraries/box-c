@@ -25,6 +25,7 @@ public abstract class FacetConstants {
     public static final String CONTENT_DESCRIBED = "Described";
     public static final String CONTENT_NOT_DESCRIBED = "Not Described";
     public static final String EMBARGOED = "Embargoed";
+    public static final String EMBARGOED_PARENT = "Parent Is Embargoed";
     public static final String INVALID_VOCAB_TERM = "Invalid Term";
     public static final String IS_PRIMARY_OBJECT = "Is Primary Object";
     public static final String MARKED_FOR_DELETION = "Marked For Deletion";
