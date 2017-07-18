@@ -261,6 +261,7 @@
 					<header>etc/header.txt</header>
 					<mapping>
 						<java>JAVADOC_STYLE</java>
+						<jsp>DYNASCRIPT_STYLE</jsp>
 					</mapping>
 					<includes>
 						<include>**/src/main/java/**</include>
@@ -282,7 +283,6 @@
 						<exclude>**/bin/**</exclude>
 						<exclude>**/bundled/**</exclude>
 						<exclude>**/standards/**</exclude>
-						<exclude>**/resources/**</exclude>
 						<exclude>**/solr-config/**</exclude>
 						<exclude>static/**</exclude>
 						<exclude>**/*.css</exclude>
