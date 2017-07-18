@@ -15,11 +15,13 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 /**
  *
@@ -30,12 +32,38 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-        ContentObject contentObj = dip.getContentObject();
-        HashMap<String, Object> statusTags = new HashMap<String, Object>();
-        
-        
-        
+            IndexDocumentBean idb = dip.getDocument();
+        idb.setStatusTags(determineStatusTags(idb));
+    }
 
+    private HashSet<String> determineStatusTags(IndexDocumentBean idb) throws IndexingException {
+
+        HashSet<String> statusTags = new HashSet<String>();
+        List<String> contentStatus = idb.getContentStatus();
+        List<String> accessStatus = idb.getStatus();
+
+        if (contentStatus.contains(FacetConstants.UNPUBLISHED)) {
+                statusTags.add(FacetConstants.UNPUBLISHED);
+        }
+
+        if (contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
+                statusTags.add(FacetConstants.CONTENT_DESCRIBED);
+
+        }
+
+        if (contentStatus.contains(FacetConstants.IS_PRIMARY_OBJECT)) {
+                statusTags.add(FacetConstants.IS_PRIMARY_OBJECT);
+        }
+
+        if (accessStatus.contains(FacetConstants.EMBARGOED)) {
+            statusTags.add(FacetConstants.EMBARGOED);
+        }
+
+        if (accessStatus.contains(FacetConstants.EMBARGOED_PARENT)) {
+            statusTags.add(FacetConstants.EMBARGOED_PARENT);
+        }
+
+            return statusTags;
     }
 
 }
