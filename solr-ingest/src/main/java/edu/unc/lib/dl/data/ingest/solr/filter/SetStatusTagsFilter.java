@@ -32,7 +32,7 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
-            IndexDocumentBean idb = dip.getDocument();
+        IndexDocumentBean idb = dip.getDocument();
         idb.setStatusTags(determineStatusTags(idb));
     }
 
@@ -43,17 +43,17 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
         List<String> accessStatus = idb.getStatus();
 
         if (contentStatus.contains(FacetConstants.UNPUBLISHED)) {
-                statusTags.add(FacetConstants.UNPUBLISHED);
+            statusTags.add(FacetConstants.UNPUBLISHED);
         }
 
         if (contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
             statusTags.add(FacetConstants.CONTENT_DESCRIBED);
         } else if (contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED)) {
-        	    statusTags.add(FacetConstants.CONTENT_NOT_DESCRIBED);
+            statusTags.add(FacetConstants.CONTENT_NOT_DESCRIBED);
         }
 
         if (contentStatus.contains(FacetConstants.IS_PRIMARY_OBJECT)) {
-                statusTags.add(FacetConstants.IS_PRIMARY_OBJECT);
+            statusTags.add(FacetConstants.IS_PRIMARY_OBJECT);
         }
 
         if (accessStatus.contains(FacetConstants.EMBARGOED)) {
