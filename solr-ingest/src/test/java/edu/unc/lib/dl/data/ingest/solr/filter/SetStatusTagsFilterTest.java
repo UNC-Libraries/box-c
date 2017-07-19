@@ -78,8 +78,6 @@ public class SetStatusTagsFilterTest {
 
     @Test
     public void testNotDescribedWork() throws Exception {
-        contentStatus.add(FacetConstants.CONTENT_NOT_DESCRIBED);
-
         filter.filter(dip);
 
         verify(idb).setStatusTags(setCaptor.capture());
@@ -143,7 +141,7 @@ public class SetStatusTagsFilterTest {
 
     @Test
     public void testNoStatusTags() throws Exception {
-
+        // NB: only one status tag is set in the default case, CONTENT_NOT_DESCRIBED
         filter.filter(dip);
 
         verify(idb).setStatusTags(setCaptor.capture());
@@ -152,7 +150,6 @@ public class SetStatusTagsFilterTest {
         assertFalse(setCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
         assertFalse(setCaptor.getValue().contains(FacetConstants.IS_PRIMARY_OBJECT));
         assertFalse(setCaptor.getValue().contains(FacetConstants.CONTENT_DESCRIBED));
-        assertFalse(setCaptor.getValue().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
     }
 
 }

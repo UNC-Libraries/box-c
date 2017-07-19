@@ -48,7 +48,7 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
 
         if (contentStatus.contains(FacetConstants.CONTENT_DESCRIBED)) {
             statusTags.add(FacetConstants.CONTENT_DESCRIBED);
-        } else if (contentStatus.contains(FacetConstants.CONTENT_NOT_DESCRIBED)) {
+        } else {
             statusTags.add(FacetConstants.CONTENT_NOT_DESCRIBED);
         }
 
