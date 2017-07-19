@@ -150,6 +150,7 @@ public class SetStatusTagsFilterTest {
         assertFalse(setCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
         assertFalse(setCaptor.getValue().contains(FacetConstants.IS_PRIMARY_OBJECT));
         assertFalse(setCaptor.getValue().contains(FacetConstants.CONTENT_DESCRIBED));
+        assertTrue(setCaptor.getValue().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
     }
 
 }

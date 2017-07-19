@@ -24,6 +24,9 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 /**
+ * Sets the status-tags field in the IndexDocumentBean
+ * NB: This filter must be run *after* SetAccessStatusFilter and SetContentStatusFilter,
+ * as it depends on their outputs
  *
  * @author harring
  *
@@ -38,7 +41,7 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
 
     private HashSet<String> determineStatusTags(IndexDocumentBean idb) throws IndexingException {
 
-        HashSet<String> statusTags = new HashSet<String>();
+        HashSet<String> statusTags = new HashSet<>();
         List<String> contentStatus = idb.getContentStatus();
         List<String> accessStatus = idb.getStatus();
 
@@ -64,7 +67,7 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
             statusTags.add(FacetConstants.EMBARGOED_PARENT);
         }
 
-            return statusTags;
+        return statusTags;
     }
 
 }

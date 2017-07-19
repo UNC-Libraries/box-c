@@ -86,7 +86,7 @@ public class SetAccessStatusFilterTest {
 
         principalRoles = new HashMap<>();
 
-        // default for test suite is staff-only access; changes made within test cases as required
+        // default for test suite is parent access; changes made within test cases as required
         when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
         when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.parent);
 
@@ -148,7 +148,7 @@ public class SetAccessStatusFilterTest {
     @Test
     public void testHasStaffOnlyAccess() throws Exception {
 
-        when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
+        when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
@@ -173,13 +173,12 @@ public class SetAccessStatusFilterTest {
     public void testParentHasStaffOnlyAccess() throws Exception {
 
         when(inheritedAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
-        when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.authenticated);
 
         filter.filter(dip);
 
         verify(idb).setStatus(listCaptor.capture());
         assertTrue(listCaptor.getValue().contains(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.STAFF_ONLY_ACCESS));
     }
 
     @Test

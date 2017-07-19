@@ -80,16 +80,13 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
 
         Date objEmbargo = objAclFactory.getEmbargoUntil(pid);
         Date parentEmbargo = inheritedAclFactory.getEmbargoUntil(pid);
-        if (parentEmbargo != null && objEmbargo != null) {
-            status.add(FacetConstants.EMBARGOED_PARENT);
+        if (objEmbargo != null) {
             status.add(FacetConstants.EMBARGOED);
         } else if (parentEmbargo != null) {
             status.add(FacetConstants.EMBARGOED_PARENT);
-        } else if (objEmbargo != null) {
-                status.add(FacetConstants.EMBARGOED);
         }
 
-        if (inheritedAccess.equals(PatronAccess.none)) {
+        if (objAccess.equals(PatronAccess.none)) {
             status.add(FacetConstants.STAFF_ONLY_ACCESS);
         } else if (inheritedAclFactory.getPrincipalRoles(pid).containsKey(AccessPrincipalConstants.PUBLIC_PRINC)) {
             status.add(FacetConstants.PUBLIC_ACCESS);
