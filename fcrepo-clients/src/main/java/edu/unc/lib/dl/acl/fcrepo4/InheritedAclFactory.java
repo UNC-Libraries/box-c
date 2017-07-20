@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
@@ -97,7 +98,7 @@ public class InheritedAclFactory implements AclFactory {
         if (depth == UNIT_PATH_DEPTH + 1) {
             Set<String> roles = new HashSet<>();
             roles.add(UserRole.canViewOriginals.getPropertyString());
-            inheritedPrincRoles.put("everyone", roles);
+            inheritedPrincRoles.put(AccessPrincipalConstants.PUBLIC_PRINC, roles);
         }
 
         return inheritedPrincRoles;
@@ -150,12 +151,12 @@ public class InheritedAclFactory implements AclFactory {
         PatronAccess computedAccess = PatronAccess.parent;
         for (int i = CONTENT_STARTING_DEPTH; i < pidPath.size(); i++) {
             PID pathPid = pidPath.get(i);
-
+            // checks to see whether access is staff-only
             PatronAccess access = objectAclFactory.getPatronAccess(pathPid);
             if (PatronAccess.none.equals(access)) {
                 return PatronAccess.none;
             }
-
+            // checks to see whether access is on-campus only
             if (PatronAccess.authenticated.equals(access)) {
                 computedAccess = access;
             }

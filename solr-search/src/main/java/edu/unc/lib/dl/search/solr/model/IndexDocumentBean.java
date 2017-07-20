@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.model;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -26,8 +27,8 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
- * 
- * @author bbpennel
+ *
+ * @author bbpennel, harring
  *
  */
 public class IndexDocumentBean {
@@ -68,6 +69,7 @@ public class IndexDocumentBean {
     protected List<String> adminGroup;
     protected List<String> status;
     protected List<String> contentStatus;
+    protected HashSet<String> statusTags;
 
     protected List<String> identifier;
     protected String identifierSort;
@@ -344,6 +346,15 @@ public class IndexDocumentBean {
 
     public List<String> getContentStatus() {
         return contentStatus;
+    }
+
+    @Field
+    public void setStatusTags(HashSet<String> statusTags) {
+        this.statusTags = statusTags;
+    }
+
+    public HashSet<String> getStatusTags() {
+        return statusTags;
     }
 
     @Field

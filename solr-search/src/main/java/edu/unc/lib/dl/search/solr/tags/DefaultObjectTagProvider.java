@@ -17,8 +17,6 @@ package edu.unc.lib.dl.search.solr.tags;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.Tag;
-import edu.unc.lib.dl.search.solr.util.FacetConstants;
 
 /**
  * @author bbpennel
@@ -26,10 +24,11 @@ import edu.unc.lib.dl.search.solr.util.FacetConstants;
  */
 public class DefaultObjectTagProvider implements TagProvider {
     @Override
+    @Deprecated
     public void addTags(BriefObjectMetadata record, AccessGroupSet accessGroups) {
-        if (record.getContentStatus().contains(FacetConstants.CONTENT_IS_DEFAULT_OBJECT)) {
-            Tag tag = new Tag("primary object");
-            record.addTag(tag);
-        }
+        //if (record.getContentStatus().contains(FacetConstants.CONTENT_IS_DEFAULT_OBJECT)) {
+            //Tag tag = new Tag("primary object");
+            //record.addTag(tag);
+        //}
     }
 }

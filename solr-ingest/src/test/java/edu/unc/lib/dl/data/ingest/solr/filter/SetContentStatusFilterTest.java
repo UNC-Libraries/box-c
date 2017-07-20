@@ -1,5 +1,5 @@
 /**
- * Copyright 2008 The University of North Carolina at Chapel Hill
+ * Copyright 2017 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,36 +15,52 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.junit.Assert;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
+import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.Model;
 
-public class SetContentStatusFilterTest extends Assert {
+/**
+ * @author harring
+ */
+public class SetContentStatusFilterTest {
     @Mock
-    private DocumentIndexingPackageDataLoader loader;
-    private DocumentIndexingPackageFactory factory;
-
-    private Map<String, List<String>> triples;
+    private DocumentIndexingPackage dip;
+    @Mock
+    private PID pid;
+    @Mock
+    private FileObject fileObj;
+    @Mock
+    private WorkObject workObj;
+    @Mock
+    private FolderObject folderObj;
+    @Mock
+    private IndexDocumentBean idb;
+    @Mock
+    private Resource resc;
+    @Captor
+    private ArgumentCaptor<List<String>> listCaptor;
 
     private SetContentStatusFilter filter;
 
@@ -52,84 +68,95 @@ public class SetContentStatusFilterTest extends Assert {
     public void setUp() throws Exception {
         initMocks(this);
 
-        factory = new DocumentIndexingPackageFactory();
-        factory.setDataLoader(loader);
-
-        triples = new HashMap<String, List<String>>();
-        triples.put(FedoraProperty.disseminates.toString(),
-                Arrays.asList("info:fedora/uuid:item/" + Datastream.RELS_EXT.getName()));
-
-        when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenReturn(triples);
+        when(dip.getDocument()).thenReturn(idb);
+        when(dip.getPid()).thenReturn(pid);
+        // by default an object in this test suite has only FacetConstants.CONTENT_NOT_DESCRIBED set
+        when(resc.hasProperty(any(Property.class))).thenReturn(false);
 
         filter = new SetContentStatusFilter();
     }
 
     @Test
-    public void testDescribedQuery() throws Exception {
+    public void testDescribedWork() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.hasMods)).thenReturn(true);
 
-        triples.put(FedoraProperty.hasModel.toString(),
-                Arrays.asList(Model.SIMPLE.toString()));
-
-        triples.put(FedoraProperty.disseminates.toString(), Arrays.asList("info:fedora/uuid:item/"
-                + Datastream.MD_DESCRIPTIVE.getName(), "info:fedora/uuid:item/"
-                + Datastream.RELS_EXT.getName()));
-
-        when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
-        DocumentIndexingPackage dip = factory.createDip("uuid:item");
         filter.filter(dip);
-        IndexDocumentBean idb = dip.getDocument();
 
-        assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
-        assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_DESCRIBED));
-
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.CONTENT_DESCRIBED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
     }
 
     @Test
-    public void testNotDescribedQuery() throws Exception {
+    public void testNotDescribedWork() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
 
-        when(loader.loadParentDip(any(DocumentIndexingPackage.class))).thenReturn(factory.createDip("uuid:parent"));
-        DocumentIndexingPackage dip = factory.createDip("uuid:item");
         filter.filter(dip);
-        IndexDocumentBean idb = dip.getDocument();
 
-        assertEquals("Only one content status should be set for non-aggregate", 1, idb.getContentStatus().size());
-        assertTrue(idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
-
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
+        assertFalse(listCaptor.getValue().contains(FacetConstants.CONTENT_DESCRIBED));
     }
 
     @Test
-    public void testAggregateNoDWOQuery() throws Exception {
-        triples.put(FedoraProperty.hasModel.toString(),
-                Arrays.asList(Model.AGGREGATE_WORK.toString()));
+    public void testWorkNoPrimaryObject() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
 
-        DocumentIndexingPackage dip = factory.createDip("uuid:item");
         filter.filter(dip);
-        IndexDocumentBean idb = dip.getDocument();
 
-        assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
-        assertTrue("Object incorrectly labeled as described",
-                idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
-        assertTrue("Aggregate should not have a default web object assigned",
-                idb.getContentStatus().contains(FacetConstants.CONTENT_NO_DEFAULT_OBJECT));
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.NO_PRIMARY_OBJECT));
     }
 
     @Test
-    public void testAggregateWithDWOQuery() throws Exception {
+    public void testFolderNoPrimaryObject() throws Exception {
+        when(dip.getContentObject()).thenReturn(folderObj);
+        when(folderObj.getResource()).thenReturn(resc);
 
-        triples.put(CDRProperty.defaultWebObject.toString(),
-                Arrays.asList("dwo"));
-
-        triples.put(FedoraProperty.hasModel.toString(),
-                Arrays.asList(Model.AGGREGATE_WORK.toString()));
-
-        DocumentIndexingPackage dip = factory.createDip("uuid:item");
         filter.filter(dip);
-        IndexDocumentBean idb = dip.getDocument();
 
-        assertEquals("Two statuses expected for aggregate object", 2, idb.getContentStatus().size());
-        assertTrue("Object incorrectly labeled as described",
-                idb.getContentStatus().contains(FacetConstants.CONTENT_NOT_DESCRIBED));
-        assertTrue("Aggregate should not have a default web object assigned",
-                idb.getContentStatus().contains(FacetConstants.CONTENT_DEFAULT_OBJECT));
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_PRIMARY_OBJECT));
     }
+
+    @Test
+    public void testWorkWithPrimaryObject() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.primaryObject)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertFalse(listCaptor.getValue().contains(FacetConstants.NO_PRIMARY_OBJECT));
+    }
+
+    @Test
+    public void testWorkWithInvalidTerm() throws Exception {
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.invalidTerm)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.INVALID_VOCAB_TERM));
+    }
+
+    @Test
+    public void testUnpublishedFileObject() throws Exception {
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(fileObj.getResource()).thenReturn(resc);
+        when(resc.hasProperty(Cdr.unpublished)).thenReturn(true);
+
+        filter.filter(dip);
+
+        verify(idb).setContentStatus(listCaptor.capture());
+        assertTrue(listCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
+    }
+
 }
