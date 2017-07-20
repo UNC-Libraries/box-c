@@ -16,14 +16,15 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,19 +92,19 @@ public class SetFullTextFilterTest extends Assert {
 
     @Test
     public void testFullTextWithWorkObject() throws Exception {
-    	    when(dip.getContentObject()).thenReturn(workObj);
-    	    when(workObj.getPrimaryObject()).thenReturn(fileObj);
+        when(dip.getContentObject()).thenReturn(workObj);
+        when(workObj.getPrimaryObject()).thenReturn(fileObj);
 
         filter.filter(dip);
-        
+
         verify(idb).setFullText(stringCaptor.capture());
         assertEquals(fullText, stringCaptor.getValue());
 
     }
-    
+
     @Test
     public void testFullTextWithFileObject() throws Exception {
-    	    when(dip.getContentObject()).thenReturn(fileObj);
+        when(dip.getContentObject()).thenReturn(fileObj);
 
         filter.filter(dip);
 
@@ -113,21 +114,21 @@ public class SetFullTextFilterTest extends Assert {
 
     @Test
     public void testNoFullText() throws Exception {
-    	when(dip.getContentObject()).thenReturn(fileObj);
-    	    when(binObj.getMimetype()).thenReturn("application/json");
+        when(dip.getContentObject()).thenReturn(fileObj);
+        when(binObj.getMimetype()).thenReturn("application/json");
 
         filter.filter(dip);
 
         verify(idb, never()).setFullText(anyString());
     }
-    
+
     @Test (expected = IndexingException.class)
     public void testBadInputStream() throws Exception {
-    	    when(dip.getContentObject()).thenReturn(fileObj);
+        when(dip.getContentObject()).thenReturn(fileObj);
 
-    	    doThrow(new FedoraException("Mocking error getting binary stream")).when(binObj).getBinaryStream();
+        doThrow(new FedoraException("Mocking error getting binary stream")).when(binObj).getBinaryStream();
 
-    	    filter.filter(dip);
+        filter.filter(dip);
     }
 
 }
