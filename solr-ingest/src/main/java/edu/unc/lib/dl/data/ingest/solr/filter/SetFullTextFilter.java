@@ -16,9 +16,8 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.io.IOException;
+
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
@@ -35,7 +34,6 @@ import edu.unc.lib.dl.fedora.FedoraException;
  *
  */
 public class SetFullTextFilter implements IndexDocumentFilter {
-    private static final Logger log = LoggerFactory.getLogger(SetFullTextFilter.class);
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -59,7 +57,6 @@ public class SetFullTextFilter implements IndexDocumentFilter {
             String fullText = IOUtils.toString(binObj.getBinaryStream(), "UTF-8");
             dip.getDocument().setFullText(fullText);
         } catch (FedoraException | IOException e) {
-            log.error("Failed to retrieve full text datastream for {}", dip.getPid().getId(), e);
             throw new IndexingException("Failed to retrieve full text datastream for {}" + dip.getPid(), e);
         }
     }
