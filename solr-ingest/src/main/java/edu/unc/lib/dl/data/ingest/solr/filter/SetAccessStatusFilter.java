@@ -30,6 +30,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
+
 /**
  * Sets access-related status tags
  *
