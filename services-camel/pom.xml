@@ -113,12 +113,6 @@
 	
 	<dependency>
 		<groupId>edu.unc.lib.cdr</groupId>
-		<artifactId>services-worker</artifactId>
-		<version>${cdr.version}</version>
-	</dependency>
-	
-	<dependency>
-		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>fcrepo-clients</artifactId>
 	</dependency>
 

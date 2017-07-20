@@ -67,9 +67,10 @@ public class MetaServicesRouter extends RouteBuilder {
                     .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
                         .to("direct-vm:replication")
                     .otherwise()
-                        .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+                        .log(LoggingLevel.WARN,
+                                "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
                 .end();
-        
+
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")
             .multicast()

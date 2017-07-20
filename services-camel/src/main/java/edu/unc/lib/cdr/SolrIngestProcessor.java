@@ -31,8 +31,6 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -44,17 +42,14 @@ import edu.unc.lib.dl.util.IndexingActionType;
 public class SolrIngestProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrIngestProcessor.class);
 
-    private final Repository repository;
     private final int maxRetries;
     private final long retryDelay;
     private DocumentIndexingPackageFactory factory;
     private DocumentIndexingPipeline pipeline;
     private SolrUpdateDriver solrUpdateDriver;
 
-    public SolrIngestProcessor(Repository repository, int maxRetries, long retryDelay,
-                DocumentIndexingPackageFactory factory, DocumentIndexingPipeline pipeline,
-                SolrUpdateDriver solrUpdateDriver) {
-        this.repository = repository;
+    public SolrIngestProcessor(int maxRetries, long retryDelay, DocumentIndexingPackageFactory factory,
+            DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver) {
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;
         this.factory = factory;
@@ -66,7 +61,6 @@ public class SolrIngestProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
         String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
-        PIDs.setRepository(repository);
 
         int retryAttempt = 0;
 
