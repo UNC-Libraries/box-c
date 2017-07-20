@@ -63,10 +63,6 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
             statusTags.add(FacetConstants.EMBARGOED);
         }
 
-        if (accessStatus.contains(FacetConstants.EMBARGOED_PARENT)) {
-            statusTags.add(FacetConstants.EMBARGOED_PARENT);
-        }
-
         return statusTags;
     }
 

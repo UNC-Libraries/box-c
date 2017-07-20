@@ -113,30 +113,6 @@ public class SetStatusTagsFilterTest {
 
         verify(idb).setStatusTags(setCaptor.capture());
         assertTrue(setCaptor.getValue().contains(FacetConstants.EMBARGOED));
-        assertFalse(setCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
-    }
-
-    @Test
-    public void testEmbargoedParent() throws Exception {
-        accessStatus.add(FacetConstants.EMBARGOED_PARENT);
-
-        filter.filter(dip);
-
-        verify(idb).setStatusTags(setCaptor.capture());
-        assertTrue(setCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
-        assertFalse(setCaptor.getValue().contains(FacetConstants.EMBARGOED));
-    }
-
-    @Test
-    public void testEmbargoedObjectAndParent() throws Exception {
-        accessStatus.add(FacetConstants.EMBARGOED);
-        accessStatus.add(FacetConstants.EMBARGOED_PARENT);
-
-        filter.filter(dip);
-
-        verify(idb).setStatusTags(setCaptor.capture());
-        assertTrue(setCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
-        assertTrue(setCaptor.getValue().contains(FacetConstants.EMBARGOED));
     }
 
     @Test
@@ -145,7 +121,6 @@ public class SetStatusTagsFilterTest {
         filter.filter(dip);
 
         verify(idb).setStatusTags(setCaptor.capture());
-        assertFalse(setCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
         assertFalse(setCaptor.getValue().contains(FacetConstants.EMBARGOED));
         assertFalse(setCaptor.getValue().contains(FacetConstants.UNPUBLISHED));
         assertFalse(setCaptor.getValue().contains(FacetConstants.IS_PRIMARY_OBJECT));
