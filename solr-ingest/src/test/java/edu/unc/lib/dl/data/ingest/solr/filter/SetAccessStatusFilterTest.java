@@ -133,19 +133,6 @@ public class SetAccessStatusFilterTest {
     }
 
     @Test
-    public void testBothParentAndObjectEmbargoed() throws Exception {
-
-        when(inheritedAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(date);
-        when(objAclFactory.getEmbargoUntil(any(PID.class))).thenReturn(date);
-
-        filter.filter(dip);
-
-        verify(idb).setStatus(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED_PARENT));
-        assertTrue(listCaptor.getValue().contains(FacetConstants.EMBARGOED));
-    }
-
-    @Test
     public void testHasStaffOnlyAccess() throws Exception {
 
         when(objAclFactory.getPatronAccess(any(PID.class))).thenReturn(PatronAccess.none);
