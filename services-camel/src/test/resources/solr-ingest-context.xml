@@ -13,18 +13,11 @@
 		http://camel.apache.org/schema/spring
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 		
-	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<util:properties id="solrProperties" location="classpath:solr.properties">
-		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
-		</prop>
-	</util:properties>
-	
-	<bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
-		<property name="properties" ref="solrProperties" />
+	<bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.search.solr.util.SearchSettings"/>
 	</bean>
-	
-	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
-		<property name="properties" ref="searchProperties" />
+	<bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.dl.search.solr.util.SolrSettings"/>
 	</bean>
 	
 	<bean id="solrIngestProcessor" class="org.mockito.Mockito" factory-method="mock">

@@ -23,6 +23,7 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
+import edu.unc.lib.dl.rdf.Cdr;
 
 /**
  * Meta router which sequences all service routes to run on events.
@@ -52,14 +53,14 @@ public class MetaServicesRouter extends RouteBuilder {
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
                 .removeHeaders("CamelHttp*")
                 .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-                .process(mdProcessor)
                 .multicast()
-                .to("direct:process.binary.original", "direct:process.solr");
+                .to("direct:process.binary", "direct:process.solr");
 
-        from("direct:process.binary.original")
+        from("direct:process.binary")
             .routeId("ProcessOriginalBinary")
             .filter(simple("${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+                .process(mdProcessor)
                 .choice()
                     .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
                         .to("direct-vm:replication")
@@ -79,7 +80,8 @@ public class MetaServicesRouter extends RouteBuilder {
         from("direct:process.solr")
             .routeId("IngestSolrIndexing")
             .log(LoggingLevel.DEBUG, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
-            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '" + Binary.getURI() + "'"))
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '" + Binary.getURI() + "'"
+                    + " && ${headers[org.fcrepo.jms.resourceType]} not contains '" + Cdr.DepositRecord.getURI() + "'"))
                 .to("direct-vm:solrIndexing");
     }
 }

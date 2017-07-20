@@ -67,25 +67,12 @@
 	</bean>
 	
 	<!-- Solr settings -->
-	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject">
-			<ref bean="tripleStoreQueryService" />
-		</property>
-		<property name="targetMethod">
-			<value>fetchByRepositoryPath</value>
-		</property>
-		<property name="arguments">
-			<list>
-				<value>/Collections</value>
-			</list>
-		</property>
-	</bean>
 
 	<bean id="solrFullUpdatePipeline"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
 		<property name="filters">
 			<list>
-				<ref bean="setDisplayOrderFilter" />
+				<ref bean="setRecordDatesFilter" />
 			</list>
 		</property>
 	</bean>
@@ -135,12 +122,15 @@
 		<property name="searchSettings" ref="searchSettings" />
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
-		<property name="collectionsPid" ref="collectionsPid" />
+		<property name="collectionsPid" value="null" />
 		<property name="pathFactory" ref="pathFactory" />
 	</bean>
 	
+	<bean id="setRecordDatesFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+	</bean>
 	<!-- Solr ingest filters -->
-	<bean id="setDatastreamContentFilter"
+	<!-- <bean id="setDatastreamContentFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
 	</bean>
 	<bean id="setDisplayOrderFilter"
@@ -149,7 +139,7 @@
 	<bean id="setRelationsFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
 	</bean>
-	<!-- <bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
 		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="tsqs" ref="tripleStoreQueryService" />
 	</bean>
@@ -342,11 +332,21 @@
 		<constructor-arg value="${cdr.replication.locations}" />
 	</bean>
 	
+	<bean id="dipDataLoader"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+		<property name="repository" ref="repository"></property>
+	</bean>
+	
+	<bean id="dipFactory"
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+		<property name="dataLoader" ref="dipDataLoader" />
+	</bean>
+	
 	<bean id="solrIngestProcessor" class="edu.unc.lib.cdr.SolrIngestProcessor">
 		<constructor-arg ref="repository"/>
 		<constructor-arg value="${error.maxRedeliveries}" />
 		<constructor-arg value="${error.retryDelay}" />
-		<constructor-arg ref="factory" />
+		<constructor-arg ref="dipFactory" />
 		<constructor-arg ref="solrFullUpdatePipeline" />
 		<constructor-arg ref="solrUpdateDriver" />
 	</bean>

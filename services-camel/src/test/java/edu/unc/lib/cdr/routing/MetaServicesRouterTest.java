@@ -103,7 +103,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testProcessEnhancementContainer() throws Exception {
-        getMockEndpoint("mock:direct:process.binary.original").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.solr").expectedMessageCount(1);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
@@ -113,7 +113,6 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
-        verify(mdProcessor).process(any(Exchange.class));
     }
 
     @Test
@@ -131,7 +130,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @Test
     public void testEventTypeFilter() throws Exception {
-        getMockEndpoint("mock:direct:process.binary.original").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(0);
         getMockEndpoint("mock:direct:process.solr").expectedMessageCount(0);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
@@ -146,7 +145,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     
     @Test
     public void testEventTypeFilterValid() throws Exception {
-        getMockEndpoint("mock:direct:process.binary.original").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.solr").expectedMessageCount(1);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
@@ -180,6 +179,8 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
+
+        verify(mdProcessor).process(any(Exchange.class));
     }
 
     @Test
