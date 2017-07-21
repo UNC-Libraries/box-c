@@ -272,40 +272,7 @@
 						<exclude>clamavj/**</exclude>
 						<exclude>oai4solr/**</exclude>
 						<exclude>staging-areas/**</exclude>
-						<exclude>target/**</exclude>
 						<exclude>**/*.properties</exclude>
-						<exclude>README</exclude>
-						<exclude>.git/**</exclude>
-						<exclude>**/.gitignore</exclude>
-						<exclude>**/*.md</exclude>
-						<exclude>Makefile</exclude>
-						<exclude>**/header.txt</exclude>
-						<exclude>**/bin/**</exclude>
-						<exclude>**/bundled/**</exclude>
-						<exclude>**/standards/**</exclude>
-						<exclude>**/solr-config/**</exclude>
-						<exclude>static/**</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>**/add_to_maven/**</exclude>
-						<exclude>**/for_tomcat_common_endorsed/**</exclude>
-						<exclude>**/js/**</exclude>
-						<exclude>**/*.tld</exclude>
-						<exclude>**/*.zip</exclude>
-						<exclude>**/*.springBeans</exclude>
-						<exclude>**/jaxb-*/**</exclude>
-						<exclude>**/src/jaxb/**</exclude>
-						<exclude>**/*.xsd</exclude>
-						<exclude>**/*.patch</exclude>
-						<exclude>**/*.r</exclude>
-						<exclude>**/*.ir</exclude>
-						<exclude>**/*.xcf</exclude>
-						<exclude>**/*.pl</exclude>
-						<exclude>**/*.xml</exclude>
-						<exclude>**/*.xsl</exclude>
-						<exclude>**/*.txt</exclude>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.properties</exclude>
-						<exclude>**/robots.txt</exclude>
 					</excludes>
 					<properties>
 						<year>${project.copyrightYear}</year>
