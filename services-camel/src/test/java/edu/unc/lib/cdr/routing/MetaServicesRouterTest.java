@@ -48,6 +48,7 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 /**
  *
  * @author bbpennel
+ * @author lfarrell
  *
  */
 public class MetaServicesRouterTest extends CamelSpringTestSupport {
@@ -57,8 +58,10 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     private static final String CONTAINER_ID = "/content/43/e2/27/ac/43e227ac-983a-4a18-94c9-c9cff8d28441";
 
     private static final String META_ROUTE = "CdrMetaServicesRouter";
-    private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessCreationEvent";
-    private static final String ORIGINAL_BINARY_ROUTE = "ProcessEnhancements";
+    private static final String PROCESS_ENHANCEMENT_ROUTE = "ProcessEnhancement";
+    private static final String ORIGINAL_BINARY_ROUTE = "ProcessOriginalBinary";
+    private static final String ADD_BINARY_ENHANCEMENTS_ROUTE = "AddBinaryEnhancements";
+    private static final String SOLR_INGEST_ROUTE = "IngestSolrIndexing";
 
     @PropertyInject(value = "fcrepo.baseUri")
     private static String baseUri;
@@ -89,22 +92,23 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRouteStartContainer() throws Exception {
         getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.ingest").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.enhancement").expectedMessageCount(1);
 
         createContext(META_ROUTE);
 
-        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID));
+        template.sendBodyAndHeaders("", createEvent(CONTAINER_ID, Binary.getURI()));
 
         assertMockEndpointsSatisfied();
     }
 
     @Test
     public void testProcessEnhancementContainer() throws Exception {
-        getMockEndpoint("mock:direct:process.creation").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.solr").expectedMessageCount(1);
 
         createContext(PROCESS_ENHANCEMENT_ROUTE);
 
-        final Map<String, Object> headers = createEvent(CONTAINER_ID);
+        final Map<String, Object> headers = createEvent(CONTAINER_ID, Binary.getURI());
         headers.put(RESOURCE_TYPE, Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
@@ -112,77 +116,108 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testProcessEnhancementOriginalBinary() throws Exception {
-        getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(0);
-        getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(1);
-
-        createContext(PROCESS_ENHANCEMENT_ROUTE);
-
-        final Map<String, Object> headers = createEvent(FILE_ID);
-        template.sendBodyAndHeaders("", headers);
-
-        assertMockEndpointsSatisfied();
-
-        verify(mdProcessor).process(any(Exchange.class));
-    }
-
-    @Test
     public void testProcessFits() throws Exception {
         getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
         getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(0);
 
-        createContext(PROCESS_ENHANCEMENT_ROUTE);
+        createContext(ORIGINAL_BINARY_ROUTE);
 
-        final Map<String, Object> headers = createEvent(FITS_ID);
+        final Map<String, Object> headers = createEvent(FITS_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
-
-        verify(mdProcessor).process(any(Exchange.class));
     }
 
     @Test
     public void testEventTypeFilter() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:process.creation").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(0);
+        getMockEndpoint("mock:direct:process.solr").expectedMessageCount(0);
 
-        createContext(META_ROUTE);
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
 
-        Map<String, Object> headers = createEvent(FILE_ID);
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         headers.put(EVENT_TYPE, "ResourceDeletion");
 
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
     }
+    
+    @Test
+    public void testEventTypeFilterValid() throws Exception {
+        getMockEndpoint("mock:direct:process.binary").expectedMessageCount(1);
+        getMockEndpoint("mock:direct:process.solr").expectedMessageCount(1);
+
+        createContext(PROCESS_ENHANCEMENT_ROUTE);
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+    
+    @Test
+    public void testEnhancementIdentifierFilterValid() throws Exception {
+        getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
+
+        createContext(ADD_BINARY_ENHANCEMENTS_ROUTE);
+
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+    
+    @Test
+    public void testProcessBinaryOriginal() throws Exception {
+        getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(1);
+        getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
+
+        createContext(ORIGINAL_BINARY_ROUTE);
+
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+
+        verify(mdProcessor).process(any(Exchange.class));
+    }
 
     @Test
-    public void testIdentifierFilter() throws Exception {
-        getMockEndpoint("mock:direct-vm:index.start").expectedMessageCount(1);
-        getMockEndpoint("mock:direct:direct:process.creation").expectedMessageCount(0);
+    public void testProcessBinaryOriginalFail() throws Exception {
+        getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(0);
+        getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(0);
 
-        createContext(META_ROUTE);
+        createContext(ORIGINAL_BINARY_ROUTE);
 
-        Map<String, Object> headers = createEvent("other_file");
+        Map<String, Object> headers = createEvent("other_file", Binary.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+    
+    @Test
+    public void testProcessSolr() throws Exception {
+        getMockEndpoint("mock:direct-vm:solrIndexing").expectedMessageCount(1);
+
+        createContext(SOLR_INGEST_ROUTE);
+
+        Map<String, Object> headers = createEvent("container", Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
     }
 
     @Test
-    public void testProcessBinary() throws Exception {
-        getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:extractFulltext").expectedMessageCount(1);
-        getMockEndpoint("mock:direct-vm:replication").expectedMessageCount(1);
+    public void testProcessSolrFail() throws Exception {
+        getMockEndpoint("mock:direct-vm:solrIndexing").expectedMessageCount(0);
 
-        createContext(ORIGINAL_BINARY_ROUTE);
+        createContext(SOLR_INGEST_ROUTE);
 
-        Map<String, Object> headers = createEvent(FILE_ID);
+        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
-        
-        verify(mdProcessor).process(any(Exchange.class));
     }
 
     private void createContext(String routeName) throws Exception {
@@ -197,11 +232,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier) {
+    private static Map<String, Object> createEvent(final String identifier, final String type) {
+        
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, identifier);
-        headers.put(RESOURCE_TYPE, Binary.getURI());
+        headers.put(RESOURCE_TYPE, type);
 
         return headers;
     }

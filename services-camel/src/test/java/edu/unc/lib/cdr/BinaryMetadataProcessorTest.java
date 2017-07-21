@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.cdr;
 
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -89,9 +92,9 @@ public class BinaryMetadataProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader("Checksum", checksum);
-        verify(message).setHeader("MimeType", mimetype);
-        verify(message).setHeader("BinaryPath", BINARY_BASE + "61/67/3d/" + checksum);
+        verify(message).setHeader(CdrBinaryChecksum, checksum);
+        verify(message).setHeader(CdrBinaryMimeType, mimetype);
+        verify(message).setHeader(CdrBinaryPath, BINARY_BASE + "61/67/3d/" + checksum);
     }
 
     @Test

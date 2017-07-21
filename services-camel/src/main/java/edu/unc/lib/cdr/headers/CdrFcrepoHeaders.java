@@ -17,10 +17,11 @@ package edu.unc.lib.cdr.headers;
 
 /**
  * Constants for Apache Camel object enhancement services
+ * 
  * @author lfarrell
  *
  */
-public class CdrFcrepoHeaders {
+public abstract class CdrFcrepoHeaders {
 
     public static final String CdrBinaryMimeType = "CdrMimeType";
 
@@ -29,8 +30,4 @@ public class CdrFcrepoHeaders {
     public static final String CdrBinaryChecksum = "CdrChecksum";
 
     public static final String CdrBinaryUri = "CdrBinaryUri";
-
-    private CdrFcrepoHeaders() {
-    }
-
 }

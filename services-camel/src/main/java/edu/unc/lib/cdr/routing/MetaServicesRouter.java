@@ -23,6 +23,7 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
+import edu.unc.lib.dl.rdf.Cdr;
 
 /**
  * Meta router which sequences all service routes to run on events.
@@ -42,38 +43,45 @@ public class MetaServicesRouter extends RouteBuilder {
         from("{{fcrepo.stream}}")
             .routeId("CdrMetaServicesRouter")
             .to("direct-vm:index.start")
-            .to("direct:process.ingest");
+            .to("direct:process.enhancement");
 
-        from("direct:process.ingest")
-            .routeId("ProcessIngest")
-            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"
-                    + " && ${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
-                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
-
+        from("direct:process.enhancement")
+            .routeId("ProcessEnhancement")
+            .filter(simple("${headers[org.fcrepo.jms.eventType]} contains 'ResourceCreation'"))
                 // Trigger binary processing after an asynchronously
                 .threads(enhancementThreads, enhancementThreads, "CdrEnhancementThread")
                 .delay(simple("{{cdr.enhancement.postIndexingDelay}}"))
-                .to("direct:process.creation");
+                .removeHeaders("CamelHttp*")
+                .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
+                .multicast()
+                .to("direct:process.binary", "direct:process.solr");
 
-        from("direct:process.creation")
-            .routeId("ProcessCreationEvent")
-            .log(LoggingLevel.DEBUG, "Processing binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-            .removeHeaders("CamelHttp*")
-            .to("fcrepo:{{fcrepo.baseUrl}}?preferInclude=ServerManaged&accept=text/turtle")
-            .process(mdProcessor)
-            .choice()
-                .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
-                    .to("direct-vm:replication")
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
-                    .to("direct-vm:replication")
-                .otherwise()
-                    .log(LoggingLevel.WARN, "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-            .end();
+        from("direct:process.binary")
+            .routeId("ProcessOriginalBinary")
+            .filter(simple("${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
+                    + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
+                .process(mdProcessor)
+                .choice()
+                    .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
+                        .to("direct-vm:replication")
+                        .to("direct:process.enhancements")
+                    .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*techmd_fits'"))
+                        .to("direct-vm:replication")
+                    .otherwise()
+                        .log(LoggingLevel.WARN,
+                                "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
+                .end();
 
         from("direct:process.enhancements")
-            .routeId("ProcessEnhancements")
+            .routeId("AddBinaryEnhancements")
             .multicast()
-                .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+            .to("direct-vm:imageEnhancements","direct-vm:extractFulltext");
+
+        from("direct:process.solr")
+            .routeId("IngestSolrIndexing")
+            .log(LoggingLevel.DEBUG, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '" + Binary.getURI() + "'"
+                    + " && ${headers[org.fcrepo.jms.resourceType]} not contains '" + Cdr.DepositRecord.getURI() + "'"))
+                .to("direct-vm:solrIndexing");
     }
 }
