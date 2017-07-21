@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 The University of North Carolina at Chapel Hill
+ * Copyright 2008 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
  * Index newly ingested objects in Solr
- * 
+ *
  * @author lfarrell
  *
  */
