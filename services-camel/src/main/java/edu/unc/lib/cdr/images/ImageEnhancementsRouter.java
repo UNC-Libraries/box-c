@@ -53,9 +53,9 @@ public class ImageEnhancementsRouter extends RouteBuilder {
         from("direct-vm:imageEnhancements")
             .routeId("CdrImageEnhancementRoute")
             .log(LoggingLevel.INFO, "Calling image route for ${headers[org.fcrepo.jms.identifier]}")
-            .filter(simple("${headers[MimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+            .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Generating images for ${headers[org.fcrepo.jms.identifier]}"
-                        + " of type ${headers[MimeType]}")
+                        + " of type ${headers[CdrMimeType]}")
                 .multicast()
                 .to("direct:small.thumbnail", "direct:large.thumbnail", "direct:accessCopy");
 

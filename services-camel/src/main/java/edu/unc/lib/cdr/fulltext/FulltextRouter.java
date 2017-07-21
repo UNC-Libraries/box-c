@@ -48,9 +48,9 @@ public class FulltextRouter extends RouteBuilder {
         from("direct-vm:extractFulltext")
             .routeId("CdrServiceFulltextExtraction")
             .log(LoggingLevel.DEBUG, "Calling text extraction route for ${headers[org.fcrepo.jms.identifier]}")
-            .filter(simple("${headers[MimeType]} regex '" + MIMETYPE_PATTERN + "'"))
+            .filter(simple("${headers[CdrMimeType]} regex '" + MIMETYPE_PATTERN + "'"))
                 .log(LoggingLevel.INFO, "Extracting text from ${headers[org.fcrepo.jms.identifier]}"
-                        + " of type ${headers[MimeType]}")
+                        + " of type ${headers[CdrMimeType]}")
                 .to("direct:fulltext.extraction");
 
         from("direct:fulltext.extraction")

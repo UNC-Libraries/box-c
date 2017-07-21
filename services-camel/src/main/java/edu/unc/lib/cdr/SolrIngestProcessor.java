@@ -48,8 +48,8 @@ public class SolrIngestProcessor implements Processor {
     private DocumentIndexingPipeline pipeline;
     private SolrUpdateDriver solrUpdateDriver;
 
-    public SolrIngestProcessor(int maxRetries, long retryDelay, DocumentIndexingPackageFactory factory,
-            DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver) {
+    public SolrIngestProcessor(DocumentIndexingPackageFactory factory,
+            DocumentIndexingPipeline pipeline, SolrUpdateDriver solrUpdateDriver, int maxRetries, long retryDelay) {
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;
         this.factory = factory;
