@@ -119,15 +119,15 @@
 	<modules>
 		<module>access</module>
 		<module>security</module>
-		<module>fcrepo-cdr-fesl</module>
+		
 		<module>fcrepo-clients</module>
-		<module>fcrepo-irods-storage</module>
+		
 		<module>metadata</module>
 		<module>oai4solr/oai2-plugin</module>
 		<module>persistence</module>
 		<module>services</module>
 		<module>services-camel</module>
-		<module>services-worker</module>
+		
 		<module>solr-ingest</module>
 		<module>solr-search</module>
 		<module>sword-server</module>
