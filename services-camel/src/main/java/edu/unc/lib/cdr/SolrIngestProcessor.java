@@ -67,13 +67,14 @@ public class SolrIngestProcessor implements Processor {
         while (true) {
             try {
                 SolrUpdateRequest updateRequest = new SolrUpdateRequest(fcrepoBinaryUri, IndexingActionType.ADD);
-                DocumentIndexingPackage dip = updateRequest.getDocumentIndexingPackage();
 
-                dip = factory.createDip(updateRequest.getPid());
+                DocumentIndexingPackage dip = factory.createDip(updateRequest.getPid());
                 updateRequest.setDocumentIndexingPackage(dip);
 
                 pipeline.process(dip);
                 solrUpdateDriver.addDocument(dip.getDocument());
+
+                return;
             } catch (Exception e) {
                 if (retryAttempt == maxRetries) {
                     throw e;
