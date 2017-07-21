@@ -91,6 +91,7 @@
 		<commons-io.version>2.4</commons-io.version>
 		<jena.version>3.1.1</jena.version>
 		<jena.fuseki.version>2.4.1</jena.fuseki.version>
+		<project.copyrightYear>2008</project.copyrightYear>
 	</properties>
 
 	<distributionManagement>
@@ -253,61 +254,35 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<inherited>false</inherited>
-				<groupId>com.google.code.maven-license-plugin</groupId>
-				<artifactId>maven-license-plugin</artifactId>
-				<version>1.4.0</version>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>3.0</version>
 				<configuration>
-					<header>${basedir}/etc/header.txt</header>
-					<failIfMissing>true</failIfMissing>
-					<aggregate>true</aggregate>
-					<properties>
-						<year>${project.inceptionYear}</year>
-					</properties>
-					<excludes>
-						<exclude>README</exclude>
-						<exclude>.git/**</exclude>
-						<exclude>**/.gitignore</exclude>
-						<exclude>**/*.md</exclude>
-						<exclude>Makefile</exclude>
-						<exclude>**/header.txt</exclude>
-						<exclude>**/bin/**</exclude>
-						<exclude>**/bundled/**</exclude>
-						<exclude>**/standards/**</exclude>
-						<exclude>**/resources/**</exclude>
-						<exclude>**/solr-config/**</exclude>
-						<exclude>static/**</exclude>
-						<exclude>**/*.css</exclude>
-						<exclude>**/add_to_maven/**</exclude>
-						<exclude>**/for_tomcat_common_endorsed/**</exclude>
-						<exclude>**/js/**</exclude>
-						<exclude>**/*.tld</exclude>
-						<exclude>**/*.tld</exclude>
-						<exclude>**/*.zip</exclude>
-						<exclude>**/*.springBeans</exclude>
-						<exclude>**/jaxb-*/**</exclude>
-						<exclude>**/src/jaxb/**</exclude>
-						<exclude>**/*.xsd</exclude>
-						<exclude>**/*.patch</exclude>
-						<exclude>**/*.r</exclude>
-						<exclude>**/*.ir</exclude>
-						<exclude>**/*.xcf</exclude>
-						<exclude>**/*.pl</exclude>
-						<exclude>**/*.foxml</exclude>
-						<exclude>**/*.txt</exclude>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.properties</exclude>
-						<exclude>**/robots.txt</exclude>
-					</excludes>
+					<header>etc/header.txt</header>
 					<mapping>
-						<sch>XML_STYLE</sch>
+						<java>JAVADOC_STYLE</java>
+						<jsp>DYNASCRIPT_STYLE</jsp>
 					</mapping>
+					<includes>
+						<include>**/src/main/java/**</include>
+						<include>**/src/test/java/**</include>
+						<include>**/*.jsp</include>
+					</includes>
+					<excludes>
+						<exclude>clamavj/**</exclude>
+						<exclude>oai4solr/**</exclude>
+						<exclude>staging-areas/**</exclude>
+						<exclude>**/*.properties</exclude>
+					</excludes>
+					<properties>
+						<year>${project.copyrightYear}</year>
+						<owner>The University of North Carolina at Chapel Hill</owner>
+					</properties>
 					<encoding>UTF-8</encoding>
+					<strictCheck>true</strictCheck>
 				</configuration>
 				<executions>
 					<execution>
-						<id>check-headers</id>
-						<phase>none</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>
