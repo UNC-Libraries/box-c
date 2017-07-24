@@ -1,3 +1,0 @@
-cdrCollChecksumCheckTest||msiAddKeyVal(*Results,"Bad Checksums:","")##msiCollectionSpider(*Collection,*Objects,acVerifyChecksumLocal(*Objects,*Results),*Status)##writeKeyValPairs(stdout,*Results,"")|nop
-*Collection=$1
-ruleExecOut
