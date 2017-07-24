@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 The University of North Carolina at Chapel Hill
+ * Copyright 2008 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +45,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 
 /**
- * 
+ *
  * @author lfarrell
  *
  */
@@ -87,7 +86,7 @@ public class SolrRouterTest extends CamelSpringTestSupport {
     }
 
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
@@ -97,14 +96,14 @@ public class SolrRouterTest extends CamelSpringTestSupport {
 
         context.start();
     }
-    
+
     private static Map<String, Object> createEvent() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, "original_file");
         headers.put(RESOURCE_TYPE, Container.getURI());
-        
+
         return headers;
     }
-    
+
 }

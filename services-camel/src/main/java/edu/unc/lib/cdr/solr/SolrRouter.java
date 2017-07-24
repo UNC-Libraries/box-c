@@ -1,5 +1,5 @@
 /**
- * Copyright 2017 The University of North Carolina at Chapel Hill
+ * Copyright 2008 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import edu.unc.lib.cdr.SolrIngestProcessor;
 
 /**
  * Router which triggers the full indexing of individual objects to Solr.
- * 
+ *
  * @author lfarrell
  *
  */
@@ -32,6 +32,7 @@ public class SolrRouter extends RouteBuilder {
     @BeanInject(value = "solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
 
+    @Override
     public void configure() throws Exception {
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")
