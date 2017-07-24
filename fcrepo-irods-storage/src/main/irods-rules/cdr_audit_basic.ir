@@ -1,3 +1,0 @@
-cdr_audit||msiMakeGenQuery("COLL_NAME, DATA_NAME, RESC_LOC",*cond,*in)##msiExecGenQuery(*in,*out)##assign(*contCnt,1)##assign(*cntr,0)##whileExec(*contCnt > 0,msiGetMoreRows(*in,*out,*contCnt)##forEachExec(*out,msiGetValByKey(*out,DATA_NAME,*dataName)##msiGetValByKey(*out,COLL_NAME,*collName)##msiGetValByKey(*out,RESC_LOC,*rescLoc)##remoteExec(*rescLoc,"null",msiDataObjChksum(*collName/*dataName,verifyChksum,*chkSum),nop)##assign(*cntr,"*cntr + 1"),nop##nop##nop##nop##nop),nop##nop)##writeLine(stdout,"All OK. Count: *cntr")|nop##nop##nop##nop##nop##nop##nop
-*cond=RESC_CLASS_NAME = 'cache' AND COLL_NAME like '/cdrTestZone/home/fedora%%'
-ruleExecOut
