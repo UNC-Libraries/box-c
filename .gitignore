@@ -25,3 +25,6 @@ dump.rdb
 authorized_keys
 staging-areas
 target
+fcrepo-cdr-fesl
+fcrepo-irods-storage
+services-worker
