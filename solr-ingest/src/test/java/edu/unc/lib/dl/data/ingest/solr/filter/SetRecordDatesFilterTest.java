@@ -21,8 +21,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.text.SimpleDateFormat;
 
+import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -57,6 +58,18 @@ public class SetRecordDatesFilterTest {
     private ContentObject contentObj;
     @Mock
     private Resource resource;
+    @Mock
+    private Statement stmt1;
+    @Mock
+    private Statement stmt2;
+    @Mock
+    private Literal literal1;
+    @Mock
+    private Literal literal2;
+    @Mock
+    private Object object1;
+    @Mock
+    private Object object2;
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -77,10 +90,16 @@ public class SetRecordDatesFilterTest {
 
         when(contentObj.getResource()).thenReturn(resource);
 
-        when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
-            .thenReturn(ResourceFactory.createResource(DATE_ADDED));
-        when(resource.getPropertyResourceValue(Fcrepo4Repository.lastModified))
-            .thenReturn(ResourceFactory.createResource(DATE_MODIFIED));
+        when(resource.getProperty(Fcrepo4Repository.created))
+            .thenReturn(stmt1);
+        when(stmt1.getLiteral()).thenReturn(literal1);
+        when(literal1.getValue()).thenReturn(object1);
+        when(object1.toString()).thenReturn(DATE_ADDED);
+        when(resource.getProperty(Fcrepo4Repository.lastModified))
+            .thenReturn(stmt2);
+        when(stmt2.getLiteral()).thenReturn(literal2);
+        when(literal2.getValue()).thenReturn(object2);
+        when(object2.toString()).thenReturn(DATE_MODIFIED);
 
         filter = new SetRecordDatesFilter();
     }
@@ -103,8 +122,7 @@ public class SetRecordDatesFilterTest {
         // checks that the exception message contains the substring param
         expectedEx.expectMessage("Failed to parse record dates from ");
 
-        when(resource.getPropertyResourceValue(Fcrepo4Repository.created))
-        .thenReturn(ResourceFactory.createResource(BAD_DATE));
+        when(object2.toString()).thenReturn(BAD_DATE);
 
         filter.filter(dip);
     }
