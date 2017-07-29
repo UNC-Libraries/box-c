@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.Model.CONTAINER;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +46,7 @@ import edu.unc.lib.dl.util.PackagingType;
 /**
  * Generates service document from all containers which are the immediate children of the starting path, given the users
  * authorization credentials.
- * 
+ *
  * @author bbpennel
  */
 public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements ServiceDocumentManager {
@@ -52,6 +54,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 
 	private Collection<PackagingType> acceptedPackaging;
 
+	@Override
 	public ServiceDocument getServiceDocument(String sdUri, AuthCredentials auth, SwordConfiguration config)
 			throws SwordError, SwordServerException, SwordAuthException {
 
@@ -104,7 +107,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 	/**
 	 * Retrieves a list of SwordCollection objects representing all the children containers of container pid which the
 	 * groups in groupList have curator access to.
-	 * 
+	 *
 	 * @param pid
 	 *           pid of the container to retrieve the children of.
 	 * @param groupList
@@ -116,8 +119,9 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 	protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
 			SwordConfigurationImpl config) throws IOException {
 		String query = this.readFileAsString("immediateContainerChildren.sparql");
-		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(), pid.getURI());
-		List<SwordCollection> result = new ArrayList<SwordCollection>();
+		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(),
+				pid.getURI(), CONTAINER.getURI());
+		List<SwordCollection> result = new ArrayList<>();
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		List<Map> bindings = (List<Map>) ((Map) tripleStoreQueryService.sendSPARQL(query).get("results")).get("bindings");
@@ -135,6 +139,9 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 				collection.addAccepts("text/xml");
 				collection.addAccepts("application/xml");
 				for (PackagingType packaging : acceptedPackaging) {
+					if (packaging == null) {
+						continue;
+					}
 					collection.addAcceptPackaging(packaging.getUri());
 				}
 				collection.setMediation(true);
@@ -147,7 +154,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 		}
 		return result;
 	}
-	
+
 	public void setAcceptedPackaging(Map<PackagingType, DepositHandler> packageTypeHandlers) {
 		this.acceptedPackaging = packageTypeHandlers.keySet();
 	}
