@@ -55,6 +55,10 @@ import edu.unc.lib.dl.util.ErrorURIRegistry;
 public class MediaResourceManagerImpl extends AbstractFedoraManager implements MediaResourceManager {
 	private static Logger log = Logger.getLogger(MediaResourceManagerImpl.class);
 
+	private final static SimpleDateFormat iso8601MsFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+	private final static SimpleDateFormat iso8601SFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+
 	private String fedoraHost;
 	private String fedoraPath;
 	private Map<String, Datastream> virtualDatastreamMap;
@@ -96,7 +100,7 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 				query.append("select $mimeType $lastModified from <%1$s>")
 						.append(" where <%2$s> <%3$s> $mimeType and <%2$s> <%4$s> $lastModified").append(";");
 				String formatted = String.format(query.toString(),
-						tripleStoreQueryService.getResourceIndexModelUri(), targetPID.getURI() + "/" + datastream.getName(), 
+						tripleStoreQueryService.getResourceIndexModelUri(), targetPID.getURI() + "/" + datastream.getName(),
 						ContentModelHelper.FedoraProperty.mimeType.getURI().toString(),
 						ContentModelHelper.FedoraProperty.lastModifiedDate.getURI().toString());
 				List<List<String>> datastreamResults = tripleStoreQueryService.queryResourceIndex(formatted);
@@ -124,13 +128,16 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
 				}
 				
 				MediaResource resource = new MediaResource(inputStream, mimeType, null, true);
-				SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 				Date lastModifiedDate;
 				try {
-					lastModifiedDate = formatter.parse(lastModified);
+					lastModifiedDate = iso8601MsFormat.parse(lastModified);
 					resource.setLastModified(lastModifiedDate);
 				} catch (ParseException e) {
-					log.error("Unable to set last modified date for " + uri, e);
+					try {
+						lastModifiedDate = iso8601SFormat.parse(lastModified);
+					} catch (ParseException e1) {
+						log.error("Unable to set last modified date for " + uri, e1);
+					}
 				}
 
 				return resource;
