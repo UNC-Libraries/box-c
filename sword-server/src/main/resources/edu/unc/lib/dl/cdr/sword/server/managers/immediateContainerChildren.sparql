@@ -4,8 +4,7 @@ SELECT ?pid ?slug
 FROM <%1$s>
 WHERE
 {
-	?containerPid cdr-base:contains ?pid .
-	?pid cdr-base:slug ?slug .
-	?pid fedora-model:hasModel <info:fedora/cdr-model:Container> .
-	FILTER ( ?containerPid = <%2$s>)
+	<%2$s> cdr-base:contains ?pid .
+	?pid fedora-model:label ?slug .
+	?pid fedora-model:hasModel <%3$s> .
 }

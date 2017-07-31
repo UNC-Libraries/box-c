@@ -159,6 +159,7 @@
 			<key><null/></key>
 			<ref bean="atomPubEntryDepositHandler"/>
 		</entry>
+		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).ATOM}" value-ref="atomPubEntryDepositHandler" />
 		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_1}" value-ref="dspaceMetsDepositHandler" />
 		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_DSPACE_SIP_2}" value-ref="dspaceMetsDepositHandler" />
 		<entry key="#{T(edu.unc.lib.dl.util.PackagingType).METS_CDR}" value-ref="cdrMetsDepositHandler" />
