@@ -4,9 +4,8 @@ SELECT ?pid ?slug
 FROM <%1$s>
 WHERE
 {
-	?containerPid cdr-base:contains ?pid .
-	?pid cdr-base:slug ?slug .
-	FILTER ( ?containerPid = <%2$s>)
+	<%2$s> cdr-base:contains ?pid .
+	?pid fedora-model:label ?slug .
 }
 LIMIT %3$s
 OFFSET %4$s
