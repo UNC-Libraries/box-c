@@ -72,7 +72,20 @@
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
 		<property name="filters">
 			<list>
+				<ref bean="setAccessControlFilter" />
+				<ref bean="setAccessStatusFilter" />
+				<ref bean="setCollectionSupplementalInformationFilter" />
+				<ref bean="setContentStatusFilter" />
+				<ref bean="setContentTypeFilter" />
+				<ref bean="setDatastreamFilter" />
+				<ref bean="setDescriptiveMetadataFilter" />
+				<ref bean="setDisplayOrderFilter" />
+				<ref bean="setFullTextFilter" />
+				<ref bean="setObjectTypeFilter" />
+				<ref bean="setPathFilter" />
 				<ref bean="setRecordDatesFilter" />
+				<ref bean="setRelationsFilter" />
+				<ref bean="setStatusTagsFilter" />
 			</list>
 		</property>
 	</bean>
@@ -137,40 +150,45 @@
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
 	</bean>
 	
-	<bean id="setRecordDatesFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
-	</bean>
+	
 	<!-- Solr ingest filters -->
-	<!-- <bean id="setDatastreamContentFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
-	</bean>
-	<bean id="setDisplayOrderFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
-	</bean>
-	<bean id="setRelationsFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
-	</bean>
-	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
-		<property name="collectionsPid" ref="collectionsPid" />
-		<property name="tsqs" ref="tripleStoreQueryService" />
-	</bean>
-	<bean id="setDescriptiveMetadataFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
-	</bean>
-	<bean id="setRecordDatesFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
-	</bean>
 	<bean id="setAccessControlFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
 	</bean>
+	<bean id="setAccessStatusFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessStatusFilter">
+    </bean>
+    <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+        <property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+    </bean>
 	<bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
 	</bean>
+	<bean id="setContentTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentTypeFilter">
+    </bean>
+	<bean id="setDatastreamFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+    </bean>
+	<bean id="setDescriptiveMetadataFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+        <!--  <property name="vocabManager" value="${services.indexing.vocabManager}" />-->
+    </bean>
+	<bean id="setDisplayOrderFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
+    </bean>
 	<bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
-		<property name="accessClient" ref="accessClient" />
-	</bean>
-	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
-		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
-	</bean>-->
+    </bean>
+	<bean id="setObjectTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetObjectTypeFilter">
+    </bean>
+	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+    </bean>
+	<bean id="setRecordDatesFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+    </bean>
+	<bean id="setRelationsFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+    </bean>
+	<bean id="setStatusTagsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusTagsFilter">
+    </bean>
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
