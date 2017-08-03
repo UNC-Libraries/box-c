@@ -18,6 +18,7 @@ package edu.unc.lib.dl.fcrepo4;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -52,7 +53,8 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     @Override
     public RepositoryObject load(PID pid) {
 
-        try (FcrepoResponse response = client.get(pid.getRepositoryUri())
+        URI metadataUri = repository.getMetadataUri(pid);
+        try (FcrepoResponse response = client.get(metadataUri)
                 .accept(TURTLE_MIMETYPE)
                 .perform()) {
 

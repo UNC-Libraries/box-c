@@ -55,6 +55,7 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
@@ -69,14 +70,14 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.JobField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
     private static final String INGESTOR_PRINC = "ingestor";
-    
+
     private IngestContentObjectsJob job;
 
     private PID destinationPid;
@@ -90,10 +91,10 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final long FILE2_SIZE = 4L;
 
     private File techmdDir;
-    
+
     @Autowired
     private AccessControlService aclService;
-    
+
     @Autowired
     private Model queryServiceModel;
 
@@ -131,11 +132,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Resource unitResc = createResource(unitPid.getRepositoryPath());
         destinationPid = repository.mintContentPid();
         Resource destResc = createResource(destinationPid.getRepositoryPath());
-        
+
         queryServiceModel.add(contentResc, PcdmModels.hasMember, unitResc);
         queryServiceModel.add(unitResc, PcdmModels.hasMember, destResc);
         queryServiceModel.add(destResc, CdrAcl.canIngest, INGESTOR_PRINC);
-        
+
         repository.createFolderObject(destinationPid);
 
         Map<String, String> status = new HashMap<>();
@@ -168,7 +169,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.run();
 
         // Verify that the destination has the folder added to it
-        ContentObject destObj = repository.getContentObject(destinationPid);
+        RepositoryObject destObj = repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
@@ -219,7 +220,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
+        ContentContainerObject destObj = (ContentContainerObject) repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
@@ -244,22 +245,22 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         // Verify that ingestion event gets added for work
         List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
         assertEquals(2, eventsWork.size());
-        
+
         assertNotNull(findPremisEventByEventDetail(eventsWork, "ingested as PID: " + mWork.getPid().getQualifiedId()));
         assertNotNull(findPremisEventByEventDetail(eventsWork, "added 2 child objects to this container"));
-        
+
         // Verify that ingestion event gets added for primary object
         List<PremisEventObject> eventsPrimObj = primaryObj.getPremisLog().getEvents();
         assertEquals(1, eventsPrimObj.size());
         assertNotNull(findPremisEventByEventDetail(eventsPrimObj, "ingested as PID: " + mainPid.getQualifiedId()
             + "\n ingested as filename: " + FILE1_LOC));
-        
+
         // Verify that ingestion event gets added for supplementary object
         List<PremisEventObject> eventsSupObj = supObj.getPremisLog().getEvents();
         assertEquals(1, eventsSupObj.size());
         assertNotNull(findPremisEventByEventDetail(eventsSupObj, "ingested as PID: " + supPid.getQualifiedId()
             + "\n ingested as filename: " + FILE2_LOC));
-        
+
         assertClickCount(3);
     }
 
@@ -279,7 +280,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        ContentObject destObj = repository.getContentObject(destinationPid);
+        RepositoryObject destObj = repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
@@ -331,7 +332,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        ContentObject destObj = repository.getContentObject(destinationPid);
+        RepositoryObject destObj = repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembers.size());
 
@@ -376,7 +377,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         }
 
         // Check that the folder and first child successfully made it in
-        ContentObject destObj = repository.getContentObject(destinationPid);
+        RepositoryObject destObj = repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembersFailed = ((ContentContainerObject) destObj).getMembers();
         assertEquals("Incorrect number of children at destination", 1, destMembersFailed.size());
 
@@ -447,7 +448,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         job.run();
 
-        ContentObject destObj = repository.getContentObject(destinationPid);
+        RepositoryObject destObj = repository.getRepositoryObject(destinationPid);
         List<ContentObject> members = ((ContentContainerObject) destObj).getMembers();
 
         for (int i = 0; i < nestingDepth; i++) {
@@ -498,16 +499,16 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             assertFalse(repository.objectExists(workPid));
         }
     }
-    
+
     @Test
     public void addDescriptionTest() throws IOException {
         File modsFolder = job.getDescriptionDir();
         modsFolder.mkdir();
-        
+
         PID folderPid = repository.mintContentPid();
         File modsFile = new File(modsFolder, folderPid.getUUID() + ".xml");
         modsFile.createNewFile();
-        
+
         String label = "testfolder";
 
         // Construct the deposit model, containing a deposit with one empty folder
@@ -524,19 +525,19 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-        
-        ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
+
+        ContentContainerObject destObj = (ContentContainerObject) repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
         FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
-        
+
         assertNotNull(folderObj.getDescription());
     }
-    
+
     @Test
     public void noDescriptionAddedTest() {
         PID folderPid = repository.mintContentPid();
-        
+
         String label = "testfolder";
 
         // Construct the deposit model, containing a deposit with one empty folder
@@ -553,25 +554,25 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         job.closeModel();
 
         job.run();
-        
-        ContentContainerObject destObj = (ContentContainerObject) repository.getContentObject(destinationPid);
+
+        ContentContainerObject destObj = (ContentContainerObject) repository.getRepositoryObject(destinationPid);
         List<ContentObject> destMembers = destObj.getMembers();
         // Make sure that the folder is present and is actually a folder
         FolderObject folderObj = (FolderObject) findContentObjectByPid(destMembers, folderPid);
-        
+
         assertNull(folderObj.getDescription());
     }
-    
+
     @Test
     public void addPremisEventsTest() throws IOException {
         File premisEventsDir = job.getEventsDirectory();
         premisEventsDir.mkdir();
-        
+
         PID folderObjPid = repository.mintContentPid();
-        
+
         File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".ttl");
         premisEventsFile.createNewFile();
-        
+
         String label = "testfolder";
 
         // Construct the deposit model, containing a deposit with one empty folder
@@ -584,7 +585,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         folderBag.addProperty(CdrDeposit.label, label);
 
         depBag.add(folderBag);
-        
+
         FilePremisLogger premisLogger = new FilePremisLogger(folderObjPid, premisEventsFile, repository);
         // build event 1
         premisLogger.buildEvent(Premis.Normalization)
@@ -596,11 +597,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
                 .addEventDetail("Event 2")
                 .addSoftwareAgent(SoftwareAgent.clamav.getFullname())
                 .write();
-        
+
         job.closeModel();
 
         job.run();
-        
+
         FolderObject folder = repository.getFolderObject(folderObjPid);
         List<PremisEventObject> events = folder.getPremisLog().getEvents();
         // there should be three events total: the ingestion event, plus the two added in the test
@@ -608,17 +609,17 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertTrue(events.contains(findPremisEventByType(events, Premis.Normalization)));
         assertTrue(events.contains(findPremisEventByType(events, Premis.VirusCheck)));
     }
-    
+
     @Test
     public void onlyIngestionEventAddedTest() throws IOException {
         File premisEventsDir = job.getEventsDirectory();
         premisEventsDir.mkdir();
-        
+
         PID folderObjPid = repository.mintContentPid();
-        
+
         File premisEventsFile = new File(premisEventsDir, folderObjPid.getUUID() + ".xml");
         premisEventsFile.createNewFile();
-        
+
         String label = "testfolder";
 
         // Construct the deposit model, containing a deposit with one empty folder
@@ -631,11 +632,11 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         folderBag.addProperty(CdrDeposit.label, label);
 
         depBag.add(folderBag);
-        
+
         job.closeModel();
 
         job.run();
-        
+
         FolderObject folder = repository.getFolderObject(folderObjPid);
         List<PremisEventObject> events = folder.getPremisLog().getEvents();
         assertEquals(1, events.size());
@@ -681,12 +682,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         return filePid;
     }
-    
+
     private PremisEventObject findPremisEventByType(List<PremisEventObject> objs, final Resource type) {
         return objs.stream()
                 .filter(p -> p.getResource().getPropertyResourceValue(Premis.hasEventType).equals(type)).findAny().get();
     }
-    
+
     private PremisEventObject findPremisEventByEventDetail(List<PremisEventObject> objs, final String message) {
         return objs.stream()
                 .filter(p -> p.getResource().hasProperty(Premis.hasEventDetail, message)).findAny().get();
