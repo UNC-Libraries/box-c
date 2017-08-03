@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
@@ -47,8 +46,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
 
-    @Autowired
     private VocabularyHelperManager vocabManager;
+
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -354,5 +353,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         if (citationEl != null) {
             idb.setCitation(citationEl.getValue().trim());
         }
+    }
+
+    public void setVocabManager(VocabularyHelperManager vocabManager) {
+        this.vocabManager = vocabManager;
     }
 }
