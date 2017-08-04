@@ -18,38 +18,26 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class DocumentIndexingPipeline implements DocumentFilteringPipeline {
+    private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPipeline.class);
     protected Collection<IndexDocumentFilter> filters;
 
     @Override
     public void process(DocumentIndexingPackage dip) throws IndexingException {
-        // Do not process deposit records or objects without content models
-        if (dip.getTriples() != null) {
-            List<String> contentModels = dip.getTriples().get(ContentModelHelper.FedoraProperty.hasModel.toString());
-
-            if (contentModels == null || contentModels.size() == 0) {
-                throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
-                        + " due having no content models assigned.");
-            }
-
-            if (contentModels.contains(ContentModelHelper.Model.DEPOSIT_RECORD.toString())) {
-                throw new UnsupportedContentModelException("Could not index object " + dip.getPid().toString()
-                        + ", objects of type " + ContentModelHelper.Model.DEPOSIT_RECORD.toString()
-                        + " are not supported for indexing.");
-            }
-        }
 
         for (IndexDocumentFilter filter : filters) {
+            log.info("filter {} executed on pid {}", filter.getClass().getName(), dip.getPid());
             filter.filter(dip);
         }
     }

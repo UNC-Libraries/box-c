@@ -50,7 +50,7 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 /**
  * Replicates binary files ingested into fedora to a series of one or more remote storage locations.
  * It checksums the remote file to make sure it's the same file that was originally ingested.
- * 
+ *
  * @author lfarrell
  *
  */
@@ -128,12 +128,12 @@ public class ReplicationProcessor implements Processor {
         return remotePath;
     }
 
-    private String createRemoteSubDirectory(String baseDirectory, String binaryChecksum) {
+    private String createRemoteSubDirectory(String baseDirectory, String binaryChecksum) throws IOException {
         String replicationPath = createFilePath(baseDirectory, binaryChecksum);
         Path fullPath = Paths.get(replicationPath);
 
         if (!Files.exists(fullPath)) {
-            new File(replicationPath).mkdirs();
+            Files.createDirectories(fullPath);
         }
 
         return replicationPath;

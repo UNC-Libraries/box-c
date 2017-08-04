@@ -79,9 +79,9 @@ public class MetaServicesRouter extends RouteBuilder {
 
         from("direct:process.solr")
             .routeId("IngestSolrIndexing")
-            .log(LoggingLevel.DEBUG, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
-            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '" + Binary.getURI() + "'"
-                    + " && ${headers[org.fcrepo.jms.resourceType]} not contains '" + Cdr.DepositRecord.getURI() + "'"))
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
+                    + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"))
+                .log(LoggingLevel.INFO, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
                 .to("direct-vm:solrIndexing");
     }
 }

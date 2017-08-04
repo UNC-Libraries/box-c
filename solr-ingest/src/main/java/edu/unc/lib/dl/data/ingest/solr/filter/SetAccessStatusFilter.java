@@ -93,7 +93,8 @@ public class SetAccessStatusFilter implements IndexDocumentFilter {
             status.add(FacetConstants.PUBLIC_ACCESS);
         }
 
-        if (inheritedAccess.equals(PatronAccess.none) && !objAccess.equals(PatronAccess.none)) {
+        if (inheritedAccess != null && inheritedAccess.equals(PatronAccess.none)
+                && !objAccess.equals(PatronAccess.none)) {
             status.add(FacetConstants.PARENT_HAS_STAFF_ONLY_ACCESS);
         }
 

@@ -17,6 +17,7 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -29,7 +30,7 @@ public class DocumentIndexingPackageFactory {
     private DocumentIndexingPackageDataLoader dataLoader;
 
     public DocumentIndexingPackage createDip(String pid) {
-        return new DocumentIndexingPackage(new PID(pid), null, dataLoader);
+        return new DocumentIndexingPackage(PIDs.get(pid), null, dataLoader);
     }
 
     public DocumentIndexingPackage createDip(PID pid) {

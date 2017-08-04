@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -47,7 +50,9 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 
@@ -66,6 +71,10 @@ public class SetDescriptiveMetadataFilterTest {
     private DocumentIndexingPackage dip;
     @Mock
     private IndexDocumentBean idb;
+    @Mock
+    private ContentObject contentObj;
+    @Mock
+    private Resource objResc;
 
     @Mock
     private PID pid;
@@ -88,10 +97,13 @@ public class SetDescriptiveMetadataFilterTest {
     public void setup() throws Exception {
         initMocks(this);
 
-        when(pid.getPid()).thenReturn(PID_STRING);
+        when(pid.getId()).thenReturn(PID_STRING);
 
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
+        when(dip.getContentObject()).thenReturn(contentObj);
+        when(contentObj.getResource()).thenReturn(objResc);
+        when(idb.getTitle()).thenReturn("Title");
 
         filter = new SetDescriptiveMetadataFilter();
         setField(filter, "vocabManager", vocabManager);
@@ -267,7 +279,11 @@ public class SetDescriptiveMetadataFilterTest {
     @Test
     public void noMODS() throws Exception {
         when(idb.getTitle()).thenReturn(null);
-        when(dip.getLabel()).thenReturn("test label");
+        when(objResc.hasProperty(DcElements.title)).thenReturn(true);
+        Statement titleStmt = mock(Statement.class);
+        when(titleStmt.getString()).thenReturn("test label");
+        when(objResc.getProperty(DcElements.title)).thenReturn(titleStmt);
+
         when(idb.getKeyword()).thenReturn(new ArrayList<String>());
 
         filter.filter(dip);

@@ -18,11 +18,12 @@ package edu.unc.lib.dl.data.ingest.solr;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -34,7 +35,7 @@ public class ChildSetRequest extends SolrUpdateRequest {
         super(newParent, action);
         this.children = new ArrayList<PID>(children.size());
         for (String childString : children) {
-            this.children.add(new PID(childString));
+            this.children.add(PIDs.get(childString));
         }
     }
 

@@ -72,7 +72,19 @@
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
 		<property name="filters">
 			<list>
+				<ref bean="setAccessControlFilter" />
+				<ref bean="setAccessStatusFilter" />
+				<ref bean="setCollectionSupplementalInformationFilter" />
+				<ref bean="setContentStatusFilter" />
+				<ref bean="setContentTypeFilter" />
+				<ref bean="setDatastreamFilter" />
+				<ref bean="setDescriptiveMetadataFilter" />
+				<ref bean="setFullTextFilter" />
+				<ref bean="setObjectTypeFilter" />
+				<ref bean="setPathFilter" />
 				<ref bean="setRecordDatesFilter" />
+				<ref bean="setRelationsFilter" />
+				<ref bean="setStatusTagsFilter" />
 			</list>
 		</property>
 	</bean>
@@ -137,40 +149,79 @@
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
 	</bean>
 	
+	<!-- ACL related beans -->
+	<bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
+		<property name="fusekiQueryURL" value="${fuseki.baseUri}" />
+	</bean>
+	
+	<bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+			init-method="init">
+		<property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
+		<property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
+		<property name="queryService" ref="sparqlQueryService" />
+	</bean>
+	
+	<bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+			init-method="init">
+		<property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
+		<property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
+		<property name="queryService" ref="sparqlQueryService" />
+	</bean>
+	
+	<bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
+		<property name="aclFactory" ref="objectAclFactory" />
+	</bean>
+	
+	<bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
+		<property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+		<property name="pathFactory" ref="contentPathFactory" />
+	</bean>
+	
+	<bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+		<property name="objectAclFactory" ref="objectAclFactory" />
+		<property name="pathFactory" ref="contentPathFactory" />
+		<property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+	</bean>
+	
+	<!-- Solr ingest filters -->
+	<bean id="setAccessControlFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+		<property name="aclFactory" ref="inheritedAclFactory" />
+	</bean>
+	<bean id="setAccessStatusFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessStatusFilter">
+		<property name="inheritedAclFactory" ref="inheritedAclFactory" />
+		<property name="objectAclFactory" ref="objectAclFactory" />
+	</bean>
+	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+	</bean>
+	<bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
+	</bean>
+	<bean id="setContentTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentTypeFilter">
+	</bean>
+	<bean id="setDatastreamFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+	</bean>
+	<bean id="setDescriptiveMetadataFilter"
+		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+		<!--  <property name="vocabManager" value="${services.indexing.vocabManager}" />-->
+	</bean>
+	<bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
+	</bean>
+	<bean id="setObjectTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetObjectTypeFilter">
+	</bean>
+	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+	   <property name="pathFactory" ref="contentPathFactory" />
+	</bean>
 	<bean id="setRecordDatesFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
-	</bean>
-	<!-- Solr ingest filters -->
-	<!-- <bean id="setDatastreamContentFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamContentFilter">
-	</bean>
-	<bean id="setDisplayOrderFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDisplayOrderFilter">
 	</bean>
 	<bean id="setRelationsFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
 	</bean>
-	<bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
-		<property name="collectionsPid" ref="collectionsPid" />
-		<property name="tsqs" ref="tripleStoreQueryService" />
+	<bean id="setStatusTagsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusTagsFilter">
 	</bean>
-	<bean id="setDescriptiveMetadataFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
-	</bean>
-	<bean id="setRecordDatesFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
-	</bean>
-	<bean id="setAccessControlFilter"
-		class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
-	</bean>
-	<bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
-	</bean>
-	<bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
-		<property name="accessClient" ref="accessClient" />
-	</bean>
-	<bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
-		<property name="collectionFilters" value="${services.indexing.collectionFilters}" />
-	</bean>-->
 
 	<!-- Ingest Actions -->
 	<bean id="updateObjectAction"
@@ -346,7 +397,7 @@
 	</bean>
 	
 	<bean id="dipDataLoader"
-		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader" init-method="init">
 		<property name="repository" ref="repository"></property>
 	</bean>
 	

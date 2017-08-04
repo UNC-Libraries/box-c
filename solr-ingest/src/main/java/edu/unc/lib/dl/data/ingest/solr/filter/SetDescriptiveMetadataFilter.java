@@ -23,13 +23,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.rdf.DcElements;
+import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -47,8 +51,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private final Properties languageCodeMap;
     public final static String AFFIL_URI = "http://cdr.unc.edu/vocabulary/Affiliation";
 
-    @Autowired
     private VocabularyHelperManager vocabManager;
+
 
     public SetDescriptiveMetadataFilter() {
         languageCodeMap = new Properties();
@@ -81,15 +85,35 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         }
 
         if (dip.getDocument().getTitle() == null) {
-            idb.setTitle(dip.getLabel());
+            idb.setTitle(getAlternativeTitle(dip));
         }
-        idb.getKeyword().add(dip.getPid().getPid());
+        idb.getKeyword().add(dip.getPid().getId());
+    }
+
+    private String getAlternativeTitle(DocumentIndexingPackage dip) throws FedoraException, IndexingException {
+        String title = null;
+        Resource resc = dip.getContentObject().getResource();
+
+        // Use dc:title as a default
+        if (resc.hasProperty(DcElements.title)) {
+            Statement dcTitle = resc.getProperty(DcElements.title);
+            return dcTitle.getString();
+        }
+
+        // fall back to filename if one is present
+        if (title == null && resc.hasProperty(Ebucore.filename)) {
+            Statement filename = resc.getProperty(Ebucore.filename);
+            return filename.getString();
+        }
+
+        // Use the object's id as the title as a final option
+        return dip.getPid().getId();
     }
 
     private void extractTitles(Element mods, IndexDocumentBean idb) {
         List<?> titles = mods.getChildren("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
         String mainTitle = null;
-        List<String> otherTitles = new ArrayList<String>();
+        List<String> otherTitles = new ArrayList<>();
         for (Object titleInfoObj : titles) {
             Element titleInfoEl = (Element) titleInfoObj;
             for (Object titleObj : titleInfoEl.getChildren()) {
@@ -109,8 +133,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments) {
         List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
-        List<String> creators = new ArrayList<String>();
-        List<String> contributors = new ArrayList<String>();
+        List<String> creators = new ArrayList<>();
+        List<String> contributors = new ArrayList<>();
 
         Element nameEl;
         for (Object nameObj : names) {
@@ -196,7 +220,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
             if (affiliationTerms != null && affiliationTerms.size() > 0) {
             // Make the departments for the whole document into a form solr can take
-                List<String> flattened = new ArrayList<String>();
+                List<String> flattened = new ArrayList<>();
                 for (List<String> path : affiliationTerms) {
                     flattened.addAll(path);
                 }
@@ -215,7 +239,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private void extractSubjects(Element mods, IndexDocumentBean idb) {
         List<?> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
         if (subjectEls.size() > 0) {
-            List<String> subjects = new ArrayList<String>();
+            List<String> subjects = new ArrayList<>();
             for (Object subjectObj: subjectEls) {
                 List<?> subjectParts = ((Element)subjectObj).getChildren();
                 for (Object subjectPart: subjectParts) {
@@ -235,7 +259,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
     private void extractLanguages(Element mods, IndexDocumentBean idb) {
         List<?> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
         if (languageEls.size() > 0) {
-            List<String> languages = new ArrayList<String>();
+            List<String> languages = new ArrayList<>();
             String languageTerm = null;
             for (Object languageObj: languageEls) {
                 // Our schema only allows for iso639-2b languages at this point.
@@ -298,7 +322,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
     private void extractIdentifiers(Element mods, IndexDocumentBean idb) {
         List<?> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-        List<String> identifiers = new ArrayList<String>();
+        List<String> identifiers = new ArrayList<>();
         for (Object identifierObj: identifierEls) {
             StringBuilder identifierBuilder = new StringBuilder();
             Element identifierEl = (Element) identifierObj;
@@ -354,5 +378,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         if (citationEl != null) {
             idb.setCitation(citationEl.getValue().trim());
         }
+    }
+
+    public void setVocabManager(VocabularyHelperManager vocabManager) {
+        this.vocabManager = vocabManager;
     }
 }
