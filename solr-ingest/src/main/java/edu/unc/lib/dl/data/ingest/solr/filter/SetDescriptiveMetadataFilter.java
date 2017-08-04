@@ -102,7 +102,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
         // fall back to filename if one is present
         if (title == null && resc.hasProperty(Ebucore.filename)) {
-            // ebucore: filename
             Statement filename = resc.getProperty(Ebucore.filename);
             return filename.getString();
         }
