@@ -82,13 +82,13 @@ public class Repository {
 
     private RepositoryObjectDataLoader repositoryObjectDataLoader;
 
-    private LoadingCache<PID, RepositoryObject> contentObjCache;
+    private LoadingCache<PID, RepositoryObject> repositoryObjCache;
     private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
     private long cacheTimeToLive;
     private long cacheMaxSize;
 
     public void init() {
-        contentObjCache = CacheBuilder.newBuilder()
+        repositoryObjCache = CacheBuilder.newBuilder()
                 .maximumSize(cacheMaxSize)
                 .expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
                 .build(repositoryObjectCacheLoader);
@@ -155,7 +155,7 @@ public class Repository {
      */
     public RepositoryObject getRepositoryObject(PID pid) throws FedoraException {
         try {
-            return contentObjCache.get(pid);
+            return repositoryObjCache.get(pid);
         } catch (UncheckedExecutionException | ExecutionException e) {
             throw (FedoraException) e.getCause();
         }

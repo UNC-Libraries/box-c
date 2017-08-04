@@ -204,13 +204,6 @@ public class RepositoryObjectCacheLoaderTest {
     }
 
     @Test(expected = ObjectTypeMismatchException.class)
-    public void loadInvalidPidTest() throws Exception {
-        mockResponseBodyWithType(pid, Fcrepo4Repository.Pairtree);
-
-        objectCacheLoader.load(pid);
-    }
-
-    @Test(expected = ObjectTypeMismatchException.class)
     public void invalidContentPidTest() throws Exception {
         pid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE + "/" + UUID.randomUUID().toString());
 
