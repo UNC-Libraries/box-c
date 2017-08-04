@@ -107,7 +107,7 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             return filename.getString();
         }
 
-        // Use the objects id as the title as a final option
+        // Use the object's id as the title as a final option
         return dip.getPid().getId();
     }
 
