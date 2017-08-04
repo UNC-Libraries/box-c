@@ -61,7 +61,7 @@ public abstract class ContentContainerObject extends ContentObject {
         for (StmtIterator it = resc.listProperties(PcdmModels.hasMember); it.hasNext(); ) {
             String memberUri = it.nextStatement().getResource().toString();
 
-            members.add(repository.getContentObject(PIDs.get(memberUri)));
+            members.add((ContentObject) repository.getRepositoryObject(PIDs.get(memberUri)));
         }
 
         return members;

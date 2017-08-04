@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -31,10 +29,6 @@ import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 
 import edu.unc.lib.dl.acl.fcrepo3.ObjectAccessControlsBeanImpl;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -44,6 +38,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -79,16 +74,8 @@ public class DocumentIndexingPackageDataLoader {
     private int maxRetries = 2;
     private long retryDelay = 1000L;
 
-    private LoadingCache<PID, ContentObject> contentObjCache;
     private long cacheTimeToLive;
     private long cacheMaxSize;
-
-    public void init() {
-        contentObjCache = CacheBuilder.newBuilder()
-                .maximumSize(cacheMaxSize)
-                .expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
-                .build(new ContentObjectCacheLoader());
-    }
 
     public Element loadMods(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject contentObj = getContentObject(dip);
@@ -107,11 +94,11 @@ public class DocumentIndexingPackageDataLoader {
     }
 
     public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
-        try {
-            return contentObjCache.get(dip.getPid());
-        } catch (ExecutionException e) {
-            throw new IndexingException("Failed to load content object " + dip.getPid(), e.getCause());
+        RepositoryObject repoObj = repository.getRepositoryObject(dip.getPid());
+        if (!(repoObj instanceof ContentObject)) {
+            throw new IndexingException("Object " + dip.getPid() + " is not a ContentObject");
         }
+        return (ContentObject) repoObj;
     }
 
     public long getCacheTimeToLive() {
@@ -128,18 +115,6 @@ public class DocumentIndexingPackageDataLoader {
 
     public void setCacheMaxSize(long cacheMaxSize) {
         this.cacheMaxSize = cacheMaxSize;
-    }
-
-    /**
-     * Loader for cache content objects for reuse in indexing tasks
-     *
-     * @author bbpennel
-     *
-     */
-    private class ContentObjectCacheLoader extends CacheLoader<PID, ContentObject> {
-        public ContentObject load(PID pid) {
-            return repository.getContentObject(pid);
-        }
     }
 
     public void setRepository(Repository repository) {
@@ -202,7 +177,7 @@ public class DocumentIndexingPackageDataLoader {
         if (childrenRelations == null) {
             return Collections.<PID>emptyList();
         }
-        List<PID> children = new ArrayList<PID>(childrenRelations.size());
+        List<PID> children = new ArrayList<>(childrenRelations.size());
 
         for (String childRelation : childrenRelations) {
             children.add(new PID(childRelation));

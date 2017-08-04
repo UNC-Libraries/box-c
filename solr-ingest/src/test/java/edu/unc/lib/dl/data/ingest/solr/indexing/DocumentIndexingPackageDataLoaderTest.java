@@ -68,7 +68,6 @@ public class DocumentIndexingPackageDataLoaderTest {
 
         dataLoader = new DocumentIndexingPackageDataLoader();
         dataLoader.setRepository(repository);
-        dataLoader.init();
 
         when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
         when(dip.getPid()).thenReturn(pid);
@@ -79,7 +78,7 @@ public class DocumentIndexingPackageDataLoaderTest {
         InputStream modsStream = new FileInputStream(new File(
                 "src/test/resources/datastream/inventoryMods.xml"));
 
-        when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+        when(repository.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getMODS()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(modsStream);
 
@@ -88,27 +87,27 @@ public class DocumentIndexingPackageDataLoaderTest {
         assertNotNull(modsElement);
         assertEquals("mods", modsElement.getName());
 
-        verify(repository).getContentObject(any(PID.class));
+        verify(repository).getRepositoryObject(any(PID.class));
     }
 
     @Test
     public void testLoadNoMods() throws Exception {
 
-        when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+        when(repository.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getMODS()).thenReturn(null);
 
         Element modsElement = dataLoader.loadMods(dip);
 
         assertNull(modsElement);
 
-        verify(repository).getContentObject(any(PID.class));
+        verify(repository).getRepositoryObject(any(PID.class));
     }
 
     @Test(expected = IndexingException.class)
     public void testLoadBadMods() throws Exception {
         InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
 
-        when(repository.getContentObject(eq(pid))).thenReturn(contentObj);
+        when(repository.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getMODS()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
 

@@ -27,30 +27,23 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoResponse;
-import org.fcrepo.client.GetBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -61,13 +54,13 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class RepositoryTest extends AbstractFedoraTest {
 
-    private static String ETAG = "etag";
-    private static final String ETAG_HEADER =  "\"etag\"";
-
     private Repository repository;
 
     @Mock
     private RepositoryObjectFactory objFactory;
+
+    @Mock
+    private RepositoryObjectCacheLoader objectCacheLoader;
 
     @Mock
     private FcrepoClient fcrepoClient;
@@ -80,9 +73,12 @@ public class RepositoryTest extends AbstractFedoraTest {
         repository.setBaseUri(FEDORA_BASE);
         repository.setRepositoryObjectDataLoader(dataLoader);
         repository.setRepositoryObjectFactory(objFactory);
+        repository.setRepositoryObjectCacheLoader(objectCacheLoader);
         repository.setClient(fcrepoClient);
 
         PIDs.setRepository(repository);
+
+        repository.init();
     }
 
     @Test
@@ -111,108 +107,38 @@ public class RepositoryTest extends AbstractFedoraTest {
     public void getDepositRecordTest() {
         PID pid = repository.mintDepositRecordPid();
 
-        mockLoadTypes(Arrays.asList(Cdr.DepositRecord.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(DepositRecord.class));
 
-        DepositRecord obj = repository.getDepositRecord(pid);
-        assertEquals(pid, obj.getPid());
-    }
-
-    @Test
-    public void getContentObjectFolderTest() throws Exception {
-        PID pid = repository.mintContentPid();
-
-        // Fake the fcrepo client and its response to return a model with the Folder type
-        mockFcrepoResponse(pid, ETAG_HEADER, Cdr.Folder);
-        // Fake the dataloader to also give back the same types
-        mockLoadTypes(Arrays.asList(Cdr.Folder.getURI()));
-
-        ContentObject obj = repository.getContentObject(pid);
-
-        assertTrue("Incorrect type of object returned", obj instanceof FolderObject);
-        assertEquals(pid, obj.getPid());
-        assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
-        assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Folder));
-    }
-
-    @Test
-    public void getContentObjectWorkTest() throws Exception {
-        PID pid = repository.mintContentPid();
-
-        // Fake the fcrepo client and its response to return a model with the Work type
-        mockFcrepoResponse(pid, ETAG_HEADER, Cdr.Work);
-        mockLoadTypes(Arrays.asList(Cdr.Work.getURI()));
-
-        ContentObject obj = repository.getContentObject(pid);
-
-        assertTrue("Incorrect type of object returned", obj instanceof WorkObject);
-        assertEquals(pid, obj.getPid());
-        assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
-        assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.Work));
-    }
-
-    @Test
-    public void getContentObjectFileTest() throws Exception {
-        PID pid = repository.mintContentPid();
-
-        mockFcrepoResponse(pid, ETAG_HEADER, Cdr.FileObject);
-
-        mockLoadTypes(Arrays.asList(Cdr.FileObject.getURI()));
-
-        ContentObject obj = repository.getContentObject(pid);
-
-        assertTrue("Incorrect type of object returned", obj instanceof FileObject);
-        assertEquals(pid, obj.getPid());
-        assertEquals("Etag was not present or didn't match", ETAG, obj.getEtag());
-        assertTrue(obj.getResource().hasProperty(RDF.type, Cdr.FileObject));
+        assertNotNull(repository.getDepositRecord(pid));
     }
 
     @Test(expected = ObjectTypeMismatchException.class)
-    public void getContentObjectInvalidTypeTest() throws Exception {
+    public void getDepositRecordWrongTypeTest() {
+        PID pid = repository.mintDepositRecordPid();
+
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObject.class));
+
+        repository.getDepositRecord(pid);
+    }
+
+    @Test
+    public void getRepositoryObjectFolderTest() throws Exception {
         PID pid = repository.mintContentPid();
 
-        // Response returns DepositRecord type, which isn't a ContentObject
-        mockFcrepoResponse(pid, ETAG_HEADER, Cdr.DepositRecord);
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObject.class));
 
-        // Make the dataloader agree
-        mockLoadTypes(Arrays.asList(Cdr.DepositRecord.getURI()));
-
-        repository.getContentObject(pid);
+        RepositoryObject resultObj = repository.getRepositoryObject(pid);
+        assertTrue(resultObj instanceof FolderObject);
     }
 
-    /**
-     * Mocks a fcrepoResponse for a get request to retrieve a model containing a
-     * particular rdf type
-     *
-     * @param pid
-     * @param etag
-     * @param type
-     * @throws Exception
-     */
-    private void mockFcrepoResponse(PID pid, String etag, Resource type) throws Exception {
-        FcrepoResponse mockResp = mock(FcrepoResponse.class);
-        String turtle = "<" + pid.getRepositoryPath() + "> a <"
-                + type.getURI() + "> .";
-        when(mockResp.getBody()).thenReturn(new ByteArrayInputStream(turtle.getBytes()));
-        when(mockResp.getHeaderValue(eq("ETag"))).thenReturn(etag);
+    @Test(expected = NotFoundException.class)
+    public void getRepositoryObjectExecutionExceptionTest() throws Exception {
+        PID pid = repository.mintContentPid();
 
-        GetBuilder mockGet = mock(GetBuilder.class);
-        when(fcrepoClient.get(any(URI.class))).thenReturn(mockGet);
-        when(mockGet.accept(anyString())).thenReturn(mockGet);
-        when(mockGet.perform()).thenReturn(mockResp);
-    }
+        FedoraException fedoraE = new NotFoundException("Not found");
 
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void getContentObjectInvalidBaseTest() {
-        PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
-
-        repository.getContentObject(pid);
-    }
-
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void getContentObjectInvalidComponentTest() {
-        PID pid = getBinaryPid();
-
-        repository.getContentObject(pid);
+        when(objectCacheLoader.load(eq(pid))).thenThrow(fedoraE);
+        repository.getRepositoryObject(pid);
     }
 
     @Test
@@ -233,17 +159,9 @@ public class RepositoryTest extends AbstractFedoraTest {
     public void getAdminUnitTest() {
         PID pid = repository.mintContentPid();
 
-        mockLoadTypes(Arrays.asList(Cdr.AdminUnit.getURI(), PcdmModels.Collection.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(AdminUnit.class));
 
-        AdminUnit obj = repository.getAdminUnit(pid);
-        assertEquals(pid, obj.getPid());
-    }
-
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void createAdminUnitAtInvalidPathTest() {
-        PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
-
-        repository.createAdminUnit(pid);
+        assertNotNull(repository.getAdminUnit(pid));
     }
 
     @Test
@@ -264,17 +182,9 @@ public class RepositoryTest extends AbstractFedoraTest {
     public void getCollectionObjectTest() {
         PID pid = repository.mintContentPid();
 
-        mockLoadTypes(Arrays.asList(Cdr.Collection.getURI(), PcdmModels.Object.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(CollectionObject.class));
 
-        CollectionObject obj = repository.getCollectionObject(pid);
-        assertEquals(pid, obj.getPid());
-    }
-
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void createCollectionObjectAtInvalidPathTest() {
-        PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
-
-        repository.createCollectionObject(pid);
+        assertNotNull(repository.getCollectionObject(pid));
     }
 
     @Test
@@ -291,21 +201,13 @@ public class RepositoryTest extends AbstractFedoraTest {
         verify(objFactory).createFolderObject(eq(pid.getRepositoryUri()), (Model) isNull());
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void createFolderObjectAtInvalidPathTest() {
-        PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
-
-        repository.createFolderObject(pid);
-    }
-
     @Test
     public void getFolderObjectTest() {
         PID pid = repository.mintContentPid();
 
-        mockLoadTypes(Arrays.asList(Cdr.Folder.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FolderObject.class));
 
-        FolderObject obj = repository.getFolderObject(pid);
-        assertEquals(pid, obj.getPid());
+        assertNotNull(repository.getFolderObject(pid));
     }
 
     @Test
@@ -326,17 +228,9 @@ public class RepositoryTest extends AbstractFedoraTest {
     public void getWorkObjectTest() {
         PID pid = repository.mintContentPid();
 
-        mockLoadTypes(Arrays.asList(Cdr.Work.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(WorkObject.class));
 
-        WorkObject obj = repository.getWorkObject(pid);
-        assertEquals(pid, obj.getPid());
-    }
-
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void createWorkObjectAtInvalidPathTest() {
-        PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
-
-        repository.createWorkObject(pid);
+        assertNotNull(repository.getWorkObject(pid));
     }
 
     @Test
@@ -356,17 +250,9 @@ public class RepositoryTest extends AbstractFedoraTest {
     public void getFileObjectTest() {
         PID pid = repository.mintContentPid();
 
-        mockLoadTypes(Arrays.asList(Cdr.FileObject.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(FileObject.class));
 
-        FileObject obj = repository.getFileObject(pid);
-        assertEquals(pid, obj.getPid());
-    }
-
-    @Test(expected = ObjectTypeMismatchException.class)
-    public void createFileObjectAtInvalidPathTest() {
-        PID pid = PIDs.get("invalid/43f3016b-9cb0-4d7b-92a4-0e2921362a66");
-
-        repository.createFileObject(pid);
+        assertNotNull(repository.getFileObject(pid));
     }
 
     @Test
@@ -396,28 +282,15 @@ public class RepositoryTest extends AbstractFedoraTest {
     public void getBinaryTest() {
         PID pid = getBinaryPid();
 
-        mockLoadTypes(Arrays.asList(Fcrepo4Repository.Binary.getURI()));
+        when(objectCacheLoader.load(eq(pid))).thenReturn(mock(BinaryObject.class));
 
-        BinaryObject obj = repository.getBinary(pid);
-
-        assertEquals(pid, obj.getPid());
+        assertNotNull(repository.getBinary(pid));
     }
 
     private PID getBinaryPid() {
         PID pid = repository.mintContentPid();
         URI binaryUri = URI.create(URIUtil.join(pid.getRepositoryPath(), "file"));
         return PIDs.get(binaryUri);
-    }
-
-    private void mockLoadTypes(List<String> types) {
-        when(dataLoader.loadTypes(any(RepositoryObject.class))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-            @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-                RepositoryObject obj = invocation.getArgumentAt(0, RepositoryObject.class);
-                obj.setTypes(types);
-                return dataLoader;
-            }
-        });
     }
 
     @Test

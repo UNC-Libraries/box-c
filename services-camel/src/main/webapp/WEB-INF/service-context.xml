@@ -42,6 +42,12 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	
+	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+		<property name="client" ref="fcrepoClient" />
+		<property name="repository" ref="repository" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+	</bean>
+	
 	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
 		<property name="fusekiEndpointURL" value="${triplestore.baseUrl}" />
 		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
@@ -49,6 +55,7 @@
 
 	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
 		<property name="client" ref="fcrepoClient" />
+		<property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 		<property name="baseUri" value="${fcrepo.baseUrl}" />
