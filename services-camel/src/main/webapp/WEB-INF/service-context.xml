@@ -421,11 +421,20 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
+	<bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
+		<constructor-arg value="${error.maxRedeliveries}" />
+		<constructor-arg value="${error.retryDelay}" />
+	</bean>
+	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
 		<property name="authUsername" value="${fcrepo.authUsername}"/>
 		<property name="authPassword" value="${fcrepo.authPassword}"/>
 		<property name="authHost" value="${fcrepo.authHost}"/>
 		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
+	</bean>
+	
+	<bean class="org.fcrepo.jms.JMSQueuePublisher">
+		<constructor-arg value="cdr"/>
 	</bean>
 
 	<camel:camelContext id="MetaServicesRouter">
