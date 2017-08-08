@@ -50,7 +50,6 @@ public class SolrUpdateProcessor implements Processor {
 
     private final int maxRetries;
     private final long retryDelay;
-    private List<SolrUpdateRequest> updateRequests;
     private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
 
     public SolrUpdateProcessor(int maxRetries, long retryDelay) {
@@ -68,7 +67,7 @@ public class SolrUpdateProcessor implements Processor {
         int retryAttempt = 0;
 
         while (true) {
-            updateRequests = updateSolr(in, solrActionType, fcrepoBinaryUri);
+            List<SolrUpdateRequest> updateRequests = updateSolr(in, solrActionType, fcrepoBinaryUri);
 
             for (SolrUpdateRequest updateRequest : updateRequests) {
                 try {
