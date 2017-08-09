@@ -229,7 +229,7 @@
 		factory-method="compile">
 		<constructor-arg>
 			<bean class="java.io.InputStreamReader">
-				<constructor-arg type="java.io.InputStream" value="${classpath:completed_text.txt}" />
+				<constructor-arg type="java.io.InputStream" value="classpath:completed_text.txt" />
 			</bean>
 		</constructor-arg>
 	</bean>
@@ -247,7 +247,7 @@
 		factory-method="compile">
 		<constructor-arg>
 			<bean class="java.io.InputStreamReader">
-				<constructor-arg type="java.io.InputStream" value="${classpath:failed_text.txt}" />
+				<constructor-arg type="java.io.InputStream" value="classpath:failed_text.txt" />
 			</bean>
 		</constructor-arg>
 	</bean>
