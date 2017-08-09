@@ -271,7 +271,6 @@
 					<excludes>
 						<exclude>clamavj/**</exclude>
 						<exclude>oai4solr/**</exclude>
-						<exclude>staging-areas/**</exclude>
 						<exclude>**/*.properties</exclude>
 					</excludes>
 					<properties>

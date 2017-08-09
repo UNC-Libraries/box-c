@@ -156,7 +156,7 @@ public class RepositoryObjectDataLoader {
 
         PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
 
-        return repository.getContentObject(pid);
+        return repository.getRepositoryObject(pid);
     }
 
     /**

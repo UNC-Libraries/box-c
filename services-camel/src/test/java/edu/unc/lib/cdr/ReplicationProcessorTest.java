@@ -40,7 +40,9 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -50,7 +52,6 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class ReplicationProcessorTest {
     private ReplicationProcessor processor;
-    private final String replicationLocations = "/tmp";
     private final String badReplicationLocations = "/no_replicate";
     private final String fileName = "replication_text.txt";
     private final String testText = "Test text, see if it can be replicated.";
@@ -60,6 +61,12 @@ public class ReplicationProcessorTest {
     private String filePath;
     private String localChecksum;
     private InputStream binaryStream;
+
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
+    private File replicationDir;
+
     @Mock
     private BinaryObject binary;
 
@@ -79,7 +86,10 @@ public class ReplicationProcessorTest {
     public void init() throws Exception {
         initMocks(this);
 
-        processor = new ReplicationProcessor(repository, replicationLocations, maxRetries, retryDelay);
+        replicationDir = tmpFolder.newFolder("repl");
+        replicationDir.mkdir();
+
+        processor = new ReplicationProcessor(repository, replicationDir.getAbsolutePath(), maxRetries, retryDelay);
 
         file = File.createTempFile(fileName, "txt");
         file.deleteOnExit();
@@ -112,7 +122,7 @@ public class ReplicationProcessorTest {
         localChecksum = DigestUtils.sha1Hex(new FileInputStream(filePath));
 
         when(message.getHeader(eq(CdrBinaryChecksum)))
-        .thenReturn(localChecksum);
+                .thenReturn(localChecksum);
 
         when(binary.getBinaryStream())
                 .thenReturn(binaryStream);
@@ -121,7 +131,7 @@ public class ReplicationProcessorTest {
     @Test
     public void testReplicateExternalFile() throws Exception {
         when(message.getHeader(eq(CdrBinaryPath)))
-        .thenReturn(filePath);
+                .thenReturn(filePath);
 
         processor.process(exchange);
 
@@ -132,7 +142,7 @@ public class ReplicationProcessorTest {
     @Test
     public void testReplicateFileFromFedora() throws Exception {
         when(message.getHeader(eq(CdrBinaryPath)))
-        .thenReturn(badReplicationLocations);
+                .thenReturn(badReplicationLocations);
 
         processor.process(exchange);
 
@@ -155,5 +165,17 @@ public class ReplicationProcessorTest {
         } finally {
             verify(binaryStream, times(maxRetries + 1));
         }
+    }
+
+    @Test(expected = ReplicationException.class)
+    public void testDestinationNotWritable() throws Exception {
+        // Replace the repl destination with a file so that its not writable
+        replicationDir.delete();
+        replicationDir.createNewFile();
+
+        when(message.getHeader(eq(CdrBinaryPath)))
+                .thenReturn(filePath);
+
+        processor.process(exchange);
     }
 }

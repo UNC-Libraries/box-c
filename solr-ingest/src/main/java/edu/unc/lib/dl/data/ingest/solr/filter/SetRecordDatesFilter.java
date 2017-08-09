@@ -16,6 +16,9 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.text.ParseException;
+
+import org.apache.jena.rdf.model.Resource;
+
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -33,8 +36,9 @@ public class SetRecordDatesFilter implements IndexDocumentFilter {
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         ContentObject obj = dip.getContentObject();
-        String dateAdded = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.created).toString();
-        String dateUpdated = obj.getResource().getPropertyResourceValue(Fcrepo4Repository.lastModified).toString();
+        Resource resc = obj.getResource();
+        String dateAdded = resc.getProperty(Fcrepo4Repository.created).getLiteral().getValue().toString();
+        String dateUpdated = resc.getProperty(Fcrepo4Repository.lastModified).getLiteral().getValue().toString();
         try {
             dip.getDocument().setDateAdded(dateAdded);
             dip.getDocument().setDateUpdated(dateUpdated);

@@ -23,24 +23,26 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.util.EntityTag;
 import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -80,6 +82,18 @@ public class Repository {
 
     private RepositoryObjectDataLoader repositoryObjectDataLoader;
 
+    private LoadingCache<PID, RepositoryObject> repositoryObjCache;
+    private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
+    private long cacheTimeToLive;
+    private long cacheMaxSize;
+
+    public void init() {
+        repositoryObjCache = CacheBuilder.newBuilder()
+                .maximumSize(cacheMaxSize)
+                .expireAfterWrite(cacheTimeToLive, TimeUnit.MILLISECONDS)
+                .build(repositoryObjectCacheLoader);
+    }
+
     /**
      * Mint a PID for a new deposit record object
      *
@@ -100,10 +114,7 @@ public class Repository {
      * @throws FedoraException
      */
     public DepositRecord getDepositRecord(PID pid) throws FedoraException {
-        DepositRecord record = new DepositRecord(pid, this, repositoryObjectDataLoader);
-
-        // Verify that the retrieved object is a deposit record
-        return record.validateType();
+        return (DepositRecord) getRepositoryObject(pid, DepositRecord.class);
     }
 
     /**
@@ -137,62 +148,26 @@ public class Repository {
     }
 
     /**
-     * Retrieves an existing content object, or throws an
-     * ObjectTypeMismatchException if the requested object is not a content
-     * object.
+     * Retrieves an existing repository object
      *
      * @param pid
      * @return
-     * @throws FedoraException
      */
-    public ContentObject getContentObject(PID pid) throws FedoraException {
-        // Reject non-content pids
-        verifyContentPID(pid);
-
-        // No component path provided, the object requested should be a top
-        // level object
-        if (StringUtils.isEmpty(pid.getComponentPath())) {
-            try (FcrepoResponse response = getClient().get(pid.getRepositoryUri())
-                    .accept(TURTLE_MIMETYPE)
-                    .perform()) {
-
-                Model model = ModelFactory.createDefaultModel();
-                model.read(response.getBody(), null, Lang.TURTLE.getName());
-
-                Resource resc = model.getResource(pid.getRepositoryPath());
-
-                String etag = response.getHeaderValue("ETag");
-                if (etag != null) {
-                    etag = new EntityTag(etag).getValue();
-                }
-
-                if (resc.hasProperty(RDF.type, Cdr.Work)) {
-                    return getWorkObject(pid, model, etag);
-                }
-                if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
-                    return getFileObject(pid, model, etag);
-                }
-                if (resc.hasProperty(RDF.type, Cdr.Folder)) {
-                    return getFolderObject(pid, model, etag);
-                }
-                if (resc.hasProperty(RDF.type, Cdr.Collection)) {
-                    return getCollectionObject(pid, model, etag);
-                }
-                if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
-                    return getContentRootObject(pid, model, etag);
-                }
-                if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
-                    return getAdminUnit(pid, model, etag);
-                }
-
-            } catch (IOException e) {
-                throw new FedoraException("Failed to read model for " + pid, e);
-            } catch (FcrepoOperationFailedException e) {
-                throw ClientFaultResolver.resolve(e);
-            }
+    public RepositoryObject getRepositoryObject(PID pid) throws FedoraException {
+        try {
+            return repositoryObjCache.get(pid);
+        } catch (UncheckedExecutionException | ExecutionException e) {
+            throw (FedoraException) e.getCause();
         }
+    }
 
-        throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+    protected RepositoryObject getRepositoryObject(PID pid, Class<?> expectedClass) throws FedoraException {
+        RepositoryObject obj = getRepositoryObject(pid);
+
+        if (!expectedClass.isInstance(obj)) {
+            throw new ObjectTypeMismatchException("Object " + pid + " is not a " + expectedClass.getName() + ".");
+        }
+        return obj;
     }
 
     /**
@@ -203,15 +178,7 @@ public class Repository {
      * @throws FedoraException
      */
     public AdminUnit getAdminUnit(PID pid) throws FedoraException {
-        return getAdminUnit(pid, null, null);
-    }
-
-    protected AdminUnit getAdminUnit(PID pid, Model model, String etag) {
-        AdminUnit adminUnitObj = new AdminUnit(pid, this, repositoryObjectDataLoader);
-        adminUnitObj.storeModel(model);
-        adminUnitObj.setEtag(etag);
-
-        return adminUnitObj.validateType();
+        return (AdminUnit) getRepositoryObject(pid, AdminUnit.class);
     }
 
     /**
@@ -250,15 +217,7 @@ public class Repository {
      * @throws FedoraException
      */
     public CollectionObject getCollectionObject(PID pid) throws FedoraException {
-        return getCollectionObject(pid, null, null);
-    }
-
-    protected CollectionObject getCollectionObject(PID pid, Model model, String etag) {
-        CollectionObject collectionObj = new CollectionObject(pid, this, repositoryObjectDataLoader);
-        collectionObj.storeModel(model);
-        collectionObj.setEtag(etag);
-
-        return collectionObj.validateType();
+        return (CollectionObject) getRepositoryObject(pid, CollectionObject.class);
     }
 
     /**
@@ -297,17 +256,7 @@ public class Repository {
     public ContentRootObject getContentRootObject() {
         PID contentRootPid = PIDs.get(RepositoryPathConstants.CONTENT_ROOT_ID);
 
-        return getContentRootObject(contentRootPid, null, null);
-    }
-
-    protected ContentRootObject getContentRootObject(PID pid, Model model, String etag) {
-        ContentRootObject rootObj = new ContentRootObject(pid, this, repositoryObjectDataLoader);
-        rootObj.storeModel(model);
-        rootObj.setEtag(etag);
-
-        // not triggering validation for object, this method only called when
-        // the object's identity is already known
-        return rootObj;
+        return (ContentRootObject) getRepositoryObject(contentRootPid, ContentRootObject.class);
     }
 
     /**
@@ -318,16 +267,10 @@ public class Repository {
      * @throws FedoraException
      */
     public FolderObject getFolderObject(PID pid) throws FedoraException {
-        return getFolderObject(pid, null, null);
+        return (FolderObject) getRepositoryObject(pid, FolderObject.class);
     }
 
-    protected FolderObject getFolderObject(PID pid, Model model, String etag) {
-        FolderObject folderObj = new FolderObject(pid, this, repositoryObjectDataLoader);
-        folderObj.storeModel(model);
-        folderObj.setEtag(etag);
 
-        return folderObj.validateType();
-    }
 
     /**
      * Creates a new FolderObject with the given pid
@@ -365,15 +308,7 @@ public class Repository {
      * @throws FedoraException
      */
     public WorkObject getWorkObject(PID pid) throws FedoraException {
-        return getWorkObject(pid, null, null);
-    }
-
-    protected WorkObject getWorkObject(PID pid, Model model, String etag) {
-        WorkObject workObj = new WorkObject(pid, this, repositoryObjectDataLoader);
-        workObj.storeModel(model);
-        workObj.setEtag(etag);
-
-        return workObj.validateType();
+        return (WorkObject) getRepositoryObject(pid, WorkObject.class);
     }
 
     /**
@@ -412,15 +347,7 @@ public class Repository {
      * @throws FedoraException
      */
     public FileObject getFileObject(PID pid) throws FedoraException {
-        return getFileObject(pid, null, null);
-    }
-
-    protected FileObject getFileObject(PID pid, Model model, String etag) throws FedoraException {
-        FileObject fileObject = new FileObject(pid, this, repositoryObjectDataLoader);
-        fileObject.storeModel(model);
-        fileObject.setEtag(etag);
-
-        return fileObject.validateType();
+        return (FileObject) getRepositoryObject(pid, FileObject.class);
     }
 
     /**
@@ -457,7 +384,7 @@ public class Repository {
      *
      * @param pid
      */
-    private void verifyContentPID(PID pid) {
+    protected void verifyContentPID(PID pid) {
         if (!pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE)) {
             throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
         }
@@ -472,15 +399,7 @@ public class Repository {
      *             if the object retrieved is not a binary or does not exist
      */
     public BinaryObject getBinary(PID pid) throws FedoraException {
-        return getBinary(pid, null);
-    }
-
-    protected BinaryObject getBinary(PID pid, Model model) throws FedoraException {
-        BinaryObject binary = new BinaryObject(pid, this, repositoryObjectDataLoader);
-        binary.storeModel(model);
-
-        // Verify that the retrieved object is a deposit record
-        return binary.validateType();
+        return (BinaryObject) getRepositoryObject(pid, BinaryObject.class);
     }
 
     /**
@@ -749,6 +668,13 @@ public class Repository {
 
     public FcrepoClient getClient() {
         return client;
+    }
+
+    /**
+     * @param objectCacheLoader the objectCacheLoader to set
+     */
+    public void setRepositoryObjectCacheLoader(RepositoryObjectCacheLoader objectCacheLoader) {
+        this.repositoryObjectCacheLoader = objectCacheLoader;
     }
 
     public RepositoryObjectDataLoader getRepositoryObjectDataLoader() {

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 
@@ -48,12 +49,12 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
     }
 
     public SolrUpdateRequest(String pid, IndexingActionType action, String messageID, UpdateNodeRequest parent) {
-        this(new PID(pid), action, messageID, parent);
+        this(PIDs.get(pid), action, messageID, parent);
     }
 
     public SolrUpdateRequest(String pid, IndexingActionType action, SolrUpdateRequest linkedRequest,
             String messageID, UpdateNodeRequest parent) {
-        this(new PID(pid), action, linkedRequest, messageID, parent);
+        this(PIDs.get(pid), action, linkedRequest, messageID, parent);
     }
 
     public SolrUpdateRequest(PID pid, IndexingActionType action, SolrUpdateRequest linkedRequest,
@@ -67,7 +68,7 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
     }
 
     public void setPid(String pid) {
-        this.pid = new PID(pid);
+        this.pid = PIDs.get(pid);
     }
 
     public IndexingActionType getUpdateAction() {
@@ -99,6 +100,7 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
     public void linkedRequestCompleted(SolrUpdateRequest completedRequest) {
     }
 
+    @Override
     public void requestCompleted() {
         super.requestCompleted();
         if (linkedRequest != null) {

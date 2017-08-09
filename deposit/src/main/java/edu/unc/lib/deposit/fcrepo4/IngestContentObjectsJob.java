@@ -59,6 +59,7 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -73,7 +74,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Ingests all content objects in the deposit into the Fedora repository.
- * 
+ *
  * @author bbpennel
  * @author harring
  *
@@ -102,7 +103,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     /**
      * Determines how many operations will be required to complete this deposit.
-     * 
+     *
      * @param depositBag
      */
     private void calculateWorkRemaining(Bag depositBag) {
@@ -122,7 +123,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * Generates a list of objects in this deposit which already exist in the
      * repository, updating the status of the job to indicate how much work is
      * left
-     * 
+     *
      * @param contentPaths
      */
     private void populatePreviouslyIngested(List<String> contentPaths) {
@@ -156,7 +157,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
-        ContentObject destObj = repository.getContentObject(destPid);
+        RepositoryObject destObj = repository.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
                     + ", types does not support children");
@@ -189,7 +190,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     /**
      * Ingest the children of parentResc as children ContentObjects of destObj.
-     * 
+     *
      * @param destObj the repository object which children objects will be added to.
      * @param parentResc the parent resource where children will be listed from
      * @throws DepositException
@@ -230,7 +231,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     /**
      * Ingests the object in childResc as a FileObject into an existing
      * WorkObject.
-     * 
+     *
      * @param parent
      * @param parentResc
      * @param childResc
@@ -264,7 +265,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * Ingests the file object represented by childResc as a FileObject wrapped
      * in a newly constructed WorkObject. Descriptive information about the file
      * is migrated to the WorkObject.
-     * 
+     *
      * @param parent
      * @param parentResc
      * @param childResc
@@ -330,7 +331,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * Ingests the object represented by childResc as a FileObject as the child
      * of the given WorkObject, with the file properties provided with
      * childResc.
-     * 
+     *
      * @param work
      * @param childResc
      * @return
@@ -390,7 +391,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     /**
      * Ingest childResc as a FolderObject as a member of the provided parent object.
-     * 
+     *
      * @param parent
      * @param parentResc
      * @param childResc
@@ -444,7 +445,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * Ingest childResc as a WorkObject containing all of its child objects, as
      * a member of the provided parent object. Establishes the primaryObject
      * relationship to one of its children if specified.
-     * 
+     *
      * @param parent
      * @param parentResc
      * @param childResc
@@ -520,7 +521,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     /**
      * Returns true if the resource represents an object that does not need to
      * be deposited due to having been previously ingested
-     * 
+     *
      * @param resc
      * @return
      */
@@ -534,7 +535,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     /**
      * Get the String value of the specified property if present, or return null.
-     * 
+     *
      * @param resc
      * @param property
      * @return
@@ -550,7 +551,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     /**
      * Return an iterator for the children of the given resource, base on what
      * type of container it is.
-     * 
+     *
      * @param resc
      * @return
      */

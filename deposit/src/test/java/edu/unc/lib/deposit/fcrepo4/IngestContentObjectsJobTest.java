@@ -153,7 +153,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         destinationObj = mock(FolderObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repository.getContentObject(eq(destinationPid))).thenReturn(destinationObj);
+        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
     }
 
     /**
