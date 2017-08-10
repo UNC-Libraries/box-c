@@ -62,7 +62,7 @@ run-admin:
 	cd admin && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48009,server=y,suspend=$(SUSPEND)"; mvn jetty:run
 	
 run-deposit:
-	cd deposit && mvn exec:exec
+	cd deposit && export MAVEN_OPTS="-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address=48010,server=y,suspend=$(SUSPEND)"; mvn jetty:run
 
 ifneq ($(VERSION), "")
 	for i in static/js/public/*.js; do \
