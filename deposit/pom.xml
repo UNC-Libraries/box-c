@@ -277,7 +277,28 @@
 	</dependencies>
 
 	<build>
-    <plugins>
+    <finalName>${artifactId}</finalName>
+      <resources>
+          <resource>
+              <filtering>false</filtering>
+              <directory>src/main/resources</directory>
+          </resource>
+          <resource>
+              <filtering>true</filtering>
+              <directory>../etc</directory>
+              <includes>
+                  <include>deposit.properties</include>
+                  <include>stagesConfig.json</include>
+              </includes>
+          </resource>
+      </resources>
+      <testResources>
+          <testResource>
+              <filtering>true</filtering>
+              <directory>src/test/resources</directory>
+          </testResource>
+      </testResources>
+   <plugins>
     <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
@@ -298,6 +319,46 @@
                 </goals>
             </execution>
         </executions>
+    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <webResources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>../etc</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+    
+    <plugin>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-maven-plugin</artifactId>
+         <version>${jetty.version}</version>
+         <configuration>
+             <scanIntervalSeconds>2</scanIntervalSeconds>
+             <stopKey>STOP</stopKey>
+             <webApp>
+                 <contextPath>/</contextPath>
+                 <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+             </webApp>
+             <httpConnector>
+                 <port>8191</port>
+             </httpConnector>
+             <systemProperties>
+                 <systemProperty>
+                     <name>deposit.properties.uri</name>
+                     <value>file:${project.basedir}/target/${project.build.finalName}/deposit.properties</value>
+                 </systemProperty>
+                 <systemProperty>
+                     <name>acl.properties.uri</name>
+                     <value>file:${project.basedir}/target/${project.build.finalName}/acl-config.properties</value>
+                 </systemProperty>
+             </systemProperties>
+         </configuration>
     </plugin>
     
     <!-- compiler plugin -->
