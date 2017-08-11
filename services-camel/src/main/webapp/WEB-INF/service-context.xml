@@ -404,7 +404,7 @@
 	</bean>
 	
 	<bean id="dipDataLoader"
-		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader" init-method="init">
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
 		<property name="repository" ref="repository"></property>
 	</bean>
 	
