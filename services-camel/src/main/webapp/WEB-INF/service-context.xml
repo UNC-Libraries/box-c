@@ -357,6 +357,9 @@
 	</util:map>
 
 	<!-- Processors -->
+	<bean id="cdrEventProcessor" class="edu.unc.lib.cdr.CdrEventProcessor">
+	</bean>
+	
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.cdr.BinaryMetadataProcessor">
 		<constructor-arg value="${fcrepo.binaryBase}"/>
 	</bean>

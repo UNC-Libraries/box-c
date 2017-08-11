@@ -16,11 +16,15 @@
 
 package edu.unc.lib.cdr.solr;
 
+import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
+import edu.unc.lib.cdr.CdrEventProcessor;
 import edu.unc.lib.cdr.SolrUpdateProcessor;
+import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
  *
@@ -28,6 +32,9 @@ import edu.unc.lib.cdr.SolrUpdateProcessor;
  *
  */
 public class SolrUpdateRouter extends RouteBuilder {
+    @BeanInject(value = "cdrEventProcessor")
+    private CdrEventProcessor cdrEventProcessor;
+
     @BeanInject(value = "solrUpdateProcessor")
     private SolrUpdateProcessor solrUpdateProcessor;
 
@@ -41,30 +48,20 @@ public class SolrUpdateRouter extends RouteBuilder {
 
         from("{{cdr.stream}}")
             .routeId("CdrServiceSolrUpdate")
-            .log(LoggingLevel.DEBUG, "Calling solr index update route for ${headers[org.fcrepo.jms.identifier]}")
-            .bean(solrUpdateProcessor);
+            .bean(cdrEventProcessor)
+            .filter(simple("${headers[" + CdrSolrUpdateAction + "} contains '" + CDRActions.MOVE + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REMOVE + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.ADD + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REORDER + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.PUBLISH + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REINDEX + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.INDEX + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE + "'"))
+            .to("direct:solr-update");
 
-           /* .choice()
-                .when(simple("${headers[edu.unc.lib.cdr.identifier]} contains '" + CDRActions.MOVE + "'"))
-                    .recipientList()
-                    .header("myHeader")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.REMOVE + "'"))
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.ADD + "'"))
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.REORDER + "'"))
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.PUBLISH + "'"))
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.REINDEX + "'"))
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.INDEX + "'"))
-                    .to("direct:process.enhancements")
-                .when(simple("${headers[edu.unc.lib.cdr.jms.identifier]} contains '" + CDRActions.EDIT_TYPE + "'"))
-                    .to("direct:process.enhancements")
-                .otherwise()
-                    .log(LoggingLevel.WARN,
-                            "Cannot update Solr index for ${headers[org.fcrepo.jms.identifier]}")
-            .end(); */
+        from("direct:solr-update")
+            .routeId("CdrServiceSolrUpdateProcess")
+            .log(LoggingLevel.DEBUG, "Updating solr index for ${headers[org.fcrepo.jms.identifier]}")
+            .bean(solrUpdateProcessor);
     }
 }
