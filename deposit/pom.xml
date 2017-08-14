@@ -16,7 +16,6 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<commons-daemon.version>1.0.15</commons-daemon.version>
 	</properties>
 	
 	<dependencies>
@@ -110,20 +109,6 @@
 			<version>0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-daemon</groupId>
-			<artifactId>commons-daemon</artifactId>
-			<version>${commons-daemon.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jms</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-pool</artifactId>
-			<version>5.5.1</version>
-		</dependency>
-		<dependency>
 			<groupId>com.samskivert</groupId>
 			<artifactId>jmustache</artifactId>
 			<version>1.9</version>
@@ -163,24 +148,6 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.stax-utils</groupId>
-			<artifactId>stax-utils</artifactId>
-			<version>20070216</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>jsr173-ri</artifactId>
-					<groupId>com.bea.xml</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>de.sven-jacobs</groupId>
-			<artifactId>loremipsum</artifactId>
-			<version>1.0</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -256,19 +223,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-http-commons</artifactId>
-			<version>${fcrepo4.version}</version>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-auth-common</artifactId>
-			<version>${fcrepo4.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.github.kstyrc</groupId>
 			<artifactId>embedded-redis</artifactId>
 			<version>0.6</version>
@@ -277,9 +231,11 @@
 	</dependencies>
 
 	<build>
+    <finalName>${artifactId}</finalName>
     <plugins>
     <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven.failsafe.version}</version>
         <configuration>
             <!--Set reuseForks=false due to the need for different instances of the -->
             <!--Singleton ServletContainerAuthenticationProvider -->
@@ -298,6 +254,46 @@
                 </goals>
             </execution>
         </executions>
+    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <webResources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>../etc</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+    
+    <plugin>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-maven-plugin</artifactId>
+         <version>${jetty.version}</version>
+         <configuration>
+             <scanIntervalSeconds>2</scanIntervalSeconds>
+             <stopKey>STOP</stopKey>
+             <webApp>
+                 <contextPath>/</contextPath>
+                 <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+             </webApp>
+             <httpConnector>
+                 <port>8191</port>
+             </httpConnector>
+             <systemProperties>
+                 <systemProperty>
+                     <name>deposit.properties.uri</name>
+                     <value>file:${project.basedir}/target/${project.build.finalName}/deposit.properties</value>
+                 </systemProperty>
+                 <systemProperty>
+                     <name>acl.properties.uri</name>
+                     <value>file:${project.basedir}/target/${project.build.finalName}/acl-config.properties</value>
+                 </systemProperty>
+             </systemProperties>
+         </configuration>
     </plugin>
     
     <!-- compiler plugin -->
