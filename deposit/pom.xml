@@ -232,27 +232,7 @@
 
 	<build>
     <finalName>${artifactId}</finalName>
-      <resources>
-          <resource>
-              <filtering>false</filtering>
-              <directory>src/main/resources</directory>
-          </resource>
-          <resource>
-              <filtering>true</filtering>
-              <directory>../etc</directory>
-              <includes>
-                  <include>deposit.properties</include>
-                  <include>stagesConfig.json</include>
-              </includes>
-          </resource>
-      </resources>
-      <testResources>
-          <testResource>
-              <filtering>true</filtering>
-              <directory>src/test/resources</directory>
-          </testResource>
-      </testResources>
-   <plugins>
+    <plugins>
     <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven.failsafe.version}</version>
