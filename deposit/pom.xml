@@ -16,7 +16,6 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<commons-daemon.version>1.0.15</commons-daemon.version>
 	</properties>
 	
 	<dependencies>
@@ -110,20 +109,6 @@
 			<version>0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-daemon</groupId>
-			<artifactId>commons-daemon</artifactId>
-			<version>${commons-daemon.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jms</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-pool</artifactId>
-			<version>5.5.1</version>
-		</dependency>
-		<dependency>
 			<groupId>com.samskivert</groupId>
 			<artifactId>jmustache</artifactId>
 			<version>1.9</version>
@@ -163,24 +148,6 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.stax-utils</groupId>
-			<artifactId>stax-utils</artifactId>
-			<version>20070216</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>jsr173-ri</artifactId>
-					<groupId>com.bea.xml</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>de.sven-jacobs</groupId>
-			<artifactId>loremipsum</artifactId>
-			<version>1.0</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
