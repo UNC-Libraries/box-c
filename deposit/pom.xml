@@ -223,19 +223,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-http-commons</artifactId>
-			<version>${fcrepo4.version}</version>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-auth-common</artifactId>
-			<version>${fcrepo4.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.github.kstyrc</groupId>
 			<artifactId>embedded-redis</artifactId>
 			<version>0.6</version>
@@ -268,6 +255,7 @@
    <plugins>
     <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven.failsafe.version}</version>
         <configuration>
             <!--Set reuseForks=false due to the need for different instances of the -->
             <!--Singleton ServletContainerAuthenticationProvider -->
