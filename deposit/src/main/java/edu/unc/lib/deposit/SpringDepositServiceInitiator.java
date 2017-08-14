@@ -37,11 +37,7 @@ public class SpringDepositServiceInitiator implements ApplicationListener<Contex
     public void onApplicationEvent(ContextRefreshedEvent event) {
         log.info("Context initialized, starting deposit service");
 
-        log.info("App context {} {}", depositSupervisor, depositSupervisor == null ? "yes" : "no");
-
         depositSupervisor.start();
-
-        log.info("Deposit service started");
     }
 
     /**
