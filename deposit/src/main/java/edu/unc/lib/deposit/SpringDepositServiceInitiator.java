@@ -23,7 +23,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import edu.unc.lib.deposit.work.DepositSupervisor;
 
 /**
- * Detects when the applications context has full initialized and then kicks off the deposit supervisor.
+ * Detects when the application's context has fully initialized and then kicks off the deposit supervisor.
  *
  * @author bbpennel
  *
