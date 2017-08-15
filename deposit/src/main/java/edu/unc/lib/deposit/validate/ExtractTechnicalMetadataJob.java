@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -153,13 +154,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      */
     private Document getFitsDocument(PID objPid, String stagedPath) {
         HttpUriRequest request;
+        URI stagedUri = URI.create(stagedPath);
+        if (!stagedUri.isAbsolute()) {
+            stagedUri = Paths.get(getDepositDirectory().toString(), stagedPath).toUri();
+        }
 
         if (processFilesLocally) {
             // Files are available locally to FITS, so just pass along path
             URI fitsUri = null;
             try {
                 URIBuilder builder = new URIBuilder(fitsExamineUri);
-                builder.addParameter("file", URI.create(stagedPath).getPath());
+                builder.addParameter("file", stagedUri.getPath());
                 fitsUri = builder.build();
 
                 log.debug("Requesting FITS document for {} using local file via URI {}", objPid, fitsUri);
@@ -170,7 +175,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             request = new HttpGet(fitsUri);
         } else {
             // Files are to be processed remotely, so upload them via a post request
-            File stagedFile = new File(URI.create(stagedPath));
+            File stagedFile = new File(stagedUri);
             HttpEntity entity = MultipartEntityBuilder.create()
                     .addPart("datafile", new FileBody(stagedFile))
                     .build();
