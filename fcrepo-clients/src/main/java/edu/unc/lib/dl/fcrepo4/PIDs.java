@@ -21,6 +21,9 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import java.net.URI;
 import java.util.regex.Matcher;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -30,6 +33,8 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public abstract class PIDs {
+
+    private static final Logger log = LoggerFactory.getLogger(PIDs.class);
 
     private static Repository repository;
 
@@ -79,6 +84,7 @@ public abstract class PIDs {
                 // Reconstruct the repository path from wanted components (excluding things like tx ids)
                 repositoryPath = getRepositoryPath(matcher.group(3), qualifier, componentPath, false);
             } else {
+                log.warn("Invalid path {}, cannot construct PID", value);
                 // Value was an invalid path within the repository
                 return null;
             }
@@ -106,6 +112,7 @@ public abstract class PIDs {
                     repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
                 }
             } else {
+                log.warn("Invalid qualified path {}, cannot construct PID", value);
                 // No a recognized format for constructing a pid
                 return null;
             }
