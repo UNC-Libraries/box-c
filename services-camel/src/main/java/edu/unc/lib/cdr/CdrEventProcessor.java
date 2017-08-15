@@ -1,40 +1,31 @@
 package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
-import java.util.Iterator;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.jdom2.Content;
 import org.jdom2.Document;
-
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
+import org.jdom2.input.SAXBuilder;
 
 public class CdrEventProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
-        Document body = (Document) in.getBody();
-        String msgValue = null;
+        String body = (String) in.getBody();
 
-        List<Content> msgContents = body.getContent();
-        Iterator<Content> contentsIterator = msgContents.iterator();
+        try {
+            SAXBuilder parseXML= new SAXBuilder();
+            InputStream stream = new ByteArrayInputStream(body.getBytes("UTF-8"));
+            Document solrMsg = parseXML.build(stream);
 
-        while (contentsIterator.hasNext()) {
-            Content msgElement = contentsIterator.next();
-
-            if (msgElement.getCType().name() == "title") {
-                msgValue = msgElement.getValue();
-                if (CDRActions.getAction(msgValue) != null) {
-                    in.setHeader(CdrSolrUpdateAction, msgValue);
-                }
-            }
-        }
-
-        if (msgValue == null) {
+            String actionType = solrMsg.getRootElement().getChild("title", ATOM_NS).getTextTrim();
+            in.setHeader(CdrSolrUpdateAction, actionType);
+        } catch(NullPointerException e) {
             in.setHeader(CdrSolrUpdateAction, "none");
         }
     }
