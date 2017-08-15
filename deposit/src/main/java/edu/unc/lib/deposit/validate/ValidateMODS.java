@@ -23,20 +23,19 @@ import java.text.MessageFormat;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import org.apache.jena.rdf.model.Resource;
-
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.schematron.SchematronValidator;
-import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
@@ -96,7 +95,7 @@ public class ValidateMODS extends AbstractDepositJob {
         setTotalClicks(modsFiles.length);
         for (File f : modsFiles) {
             count++;
-            PID p = DepositConstants.getPIDForTagFile(f.getPath());
+            PID p = getPIDFromFile(f);
             String xsdMessage = "Validation of Controlled Vocabularies in Descriptive Metadata (MODS)";
 
             PremisLogger premisLogger = getPremisLogger(p);
@@ -176,4 +175,10 @@ public class ValidateMODS extends AbstractDepositJob {
         }
     }
 
+    private PID getPIDFromFile(File file) {
+        String path = file.getPath();
+        String uuid = path.substring(path.lastIndexOf('/') + 1,
+                path.lastIndexOf('.'));
+        return PIDs.get(uuid);
+    }
 }
