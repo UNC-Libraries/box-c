@@ -34,4 +34,10 @@
 	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
 		<property name="configuration" ref="jmsConfig" />
 	</bean>
+	
+	<bean class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="pooledConnectionFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
 </beans>

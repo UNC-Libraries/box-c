@@ -12,20 +12,17 @@
 		http://www.springframework.org/schema/context/spring-context-4.3.xsd
 		http://camel.apache.org/schema/spring
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
-		
-	<bean id="searchSettings" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.search.solr.util.SearchSettings"/>
-	</bean>
-	<bean id="solrSettings" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.search.solr.util.SolrSettings"/>
+	
+	<bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.SolrUpdateProcessor" />
 	</bean>
 	
-	<bean id="solrIngestProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.SolrIngestProcessor" />
+	<bean id="cdrEventProcessor" class="org.mockito.Mockito" factory-method="mock">
+		<constructor-arg value="edu.unc.lib.cdr.CdrEventProcessor" />
 	</bean>
 	
-	<camel:camelContext id="CdrServiceSolr">
-		<camel:package>edu.unc.lib.cdr.solr</camel:package>
+	<camel:camelContext id="CdrServiceSolrUpdate">
+		<camel:package>edu.unc.lib.cdr.solrUpdate</camel:package>
 	</camel:camelContext>
 	
 </beans>

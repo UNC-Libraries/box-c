@@ -435,10 +435,6 @@
 		<property name="authHost" value="${fcrepo.authHost}"/>
 		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
 	</bean>
-	
-	<bean class="org.fcrepo.jms.JMSQueuePublisher">
-		<constructor-arg value="cdr"/>
-	</bean>
 
 	<camel:camelContext id="MetaServicesRouter">
 		<camel:package>edu.unc.lib.cdr.routing</camel:package>
@@ -458,6 +454,10 @@
 	
 	<camel:camelContext id="CdrServiceSolr">
 		<camel:package>edu.unc.lib.cdr.solr</camel:package>
+	</camel:camelContext>
+	
+	<camel:camelContext id="CdrServiceSolrUpdate">
+		<camel:package>edu.unc.lib.cdr.solrUpdate</camel:package>
 	</camel:camelContext>
 	
 	<camel:camelContext id="FcrepoTriplestoreIndexer">

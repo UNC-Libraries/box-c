@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.unc.lib.cdr.solr;
+package edu.unc.lib.cdr.solrUpdate;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 
@@ -41,22 +41,22 @@ public class SolrUpdateRouter extends RouteBuilder {
     @Override
     public void configure() throws Exception {
         onException(Exception.class)
-            .redeliveryDelay("{{error.retryDelay}}")
-            .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier(2)
-            .retryAttemptedLogLevel(LoggingLevel.WARN);
+        .redeliveryDelay("{{error.retryDelay}}")
+        .maximumRedeliveries("{{error.maxRedeliveries}}")
+        .backOffMultiplier(2)
+        .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.stream}}")
             .routeId("CdrServiceSolrUpdate")
             .bean(cdrEventProcessor)
-            .filter(simple("${headers[" + CdrSolrUpdateAction + "} contains '" + CDRActions.MOVE + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REMOVE + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.ADD + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REORDER + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.PUBLISH + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REINDEX + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.INDEX + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE + "'"))
+            .filter(simple("${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.MOVE.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REMOVE.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.ADD.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REORDER.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.PUBLISH.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REINDEX.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.INDEX.getName() + "'"
+                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE.getName() + "'"))
             .to("direct:solr-update");
 
         from("direct:solr-update")
