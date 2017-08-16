@@ -17,17 +17,17 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
@@ -45,7 +45,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 
 /**
  * Creates and ingests the deposit record object
- * 
+ *
  * @author bbpennel
  *
  */
@@ -94,12 +94,13 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             // Add manifest files
             List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
             for (String manifestPath : manifestURIs) {
-                depositRecord.addManifest(new File(manifestPath), "text/plain");
+                String path = URI.create(manifestPath).getPath();
+                depositRecord.addManifest(new File(path), "text/plain");
             }
 
             // Add references to deposited objects
             Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
-            List<Resource> children = new ArrayList<Resource>();
+            List<Resource> children = new ArrayList<>();
             // walks through the bag and adds children to the list
             DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
             depositRecord.addIngestedObjects(depositPID, children);
@@ -111,7 +112,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 
     /**
      * Generates a model containing the properties for this deposit record
-     * 
+     *
      * @param deposit
      * @param status
      * @return
@@ -147,6 +148,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         return aipObjResc;
     }
 
+    @Override
     public void setRepository(Repository repository) {
         this.repository = repository;
     }
