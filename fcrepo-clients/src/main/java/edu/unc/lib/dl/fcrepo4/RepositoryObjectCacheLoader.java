@@ -113,8 +113,12 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
             } else if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
                 obj =  new AdminUnit(pid, repository, repositoryObjectDataLoader);
             }
-        } else if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
-            obj =  new DepositRecord(pid, repository, repositoryObjectDataLoader);
+        } else if (isDepositPID(pid)) {
+            if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
+                obj =  new DepositRecord(pid, repository, repositoryObjectDataLoader);
+            } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
+                obj =  new BinaryObject(pid, repository, repositoryObjectDataLoader);
+            }
         }
 
         if (obj == null) {
@@ -129,5 +133,9 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
     private boolean isContentPID(PID pid) {
         return pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE);
+    }
+
+    private boolean isDepositPID(PID pid) {
+        return pid.getQualifier().equals(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
     }
 }
