@@ -216,7 +216,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     ingestFolder(destObj, parentResc, childResc, groupSet);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
                     ingestWork(destObj, parentResc, childResc, groupSet);
-                } else if (childResc.hasProperty(RDF.type, Cdr.FileObject)) {
+                } else if (childResc.hasProperty(RDF.type, Cdr.FileObject)
+                        || !childResc.hasProperty(RDF.type)) {
+                    // Assume child is a file if no type is provided
                     if (destObj instanceof WorkObject) {
                         // File object is being added to a work, go ahead
                         ingestFileObject(destObj, parentResc, childResc);
