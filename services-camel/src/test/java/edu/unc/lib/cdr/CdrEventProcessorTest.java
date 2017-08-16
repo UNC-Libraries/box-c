@@ -10,7 +10,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.output.XMLOutputter;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -45,11 +44,8 @@ public class CdrEventProcessorTest {
         Document msg = new Document();
         createAtomEntry(msg, actionType);
 
-        XMLOutputter out = new XMLOutputter();
-        final String msgStr = out.outputString(msg);
-
         when(message.getBody())
-            .thenReturn(msgStr);
+            .thenReturn(msg);
 
         processor.process(exchange);
 
@@ -61,11 +57,8 @@ public class CdrEventProcessorTest {
         Document msg = new Document();
         createAtomEntry(msg, null);
 
-        XMLOutputter out = new XMLOutputter();
-        final String msgStr = out.outputString(msg);
-
         when(message.getBody())
-            .thenReturn(msgStr);
+            .thenReturn(msg);
 
         processor.process(exchange);
 
