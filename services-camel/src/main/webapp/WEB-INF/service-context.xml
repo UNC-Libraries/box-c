@@ -355,6 +355,23 @@
 		<entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
 		<entry key="SET_DEFAULT_WEB_OBJECT" value-ref="updateDWOAction" />-->
 	</util:map>
+	
+	<!-- JMS messaging -->
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL"> 
+					<value>${jms.brokerUrl}</value>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	
+	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="repository.updates" />
+		<property name="pubSubDomain" value="true" />
+	</bean>
 
 	<!-- Processors -->
 	<bean id="cdrEventProcessor" class="edu.unc.lib.cdr.CdrEventProcessor">
@@ -425,8 +442,12 @@
 	</bean>
 	
 	<bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
-		<constructor-arg value="${error.maxRedeliveries}" />
-		<constructor-arg value="${error.retryDelay}" />
+		<property name="jmsTemplate" ref="jmsTemplate" />
+		<property name="queueName" value="solr-update"/>
+	</bean>
+	
+	<bean id="solrUpdateJobProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
+		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
 	</bean>
 	
 	<bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">

@@ -17,24 +17,29 @@
 package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.jms.JMSException;
+import javax.jms.Session;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -47,128 +52,142 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 public class SolrUpdateProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
-
-    private final int maxRetries;
-    private final long retryDelay;
-    private Map<IndexingActionType, IndexingAction> solrIndexingActionMap;
-
-    public SolrUpdateProcessor(int maxRetries, long retryDelay) {
-        this.maxRetries = maxRetries;
-        this.retryDelay = retryDelay;
-    }
+    private String parent;
+    private String mode;
+    private List<String>subjects;
+    private JmsTemplate jmsTemplate;
 
     @Override
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
+        Document body = (Document) in.getBody();
+        Element contentBody = body.getRootElement().getChild("content", JDOMNamespaceUtil.ATOM_NS);
 
-        String fcrepoBinaryUri = (String) in.getHeader(FCREPO_URI);
+        if (contentBody == null || contentBody.getChildren().size() == 0) {
+            return;
+        }
+
         String solrActionType = (String) in.getHeader(CdrSolrUpdateAction);
 
-        int retryAttempt = 0;
+        if (solrActionType.equals("none")) {
+            return;
+        }
 
-        while (true) {
-            List<SolrUpdateRequest> updateRequests = updateSolr(in, solrActionType, fcrepoBinaryUri);
+        parent = contentBody.getChildText("parent", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+        mode = contentBody.getChildText("mode", JDOMNamespaceUtil.CDR_MESSAGE_NS);
+        subjects = populateList("subjects", contentBody);
+        String targetId = JMSMessageUtil.getPid(body);
 
-            for (SolrUpdateRequest updateRequest : updateRequests) {
-                try {
-                    IndexingAction indexingAction = this.solrIndexingActionMap.get(updateRequest.getUpdateAction());
-
-                    if (indexingAction != null) {
-                        log.info("Performing action {} on object {}", updateRequest.getUpdateAction(),
-                                updateRequest.getTargetID());
-                        indexingAction.performAction(updateRequest);
+        if (JMSMessageUtil.CDRActions.MOVE.equals(solrActionType)) {
+            SolrUpdateRequest request = new ChildSetRequest(targetId, subjects,
+                    IndexingActionType.MOVE);
+            this.offer(request);
+        } else if (JMSMessageUtil.CDRActions.ADD.equals(solrActionType)) {
+            SolrUpdateRequest request = new ChildSetRequest(targetId, subjects,
+                    IndexingActionType.ADD_SET_TO_PARENT);
+            this.offer(request);
+        } else if (JMSMessageUtil.CDRActions.REORDER.equals(solrActionType)) {
+            // TODO this is a placeholder until a partial update for reorder is worked out
+            for (String pidString : populateList("reordered", contentBody)) {
+                this.offer(pidString, IndexingActionType.ADD);
+            }
+        } else if (JMSMessageUtil.CDRActions.INDEX.equals(solrActionType)) {
+            String operation = contentBody.getName();
+            IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace
+                    + operation);
+            if (indexingAction != null) {
+                if (IndexingActionType.SET_DEFAULT_WEB_OBJECT.equals(indexingAction)) {
+                    SolrUpdateRequest request = new ChildSetRequest(targetId, subjects,
+                            IndexingActionType.SET_DEFAULT_WEB_OBJECT);
+                    this.offer(request);
+                } else {
+                    for (String pidString : subjects) {
+                        this.offer(pidString, indexingAction);
                     }
-
-                    // Reset retry count for outer loop
-                    retryAttempt = 0;
-                } catch (IndexingException e) {
-                    log.error("Error attempting to perform action " + updateRequest.getAction() +
-                            " on object " + updateRequest.getTargetID(), e);
-                } catch (Exception e) {
-                    if (retryAttempt == maxRetries) {
-                        throw e;
-                    }
-
-                    retryAttempt++;
-                    log.info("Unable to update solr for {}. Retrying, attempt {}",
-                            fcrepoBinaryUri, retryAttempt);
-                    TimeUnit.MILLISECONDS.sleep(retryDelay);
                 }
             }
+        } else if (JMSMessageUtil.CDRActions.REINDEX.equals(solrActionType)) {
+            // Determine which kind of reindex to perform based on the mode
+            if (mode.equals("inplace")) {
+                this.offer(parent, IndexingActionType.RECURSIVE_REINDEX);
+            } else {
+                this.offer(parent, IndexingActionType.CLEAN_REINDEX);
+            }
+        } else if (JMSMessageUtil.CDRActions.PUBLISH.equals(solrActionType)) {
+            for (String pidString : subjects) {
+                this.offer(pidString, IndexingActionType.UPDATE_STATUS);
+            }
+        } else if (JMSMessageUtil.CDRActions.EDIT_TYPE.equals(solrActionType)) {
+            SolrUpdateRequest request = new ChildSetRequest(targetId, subjects,
+                    IndexingActionType.UPDATE_TYPE);
+            this.offer(request);
         }
     }
 
-    private List<String> populateList(String field, Element contentBody) {
+    private List<String> populateList(String field, Element contentBody){
         List<Element> children = contentBody.getChildren(field, JDOMNamespaceUtil.CDR_MESSAGE_NS);
+
         if (children == null || children.size() == 0) {
             return null;
         }
 
         List<String> list = new ArrayList<String>();
-        for (Object node: children) {
+        for (Object node: children){
             Element element = (Element)node;
-            for (Object pid: element.getChildren()) {
+            for (Object pid: element.getChildren()){
                 Element pidElement = (Element)pid;
                 list.add(pidElement.getTextTrim());
             }
         }
+
         return list;
     }
 
-    private List<SolrUpdateRequest> updateSolr(Message message, String action, String pid) {
-        Element messageBody = (Element) message.getBody();
+    private void sendMessage(Document msg) {
+        XMLOutputter out = new XMLOutputter();
+        final String msgStr = out.outputString(msg);
+
+        this.jmsTemplate.send(new MessageCreator() {
+
+            @Override
+            public javax.jms.Message createMessage(Session session) throws JMSException {
+                return session.createTextMessage(msgStr);
+            }
+
+        });
+    }
+
+    public void setJmsTemplate(JmsTemplate jmsTemplate) {
+        this.jmsTemplate = jmsTemplate;
+    }
+
+    private void offer(String pid, IndexingActionType solrActionType) {
+        offer(new SolrUpdateRequest(pid, solrActionType));
+    }
+
+    private void offer(SolrUpdateRequest ingestRequest) {
+        String pid = ingestRequest.getPid().getRepositoryPath();
+        String solrActionType = ingestRequest.getUpdateAction().toString();
 
         List<String> children = null;
-        List<String> reordered = null;
-        List<SolrUpdateRequest> updates = new ArrayList<SolrUpdateRequest>();
-        final String parent;
-        final String mode;
 
-        children = populateList("subjects", messageBody);
-        parent = messageBody.getChildText("parent", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-        mode = messageBody.getChildText("mode", JDOMNamespaceUtil.CDR_MESSAGE_NS);
-
-        if (JMSMessageUtil.CDRActions.MOVE.equals(action)) {
-            updates.add(new ChildSetRequest(pid, children,
-                    IndexingActionType.MOVE));
-        } else if (JMSMessageUtil.CDRActions.ADD.equals(action)) {
-            updates.add(new ChildSetRequest(pid, children,
-                    IndexingActionType.ADD_SET_TO_PARENT));
-        } else if (JMSMessageUtil.CDRActions.REORDER.equals(action)) {
-            reordered = populateList("reordered", messageBody);
-
-            for (String pidString : reordered) {
-                updates.add(new SolrUpdateRequest(pidString, IndexingActionType.ADD));
+        if (ingestRequest instanceof ChildSetRequest) {
+            children = new ArrayList<>();
+            for (PID p : ((ChildSetRequest) ingestRequest).getChildren()) {
+                children.add(p.getId());
             }
-        } else if (JMSMessageUtil.CDRActions.INDEX.equals(action)) {
-            IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace
-                    + action);
-            if (indexingAction != null) {
-                if (IndexingActionType.SET_DEFAULT_WEB_OBJECT.equals(indexingAction)) {
-                    updates.add(new ChildSetRequest(pid, children,
-                            IndexingActionType.SET_DEFAULT_WEB_OBJECT));
-                } else {
-                    for (String pidString : children) {
-                        updates.add(new SolrUpdateRequest(pidString, indexingAction));
-                    }
-                }
-            }
-        } else if (JMSMessageUtil.CDRActions.REINDEX.equals(action)) {
-            // Determine which kind of reindex to perform based on the mode
-            if (mode.equals("inplace")) {
-                updates.add(new SolrUpdateRequest(parent, IndexingActionType.RECURSIVE_REINDEX));
-            } else {
-                updates.add(new SolrUpdateRequest(parent, IndexingActionType.CLEAN_REINDEX));
-            }
-        } else if (JMSMessageUtil.CDRActions.PUBLISH.equals(action)) {
-            for (String pidString : children) {
-                updates.add(new SolrUpdateRequest(pidString, IndexingActionType.UPDATE_STATUS));
-            }
-        } else if (JMSMessageUtil.CDRActions.EDIT_TYPE.equals(action)) {
-            updates.add(new ChildSetRequest(pid, children,
-                    IndexingActionType.UPDATE_TYPE));
         }
 
-        return updates;
+        String childrenStr = children.stream().map(Object::toString)
+            .collect(Collectors.joining(","));
+
+        Document msg = new Document();
+        Element entry = new Element("entry", ATOM_NS);
+        msg.addContent(entry);
+        entry.addContent(new Element("pid", ATOM_NS).setText(pid));
+        entry.addContent(new Element("solrActionType", ATOM_NS).setText(solrActionType));
+        entry.addContent(new Element("children", ATOM_NS).setText(childrenStr));
+
+        sendMessage(msg);
     }
 }
