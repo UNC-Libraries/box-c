@@ -113,7 +113,7 @@ public abstract class PIDs {
                 }
             } else {
                 log.warn("Invalid qualified path {}, cannot construct PID", value);
-                // No a recognized format for constructing a pid
+                // Not a recognized format for constructing a pid
                 return null;
             }
         }
