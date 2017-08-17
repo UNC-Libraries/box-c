@@ -15,8 +15,14 @@
 
 	<context:annotation-config />
 	
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="config.properties.uri" />
+		<constructor-arg index="1" value="classpath:config.properties" />
+	</bean>
+	
 	<bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:config.properties"/>
+		<property name="location" ref="propertiesURI"/>
 	</bean>
 	
 	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
