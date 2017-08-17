@@ -212,12 +212,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 Resource childResc = (Resource) iterator.next();
 
                 // Ingest the child according to its object type
-                if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
-                    ingestFolder(destObj, parentResc, childResc, groupSet);
-                } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    ingestWork(destObj, parentResc, childResc, groupSet);
-                } else if (childResc.hasProperty(RDF.type, Cdr.FileObject)
-                        || !childResc.hasProperty(RDF.type)) {
+                if (!childResc.hasProperty(RDF.type)
+                        || childResc.hasProperty(RDF.type, Cdr.FileObject)) {
                     // Assume child is a file if no type is provided
                     if (destObj instanceof WorkObject) {
                         // File object is being added to a work, go ahead
@@ -226,6 +222,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                         // File object is a standalone, so construct a Work around it
                         ingestFileObjectAsWork(destObj, parentResc, childResc);
                     }
+                } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
+                    ingestFolder(destObj, parentResc, childResc, groupSet);
+                } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
+                    ingestWork(destObj, parentResc, childResc, groupSet);
                 } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
                     ingestCollection(destObj, parentResc, childResc, groupSet);
                 } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
