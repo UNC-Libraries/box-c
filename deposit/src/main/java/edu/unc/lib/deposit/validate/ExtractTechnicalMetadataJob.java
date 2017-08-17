@@ -30,12 +30,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -58,13 +61,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Job which performs technical metadata extraction on binary files included in
  * this deposit and then stores the resulting details in a PREMIS report file
- * 
+ *
  * @author bbpennel
  *
  */
@@ -114,42 +118,56 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             // Generate the FITS report as a document
             Document fitsDoc = getFitsDocument(objPid, stagedPath);
 
-            // Create the PREMIS report wrapper for the FITS results
-            Document premisDoc = generatePremisReport(objPid, fitsDoc);
-            Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
+            try {
 
-            Resource objResc = model.getResource(objPid.getRepositoryPath());
+                // Create the PREMIS report wrapper for the FITS results
+                Document premisDoc = generatePremisReport(objPid, fitsDoc);
+                Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
-            // Record the format info for this file
-            addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
+                Resource objResc = model.getResource(objPid.getRepositoryPath());
 
-            addFileinfoToReport(objResc, fitsDoc, premisObjCharsEl);
+                // Record the format info for this file
+                addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
 
-            addFitsResults(premisDoc, fitsDoc);
+                addFileinfoToReport(objResc, fitsDoc, premisObjCharsEl);
 
-            // Store the premis report to file
-            writePremisReport(objPid, premisDoc);
+                addFitsResults(premisDoc, fitsDoc);
+
+                // Store the premis report to file
+                writePremisReport(objPid, premisDoc);
+            } catch (JobFailedException e) {
+                throw e;
+            } catch (Exception e) {
+                failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",
+                        objPid, xmlOutputter.outputString(fitsDoc));
+            }
         }
     }
 
     /**
      * Generate the FITS report for the given object/file and return it as an
      * XML document
-     * 
+     *
      * @param objPid
      * @param stagedPath
      * @return
      */
     private Document getFitsDocument(PID objPid, String stagedPath) {
         HttpUriRequest request;
+        URI stagedUri = URI.create(stagedPath);
+        if (!stagedUri.isAbsolute()) {
+            stagedUri = Paths.get(getDepositDirectory().toString(), stagedPath).toUri();
+        }
 
         if (processFilesLocally) {
             // Files are available locally to FITS, so just pass along path
             URI fitsUri = null;
             try {
                 URIBuilder builder = new URIBuilder(fitsExamineUri);
-                builder.addParameter("file", stagedPath);
+                builder.addParameter("file", stagedUri.getPath());
                 fitsUri = builder.build();
+
+                log.debug("Requesting FITS document for {} using local file via URI {}", objPid, fitsUri);
             } catch (URISyntaxException e) {
                 failJob(e, "Failed to construct FITs report uri for {0}", objPid);
             }
@@ -157,7 +175,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             request = new HttpGet(fitsUri);
         } else {
             // Files are to be processed remotely, so upload them via a post request
-            File stagedFile = new File(URI.create(stagedPath));
+            File stagedFile = new File(stagedUri);
             HttpEntity entity = MultipartEntityBuilder.create()
                     .addPart("datafile", new FileBody(stagedFile))
                     .build();
@@ -165,11 +183,19 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             HttpPost postRequest = new HttpPost(fitsExamineUri);
             postRequest.setEntity(entity);
             request = postRequest;
+
+            log.debug("Requesting FITS document for {} using remote file from {}", objPid, stagedFile);
         }
 
         try (CloseableHttpResponse resp = httpClient.execute(request)) {
             // Write the report response to file
             InputStream respBodyStream = resp.getEntity().getContent();
+
+            if (resp.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+                failJob(null, "Failed to retrieve report for {0}, status {1} response {2}",
+                        objPid, resp.getStatusLine().getStatusCode(), IOUtils.toString(respBodyStream));
+            }
+
             return new SAXBuilder().build(respBodyStream);
         } catch (IOException | JDOMException e) {
             failJob(e, "Failed to stream report for {0} from server to report document",
@@ -182,7 +208,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
      * Build a list of staging locations in this deposit which need to have FITS
      * reports generated for them. If a report has been previously generated in
      * a resumed deposit, then it will be excluded
-     * 
+     *
      * @param model
      * @return
      */
@@ -223,7 +249,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     /**
      * Adds format and mimetype information for the give object, to both the
      * PREMIS report and the deposit model to be included as part of the ingest.
-     * 
+     *
      * @param objResc
      * @param fitsDoc
      * @param premisObjCharsEl
@@ -256,7 +282,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     /**
      * Retrieves the file identification information from the FITS report,
      * resolving conflicts when necessary
-     * 
+     *
      * @param fitsDoc
      * @return
      */
@@ -289,7 +315,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     /**
      * Overrides the mimetype for this object in the deposit model when the FITS
      * generated value is preferred.
-     * 
+     *
      * @param objPid
      * @param model
      * @param fitsMimetype
@@ -318,7 +344,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     /**
      * Determines if the given mimetype is a meaningful value, meaning not empty
      * or generic
-     * 
+     *
      * @param mimetype
      * @return
      */
@@ -335,7 +361,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     /**
      * Add file info, including md5 checksum and filesize to the premis report and
-     * 
+     *
      * @param objResc
      * @param fitsDoc
      * @param premisDoc
@@ -375,7 +401,7 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     /**
      * Constructs a PREMIS document with basic information about the given
      * object
-     * 
+     *
      * @param objPid
      * @param fitsDoc
      * @return

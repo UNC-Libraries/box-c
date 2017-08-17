@@ -19,7 +19,7 @@ import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 /**
  * Permissions for user actions within the repository
- * 
+ *
  * @author bbpennel
  *
  */
@@ -40,6 +40,7 @@ public enum Permission {
     markForDeletion,
     destroy,
     createCollection,
+    createAdminUnit,
     changePatronAccess,
     assignStaffRoles,
     editResourceType;

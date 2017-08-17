@@ -52,6 +52,8 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
@@ -163,11 +165,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     + ", types does not support children");
         }
         String groups = depositStatus.get(DepositField.permissionGroups.name());
+        AccessGroupSet groupSet = new AccessGroupSet(groups);
 
         // Verify that the depositor is allow to ingest to the given destination
         aclService.assertHasAccess(
                 "Depositor does not have permissions to ingest to destination " + destPid,
-                destPid, new AccessGroupSet(groups), Permission.ingest);
+                destPid, groupSet, Permission.ingest);
 
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
@@ -180,7 +183,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         // Ingest objects included in this deposit into the destination object
         try {
-            ingestChildren((ContentContainerObject) destObj, depositBag);
+            ingestChildren((ContentContainerObject) destObj, depositBag, groupSet);
             // Add ingestion event for the parent container
             addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource());
         } catch (DepositException | FedoraException | IOException e) {
@@ -196,7 +199,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestChildren(ContentContainerObject destObj, Resource parentResc)
+    private void ingestChildren(ContentContainerObject destObj, Resource parentResc, AccessGroupSet groupSet)
             throws DepositException, IOException {
         NodeIterator iterator = getChildIterator(parentResc);
         // No more children, nothing further to do in this tree
@@ -209,11 +212,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 Resource childResc = (Resource) iterator.next();
 
                 // Ingest the child according to its object type
-                if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
-                    ingestFolder(destObj, parentResc, childResc);
-                } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
-                    ingestWork(destObj, parentResc, childResc);
-                } else if (childResc.hasProperty(RDF.type, Cdr.FileObject)) {
+                if (!childResc.hasProperty(RDF.type)
+                        || childResc.hasProperty(RDF.type, Cdr.FileObject)) {
+                    // Assume child is a file if no type is provided
                     if (destObj instanceof WorkObject) {
                         // File object is being added to a work, go ahead
                         ingestFileObject(destObj, parentResc, childResc);
@@ -221,6 +222,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                         // File object is a standalone, so construct a Work around it
                         ingestFileObjectAsWork(destObj, parentResc, childResc);
                     }
+                } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
+                    ingestFolder(destObj, parentResc, childResc, groupSet);
+                } else if (childResc.hasProperty(RDF.type, Cdr.Work)) {
+                    ingestWork(destObj, parentResc, childResc, groupSet);
+                } else if (childResc.hasProperty(RDF.type, Cdr.Collection)) {
+                    ingestCollection(destObj, parentResc, childResc, groupSet);
+                } else if (childResc.hasProperty(RDF.type, Cdr.AdminUnit)) {
+                    ingestAdminUnit(destObj, parentResc, childResc, groupSet);
                 }
             }
         } finally {
@@ -395,12 +404,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @param parent
      * @param parentResc
      * @param childResc
+     * @param groupSet
      * @return
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc)
-            throws DepositException, IOException {
+    private void ingestFolder(ContentContainerObject parent, Resource parentResc, Resource childResc,
+            AccessGroupSet groupSet) throws DepositException, IOException {
 
         PID childPid = PIDs.get(childResc.getURI());
         FolderObject obj = null;
@@ -434,7 +444,99 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // ingest children of the folder
-        ingestChildren(obj, childResc);
+        ingestChildren(obj, childResc, groupSet);
+        // add ingestion event for the new folder
+        addIngestionEventForContainer(obj, childResc);
+
+        addPremisEvents(obj);
+    }
+
+    private void ingestAdminUnit(ContentContainerObject parent, Resource parentResc, Resource childResc,
+            AccessGroupSet groupSet) throws DepositException, IOException {
+
+        PID childPid = PIDs.get(childResc.getURI());
+        AdminUnit obj = null;
+        if (skipResumed(childResc)) {
+            // Resuming, retrieve the existing admin unit object
+            obj = repository.getAdminUnit(childPid);
+        } else {
+            aclService.assertHasAccess(
+                    "Depositor does not have permissions to create admin units",
+                    parent.getPid(), groupSet, Permission.createAdminUnit);
+
+            // Create the new folder
+            Model model = ModelFactory.createDefaultModel();
+            Resource adminResc = model.getResource(childPid.getRepositoryPath());
+            populateAIPProperties(childResc, adminResc);
+
+            // TODO add ACLs
+            FedoraTransaction tx = repository.startTransaction();
+            try {
+                obj = repository.createAdminUnit(childPid, model);
+                addIngestionEventForChild(obj);
+                parent.addMember(obj);
+
+                addDescription(obj);
+
+                // Increment the count of objects deposited prior to adding children
+                addClicks(1);
+
+                log.info("Created admin unit {} for deposit {}", childPid, getDepositPID());
+            } catch (Exception e) {
+                tx.cancel(e);
+            } finally {
+                tx.close();
+            }
+        }
+
+        // ingest children of the admin unit
+        ingestChildren(obj, childResc, groupSet);
+        // add ingestion event for the new folder
+        addIngestionEventForContainer(obj, childResc);
+
+        addPremisEvents(obj);
+    }
+
+    private void ingestCollection(ContentContainerObject parent, Resource parentResc, Resource childResc,
+            AccessGroupSet groupSet) throws DepositException, IOException {
+
+        PID childPid = PIDs.get(childResc.getURI());
+        CollectionObject obj = null;
+        if (skipResumed(childResc)) {
+            // Resuming, retrieve the existing admin unit object
+            obj = repository.getCollectionObject(childPid);
+        } else {
+            aclService.assertHasAccess(
+                    "Depositor does not have permissions to create collections in " + parent.getPid(),
+                    parent.getPid(), groupSet, Permission.createCollection);
+
+            // Create the new folder
+            Model model = ModelFactory.createDefaultModel();
+            Resource adminResc = model.getResource(childPid.getRepositoryPath());
+            populateAIPProperties(childResc, adminResc);
+
+            // TODO add ACLs
+            FedoraTransaction tx = repository.startTransaction();
+            try {
+                obj = repository.createCollectionObject(childPid, model);
+                addIngestionEventForChild(obj);
+                parent.addMember(obj);
+
+                addDescription(obj);
+
+                // Increment the count of objects deposited prior to adding children
+                addClicks(1);
+
+                log.info("Created collection {} for deposit {}", childPid, getDepositPID());
+            } catch (Exception e) {
+                tx.cancel(e);
+            } finally {
+                tx.close();
+            }
+        }
+
+        // ingest children of the admin unit
+        ingestChildren(obj, childResc, groupSet);
         // add ingestion event for the new folder
         addIngestionEventForContainer(obj, childResc);
 
@@ -449,19 +551,20 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @param parent
      * @param parentResc
      * @param childResc
+     * @param groupSet
      * @return
      * @throws DepositException
      * @throws IOException
      */
-    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
-            throws DepositException, IOException {
+    private void ingestWork(ContentContainerObject parent, Resource parentResc, Resource childResc,
+            AccessGroupSet groupSet) throws DepositException, IOException {
         PID childPid = PIDs.get(childResc.getURI());
 
         WorkObject obj = null;
         boolean skip = skipResumed(childResc);
         if (skip) {
             obj = repository.getWorkObject(childPid);
-            ingestChildren(obj, childResc);
+            ingestChildren(obj, childResc, groupSet);
 
             // Avoid adding primaryObject relation for a resuming deposit if already present
             if (!obj.getResource().hasProperty(Cdr.primaryObject)) {
@@ -488,7 +591,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
                 log.info("Created work object {} for deposit {}", childPid, getDepositPID());
 
-                ingestChildren(obj, childResc);
+                ingestChildren(obj, childResc, groupSet);
                 // Set the primary object for this work if one was specified
                 addPrimaryObject(obj, childResc);
                 // Add ingestion event for the work as container

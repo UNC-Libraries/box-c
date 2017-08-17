@@ -28,8 +28,11 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Paths;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -55,7 +58,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.DepositConstants;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -83,6 +86,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     private CloseableHttpClient httpClient;
     @Mock
     private CloseableHttpResponse httpResp;
+    @Mock
+    private StatusLine statusLine;
     @Mock
     private HttpEntity respEntity;
 
@@ -112,6 +117,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         when(httpClient.execute(any(HttpGet.class))).thenReturn(httpResp);
         when(httpResp.getEntity()).thenReturn(respEntity);
+        when(httpResp.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
     }
@@ -263,6 +270,9 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
     private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
             String expectedChecksum, String expectedFilepath, int numberReports) throws Exception {
+
+        String absFilePath = Paths.get(depositDir.getAbsolutePath(), expectedFilepath).toString();
+
         model = job.getReadOnlyModel();
         // Post-run model info for the file object
         Resource fileResc = model.getResource(filePid.getRepositoryPath());
@@ -272,7 +282,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         HttpUriRequest request = requestCaptor.getValue();
 
         assertEquals("FITS service not called with the expected path",
-                FITS_BASE_URI + "/examine?file=" + expectedFilepath.replace("/", "%2F"),
+                FITS_BASE_URI + "/examine?file=" + absFilePath.replace("/", "%2F"),
                 request.getURI().toString());
 
         assertEquals("Incorrect number of reports in output dir",

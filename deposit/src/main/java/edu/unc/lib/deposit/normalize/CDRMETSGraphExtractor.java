@@ -27,21 +27,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-import org.jdom2.filter.ElementFilter;
-import org.jdom2.output.Format;
-import org.jdom2.output.XMLOutputter;
-
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.filter.ElementFilter;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -51,7 +50,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -59,11 +58,13 @@ public class CDRMETSGraphExtractor {
     public static final Logger LOG = LoggerFactory.getLogger(CDRMETSGraphExtractor.class);
     public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
 
-    private static Map<String, URI> containerTypes = new HashMap<String, URI>();
+    private static Map<String, URI> containerTypes = new HashMap<>();
     static {
         containerTypes.put("Folder", URI.create(Cdr.Folder.getURI()));
+        containerTypes.put("AdminUnit", URI.create(Cdr.AdminUnit.getURI()));
         containerTypes.put("Collection", URI.create(Cdr.Collection.getURI()));
         containerTypes.put("Aggregate Work", URI.create(Cdr.Work.getURI()));
+        containerTypes.put("Work", URI.create(Cdr.Work.getURI()));
         containerTypes.put("SWORD Object", URI.create(Cdr.Work.getURI()));
     }
 
@@ -166,7 +167,7 @@ public class CDRMETSGraphExtractor {
             try {
                 fos = new FileOutputStream(path);
                 Document mods = new Document();
-                mods.setRootElement((Element) modsEl.detach());
+                mods.setRootElement(modsEl.detach());
                 new XMLOutputter(Format.getPrettyFormat()).output(mods, fos);
             } catch (IOException e) {
                 throw new Error("unexpected exception", e);
@@ -181,7 +182,7 @@ public class CDRMETSGraphExtractor {
 
     private void addContainerTriples(Model m) {
         // add deposit-level parent (represented as structMap or bag div)
-        Element topContainer = (Element) mets.getRootElement().getChild(
+        Element topContainer = mets.getRootElement().getChild(
                 "structMap", METS_NS);
         Element firstdiv = topContainer.getChild("div", METS_NS);
         if (firstdiv != null
@@ -224,12 +225,9 @@ public class CDRMETSGraphExtractor {
                             .getPIDURI(childEl));
                     parent.add(child);
                 }
-                // set container content model(s)
-                m.add(parent, RDF.type, Cdr.Folder);
-                if (!"Folder".equals(type)) {
-                    m.add(parent, RDF.type, m.createResource(containerTypes
-                            .get(type).toString()));
-                }
+                // Set container type
+                m.add(parent, RDF.type, m.createResource(containerTypes
+                        .get(type).toString()));
             }
 
         }

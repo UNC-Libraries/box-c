@@ -57,8 +57,12 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.Repository;
@@ -72,7 +76,7 @@ import edu.unc.lib.dl.test.SelfReturningAnswer;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -84,14 +88,14 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     private PID destinationPid;
 
-    private FolderObject destinationObj;
+    private ContentContainerObject destinationObj;
 
     @Mock
     private PremisLoggerFactory mockPremisLoggerFactory;
-    
+
     @Mock
     private PremisLogger mockPremisLogger;
-    
+
     private PremisEventBuilder mockPremisEventBuilder;
 
     @Mock
@@ -99,7 +103,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Mock
     private FileObject mockFileObj;
-    
+
     @Mock
     private BinaryObject mockBinaryObj;
 
@@ -131,7 +135,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         techmdDir = new File(depositDir, TECHMD_DIR);
         techmdDir.mkdir();
-        
+
         // Setup logging dependencies
         mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
         when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
@@ -164,7 +168,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         FolderObject folder = mock(FolderObject.class);
         when(repository.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
-        
+
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
@@ -472,7 +476,124 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         // No preprocessing ticks
         verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(0));
     }
-    
+
+    @Test
+    public void ingestAdminUnitTest() {
+
+        destinationObj = mock(ContentRootObject.class);
+        when(destinationObj.getPid()).thenReturn(destinationPid);
+        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+
+        AdminUnit adminUnit = mock(AdminUnit.class);
+        when(repository.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag adminBag = model.createBag(adminPid.getRepositoryPath());
+        adminBag.addProperty(RDF.type, Cdr.AdminUnit);
+        when(adminUnit.getPid()).thenReturn(adminPid);
+
+        depBag.add(adminBag);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(repository).createAdminUnit(eq(adminPid), any(Model.class));
+        verify(destinationObj).addMember(eq(adminUnit));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test(expected = AccessRestrictionException.class)
+    public void ingestAdminUnitNoPermissionTest() {
+        destinationObj = mock(ContentRootObject.class);
+        when(destinationObj.getPid()).thenReturn(destinationPid);
+        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+
+        // Throw access exception for creating admin unit
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSet.class),
+                        eq(Permission.createAdminUnit));
+
+        AdminUnit adminUnit = mock(AdminUnit.class);
+        when(repository.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag adminBag = model.createBag(adminPid.getRepositoryPath());
+        adminBag.addProperty(RDF.type, Cdr.AdminUnit);
+        when(adminUnit.getPid()).thenReturn(adminPid);
+
+        depBag.add(adminBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void ingestCollectionTest() {
+
+        destinationObj = mock(AdminUnit.class);
+        when(destinationObj.getPid()).thenReturn(destinationPid);
+        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+
+        CollectionObject collection = mock(CollectionObject.class);
+        when(repository.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag collectionBag = model.createBag(collectionPid.getRepositoryPath());
+        collectionBag.addProperty(RDF.type, Cdr.Collection);
+        when(collection.getPid()).thenReturn(collectionPid);
+
+        depBag.add(collectionBag);
+
+        job.closeModel();
+
+        job.run();
+
+        verify(repository).createCollectionObject(eq(collectionPid), any(Model.class));
+        verify(destinationObj).addMember(eq(collection));
+        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
+    }
+
+    @Test(expected = AccessRestrictionException.class)
+    public void ingestCollectionNoPermisionTest() {
+
+        destinationObj = mock(AdminUnit.class);
+        when(destinationObj.getPid()).thenReturn(destinationPid);
+        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+
+        // Throw access exception for creating collection
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(destinationPid), any(AccessGroupSet.class),
+                        eq(Permission.createCollection));
+
+        CollectionObject collection = mock(CollectionObject.class);
+        when(repository.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
+
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag collectionBag = model.createBag(collectionPid.getRepositoryPath());
+        collectionBag.addProperty(RDF.type, Cdr.Collection);
+        when(collection.getPid()).thenReturn(collectionPid);
+
+        depBag.add(collectionBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 

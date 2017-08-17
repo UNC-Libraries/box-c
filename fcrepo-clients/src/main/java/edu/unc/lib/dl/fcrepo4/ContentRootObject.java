@@ -35,7 +35,7 @@ public class ContentRootObject extends ContentContainerObject {
 
     @Override
     public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
-        if (!(member instanceof FolderObject)) {
+        if (!(member instanceof AdminUnit)) {
             throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
                     + " as a member of ContentRootObject " + pid.getQualifiedId());
         }
