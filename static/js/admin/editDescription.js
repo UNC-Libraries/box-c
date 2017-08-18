@@ -134,9 +134,21 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						icon_class: 'fa fa-file-text-o'
 					},
 					{
+						filename: 'minimal_metadata.xml',
+						title: "Minimal Metadata",
+						description: 'Simplified MODS template with basic fields',
+						icon_class: 'fa fa-file-text-o'
+					},
+					{
 						filename: 'archives.xml',
 						title: 'Archival Folder',
 						description: 'Wilson MODS template with common fields',
+						icon_class: 'fa fa-file-text-o'
+					},
+					{
+						filename: 'serials.xml',
+						title: "Serial Title",
+						description: 'Template with standard fields to describe serial titles',
 						icon_class: 'fa fa-file-text-o'
 					},
 					{
