@@ -62,7 +62,11 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -392,6 +396,17 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
             objResc.addProperty(md5sum, md5Value);
         }
 
+        // Store event for calculation of checksum
+        PID pid = PIDs.get(objResc.getURI());
+        PremisLogger premisDepositLogger = getPremisLogger(pid);
+        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
+                .addEventDetail("Checksum for file is {0}", md5Value)
+                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                .create();
+
+        premisDepositLogger.writeEvent(premisDepositEvent);
+
+        // Add checksum to FITS report
         premisObjCharsEl.addContent(
                 new Element("fixity", PREMIS_V3_NS).addContent(
                         new Element("messageDigestAlgorithm", PREMIS_V3_NS).setText("MD5"))
