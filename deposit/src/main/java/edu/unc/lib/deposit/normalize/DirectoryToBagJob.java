@@ -24,6 +24,7 @@ import static edu.unc.lib.dl.util.ContentModelHelper.Model.SIMPLE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -111,8 +112,8 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				
 				String fullPath = file.toString();
 				
-				try {
-					checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
+				try (InputStream fileStream = new FileInputStream(fullPath)) {
+					checksum = DigestUtils.md5Hex(fileStream);
 				} catch (IOException e) {
 					failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
 				}
