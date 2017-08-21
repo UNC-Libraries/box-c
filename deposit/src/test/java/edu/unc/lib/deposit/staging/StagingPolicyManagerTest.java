@@ -32,7 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -87,6 +87,29 @@ public class StagingPolicyManagerTest {
         assertEquals("Stage1", policy.getName());
         assertEquals(CleanupPolicy.DELETE_INGESTED_FILES_EMPTY_FOLDERS, policy.getCleanupPolicy());
         assertNotNull(policy.getPath());
+    }
+
+    @Test
+    public void getStagingPolicyNonFileUriTest() {
+        manager.init();
+
+        URI uri = URI.create(validUri.getPath());
+        StagingPolicy policy = manager.getStagingPolicy(uri);
+
+        assertNotNull(policy);
+        assertEquals("Stage1", policy.getName());
+    }
+
+    @Test
+    public void getStagingPolicyRelativeTest() {
+        manager.init();
+
+        URI relative = URI.create("staging_location1/file.txt");
+
+        StagingPolicy policy = manager.getStagingPolicy(relative);
+
+        assertNotNull(policy);
+        assertEquals("Stage1", policy.getName());
     }
 
     @Test(expected = StagingException.class)

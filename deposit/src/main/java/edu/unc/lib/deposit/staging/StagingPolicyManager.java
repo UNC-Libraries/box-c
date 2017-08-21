@@ -22,6 +22,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy;
 import edu.unc.lib.dl.util.URIUtil;
@@ -31,11 +33,13 @@ import edu.unc.lib.dl.util.URIUtil;
  * located within accepted staging locations according to the provided policies,
  * and provides access to those policies. Loaded from a policy configuration
  * json file
- * 
+ *
  * @author bbpennel
  *
  */
 public class StagingPolicyManager {
+
+    private static final Logger log = LoggerFactory.getLogger(StagingPolicyManager.class);
 
     private String basePath;
 
@@ -67,10 +71,8 @@ public class StagingPolicyManager {
         for (StagingPolicy policy : policies) {
             String path = policy.getPath();
 
-            // If path was not absolute, resolve it against the base path
-            if (!Paths.get(path).isAbsolute()) {
-                policy.setPath(URIUtil.join(basePath, path));
-            }
+            // Ensure that the path of the policy is absolute
+            policy.setPath(makeAbsolute(path));
 
             // Abort loading if one of the paths is invalid
             if (!Paths.get(policy.getPath()).toFile().exists()) {
@@ -82,13 +84,13 @@ public class StagingPolicyManager {
     /**
      * Get the staging policy which applies to the given file uri, or throw a
      * staging exception if no policy is found
-     * 
+     *
      * @param fileUri
      * @return
      * @throws StagingException
      */
     public StagingPolicy getStagingPolicy(URI fileUri) throws StagingException {
-        String path = fileUri.getPath();
+        String path = makeAbsolute(fileUri.getPath());
 
         for (StagingPolicy policy : policies) {
             String policyPath = policy.getPath();
@@ -97,13 +99,13 @@ public class StagingPolicyManager {
             }
         }
 
-        throw new StagingException("No staging policy available for " + fileUri);
+        throw new StagingException("No staging policy available for " + path);
     }
 
     /**
      * Get the cleanup policy which applies to the given file uri, or throw a
      * staging exception if no policy is found
-     * 
+     *
      * @param fileUri
      * @return
      * @throws StagingException
@@ -115,7 +117,7 @@ public class StagingPolicyManager {
     /**
      * Returns true if the given file uri is contained by at least one of the
      * staging locations registered with this manager
-     * 
+     *
      * @param fileUri
      * @return
      */
@@ -126,6 +128,14 @@ public class StagingPolicyManager {
         } catch (StagingException e) {
             return false;
         }
+    }
+
+    private String makeAbsolute(String path) {
+        if (!Paths.get(path).isAbsolute()) {
+            log.debug("Resolving relative path {} to within {}", path, basePath);
+            return URIUtil.join(basePath, path);
+        }
+        return path;
     }
 
     public String getBasePath() {
