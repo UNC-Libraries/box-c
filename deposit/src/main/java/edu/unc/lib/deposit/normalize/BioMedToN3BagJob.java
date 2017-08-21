@@ -30,6 +30,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -74,15 +75,15 @@ import edu.unc.lib.dl.xml.METSProfile;
  * @date Oct 28, 2015
  */
 public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(BioMedToN3BagJob.class);
 
 	private static final String fLocatHrefPath =
 			"/m:mets/m:fileSec/m:fileGrp/m:file[@ID = '%s']/m:FLocat/@xlink:href";
 	private static final Pattern mainArticlePattern = Pattern.compile(".*\\_Article\\_.*\\.[pP][dD][fF]");
-	
+
 	private Transformer epdcx2modsTransformer = null;
-	
+
 	public BioMedToN3BagJob(String uuid, String depositUUID) {
 		super(uuid, depositUUID);
 	}
@@ -94,7 +95,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 	public void setEpdcx2modsTransformer(Transformer epdcx2modsTransformer) {
 		this.epdcx2modsTransformer = epdcx2modsTransformer;
 	}
-	
+
 	@Override
 	public void runJob() {
 		validateMETS();
@@ -114,19 +115,19 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		Bag top = model.createBag(getDepositPID().getURI().toString());
 		// add aggregate work bag
 		Element aggregateEl = helper.mets.getRootElement().getChild("structMap", METS_NS).getChild("div", METS_NS);
-		
+
 		List<Element> topChildren = new ArrayList<>();
 		String metadataFileName = retrieveChildrenMinusMetadata(aggregateEl, helper.mets, topChildren);
-		
+
 		Resource rootResource = constructResources(model, aggregateEl, topChildren, helper);
 		top.add(rootResource);
-		
+
 		if (topChildren.size() > 1) {
 			setDefaultWebObject(model, model.getBag(rootResource));
 		}
 
 		extractEPDCX(helper.mets, rootResource);
-		
+
 		try {
 			addSourceMetadata(model, rootResource, metadataFileName);
 		} catch (JDOMException | IOException e) {
@@ -135,11 +136,11 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 
 		recordDepositEvent(Type.NORMALIZATION, "Normalized deposit package from {0} to {1}", PackagingType.METS_DSPACE_SIP_1.getUri(), PackagingType.BAG_WITH_N3.getUri());
 	}
-	
+
 	private String retrieveChildrenMinusMetadata(Element aggregateEl, Document mets, List<Element> topChildren) {
 		XPathFactory xFactory = XPathFactory.instance();
 		String metadataFileName = null;
-		
+
 		// Get the list of children minus the metadata document if it exists
 		for (Element child : aggregateEl.getChildren("div", METS_NS)) {
 			// Detect the metadata file if it has not already been located
@@ -149,7 +150,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 				XPathExpression<Attribute> xPath = xFactory.compile(String.format(fLocatHrefPath, fileId),
 						Filters.attribute(), null, METS_NS, JDOMNamespaceUtil.XLINK_NS);
 				String fileName = xPath.evaluateFirst(mets).getValue();
-				
+
 				// Is it the metadata document?
 				if (fileName.endsWith(".xml.Meta")) {
 					// Capture reference to the xml document
@@ -157,43 +158,43 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 					continue;
 				}
 			}
-			
+
 			// Add all other children to the list
 			topChildren.add(child);
 		}
-		
+
 		return metadataFileName;
 	}
-	
+
 	private Resource constructResources(Model model, Element aggregateEl, List<Element> topChildren, METSHelper helper) {
 		Property hasModel = model.createProperty(ContentModelHelper.FedoraProperty.hasModel.getURI().toString());
 		Property fileLocation = model.createProperty(DepositRelationship.stagingLocation.toString());
-		
+
 		if (topChildren.size() == 1) {
 			Resource rootResource = model.createResource(METSHelper.getPIDURI(topChildren.get(0)));
 			model.add(rootResource, hasModel, model.createResource(ContentModelHelper.Model.SIMPLE.getURI().toString()));
-			
+
 			helper.addFileAssociations(model, true);
-			
+
 			// Move properties for data to the root resource
 			String location = rootResource.getProperty(fileLocation).getString();
 			String filename = location.substring("data/".length()).toLowerCase();
 			model.add(rootResource, dprop(model, DepositRelationship.label), filename);
 			return rootResource;
 		}
-		
+
 		Bag rootObject = model.createBag(METSHelper.getPIDURI(aggregateEl));
-		
+
 		model.add(rootObject, hasModel, model.createResource(ContentModelHelper.Model.CONTAINER.getURI().toString()));
 		model.add(rootObject, hasModel, model.createResource(ContentModelHelper.Model.AGGREGATE_WORK.getURI().toString()));
-		
+
 		for (Element childEl : topChildren) {
 			Resource child = model.createResource(METSHelper.getPIDURI(childEl));
 			rootObject.add(child);
 		}
-		
+
 		helper.addFileAssociations(model, true);
-		
+
 		// Add labels to aggregate children
 		NodeIterator children = rootObject.iterator();
 		try {
@@ -206,24 +207,24 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 		} finally {
 			children.close();
 		}
-		
+
 		return rootObject;
 	}
-	
+
 	private void extractEPDCX(Document mets, Resource rootResource) {
-	// extract EPDCX from mets
-		FileOutputStream fos = null;
+		// extract EPDCX from mets
 		try {
 			Element epdcxEl = mets.getRootElement().getChild("dmdSec", METS_NS).getChild("mdWrap", METS_NS)
 					.getChild("xmlData", METS_NS).getChild("descriptionSet", EPDCX_NS);
-			
+
 			JDOMResult mods = new JDOMResult();
 			epdcx2modsTransformer.transform(new JDOMSource(epdcxEl), mods);
 			final File modsFolder = getDescriptionDir();
 			modsFolder.mkdir();
 			File modsFile = new File(modsFolder, new PID(rootResource.getURI()).getUUID()+".xml");
-			fos = new FileOutputStream(modsFile);
-			new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
+			try (OutputStream fos = new FileOutputStream(modsFile)) {
+				new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
+			}
 		} catch(NullPointerException ignored) {
 			log.debug("NPE", ignored);
 			// no embedded metadata
@@ -231,13 +232,13 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 			failJob(e, "Failed during transform of EPDCX to MODS.");
 		}
 	}
-	
+
 	private void addSourceMetadata(Model model, Resource rootResource, String metadataFileName)
 			throws JDOMException, IOException {
 		if (metadataFileName == null) {
 			return;
 		}
-		
+
 		PID sourceMDPID = new PID(rootResource.getURI() + "/" + MD_SOURCE.getName());
 		Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
 		model.add(rootResource, dprop(model, hasDatastream), sourceMDResource);
@@ -247,14 +248,14 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 				this.getDataDirectory().getName() + "/" + metadataFileName);
 		model.add(rootResource, cdrprop(model, hasSourceMetadataProfile), BIOMED_ARTICLE);
 		model.add(sourceMDResource, dprop(model, mimetype), "text/xml");
-		
+
 		File modsFile = new File(getDescriptionDir(), new PID(rootResource.getURI()).getUUID() + ".xml");
 
 		SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
 		sb.setFeature("http://xml.org/sax/features/validation", false);
 		sb.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
 		sb.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-		
+
 		Document existingModsDocument = null;
 		// Start from an existing MODS document if there is one
 		if (modsFile.exists()) {
@@ -265,21 +266,21 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 			if (!descriptionDir.exists())
 				descriptionDir.mkdir();
 		}
-		
+
 		Document metadataDocument = sb.build(new File(this.getDataDirectory(), metadataFileName));
 		BioMedArticleHelper biohelper = new BioMedArticleHelper();
 		Document mods = biohelper.extractMODS(metadataDocument, existingModsDocument);
-		
+
 		// Output the new MODS file, overwriting the existing one if it was present
 		try (FileOutputStream out = new FileOutputStream(modsFile, false)) {
 			new XMLOutputter(Format.getPrettyFormat()).output(mods, out);
 		}
 	}
-	
+
 	private void setDefaultWebObject(Model model, Bag rootObject) {
-		
+
 		Property fileLocation = model.createProperty(ContentModelHelper.DepositRelationship.stagingLocation.toString());
-		
+
 		NodeIterator children = rootObject.iterator();
 		try {
 			// Find the main article file
@@ -290,7 +291,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 				if (!mainArticlePattern.matcher(location).matches()) {
 					continue;
 				}
-	
+
 				log.debug("Found primary Biomed content document {}", location);
 				// If this is a main object, then designate it as a default web object for its parent container
 				Property defaultObject = model.getProperty(CDRProperty.defaultWebObject.getURI().toString());

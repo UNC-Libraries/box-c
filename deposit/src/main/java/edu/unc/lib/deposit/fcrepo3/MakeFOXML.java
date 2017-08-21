@@ -71,7 +71,7 @@ public class MakeFOXML extends AbstractDepositJob {
 	private static Set<String> copyPropertyURIs = null;
 
 	static {
-		copyPropertyURIs = new HashSet<String>();
+		copyPropertyURIs = new HashSet<>();
 		for(CDRProperty p : ContentModelHelper.CDRProperty.values()) {
 			copyPropertyURIs.add(p.getURI().toString());
 		}
@@ -319,8 +319,7 @@ public class MakeFOXML extends AbstractDepositJob {
 	}
 
 	private void saveRELSEXTtoFOXMl(Model relsExt, Document foxml) {
-		try {
-			ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
 			relsExt.write(os, "RDF/XML");
 			os.flush();
 			ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
@@ -353,7 +352,7 @@ public class MakeFOXML extends AbstractDepositJob {
 						"M", path, "text/xml", "URL", dsLabel, false, null);
 				foxml.getRootElement().addContent(el);
 				log.info("Manifest file {} has been added to foxml", path);
-			} 
+			}
 		} else {
 			log.info("No manifest files were found for the deposit; not a bag/not METS");
 		}

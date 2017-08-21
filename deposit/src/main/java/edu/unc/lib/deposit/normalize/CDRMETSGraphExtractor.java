@@ -7,20 +7,21 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.filter.ElementFilter;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.rdf.model.Bag;
@@ -38,8 +39,8 @@ import edu.unc.lib.dl.xml.NamespaceConstants;
 public class CDRMETSGraphExtractor {
 	public static final Logger LOG = LoggerFactory.getLogger(CDRMETSGraphExtractor.class);
 	public static final Namespace METS_ACL_NS = Namespace.getNamespace("acl", "http://cdr.unc.edu/definitions/acl");
-	
-	private static Map<String, URI> containerTypes = new HashMap<String, URI>();
+
+	private static Map<String, URI> containerTypes = new HashMap<>();
 	static {
 		containerTypes.put("Folder",
 				ContentModelHelper.Model.CONTAINER.getURI());
@@ -68,7 +69,7 @@ public class CDRMETSGraphExtractor {
 		LOG.info("Added struct link properties");
 		addContainerTriples(m);
 	}
-	
+
 	/**
 	 * Extract the deposit's staging location from the METS amdSec, if available.
 	 * @return staging URI or null
@@ -80,7 +81,7 @@ public class CDRMETSGraphExtractor {
 		while(i.hasNext()) {
 			Element e = (Element)i.next();
 			String loc = e.getTextTrim();
-			if(loc.length() > 0) { 
+			if(loc.length() > 0) {
 				result = loc;
 				break;
 			}
@@ -146,26 +147,20 @@ public class CDRMETSGraphExtractor {
 					.getChild("xmlData", METS_NS).getChild("mods", MODS_V3_NS);
 			String pid = METSHelper.getPIDURI(div);
 			String path = f.getPath(pid);
-			FileOutputStream fos = null;
-			try {
-				fos = new FileOutputStream(path);
+
+			try (OutputStream fos = new FileOutputStream(path)) {
 				Document mods = new Document();
-				mods.setRootElement((Element) modsEl.detach());
+				mods.setRootElement(modsEl.detach());
 				new XMLOutputter(Format.getPrettyFormat()).output(mods, fos);
 			} catch (IOException e) {
 				throw new Error("unexpected exception", e);
-			} finally {
-				try {
-					fos.close();
-				} catch (IOException ignored) {
-				}
 			}
 		}
 	}
 
 	private void addContainerTriples(Model m) {
 		// add deposit-level parent (represented as structMap or bag div)
-		Element topContainer = (Element) mets.getRootElement().getChild(
+		Element topContainer = mets.getRootElement().getChild(
 				"structMap", METS_NS);
 		Element firstdiv = topContainer.getChild("div", METS_NS);
 		if (firstdiv != null
