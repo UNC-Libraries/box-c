@@ -143,13 +143,13 @@ define("editDescription", ["module", "jquery", "jquery-ui", "ace", "xmleditor", 
 						filename: 'archives.xml',
 						title: 'Archival Folder',
 						description: 'Wilson MODS template with common fields',
-						icon_class: 'fa fa-file-text-o'
+						icon_class: 'fa fa-archive'
 					},
 					{
 						filename: 'serials.xml',
 						title: "Serial Title",
 						description: 'Template with standard fields to describe serial titles',
-						icon_class: 'fa fa-file-text-o'
+						icon_class: 'fa fa-newspaper-o'
 					},
 					{
 						filename: 'student_papers.xml',
