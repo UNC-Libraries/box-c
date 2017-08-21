@@ -1,0 +1,20 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:name>
+    <mods:namePart type="given" />
+    <mods:namePart type="family" />
+    <mods:namePart type="termsOfAddress" />
+    <mods:namePart type="date" />
+    <mods:role>
+      <mods:roleTerm type="text" authority="marcrelator">Creator</mods:roleTerm>
+    </mods:role>
+  </mods:name>
+  <mods:originInfo>
+    <mods:dateCreated encoding="iso8601" />
+  </mods:originInfo>
+  <mods:titleInfo>
+    <mods:title />
+  </mods:titleInfo>
+  <mods:note displayLabel="Description" />
+  <mods:note displayLabel="Keywords" />
+</mods:mods>
