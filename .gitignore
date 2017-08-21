@@ -18,3 +18,8 @@ static/js/cdr-admin.js
 static/css/cdr_admin.css
 static/js/cdr-access.js
 static/css/cdr_access.css
+deposit/fcrepo4-data
+velocity.log
+dump.rdb
+services-camel
+**/target
