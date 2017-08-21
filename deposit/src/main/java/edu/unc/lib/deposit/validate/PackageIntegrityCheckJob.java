@@ -28,7 +28,7 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
- * 
+ *
  * @author count0
  *
  */
@@ -56,7 +56,7 @@ public class PackageIntegrityCheckJob extends AbstractDepositJob {
             File payload = new File(getSubdir("data"), file);
             String computed = null;
             try (InputStream is = new FileInputStream(payload)) {
-                computed = DigestUtils.md5Hex(new FileInputStream(payload));
+                computed = DigestUtils.md5Hex(is);
             } catch (IOException e) {
                 failJob(e, "Unable to read deposit file while verifying package");
             }
