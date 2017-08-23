@@ -73,7 +73,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
     public void workNoAclsTest() throws Exception {
         model.add(resc, RDF.type, Cdr.Work);
 
-        validator.validate(pid, model);
+        validator.validate(resc);
     }
 
     @Test
@@ -83,7 +83,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.patronAccess, PatronAccess.none.name());
         model.add(resc, CdrAcl.markedForDeletion, model.createTypedLiteral(false));
 
-        validator.validate(pid, model);
+        validator.validate(resc);
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -92,7 +92,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.patronAccess, "nobodynohow");
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("patron access"));
             throw e;
@@ -106,7 +106,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("invalid acl properties"));
             assertTrue(e.getMessage().contains(CdrAcl.canAccess.getLocalName()));
@@ -123,7 +123,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.patronAccess, PatronAccess.parent.name());
         model.add(resc, CdrAcl.markedForDeletion, model.createTypedLiteral(true));
 
-        validator.validate(pid, model);
+        validator.validate(resc);
     }
 
     @Test
@@ -133,7 +133,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.patronAccess, PatronAccess.authenticated.name());
         model.add(resc, CdrAcl.markedForDeletion, model.createTypedLiteral(true));
 
-        validator.validate(pid, model);
+        validator.validate(resc);
     }
 
     @Test
@@ -144,7 +144,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
         model.add(resc, CdrAcl.canManage, OWNER_PRINC);
 
-        validator.validate(pid, model);
+        validator.validate(resc);
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -153,7 +153,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.patronAccess, PatronAccess.parent.name());
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("invalid acl properties"));
             assertTrue(e.getMessage().contains(CdrAcl.patronAccess.getLocalName()));
@@ -170,7 +170,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
 
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("Too many patron roles assigned"));
             throw e;
@@ -183,7 +183,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canIngest, PUBLIC_PRINC);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("Invalid patron principal"));
             throw e;
@@ -196,7 +196,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canViewMetadata, STAFF_PRINC);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("Invalid staff principal"));
             throw e;
@@ -209,7 +209,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canViewOriginals, "");
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("Cannot assign empty principal to role"));
             throw e;
@@ -222,7 +222,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("invalid acl properties"));
             throw e;
@@ -235,7 +235,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canIngest, STAFF_PRINC);
         model.add(resc, CdrAcl.unitOwner, OWNER_PRINC);
 
-        validator.validate(pid, model);
+        validator.validate(resc);
     }
 
     @Test(expected = InvalidAssignmentException.class)
@@ -246,7 +246,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.patronAccess, OWNER_PRINC);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("invalid acl properties"));
             assertTrue(e.getMessage().contains(CdrAcl.embargoUntil.getLocalName()));
@@ -263,7 +263,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canIngest, PUBLIC_PRINC);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("Invalid patron principal"));
             throw e;
@@ -276,7 +276,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, CdrAcl.canDescribe, "");
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("Cannot assign empty principal to role"));
             throw e;
@@ -288,7 +288,7 @@ public class ContentObjectAccessRestrictionValidatorTest {
         model.add(resc, RDF.type, Cdr.ContentRoot);
 
         try {
-            validator.validate(pid, model);
+            validator.validate(resc);
         } catch (InvalidAssignmentException e) {
             assertTrue(e.getMessage().contains("not applicable for access restrictions"));
             throw e;

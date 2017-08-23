@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
@@ -47,7 +46,6 @@ import org.apache.jena.vocabulary.RDF;
 import edu.unc.lib.dl.acl.exception.InvalidAssignmentException;
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 
@@ -102,18 +100,16 @@ public class ContentObjectAccessRestrictionValidator {
      * any of the assigned restrictions are invalid for the type of object
      * provided.
      *
-     * @param pid pid of the object being validated
-     * @param model model containing properties of the object being validated
+     * @param resc model containing properties of the object being validated
      * @throws InvalidAssignmentException
      */
-    public void validate(PID pid, Model model) throws InvalidAssignmentException {
-        Resource resc = model.getResource(pid.getURI());
+    public void validate(Resource resc) throws InvalidAssignmentException {
 
         Resource objType = getValidObjectTypeResc(resc);
 
         if (objType == null) {
             throw new InvalidAssignmentException(
-                    "Object " + pid.getURI() + " is not applicable for access restrictions.");
+                    "Object " + resc.getURI() + " is not applicable for access restrictions.");
         }
 
         if (objType.equals(Cdr.FileObject)
