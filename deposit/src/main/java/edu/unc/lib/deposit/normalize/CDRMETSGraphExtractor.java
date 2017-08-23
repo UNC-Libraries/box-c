@@ -36,7 +36,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
-import org.jdom2.filter.ElementFilter;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -46,7 +45,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
@@ -84,26 +82,6 @@ public class CDRMETSGraphExtractor {
         addStructLinkProperties(m);
         LOG.info("Added struct link properties");
         addContainerTriples(m);
-    }
-
-    /**
-     * Extract the deposit's staging location from the METS amdSec, if available.
-     * @return staging URI or null
-     */
-    protected String getStagingLocation() {
-        String result = null;
-        @SuppressWarnings("rawtypes")
-        Iterator i = mets.getDescendants(new ElementFilter("stagingLocation",
-                JDOMNamespaceUtil.SIMPLE_METS_PROFILE_NS));
-        while (i.hasNext()) {
-            Element e = (Element)i.next();
-            String loc = e.getTextTrim();
-            if (loc.length() > 0) {
-                result = loc;
-                break;
-            }
-        }
-        return result;
     }
 
     private void addDivProperties(Model m) {
@@ -228,8 +206,11 @@ public class CDRMETSGraphExtractor {
                 // Set container type
                 m.add(parent, RDF.type, m.createResource(containerTypes
                         .get(type).toString()));
+            } else if (type.equals("File")) {
+                // Type was file, so store FileObject type
+                Resource fileResc = m.getResource(METSHelper.getPIDURI(div));
+                m.add(fileResc, RDF.type, Cdr.FileObject);
             }
-
         }
     }
 
