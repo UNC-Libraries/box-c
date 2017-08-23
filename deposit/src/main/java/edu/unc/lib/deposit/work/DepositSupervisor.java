@@ -47,6 +47,7 @@ import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
 import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
+import edu.unc.lib.deposit.validate.ValidateContentModelJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
@@ -595,6 +596,11 @@ public class DepositSupervisor implements WorkerListener {
             } else if (!successfulJobs.contains(conversion.getClassName())) {
                 return conversion;
             }
+        }
+
+        // Validate object structure and properties
+        if (!successfulJobs.contains(ValidateContentModelJob.class.getName())) {
+            return makeJob(ValidateContentModelJob.class, depositUUID);
         }
 
         // Perform vocabulary enforcement for package types that retain the original metadata

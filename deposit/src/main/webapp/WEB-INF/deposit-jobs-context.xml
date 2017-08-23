@@ -147,6 +147,14 @@
 		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
 	</bean>
 	
+	<bean id="aclValidator" class="edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator">
+	</bean>
+	
+	<bean id="ValidateContentModelJob" class="edu.unc.lib.deposit.validate.ValidateContentModelJob"
+		scope="prototype">
+		<property name="aclValidator" ref="aclValidator" />
+	</bean>
+	
 	<bean id="VocabularyEnforcementJob" class="edu.unc.lib.deposit.normalize.VocabularyEnforcementJob"
 		scope="prototype">
 	</bean>
