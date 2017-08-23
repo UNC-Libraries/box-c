@@ -200,12 +200,17 @@ public class ContentObjectAccessRestrictionValidator {
     }
 
     /**
-     * Assert that the resource given does not contain any access restriction assignments that are invalid for its object type
+     * Assert that the resource given does not contain any access restriction
+     * assignments that are invalid for its object type
      *
-     * @param resc resource for the object being validated
-     * @param objType RDF type of the object being validated
-     * @param allowed list of properties which are allowed for this object type
-     * @throws InvalidAssignmentException Thrown if any invalid access restrictions are assigned.
+     * @param resc
+     *            resource for the object being validated
+     * @param objType
+     *            RDF type of the object being validated
+     * @param allowed
+     *            list of properties which are allowed for this object type
+     * @throws InvalidAssignmentException
+     *             Thrown if any invalid access restrictions are assigned.
      */
     private void assertApplicableProperties(Resource resc, Resource objType, Set<Property> allowed)
             throws InvalidAssignmentException {
