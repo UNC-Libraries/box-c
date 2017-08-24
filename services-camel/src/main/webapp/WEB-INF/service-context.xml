@@ -112,7 +112,7 @@
 	
 	<util:properties id="searchProperties" location="classpath:search.properties" />
 	<util:properties id="solrProperties" location="classpath:solr.properties">
-		<prop key="solr.path">${solr.protocol}://${solr.host}:${solr.port}/${solr.context}
+		<prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
 		</prop>
 	</util:properties>
 	
