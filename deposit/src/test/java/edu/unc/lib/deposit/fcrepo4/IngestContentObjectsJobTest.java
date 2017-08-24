@@ -224,7 +224,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString()))
+        when(work.addDataFile(any(PID.class), any(InputStream.class),
+                anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
 
@@ -234,9 +235,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         verify(destinationObj).addMember(eq(work));
 
         verify(work).addDataFile(eq(mainPid), any(InputStream.class), eq(mainLoc),
-                eq(mainMime), anyString());
+                eq(mainMime), anyString(), any(Model.class));
         verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
-                eq(supMime), anyString());
+                eq(supMime), anyString(), any(Model.class));
         verify(work).setPrimaryObject(mainPid);
 
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
@@ -328,7 +329,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString()))
+        when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(),
+                anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(filePid);
         job.run();
@@ -341,7 +343,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         // Verify that a FileObject was added to the generated work as primary obj
         verify(work).setPrimaryObject(filePid);
         verify(work).addDataFile(eq(filePid), any(InputStream.class), eq(fileLoc),
-                eq(fileMime), anyString());
+                eq(fileMime), anyString(), any(Model.class));
 
         // Only one ticket should register since the work object is generated
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
@@ -402,7 +404,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(), anyString(), anyString()))
+        when(work.addDataFile(any(PID.class), any(InputStream.class),
+                anyString(), anyString(), anyString(), any(Model.class)))
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
 
@@ -419,14 +422,14 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         // Main file object should not be touched
         verify(repository).objectExists(eq(mainPid));
         verify(work, never()).addDataFile(eq(mainPid), any(InputStream.class),
-                anyString(), anyString(), anyString());
+                anyString(), anyString(), anyString(), any(Model.class));
         verify(repository, never()).getFileObject(eq(mainPid));
 
         // Supplemental file should be created
         verify(repository).objectExists(eq(supPid));
         verify(repository, never()).getFileObject(eq(supPid));
         verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
-                eq(supMime), anyString());
+                eq(supMime), anyString(), any(Model.class));
 
         // Ensure that the primary object still got set
         verify(work).setPrimaryObject(mainPid);
