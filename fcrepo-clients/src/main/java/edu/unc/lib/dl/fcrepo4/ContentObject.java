@@ -35,8 +35,8 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public abstract class ContentObject extends RepositoryObject {
 
-    protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected ContentObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repoObjLoader, dataLoader);
     }
 
     /**
@@ -56,7 +56,7 @@ public abstract class ContentObject extends RepositoryObject {
     /**
      * Adds description information to this object, which includes source
      * metadata and a MODS record derived from it
-     * 
+     *
      * @param sourceMdStream
      * @param sourceProfile,
      *            identifies the encoding, profile, and/or origins of the
@@ -95,7 +95,7 @@ public abstract class ContentObject extends RepositoryObject {
         Statement s = res.getProperty(PcdmModels.hasRelatedObject);
         if (s != null) {
             PID fileObjPid = PIDs.get(s.getResource().getURI());
-            return repository.getFileObject(fileObjPid);
+            return repoObjLoader.getFileObject(fileObjPid);
         } else {
             return null;
         }
@@ -115,7 +115,7 @@ public abstract class ContentObject extends RepositoryObject {
         Statement s = res.getProperty(Cdr.hasMods);
         if (s != null) {
             PID binPid = PIDs.get(s.getResource().getURI());
-            return repository.getBinary(binPid);
+            return repoObjLoader.getBinaryObject(binPid);
         } else {
             return null;
         }

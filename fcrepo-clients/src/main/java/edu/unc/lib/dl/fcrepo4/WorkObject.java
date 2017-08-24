@@ -43,8 +43,8 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class WorkObject extends ContentContainerObject {
 
-    protected WorkObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected WorkObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repoObjLoader, dataLoader);
     }
 
     @Override
@@ -86,7 +86,7 @@ public class WorkObject extends ContentContainerObject {
             return null;
         }
 
-        return repository.getFileObject(
+        return repoObjLoader.getFileObject(
                 PIDs.get(primaryStmt.getResource().getURI()));
     }
 

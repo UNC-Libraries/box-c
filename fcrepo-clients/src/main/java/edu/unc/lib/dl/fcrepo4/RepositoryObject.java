@@ -23,7 +23,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -35,8 +34,7 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public abstract class RepositoryObject {
 
-    // Repository which produced and manages this object
-    protected Repository repository;
+    protected RepositoryObjectLoader repoObjLoader;
     // Loader for lazy loading data about this object when requested
     protected RepositoryObjectDataLoader dataLoader;
 
@@ -52,8 +50,8 @@ public abstract class RepositoryObject {
 
     protected PremisLogger premisLog;
 
-    protected RepositoryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        this.repository = repository;
+    protected RepositoryObject(PID pid, RepositoryObjectLoader repositoryObjectLoader, RepositoryObjectDataLoader dataLoader) {
+        this.repoObjLoader = repositoryObjectLoader;
         this.pid = pid;
         this.dataLoader = dataLoader;
     }
@@ -112,7 +110,7 @@ public abstract class RepositoryObject {
      */
     public RepositoryObject addPremisEvents(List<PremisEventObject> events) throws FedoraException {
         for (PremisEventObject event: events) {
-            repository.createPremisEvent(event.getPid(), event.getModel());
+            //repository.createPremisEvent(event.getPid(), event.getModel());
         }
 
         return this;
@@ -125,7 +123,7 @@ public abstract class RepositoryObject {
      */
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
-            premisLog = new RepositoryPremisLogger(this, repository);
+            //premisLog = new RepositoryPremisLogger(this, repository);
         }
         return premisLog;
     }

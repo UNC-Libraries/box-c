@@ -42,8 +42,8 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class DepositRecord extends RepositoryObject {
 
-    protected DepositRecord(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected DepositRecord(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repoObjLoader, dataLoader);
     }
 
     /**
@@ -89,7 +89,7 @@ public class DepositRecord extends RepositoryObject {
         if (!this.pid.containsComponent(pid)) {
             return null;
         }
-        return repository.getBinary(pid);
+        return repoObjLoader.getBinaryObject(pid);
     }
 
     /**

@@ -43,10 +43,10 @@ public class BinaryObject extends RepositoryObject {
 
     private URI metadataUri;
 
-    protected BinaryObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected BinaryObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader) {
+        super(pid, repoObjLoader, dataLoader);
 
-        metadataUri = repository.getMetadataUri(pid);
+        //metadataUri = repository.getMetadataUri(pid);
     }
 
     @Override
