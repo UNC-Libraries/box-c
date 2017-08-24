@@ -78,7 +78,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 	private static final Logger log = LoggerFactory.getLogger(IngestDeposit.class);
 
 	private static long COMPLETE_CHECK_DELAY = 500L;
-	
+
 	private static long CONNECT_EXCEPTION_DELAY = 30000L;
 
 	@Autowired
@@ -86,16 +86,16 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 	@Autowired
 	private ManagementClient client;
-	
+
 	@Autowired
 	private DigitalObjectManager digitalObjectManager;
 
 	@Autowired
 	private AccessClient accessClient;
-	
+
 	@Autowired
 	private TripleStoreQueryService tsqs;
-	
+
 	@Autowired
 	private ActivityMetricsClient metricsClient;
 
@@ -164,8 +164,8 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		Model model = getReadOnlyModel();
 
-		ingestPids = new ArrayDeque<String>();
-		topLevelPids = new ArrayList<String>();
+		ingestPids = new ArrayDeque<>();
+		topLevelPids = new ArrayList<>();
 		ingestsAwaitingConfirmation = Collections.synchronizedSet(new HashSet<String>());
 
 		String depositPid = getDepositPID().getURI();
@@ -193,7 +193,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 
 		// Capture the top level pids
 		DepositGraphUtils.walkChildrenDepthFirst(depositBag, topLevelPids, false);
-		
+
 		closeModel();
 
 		// TODO capture structure for ordered sequences instead of just bags
@@ -371,9 +371,7 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		uploadIngestFiles(foxmlDoc, pid);
 
 		// Ingest the object's FOXML
-		try {
-
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
 			XMLOutputter xmlOutput = new XMLOutputter();
 			xmlOutput.output(foxmlDoc, outputStream);
@@ -382,10 +380,10 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 				try {
 					log.debug("Ingesting foxml for {}", ingestPid);
 					client.ingestRaw(outputStream.toByteArray(), Format.FOXML_1_1, getDepositUUID());
-					
+
 					// Record FOXML throughput metrics
 					metricsClient.incrDepositFileThroughput(getDepositUUID(), foxml.length());
-					
+
 					return;
 				} catch (ServiceException e) {
 					waitIfConnectionLostOrRethrow(e);
@@ -411,54 +409,54 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 		// TODO increment ingestedOctets
 
 	}
-	
+
 	private boolean isDuplicateOkay(PID pid) {
 		// Get the deposit ID for the repository copy of pid
 		List<String> deposits = tsqs.fetchBySubjectAndPredicate(pid, Relationship.originalDeposit.toString());
-		
+
 		// Ensure that the deposit id as record by fedora matches the current deposit or is not present
 		if (deposits != null && !deposits.contains(this.getDepositPID().getURI())) {
 			return false;
 		}
-		
+
 		Model model = getReadOnlyModel();
 		try {
 			Resource objectResc = model.getResource(pid.getURI());
-			
+
 			Property stagingLocation = dprop(model, DepositRelationship.stagingLocation);
 			if (!objectResc.hasProperty(stagingLocation)) {
 				// No staging location, no file, no reason to check further
 				return true;
 			}
-			
+
 			// Get information for copy in the repository
 			Datastream ds = client.getDatastream(pid, DATA_FILE.getName());
-			
+
 			// Confirm that incoming file is the same size as the one in the repository
 			Property filesizeProperty = dprop(model, DepositRelationship.size);
 			if (objectResc.hasProperty(filesizeProperty)) {
 				long incomingSize = Long.parseLong(objectResc.getProperty(filesizeProperty).getString());
-				
+
 				if (incomingSize != ds.getSize() && !(ds.getSize() == -1 && incomingSize == 0)) {
 					// File sizes didn't match, so this is not the correct file
 					return false;
 				}
 			}
-			
+
 			// If a checksum is available, make sure it matches the one in the repository
 			Property md5sum = dprop(model, DepositRelationship.md5sum);
 			if (objectResc.hasProperty(md5sum)) {
 				String incomingChecksum = objectResc.getProperty(md5sum).getString();
 				return ds.getChecksum().equals(incomingChecksum);
 			}
-			
+
 			return true;
 		} catch (FedoraException e1) {
 			log.debug("Failed to get datastream info while checking on duplicate for {}", pid, e1);
 		} finally {
 			closeModel();
 		}
-		
+
 		return false;
 	}
 
@@ -493,15 +491,15 @@ public class IngestDeposit extends AbstractDepositJob implements ListenerJob {
 							if (!file.exists()) {
 								throw new IOException("File not found: " + ref);
 							}
-	
+
 							log.debug("uploading " + file.getPath());
 							newref = client.upload(file);
-	
+
 							cLocation.setAttribute("REF", newref);
-							
+
 							// Record throughput metrics
 							metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
-							
+
 							break repeatUpload;
 						} catch (FedoraTimeoutException e) {
 							log.warn("Connection to Fedora lost while ingesting {}, halting ingest", ref);
