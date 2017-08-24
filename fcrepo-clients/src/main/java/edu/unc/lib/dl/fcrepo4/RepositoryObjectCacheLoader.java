@@ -46,9 +46,12 @@ import edu.unc.lib.dl.util.EntityTag;
  */
 public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObject> {
 
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
     private FcrepoClient client;
     private RepositoryObjectDataLoader repositoryObjectDataLoader;
+
+    protected RepositoryObjectCacheLoader() {
+    }
 
     @Override
     public RepositoryObject load(PID pid) {
@@ -77,8 +80,8 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     /**
      * @param repository the repository to set
      */
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
     /**
@@ -99,25 +102,25 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
         if (isContentPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.Work)) {
-                obj =  new WorkObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new WorkObject(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
-                obj =  new FileObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new FileObject(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
-                obj =  new BinaryObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new BinaryObject(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Cdr.Folder)) {
-                obj =  new FolderObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new FolderObject(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Cdr.Collection)) {
-                obj =  new CollectionObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new CollectionObject(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
-                obj =  new ContentRootObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new ContentRootObject(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
-                obj =  new AdminUnit(pid, repository, repositoryObjectDataLoader);
+                obj =  new AdminUnit(pid, repoObjLoader, repositoryObjectDataLoader);
             }
         } else if (isDepositPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
-                obj =  new DepositRecord(pid, repository, repositoryObjectDataLoader);
+                obj =  new DepositRecord(pid, repoObjLoader, repositoryObjectDataLoader);
             } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
-                obj =  new BinaryObject(pid, repository, repositoryObjectDataLoader);
+                obj =  new BinaryObject(pid, repoObjLoader, repositoryObjectDataLoader);
             }
         }
 
