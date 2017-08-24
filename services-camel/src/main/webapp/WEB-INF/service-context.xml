@@ -59,7 +59,7 @@
 		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
 	</bean>
 
-	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
+	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository" init-method="init">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
