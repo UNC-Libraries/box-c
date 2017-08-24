@@ -26,67 +26,67 @@ public class RepositoryObjectLoader {
                 .build(repositoryObjectCacheLoader);
     }
 
-    public RepositoryObject getAdminUnit(PID pid) {
+    public AdminUnit getAdminUnit(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof AdminUnit)) {
             throw new FedoraException("Object with pid " + pid + "is not an admin unit");
         }
-        return repoObj;
+        return (AdminUnit) repoObj;
     }
 
-    public RepositoryObject getCollectionObject(PID pid) {
+    public CollectionObject getCollectionObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof CollectionObject)) {
             throw new FedoraException("Object with pid " + pid + "is not a collection");
         }
-        return repoObj;
+        return (CollectionObject) repoObj;
     }
 
-    public RepositoryObject getContentRootObject(PID pid) {
+    public ContentRootObject getContentRootObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof ContentRootObject)) {
             throw new FedoraException("Object with pid " + pid + "is not the content root");
         }
-        return repoObj;
+        return (ContentRootObject) repoObj;
     }
 
-    public RepositoryObject getFolderObject(PID pid) {
+    public FolderObject getFolderObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof FolderObject)) {
             throw new FedoraException("Object with pid " + pid + "is not a folder");
         }
-        return repoObj;
+        return (FolderObject) repoObj;
     }
 
-    public RepositoryObject getWorkObject(PID pid) {
+    public WorkObject getWorkObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof WorkObject)) {
             throw new FedoraException("Object with pid " + pid + "is not a work");
         }
-        return repoObj;
+        return (WorkObject) repoObj;
     }
 
-    public RepositoryObject getFileObject(PID pid) {
+    public FileObject getFileObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof FileObject)) {
             throw new FedoraException("Object with pid " + pid + "is not a file");
         }
-        return repoObj;
+        return (FileObject) repoObj;
     }
 
-    public RepositoryObject getBinaryObject(PID pid) {
+    public BinaryObject getBinaryObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof BinaryObject)) {
             throw new FedoraException("Object with pid " + pid + "is not a binary");
         }
-        return repoObj;
+        return (BinaryObject) repoObj;
     }
 
     public PremisEventObject getPremisEventObject(PID pid) {
         return new PremisEventObject(pid, this, dataLoader).validateType();
     }
 
-    private RepositoryObject getRepositoryObject(PID pid) {
+    protected RepositoryObject getRepositoryObject(PID pid) {
         try {
             return repositoryObjCache.get(pid);
         } catch (UncheckedExecutionException | ExecutionException e) {
