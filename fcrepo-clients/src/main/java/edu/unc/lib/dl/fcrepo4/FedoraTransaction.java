@@ -33,9 +33,9 @@ public class FedoraTransaction {
     private boolean isSub = true;
     private boolean isCancelled = false;
     private URI txUri;
-    private Repository repo;
+    private TransactionManager txManager;
 
-    public FedoraTransaction(URI txUri, Repository repo) {
+    public FedoraTransaction(URI txUri, TransactionManager txManager) {
         // if tx is root
         if (rootTxThread.get() == null) {
             rootTxThread.set(this);
@@ -43,7 +43,7 @@ public class FedoraTransaction {
             isSub = false;
         }
         this.txUri = txUri;
-        this.repo = repo;
+        this.txManager = txManager;
     }
 
     public static boolean hasTxId() {
@@ -62,14 +62,14 @@ public class FedoraTransaction {
         if (!isSub && !isCancelled) {
             txUriThread.remove();
             rootTxThread.remove();
-            repo.commitTransaction(txUri);
+            txManager.commitTransaction(txUri);
         }
         txUri = null;
     }
 
     public void keepAlive() {
         //TODO implement clock to extend tx for ~ 1 hour?
-        repo.keepTransactionAlive(txUri);
+        txManager.keepTransactionAlive(txUri);
     }
 
     public void cancel(Throwable t) {
@@ -80,7 +80,7 @@ public class FedoraTransaction {
             isCancelled = true;
             txUriThread.remove();
             rootTxThread.remove();
-            repo.cancelTransaction(txUri);
+            txManager.cancelTransaction(txUri);
         }
         if (t instanceof TransactionCancelledException) {
             throw (TransactionCancelledException) t;
