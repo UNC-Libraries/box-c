@@ -95,11 +95,12 @@ public class AddDerivativeProcessor implements Processor {
 
     private void ingestFile(String binaryUri, String binaryMimeType, String derivativePath)
             throws FileNotFoundException {
+        String filename = derivativePath.substring(derivativePath.lastIndexOf('/') + 1);
         InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
 
         BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
         FileObject parent = (FileObject) binary.getParent();
-        parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
+        parent.addDerivative(slug, binaryStream, filename, binaryMimeType, PcdmUse.ThumbnailImage);
 
         log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
     }
