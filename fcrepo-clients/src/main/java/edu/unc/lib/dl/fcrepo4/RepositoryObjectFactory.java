@@ -350,6 +350,16 @@ public class RepositoryObjectFactory {
         return ldpFactory.createDirectContainer(parentUri, Premis.hasEvent,
                 RepositoryPathConstants.EVENTS_CONTAINER);
     }
+    /**
+     * Add a member to the parent object.
+     *
+     * @param parent
+     * @param member
+     */
+    public void addMember(ContentObject parent, ContentObject member) {
+        createMemberLink(parent.getPid().getRepositoryUri(),
+                member.getPid().getRepositoryUri());
+    }
 
     /**
      * Creates a link between a parent object and a member object.
