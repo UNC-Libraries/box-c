@@ -74,7 +74,7 @@ public class DepositRecord extends RepositoryObject {
     public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype)
             throws FedoraException {
         URI manifestsUri = getManifestsUri();
-        return repository.createBinary(manifestsUri, null, manifestStream, filename,
+        return repoObjFactory.createBinary(manifestsUri, null, manifestStream, filename,
                 mimetype, null, null);
     }
 
@@ -116,7 +116,7 @@ public class DepositRecord extends RepositoryObject {
         for (Resource child : children) {
             res.addProperty(Cdr.hasIngestedObject, child);
         }
-        repository.createRelationships(depositPID, triples);
+        repoObjFactory.createRelationships(depositPID, triples);
         return this;
     }
 

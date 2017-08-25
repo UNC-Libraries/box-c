@@ -41,7 +41,7 @@ public class ContentRootObject extends ContentContainerObject {
                     + " as a member of ContentRootObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 

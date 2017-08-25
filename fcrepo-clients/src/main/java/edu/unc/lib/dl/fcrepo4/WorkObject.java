@@ -38,10 +38,12 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * the main work file, in which case the other data files are considered to be
  * supplemental.
  *
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class WorkObject extends ContentContainerObject {
+
+    private RepositoryPIDMinter pidMinter;
 
     protected WorkObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
@@ -71,7 +73,7 @@ public class WorkObject extends ContentContainerObject {
         }
 
         // Add the relation
-        repository.createRelationship(pid, Cdr.primaryObject, primaryResc);
+        repoObjFactory.createRelationship(pid, Cdr.primaryObject, primaryResc);
     }
 
     /**
@@ -113,7 +115,7 @@ public class WorkObject extends ContentContainerObject {
      */
     public FileObject addDataFile(String filename, InputStream contentStream, String mimetype,
             String sha1Checksum) {
-        PID fileObjPid = repository.mintContentPid();
+        PID fileObjPid = pidMinter.mintContentPid();
 
         return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum);
     }
@@ -137,12 +139,12 @@ public class WorkObject extends ContentContainerObject {
         model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
 
         // Create the file object
-        FileObject fileObj = repository.createFileObject(childPid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(childPid, null);
         // Add the binary content to it as its original file
         fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 
         // Add the new file object as a member of this Work
-        repository.addMember(this, fileObj);
+        repoObjFactory.addMember(this, fileObj);
 
         return fileObj;
     }

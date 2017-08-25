@@ -53,7 +53,7 @@ public class CollectionObject extends ContentContainerObject {
                     + " as a member of WorkObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 

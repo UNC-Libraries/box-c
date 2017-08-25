@@ -30,10 +30,12 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 /**
  * Represents a generic repository object within the main content tree.
  *
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public abstract class ContentObject extends RepositoryObject {
+
+    private RepositoryPIDMinter pidMinter;
 
     protected ContentObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
@@ -49,8 +51,8 @@ public abstract class ContentObject extends RepositoryObject {
         FileObject fileObj = createFileObject();
 
         BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
-        repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
-        repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
+        repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
+        repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
         return fileObj;
     }
 
@@ -77,12 +79,12 @@ public abstract class ContentObject extends RepositoryObject {
         FileObject fileObj = createFileObject();
 
         BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
-        repository.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
-        repository.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
-        repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
+        repoObjFactory.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
+        repoObjFactory.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
+        repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
 
         BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
-        repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
+        repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
 
         return fileObj;
     }
@@ -123,8 +125,8 @@ public abstract class ContentObject extends RepositoryObject {
     }
 
     private FileObject createFileObject() {
-        PID childPid = repository.mintContentPid();
-        FileObject fileObj = repository.createFileObject(childPid, null);
+        PID childPid = pidMinter.mintContentPid();
+        FileObject fileObj = repoObjFactory.createFileObject(childPid, null);
         return fileObj;
     }
 

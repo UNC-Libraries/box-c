@@ -26,10 +26,12 @@ import edu.unc.lib.dl.rdf.Cdr;
  * A repository object which represents a Folder. Folders are containers which
  * may hold work objects or folder objects directly inside of them.
  *
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class FolderObject extends ContentContainerObject {
+
+    private RepositoryPIDMinter pidMinter;
 
     protected FolderObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
@@ -51,7 +53,7 @@ public class FolderObject extends ContentContainerObject {
                     + " as a member of WorkObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 
@@ -61,7 +63,7 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created folder object
      */
     public FolderObject addFolder() {
-        return addFolder(repository.mintContentPid(), null);
+        return addFolder(pidMinter.mintContentPid(), null);
     }
 
     /**
@@ -75,8 +77,8 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created folder object
      */
     public FolderObject addFolder(PID childPid, Model model) {
-        FolderObject work = repository.createFolderObject(childPid, model);
-        repository.addMember(this, work);
+        FolderObject work = repoObjFactory.createFolderObject(childPid, model);
+        repoObjFactory.addMember(this, work);
 
         return work;
     }
@@ -87,7 +89,7 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created work object
      */
     public WorkObject addWork() {
-        return addWork(repository.mintContentPid(), null);
+        return addWork(pidMinter.mintContentPid(), null);
     }
 
     /**
@@ -101,8 +103,8 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created work object
      */
     public WorkObject addWork(PID childPid, Model model) {
-        WorkObject work = repository.createWorkObject(childPid, model);
-        repository.addMember(this, work);
+        WorkObject work = repoObjFactory.createWorkObject(childPid, model);
+        repoObjFactory.addMember(this, work);
 
         return work;
     }
