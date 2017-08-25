@@ -36,7 +36,7 @@ public abstract class PIDs {
 
     private static final Logger log = LoggerFactory.getLogger(PIDs.class);
 
-    private static Repository repository;
+    private static RepositoryPaths repoPaths;
 
     /**
      * Get a PID object for the given URI.
@@ -66,9 +66,9 @@ public abstract class PIDs {
         String componentPath;
         String repositoryPath;
 
-        if (value.startsWith(repository.getBaseUri())) {
+        if (value.startsWith(repoPaths.getBaseUri())) {
             // Given value was a fedora path. Remove the base and decompose
-            String path = value.substring(repository.getBaseUri().length());
+            String path = value.substring(repoPaths.getBaseUri().length());
 
             Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
             if (matcher.matches()) {
@@ -133,8 +133,8 @@ public abstract class PIDs {
         return get(qualifier + "/" + id);
     }
 
-    public static void setRepository(Repository repository) {
-        PIDs.repository = repository;
+    public static void setRepositoryPaths(RepositoryPaths repoPaths) {
+        PIDs.repoPaths = repoPaths;
     }
 
     /**
@@ -147,7 +147,7 @@ public abstract class PIDs {
      * @return
      */
     private static String getRepositoryPath(String id, String qualifier, String componentPath, boolean expand) {
-        StringBuilder builder = new StringBuilder(repository.getBaseUri());
+        StringBuilder builder = new StringBuilder(repoPaths.getBaseUri());
         builder.append(qualifier).append('/');
 
         if (expand) {

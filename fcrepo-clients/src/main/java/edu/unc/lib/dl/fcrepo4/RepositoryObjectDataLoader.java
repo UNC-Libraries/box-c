@@ -53,7 +53,7 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class RepositoryObjectDataLoader {
     private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
 
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
 
     private AccessControlService aclService;
 
@@ -156,7 +156,7 @@ public class RepositoryObjectDataLoader {
 
         PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
 
-        return repository.getRepositoryObject(pid);
+        return repoObjLoader.getRepositoryObject(pid);
     }
 
     /**
@@ -213,12 +213,8 @@ public class RepositoryObjectDataLoader {
         return client;
     }
 
-    public Repository getRepository() {
-        return repository;
-    }
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
     public AccessControlService getAclService() {
