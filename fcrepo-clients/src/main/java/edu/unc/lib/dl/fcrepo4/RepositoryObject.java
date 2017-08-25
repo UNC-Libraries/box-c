@@ -37,6 +37,7 @@ public abstract class RepositoryObject {
     protected RepositoryObjectLoader repoObjLoader;
     // Loader for lazy loading data about this object when requested
     protected RepositoryObjectDataLoader dataLoader;
+    protected RepositoryObjectFactory repoObjFactory;
 
     // The identifier and path information for this object
     protected PID pid;
@@ -50,10 +51,12 @@ public abstract class RepositoryObject {
 
     protected PremisLogger premisLog;
 
-    protected RepositoryObject(PID pid, RepositoryObjectLoader repositoryObjectLoader, RepositoryObjectDataLoader dataLoader) {
+    protected RepositoryObject(PID pid, RepositoryObjectLoader repositoryObjectLoader,
+            RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory) {
         this.repoObjLoader = repositoryObjectLoader;
         this.pid = pid;
         this.dataLoader = dataLoader;
+        this.repoObjFactory = repoObjFactory;
     }
 
     /**
