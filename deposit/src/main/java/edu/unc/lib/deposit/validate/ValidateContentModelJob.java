@@ -61,6 +61,12 @@ public class ValidateContentModelJob extends AbstractDepositJob{
     private final Reasoner reasoner;
 
     public ValidateContentModelJob() {
+        this(null, null);
+    }
+
+    public ValidateContentModelJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+
         validObjectTypes = new HashSet<>(Arrays.asList(
                 Cdr.FileObject, Cdr.Work, Cdr.Folder, Cdr.Collection, Cdr.AdminUnit));
 

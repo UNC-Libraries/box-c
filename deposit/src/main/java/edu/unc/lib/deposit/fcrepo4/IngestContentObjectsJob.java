@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -38,6 +39,7 @@ import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
@@ -66,6 +68,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.IanaRelation;
 import edu.unc.lib.dl.rdf.Premis;
@@ -255,9 +258,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             return;
         }
 
-        // TODO add ACLs
         WorkObject work = (WorkObject) parent;
-        FileObject obj = addFileToWork(work, childResc);
+        FileObject obj = addFileToWork(work, childResc, true);
+
         // Add ingestion event for file object
         addIngestionEventForChild(obj);
         addPremisEvents(obj);
@@ -294,9 +297,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         // Construct a model for the new work using some of the properties from the child
         Model workModel = ModelFactory.createDefaultModel();
-        // TODO add ACLs from the original child
+        Resource workResc = workModel.getResource(workPid.getRepositoryPath());
+
         String label = getPropertyValue(childResc, CdrDeposit.label);
-        if (label == null) {
+        if (label == null || StringUtils.isEmpty(label)) {
             label = getPropertyValue(childResc, CdrDeposit.stagingLocation);
             if (label == null) {
                 // throw exception before NPE happens as stagingLocation is required
@@ -305,8 +309,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             }
             label = new File(label).getName();
         }
-        Resource workResc = workModel.createResource(workPid.getRepositoryPath());
+
         workResc.addProperty(DC.title, label);
+
+        // add ACLs from the original file child
+        addAclProperties(childResc, workResc);
+
         WorkObject newWork  = null;
         FedoraTransaction tx = repository.startTransaction();
         try {
@@ -315,7 +323,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             addDescription(newWork);
             // Add the newly created work to its parent
             parent.addMember(newWork);
-            FileObject fileObj = addFileToWork(newWork, childResc);
+            FileObject fileObj = addFileToWork(newWork, childResc, false);
             // add ingestion event for work object
             addIngestionEventForContainer(newWork, parentResc);
             // Set the file as the primary object for the generated work
@@ -343,10 +351,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      *
      * @param work
      * @param childResc
+     * @param addAipProperties
+     *            if true, then acl and other properties from the child resource
+     *            will be added to will be added to the file object's aip
      * @return
      * @throws DepositException
      */
-    private FileObject addFileToWork(WorkObject work, Resource childResc) throws DepositException {
+    private FileObject addFileToWork(WorkObject work, Resource childResc, boolean addAipProperties)
+            throws DepositException {
         PID childPid = PIDs.get(childResc.getURI());
 
         String stagingPath = getPropertyValue(childResc, CdrDeposit.stagingLocation);
@@ -364,12 +376,20 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         File file = new File(getStagedUri(stagingPath));
 
+        // Construct a model to store properties about this new fileObject
+        Model aipModel = ModelFactory.createDefaultModel();
+        Resource aResc = aipModel.getResource(childResc.getURI());
+
+        if (addAipProperties) {
+            addAclProperties(childResc, aResc);
+        }
+
         String filename = label != null ? label : file.getName();
 
         FileObject fileObj;
         try (InputStream fileStream = new FileInputStream(file)) {
             // Add the file to the work as the datafile of its own FileObject
-            fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1);
+            fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1, aipModel);
             // Record the size of the file for throughput stats
             metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
 
@@ -421,9 +441,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             // Create the new folder
             Model model = ModelFactory.createDefaultModel();
             Resource folderResc = model.getResource(childPid.getRepositoryPath());
-            populateAIPProperties(childResc, folderResc);
 
-            // TODO add ACLs
+            populateAIPProperties(childResc, folderResc);
+            // Add acls to AIP
+            addAclProperties(childResc, folderResc);
+
             FedoraTransaction tx = repository.startTransaction();
             try {
                 obj = repository.createFolderObject(childPid, model);
@@ -464,12 +486,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     "Depositor does not have permissions to create admin units",
                     parent.getPid(), groupSet, Permission.createAdminUnit);
 
-            // Create the new folder
+            // Create the new admin unit
             Model model = ModelFactory.createDefaultModel();
             Resource adminResc = model.getResource(childPid.getRepositoryPath());
-            populateAIPProperties(childResc, adminResc);
 
-            // TODO add ACLs
+            populateAIPProperties(childResc, adminResc);
+            // Add acls to AIP
+            addAclProperties(childResc, adminResc);
+
             FedoraTransaction tx = repository.startTransaction();
             try {
                 obj = repository.createAdminUnit(childPid, model);
@@ -503,19 +527,21 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         PID childPid = PIDs.get(childResc.getURI());
         CollectionObject obj = null;
         if (skipResumed(childResc)) {
-            // Resuming, retrieve the existing admin unit object
+            // Resuming, retrieve the existing collection unit object
             obj = repository.getCollectionObject(childPid);
         } else {
             aclService.assertHasAccess(
                     "Depositor does not have permissions to create collections in " + parent.getPid(),
                     parent.getPid(), groupSet, Permission.createCollection);
 
-            // Create the new folder
+            // Create the new collection
             Model model = ModelFactory.createDefaultModel();
-            Resource adminResc = model.getResource(childPid.getRepositoryPath());
-            populateAIPProperties(childResc, adminResc);
+            Resource collectionResc = model.getResource(childPid.getRepositoryPath());
 
-            // TODO add ACLs
+            populateAIPProperties(childResc, collectionResc);
+            // Add acls to AIP
+            addAclProperties(childResc, collectionResc);
+
             FedoraTransaction tx = repository.startTransaction();
             try {
                 obj = repository.createCollectionObject(childPid, model);
@@ -574,10 +600,13 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         } else {
             Model model = ModelFactory.createDefaultModel();
             Resource workResc = model.getResource(childPid.getRepositoryPath());
+
             populateAIPProperties(childResc, workResc);
+            // Add acls to AIP
+            addAclProperties(childResc, workResc);
+
             // send txid along with uris for the following actions
             FedoraTransaction tx = repository.startTransaction();
-            // TODO add ACLs
             try {
                 obj = repository.createWorkObject(childPid, model);
                 // Add ingestion event for the work itself
@@ -668,8 +697,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
     }
 
-    private void addAclProperties(Resource depositResc, Model aipModel) {
-        // TODO add access control properties
+    private void addAclProperties(Resource dResc, Resource aResc) {
+        StmtIterator stmtIt = dResc.listProperties();
+
+        while (stmtIt.hasNext()) {
+            Statement stmt = stmtIt.nextStatement();
+            Property pred = stmt.getPredicate();
+            if (!CdrAcl.NS.equals(pred.getNameSpace())) {
+                continue;
+            }
+
+            aResc.addProperty(pred, stmt.getObject());
+        }
     }
 
     private void addDescription(ContentObject obj) throws IOException {
