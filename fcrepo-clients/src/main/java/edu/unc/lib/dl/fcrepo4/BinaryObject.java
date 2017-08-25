@@ -42,12 +42,13 @@ public class BinaryObject extends RepositoryObject {
     private Long filesize;
 
     private URI metadataUri;
+    private RepositoryPaths repoPaths;
 
     protected BinaryObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, repoObjLoader, dataLoader, repoObjFactory);
 
-        //metadataUri = repository.getMetadataUri(pid);
+        metadataUri = repoPaths.getMetadataUri(pid);
     }
 
     @Override
