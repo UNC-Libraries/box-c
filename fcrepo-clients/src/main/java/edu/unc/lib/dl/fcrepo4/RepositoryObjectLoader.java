@@ -9,6 +9,11 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+/**
+ *
+ * @author bbpennel, harring
+ *
+ */
 
 public class RepositoryObjectLoader {
 
@@ -18,6 +23,8 @@ public class RepositoryObjectLoader {
     private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
     private long cacheTimeToLive;
     private long cacheMaxSize;
+
+    private RepositoryObjectFactory repoObjFactory;
 
     public void init() {
         repositoryObjCache = CacheBuilder.newBuilder()
@@ -83,7 +90,7 @@ public class RepositoryObjectLoader {
     }
 
     public PremisEventObject getPremisEventObject(PID pid) {
-        return new PremisEventObject(pid, this, dataLoader).validateType();
+        return new PremisEventObject(pid, this, dataLoader, repoObjFactory).validateType();
     }
 
     protected RepositoryObject getRepositoryObject(PID pid) {
