@@ -22,30 +22,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 
-import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
-import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
  * Creates objects in the repository matching specific object profile types.
  *
- * @author bbpennel
+ * @author bbpennel, harring
  *
  */
 public class RepositoryObjectFactory {
@@ -54,203 +48,167 @@ public class RepositoryObjectFactory {
 
     private FcrepoClient client;
 
-    /**
-     * Creates a deposit record object structure at the given path with the
-     * properties specified in the provided model
-     *
-     * @param path
-     *            URI of the full path where this deposit record should be
-     *            created
-     * @param model
-     *            Model containing additional properties to add to this Deposit
-     *            Record. Optional.
-     * @return the URI of the created deposit record
-     * @throws FedoraException
-     */
-    public URI createDepositRecord(URI path, Model model) throws FedoraException {
-        // Add the deposit record type to the object being created
-        model = populateModelTypes(path, model, Arrays.asList(Cdr.DepositRecord));
+    private RepositoryPaths repoPaths;
 
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                .perform()) {
+    private RepositoryObjectDataLoader repoObjDataLoader;
 
-            URI createdUri = response.getLocation();
+    private RepositoryObjectLoader repoObjLoader;
 
-            // Add the manifests container
-            ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
-                    RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
-
-            // Add the premis event container
-            addEventContainer(createdUri);
-
-            return createdUri;
-        } catch (IOException e) {
-            throw new FedoraException("Unable to create deposit record at " + path, e);
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
-        }
-    }
+    private RepositoryPIDMinter pidMinter;
 
     /**
-     * Creates an AdminUnit object structure at the given path with optional
-     * properties.
+     * Creates a new deposit record object with the given uuid.
+     * Properties in the supplied model will be added to the deposit record.
      *
-     * @param path
-     *            URI of the full path where the work will be created
-     * @param model
-     *            Model containing additional properties. Optional.
-     * @return URI to the object created
-     * @throws FedoraException
-     */
-    public URI createAdminUnit(URI path, Model model) {
-        // Add types to the object being created
-        model = populateModelTypes(path, model,
-                Arrays.asList(Cdr.AdminUnit, PcdmModels.Collection));
-
-        return createContentContainerObject(path, model);
-    }
-
-    /**
-     * Creates a collection object structure at the given path with optional
-     * properties.
-     *
-     * @param path
-     *            URI of the full path where the work will be created
-     * @param model
-     *            Model containing additional properties. Optional.
-     * @return URI to the object created
-     * @throws FedoraException
-     */
-    public URI createCollectionObject(URI path, Model model) {
-        // Add types to the object being created
-        model = populateModelTypes(path, model,
-                Arrays.asList(Cdr.Collection, PcdmModels.Object));
-
-        return createContentContainerObject(path, model);
-    }
-
-    /**
-     * Creates a folder object structure at the given path with optional
-     * properties.
-     *
-     * @param path
-     *            URI of the full path where the work will be created
-     * @param model
-     *            Model containing additional properties. Optional.
-     * @return URI to the object created
-     * @throws FedoraException
-     */
-    public URI createFolderObject(URI path, Model model) throws FedoraException {
-        // Add types to the object being created
-        model = populateModelTypes(path, model,
-                Arrays.asList(Cdr.Folder, PcdmModels.Object));
-
-        return createContentContainerObject(path, model);
-    }
-
-    /**
-     * Creates a work object structure at the given path with the properties
-     * specified.
-     *
-     * @param path
-     *            URI of the full path where the work will be created
-     * @param model
-     *            Model containing additional properties. Optional.
-     * @return
-     * @throws FedoraException
-     */
-    public URI createWorkObject(URI path, Model model) throws FedoraException {
-        // Add types to the object being created
-        model = populateModelTypes(path, model,
-                Arrays.asList(Cdr.Work, PcdmModels.Object));
-
-        return createContentContainerObject(path, model);
-    }
-
-    /**
-     * Creates a content root object structure with the provided properties
-     *
-     * @param path
+     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
-    public URI createContentRootObject(URI path, Model model) throws FedoraException {
-        // Add types to the object being created
-        model = populateModelTypes(path, model,
-                Arrays.asList(Cdr.ContentRoot));
+    public DepositRecord createDepositRecord(PID pid, Model model) throws FedoraException {
 
-        return createContentContainerObject(path, model);
+        PID newPid = pidMinter.mintDepositRecordPid();
+
+        DepositRecord depositRecord = new DepositRecord(newPid, repoObjLoader, repoObjDataLoader, this);
+        return depositRecord;
     }
 
     /**
-     * Helper to create a content object that can contain members and events
+     * Creates a new AdminUnit with the given pid
      *
-     * @param path
+     * @param pid
+     * @return
+     * @throws FedoraException
+     */
+    public AdminUnit createAdminUnit(PID pid) throws FedoraException {
+        return createAdminUnit(pid, null);
+    }
+
+    /**
+     * Creates a new AdminUnit with the given pid and properties.
+     *
+     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
-    private URI createContentContainerObject(URI path, Model model) throws FedoraException {
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                .perform()) {
+    public AdminUnit createAdminUnit(PID pid, Model model) throws FedoraException {
+        verifyContentPID(pid);
 
-            URI createdUri = response.getLocation();
+        PID createdPid = pidMinter.mintContentPid();
 
-            // Add PREMIS event container
-            addEventContainer(createdUri);
-
-            // Add the container for member objects
-            ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
-                    RepositoryPathConstants.MEMBER_CONTAINER);
-
-            return createdUri;
-        } catch (IOException e) {
-            throw new FedoraException("Unable to create deposit record at " + path, e);
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
-        }
+        return new AdminUnit(createdPid, repoObjLoader, repoObjDataLoader, this);
     }
 
     /**
-     * Creates a minimal file object structure at the given path with the
-     * properties specified in the provided model
+     * Creates a new CollectionObject with the given pid
      *
-     * @param path
+     * @param pid
+     * @return
+     * @throws FedoraException
+     */
+    public CollectionObject createCollectionObject(PID pid) throws FedoraException {
+        return createCollectionObject(pid, null);
+    }
+
+    /**
+     * Creates a new CollectionObject with the given pid and properties.
+     *
+     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
-    public URI createFileObject(URI path, Model model) throws FedoraException {
-        // Add types to the object being created
-        model = populateModelTypes(path, model,
-                Arrays.asList(Cdr.FileObject, PcdmModels.Object));
+    public CollectionObject createCollectionObject(PID pid, Model model) throws FedoraException {
+        verifyContentPID(pid);
 
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-                .perform()) {
+        PID createdPid = pidMinter.mintContentPid();
 
-            URI createdUri = response.getLocation();
-
-            // Add PREMIS event container
-            addEventContainer(createdUri);
-
-            // Add the manifests container
-            ldpFactory.createDirectFileSet(createdUri,
-                    RepositoryPathConstants.DATA_FILE_FILESET);
-
-            return createdUri;
-        } catch (IOException e) {
-            throw new FedoraException("Unable to create deposit record at " + path, e);
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
-        }
+        return new CollectionObject(createdPid, repoObjLoader, repoObjDataLoader, this);
     }
 
     /**
-     * Creates a binary resource at the given path.
+     * Creates a new FolderObject with the given pid
+     *
+     * @param pid
+     * @return
+     * @throws FedoraException
+     */
+    public FolderObject createFolderObject(PID pid) throws FedoraException {
+        return createFolderObject(pid, null);
+    }
+
+    /**
+     * Creates a new FolderObject with the given pid and properties.
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public FolderObject createFolderObject(PID pid, Model model) throws FedoraException {
+        verifyContentPID(pid);
+
+        PID createdPid = pidMinter.mintContentPid();
+
+        return new FolderObject(createdPid, repoObjLoader, repoObjDataLoader, this);
+    }
+
+    /**
+     * Creates a new WorkObject with the given pid
+     *
+     * @param pid
+     * @return
+     * @throws FedoraException
+     */
+    public WorkObject createWorkObject(PID pid) throws FedoraException {
+        return createWorkObject(pid, null);
+    }
+
+    /**
+     * Creates a new WorkObject with the given pid and properties.
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public WorkObject createWorkObject(PID pid, Model model) throws FedoraException {
+        verifyContentPID(pid);
+
+        PID createdPid = pidMinter.mintContentPid();
+
+        return new WorkObject(createdPid, repoObjLoader, repoObjDataLoader, this);
+    }
+
+    /**
+     * Creates a new file object with the given PID.
+     *
+     * @param pid
+     * @return
+     * @throws FedoraException
+     */
+    public FileObject createFileObject(PID pid) throws FedoraException {
+        return createFileObject(pid, null);
+    }
+
+    /**
+     * Creates a new file object with the given PID.
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public FileObject createFileObject(PID pid, Model model) throws FedoraException {
+        verifyContentPID(pid);
+
+        PID newPid = pidMinter.mintDepositRecordPid();
+
+        return new FileObject(newPid, repoObjLoader, repoObjDataLoader, this);
+    }
+    /**
+     * Creates a binary object at the given path.
      *
      * @param path
      *            Repository path where the binary will be created
@@ -267,89 +225,18 @@ public class RepositoryObjectFactory {
      * @param model
      *            Model containing additional triples to add to the new binary's
      *            metadata. Optional
-     * @return URI of the newly created binary
+     * @return A BinaryObject for this newly created resource.
      * @throws FedoraException
      */
-    public URI createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
+    public BinaryObject createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
             String checksum, Model model) throws FedoraException {
-        if (content == null) {
-            throw new IllegalArgumentException("Cannot create a binary object from a null content stream");
-        }
 
-        // Upload the binary and provided technical metadata
-        URI resultUri;
-        // Track the URI where metadata updates would be made to for this binary
-        URI describedBy;
-        try (FcrepoResponse response = getClient().post(path)
-                .slug(slug)
-                .body(content, mimetype)
-                .filename(filename)
-                .digest(checksum)
-                .perform()) {
+        PID newPid = pidMinter.mintContentPid();
 
-            resultUri = response.getLocation();
-            describedBy = response.getLinkHeaders("describedby").get(0);
-        } catch (IOException e) {
-            throw new FedoraException("Unable to create binary at " + path, e);
-        } catch (FcrepoOperationFailedException e) {
-            if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
-                throw new ChecksumMismatchException("Failed to create binary for " + path + ", provided SHA1 checksum "
-                        + checksum + " did not match the submitted content according to the repository.", e);
-            }
-            throw ClientFaultResolver.resolve(e);
-        }
-
-        // Add in pcdm:File type to model
-        model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
-
-        // If a model was provided, then add the triples to the new binary's metadata
-        // Turn model into sparql update query
-        String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
-        InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
-
-        try (FcrepoResponse response = getClient().patch(describedBy)
-                .body(sparqlStream)
-                .perform()) {
-        } catch (IOException e) {
-            throw new FedoraException("Unable to add triples to binary at " + path, e);
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
-        }
-
-        return resultUri;
+        BinaryObject binary = new BinaryObject(newPid, repoObjLoader, repoObjDataLoader, this);
+        return binary;
     }
 
-    /**
-     * Adds a set of resource types to the specified resource in the given
-     * model. If no model is provided, then a new model is created.
-     *
-     * @param model
-     *            Model to add to. If no model is provided, then one is created.
-     * @param rescUri
-     *            URI of the resource types will be added to.
-     * @param types
-     *            list of types to add
-     * @return The model with types added.
-     */
-    private Model populateModelTypes(URI rescUri, Model model, List<Resource> types) {
-        // Create an empty model if none was provided
-        if (model == null) {
-            model = ModelFactory.createDefaultModel();
-        }
-
-        // Add the required type for DepositRecords
-        Resource mainResc = model.getResource(rescUri.toString());
-        for (Resource type : types) {
-            mainResc.addProperty(RDF.type, type);
-        }
-
-        return model;
-    }
-
-    private URI addEventContainer(URI parentUri) throws FedoraException, IOException {
-        return ldpFactory.createDirectContainer(parentUri, Premis.hasEvent,
-                RepositoryPathConstants.EVENTS_CONTAINER);
-    }
     /**
      * Add a member to the parent object.
      *
@@ -359,6 +246,17 @@ public class RepositoryObjectFactory {
     public void addMember(ContentObject parent, ContentObject member) {
         createMemberLink(parent.getPid().getRepositoryUri(),
                 member.getPid().getRepositoryUri());
+    }
+
+    /**
+     * Creates a triple in Fedora from the given parameters
+     * @param subject
+     * @param property
+     * @param object
+     */
+    public void createProperty(PID subject, Property property, String object) {
+        String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
+        persistTripleToFedora(subject, sparqlUpdate);
     }
 
     /**
@@ -374,6 +272,27 @@ public class RepositoryObjectFactory {
 
         return ldpFactory.createIndirectProxy(URI.create(memberContainer),
                 parentUri, memberUri);
+    }
+
+    /**
+     * Creates a triple in Fedora from the given parameters
+     * @param subject
+     * @param property
+     * @param object
+     */
+    public void createRelationship(PID subject, Property property, Resource object) {
+        String sparqlUpdate = RDFModelUtil.createSparqlInsert(subject.getRepositoryPath(), property, object);
+        persistTripleToFedora(subject, sparqlUpdate);
+    }
+
+    /**
+     * Creates the relevant triples in Fedora from the given model
+     * @param pid
+     * @param model
+     */
+    public void createRelationships(PID pid, Model model) {
+        String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
+        persistTripleToFedora(pid, sparqlUpdate);
     }
 
     /**
@@ -413,6 +332,33 @@ public class RepositoryObjectFactory {
 
     public void setLdpFactory(LdpContainerFactory ldpFactory) {
         this.ldpFactory = ldpFactory;
+    }
+
+    /**
+     * Throws a ObjectTypeMismatchException if the pid provided is not in the
+     * content path
+     *
+     * @param pid
+     */
+    protected void verifyContentPID(PID pid) {
+        if (!pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE)) {
+            throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
+        }
+    }
+
+    private void persistTripleToFedora(PID subject, String sparqlUpdate) {
+        URI uri = repoPaths.getMetadataUri(subject);
+
+        InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+        try (FcrepoResponse response = getClient().patch(uri)
+                .body(sparqlStream)
+                .perform()) {
+        } catch (IOException e) {
+            throw new FedoraException("Unable to add relationship to object " + subject.getId(), e);
+        } catch (FcrepoOperationFailedException e) {
+            throw ClientFaultResolver.resolve(e);
+        }
     }
 
 }
