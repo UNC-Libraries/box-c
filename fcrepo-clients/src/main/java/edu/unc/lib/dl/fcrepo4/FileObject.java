@@ -54,8 +54,9 @@ public class FileObject extends ContentObject {
     private final String fileSetPath;
     private final URI fileSetUri;
 
-    protected FileObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repoObjLoader, dataLoader);
+    protected FileObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
 
         fileSetPath = URIUtil.join(pid.getRepositoryPath(), DATA_FILE_FILESET);
         fileSetUri = URI.create(fileSetPath);
