@@ -80,7 +80,13 @@ public class MetaServicesRouter extends RouteBuilder {
         from("direct:process.solr")
             .routeId("IngestSolrIndexing")
             .filter(simple("${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Work.getURI() + "'"
-                    + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"))
+                    + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.FileObject.getURI() + "'"
+                    + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.Collection.getURI() + "'"
+                    + " || ${headers[org.fcrepo.jms.resourceType]} contains '" + Cdr.AdminUnit.getURI() + "'"
+                    ))
+            // Filter out descriptive md separately because camel simple filters don't support basic () operators
+            .filter(simple("${headers[org.fcrepo.jms.resourceType]} not contains '"
+                    + Cdr.DescriptiveMetadata.getURI() + "'"))
                 .log(LoggingLevel.INFO, "Ingest solr indexing for ${headers[org.fcrepo.jms.identifier]}")
                 .to("direct-vm:solrIndexing");
     }

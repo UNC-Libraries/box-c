@@ -44,6 +44,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.rdf.Cdr;
 
 /**
  *
@@ -142,7 +143,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testEventTypeFilterValid() throws Exception {
         getMockEndpoint("mock:direct:process.binary").expectedMessageCount(1);
@@ -154,7 +155,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testEnhancementIdentifierFilterValid() throws Exception {
         getMockEndpoint("mock:direct-vm:imageEnhancements").expectedMessageCount(1);
@@ -167,7 +168,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testProcessBinaryOriginal() throws Exception {
         getMockEndpoint("mock:direct:process.enhancements").expectedMessageCount(1);
@@ -195,14 +196,14 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testProcessSolr() throws Exception {
         getMockEndpoint("mock:direct-vm:solrIndexing").expectedMessageCount(1);
 
         createContext(SOLR_INGEST_ROUTE);
 
-        Map<String, Object> headers = createEvent("container", Container.getURI());
+        Map<String, Object> headers = createEvent("container", Cdr.Work.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
@@ -220,6 +221,19 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         assertMockEndpointsSatisfied();
     }
 
+    @Test
+    public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
+        getMockEndpoint("mock:direct-vm:solrIndexing").expectedMessageCount(0);
+
+        createContext(SOLR_INGEST_ROUTE);
+
+        Map<String, Object> headers = createEvent("container",
+                Cdr.FileObject.getURI(), Cdr.DescriptiveMetadata.getURI());
+        template.sendBodyAndHeaders("", headers);
+
+        assertMockEndpointsSatisfied();
+    }
+
     private void createContext(String routeName) throws Exception {
         context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
@@ -232,12 +246,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String type) {
-        
+    private static Map<String, Object> createEvent(final String identifier, final String... type) {
+
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, identifier);
-        headers.put(RESOURCE_TYPE, type);
+        headers.put(RESOURCE_TYPE, String.join(",", type));
 
         return headers;
     }
