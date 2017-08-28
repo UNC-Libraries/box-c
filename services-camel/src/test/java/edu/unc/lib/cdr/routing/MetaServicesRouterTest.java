@@ -42,6 +42,8 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
+import edu.unc.lib.cdr.CleanupBinaryProcessor;
+import edu.unc.lib.cdr.GetBinaryProcessor;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -78,6 +80,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
+
+    @BeanInject(value = "getBinaryProcessor")
+    private GetBinaryProcessor getBinaryProcessor;
+
+    @BeanInject(value = "cleanupBinaryProcessor")
+    private CleanupBinaryProcessor cleanupBinaryProcessor;
 
     @Before
     public void init() {
@@ -182,6 +190,8 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         assertMockEndpointsSatisfied();
 
         verify(mdProcessor).process(any(Exchange.class));
+        verify(getBinaryProcessor).process(any(Exchange.class));
+        verify(cleanupBinaryProcessor).process(any(Exchange.class));
     }
 
     @Test

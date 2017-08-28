@@ -23,6 +23,8 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
+import edu.unc.lib.cdr.CleanupBinaryProcessor;
+import edu.unc.lib.cdr.GetBinaryProcessor;
 import edu.unc.lib.dl.rdf.Cdr;
 
 /**
@@ -37,6 +39,12 @@ public class MetaServicesRouter extends RouteBuilder {
 
     @PropertyInject(value = "cdr.enhancement.processingThreads")
     private Integer enhancementThreads;
+
+    @BeanInject(value = "getBinaryProcessor")
+    private GetBinaryProcessor getBinaryProcessor;
+
+    @BeanInject(value = "cleanupBinaryProcessor")
+    private CleanupBinaryProcessor cleanupBinaryProcessor;
 
     @Override
     public void configure() throws Exception {
@@ -61,6 +69,7 @@ public class MetaServicesRouter extends RouteBuilder {
             .filter(simple("${headers[org.fcrepo.jms.identifier]} regex '.*(original_file|techmd_fits)'"
                     + " && ${headers[org.fcrepo.jms.resourceType]} contains '" + Binary.getURI() + "'"))
                 .process(mdProcessor)
+                .process(getBinaryProcessor)
                 .choice()
                     .when(simple("${headers[org.fcrepo.jms.identifier]} regex '.*original_file'"))
                         .to("direct-vm:replication")
@@ -70,7 +79,8 @@ public class MetaServicesRouter extends RouteBuilder {
                     .otherwise()
                         .log(LoggingLevel.WARN,
                                 "Cannot process binary metadata for ${headers[org.fcrepo.jms.identifier]}")
-                .end();
+                .end()
+                .process(cleanupBinaryProcessor);
 
         from("direct:process.enhancements")
             .routeId("AddBinaryEnhancements")
