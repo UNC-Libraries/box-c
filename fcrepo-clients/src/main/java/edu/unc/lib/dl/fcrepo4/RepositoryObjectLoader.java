@@ -11,7 +11,8 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 /**
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 
@@ -91,6 +92,14 @@ public class RepositoryObjectLoader {
 
     public PremisEventObject getPremisEventObject(PID pid) {
         return new PremisEventObject(pid, this, dataLoader, repoObjFactory).validateType();
+    }
+
+    public DepositRecord getDepositRecord(PID pid) {
+        RepositoryObject repoObj = getRepositoryObject(pid);
+        if (!(repoObj instanceof DepositRecord)) {
+            throw new FedoraException("Object with pid " + pid + "is not a deposit record");
+        }
+        return (DepositRecord) repoObj;
     }
 
     protected RepositoryObject getRepositoryObject(PID pid) {
