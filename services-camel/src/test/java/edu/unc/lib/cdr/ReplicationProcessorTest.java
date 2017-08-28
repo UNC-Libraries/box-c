@@ -71,9 +71,6 @@ public class ReplicationProcessorTest {
     private BinaryObject binary;
 
     @Mock
-    private BinaryObject binaryFcrepo;
-
-    @Mock
     private Repository repository;
 
     @Mock
