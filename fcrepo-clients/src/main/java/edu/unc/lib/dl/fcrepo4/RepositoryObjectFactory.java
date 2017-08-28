@@ -208,33 +208,30 @@ public class RepositoryObjectFactory {
         return new FileObject(newPid, repoObjLoader, repoObjDataLoader, this);
     }
     /**
-     * Creates a binary object at the given path.
+     * Creates a new binary object with the given PID.
      *
-     * @param path
-     *            Repository path where the binary will be created
-     * @param slug
-     *            Name in the path for the binary resource. Optional.
-     * @param content
-     *            Input stream containing the binary content for this resource.
-     * @param filename
-     *            Filename of the binary content. Optional.
-     * @param mimetype
-     *            Mimetype of the content. Optional.
-     * @param checksum
-     *            SHA-1 digest of the content. Optional.
+     * @param pid
      * @param model
-     *            Model containing additional triples to add to the new binary's
-     *            metadata. Optional
-     * @return A BinaryObject for this newly created resource.
+     * @return
      * @throws FedoraException
      */
-    public BinaryObject createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
-            String checksum, Model model) throws FedoraException {
+    public BinaryObject createBinary(PID pid, Model model) throws FedoraException {
 
         PID newPid = pidMinter.mintContentPid();
 
         BinaryObject binary = new BinaryObject(newPid, repoObjLoader, repoObjDataLoader, this);
         return binary;
+    }
+
+    /**
+     * Creates a new binary object with the given PID.
+     *
+     * @param pid
+     * @return
+     * @throws FedoraException
+     */
+    public BinaryObject createBinary(PID pid) throws FedoraException {
+        return createBinary(pid, null);
     }
 
     /**
