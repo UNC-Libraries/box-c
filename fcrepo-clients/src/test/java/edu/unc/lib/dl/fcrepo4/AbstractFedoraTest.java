@@ -28,16 +28,19 @@ public class AbstractFedoraTest {
     @Mock
     protected RepositoryObjectDataLoader dataLoader;
     @Mock
-    protected Repository repository;
+    protected RepositoryPaths repoPaths;
+    @Mock
+    protected RepositoryObjectLoader repoObjLoader;
+    @Mock
+    protected RepositoryObjectFactory repoObjFactory;
+    @Mock
+    protected RepositoryPIDMinter pidMinter;
 
     @Before
     public void initBase() {
         initMocks(this);
 
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
-
-        when(repository.getRepositoryObjectDataLoader()).thenReturn(dataLoader);
+        when(repoPaths.getBaseUri()).thenReturn(FEDORA_BASE);
     }
 
 }

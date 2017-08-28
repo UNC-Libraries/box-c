@@ -63,10 +63,10 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
         URI repoUri = new URI(FEDORA_BASE);
         when(mockPid.getRepositoryUri()).thenReturn(repoUri);
-        when(repository.getMetadataUri(any(PID.class))).thenReturn(
+        when(repoPaths.getMetadataUri(any(PID.class))).thenReturn(
                 URI.create(URIUtil.join(repoUri, RepositoryPathConstants.FCR_METADATA)));
 
-        binObj = new BinaryObject(mockPid, repository, dataLoader);
+        binObj = new BinaryObject(mockPid, repoObjLoader, dataLoader, repoObjFactory);
 
         when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);
 
