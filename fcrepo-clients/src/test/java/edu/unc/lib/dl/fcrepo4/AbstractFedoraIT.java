@@ -25,7 +25,6 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -43,14 +42,6 @@ public class AbstractFedoraIT {
 
     @Autowired
     protected FcrepoClient client;
-
-    @Autowired
-    protected Repository repository;
-
-    @Before
-    public void initBase() {
-        PIDs.setRepository(repository);
-    }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
