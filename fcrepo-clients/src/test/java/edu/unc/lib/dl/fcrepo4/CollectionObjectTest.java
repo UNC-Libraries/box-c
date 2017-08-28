@@ -15,7 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -63,7 +64,7 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        collection = new CollectionObject(pid, repository, dataLoader);
+        collection = new CollectionObject(pid, repoObjLoader, dataLoader, repoObjFactory);
 
         folderChildPid = PIDs.get(UUID.randomUUID().toString());
         when(folderChildObj.getPid()).thenReturn(folderChildPid);
@@ -106,7 +107,7 @@ public class CollectionObjectTest extends AbstractFedoraTest {
         collection.addMember(workChildObj);
 
         ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-        verify(repository).addMember(eq(collection), captor.capture());
+        verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
         ContentObject child = captor.getValue();
         assertTrue("Incorrect type of child added", child instanceof WorkObject);
@@ -118,7 +119,7 @@ public class CollectionObjectTest extends AbstractFedoraTest {
         collection.addMember(folderChildObj);
 
         ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-        verify(repository).addMember(eq(collection), captor.capture());
+        verify(repoObjFactory).addMember(eq(collection), captor.capture());
 
         ContentObject child = captor.getValue();
         assertTrue("Incorrect type of child added", child instanceof FolderObject);
