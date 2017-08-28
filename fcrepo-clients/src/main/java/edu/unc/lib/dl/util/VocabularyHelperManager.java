@@ -15,17 +15,12 @@
  */
 package edu.unc.lib.dl.util;
 
-import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.replaceInvalidTerms;
-import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
-import static edu.unc.lib.dl.util.ContentModelHelper.Model.COLLECTION;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,20 +28,13 @@ import java.util.Set;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
@@ -83,13 +71,6 @@ public class VocabularyHelperManager {
 
     private PID collectionsPID;
 
-    @Autowired
-    private TripleStoreQueryService queryService;
-    @Autowired
-    private ManagementClient managementClient;
-    @Autowired
-    private AccessClient accessClient;
-
     private Boolean initialized = false;
 
     private final Namespace[] defaultSelectorNamespaces = new Namespace[] {
@@ -98,45 +79,45 @@ public class VocabularyHelperManager {
 
     public synchronized void init() {
         // Wait for the repository to be up before loading vocabularies
-        managementClient.waitForRepositoryAvailable();
-
-        log.debug("Initializing vocabulary helpers");
-        initialized = true;
-
-        // Scan fedora for objects with the vocabulary content model
-        vocabInfoMap = queryService.fetchVocabularyInfo();
-
-        pidToVocabApplication = queryService.fetchVocabularyMapping();
-
-        // Instantiate helper classes per vocabulary definition
-        instantiateVocabularyHelpers();
-
-        // Establish the associations between containers and vocabularies
-        linkHelpersToPIDs();
-
-        // Load the contents of the vocabularies
-        for (String vocabPID : vocabInfoMap.keySet()) {
-            try {
-                byte[] stream = accessClient.getDatastreamDissemination(new PID(vocabPID),
-                        ContentModelHelper.Datastream.DATA_FILE.getName(), null).getStream();
-
-                if (vocabInfoMap.containsKey(vocabPID)) {
-                    String vocabURI = vocabInfoMap.get(vocabPID).get("vocabURI");
-                    vocabHelperMap.get(vocabURI).setContent(stream);
-                }
-            } catch (Exception e) {
-                log.error("Failed to load vocabulary content for {}", vocabPID, e);
-            }
-        }
-
-        if (log.isDebugEnabled()) {
-            for (Entry<String, Map<String, Set<String>>> pidEntry : pidToVocabApplication.entrySet()) {
-                log.debug("Vocabularies bound to {}", pidEntry.getKey());
-                for (Entry<String, Set<String>> vocabEntry : pidEntry.getValue().entrySet()) {
-                    log.debug("  {}: {}", vocabEntry.getKey(), vocabEntry.getValue());
-                }
-            }
-        }
+//        managementClient.waitForRepositoryAvailable();
+//
+//        log.debug("Initializing vocabulary helpers");
+//        initialized = true;
+//
+//        // Scan fedora for objects with the vocabulary content model
+//        vocabInfoMap = queryService.fetchVocabularyInfo();
+//
+//        pidToVocabApplication = queryService.fetchVocabularyMapping();
+//
+//        // Instantiate helper classes per vocabulary definition
+//        instantiateVocabularyHelpers();
+//
+//        // Establish the associations between containers and vocabularies
+//        linkHelpersToPIDs();
+//
+//        // Load the contents of the vocabularies
+//        for (String vocabPID : vocabInfoMap.keySet()) {
+//            try {
+//                byte[] stream = accessClient.getDatastreamDissemination(new PID(vocabPID),
+//                        ContentModelHelper.Datastream.DATA_FILE.getName(), null).getStream();
+//
+//                if (vocabInfoMap.containsKey(vocabPID)) {
+//                    String vocabURI = vocabInfoMap.get(vocabPID).get("vocabURI");
+//                    vocabHelperMap.get(vocabURI).setContent(stream);
+//                }
+//            } catch (Exception e) {
+//                log.error("Failed to load vocabulary content for {}", vocabPID, e);
+//            }
+//        }
+//
+//        if (log.isDebugEnabled()) {
+//            for (Entry<String, Map<String, Set<String>>> pidEntry : pidToVocabApplication.entrySet()) {
+//                log.debug("Vocabularies bound to {}", pidEntry.getKey());
+//                for (Entry<String, Set<String>> vocabEntry : pidEntry.getValue().entrySet()) {
+//                    log.debug("  {}: {}", vocabEntry.getKey(), vocabEntry.getValue());
+//                }
+//            }
+//        }
     }
 
     private void instantiateVocabularyHelpers() {
@@ -207,51 +188,51 @@ public class VocabularyHelperManager {
      * @throws FedoraException
      */
     public void updateInvalidTermsRelations(PID pid, Element docElement) throws FedoraException {
-        Set<VocabularyHelper> helpers = getHelpers(pid);
-        if (helpers == null) {
-            return;
-        }
-
-        DatastreamDocument relsDs = managementClient.getXMLDatastreamIfExists(pid, Datastream.RELS_EXT.getName());
-
-        Element descEl = relsDs.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
-
-        // Remove all existing invalid term predicates
-        boolean termsChanged =
-                descEl.removeChildren(invalidTerm.getPredicate(), invalidTerm.getNamespace());
-
-        for (VocabularyHelper helper : helpers) {
-            Set<String> invalidTerms;
-            try {
-                invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
-
-                if (invalidTerms != null && invalidTerms.size() > 0) {
-                    termsChanged = true;
-
-                    for (String term : invalidTerms) {
-                        Element invTermEl = new Element(invalidTerm.getPredicate(), invalidTerm.getNamespace());
-                        invTermEl.setText(term);
-                        descEl.addContent(invTermEl);
-                    }
-                }
-            } catch (JDOMException e) {
-                log.error("Failed to extract invalid terms from {}", pid.getPid(), e);
-                continue;
-            }
-        }
-
-        // If any terms changed, then update RELS-EXT with optimistic locking
-        if (termsChanged) {
-            do {
-                try {
-                    managementClient.modifyDatastream(pid, RELS_EXT.getName(), "Setting invalid vocabulary terms",
-                            relsDs.getLastModified(), relsDs.getDocument());
-                    return;
-                } catch (OptimisticLockException e) {
-                    log.debug("Unable to update RELS-EXT for {}, retrying", pid);
-                }
-            } while (true);
-        }
+//        Set<VocabularyHelper> helpers = getHelpers(pid);
+//        if (helpers == null) {
+//            return;
+//        }
+//
+//        DatastreamDocument relsDs = managementClient.getXMLDatastreamIfExists(pid, Datastream.RELS_EXT.getName());
+//
+//        Element descEl = relsDs.getDocument().getRootElement().getChild("Description", JDOMNamespaceUtil.RDF_NS);
+//
+//        // Remove all existing invalid term predicates
+//        boolean termsChanged =
+//                descEl.removeChildren(invalidTerm.getPredicate(), invalidTerm.getNamespace());
+//
+//        for (VocabularyHelper helper : helpers) {
+//            Set<String> invalidTerms;
+//            try {
+//                invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
+//
+//                if (invalidTerms != null && invalidTerms.size() > 0) {
+//                    termsChanged = true;
+//
+//                    for (String term : invalidTerms) {
+//                        Element invTermEl = new Element(invalidTerm.getPredicate(), invalidTerm.getNamespace());
+//                        invTermEl.setText(term);
+//                        descEl.addContent(invTermEl);
+//                    }
+//                }
+//            } catch (JDOMException e) {
+//                log.error("Failed to extract invalid terms from {}", pid.getPid(), e);
+//                continue;
+//            }
+//        }
+//
+//        // If any terms changed, then update RELS-EXT with optimistic locking
+//        if (termsChanged) {
+//            do {
+//                try {
+//                    managementClient.modifyDatastream(pid, RELS_EXT.getName(), "Setting invalid vocabulary terms",
+//                            relsDs.getLastModified(), relsDs.getDocument());
+//                    return;
+//                } catch (OptimisticLockException e) {
+//                    log.debug("Unable to update RELS-EXT for {}, retrying", pid);
+//                }
+//            } while (true);
+//        }
     }
 
     /**
@@ -270,34 +251,34 @@ public class VocabularyHelperManager {
     }
 
     private Map<String, Set<String>> getInvalidTerms(PID pid, Element docElement, boolean includePrefix) {
-
-        Set<VocabularyHelper> helpers = getHelpers(pid);
-        if (helpers == null) {
-            return null;
-        }
-
-        Map<String, Set<String>> results = new LinkedHashMap<>();
-
-        for (VocabularyHelper helper : helpers) {
-            if (helper != null) {
-                try {
-                    Set<String> invalidTerms;
-                    if (includePrefix) {
-                        invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
-                    } else {
-                        invalidTerms = helper.getInvalidTerms(docElement);
-                    }
-
-                    if (invalidTerms != null) {
-                        results.put(helper.getVocabularyURI(), invalidTerms);
-                    }
-                } catch (JDOMException e) {
-                    log.error("Failed to get invalid vocabulary terms of {}", pid, e);
-                }
-            }
-        }
-
-        return results;
+        return null;
+//        Set<VocabularyHelper> helpers = getHelpers(pid);
+//        if (helpers == null) {
+//            return null;
+//        }
+//
+//        Map<String, Set<String>> results = new LinkedHashMap<>();
+//
+//        for (VocabularyHelper helper : helpers) {
+//            if (helper != null) {
+//                try {
+//                    Set<String> invalidTerms;
+//                    if (includePrefix) {
+//                        invalidTerms = helper.getInvalidTermsWithPrefix(docElement);
+//                    } else {
+//                        invalidTerms = helper.getInvalidTerms(docElement);
+//                    }
+//
+//                    if (invalidTerms != null) {
+//                        results.put(helper.getVocabularyURI(), invalidTerms);
+//                    }
+//                } catch (JDOMException e) {
+//                    log.error("Failed to get invalid vocabulary terms of {}", pid, e);
+//                }
+//            }
+//        }
+//
+//        return results;
     }
 
     /**
@@ -336,43 +317,44 @@ public class VocabularyHelperManager {
     }
 
     private Set<VocabularyHelper> getHelpers(PID pid, CDRProperty appLevel) {
-        synchronized (initialized) {
-            if (!initialized) {
-                init();
-            }
-        }
-
-        PID parentCollectionPID = queryService.fetchParentCollection(pid);
-        if (parentCollectionPID == null) {
-            List<URI> models = queryService.lookupContentModels(pid);
-            if (models.contains(COLLECTION.getURI())) {
-                parentCollectionPID = pid;
-            }
-        }
-
-        // Start helpers from the set of globals assigned to the collections object
-        Set<VocabularyHelper> helpers = new HashSet<>();
-        Set<VocabularyHelper> rootHelpers = pidToHelpers.get(collectionsPID.getURI());
-        if (rootHelpers != null) {
-            helpers.addAll(rootHelpers);
-        }
-
-        if (parentCollectionPID != null) {
-            Set<VocabularyHelper> parentHelpers = pidToHelpers.get(parentCollectionPID.getURI());
-            if (parentHelpers != null) {
-                helpers.addAll(parentHelpers);
-            }
-        }
-
-        if (appLevel != null && helpers != null) {
-            filterHelperSet(parentCollectionPID, helpers, appLevel);
-        }
-
-        if (log.isDebugEnabled()) {
-            log.debug("Helpers found for {} with {}: {}", new Object[] { pid, appLevel, helpers });
-        }
-
-        return helpers;
+        return null;
+//        synchronized (initialized) {
+//            if (!initialized) {
+//                init();
+//            }
+//        }
+//
+//        PID parentCollectionPID = queryService.fetchParentCollection(pid);
+//        if (parentCollectionPID == null) {
+//            List<URI> models = queryService.lookupContentModels(pid);
+//            if (models.contains(COLLECTION.getURI())) {
+//                parentCollectionPID = pid;
+//            }
+//        }
+//
+//        // Start helpers from the set of globals assigned to the collections object
+//        Set<VocabularyHelper> helpers = new HashSet<>();
+//        Set<VocabularyHelper> rootHelpers = pidToHelpers.get(collectionsPID.getURI());
+//        if (rootHelpers != null) {
+//            helpers.addAll(rootHelpers);
+//        }
+//
+//        if (parentCollectionPID != null) {
+//            Set<VocabularyHelper> parentHelpers = pidToHelpers.get(parentCollectionPID.getURI());
+//            if (parentHelpers != null) {
+//                helpers.addAll(parentHelpers);
+//            }
+//        }
+//
+//        if (appLevel != null && helpers != null) {
+//            filterHelperSet(parentCollectionPID, helpers, appLevel);
+//        }
+//
+//        if (log.isDebugEnabled()) {
+//            log.debug("Helpers found for {} with {}: {}", new Object[] { pid, appLevel, helpers });
+//        }
+//
+//        return helpers;
     }
 
     private void filterHelperSet(PID pid, Set<VocabularyHelper> helpers, CDRProperty appLevel) {
@@ -441,36 +423,29 @@ public class VocabularyHelperManager {
     }
 
     public Map<String, List<List<String>>> getAuthoritativeForms(PID pid, Element docElement) {
-        Set<VocabularyHelper> helpers = getHelpers(pid);
-        if (helpers == null) {
-            return null;
-        }
-
-        Map<String, List<List<String>>> results = new HashMap<>();
-        for (VocabularyHelper helper : helpers) {
-            try {
-                List<List<String>> terms = helper.getAuthoritativeForms(docElement);
-                if (terms != null && terms.size() > 0) {
-                    results.put(helper.getVocabularyURI(), terms);
-                }
-            } catch (JDOMException e) {
-                log.error("Failed to get authoritative forms for vocabulary {} on object {}",
-                        new Object[] { helper.getVocabularyURI(), pid.getPid(), e });
-            }
-        }
-
-        return results;
+        return null;
+//        Set<VocabularyHelper> helpers = getHelpers(pid);
+//        if (helpers == null) {
+//            return null;
+//        }
+//
+//        Map<String, List<List<String>>> results = new HashMap<>();
+//        for (VocabularyHelper helper : helpers) {
+//            try {
+//                List<List<String>> terms = helper.getAuthoritativeForms(docElement);
+//                if (terms != null && terms.size() > 0) {
+//                    results.put(helper.getVocabularyURI(), terms);
+//                }
+//            } catch (JDOMException e) {
+//                log.error("Failed to get authoritative forms for vocabulary {} on object {}",
+//                        new Object[] { helper.getVocabularyURI(), pid.getPid(), e });
+//            }
+//        }
+//
+//        return results;
     }
 
     public void setCollectionsPID(PID collectionsPID) {
         this.collectionsPID = collectionsPID;
-    }
-
-    public void setManagementClient(ManagementClient managementClient) {
-        this.managementClient = managementClient;
-    }
-
-    public void setAccessClient(AccessClient accessClient) {
-        this.accessClient = accessClient;
     }
 }

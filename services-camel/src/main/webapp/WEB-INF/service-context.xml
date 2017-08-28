@@ -79,6 +79,9 @@
 		</property>
 	</bean>
 	
+	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
+	</bean>
+	
 	<!-- Solr settings -->
 
 	<bean id="solrFullUpdatePipeline"
@@ -218,7 +221,7 @@
 	</bean>
 	<bean id="setDescriptiveMetadataFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
-		<!--  <property name="vocabManager" value="${services.indexing.vocabManager}" />-->
+		<property name="vocabManager" ref="vocabManager" />
 	</bean>
 	<bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
 	</bean>
