@@ -64,8 +64,6 @@ public class RepositoryObjectFactory {
 
     private RepositoryObjectLoader repoObjLoader;
 
-    private RepositoryPIDMinter pidMinter;
-
     /**
      * Creates a new deposit record object with the given uuid.
      * Properties in the supplied model will be added to the deposit record.
@@ -82,8 +80,8 @@ public class RepositoryObjectFactory {
         model = populateModelTypes(path, model, Arrays.asList(Cdr.DepositRecord));
 
         try (FcrepoResponse response = getClient().put(path)
-        .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-        .perform()) {
+                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                .perform()) {
             URI createdUri = response.getLocation();
             // Add the manifests container
             ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
@@ -281,23 +279,21 @@ public class RepositoryObjectFactory {
     * Creates a new file object with the given PID.
     *
     * @param path
-    *            Repository path where the binary will be created
+    *        Repository path where the binary will be created
     * @param slug
-    *            Name in the path for the binary resource. Optional.
+    *        Name in the path for the binary resource. Optional.
     * @param content
-    *            Input stream containing the binary content for this resource.
+    *        Input stream containing the binary content for this resource.
     * @param filename
-    *            Filename of the binary content. Optional.
+    *        Filename of the binary content. Optional.
     * @param mimetype
-    *            Mimetype of the content. Optional.
+    *        Mimetype of the content. Optional.
     * @param checksum
-    *            SHA-1 digest of the content. Optional.
+    *        SHA-1 digest of the content. Optional.
     * @param pid
     * @param model
-    *            Model containing additional triples to add to the new binary's
-    *            metadata. Optional
+    *        Model containing additional triples to add to the new binary's metadata. Optional
     * @return URI of the newly created binary
-    * @return
     * @throws FedoraException
     */
     public URI createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
@@ -310,15 +306,15 @@ public class RepositoryObjectFactory {
        // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         try (FcrepoResponse response = getClient().post(path)
-            .slug(slug)
-            .body(content, mimetype)
-            .filename(filename)
-            .digest(checksum)
-            .perform()) {
-                resultUri = response.getLocation();
-                describedBy = response.getLinkHeaders("describedby").get(0);
+                .slug(slug)
+                .body(content, mimetype)
+                .filename(filename)
+                .digest(checksum)
+                .perform()) {
+            resultUri = response.getLocation();
+            describedBy = response.getLinkHeaders("describedby").get(0);
         } catch (IOException e) {
-               throw new FedoraException("Unable to create binary at " + path, e);
+            throw new FedoraException("Unable to create binary at " + path, e);
         } catch (FcrepoOperationFailedException e) {
             if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
                 throw new ChecksumMismatchException("Failed to create binary for " + path + ", provided SHA1 checksum "
@@ -471,8 +467,8 @@ public class RepositoryObjectFactory {
 
     private void createContentContainerObject(URI path, Model model) throws FedoraException {
         try (FcrepoResponse response = getClient().put(path)
-            .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-            .perform()) {
+                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                .perform()) {
 
              URI createdUri = response.getLocation();
 
