@@ -24,9 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.camel.Exchange;
@@ -44,12 +41,11 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
- *
+ * 
  * @author lfarrell
  *
  */
@@ -79,16 +75,14 @@ public class FulltextProcessor implements Processor {
 
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
-        PID pid = PIDs.get(binaryUri);
-
-        String text = extractText(binaryPath, pid);
+        String text = extractText(binaryPath);
         int retryAttempt = 0;
 
         InputStream binaryStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
 
         while (true) {
             try {
-                BinaryObject binary = repository.getBinary(pid);
+                BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
                 FileObject parent = (FileObject) binary.getParent();
 
                 parent.addDerivative(slug, binaryStream, fileName, MIMETYPE, PcdmUse.ExtractedText);
@@ -109,34 +103,15 @@ public class FulltextProcessor implements Processor {
         }
     }
 
-    private String extractText(String filepath, PID pid) throws IOException, SAXException, TikaException {
-        File file = new File(filepath);
-        // Download the binary if it couldn't be located by file path
-        if (!file.exists()) {
-            file = downloadBinary(pid);
-        }
-
+    private String extractText(String filepath) throws IOException, SAXException, TikaException {
         BodyContentHandler handler = new BodyContentHandler();
 
         AutoDetectParser parser = new AutoDetectParser();
         Metadata metadata = new Metadata();
 
-        try (InputStream stream = new FileInputStream(file)) {
+        try (InputStream stream = new FileInputStream(new File(filepath))) {
             parser.parse(stream, handler, metadata);
             return handler.toString();
         }
-    }
-
-    private File downloadBinary(PID pid) throws IOException {
-        File binaryFile = File.createTempFile(pid.getId(), null);
-
-        BinaryObject binary = repository.getBinary(pid);
-        try (InputStream response = binary.getBinaryStream()) {
-            Files.copy(response, Paths.get(binaryFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return binaryFile;
     }
 }

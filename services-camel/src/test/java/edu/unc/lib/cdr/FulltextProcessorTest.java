@@ -28,7 +28,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -148,30 +147,5 @@ public class FulltextProcessorTest {
         } finally {
             verify(binary, times(maxRetries + 1)).getParent();
         }
-    }
-
-    @Test
-    public void extractFromFedoraTest() throws Exception {
-        File nonexistent = File.createTempFile("text", null);
-        nonexistent.delete();
-
-        // Returning a path that doesn't exist as the binary uri
-        when(message.getHeader(eq(CdrBinaryPath)))
-                .thenReturn(nonexistent.getAbsolutePath());
-
-        // Return the actual contents when requesting from fedora
-        when(binary.getBinaryStream())
-                .thenReturn(new FileInputStream(file));
-        when(binary.getParent()).thenReturn(parent);
-
-        processor.process(exchange);
-
-        verify(parent).addDerivative(eq(slug), inputStreamCaptor.capture(),
-                eq(fileName), eq(MIMETYPE), eq(PcdmUse.ExtractedText));
-        InputStream request = inputStreamCaptor.getValue();
-        String extractedText = new BufferedReader(new InputStreamReader(request))
-                .lines().collect(Collectors.joining("\n"));
-
-        assertEquals(testText, extractedText);
     }
 }
