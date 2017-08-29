@@ -17,6 +17,7 @@ package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,11 +26,16 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpStatus;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +53,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  *
@@ -65,6 +72,10 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
 
     @Autowired
     protected Repository repository;
+    @Autowired
+    protected String baseAddress;
+    @Autowired
+    protected FcrepoClient client;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -78,7 +89,7 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
     private ArgumentCaptor<String> stringCaptor;
 
     @Before
-    public void init() throws IOException {
+    public void init() throws Exception {
         initMocks(this);
 
         PIDs.setRepository(repository);
@@ -88,6 +99,8 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getOut()).thenReturn(message);
+
+        createBaseContainer(CONTENT_BASE);
 
         PID pid = repository.mintContentPid();
         WorkObject work = repository.createWorkObject(pid);
@@ -124,5 +137,19 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
         File binaryFile = new File(filePath);
         assertTrue(binaryFile.exists());
         assertEquals(BINARY_CONTENT, FileUtils.readFileToString(binaryFile));
+    }
+
+    private URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+        URI baseUri = URI.create(URIUtil.join(baseAddress, name));
+        // Create a parent object to put the binary into
+        try (FcrepoResponse response = client.put(baseUri).perform()) {
+            return response.getLocation();
+        } catch(FcrepoOperationFailedException e) {
+            if (e.getStatusCode() != HttpStatus.SC_CONFLICT) {
+                throw e;
+            }
+            // Ignore duplicate creation of base container
+            return baseUri;
+        }
     }
 }
