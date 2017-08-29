@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getBaseUri;
 
 import java.net.URI;
 import java.util.regex.Matcher;
@@ -32,12 +33,13 @@ import edu.unc.lib.dl.fedora.PID;
  * @author bbpennel
  *
  */
-public abstract class PIDs {
+public class PIDs {
 
     private static final Logger log = LoggerFactory.getLogger(PIDs.class);
 
-    private static RepositoryPaths repoPaths;
+    private PIDs() {
 
+    }
     /**
      * Get a PID object for the given URI.
      *
@@ -66,9 +68,9 @@ public abstract class PIDs {
         String componentPath;
         String repositoryPath;
 
-        if (value.startsWith(repoPaths.getBaseUri())) {
+        if (value.startsWith(getBaseUri())) {
             // Given value was a fedora path. Remove the base and decompose
-            String path = value.substring(repoPaths.getBaseUri().length());
+            String path = value.substring(getBaseUri().length());
 
             Matcher matcher = RepositoryPathConstants.repositoryPathPattern.matcher(path);
             if (matcher.matches()) {
@@ -133,10 +135,6 @@ public abstract class PIDs {
         return get(qualifier + "/" + id);
     }
 
-    public static void setRepositoryPaths(RepositoryPaths repoPaths) {
-        PIDs.repoPaths = repoPaths;
-    }
-
     /**
      * Expands the identifier for a repository object into the full repository path.
      *
@@ -147,7 +145,7 @@ public abstract class PIDs {
      * @return
      */
     private static String getRepositoryPath(String id, String qualifier, String componentPath, boolean expand) {
-        StringBuilder builder = new StringBuilder(repoPaths.getBaseUri());
+        StringBuilder builder = new StringBuilder(getBaseUri());
         builder.append(qualifier).append('/');
 
         if (expand) {

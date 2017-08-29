@@ -22,16 +22,28 @@ import edu.unc.lib.dl.util.URIUtil;
 
 public class RepositoryPaths {
 
-    private String policiesBase;
-    private String vocabulariesBase;
-    private String depositRecordBase;
-    private String contentBase;
-    private String agentsBase;
-    private String serverUri;
-    private String baseUri;
-    private String baseHost;
+    private static String policiesBase;
+    private static String vocabulariesBase;
+    private static String depositRecordBase;
+    private static String contentBase;
+    private static String agentsBase;
+    private static String serverUri;
+    private static String baseUri;
+    private static String baseHost;
 
-    protected URI getMetadataUri(PID pid) {
+    static {
+        baseUri = System.getProperty("fcrepo.baseUri");
+        if (!baseUri.endsWith("/")) {
+            baseUri += "/";
+        }
+        contentBase = URIUtil.join(baseUri, RepositoryPathConstants.CONTENT_BASE);
+    }
+
+    private RepositoryPaths() {
+
+    }
+
+    protected static URI getMetadataUri(PID pid) {
         String path = pid.getRepositoryPath();
         if (!path.endsWith(RepositoryPathConstants.FCR_METADATA)) {
             return URI.create(URIUtil.join(path,
@@ -41,74 +53,35 @@ public class RepositoryPaths {
         }
     }
 
-    public String getServerUri() {
+    public static String getServerUri() {
         return serverUri;
     }
 
-    public String getBaseUri() {
+    public static String getBaseUri() {
         return baseUri;
     }
 
-    public String getBaseHost() {
+    public static String getBaseHost() {
         return baseHost;
     }
 
-    public String getContentBase() {
+    public static String getContentBase() {
         return contentBase;
     }
 
-    public String getDepositRecordBase() {
+    public static String getDepositRecordBase() {
         return depositRecordBase;
     }
 
-    public String getAgentsBase() {
+    public static String getAgentsBase() {
         return agentsBase;
     }
 
-    public String getPoliciesBase() {
+    public static String getPoliciesBase() {
         return policiesBase;
     }
 
-    public String getVocabulariesBase() {
+    public static String getVocabulariesBase() {
         return vocabulariesBase;
     }
-
-    public void setDepositRecordBase(String depositRecordBase) {
-        this.depositRecordBase = depositRecordBase;
-    }
-
-    public void setVocabulariesBase(String vocabulariesBase) {
-        this.vocabulariesBase = vocabulariesBase;
-    }
-
-    public void setContentBase(String contentBase) {
-        this.contentBase = contentBase;
-    }
-
-    public void setAgentsBase(String agentsBase) {
-        this.agentsBase = agentsBase;
-    }
-
-    public void setPoliciesBase(String policiesBase) {
-        this.policiesBase = policiesBase;
-    }
-
-    public void setServerUri(String serverUri) {
-        this.serverUri = serverUri;
-        if (!serverUri.endsWith("/")) {
-            this.serverUri += "/";
-        }
-    }
-
-    public void setBaseUri(String baseUri) {
-        this.baseUri = baseUri;
-        if (!baseUri.endsWith("/")) {
-            this.baseUri += "/";
-        }
-    }
-
-    public void setBaseHost(String baseHost) {
-        this.baseHost = baseHost;
-    }
-
 }
