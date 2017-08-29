@@ -44,7 +44,7 @@ public class SetRelationsFilter implements IndexDocumentFilter{
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
         log.debug("Applying setRelationsFilter");
 
-        List<String> relations = new ArrayList<String>();
+        List<String> relations = new ArrayList<>();
 
         ContentObject contentObj = dip.getContentObject();
 
@@ -52,8 +52,10 @@ public class SetRelationsFilter implements IndexDocumentFilter{
         if (contentObj instanceof WorkObject) {
             primaryObj = ((WorkObject) contentObj).getPrimaryObject();
 
-            // store primary-object relation
-            relations.add(Cdr.primaryObject.toString() + "|" + primaryObj.getPid().getId());
+            if (primaryObj != null) {
+                // store primary-object relation
+                relations.add(Cdr.primaryObject.toString() + "|" + primaryObj.getPid().getId());
+            }
         }
 
         // retrieve and store invalid terms
