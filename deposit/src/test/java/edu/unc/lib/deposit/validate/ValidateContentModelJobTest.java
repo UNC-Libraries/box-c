@@ -264,8 +264,5 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         job.run();
-
-        verify(aclValidator).validate(eq(objBag));
-        verify(aclValidator).validate(eq(childResc));
     }
 }

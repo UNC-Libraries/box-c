@@ -244,7 +244,7 @@ public class CDRMETSGraphExtractor {
                 }
 
                 String patronAccessVal = aclEl.getAttributeValue(
-                        "patronAccessVal", METS_ACL_NS);
+                        "patronAccess", METS_ACL_NS);
                 if (patronAccessVal != null) {
                     m.add(object, CdrAcl.patronAccess, patronAccessVal);
                 }

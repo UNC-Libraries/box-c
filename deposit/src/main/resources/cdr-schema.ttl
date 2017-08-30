@@ -108,7 +108,7 @@ cdr-acl:patronAccess a rdfs:Property ;
         cdr:Folder,
         cdr:FileObject ;
     rdfs:range xsd:string ;
-    rdfs:comment "Grants the specified category of users patron access to this object and its children, unless further restricted by the child.  Cannot exceed the level of patron access granted on a parent object.  Valid values are: 'authenticated, 'none', 'parent'.   Applies to cdr:FileObject, cdr:Work, cdr:Folder, and cdr:Collection objects." .
+    rdfs:comment "Grants the specified category of users patron access to this object and its children, unless further restricted by the child.  Cannot exceed the level of patron access granted on a parent object.  Valid values are: 'authenticated, 'none', 'parent'.   Applies to cdr:FileObject, cdr:Work, and cdr:Folder objects." .
 
 cdr-acl:markedForDeletion a rdfs:Property ;
     rdfs:label "Marked for Deletion" ;

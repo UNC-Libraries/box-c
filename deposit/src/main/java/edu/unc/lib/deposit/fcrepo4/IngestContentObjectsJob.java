@@ -353,7 +353,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
      * @param childResc
      * @param addAipProperties
      *            if true, then acl and other properties from the child resource
-     *            will be added to will be added to the file object's aip
+     *            will be added to the file object's aip
      * @return
      * @throws DepositException
      */

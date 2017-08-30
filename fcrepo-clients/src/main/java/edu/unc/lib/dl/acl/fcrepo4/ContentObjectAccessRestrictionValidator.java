@@ -51,7 +51,7 @@ import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
  * Validator which determines if a provided model contains access restriction
- * properties which are value for the type of content object described.
+ * properties which are valid for the type of content object described.
  *
  * @author bbpennel
  *

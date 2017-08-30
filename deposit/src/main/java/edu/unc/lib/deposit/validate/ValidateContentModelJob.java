@@ -60,10 +60,19 @@ public class ValidateContentModelJob extends AbstractDepositJob{
     private final Model cdrSchema;
     private final Reasoner reasoner;
 
+    /**
+     * Constructs a new validation job with no job uuid or deposit uuid
+     */
     public ValidateContentModelJob() {
         this(null, null);
     }
 
+    /**
+     * Constructs a new validation job
+     *
+     * @param uuid job uuid
+     * @param depositUUID deposit uuid
+     */
     public ValidateContentModelJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
 
@@ -141,7 +150,7 @@ public class ValidateContentModelJob extends AbstractDepositJob{
             return;
         }
 
-        if (iterator != null && parentResc.hasProperty(RDF.type, Cdr.FileObject)) {
+        if (parentResc.hasProperty(RDF.type, Cdr.FileObject)) {
             failJob(null, "FileObject {0} cannot contain children, but was provided as a container",
                     parentResc.getURI());
         }
