@@ -284,7 +284,7 @@ public class RepositoryObjectFactory {
                 .slug(slug)
                 .body(content, mimetype)
                 .filename(filename)
-                .digest(checksum)
+                .digestSha1(checksum)
                 .perform()) {
 
             resultUri = response.getLocation();

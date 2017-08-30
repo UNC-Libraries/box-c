@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.METS_NS;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -29,6 +30,11 @@ import java.util.regex.Pattern;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -45,21 +51,15 @@ import org.jdom2.xpath.XPathFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
+import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
 
@@ -210,25 +210,49 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
     }
 
     private void extractEPDCX(Document mets, Resource rootResource) {
-    // extract EPDCX from mets
-        FileOutputStream fos = null;
+        // extract EPDCX from mets
+        Document modsDoc = null;
         try {
-            Element epdcxEl = mets.getRootElement().getChild("dmdSec", METS_NS).getChild("mdWrap", METS_NS)
-                    .getChild("xmlData", METS_NS).getChild("descriptionSet", EPDCX_NS);
+            Element epdcxEl = getEpcdxElement(mets);
+            if (epdcxEl == null) {
+                log.debug("No EPDCX metadata provided in package for {}", rootResource.getURI());
+                return;
+            }
 
             JDOMResult mods = new JDOMResult();
             epdcx2modsTransformer.transform(new JDOMSource(epdcxEl), mods);
-            final File modsFolder = getDescriptionDir();
-            modsFolder.mkdir();
-            File modsFile = new File(modsFolder, PIDs.get(rootResource.getURI()).getUUID() + ".xml");
-            fos = new FileOutputStream(modsFile);
-            new XMLOutputter(Format.getPrettyFormat()).output(mods.getDocument(), fos);
-        } catch (NullPointerException ignored) {
-            log.debug("NPE", ignored);
-            // no embedded metadata
-        } catch (TransformerException | IOException e) {
+            modsDoc = mods.getDocument();
+        } catch (TransformerException e) {
             failJob(e, "Failed during transform of EPDCX to MODS.");
         }
+
+        final File modsFolder = getDescriptionDir();
+        modsFolder.mkdir();
+        File modsFile = new File(modsFolder, PIDs.get(rootResource.getURI()).getUUID() + ".xml");
+        try (OutputStream fos = new FileOutputStream(modsFile)) {
+            new XMLOutputter(Format.getPrettyFormat()).output(modsDoc, fos);
+        } catch (IOException e) {
+            failJob(e, "Failed to write transformed EPDCX to MODS at path {}", modsFile.getAbsolutePath());
+        }
+    }
+
+    private Element getEpcdxElement(Document mets) {
+        Element dmdEl = mets.getRootElement().getChild("dmdSec", METS_NS);
+        if (dmdEl == null) {
+            return null;
+        }
+        Element mdWrapEl = dmdEl.getChild("mdWrap", METS_NS);
+        if (mdWrapEl == null) {
+            return null;
+        }
+
+        Element xmlDataEl = mdWrapEl.getChild("xmlData", METS_NS);
+        if (xmlDataEl == null) {
+            return null;
+        }
+
+        Element descEl = xmlDataEl.getChild("descriptionSet", EPDCX_NS);
+        return descEl;
     }
 
     private void addSourceMetadata(Model model, Resource rootResource, String metadataFileName)

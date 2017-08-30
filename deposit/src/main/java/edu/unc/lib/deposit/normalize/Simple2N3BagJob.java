@@ -16,23 +16,18 @@
 package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.util.UriUtils;
 
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.util.UriUtils;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -108,25 +103,6 @@ public class Simple2N3BagJob extends AbstractDepositJob {
             failJob("Failed to find upload file for simple deposit: " + filename,
                     contentFile.getAbsolutePath());
         }
-
-        String checksum = null;
-        String fullPath = contentFile.toString();
-
-        try {
-            checksum = DigestUtils.md5Hex(new FileInputStream(fullPath));
-
-            PremisLogger premisDepositLogger = getPremisLogger(PIDs.get(mainResource.toString()));
-            Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.MessageDigestCalculation)
-                    .addEventDetail("Checksum for file is {0}", checksum)
-                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                    .create();
-
-            premisDepositLogger.writeEvent(premisDepositEvent);
-        } catch (IOException e) {
-            failJob(e, "Unable to compute checksum. File not found at {0}", fullPath);
-        }
-
-        model.add(mainResource, CdrDeposit.md5sum, checksum);
 
         if (alabel == null) {
             alabel = contentFile.getName();

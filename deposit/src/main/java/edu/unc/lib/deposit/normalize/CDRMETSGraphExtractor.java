@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.XLINK_NS;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -163,19 +164,13 @@ public class CDRMETSGraphExtractor {
                     .getChild("xmlData", METS_NS).getChild("mods", MODS_V3_NS);
             String pid = METSHelper.getPIDURI(div);
             String path = f.getPath(pid);
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(path);
+
+            try (OutputStream fos = new FileOutputStream(path)) {
                 Document mods = new Document();
                 mods.setRootElement(modsEl.detach());
                 new XMLOutputter(Format.getPrettyFormat()).output(mods, fos);
             } catch (IOException e) {
                 throw new Error("unexpected exception", e);
-            } finally {
-                try {
-                    fos.close();
-                } catch (IOException ignored) {
-                }
             }
         }
     }

@@ -25,11 +25,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -37,36 +32,40 @@ import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
-    
+
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
 
     private DirectoryToBagJob job;
 
     private Map<String, String> status;
-    
+
     private File depositDirectory;
 
     @Before
     public void setup() throws Exception {
         depositDirectory = tmpDir.newFolder("directory-deposit");
-        
+
         File emptyDir = new File(depositDirectory, "empty_test");
         emptyDir.mkdir();
-        
+
         File testDirectory = new File(depositDirectory, "test");
         testDirectory.mkdir();
-        
+
         File testFile = new File(testDirectory, "lorem.txt");
         testFile.createNewFile();
-        
-        status = new HashMap<String, String>();
+
+        status = new HashMap<>();
 
         when(depositStatusFactory.get(anyString())).thenReturn(status);
 
@@ -94,42 +93,40 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         Model model = job.getReadOnlyModel();
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
-        
+
         assertEquals(depositBag.size(), 1);
-        
+
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
         assertEquals("Content model was not set", RDF.Bag, bagFolder.getPropertyResourceValue(RDF.type));
-        
+
         NodeIterator iterator = bagFolder.iterator();
         Resource emptyFolder = (Resource) iterator.next();
         assertEquals("Folder label was not set", "empty_test", emptyFolder.getProperty(CdrDeposit.label).getString());
         assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
-        
+
         Bag emptyBag = model.getBag(emptyFolder.getURI());
-        
+
         assertEquals(emptyBag.size(), 0);
-        
+
         Resource folder = (Resource) iterator.next();
-        
+
         assertEquals("Folder label was not set", "test", folder.getProperty(CdrDeposit.label).getString());
         assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
-        
+
         Bag childrenBag = model.getBag(folder.getURI());
-        
+
         assertEquals(childrenBag.size(), 1);
 
         Resource file = (Resource) childrenBag.iterator().next();
-        
+
         assertEquals("File label was not set", "lorem.txt",
                 file.getProperty(CdrDeposit.label).getString());
         assertEquals("Content model was not set", Cdr.FileObject.getURI(),
                 file.getPropertyResourceValue(RDF.type).getURI());
-        assertEquals("Checksum was not set", "d41d8cd98f00b204e9800998ecf8427e",
-                file.getProperty(CdrDeposit.md5sum).getString());
-        
+
         String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
-        
+
     }
 }

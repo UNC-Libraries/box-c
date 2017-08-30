@@ -23,6 +23,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -51,10 +53,16 @@ import org.mockito.Mock;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.test.SelfReturningAnswer;
 import edu.unc.lib.dl.util.DepositConstants;
 
 /**
@@ -91,6 +99,12 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     @Mock
     private HttpEntity respEntity;
 
+    @Mock
+    private PremisLoggerFactory premisLoggerFactory;
+    @Mock
+    private PremisLogger premisLogger;
+    private PremisEventBuilder premisEventBuilder;
+
     private ExtractTechnicalMetadataJob job;
 
     private Bag depositBag;
@@ -106,6 +120,13 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.setHttpClient(httpClient);
         job.setProcessFilesLocally(true);
         job.setBaseFitsUri(FITS_BASE_URI);
+
+        // Setup logging dependencies
+        premisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+        when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+                .thenReturn(premisLogger);
+        when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
+        job.setPremisLoggerFactory(premisLoggerFactory);
 
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
@@ -144,6 +165,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.run();
 
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verify(premisLogger).buildEvent(eq(Premis.MessageDigestCalculation));
     }
 
     @Test
