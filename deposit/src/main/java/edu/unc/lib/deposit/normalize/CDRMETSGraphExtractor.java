@@ -45,7 +45,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
-import edu.unc.lib.dl.xml.NamespaceConstants;
 
 /**
  *
@@ -244,12 +243,19 @@ public class CDRMETSGraphExtractor {
                             XSDDatatype.XSDdateTime);
                 }
 
+                String patronAccessVal = aclEl.getAttributeValue(
+                        "patronAccessVal", METS_ACL_NS);
+                if (patronAccessVal != null) {
+                    m.add(object, CdrAcl.patronAccess, patronAccessVal);
+                }
+
                 // add grants to groups
                 for (Object o : aclEl.getChildren("grant", METS_ACL_NS)) {
                     Element grant = (Element) o;
                     String role = grant.getAttributeValue("role", METS_ACL_NS);
                     String group = grant.getAttributeValue("group", METS_ACL_NS);
-                    String roleURI = NamespaceConstants.CDR_ROLE_NS_URI + role;
+                    String roleURI = CdrAcl.NS + role;
+                    LOG.debug("Found grant of role {} with group {}", roleURI, group);
                     Property roleProp = m.createProperty(roleURI);
                     m.add(object, roleProp, group);
                 }
