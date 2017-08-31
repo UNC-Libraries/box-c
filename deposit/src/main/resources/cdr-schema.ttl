@@ -114,9 +114,11 @@ cdr-acl:markedForDeletion a rdfs:Property ;
     rdfs:label "Marked for Deletion" ;
     rdfs:domain cdr:Work,
         cdr:Folder,
-        cdr:FileObject ;
+        cdr:FileObject,
+        cdr:Collection,
+        cdr:AdminUnit ;
     rdfs:range xsd:boolean ;
-    rdfs:comment "Indicates that the object has been selected for deletion from the repository, and removes patron access. Applies to cdr:FileObject, cdr:Work, and cdr:Folder objects." .
+    rdfs:comment "Indicates that the object has been selected for deletion from the repository, and removes patron access. Applies to cdr:FileObject, cdr:Work, cdr:Folder, cdr:Collection and cdr:AdminUnit objects." .
     
 cdr-acl:owner a rdfs:Property ;
     rdfs:label "Owner" ;
