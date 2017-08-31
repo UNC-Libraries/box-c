@@ -71,9 +71,6 @@ public class ReplicationProcessorTest {
     private BinaryObject binary;
 
     @Mock
-    private BinaryObject binaryFcrepo;
-
-    @Mock
     private Repository repository;
 
     @Mock
@@ -89,7 +86,7 @@ public class ReplicationProcessorTest {
         replicationDir = tmpFolder.newFolder("repl");
         replicationDir.mkdir();
 
-        processor = new ReplicationProcessor(repository, replicationDir.getAbsolutePath(), maxRetries, retryDelay);
+        processor = new ReplicationProcessor(replicationDir.getAbsolutePath(), maxRetries, retryDelay);
 
         file = File.createTempFile(fileName, "txt");
         file.deleteOnExit();
@@ -108,7 +105,7 @@ public class ReplicationProcessorTest {
                 .thenReturn("http://fedora/test/replicate");
 
         when(message.getHeader(eq(CdrBinaryUri)))
-                .thenReturn("http://fedora/test/uuid:1234");
+                .thenReturn("http://fedora/content/12/34/56/78/1234567890");
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("text/plain");
@@ -139,20 +136,9 @@ public class ReplicationProcessorTest {
         assertEquals(localChecksum, remoteChecksum);
     }
 
-    @Test
-    public void testReplicateFileFromFedora() throws Exception {
-        when(message.getHeader(eq(CdrBinaryPath)))
-                .thenReturn(badReplicationLocations);
-
-        processor.process(exchange);
-
-        String remoteChecksum = DigestUtils.sha1Hex(new ByteArrayInputStream(testText.getBytes()));
-        assertEquals(localChecksum, remoteChecksum);
-    }
-
     @Test(expected = ReplicationDestinationUnavailableException.class)
     public void testBadReplicationLocations() throws Exception {
-        processor = new ReplicationProcessor(repository, badReplicationLocations, maxRetries, retryDelay);
+        processor = new ReplicationProcessor(badReplicationLocations, maxRetries, retryDelay);
     }
 
     @Test(expected = RuntimeException.class)

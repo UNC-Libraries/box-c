@@ -147,5 +147,7 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#DepositRecord" );
     public static final Resource SourceMetadata = createResource(
             "http://cdr.unc.edu/definitions/model#SourceMetadata" );
+    public static final Resource DescriptiveMetadata = createResource(
+            "http://cdr.unc.edu/definitions/model#DescriptiveMetadata" );
 
 }

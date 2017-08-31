@@ -36,7 +36,6 @@ import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.exceptions.base.MockitoException;
 
@@ -60,6 +59,8 @@ public class AddDerivativeProcessorTest {
     private AddDerivativeProcessor processor;
 
     private String extensionlessPath;
+
+    private String extensionlessName;
 
     @Mock
     private BinaryObject binary;
@@ -102,6 +103,7 @@ public class AddDerivativeProcessorTest {
         extensionlessPath = file.getAbsolutePath().split("\\.")[0];
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(extensionlessPath);
+        extensionlessName= new File(extensionlessPath).getName();
 
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
         when(message.getBody()).thenReturn(result);
@@ -116,8 +118,8 @@ public class AddDerivativeProcessorTest {
 
         processor.process(exchange);
 
-        ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-        verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
+        verify(parent).addDerivative(eq(slug), any(InputStream.class), eq(extensionlessName),
+                eq("image/png"), eq(PcdmUse.ThumbnailImage));
     }
 
     @Test
@@ -129,10 +131,9 @@ public class AddDerivativeProcessorTest {
 
         processor.process(exchange);
 
-        ArgumentCaptor<InputStream> requestCaptor = ArgumentCaptor.forClass(InputStream.class);
-
         verify(binary, times(2)).getParent();
-        verify(parent).addDerivative(eq(slug), requestCaptor.capture(), eq(extensionlessPath), eq("image/png"), eq(PcdmUse.ThumbnailImage));
+        verify(parent).addDerivative(eq(slug), any(InputStream.class), eq(extensionlessName),
+                eq("image/png"), eq(PcdmUse.ThumbnailImage));
     }
 
     @Test(expected = RuntimeException.class)

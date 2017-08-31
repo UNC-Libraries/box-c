@@ -99,6 +99,7 @@ public enum UserRole {
         try {
             this.predicate = predicate;
             this.uri = new URI(CdrAcl.getURI() + predicate);
+            this.propertyString = "";
             HashSet<Permission> mypermissions = new HashSet<>(perms.length);
             Collections.addAll(mypermissions, perms);
             this.permissions = Collections.unmodifiableSet(mypermissions);
@@ -166,6 +167,22 @@ public enum UserRole {
         return Arrays.stream(UserRole.values())
             .filter(p -> p.isStaffRole != null && !p.isStaffRole)
             .collect(Collectors.toSet());
+    }
+
+    /**
+     * Returns the UserRole which has a property string matching the provided value.
+     *
+     * @param property
+     * @return
+     */
+    public static UserRole getRoleByProperty(String property) {
+        for (UserRole role : values()) {
+            if (role.getPropertyString().equals(property)) {
+                return role;
+            }
+        }
+
+        return null;
     }
 
     /**
