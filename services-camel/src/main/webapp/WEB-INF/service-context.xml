@@ -420,7 +420,7 @@
 	
 	<bean id="dipDataLoader"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
-		<property name="repository" ref="repository"></property>
+		<property name="repository" ref="repository" />
 	</bean>
 	
 	<bean id="dipFactory"
