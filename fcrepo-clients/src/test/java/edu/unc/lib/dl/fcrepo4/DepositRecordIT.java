@@ -58,7 +58,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     @Before
     public void init() {
         // Generate a new ID every time so that tests don't conflict
-        pid = repository.mintDepositRecordPid();
+        pid = pidMinter.mintDepositRecordPid();
     }
 
     @Test
@@ -66,7 +66,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repository.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(pid, model);
 
         assertNotNull(record);
 
@@ -79,16 +79,16 @@ public class DepositRecordIT extends AbstractFedoraIT {
         client.put(pid.getRepositoryUri()).perform().close();
 
         // Try (and fail) to retrieve it as a deposit record
-        repository.getDepositRecord(pid);
+        repoObjLoader.getDepositRecord(pid);
     }
 
     @Test
     public void getDepositRecord() throws Exception {
         Model model = getDepositRecordModel();
 
-        repository.createDepositRecord(pid, model);
+        repoObjFactory.createDepositRecord(pid, model);
 
-        DepositRecord record = repository.getDepositRecord(pid);
+        DepositRecord record = repoObjLoader.getDepositRecord(pid);
 
         assertTrue(record.getTypes().contains(Cdr.DepositRecord.getURI()));
     }
@@ -98,7 +98,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repository.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(pid, model);
 
         String bodyString1 = "Manifest info";
         String filename1 = "manifest1.txt";
@@ -145,7 +145,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         String details = "Event details";
         // Prep the events prior to ingest
-        PremisLogger logger = new FilePremisLogger(pid, null, repository);
+        PremisLogger logger = new FilePremisLogger(pid, null, pidMinter);
         logger.buildEvent(Premis.Ingestion)
                 .addAuthorizingAgent(SoftwareAgent.depositService.toString())
                 .addEventDetail("Event details")
@@ -155,7 +155,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
                 .write();
 
         // Push the events out to repository
-        DepositRecord record = repository.createDepositRecord(pid, model)
+        DepositRecord record = repoObjFactory.createDepositRecord(pid, model)
             .addPremisEvents(logger.getEvents());
 
         // Retrieve all the events added to this object
@@ -174,7 +174,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     @Test
     public void addObjectsTest() throws Exception {
         Model model = getDepositRecordModel();
-        DepositRecord record = repository.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(pid, model);
 
         URI obj1Uri;
         URI obj2Uri;

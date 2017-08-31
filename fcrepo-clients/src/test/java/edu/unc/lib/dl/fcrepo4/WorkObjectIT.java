@@ -40,6 +40,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class WorkObjectIT extends AbstractFedoraIT {
@@ -48,7 +49,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Before
     public void init() {
-        pid = repository.mintContentPid();
+        pid = pidMinter.mintContentPid();
     }
 
     @Test
@@ -57,7 +58,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         Resource resc = model.createResource(pid.getRepositoryPath());
         resc.addProperty(DcElements.title, "Title");
 
-        WorkObject obj = repository.createWorkObject(pid, model);
+        WorkObject obj = repoObjFactory.createWorkObject(pid, model);
 
         assertTrue(obj.getTypes().contains(Cdr.Work.getURI()));
         assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
@@ -67,7 +68,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addDataFileTest() throws Exception {
-        WorkObject obj = repository.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject(pid);
 
         String bodyString = "Content";
         String filename = "file.txt";
@@ -94,7 +95,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addPrimaryObjectAndSupplements() throws Exception {
-        WorkObject obj = repository.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject(pid);
 
         // Create the primary object
         String bodyString = "Primary object";
@@ -137,7 +138,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addModsTest() throws Exception {
-        WorkObject obj = repository.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject(pid);
         String bodyString = "some MODS content";
         InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
         FileObject fileObj = obj.addDescription(modsStream);
@@ -154,7 +155,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addSourceMdTest() throws Exception {
-        WorkObject anotherObj = repository.createWorkObject(pid);
+        WorkObject anotherObj = repoObjFactory.createWorkObject(pid);
         String sourceProfile = "some source md";
         String sourceMdBodyString = "source md content";
         String modsBodyString = "MODS content";

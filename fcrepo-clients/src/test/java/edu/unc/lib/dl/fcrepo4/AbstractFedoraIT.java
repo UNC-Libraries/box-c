@@ -43,6 +43,15 @@ public class AbstractFedoraIT {
     @Autowired
     protected FcrepoClient client;
 
+    @Autowired
+    protected RepositoryPIDMinter pidMinter;
+    @Autowired
+    protected RepositoryObjectFactory repoObjFactory;
+    @Autowired
+    protected RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    protected TransactionManager txManager;
+
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
         // Create a parent object to put the binary into

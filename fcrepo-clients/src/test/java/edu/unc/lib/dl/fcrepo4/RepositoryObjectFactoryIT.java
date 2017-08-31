@@ -26,16 +26,16 @@ import java.net.URI;
 import java.util.stream.Collectors;
 
 import org.apache.activemq.util.ByteArrayInputStream;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
-
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -61,7 +61,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
                 + "/" + UUID.randomUUID().toString();
         URI uri = URI.create(path);
 
-        URI resultUri = factory.createDepositRecord(uri, null);
+        URI resultUri = factory.createDepositRecord(pidMinter.mintDepositRecordPid(), null);
         assertEquals("Requested URI did not match result", uri, resultUri);
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -92,10 +92,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String filename = "test.txt";
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        PID pid = pidMinter.mintContentPid();
 
-        URI respUri = factory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, model);
+        BinaryObject binObj = factory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, pid, model);
 
-        try (FcrepoResponse resp = client.get(respUri).perform()) {
+        try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
                     .collect(Collectors.joining("\n"));
 
@@ -209,23 +210,22 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createCollectionObjectTest() throws Exception {
-        String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
-        URI uri = URI.create(objectPath);
+        PID pid = pidMinter.mintContentPid();
 
-        URI resultUri = factory.createCollectionObject(uri, null);
-        assertEquals("Requested URI did not match result", uri, resultUri);
+        CollectionObject obj = factory.createCollectionObject(pid);
+        URI uri = pid.getRepositoryUri();
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
-
-            Resource respResc = respModel.getResource(objectPath);
+            String objPath = uri.getPath();
+            Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Collection));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 }

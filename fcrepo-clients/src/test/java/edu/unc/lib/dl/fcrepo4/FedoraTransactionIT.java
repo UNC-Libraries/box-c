@@ -50,7 +50,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 
     @Before
     public void init() {
-        pid = repository.mintContentPid();
+        pid = pidMinter.mintContentPid();
         model = ModelFactory.createDefaultModel();
         Resource resc = model.createResource(pid.getRepositoryPath());
         resc.addProperty(DcElements.title, "Folder Title");
@@ -58,11 +58,11 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 
     @Test
     public void createTxTest() throws Exception {
-        FedoraTransaction tx = repository.startTransaction();
+        FedoraTransaction tx = txManager.startTransaction();
 
         FolderObject obj = null;
         try {
-            obj = repository.createFolderObject(pid, model);
+            obj = repoObjFactory.createFolderObject(pid, model);
 
             assertTrue(FedoraTransaction.hasTxId());
             assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
@@ -80,10 +80,10 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 
     @Test (expected = TransactionCancelledException.class)
     public void createRollbackTxTest() {
-        FedoraTransaction tx = repository.startTransaction();
-        FolderObject obj = repository.createFolderObject(pid, model);
+        FedoraTransaction tx = txManager.startTransaction();
+        FolderObject obj = repoObjFactory.createFolderObject(pid, model);
         tx.cancel();
-        assertNull(repository.getFolderObject(pid));
+        assertNull(repoObjLoader.getFolderObject(pid));
         assertNull(obj.getUri());
         assertFalse(FedoraTransaction.hasTxId());
         assertFalse(FedoraTransaction.isStillAlive());
@@ -91,12 +91,12 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 
     @Test
     public void nestedTxTest() throws Exception {
-        FedoraTransaction parentTx = repository.startTransaction();
-        repository.createFolderObject(pid, model);
+        FedoraTransaction parentTx = txManager.startTransaction();
+        repoObjFactory.createFolderObject(pid, model);
 
-        FedoraTransaction subTx = repository.startTransaction();
-        PID workPid = repository.mintContentPid();
-        repository.createWorkObject(workPid);
+        FedoraTransaction subTx = txManager.startTransaction();
+        PID workPid = pidMinter.mintContentPid();
+        repoObjFactory.createWorkObject(workPid);
         subTx.close();
 
         assertNull(subTx.getTxUri());
@@ -112,8 +112,8 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 
     @Test
     public void cannotAccessObjectOutsideTxTest() throws Exception {
-        FedoraTransaction tx = repository.startTransaction();
-        FolderObject folder = repository.createFolderObject(pid);
+        FedoraTransaction tx = txManager.startTransaction();
+        FolderObject folder = repoObjFactory.createFolderObject(pid);
 
         verifyNonTxStatusCode(folder.getPid(), 404);
         tx.close();
