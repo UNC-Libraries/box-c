@@ -26,8 +26,10 @@ import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
@@ -42,14 +44,19 @@ import edu.unc.lib.dl.util.ObjectPersistenceException;
  */
 public class RepositoryPremisLogger implements PremisLogger {
 
-    private Repository repository;
+    private RepositoryPIDMinter pidMinter;
+    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectFactory repoObjFactory;
     private RepositoryObject repoObject;
 
     private List<PremisEventObject> events;
 
-    public RepositoryPremisLogger(RepositoryObject repoObject, Repository repository) {
+    public RepositoryPremisLogger(RepositoryObject repoObject, RepositoryPIDMinter pidMinter,
+            RepositoryObjectLoader repoObjLoader, RepositoryObjectFactory repoObjFactory) {
         this.repoObject = repoObject;
-        this.repository = repository;
+        this.pidMinter = pidMinter;
+        this.repoObjLoader = repoObjLoader;
+        this.repoObjFactory = repoObjFactory;
     }
 
     @Override
@@ -58,13 +65,13 @@ public class RepositoryPremisLogger implements PremisLogger {
             date = new Date();
         }
 
-        return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
+        return new PremisEventBuilder(pidMinter.mintPremisEventPid(repoObject.getPid()),
                 eventType, date, this);
     }
 
     @Override
     public PremisEventBuilder buildEvent(Resource eventType) {
-        return new PremisEventBuilder(repository.mintPremisEventPid(repoObject.getPid()),
+        return new PremisEventBuilder(pidMinter.mintPremisEventPid(repoObject.getPid()),
                 eventType, new Date(), this);
     }
 
@@ -74,7 +81,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         PID eventPid = PIDs.get(eventResc.getURI());
 
         try {
-            repository.createPremisEvent(eventPid, eventModel);
+            repoObjFactory.createPremisEventObject(eventPid, eventModel);
         } catch (FedoraException e) {
             throw new ObjectPersistenceException("Failed to create event at " + eventPid, e);
         }
@@ -102,7 +109,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         List<PID> eventPids = listEvents();
 
         for (PID pid : eventPids) {
-            events.add(repository.getPremisEvent(pid));
+            events.add(repoObjLoader.getPremisEventObject(pid));
         }
     }
 

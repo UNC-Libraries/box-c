@@ -38,7 +38,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.ObjectPersistenceException;
@@ -57,12 +60,15 @@ public class FilePremisLogger implements PremisLogger {
     private PID objectPid;
     private Model model;
 
-    private Repository repository;
+    private RepositoryPIDMinter pidMinter;
+    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectDataLoader repoObjDataLoader;
+    private RepositoryObjectFactory repoObjFactory;
 
-    public FilePremisLogger(PID pid, File file, Repository repository) {
+    public FilePremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter) {
         this.objectPid = pid;
         this.premisFile = file;
-        this.repository = repository;
+        this.pidMinter = pidMinter;
     }
 
     /**
@@ -77,7 +83,7 @@ public class FilePremisLogger implements PremisLogger {
             date = new Date();
         }
 
-        return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
+        return new PremisEventBuilder(pidMinter.mintPremisEventPid(objectPid),
                 eventType, date, this);
     }
 
@@ -89,7 +95,7 @@ public class FilePremisLogger implements PremisLogger {
      */
     @Override
     public PremisEventBuilder buildEvent(Resource eventType) {
-        return new PremisEventBuilder(repository.mintPremisEventPid(objectPid),
+        return new PremisEventBuilder(pidMinter.mintPremisEventPid(objectPid),
                 eventType, new Date(), this);
     }
 
@@ -192,8 +198,8 @@ public class FilePremisLogger implements PremisLogger {
                 }
                 stmtIt.close();
                 // Construct the event object with a presupplied model
-                PremisEventObject event = new PremisEventObject(eventPid, repository,
-                        repository.getRepositoryObjectDataLoader());
+                PremisEventObject event = new PremisEventObject(eventPid, repoObjLoader,
+                        repoObjDataLoader, repoObjFactory);
                 event.storeModel(eventModel);
 
                 events.add(event);

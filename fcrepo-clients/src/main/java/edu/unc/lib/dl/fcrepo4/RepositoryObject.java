@@ -23,6 +23,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -126,7 +127,7 @@ public abstract class RepositoryObject {
      */
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
-            //premisLog = new RepositoryPremisLogger(this, repository);
+            premisLog = new RepositoryPremisLogger(this, repository);
         }
         return premisLog;
     }
