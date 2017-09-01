@@ -49,10 +49,14 @@ public class AdminUnitTest extends AbstractFedoraTest {
 
     private PID collectionChildPid;
 
+    private RepositoryPIDMinter pidMinter;
+
     @Mock
     private CollectionObject collectionChildObj;
     @Mock
     private WorkObject workChildObj;
+    @Mock
+    private RepositoryObjectFactory repoObjFactory;
 
     @Before
     public void init() {
@@ -61,6 +65,8 @@ public class AdminUnitTest extends AbstractFedoraTest {
         pid = PIDs.get(UUID.randomUUID().toString());
 
         unit = new AdminUnit(pid, repoObjLoader, dataLoader, repoObjFactory);
+
+        pidMinter = new RepositoryPIDMinter();
 
         collectionChildPid = PIDs.get(UUID.randomUUID().toString());
         when(collectionChildObj.getPid()).thenReturn(collectionChildPid);
