@@ -56,7 +56,7 @@ public class DepositRecord extends RepositoryObject {
      * @return BinaryObject representing the newly created manifest object
      * @throws FedoraException
      */
-    public URI addManifest(File manifest, String mimetype)
+    public BinaryObject addManifest(File manifest, String mimetype)
             throws FedoraException, IOException {
 
         InputStream contentStream = new FileInputStream(manifest);
@@ -72,11 +72,11 @@ public class DepositRecord extends RepositoryObject {
      * @return representing the newly created manifest object
      * @throws FedoraException
      */
-    public URI addManifest(InputStream manifestStream, String filename, String mimetype)
+    public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype)
             throws FedoraException {
         URI manifestsUri = getManifestsUri();
         return repoObjFactory.createBinary(manifestsUri, null, manifestStream, filename,
-                mimetype, null, null);
+                mimetype, null, pid, null);
     }
 
     /**
