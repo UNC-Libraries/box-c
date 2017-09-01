@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.solrUpdate;
+package edu.unc.lib.cdr.cdrEvents;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static org.mockito.Matchers.any;
@@ -33,7 +33,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.CdrEventProcessor;
-import edu.unc.lib.cdr.SolrUpdateProcessor;
+import edu.unc.lib.cdr.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
@@ -41,25 +41,25 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
  * @author lfarrell
  *
  */
-public class SolrUpdateRouterTest extends CamelSpringTestSupport {
+public class CdrEventRouterTest extends CamelSpringTestSupport {
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
     @BeanInject(value = "cdrEventProcessor")
     private CdrEventProcessor cdrEventProcessor;
 
-    @BeanInject(value = "solrUpdateProcessor")
-    private SolrUpdateProcessor solrUpdateProcessor;
+    @BeanInject(value = "cdrEventToSolrUpdateProcessor")
+    private CdrEventToSolrUpdateProcessor cdrEventToSolrUpdateProcessor;
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {
-        return new ClassPathXmlApplicationContext("/service-context.xml", "/solr-update-context.xml");
+        return new ClassPathXmlApplicationContext("/service-context.xml", "/cdr-events-context.xml");
     }
 
     @Test
     public void testMoveFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.MOVE.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -67,7 +67,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testRemoveFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.REMOVE.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -75,7 +75,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testAddFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.ADD.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -83,7 +83,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testReorderFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.REORDER.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -91,7 +91,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testPublishFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.PUBLISH.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -99,7 +99,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testReindexFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.REINDEX.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -107,7 +107,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testIndexFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.INDEX.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -115,7 +115,7 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testEditTypeFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(CDRActions.EDIT_TYPE.getName()));
         assertMockEndpointsSatisfied();
     }
@@ -123,23 +123,23 @@ public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     @Test
     public void testFilterFail() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(0);
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent("none"));
         assertMockEndpointsSatisfied();
     }
 
     @Test
     public void testCdrEventProcessor() throws Exception {
-        createContext("CdrServiceSolrUpdate");
+        createContext("CdrServiceCdrEvents");
         template.sendBodyAndHeaders("", createEvent(""));
         verify(cdrEventProcessor).process(any(Exchange.class));
     }
 
     @Test
     public void testSolrUpdateProcessor() throws Exception {
-        createContext("CdrServiceSolrUpdateProcess");
+        createContext("CdrServiceCdrEventToSolrUpdateProcessor");
         template.sendBodyAndHeaders("", createEvent(CDRActions.INDEX.getName()));
-        verify(solrUpdateProcessor).process(any(Exchange.class));
+        verify(cdrEventToSolrUpdateProcessor).process(any(Exchange.class));
     }
 
     private void createContext(String routeName) throws Exception {

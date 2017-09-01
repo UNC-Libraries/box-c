@@ -13,18 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package edu.unc.lib.cdr.solrUpdate;
-
-import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.cdr.CdrEventProcessor;
 import edu.unc.lib.cdr.SolrUpdateProcessor;
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**
  *
@@ -32,9 +27,6 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
  *
  */
 public class SolrUpdateRouter extends RouteBuilder {
-    @BeanInject(value = "cdrEventProcessor")
-    private CdrEventProcessor cdrEventProcessor;
-
     @BeanInject(value = "solrUpdateProcessor")
     private SolrUpdateProcessor solrUpdateProcessor;
 
@@ -48,20 +40,8 @@ public class SolrUpdateRouter extends RouteBuilder {
 
         from("{{cdr.stream}}")
             .routeId("CdrServiceSolrUpdate")
-            .bean(cdrEventProcessor)
-            .filter(simple("${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.MOVE.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REMOVE.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.ADD.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REORDER.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.PUBLISH.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REINDEX.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.INDEX.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE.getName() + "'"))
-            .to("direct:solr-update");
-
-        from("direct:solr-update")
-            .routeId("CdrServiceSolrUpdateProcess")
-            .log(LoggingLevel.DEBUG, "Updating solr index for ${headers[org.fcrepo.jms.identifier]}")
             .bean(solrUpdateProcessor);
+
     }
+
 }

@@ -456,12 +456,11 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
-	<bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
+	<bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.cdr.CdrEventToSolrUpdateProcessor">
 		<property name="jmsTemplate" ref="jmsTemplate" />
-		<property name="queueName" value="solr-update"/>
 	</bean>
 	
-	<bean id="solrUpdateJobProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
+	<bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
 		<property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
 	</bean>
 	
@@ -490,6 +489,10 @@
 	
 	<camel:camelContext id="CdrServiceSolr">
 		<camel:package>edu.unc.lib.cdr.solr</camel:package>
+	</camel:camelContext>
+	
+	<camel:camelContext id="CdrServiceCdrEvents">
+		<camel:package>edu.unc.lib.cdr.cdrEvents</camel:package>
 	</camel:camelContext>
 	
 	<camel:camelContext id="CdrServiceSolrUpdate">
