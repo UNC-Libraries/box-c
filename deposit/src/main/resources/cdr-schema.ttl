@@ -1,0 +1,187 @@
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfa: <http://www.w3.org/ns/rdfa#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix pcdm-use:  <http://pcdm.org/use#> .
+@prefix pcdm:  <http://pcdm.org/models#> .
+@prefix cdr:  <http://cdr.unc.edu/definitions/model#> .
+@prefix cdr-acl:  <http://cdr.unc.edu/definitions/acl#> .
+
+###### Content Object Classes ###### 
+cdr:FileObject a rdfs:Class ;
+    rdfs:label "FileObject" ;
+    rdfs:comment "An intellectual entity representing a single work or digital object.   Must contain exactly one data file binary, and may contain descriptive and administrative metadata." ;
+    rdfs:subClassOf pcdm:Object .
+    
+cdr:Work a rdfs:Class ;
+    rdfs:label "Work" ;
+    rdfs:comment "An intellectual entity representing a single work or digital object.  It may contain any number of objects which compose the work, which must be either cdr:Simple or cdr:Folder objects.   It maybe have one object designated as the primary work representing this aggregate.  It may contain descriptive and administrative metadata for the entire work." ;
+    rdfs:subClassOf pcdm:Object .
+
+cdr:Collection a rdfs:Class ;
+    rdfs:label "Collection" ;
+    rdfs:comment "An intellectual entity representing a single work or digital object.   Must contain exactly one data file binary, and may contain descriptive and administrative metadata." ;
+    rdfs:subClassOf pcdm:Object .
+    
+cdr:AdminUnit a rdfs:Class ;
+    rdfs:label "AdminUnit" ;
+    rdfs:comment "A grouping of collections belonging to a single administrative organization, for the purposes of assigning high level ownership of materials and staff permissions.  May contain any number of cdr:Collection objects." ;
+        rdfs:subClassOf pcdm:Collection .
+
+cdr:SourceMetadata a rdfs:Class ;
+    rdfs:label "SourceMetadata" ;
+    rdfs:comment "A binary object which contains the original metadata provided with an object during deposit." .
+
+###### Content Object Properties ######
+
+cdr:primaryObject a rdfs:Property ;
+    rdfs:label "primaryObject" ;
+    rdfs:domain cdr:Work ;
+    rdfs:range cdr:FileObject ;
+    rdfs:comment "Relation from a Work to a child which will be treated as the primary object for this object." .
+
+cdr:hasSourceMetadataProfile a rdfs:Property ;
+    rdfs:label "hasSourceMetadataProfile" ;
+    rdfs:domain cdr:SourceMetadata ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Identifier indicating the profile of the metadata provided with this object at deposit time. Used to identify what transformation was used to generate descriptive metadata from the original metadata." .
+
+cdr:collectionDefaultView a rdfs:Property ;
+    rdfs:label "collectionDefaultView" ;
+    rdfs:domain cdr:Collection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of the view to show by default on a collection record page." .
+
+cdr:collectionShowView a rdfs:Property ;
+    rdfs:label "collectionShowView" ;
+    rdfs:domain cdr:Collection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Name of a view to show on this collections record page. Repeatable." .
+
+###### Deposit Record ######
+
+cdr:DepositRecord a rdfs:Class ;
+    rdfs:label "DepositRecord" ;
+    rdfs:comment "An object representing a single deposit.  Encodes information about the deposit, including SIPs, manifests and submission information." .
+
+cdr:depositedOnBehalfOf a rdfs:Property ;
+    rdfs:label "depositedOnBehalfOf" ;
+    rdfs:domain cdr:DepositRecord ;
+    rdfs:range xsd:string ;
+    rdfs:comment "User who this deposit was submitted on behalf of." .
+
+cdr:depositMethod a rdfs:Property ;
+    rdfs:label "depositMethod" ;
+    rdfs:domain cdr:DepositRecord ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Method by which this deposit was submitted, such as 'sword' or 'CDR web form'." .
+
+cdr:depositPackageType a rdfs:Property ;
+    rdfs:label "depositPackageType" ;
+    rdfs:domain cdr:DepositRecord ;
+    rdfs:range xsd:string ;
+    rdfs:comment "URI representing the type of packaging used for the original deposit represented by this record, such as CDR METS or BagIt." .
+
+cdr:depositPackageProfile a rdfs:Property ;
+    rdfs:label "depositPackageProfile" ;
+    rdfs:domain cdr:DepositRecord ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Subclassification of the packaging type for this deposit, such as a METS profile." .
+
+###### ACL Properties ######
+
+cdr-acl:embargoUntil a rdfs:Property ;
+    rdfs:label "Embargo Until" ;
+    rdfs:domain cdr:Collection,
+        cdr:Work,
+        cdr:Folder,
+        cdr:FileObject ;
+    rdfs:range xsd:dateTime ;
+    rdfs:comment "A restriction on patron access which expires after date given.  When in effect, the embargo reduces patron access to only being able to view metadata for the object and all objects contained within it.  Applies to cdr:FileObject, cdr:Work, cdr:Folder and cdr:Collection." .
+
+cdr-acl:patronAccess a rdfs:Property ;
+    rdfs:label "Patron Access" ;
+    rdfs:domain cdr:Work,
+        cdr:Folder,
+        cdr:FileObject ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified category of users patron access to this object and its children, unless further restricted by the child.  Cannot exceed the level of patron access granted on a parent object.  Valid values are: 'authenticated, 'none', 'parent'.   Applies to cdr:FileObject, cdr:Work, and cdr:Folder objects." .
+
+cdr-acl:markedForDeletion a rdfs:Property ;
+    rdfs:label "Marked for Deletion" ;
+    rdfs:domain cdr:Work,
+        cdr:Folder,
+        cdr:FileObject,
+        cdr:Collection,
+        cdr:AdminUnit ;
+    rdfs:range xsd:boolean ;
+    rdfs:comment "Indicates that the object has been selected for deletion from the repository, and removes patron access. Applies to cdr:FileObject, cdr:Work, cdr:Folder, cdr:Collection and cdr:AdminUnit objects." .
+    
+cdr-acl:owner a rdfs:Property ;
+    rdfs:label "Owner" ;
+    rdfs:domain cdr:Work,
+        cdr:Folder,
+        cdr:FileObject ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Indicates the user who has ownership of this object, and would be able to grant temporary access permissions to it. Applies to cdr:FileObject, cdr:Work and cdr:Folder objects." .
+    
+cdr-acl:canDiscover a rdfs:Property ;
+    rdfs:label "Can Discover" ;
+    rdfs:domain cdr:Collection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified patron group permission to view metadata records for this object and all of its children. Applies to cdr:Collection objects." .
+    
+cdr-acl:canViewMetadata a rdfs:Property ;
+    rdfs:label "Can View Metadata" ;
+    rdfs:domain cdr:Collection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified patron group permission to view metadata records for this object and all of its children. Applies to cdr:Collection objects." .
+
+cdr-acl:canViewAccessCopies a rdfs:Property ;
+    rdfs:label "Can View Access Copies" ;
+    rdfs:domain cdr:Collection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified patron group permission to view access copies and metadata records for this object and all of its children. Applies to cdr:Collection objects." .
+    
+cdr-acl:canViewOriginals a rdfs:Property ;
+    rdfs:label "Can View Originals" ;
+    rdfs:domain cdr:Collection ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified patron group permission to view originals, access copies and metadata records for this object and all of its children. Applies to cdr:Collection objects." .
+    
+cdr-acl:canAccess a rdfs:Property ;
+    rdfs:label "Can Access" ;
+    rdfs:domain cdr:Collection,
+        cdr:AdminUnit ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified staff group or user permission to view hidden objects . Applies to cdr:Collection and cdr:AdminUnit objects.  Repeatable." .
+    
+cdr-acl:canDescribe a rdfs:Property ;
+    rdfs:label "Can Describe" ;
+    rdfs:domain cdr:Collection,
+        cdr:AdminUnit ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified group or user permission to add or edit descriptive records for this object and all of its children. Also has all of the rights granted by the canAccess role. Applies to cdr:Collection and cdr:AdminUnit objects.  Repeatable." .
+
+cdr-acl:canIngest a rdfs:Property ;
+    rdfs:label "Can Ingest" ;
+    rdfs:domain cdr:Collection,
+        cdr:AdminUnit ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified group or user permission ingest new objects into this object and any children containers.  Applies to cdr:Collection and cdr:AdminUnit objects. Repeatable." .
+    
+cdr-acl:canManage a rdfs:Property ;
+    rdfs:label "Can Manage" ;
+    rdfs:domain cdr:Collection,
+        cdr:AdminUnit ;
+    rdfs:range xsd:string ;
+    rdfs:comment "Grants the specified group or user permission to move objects, change access to objects, or mark objects for deletion all children objects into this object and any children containers. Also has all of the rights granted by the canIngest role. Applies to cdr:Collection and cdr:AdminUnit objects. Repeatable." .
+    
+cdr-acl:unitOwner a rdfs:Property ;
+    rdfs:label "Unit Owner" ;
+    rdfs:domain cdr:AdminUnit ;
+    rdfs:range xsd:string ;
+    rdfs:comment "User granted ownership of an administrative unit. Has all access and administrative permissions, as well as permission to permanently destroy objects, create collections, and assign staff permissions. Applies to cdr:AdminUnit objects." .

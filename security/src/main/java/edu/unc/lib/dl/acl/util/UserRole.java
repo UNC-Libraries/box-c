@@ -18,6 +18,7 @@ package edu.unc.lib.dl.acl.util;
 import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
 import static edu.unc.lib.dl.acl.util.Permission.bulkUpdateDescription;
 import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
+import static edu.unc.lib.dl.acl.util.Permission.createAdminUnit;
 import static edu.unc.lib.dl.acl.util.Permission.createCollection;
 import static edu.unc.lib.dl.acl.util.Permission.destroy;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
@@ -77,7 +78,7 @@ public enum UserRole {
             changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
     administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
-            changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles);
+            changePatronAccess, editResourceType, destroy, createCollection, createAdminUnit, assignStaffRoles);
 
     private URI uri;
     private String predicate;
@@ -98,7 +99,8 @@ public enum UserRole {
         try {
             this.predicate = predicate;
             this.uri = new URI(CdrAcl.getURI() + predicate);
-            HashSet<Permission> mypermissions = new HashSet<Permission>(perms.length);
+            this.propertyString = "";
+            HashSet<Permission> mypermissions = new HashSet<>(perms.length);
             Collections.addAll(mypermissions, perms);
             this.permissions = Collections.unmodifiableSet(mypermissions);
         } catch (URISyntaxException e) {
@@ -136,7 +138,7 @@ public enum UserRole {
      */
     public static Set<UserRole> getUserRoles(Collection<Permission> inPermissions) {
 
-        Set<UserRole> roles = new HashSet<UserRole>();
+        Set<UserRole> roles = new HashSet<>();
         for (UserRole r : UserRole.values()) {
             if (r.permissions.containsAll(inPermissions)) {
                 roles.add(r);
@@ -147,7 +149,7 @@ public enum UserRole {
 
     /**
      * Return a set of staff UserRoles
-     * 
+     *
      * @return
      */
     public static Set<UserRole> getStaffRoles() {
@@ -158,7 +160,7 @@ public enum UserRole {
 
     /**
      * Return a set of patron UserRoles
-     * 
+     *
      * @return
      */
     public static Set<UserRole> getPatronRoles() {
@@ -168,8 +170,24 @@ public enum UserRole {
     }
 
     /**
+     * Returns the UserRole which has a property string matching the provided value.
+     *
+     * @param property
+     * @return
+     */
+    public static UserRole getRoleByProperty(String property) {
+        for (UserRole role : values()) {
+            if (role.getPropertyString().equals(property)) {
+                return role;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Return the URI of the property for this role as a string.
-     * 
+     *
      * @return
      */
     public String getPropertyString() {

@@ -17,6 +17,8 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
@@ -45,7 +47,11 @@ public abstract class ContentObject extends RepositoryObject {
      * @return the FileObject containing the BinaryObject for the MODS
      */
     public FileObject addDescription(InputStream modsStream) {
-        FileObject fileObj = createFileObject();
+        PID childPid = repository.mintContentPid();
+        Model descModel = ModelFactory.createDefaultModel();
+        descModel.getResource(childPid.getURI()).addProperty(RDF.type, Cdr.DescriptiveMetadata);
+
+        FileObject fileObj = repository.createFileObject(childPid, descModel);
 
         BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
         repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
@@ -56,7 +62,7 @@ public abstract class ContentObject extends RepositoryObject {
     /**
      * Adds description information to this object, which includes source
      * metadata and a MODS record derived from it
-     * 
+     *
      * @param sourceMdStream
      * @param sourceProfile,
      *            identifies the encoding, profile, and/or origins of the

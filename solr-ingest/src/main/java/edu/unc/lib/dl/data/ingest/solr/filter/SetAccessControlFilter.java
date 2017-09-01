@@ -48,7 +48,7 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
      */
     public SetAccessControlFilter() {
         staffRoleNames = UserRole.getStaffRoles().stream()
-                .map(r -> r.name())
+                .map(r -> r.getPropertyString())
                 .collect(Collectors.toSet());
     }
 
@@ -66,7 +66,7 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
         principalRoles.forEach((principal, roles) -> {
             // Populate role -> principal field
             roles.stream()
-                .map(role -> UserRole.valueOf(role))
+                .map(role -> UserRole.getRoleByProperty(role))
                 .filter(role -> role != null)
                 .map(role -> (role.name() + "|" + principal))
                 .forEach(denormalizedRolePrincipals::add);

@@ -3,19 +3,21 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>deposit</artifactId>
-	<name>deposit</name>
-	<packaging>jar</packaging>
+	
 	<parent>
-		<groupId>edu.unc.lib.cdr</groupId>
-		<artifactId>cdr</artifactId>
-		<version>4.0-SNAPSHOT</version>
-	</parent>
+        <groupId>edu.unc.lib.cdr</groupId>
+        <artifactId>cdr</artifactId>
+        <version>4.0-SNAPSHOT</version>
+    </parent>
+	
+	<artifactId>deposit</artifactId>
+	<packaging>war</packaging>
+	
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<commons-daemon.version>1.0.15</commons-daemon.version>
 	</properties>
+	
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -107,20 +109,6 @@
 			<version>0.3</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-daemon</groupId>
-			<artifactId>commons-daemon</artifactId>
-			<version>${commons-daemon.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jms</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-pool</artifactId>
-			<version>5.5.1</version>
-		</dependency>
-		<dependency>
 			<groupId>com.samskivert</groupId>
 			<artifactId>jmustache</artifactId>
 			<version>1.9</version>
@@ -160,24 +148,6 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
-		</dependency>
-		<dependency>
-			<groupId>net.java.dev.stax-utils</groupId>
-			<artifactId>stax-utils</artifactId>
-			<version>20070216</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>jsr173-ri</artifactId>
-					<groupId>com.bea.xml</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>de.sven-jacobs</groupId>
-			<artifactId>loremipsum</artifactId>
-			<version>1.0</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -253,19 +223,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-http-commons</artifactId>
-			<version>${fcrepo4.version}</version>
-			<scope>test</scope>
-			<type>test-jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.fcrepo</groupId>
-			<artifactId>fcrepo-auth-common</artifactId>
-			<version>${fcrepo4.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.github.kstyrc</groupId>
 			<artifactId>embedded-redis</artifactId>
 			<version>0.6</version>
@@ -274,162 +231,81 @@
 	</dependencies>
 
 	<build>
-		<finalName>${artifactId}</finalName>
-		<resources>
-			<resource>
-				<filtering>false</filtering>
-				<directory>src/main/resources</directory>
-			</resource>
-			<resource>
-				<filtering>true</filtering>
-				<directory>../etc</directory>
-				<includes>
-					<include>deposit.properties</include>
-					<include>stagesConfig.json</include>
-				</includes>
-			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<filtering>true</filtering>
-				<directory>src/test/resources</directory>
-			</testResource>
-		</testResources>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<systemPropertyVariables>
-						<deposit.properties.uri>file:${project.basedir}/src/test/resources/deposit.properties</deposit.properties.uri>
-						<acl.properties.uri>file:etc/acl-config.properties</acl.properties.uri>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<!-- JAR Plugin to configure JAR generation. -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addClasspath>true</addClasspath>
-						</manifest>
-						<manifestEntries>
-							<Class-Path>.</Class-Path>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
-				<executions>
-					<execution>
-						<id>attach-source</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.1</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>shade</goal>
-						</goals>
-						<configuration>
-							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/spring.handlers</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-									<resource>META-INF/spring.schemas</resource>
-								</transformer>
-								<transformer
-									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>edu.unc.lib.deposit.DepositDaemon</mainClass>
-								</transformer>
-							</transformers>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.5.0</version>
-				<executions>
-					<execution>
-						<id>deposit</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<executable>${basedir}/../etc/deposit.sh</executable>
-					<cleanupDaemonThreads>false</cleanupDaemonThreads>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<configuration>
-					<!--Set reuseForks=false due to the need for different instances of the -->
-					<!--Singleton ServletContainerAuthenticationProvider -->
-					<reuseForks>false</reuseForks>
-					<argLine>${jacoco.agent.it.arg}</argLine>
-					<systemPropertyVariables>
-						<fcrepo.dynamic.test.port>${fcrepo.dynamic.test.port}</fcrepo.dynamic.test.port>
-						<project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
-					</systemPropertyVariables>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+    <finalName>${artifactId}</finalName>
+    <plugins>
+    <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven.failsafe.version}</version>
+        <configuration>
+            <!--Set reuseForks=false due to the need for different instances of the -->
+            <!--Singleton ServletContainerAuthenticationProvider -->
+            <reuseForks>false</reuseForks>
+            <argLine>${jacoco.agent.it.arg}</argLine>
+            <systemPropertyVariables>
+                <fcrepo.dynamic.test.port>${fcrepo.dynamic.test.port}</fcrepo.dynamic.test.port>
+                <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
+            </systemPropertyVariables>
+        </configuration>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>integration-test</goal>
+                    <goal>verify</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <webResources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>../etc</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+    
+    <plugin>
+         <groupId>org.eclipse.jetty</groupId>
+         <artifactId>jetty-maven-plugin</artifactId>
+         <version>${jetty.version}</version>
+         <configuration>
+             <scanIntervalSeconds>2</scanIntervalSeconds>
+             <stopKey>STOP</stopKey>
+             <webApp>
+                 <contextPath>/</contextPath>
+                 <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+             </webApp>
+             <httpConnector>
+                 <port>8191</port>
+             </httpConnector>
+             <systemProperties>
+                 <systemProperty>
+                     <name>deposit.properties.uri</name>
+                     <value>file:${project.basedir}/target/${project.build.finalName}/deposit.properties</value>
+                 </systemProperty>
+                 <systemProperty>
+                     <name>acl.properties.uri</name>
+                     <value>file:${project.basedir}/target/${project.build.finalName}/acl-config.properties</value>
+                 </systemProperty>
+             </systemProperties>
+         </configuration>
+    </plugin>
+    
+    <!-- compiler plugin -->
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.5.1</version>
+        <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+        </configuration>
+    </plugin>
+    </plugins>
+    </build>
 </project>

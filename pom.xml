@@ -86,12 +86,13 @@
 		<grizzly.version>2.3.28</grizzly.version>
 		<jersey.version>2.24</jersey.version>
 		<mockito.version>1.10.19</mockito.version>
-		<fcrepo.client.version>0.2.1</fcrepo.client.version>
+		<fcrepo.client.version>0.3.0</fcrepo.client.version>
 		<mock.server.version>3.10.2</mock.server.version>
 		<commons-io.version>2.4</commons-io.version>
 		<jena.version>3.1.1</jena.version>
 		<jena.fuseki.version>2.4.1</jena.fuseki.version>
 		<project.copyrightYear>2008</project.copyrightYear>
+		<maven.failsafe.version>2.20</maven.failsafe.version>
 	</properties>
 
 	<distributionManagement>
@@ -271,6 +272,7 @@
 					<excludes>
 						<exclude>clamavj/**</exclude>
 						<exclude>oai4solr/**</exclude>
+            <exclude>staging-areas/**</exclude>
 						<exclude>**/*.properties</exclude>
 					</excludes>
 					<properties>
@@ -288,11 +290,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-failsafe-plugin</artifactId> 
-				<version>2.8</version> <executions> <execution> <id>integration-test</id> 
-				<goals> <goal>integration-test</goal> </goals> </execution> <execution> <id>verify</id> 
-				<goals> <goal>verify</goal> </goals> </execution> </executions> </plugin> -->
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -28,6 +28,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.InputStream;
 
 import org.apache.camel.Exchange;
@@ -39,7 +40,9 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.rdf.Ebucore;
@@ -47,7 +50,7 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -55,9 +58,12 @@ public class BinaryMetadataProcessorTest {
 
     private BinaryMetadataProcessor processor;
 
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
     private static final String FEDORA_BASE = "http://example.com/";
 
-    private static final String BINARY_BASE = "/binary/base/";
+    private String binaryBase;
 
     private static final String RESC_ID = FEDORA_BASE + "de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
@@ -70,13 +76,53 @@ public class BinaryMetadataProcessorTest {
     public void init() throws Exception {
         initMocks(this);
 
-        processor = new BinaryMetadataProcessor(BINARY_BASE);
+        binaryBase = tmpFolder.newFolder().getAbsolutePath();
+
+        processor = new BinaryMetadataProcessor(binaryBase);
 
         when(exchange.getIn()).thenReturn(message);
     }
 
     @Test
     public void validTest() throws Exception {
+        String mimetype = "text/plain";
+        String checksumPrefix = "urn:sha1:";
+        String checksum = "61673dacf6c6eea104e77b151584ed7215388ea3";
+        File file = new File(binaryBase + "/61/67/3d/" + checksum);
+        file.getParentFile().mkdirs();
+        file.createNewFile();
+
+        Model model = ModelFactory.createDefaultModel();
+
+        Resource resc = model.createResource(RESC_ID);
+        resc.addProperty(RDF.type, Fcrepo4Repository.Binary);
+        resc.addProperty(Ebucore.hasMimeType, mimetype);
+        resc.addProperty(Premis.hasMessageDigest, checksumPrefix + checksum);
+
+        setMessageBody(model);
+
+        processor.process(exchange);
+
+        verify(message).setHeader(CdrBinaryChecksum, checksum);
+        verify(message).setHeader(CdrBinaryMimeType, mimetype);
+        verify(message).setHeader(CdrBinaryPath, file.getAbsolutePath());
+    }
+
+    @Test
+    public void nonbinaryTest() throws Exception {
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.createResource(RESC_ID);
+        resc.addProperty(RDF.type, createResource(Fcrepo4Repository.Resource.getURI()));
+
+        setMessageBody(model);
+
+        processor.process(exchange);
+
+        verify(message, never()).setHeader(anyString(), anyString());
+    }
+
+    @Test
+    public void noLocalBinaryTest() throws Exception {
         String mimetype = "text/plain";
         String checksumPrefix = "urn:sha1:";
         String checksum = "61673dacf6c6eea104e77b151584ed7215388ea3";
@@ -94,20 +140,7 @@ public class BinaryMetadataProcessorTest {
 
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
-        verify(message).setHeader(CdrBinaryPath, BINARY_BASE + "61/67/3d/" + checksum);
-    }
-
-    @Test
-    public void nonbinaryTest() throws Exception {
-        Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(RESC_ID);
-        resc.addProperty(RDF.type, createResource(Fcrepo4Repository.Resource.getURI()));
-
-        setMessageBody(model);
-
-        processor.process(exchange);
-
-        verify(message, never()).setHeader(anyString(), anyString());
+        verify(message, never()).setHeader(eq(CdrBinaryPath), anyString());
     }
 
     private void setMessageBody(Model model) throws Exception {

@@ -115,7 +115,7 @@
             <sch:assert test="count($allFiles[@USE = 'Master' or not(@USE)]) = 1">File divs MUST have one file with a USE of Master or no USE attribute. (found <sch:value-of select="count($allFiles)"/> METS file elements)</sch:assert>
         </sch:rule>
         <sch:rule context="m:div">
-            <sch:assert test="not(@TYPE) or contains('Bag,Collection,Folder,Aggregate Work,File', @TYPE)">The specified TYPE (<sch:value-of select="@TYPE"/>) MUST be one of Folder, Aggregate Work, or File.</sch:assert>
+            <sch:assert test="not(@TYPE) or contains('Bag,Collection,Folder,AdminUnit,Work,Aggregate Work,File', @TYPE)">The specified TYPE (<sch:value-of select="@TYPE"/>) MUST be one of Folder, Aggregate Work, or File.</sch:assert>
         </sch:rule>
         <sch:rule context="m:div[ not(@TYPE) and (count(m:fptr) &gt; 0 and count(m:div) &gt; 0) ]">
             <sch:assert test="false">A div without a TYPE cannot contain both other divs and fptrs.</sch:assert>

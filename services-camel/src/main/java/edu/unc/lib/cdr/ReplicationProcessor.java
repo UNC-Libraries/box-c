@@ -21,15 +21,12 @@ import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.StringJoiner;
 import java.util.concurrent.TimeUnit;
 
@@ -43,10 +40,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
-
 /**
  * Replicates binary files ingested into fedora to a series of one or more remote storage locations.
  * It checksums the remote file to make sure it's the same file that was originally ingested.
@@ -57,13 +50,11 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 public class ReplicationProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
 
-    private final Repository repository;
     private final String[] replicationLocations;
     private final int maxRetries;
     private final long retryDelay;
 
-    public ReplicationProcessor(Repository repository, String replicationLocations, int maxRetries, long retryDelay) {
-        this.repository = repository;
+    public ReplicationProcessor(String replicationLocations, int maxRetries, long retryDelay) {
         this.replicationLocations = splitReplicationLocations(replicationLocations);
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;
@@ -139,21 +130,6 @@ public class ReplicationProcessor implements Processor {
         return replicationPath;
     }
 
-    private File fcrepoBinaryDownload(String uri, String binaryChecksum) throws IOException {
-        File binaryFile = File.createTempFile(binaryChecksum, null);
-        InputStream response = null;
-
-        try {
-            BinaryObject binary = repository.getBinary(PIDs.get(uri));
-            response = binary.getBinaryStream();
-            Files.copy(response, Paths.get(binaryFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return binaryFile;
-    }
-
     private String getFileChecksum(String filePath) {
         String checksum = null;
         try {
@@ -181,24 +157,6 @@ public class ReplicationProcessor implements Processor {
         String binaryMimeType, String binaryUri) throws InterruptedException {
 
         String destinationFullPath = null;
-        String localBinary = null;
-        File fcrepoBinary = null;
-
-        /*
-         * Checks to see if binary has been persisted to disk.
-         * If file is below a certain size it is saved directly into fedora
-         * and must be retrieved through a REST request to fedora.
-         */
-        if (Files.exists(Paths.get(binaryPath))) {
-            localBinary = binaryPath;
-        } else {
-            try {
-                fcrepoBinary = fcrepoBinaryDownload(binaryUri, originalFileChecksum);
-            } catch (IOException e) {
-                throw new ReplicationException(String.format("Unable to replicate %s", binaryPath), e);
-            }
-            localBinary = fcrepoBinary.getAbsolutePath();
-        }
 
         try {
             for (String location : replicationLocations) {
@@ -206,7 +164,7 @@ public class ReplicationProcessor implements Processor {
 
                 destinationFullPath = destinationDirectory + "/" + originalFileChecksum;
                 String[] cmd = new String[]{"rsync", "--update", "--whole-file", "--times", "--verbose",
-                        localBinary, destinationFullPath};
+                        binaryPath, destinationFullPath};
                 Process runCmd = Runtime.getRuntime().exec(cmd);
                 int exitCode = runCmd.waitFor();
 
@@ -220,11 +178,6 @@ public class ReplicationProcessor implements Processor {
                 }
 
                 verifyChecksums(originalFileChecksum, destinationFullPath);
-
-                // Delete temp file on disk if the binary came directly from fedora
-                if (fcrepoBinary != null) {
-                    fcrepoBinary.delete();
-                }
             }
         } catch (IOException e) {
             throw new ReplicationException(String.format("Unable to replicate %s", binaryPath), e);

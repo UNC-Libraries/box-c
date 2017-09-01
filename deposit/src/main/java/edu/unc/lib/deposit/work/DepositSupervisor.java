@@ -45,9 +45,9 @@ import edu.unc.lib.deposit.normalize.DirectoryToBagJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
-import edu.unc.lib.deposit.normalize.VocabularyEnforcementJob;
 import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
+import edu.unc.lib.deposit.validate.ValidateContentModelJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
@@ -598,13 +598,18 @@ public class DepositSupervisor implements WorkerListener {
             }
         }
 
-        // Perform vocabulary enforcement for package types that retain the original metadata
-        if ((packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
-                || packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())
-                || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
-                && !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
-            return makeJob(VocabularyEnforcementJob.class, depositUUID);
+        // Validate object structure and properties
+        if (!successfulJobs.contains(ValidateContentModelJob.class.getName())) {
+            return makeJob(ValidateContentModelJob.class, depositUUID);
         }
+
+        // Perform vocabulary enforcement for package types that retain the original metadata
+//        if ((packagingType.equals(PackagingType.METS_DSPACE_SIP_1.getUri())
+//                || packagingType.equals(PackagingType.METS_DSPACE_SIP_2.getUri())
+//                || packagingType.equals(PackagingType.PROQUEST_ETD.getUri()))
+//                && !successfulJobs.contains(VocabularyEnforcementJob.class.getName())) {
+//            return makeJob(VocabularyEnforcementJob.class, depositUUID);
+//        }
 
         // MODS validation
         File bagPath = new File(depositsDirectory, depositUUID);

@@ -136,6 +136,10 @@
 		<property name="cleanupDelaySeconds" value="${cleanup.delay.seconds:60}"/>
 		<property name="unavailableDelaySeconds" value="${unavailable.delay.seconds:60}"/>
 	</bean>
+	
+	<bean id="depositServiceInitiator" class="edu.unc.lib.deposit.SpringDepositServiceInitiator">
+		<property name="depositSupervisor" ref="depositSupervisor" />
+	</bean>
 
 	<bean id="jobFactory" class="edu.unc.lib.dl.util.SpringJobFactory" />
 
@@ -162,6 +166,7 @@
 	<bean id="stagingPolicyManager" class="edu.unc.lib.deposit.staging.StagingPolicyManager"
 			init-method="init">
 		<property name="configPath" value="#{stagesConfigFile.getAbsolutePath()}" />
+		<property name="basePath" value="${deposits.dir}" />
 	</bean>
 	
 	<bean id="multiThreadedHttpConnectionManager" class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager"
@@ -216,6 +221,7 @@
 				<ref bean="aclPropertiesURI" />
 			</list>
 		</property>
+		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 	
 	<bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">

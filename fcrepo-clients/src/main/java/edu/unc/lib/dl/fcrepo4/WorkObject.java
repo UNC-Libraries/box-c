@@ -110,11 +110,11 @@ public class WorkObject extends ContentContainerObject {
      * @param sha1Checksum
      * @return
      */
-    public FileObject addDataFile(String filename, InputStream contentStream, String mimetype,
+    public FileObject addDataFile(InputStream contentStream, String filename, String mimetype,
             String sha1Checksum) {
         PID fileObjPid = repository.mintContentPid();
 
-        return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum);
+        return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum, null);
     }
 
     /**
@@ -124,19 +124,28 @@ public class WorkObject extends ContentContainerObject {
      *
      * @param childPid
      * @param contentStream
+     *            Inputstream containing the binary content for the data file. Required.
      * @param filename
      * @param mimetype
      * @param sha1Checksum
+     * @param model
+     *            model containing properties for the new fileObject
      * @return
      */
     public FileObject addDataFile(PID childPid, InputStream contentStream, String filename,
-            String mimetype, String sha1Checksum) {
+            String mimetype, String sha1Checksum, Model model) {
 
-        Model model = ModelFactory.createDefaultModel();
-        model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
+        if (contentStream == null) {
+            throw new IllegalArgumentException("A non-null contentstream is required");
+        }
+
+        if (model == null) {
+            model = ModelFactory.createDefaultModel();
+        }
+        model.getResource(childPid.getURI()).addProperty(DC.title, filename);
 
         // Create the file object
-        FileObject fileObj = repository.createFileObject(childPid, null);
+        FileObject fileObj = repository.createFileObject(childPid, model);
         // Add the binary content to it as its original file
         fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 

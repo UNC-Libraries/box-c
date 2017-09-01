@@ -23,13 +23,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Paths;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -48,14 +53,20 @@ import org.mockito.Mock;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
+import edu.unc.lib.dl.event.PremisEventBuilder;
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.PremisLoggerFactory;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.test.SelfReturningAnswer;
 import edu.unc.lib.dl.util.DepositConstants;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -84,7 +95,15 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     @Mock
     private CloseableHttpResponse httpResp;
     @Mock
+    private StatusLine statusLine;
+    @Mock
     private HttpEntity respEntity;
+
+    @Mock
+    private PremisLoggerFactory premisLoggerFactory;
+    @Mock
+    private PremisLogger premisLogger;
+    private PremisEventBuilder premisEventBuilder;
 
     private ExtractTechnicalMetadataJob job;
 
@@ -102,6 +121,13 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.setProcessFilesLocally(true);
         job.setBaseFitsUri(FITS_BASE_URI);
 
+        // Setup logging dependencies
+        premisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
+        when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+                .thenReturn(premisLogger);
+        when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
+        job.setPremisLoggerFactory(premisLoggerFactory);
+
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
@@ -112,6 +138,8 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
         when(httpClient.execute(any(HttpGet.class))).thenReturn(httpResp);
         when(httpResp.getEntity()).thenReturn(respEntity);
+        when(httpResp.getStatusLine()).thenReturn(statusLine);
+        when(statusLine.getStatusCode()).thenReturn(HttpStatus.SC_OK);
 
         techmdDir = new File(job.getDepositDirectory(), DepositConstants.TECHMD_DIR);
     }
@@ -137,6 +165,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         job.run();
 
         verifyFileResults(filePid, IMAGE_MIMETYPE, IMAGE_FORMAT, IMAGE_MD5, IMAGE_FILEPATH, 1);
+        verify(premisLogger).buildEvent(eq(Premis.MessageDigestCalculation));
     }
 
     @Test
@@ -263,6 +292,9 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
 
     private void verifyFileResults(PID filePid, String expectedMimetype, String expectedFormat,
             String expectedChecksum, String expectedFilepath, int numberReports) throws Exception {
+
+        String absFilePath = Paths.get(depositDir.getAbsolutePath(), expectedFilepath).toString();
+
         model = job.getReadOnlyModel();
         // Post-run model info for the file object
         Resource fileResc = model.getResource(filePid.getRepositoryPath());
@@ -272,7 +304,7 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
         HttpUriRequest request = requestCaptor.getValue();
 
         assertEquals("FITS service not called with the expected path",
-                FITS_BASE_URI + "/examine?file=" + expectedFilepath.replace("/", "%2F"),
+                FITS_BASE_URI + "/examine?file=" + absFilePath.replace("/", "%2F"),
                 request.getURI().toString());
 
         assertEquals("Incorrect number of reports in output dir",

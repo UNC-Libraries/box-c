@@ -37,7 +37,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 /**
  * Verifies that files referenced by this deposit for ingest are present and
  * available
- * 
+ *
  * @author count0
  *
  */
@@ -57,14 +57,13 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
     @Override
     public void runJob() {
 
-        Set<String> failures = new HashSet<String>();
-        Set<String> badlyStagedFiles = new HashSet<String>();
+        Set<String> failures = new HashSet<>();
+        Set<String> badlyStagedFiles = new HashSet<>();
 
         Model model = getReadOnlyModel();
         // Construct a map of objects to file paths to verify
         List<Entry<PID, String>> hrefs = new ArrayList<>();
         hrefs.addAll(getPropertyPairList(model, CdrDeposit.stagingLocation));
-        hrefs.addAll(getPropertyPairList(model, CdrDeposit.hasDatastream));
 
         setTotalClicks(hrefs.size());
 

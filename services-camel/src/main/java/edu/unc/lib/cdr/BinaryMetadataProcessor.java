@@ -24,6 +24,8 @@ import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.StringJoiner;
 
 import org.apache.camel.Exchange;
@@ -38,7 +40,7 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  * Stores information related to identifying binary objects from the repository
- * 
+ *
  * @author lfarrell
  *
  */
@@ -47,10 +49,13 @@ public class BinaryMetadataProcessor implements Processor {
     private final int BINARY_PATH_DEPTH = 3;
     private final int BINARY_PATH_LENGTH = 2;
 
-    private final String baseBinaryPath;
+    private String baseBinaryPath;
 
     protected BinaryMetadataProcessor(String baseBinaryPath) {
         this.baseBinaryPath = baseBinaryPath;
+        if (!baseBinaryPath.endsWith("/")) {
+            this.baseBinaryPath += "/";
+        }
     }
 
     @Override
@@ -78,10 +83,13 @@ public class BinaryMetadataProcessor implements Processor {
                     .add(binaryPath)
                     .add(binaryFcrepoChecksumSplit[2])
                     .toString();
+                // Only set the binary path if the computed path exists
+                if (Files.exists(Paths.get(binaryFullPath))) {
+                    in.setHeader(CdrBinaryPath, binaryFullPath);
+                }
 
                 in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
                 in.setHeader(CdrBinaryMimeType, binaryMimeType);
-                in.setHeader(CdrBinaryPath, binaryFullPath);
                 in.setHeader(CdrBinaryUri, fcrepoBinaryUri);
             }
         } finally {
@@ -93,7 +101,7 @@ public class BinaryMetadataProcessor implements Processor {
      * Prepend id with defined levels of hashed containers based on the values.
      * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
      *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
-     * 
+     *
      * @param id
      * @return
      */

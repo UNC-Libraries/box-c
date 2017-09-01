@@ -15,8 +15,14 @@
 
 	<context:annotation-config />
 	
+	<bean name="propertiesURI" class="java.lang.System"
+		factory-method="getProperty">
+		<constructor-arg index="0" value="config.properties.uri" />
+		<constructor-arg index="1" value="classpath:config.properties" />
+	</bean>
+	
 	<bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
-		<property name="location" value="classpath:config.properties"/>
+		<property name="location" ref="propertiesURI"/>
 	</bean>
 	
 	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
@@ -53,7 +59,7 @@
 		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
 	</bean>
 
-	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository">
+	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository" init-method="init">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
@@ -71,6 +77,9 @@
 				<ref bean="repository" />
 			</list>
 		</property>
+	</bean>
+	
+	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
 	</bean>
 	
 	<!-- Solr settings -->
@@ -212,7 +221,7 @@
 	</bean>
 	<bean id="setDescriptiveMetadataFilter"
 		class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
-		<!--  <property name="vocabManager" value="${services.indexing.vocabManager}" />-->
+		<property name="vocabManager" ref="vocabManager" />
 	</bean>
 	<bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
 	</bean>
@@ -417,15 +426,21 @@
 	</bean>
 	
 	<bean id="replicationProcessor" class="edu.unc.lib.cdr.ReplicationProcessor">
-		<constructor-arg ref="repository"/>
 		<constructor-arg value="${cdr.replication.locations}" />
 		<constructor-arg value="${error.maxRedeliveries}" />
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
+	<bean id="getBinaryProcessor" class="edu.unc.lib.cdr.GetBinaryProcessor">
+		<property name="repository" ref="repository"/>
+	</bean>
+	
+	<bean id="cleanupBinaryProcessor" class="edu.unc.lib.cdr.CleanupBinaryProcessor">
+	</bean>
+	
 	<bean id="dipDataLoader"
-		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader" init-method="init">
-		<property name="repository" ref="repository"></property>
+		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+		<property name="repository" ref="repository" />
 	</bean>
 	
 	<bean id="dipFactory"
