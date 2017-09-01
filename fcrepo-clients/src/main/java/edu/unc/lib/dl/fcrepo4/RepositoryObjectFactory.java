@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getMetadataUri;
 import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 
 import java.io.ByteArrayInputStream;
@@ -57,8 +58,6 @@ public class RepositoryObjectFactory {
     private LdpContainerFactory ldpFactory;
 
     private FcrepoClient client;
-
-    private RepositoryPaths repoPaths;
 
     private RepositoryObjectDataLoader repoObjDataLoader;
 
@@ -131,6 +130,23 @@ public class RepositoryObjectFactory {
 
         return new AdminUnit(pid, repoObjLoader, repoObjDataLoader, this);
     }
+
+    /**
+     * Creates a content root object structure with the provided properties
+     *
+     * @param path
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public URI createContentRootObject(URI path, Model model) throws FedoraException {
+        // Add types to the object being created
+        model = populateModelTypes(path, model,
+                Arrays.asList(Cdr.ContentRoot));
+
+        return createContentContainerObject(path, model);
+    }
+
 
     /**
      * Creates a new CollectionObject with the given pid
@@ -296,8 +312,8 @@ public class RepositoryObjectFactory {
     * @return URI of the newly created binary
     * @throws FedoraException
     */
-    public URI createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
-            String checksum, Model model) throws FedoraException {
+    public BinaryObject createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
+            String checksum, PID pid, Model model) throws FedoraException {
         if (content == null) {
             throw new IllegalArgumentException("Cannot create a binary object from a null content stream");
         }
@@ -322,25 +338,30 @@ public class RepositoryObjectFactory {
             }
                 throw ClientFaultResolver.resolve(e);
           }
+        if (model != null) {
+            // Add in pcdm:File type to model
+            model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
 
-        // Add in pcdm:File type to model
-        model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
+            // If a model was provided, then add the triples to the new binary's metadata
+            // Turn model into sparql update query
+            String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
+            InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
 
-        // If a model was provided, then add the triples to the new binary's metadata
-        // Turn model into sparql update query
-        String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
-        InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
-
-        try (FcrepoResponse response = getClient().patch(describedBy)
-            .body(sparqlStream)
-            .perform()) {
-        } catch (IOException e) {
-            throw new FedoraException("Unable to add triples to binary at " + path, e);
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
+            try (FcrepoResponse response = getClient().patch(describedBy)
+                .body(sparqlStream)
+                .perform()) {
+            } catch (IOException e) {
+                throw new FedoraException("Unable to add triples to binary at " + path, e);
+            } catch (FcrepoOperationFailedException e) {
+                throw ClientFaultResolver.resolve(e);
+            }
         }
-            return resultUri;
+            return new BinaryObject(pid, repoObjLoader, repoObjDataLoader, this);
          }
+
+    public PremisEventObject createPremisEventObject(PID pid, Model model) throws FedoraException {
+
+    }
 
     /**
      * Add a member to the parent object.
@@ -451,7 +472,7 @@ public class RepositoryObjectFactory {
     }
 
     private void persistTripleToFedora(PID subject, String sparqlUpdate) {
-        URI uri = repoPaths.getMetadataUri(subject);
+        URI uri = getMetadataUri(subject);
 
         InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
 
@@ -465,7 +486,7 @@ public class RepositoryObjectFactory {
         }
     }
 
-    private void createContentContainerObject(URI path, Model model) throws FedoraException {
+    private URI createContentContainerObject(URI path, Model model) throws FedoraException {
         try (FcrepoResponse response = getClient().put(path)
                 .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
                 .perform()) {
@@ -478,6 +499,8 @@ public class RepositoryObjectFactory {
              // Add the container for member objects
              ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
              RepositoryPathConstants.MEMBER_CONTAINER);
+
+             return createdUri;
 
         } catch (IOException e) {
              throw new FedoraException("Unable to create deposit record at " + path, e);
