@@ -104,8 +104,8 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
 
         PID pid = repository.mintContentPid();
         WorkObject work = repository.createWorkObject(pid);
-        FileObject fileObj = work.addDataFile("file", new ByteArrayInputStream(BINARY_CONTENT.getBytes()),
-                MIMETYPE, null);
+        FileObject fileObj = work.addDataFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()),
+                "file", MIMETYPE, null);
 
         when(message.getHeader(CdrBinaryUri)).thenReturn(
                 fileObj.getOriginalFile().getPid().getRepositoryPath());

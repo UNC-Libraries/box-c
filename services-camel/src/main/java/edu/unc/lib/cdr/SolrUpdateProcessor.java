@@ -54,7 +54,7 @@ public class SolrUpdateProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateProcessor.class);
     private String parent;
     private String mode;
-    private List<String>subjects;
+    private List<String> subjects;
     private JmsTemplate jmsTemplate;
 
     @Override
@@ -124,17 +124,17 @@ public class SolrUpdateProcessor implements Processor {
         }
     }
 
-    private List<String> populateList(String field, Element contentBody){
+    private List<String> populateList(String field, Element contentBody) {
         List<Element> children = contentBody.getChildren(field, JDOMNamespaceUtil.CDR_MESSAGE_NS);
 
         if (children == null || children.size() == 0) {
             return null;
         }
 
-        List<String> list = new ArrayList<String>();
-        for (Object node: children){
-            Element element = (Element)node;
-            for (Object pid: element.getChildren()){
+        List<String> list = new ArrayList<>();
+        for (Object node : children) {
+            Element element = (Element) node;
+            for (Object pid : element.getChildren()) {
                 Element pidElement = (Element)pid;
                 list.add(pidElement.getTextTrim());
             }
