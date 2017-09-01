@@ -60,8 +60,6 @@ public class RepositoryObjectCacheLoaderTest {
     private RepositoryObjectCacheLoader objectCacheLoader;
 
     @Mock
-    private Repository repository;
-    @Mock
     private RepositoryObjectDataLoader dataLoader;
 
     private FcrepoClient client;
@@ -81,11 +79,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         objectCacheLoader = new RepositoryObjectCacheLoader();
         objectCacheLoader.setClient(client);
-        objectCacheLoader.setRepository(repository);
         objectCacheLoader.setRepositoryObjectDataLoader(dataLoader);
-
-        when(repository.getBaseUri()).thenReturn(REPO_BASE);
-        PIDs.setRepository(repository);
 
         pid = PIDs.get(UUID.randomUUID().toString());
     }
