@@ -31,7 +31,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
-import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -57,12 +56,12 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createDepositRecordTest() throws Exception {
-        String path = baseAddress + RepositoryPathConstants.DEPOSIT_RECORD_BASE
-                + "/" + UUID.randomUUID().toString();
-        URI uri = URI.create(path);
+        PID pid = pidMinter.mintDepositRecordPid();
+        URI uri = pid.getRepositoryUri();
+        String path = uri.getPath();
 
-        URI resultUri = factory.createDepositRecord(pidMinter.mintDepositRecordPid(), null);
-        assertEquals("Requested URI did not match result", uri, resultUri);
+        DepositRecord depRec = repoObjFactory.createDepositRecord(pidMinter.mintDepositRecordPid(), null);
+        assertEquals("Requested URI did not match result", uri, depRec.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
@@ -120,104 +119,109 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createFileObjectTest() throws Exception {
-        String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
-        URI uri = URI.create(objectPath);
+        PID pid = pidMinter.mintContentPid();
+        URI uri = pid.getRepositoryUri();
+        String objPath = uri.getPath();
 
-        URI resultUri = factory.createFileObject(uri, null);
-        assertEquals("Requested URI did not match result", uri, resultUri);
+        FileObject fileObj = repoObjFactory.createFileObject(pid);
+        assertEquals("Requested URI did not match result", uri, fileObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
 
-            Resource respResc = respModel.getResource(objectPath);
+            Resource respResc = respModel.getResource(uri.getPath());
             // Verify that the correct RDF types were applied
             assertTrue(respResc.hasProperty(RDF.type, Cdr.FileObject));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             // Verify that subcontainers were created
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.DATA_FILE_FILESET))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.DATA_FILE_FILESET))));
         }
     }
 
     @Test
     public void createWorkObjectTest() throws Exception {
-        String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
-        URI uri = URI.create(objectPath);
+        PID pid = pidMinter.mintContentPid();
+        URI uri = pid.getRepositoryUri();
+        String objPath = uri.getPath();
 
-        URI resultUri = factory.createWorkObject(uri, null);
-        assertEquals("Requested URI did not match result", uri, resultUri);
+        WorkObject workObj = repoObjFactory.createWorkObject(pid);
+        assertEquals("Requested URI did not match result", uri, workObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
 
-            Resource respResc = respModel.getResource(objectPath);
+            Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Work));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 
     @Test
     public void createFolderObjectTest() throws Exception {
-        String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
-        URI uri = URI.create(objectPath);
+        PID pid = pidMinter.mintContentPid();
+        URI uri = pid.getRepositoryUri();
+        String objPath = uri.getPath();
 
-        URI resultUri = factory.createFolderObject(uri, null);
-        assertEquals("Requested URI did not match result", uri, resultUri);
+        FolderObject folderObj = factory.createFolderObject(pid);
+        assertEquals("Requested URI did not match result", uri, folderObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
 
-            Resource respResc = respModel.getResource(objectPath);
+            Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Folder));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 
     @Test
     public void createAdminUnitTest() throws Exception {
-        String objectPath = URIUtil.join(baseAddress, UUID.randomUUID().toString());
-        URI uri = URI.create(objectPath);
+        PID pid = pidMinter.mintContentPid();
+        URI uri = pid.getRepositoryUri();
+        String objPath = uri.getPath();
 
-        URI resultUri = factory.createAdminUnit(uri, null);
-        assertEquals("Requested URI did not match result", uri, resultUri);
+        AdminUnit adminUnit = factory.createAdminUnit(pid);
+        assertEquals("Requested URI did not match result", uri, adminUnit.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
 
-            Resource respResc = respModel.getResource(objectPath);
+            Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.AdminUnit));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Collection));
 
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.EVENTS_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
-                    createResource(URIUtil.join(objectPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+                    createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
         }
     }
 
     @Test
     public void createCollectionObjectTest() throws Exception {
         PID pid = pidMinter.mintContentPid();
-
-        CollectionObject obj = factory.createCollectionObject(pid);
         URI uri = pid.getRepositoryUri();
+        String objPath = uri.getPath();
+
+        CollectionObject collObj = factory.createCollectionObject(pid);
+        assertEquals("Requested URI did not match result", uri, collObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
-            String objPath = uri.getPath();
             Resource respResc = respModel.getResource(objPath);
             assertTrue(respResc.hasProperty(RDF.type, Cdr.Collection));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
