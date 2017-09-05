@@ -29,7 +29,6 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -38,12 +37,10 @@ import edu.unc.lib.dl.rdf.PcdmUse;
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class FileObjectIT extends AbstractFedoraIT {
-
-    @Autowired
-    private Repository repository;
 
     private PID pid;
 
@@ -63,7 +60,7 @@ public class FileObjectIT extends AbstractFedoraIT {
     @Test
     public void createFileObjectTest() throws Exception {
 
-        FileObject fileObj = repository.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(pid, null);
 
         assertNotNull(fileObj);
         assertEquals(pid.getRepositoryPath(), fileObj.getPid().getRepositoryPath());
@@ -73,7 +70,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addOriginalFileTest() throws Exception {
-        FileObject fileObj = repository.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(pid, null);
 
         // Prep file and add
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
@@ -87,7 +84,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMultipleBinariesTest() throws Exception {
-        FileObject fileObj = repository.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(pid, null);
 
         // Add the original
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
@@ -134,7 +131,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
         client.put(objPid.getRepositoryUri()).perform().close();
 
-        repository.getFileObject(objPid);
+        repoObjLoader.getFileObject(objPid);
     }
 
     private void verifyOriginalFile(BinaryObject origObj) {
