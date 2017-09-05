@@ -40,7 +40,7 @@ public class AbstractFedoraTest {
     public void initBase() {
         initMocks(this);
 
-        when(repoPaths.getBaseUri()).thenReturn(FEDORA_BASE);
+        when(RepositoryPaths.getBaseUri()).thenReturn(FEDORA_BASE);
     }
 
 }

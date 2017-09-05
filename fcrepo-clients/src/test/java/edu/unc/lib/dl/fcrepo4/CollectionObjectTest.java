@@ -57,8 +57,6 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     private WorkObject workChildObj;
     @Mock
     private CollectionObject collectionChildObj;
-    @Mock
-    private RepositoryObjectFactory repoObjFactory;
 
     @Before
     public void init() {

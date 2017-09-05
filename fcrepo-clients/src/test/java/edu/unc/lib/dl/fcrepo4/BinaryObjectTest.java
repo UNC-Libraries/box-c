@@ -50,8 +50,6 @@ import edu.unc.lib.dl.util.URIUtil;
 public class BinaryObjectTest extends AbstractFedoraTest {
     @Mock
     private PID mockPid;
-    @Mock
-    private RepositoryObjectFactory repoObjFactory;
 
     private BinaryObject binObj;
     private Model model;

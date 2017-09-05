@@ -49,14 +49,10 @@ public class AdminUnitTest extends AbstractFedoraTest {
 
     private PID collectionChildPid;
 
-    private RepositoryPIDMinter pidMinter;
-
     @Mock
     private CollectionObject collectionChildObj;
     @Mock
     private WorkObject workChildObj;
-    @Mock
-    private RepositoryObjectFactory repoObjFactory;
 
     @Before
     public void init() {

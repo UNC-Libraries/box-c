@@ -22,7 +22,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +55,6 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Before
     public void init() {
-        initMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
