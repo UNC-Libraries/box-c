@@ -31,7 +31,7 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class FolderObject extends ContentContainerObject {
 
-    private RepositoryPIDMinter pidMinter;
+    private RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
 
     protected FolderObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
