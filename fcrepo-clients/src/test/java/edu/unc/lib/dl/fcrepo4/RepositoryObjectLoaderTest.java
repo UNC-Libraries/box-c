@@ -3,6 +3,7 @@ package edu.unc.lib.dl.fcrepo4;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,22 +17,37 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
-public class RepositoryObjectLoaderTest extends AbstractFedoraTest {
+public class RepositoryObjectLoaderTest {
 
     @Mock
     RepositoryObjectCacheLoader objectCacheLoader;
-
+    @Mock
     private RepositoryPIDMinter pidMinter;
+
+    private RepositoryObjectLoader repoObjLoader;
+    private PID contentPid;
+    private PID depositRecordPid;
+    private PID premisPid;
 
     @Before
     public void init() {
         initMocks(this);
 
-        pidMinter = new RepositoryPIDMinter();
+        contentPid = PIDs.get("content/uuid:0311cf7e-9ac0-4ab0-8c24-ff367e8e77f5");
+        depositRecordPid = PIDs.get("deposit/uuid:0411cf7e-9ac0-4ab0-8c24-ff367e8e77f6");
+        premisPid = PIDs.get("premis/uuid:0511cf7e-9ac0-4ab0-8c24-ff367e8e77f7");
+        repoObjLoader = new RepositoryObjectLoader();
+        repoObjLoader.setRepositoryObjectCacheLoader(objectCacheLoader);
+        repoObjLoader.setCacheMaxSize(1L);
+        repoObjLoader.setCacheTimeToLive(10L);
+        repoObjLoader.init();
+
+        when(pidMinter.mintContentPid()).thenReturn(contentPid);
+        when(pidMinter.mintDepositRecordPid()).thenReturn(depositRecordPid);
+        when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(premisPid);
     }
 
     @Test
@@ -112,7 +128,7 @@ public class RepositoryObjectLoaderTest extends AbstractFedoraTest {
         assertNotNull(repoObjLoader.getDepositRecord(pid));
     }
 
-    @Test(expected = ObjectTypeMismatchException.class)
+    @Test(expected = FedoraException.class)
     public void getDepositRecordWrongTypeTest() {
         PID pid = pidMinter.mintDepositRecordPid();
 

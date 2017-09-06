@@ -34,6 +34,18 @@ public class RepositoryObjectLoader {
                 .build(repositoryObjectCacheLoader);
     }
 
+    public void setRepositoryObjectCacheLoader(RepositoryObjectCacheLoader cacheLoader) {
+        repositoryObjectCacheLoader = cacheLoader;
+    }
+
+    public void setCacheMaxSize(long maxSize) {
+        cacheMaxSize = maxSize;
+    }
+
+    public void setCacheTimeToLive(long timeToLive) {
+        cacheTimeToLive = timeToLive;
+    }
+
     public AdminUnit getAdminUnit(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof AdminUnit)) {
