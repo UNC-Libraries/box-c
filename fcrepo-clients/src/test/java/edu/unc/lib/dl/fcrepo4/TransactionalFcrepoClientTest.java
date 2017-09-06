@@ -37,7 +37,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
+/**
+ *
+ * @author harring
+ *
+ */
 public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 
     private static final String BASE_URI = "http://localhost:48085/rest/";
@@ -48,6 +52,7 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
 
     private TransactionalFcrepoClient txClient;
     private FedoraTransaction tx;
+    private TransactionManager txManager;
 
     @Mock
     private HttpRequestBase request;
@@ -64,7 +69,7 @@ public class TransactionalFcrepoClientTest extends AbstractFedoraTest {
     public void setup() throws Exception {
         MockitoAnnotations.initMocks(this);
         URI uri = URI.create(TX_URI);
-        tx = new FedoraTransaction(uri, repository);
+        tx = new FedoraTransaction(uri, txManager);
         FcrepoClientBuilder builder = TransactionalFcrepoClient.client(BASE_URI);
         txClient = (TransactionalFcrepoClient) builder.build();
         setField(txClient, "httpclient", httpClient);

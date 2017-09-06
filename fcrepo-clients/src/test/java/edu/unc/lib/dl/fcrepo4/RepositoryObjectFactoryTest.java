@@ -48,11 +48,12 @@ import edu.unc.lib.dl.rdf.Premis;
  * @author harring
  *
  */
-public class RepositoryObjectFactoryTest extends AbstractFedoraTest {
+public class RepositoryObjectFactoryTest {
 
     @Mock
     private RepositoryObjectCacheLoader objectCacheLoader;
-
+    @Mock
+    private RepositoryObjectDataLoader dataLoader;
     @Mock
     private FcrepoClient fcrepoClient;
 

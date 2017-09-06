@@ -16,20 +16,15 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 
 import org.apache.http.HttpStatus;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -67,9 +62,6 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
                 contentContainerUri, RepositoryPathConstants.CONTENT_ROOT_ID);
         URI contentRootUri = URI.create(contentRootString);
         assertObjectExists(contentRootUri);
-        Model crModel = repository.getObjectModel(contentRootUri);
-        Resource crResc = crModel.getResource(contentRootUri.toString());
-        assertTrue(crResc.hasProperty(RDF.type, Cdr.ContentRoot));
 
         URI depositContainerUri = getContainerUri(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
         assertObjectExists(depositContainerUri);
@@ -116,7 +108,7 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
     }
 
     private URI getContainerUri(String id) {
-        String containerString = URIUtil.join(repository.getBaseUri(), id);
+        String containerString = URIUtil.join(RepositoryPaths.getBaseUri(), id);
         return URI.create(containerString);
     }
 }

@@ -20,6 +20,11 @@ import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
+/**
+ *
+ * @author harring
+ *
+ */
 public class RepositoryObjectLoaderTest {
 
     @Mock
@@ -39,6 +44,7 @@ public class RepositoryObjectLoaderTest {
         contentPid = PIDs.get("content/uuid:0311cf7e-9ac0-4ab0-8c24-ff367e8e77f5");
         depositRecordPid = PIDs.get("deposit/uuid:0411cf7e-9ac0-4ab0-8c24-ff367e8e77f6");
         premisPid = PIDs.get("premis/uuid:0511cf7e-9ac0-4ab0-8c24-ff367e8e77f7");
+
         repoObjLoader = new RepositoryObjectLoader();
         repoObjLoader.setRepositoryObjectCacheLoader(objectCacheLoader);
         repoObjLoader.setCacheMaxSize(1L);
