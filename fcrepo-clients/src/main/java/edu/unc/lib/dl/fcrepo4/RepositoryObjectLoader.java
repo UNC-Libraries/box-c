@@ -8,6 +8,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 /**
  *
@@ -109,7 +110,7 @@ public class RepositoryObjectLoader {
     public DepositRecord getDepositRecord(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof DepositRecord)) {
-            throw new FedoraException("Object with pid " + pid + "is not a deposit record");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + "is not a deposit record");
         }
         return (DepositRecord) repoObj;
     }

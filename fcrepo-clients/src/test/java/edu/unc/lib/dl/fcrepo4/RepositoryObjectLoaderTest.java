@@ -17,6 +17,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -134,7 +135,7 @@ public class RepositoryObjectLoaderTest {
         assertNotNull(repoObjLoader.getDepositRecord(pid));
     }
 
-    @Test(expected = FedoraException.class)
+    @Test(expected = ObjectTypeMismatchException.class)
     public void getDepositRecordWrongTypeTest() {
         PID pid = pidMinter.mintDepositRecordPid();
 
