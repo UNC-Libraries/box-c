@@ -93,6 +93,7 @@
 		<jena.fuseki.version>2.4.1</jena.fuseki.version>
 		<project.copyrightYear>2008</project.copyrightYear>
 		<maven.failsafe.version>2.20</maven.failsafe.version>
+		<maven.surefire.version>2.20</maven.surefire.version>
 	</properties>
 
 	<distributionManagement>
@@ -328,6 +329,18 @@
 					</execution>
 				</executions>
 				<inherited>false</inherited>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<systemPropertyVariables>
+						<fcrepo.baseUri>http://example.com/rest</fcrepo.baseUri>
+						<buildDirectory>${project.build.directory}</buildDirectory>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
