@@ -17,19 +17,26 @@ package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.io.ByteArrayInputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
@@ -48,6 +55,9 @@ public class CdrEventProcessorTest {
 
     @Mock
     private Message message;
+
+    @Captor
+    private ArgumentCaptor<Object> bodyCaptor;
 
     @Before
     public void init() throws Exception {
@@ -70,6 +80,43 @@ public class CdrEventProcessorTest {
         processor.process(exchange);
 
         verify(message).setHeader(CdrSolrUpdateAction, actionType);
+        verify(message).setBody(eq(msg));
+    }
+
+    @Test
+    public void testBodyInputStream() throws Exception {
+        Document msg = new Document();
+        createAtomEntry(msg, actionType);
+
+        XMLOutputter outputter = new XMLOutputter();
+        when(message.getBody())
+            .thenReturn(new ByteArrayInputStream(outputter.outputString(msg).getBytes()));
+
+        processor.process(exchange);
+
+        verify(message).setHeader(CdrSolrUpdateAction, actionType);
+
+        verify(message).setBody(bodyCaptor.capture());
+        Object bodyObject = bodyCaptor.getValue();
+        assertTrue(bodyObject instanceof Document);
+    }
+
+    @Test
+    public void testBodyString() throws Exception {
+        Document msg = new Document();
+        createAtomEntry(msg, actionType);
+
+        XMLOutputter outputter = new XMLOutputter();
+        when(message.getBody())
+            .thenReturn(outputter.outputString(msg));
+
+        processor.process(exchange);
+
+        verify(message).setHeader(CdrSolrUpdateAction, actionType);
+
+        verify(message).setBody(bodyCaptor.capture());
+        Object bodyObject = bodyCaptor.getValue();
+        assertTrue(bodyObject instanceof Document);
     }
 
     @Test

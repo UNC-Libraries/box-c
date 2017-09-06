@@ -18,12 +18,17 @@ package edu.unc.lib.cdr;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
+import java.io.InputStream;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.jdom2.Document;
+import org.jdom2.input.SAXBuilder;
 
 /**
+ * Processes CDR Events, extracting the body and headers
  *
  * @author lfarrell
  *
@@ -32,11 +37,29 @@ public class CdrEventProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
-        Document body = (Document) in.getBody();
+        Document document = null;
+
+        // Figure out what type of body was received and build into XML
+        final Object body = exchange.getIn().getBody();
+        if (body != null) {
+            if (body instanceof Document) {
+                document = (Document) body;
+            } else if (body instanceof InputStream) {
+                SAXBuilder bodyBuilder = new SAXBuilder();
+                document = bodyBuilder.build((InputStream) body);
+            } else if (body instanceof String) {
+                SAXBuilder bodyBuilder = new SAXBuilder();
+                document = bodyBuilder.build(
+                        new ByteArrayInputStream(((String) body).getBytes()));
+            }
+        }
 
         try {
-            String actionType = body.getRootElement().getChild("title", ATOM_NS).getTextTrim();
+            String actionType = document.getRootElement().getChild("title", ATOM_NS).getTextTrim();
             in.setHeader(CdrSolrUpdateAction, actionType);
+
+            // Pass the body document along for future processors
+            in.setBody(document);
         } catch (NullPointerException e) {
             in.setHeader(CdrSolrUpdateAction, "none");
         }
