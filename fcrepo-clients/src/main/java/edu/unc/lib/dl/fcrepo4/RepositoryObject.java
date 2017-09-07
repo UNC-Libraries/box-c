@@ -31,6 +31,7 @@ import edu.unc.lib.dl.fedora.PID;
  * A generic repository object, with properties common to objects in the repository.
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public abstract class RepositoryObject {
@@ -39,6 +40,7 @@ public abstract class RepositoryObject {
     // Loader for lazy loading data about this object when requested
     protected RepositoryObjectDataLoader dataLoader;
     protected RepositoryObjectFactory repoObjFactory;
+    protected RepositoryPIDMinter pidMinter;
 
     // The identifier and path information for this object
     protected PID pid;
@@ -114,7 +116,7 @@ public abstract class RepositoryObject {
      */
     public RepositoryObject addPremisEvents(List<PremisEventObject> events) throws FedoraException {
         for (PremisEventObject event: events) {
-            //repository.createPremisEvent(event.getPid(), event.getModel());
+            repoObjFactory.createPremisEvent(event.getPid(), event.getModel());
         }
 
         return this;
@@ -127,7 +129,8 @@ public abstract class RepositoryObject {
      */
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
-            premisLog = new RepositoryPremisLogger(this, repository);
+            premisLog = new RepositoryPremisLogger(
+                    this, pidMinter, repoObjLoader, repoObjFactory);
         }
         return premisLog;
     }
