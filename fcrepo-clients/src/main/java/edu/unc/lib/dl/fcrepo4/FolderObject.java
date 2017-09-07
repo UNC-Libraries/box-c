@@ -26,12 +26,11 @@ import edu.unc.lib.dl.rdf.Cdr;
  * A repository object which represents a Folder. Folders are containers which
  * may hold work objects or folder objects directly inside of them.
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public class FolderObject extends ContentContainerObject {
-
-    private RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
 
     protected FolderObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
@@ -63,21 +62,19 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created folder object
      */
     public FolderObject addFolder() {
-        return addFolder(pidMinter.mintContentPid(), null);
+        return addFolder(null);
     }
 
     /**
      * Creates and adds a new folder with the provided pid and properties to this
      * folder.
      *
-     * @param pid
-     *            pid for the new folder
      * @param model
      *            properties for the new folder
      * @return the newly created folder object
      */
-    public FolderObject addFolder(PID childPid, Model model) {
-        FolderObject work = repoObjFactory.createFolderObject(childPid, model);
+    public FolderObject addFolder(Model model) {
+        FolderObject work = repoObjFactory.createFolderObject(model);
         repoObjFactory.addMember(this, work);
 
         return work;
@@ -103,7 +100,7 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created work object
      */
     public WorkObject addWork(PID childPid, Model model) {
-        WorkObject work = repoObjFactory.createWorkObject(childPid, model);
+        WorkObject work = repoObjFactory.createWorkObject(model);
         repoObjFactory.addMember(this, work);
 
         return work;

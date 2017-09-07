@@ -30,12 +30,11 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 /**
  * Represents a generic repository object within the main content tree.
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public abstract class ContentObject extends RepositoryObject {
-
-    private RepositoryPIDMinter pidMinter;
 
     protected ContentObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
@@ -125,8 +124,7 @@ public abstract class ContentObject extends RepositoryObject {
     }
 
     private FileObject createFileObject() {
-        PID childPid = pidMinter.mintContentPid();
-        FileObject fileObj = repoObjFactory.createFileObject(childPid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
         return fileObj;
     }
 

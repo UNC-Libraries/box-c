@@ -38,12 +38,11 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * the main work file, in which case the other data files are considered to be
  * supplemental.
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public class WorkObject extends ContentContainerObject {
-
-    private RepositoryPIDMinter pidMinter;
 
     protected WorkObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
@@ -139,7 +138,7 @@ public class WorkObject extends ContentContainerObject {
         model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
 
         // Create the file object
-        FileObject fileObj = repoObjFactory.createFileObject(childPid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
         // Add the binary content to it as its original file
         fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 

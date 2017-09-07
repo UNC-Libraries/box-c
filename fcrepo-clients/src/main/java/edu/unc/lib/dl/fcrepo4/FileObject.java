@@ -46,7 +46,8 @@ import edu.unc.lib.dl.util.URIUtil;
  * May only contain BinaryObjects as children, but can also have descriptive
  * metadata.
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public class FileObject extends ContentObject {
