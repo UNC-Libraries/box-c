@@ -12,3 +12,5 @@ mvn clean install -DskipTests
 Eclipse IDE Developer Setup
 ---------------------------
 A version of Eclipse with m2e is required
+
+To set the environment variable you'll need for running unit tests in Eclipse, go to Preferences > Java > Installed JREs. Select your JRE and click Edit, then type  ```-Dfcrepo.baseUri=http://example.com/rest```` in the Default VM Arguments box in the Default VM Arguments box
