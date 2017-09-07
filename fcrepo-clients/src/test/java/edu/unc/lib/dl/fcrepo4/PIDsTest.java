@@ -57,7 +57,6 @@ public class PIDsTest {
         assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", CONTENT_BASE, pid.getQualifier());
-        assertEquals("Content PID should follow uuid:<> format", "uuid:" + TEST_UUID, pid.getId());
         assertNull("Component path should not be set", pid.getComponentPath());
     }
 
@@ -74,7 +73,6 @@ public class PIDsTest {
         assertEquals("Repository path was incorrect", path, pid.getRepositoryUri().toString());
         assertEquals("Incorrect qualifier", DEPOSIT_RECORD_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
-        assertEquals("PID did not match qualified id", qualified, pid.getId());
         assertEquals("Incorrect component path", component, pid.getComponentPath());
     }
 
@@ -97,7 +95,6 @@ public class PIDsTest {
         assertEquals("Identifer did not match provided value", TEST_UUID, pid.getId());
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", CONTENT_BASE, pid.getQualifier());
-        assertEquals("Content PID should follow uuid:<> format", uuid, pid.getId());
         assertNull("Component path should not be set", pid.getComponentPath());
     }
 
@@ -113,7 +110,6 @@ public class PIDsTest {
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", DEPOSIT_RECORD_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
-        assertEquals("PID did not match qualified id", qualified, pid.getId());
         assertNull("Component path should not be set", pid.getComponentPath());
     }
 
@@ -130,7 +126,6 @@ public class PIDsTest {
         assertEquals("Repository path was incorrect", expectedPath, pid.getRepositoryUri().toString());
         assertEquals("Blank qualifier was not set to default", DEPOSIT_RECORD_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
-        assertEquals("PID did not match qualified id", qualified, pid.getId());
         assertEquals("Incorrect component path", component, pid.getComponentPath());
     }
 
@@ -180,10 +175,8 @@ public class PIDsTest {
         assertEquals("Blank qualifier was not set to default", CONTENT_BASE, pid.getQualifier());
         assertEquals("Qualified id did not match", qualified, pid.getQualifiedId());
         if (component == null) {
-            assertEquals("PID did not match qualified id", "uuid:" + CONTENT_ROOT_ID, pid.getId());
             assertNull("Component path should not be set", pid.getComponentPath());
         } else {
-            assertEquals("PID did not match qualified id", "uuid:" + CONTENT_ROOT_ID + "/" + component, pid.getId());
             assertEquals("Component path not set correctly", component, pid.getComponentPath());
         }
     }
