@@ -38,7 +38,7 @@ public class SolrUpdateRouter extends RouteBuilder {
         .backOffMultiplier(2)
         .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("{{cdr.stream}}")
+        from("{{cdr.solrupdate.stream}}")
             .routeId("CdrServiceSolrUpdate")
             .bean(solrUpdateProcessor);
 

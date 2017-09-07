@@ -382,6 +382,12 @@
 		<property name="pubSubDomain" value="true" />
 	</bean>
 
+	<bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="cdr.solrupdate.stream" />
+		<property name="pubSubDomain" value="false" />
+	</bean>
+
 	<!-- Processors -->
 	<bean id="cdrEventProcessor" class="edu.unc.lib.cdr.CdrEventProcessor">
 	</bean>
@@ -457,7 +463,7 @@
 	</bean>
 	
 	<bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.cdr.CdrEventToSolrUpdateProcessor">
-		<property name="jmsTemplate" ref="jmsTemplate" />
+		<property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
 	</bean>
 	
 	<bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
