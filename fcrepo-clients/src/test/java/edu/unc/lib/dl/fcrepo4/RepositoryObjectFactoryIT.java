@@ -60,7 +60,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         URI uri = pid.getRepositoryUri();
         String path = uri.getPath();
 
-        DepositRecord depRec = repoObjFactory.createDepositRecord(pidMinter.mintDepositRecordPid(), null);
+        DepositRecord depRec = repoObjFactory.createDepositRecord(null);
         assertEquals("Requested URI did not match result", uri, depRec.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -91,9 +91,8 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String filename = "test.txt";
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
-        PID pid = pidMinter.mintContentPid();
 
-        BinaryObject binObj = factory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, pid, model);
+        BinaryObject binObj = factory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
@@ -119,11 +118,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createFileObjectTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+        FileObject fileObj = repoObjFactory.createFileObject();
+        PID pid = fileObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
 
-        FileObject fileObj = repoObjFactory.createFileObject(pid);
         assertEquals("Requested URI did not match result", uri, fileObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -144,11 +143,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createWorkObjectTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+        WorkObject workObj = repoObjFactory.createWorkObject();
+        PID pid = workObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
 
-        WorkObject workObj = repoObjFactory.createWorkObject(pid);
         assertEquals("Requested URI did not match result", uri, workObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -167,11 +166,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createFolderObjectTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+
+        FolderObject folderObj = factory.createFolderObject();
+        PID pid = folderObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
-
-        FolderObject folderObj = factory.createFolderObject(pid);
         assertEquals("Requested URI did not match result", uri, folderObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -190,11 +189,12 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createAdminUnitTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+
+        AdminUnit adminUnit = factory.createAdminUnit();
+        PID pid = adminUnit.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
 
-        AdminUnit adminUnit = factory.createAdminUnit(pid);
         assertEquals("Requested URI did not match result", uri, adminUnit.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -213,11 +213,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createCollectionObjectTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+
+        CollectionObject collObj = factory.createCollectionObject();
+        PID pid = collObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
-
-        CollectionObject collObj = factory.createCollectionObject(pid);
         assertEquals("Requested URI did not match result", uri, collObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
