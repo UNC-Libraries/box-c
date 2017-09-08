@@ -26,8 +26,8 @@
 	<bean id="repoObjFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
-		<property name="repoObjDataLoader" ref="repositoryObjectDataLoader" />
-		<property name="repoObjLoader" ref="repoObjLoader" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="pidMinter" ref="pidMinter" />
 	</bean>
 	
@@ -39,7 +39,7 @@
         <constructor-arg value="5" />
     </bean>
 	
-	<bean id="repoObjLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader">
+	<bean id="repositoyObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader">
         <property name="dataLoader" ref="repositoryObjectDataLoader" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
@@ -48,14 +48,11 @@
 	
 	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
 		<property name="client" ref="fcrepoClient" />
-		<property name="repoObjLoader" ref="repoObjLoader" />
-		<property name="aclService" ref="aclService" />
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	
-	<bean id="aclService" class="edu.unc.lib.dl.acl.service.AccessControlService"></bean>
-	
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryService"></bean>
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl"></bean>
 	
 	<bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
 	
