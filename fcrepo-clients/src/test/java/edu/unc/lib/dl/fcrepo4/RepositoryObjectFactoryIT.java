@@ -32,7 +32,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -50,9 +49,6 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
-
-    @Autowired
-    private RepositoryObjectFactory factory;
 
     @Test
     public void createDepositRecordTest() throws Exception {
@@ -92,7 +88,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject binObj = factory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, model);
+        BinaryObject binObj = repoObjFactory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
@@ -167,7 +163,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createFolderObjectTest() throws Exception {
 
-        FolderObject folderObj = factory.createFolderObject();
+        FolderObject folderObj = repoObjFactory.createFolderObject();
         PID pid = folderObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
@@ -190,7 +186,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createAdminUnitTest() throws Exception {
 
-        AdminUnit adminUnit = factory.createAdminUnit();
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit();
         PID pid = adminUnit.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();
@@ -214,7 +210,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createCollectionObjectTest() throws Exception {
 
-        CollectionObject collObj = factory.createCollectionObject();
+        CollectionObject collObj = repoObjFactory.createCollectionObject();
         PID pid = collObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.getPath();

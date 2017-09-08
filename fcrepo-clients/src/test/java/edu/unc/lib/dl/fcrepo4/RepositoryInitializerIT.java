@@ -23,7 +23,6 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -36,13 +35,10 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
 
     private RepositoryInitializer repoInitializer;
 
-    @Autowired
-    private RepositoryObjectFactory objFactory;
-
     @Before
     public void init() {
         repoInitializer = new RepositoryInitializer();
-        repoInitializer.setObjFactory(objFactory);
+        repoInitializer.setObjFactory(repoObjFactory);
         repoInitializer.setFcrepoClient(client);
     }
 
