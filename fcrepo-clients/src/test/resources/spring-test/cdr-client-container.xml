@@ -5,11 +5,6 @@
   http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
 	<context:property-placeholder />
-
-	<bean id="serverAddress" class="java.lang.String">
-		<constructor-arg
-			value="http://localhost:${systemProperties['fcrepo.dynamic.test.port']:48085}" />
-	</bean>
 	
 	<bean id="baseAddress" class="java.lang.String">
 		<constructor-arg
@@ -28,28 +23,48 @@
 		<property name="client" ref="fcrepoClient" />
 	</bean>
 
-	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+	<bean id="repoObjFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
+		<property name="repoObjDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repoObjLoader" ref="repoObjLoader" />
+		<property name="pidMinter" ref="pidMinter" />
+	</bean>
+	
+	<bean id="cacheTimeToLive" class="java.lang.Long">
+        <constructor-arg value="100" />
+    </bean>
+    
+    <bean id="cacheMaxSize" class="java.lang.Long">
+        <constructor-arg value="5" />
+    </bean>
+	
+	<bean id="repoObjLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader">
+        <property name="dataLoader" ref="repositoryObjectDataLoader" />
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="cacheTimeToLive" ref="cacheTimeToLive" />
+        <property name="cacheMaxSize" ref="cacheMaxSize" />
 	</bean>
 	
 	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
 		<property name="client" ref="fcrepoClient" />
-		<property name="repository" ref="repository" />
+		<property name="repoObjLoader" ref="repoObjLoader" />
+		<property name="aclService" ref="aclService" />
+		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
+	
+	<bean id="aclService" class="edu.unc.lib.dl.acl.service.AccessControlService"></bean>
+	
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryService"></bean>
+	
+	<bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
 		<property name="client" ref="fcrepoClient" />
-		<property name="repository" ref="repository" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 	</bean>
-
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="staticMethod" value="edu.unc.lib.dl.fcrepo4.PIDs.setRepository" />
-		<property name="arguments">
-			<list>
-				<ref bean="repository" />
-			</list>
-		</property>
+	
+	<bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+	    <property name="client" ref="fcrepoClient" />
 	</bean>
 </beans>
