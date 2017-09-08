@@ -62,7 +62,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
 
         FolderObject obj = null;
         try {
-            obj = repoObjFactory.createFolderObject(pid, model);
+            obj = repoObjFactory.createFolderObject(model);
 
             assertTrue(FedoraTransaction.hasTxId());
             assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
@@ -81,9 +81,9 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test (expected = TransactionCancelledException.class)
     public void createRollbackTxTest() {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObject obj = repoObjFactory.createFolderObject(pid, model);
+        FolderObject obj = repoObjFactory.createFolderObject(model);
         tx.cancel();
-        assertNull(repoObjLoader.getFolderObject(pid));
+        assertNull(repoObjLoader.getFolderObject(obj.getPid()));
         assertNull(obj.getUri());
         assertFalse(FedoraTransaction.hasTxId());
         assertFalse(FedoraTransaction.isStillAlive());
@@ -92,28 +92,27 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test
     public void nestedTxTest() throws Exception {
         FedoraTransaction parentTx = txManager.startTransaction();
-        repoObjFactory.createFolderObject(pid, model);
+        repoObjFactory.createFolderObject(model);
 
         FedoraTransaction subTx = txManager.startTransaction();
-        PID workPid = pidMinter.mintContentPid();
-        repoObjFactory.createWorkObject(workPid);
+        WorkObject workObj = repoObjFactory.createWorkObject();
         subTx.close();
 
         assertNull(subTx.getTxUri());
-        verifyNonTxStatusCode(workPid, 404);
+        verifyNonTxStatusCode(workObj.getPid(), 404);
         assertNotNull((parentTx.getTxUri()));
         assertTrue(FedoraTransaction.isStillAlive());
 
         parentTx.close();
         assertNull(parentTx.getTxUri());
         assertFalse(FedoraTransaction.isStillAlive());
-        verifyNonTxStatusCode(workPid, 200);
+        verifyNonTxStatusCode(workObj.getPid(), 200);
     }
 
     @Test
     public void cannotAccessObjectOutsideTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObject folder = repoObjFactory.createFolderObject(pid);
+        FolderObject folder = repoObjFactory.createFolderObject();
 
         verifyNonTxStatusCode(folder.getPid(), 404);
         tx.close();

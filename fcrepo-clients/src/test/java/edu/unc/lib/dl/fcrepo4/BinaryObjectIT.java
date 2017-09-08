@@ -56,7 +56,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
         String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject obj = repoObjFactory.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, parentPid, null);
+        BinaryObject obj = repoObjFactory.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
 
         // Verify that the body of the binary is retrieved
         InputStream resultStream = obj.getBinaryStream();

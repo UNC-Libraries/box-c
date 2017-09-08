@@ -42,8 +42,6 @@ import edu.unc.lib.dl.rdf.PcdmUse;
  */
 public class FileObjectIT extends AbstractFedoraIT {
 
-    private PID pid;
-
     private static final String origBodyString = "Original data";
     private static final String origFilename = "original.txt";
     private static final String origMimetype = "text/plain";
@@ -51,26 +49,20 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Before
     public void init() throws Exception {
-        // Generate a new ID every time so that tests don't conflict
-        pid = PIDs.get(RepositoryPathConstants.CONTENT_BASE + "/" + UUID.randomUUID().toString());
-
         createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
     }
 
     @Test
     public void createFileObjectTest() throws Exception {
-
-        FileObject fileObj = repoObjFactory.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
 
         assertNotNull(fileObj);
-        assertEquals(pid.getRepositoryPath(), fileObj.getPid().getRepositoryPath());
-
         assertObjectExists(fileObj.getPid());
     }
 
     @Test
     public void addOriginalFileTest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Prep file and add
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
@@ -84,7 +76,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMultipleBinariesTest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Add the original
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());

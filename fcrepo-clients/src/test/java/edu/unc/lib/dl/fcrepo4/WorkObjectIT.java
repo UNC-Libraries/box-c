@@ -58,7 +58,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         Resource resc = model.createResource(pid.getRepositoryPath());
         resc.addProperty(DcElements.title, "Title");
 
-        WorkObject obj = repoObjFactory.createWorkObject(pid, model);
+        WorkObject obj = repoObjFactory.createWorkObject(model);
 
         assertTrue(obj.getTypes().contains(Cdr.Work.getURI()));
         assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
@@ -68,7 +68,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addDataFileTest() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject();
 
         String bodyString = "Content";
         String filename = "file.txt";
@@ -95,7 +95,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addPrimaryObjectAndSupplements() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject();
 
         // Create the primary object
         String bodyString = "Primary object";
@@ -138,7 +138,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addModsTest() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject();
         String bodyString = "some MODS content";
         InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
         FileObject fileObj = obj.addDescription(modsStream);
@@ -155,7 +155,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addSourceMdTest() throws Exception {
-        WorkObject anotherObj = repoObjFactory.createWorkObject(pid);
+        WorkObject anotherObj = repoObjFactory.createWorkObject();
         String sourceProfile = "some source md";
         String sourceMdBodyString = "source md content";
         String modsBodyString = "MODS content";

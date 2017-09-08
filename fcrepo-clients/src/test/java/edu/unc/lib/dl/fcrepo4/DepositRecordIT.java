@@ -66,7 +66,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repoObjFactory.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(model);
 
         assertNotNull(record);
 
@@ -86,7 +86,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     public void getDepositRecord() throws Exception {
         Model model = getDepositRecordModel();
 
-        repoObjFactory.createDepositRecord(pid, model);
+        repoObjFactory.createDepositRecord(model);
 
         DepositRecord record = repoObjLoader.getDepositRecord(pid);
 
@@ -98,7 +98,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repoObjFactory.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(model);
 
         String bodyString1 = "Manifest info";
         String filename1 = "manifest1.txt";
@@ -155,7 +155,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
                 .write();
 
         // Push the events out to repository
-        DepositRecord record = repoObjFactory.createDepositRecord(pid, model)
+        DepositRecord record = repoObjFactory.createDepositRecord(model)
             .addPremisEvents(logger.getEvents());
 
         // Retrieve all the events added to this object
@@ -174,7 +174,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     @Test
     public void addObjectsTest() throws Exception {
         Model model = getDepositRecordModel();
-        DepositRecord record = repoObjFactory.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(model);
 
         URI obj1Uri;
         URI obj2Uri;

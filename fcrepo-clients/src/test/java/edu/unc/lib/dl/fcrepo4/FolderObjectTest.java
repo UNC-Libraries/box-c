@@ -96,12 +96,12 @@ public class FolderObjectTest extends AbstractFedoraTest {
     public void addFolderTest() {
         FolderObject childFolder = new FolderObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
 
-        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class)))
+        when(repoObjFactory.createFolderObject(any(Model.class)))
                 .thenReturn(childFolder);
 
         folder.addFolder();
 
-        verify(repoObjFactory).createFolderObject(eq(childPid), (Model) isNull());
+        verify(repoObjFactory).createFolderObject((Model) isNull());
 
         ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
         verify(repoObjFactory).addMember(eq(folder), captor.capture());
@@ -115,12 +115,12 @@ public class FolderObjectTest extends AbstractFedoraTest {
     public void addWorkTest() {
         WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
 
-        when(repoObjFactory.createWorkObject(any(PID.class), any(Model.class)))
+        when(repoObjFactory.createWorkObject(any(Model.class)))
                 .thenReturn(childObj);
 
         folder.addWork();
 
-        verify(repoObjFactory).createWorkObject(eq(childPid), (Model) isNull());
+        verify(repoObjFactory).createWorkObject((Model) isNull());
 
         ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
         verify(repoObjFactory).addMember(eq(folder), captor.capture());

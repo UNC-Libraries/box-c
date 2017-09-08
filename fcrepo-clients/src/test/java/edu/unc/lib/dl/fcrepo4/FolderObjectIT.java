@@ -53,7 +53,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
         Resource resc = model.createResource(pid.getRepositoryPath());
         resc.addProperty(DcElements.title, "Folder Title");
 
-        FolderObject obj = repoObjFactory.createFolderObject(pid, model);
+        FolderObject obj = repoObjFactory.createFolderObject(model);
 
         assertTrue(obj.getTypes().contains(Cdr.Folder.getURI()));
         assertTrue(obj.getTypes().contains(PcdmModels.Object.getURI()));
@@ -64,7 +64,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addFolderTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject(pid);
+        FolderObject obj = repoObjFactory.createFolderObject();
 
         FolderObject child = obj.addFolder();
 
@@ -77,7 +77,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addWorkTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject(pid);
+        FolderObject obj = repoObjFactory.createFolderObject();
 
         PID childPid = pidMinter.mintContentPid();
 
@@ -99,7 +99,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMembersTest() {
-        FolderObject obj = repoObjFactory.createFolderObject(pid);
+        FolderObject obj = repoObjFactory.createFolderObject();
 
         WorkObject child1 = obj.addWork();
         FolderObject child2 = obj.addFolder();
