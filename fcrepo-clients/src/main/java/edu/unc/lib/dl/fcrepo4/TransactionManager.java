@@ -37,10 +37,9 @@ public class TransactionManager {
     private static final String COMMIT_TX = "fcr:tx/fcr:commit";
     private static final String ROLLBACK_TX = "fcr:tx/fcr:rollback";
     private FcrepoClient client;
-    private RepositoryPaths repoPaths;
 
     public FedoraTransaction startTransaction() throws FedoraException {
-        URI repoBase = URI.create(repoPaths.getBaseUri());
+        URI repoBase = URI.create(RepositoryPaths.getBaseUri());
         // appends suffix for creating transaction
         URI createTxUri = URI.create(URIUtil.join(repoBase, CREATE_TX));
         URI txUri = null;

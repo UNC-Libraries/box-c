@@ -49,7 +49,6 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     private RepositoryObjectLoader repoObjLoader;
     private FcrepoClient client;
     private RepositoryObjectDataLoader repositoryObjectDataLoader;
-    private RepositoryPaths repoPaths;
     private RepositoryObjectFactory repoObjFactory;
 
     protected RepositoryObjectCacheLoader() {
@@ -58,7 +57,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     @Override
     public RepositoryObject load(PID pid) {
 
-        URI metadataUri = repoPaths.getMetadataUri(pid);
+        URI metadataUri = RepositoryPaths.getMetadataUri(pid);
         try (FcrepoResponse response = client.get(metadataUri)
                 .accept(TURTLE_MIMETYPE)
                 .perform()) {
