@@ -29,7 +29,6 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -45,17 +44,10 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class WorkObjectIT extends AbstractFedoraIT {
 
-    private PID pid;
-
-    @Before
-    public void init() {
-        pid = pidMinter.mintContentPid();
-    }
-
     @Test
     public void createWorkObjectTest() throws Exception {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(pid.getRepositoryPath());
+        Resource resc = model.createResource();
         resc.addProperty(DcElements.title, "Title");
 
         WorkObject obj = repoObjFactory.createWorkObject(model);

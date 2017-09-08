@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -40,17 +39,10 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class FolderObjectIT extends AbstractFedoraIT {
 
-    private PID pid;
-
-    @Before
-    public void init() {
-        pid = pidMinter.mintContentPid();
-    }
-
     @Test
     public void createFolderObjectTest() {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(pid.getRepositoryPath());
+        Resource resc = model.createResource();
         resc.addProperty(DcElements.title, "Folder Title");
 
         FolderObject obj = repoObjFactory.createFolderObject(model);
