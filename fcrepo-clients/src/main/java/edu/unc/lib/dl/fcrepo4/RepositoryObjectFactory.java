@@ -63,7 +63,7 @@ public class RepositoryObjectFactory {
 
     private RepositoryObjectLoader repoObjLoader;
 
-    private RepositoryPIDMinter pidMinter;
+    private RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
 
     /**
      * Creates a new deposit record object with the given uuid.
