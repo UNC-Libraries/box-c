@@ -78,73 +78,61 @@ public class RepositoryObjectFactoryTest {
 
     @Test
     public void createDepositRecordTest() {
-        PID pid = pidMinter.mintDepositRecordPid();
 
-        DepositRecord obj = repoObjFactory.createDepositRecord(pid, null);
+        DepositRecord obj = repoObjFactory.createDepositRecord(null);
         assertNotNull(obj);
-        assertEquals(pid, obj.getPid());
 
-        verify(repoObjFactory).createDepositRecord(eq(pid), (Model) isNull());
+        verify(repoObjFactory).createDepositRecord((Model) isNull());
     }
 
     @Test
     public void createAdminUnitTest() {
-        PID pid = pidMinter.mintContentPid();
 
-        AdminUnit obj = repoObjFactory.createAdminUnit(pid);
+        AdminUnit obj = repoObjFactory.createAdminUnit();
         assertNotNull(obj);
-        assertEquals(pid, obj.getPid());
 
-        verify(repoObjFactory).createAdminUnit(eq(pid), (Model) isNull());
+        verify(repoObjFactory).createAdminUnit((Model) isNull());
     }
 
     @Test
     public void createCollectionObjectTest() {
-        PID pid = pidMinter.mintContentPid();
 
-        CollectionObject obj = repoObjFactory.createCollectionObject(pid);
+        CollectionObject obj = repoObjFactory.createCollectionObject();
         assertNotNull(obj);
-        assertEquals(pid, obj.getPid());
 
-        verify(repoObjFactory).createCollectionObject(eq(pid), (Model) isNull());
+        verify(repoObjFactory).createCollectionObject((Model) isNull());
     }
 
     @Test
     public void createFolderObjectTest() {
-        PID pid = pidMinter.mintContentPid();
 
-        FolderObject obj = repoObjFactory.createFolderObject(pid);
+        FolderObject obj = repoObjFactory.createFolderObject();
         assertNotNull(obj);
-        assertEquals(pid, obj.getPid());
 
-        verify(repoObjFactory).createFolderObject(eq(pid), (Model) isNull());
+        verify(repoObjFactory).createFolderObject((Model) isNull());
     }
 
     @Test
     public void createWorkObjectTest() {
-        PID pid = pidMinter.mintContentPid();
 
-        WorkObject obj = repoObjFactory.createWorkObject(pid);
+        WorkObject obj = repoObjFactory.createWorkObject();
         assertNotNull(obj);
-        assertEquals(pid, obj.getPid());
 
-        verify(repoObjFactory).createWorkObject(eq(pid), (Model) isNull());
+        verify(repoObjFactory).createWorkObject((Model) isNull());
     }
 
     @Test
     public void createFileObjectTest() {
-        PID pid = pidMinter.mintContentPid();
 
-        FileObject obj = repoObjFactory.createFileObject(pid);
-        assertEquals(pid, obj.getPid());
+        FileObject obj = repoObjFactory.createFileObject();
+        assertNotNull(obj);
 
-        verify(repoObjFactory).createFileObject(eq(pid), (Model) isNull());
+        verify(repoObjFactory).createFileObject((Model) isNull());
     }
 
     @Test
     public void createBinaryTest() {
-        PID pid = pidMinter.mintContentPid();
-        URI binaryUri = pid.getRepositoryUri();
+        URI binaryUri = URI.create(RepositoryPaths.getContentBase());
 
         String slug = "slug";
         InputStream content = mock(InputStream.class);
@@ -154,11 +142,11 @@ public class RepositoryObjectFactoryTest {
         Model model = mock(Model.class);
 
         BinaryObject obj = repoObjFactory.createBinary(binaryUri, slug, content, filename,
-                mimetype, checksum, pid, model);
+                mimetype, checksum, model);
 
         assertEquals(binaryUri, obj.getPid().getRepositoryUri());
         verify(repoObjFactory).createBinary(eq(binaryUri), eq(slug), eq(content), eq(filename),
-                eq(mimetype), eq(checksum), eq(pid), eq(model));
+                eq(mimetype), eq(checksum), eq(model));
     }
 
     @Test
@@ -180,7 +168,7 @@ public class RepositoryObjectFactoryTest {
             }
         });
 
-        PremisEventObject obj = repoObjFactory.createPremisEventObject(eventPid, model);
+        PremisEventObject obj = repoObjFactory.createPremisEvent(eventPid, model);
         assertEquals(eventPid, obj.getPid());
         assertTrue(obj.getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
 

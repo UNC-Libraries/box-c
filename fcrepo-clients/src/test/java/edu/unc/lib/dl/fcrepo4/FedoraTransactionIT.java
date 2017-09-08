@@ -45,14 +45,12 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class FedoraTransactionIT extends AbstractFedoraIT {
 
-    private PID pid;
     private Model model;
 
     @Before
     public void init() {
-        pid = pidMinter.mintContentPid();
         model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(pid.getRepositoryPath());
+        Resource resc = model.createResource();
         resc.addProperty(DcElements.title, "Folder Title");
     }
 
