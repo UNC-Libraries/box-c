@@ -59,6 +59,7 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.VERSION;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -79,6 +80,10 @@ public class IndexDocumentBean {
 
 	@Field("*_d")
 	protected Map<String, Object> dynamicFields;
+
+	public IndexDocumentBean() {
+	    fields = new HashMap<>();
+	}
 
 	public String getId() {
 		return (String) fields.get(ID.getSolrField());
@@ -469,4 +474,13 @@ public class IndexDocumentBean {
 	public void setDynamicFields(Map<String, Object> dynamicFields) {
 		this.dynamicFields = dynamicFields;
 	}
+
+    /**
+     * Map containing all non-dynamic fields
+     *
+     * @return the fields
+     */
+    public Map<String, Object> getFields() {
+        return fields;
+    }
 }
