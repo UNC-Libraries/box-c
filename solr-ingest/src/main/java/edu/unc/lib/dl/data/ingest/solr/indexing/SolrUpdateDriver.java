@@ -27,7 +27,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,18 +96,17 @@ public class SolrUpdateDriver {
                     continue;
                 }
 
-                SolrInputField inputField = new SolrInputField(fieldName);
                 Object value = field.getValue();
 
                 // Id field needs to be set like a non-partial update
-                if (ID.equals(fieldName)) {
+                if (ID.getSolrField().equals(fieldName)) {
 			        sid.addField(fieldName, value);
 			        continue;
 			    }
 
                 // Allowing values and explicitly nulled fields through
                 Map<String, Object> partialUpdate = new HashMap<>();
-                partialUpdate.put(operation, inputField.getValue());
+                partialUpdate.put(operation, value);
                 sid.setField(fieldName, partialUpdate);
 			}
 
