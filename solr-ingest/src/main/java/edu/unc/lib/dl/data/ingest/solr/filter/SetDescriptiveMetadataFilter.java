@@ -18,7 +18,6 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +108,12 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 		idb.setTitle(mainTitle);
 
-		idb.setOtherTitle(otherTitles);
+		if (otherTitles.size() > 0) {
+		    idb.setOtherTitle(otherTitles);
+		} else {
+		    idb.setOtherTitle(null);
+		}
+
 	}
 
 	private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments)
@@ -186,16 +190,16 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 
-		idb.setContributor(contributors);
-
-
+		if (contributors.size() > 0) {
+		    idb.setContributor(contributors);
+		}
 
 		if (creators.size() > 0) {
 		    idb.setCreator(creators);
 			idb.setCreatorSort(creators.get(0));
 		} else {
-		    idb.setCreator(Arrays.asList(""));
-			idb.setCreatorSort("");
+		    idb.setCreator(null);
+			idb.setCreatorSort(null);
 		}
 
 		Map<String, List<List<String>>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
@@ -211,7 +215,12 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 
-		idb.setDepartment(flattened);
+		if (flattened.size() == 0) {
+		    idb.setDepartment(null);
+		} else {
+		    idb.setDepartment(flattened);
+		}
+
 	}
 
 	private void extractAbstract(Element mods, IndexDocumentBean idb) throws JDOMException {
@@ -219,7 +228,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		if (abstractText != null) {
 			idb.setAbstractText(abstractText.trim());
 		} else {
-			idb.setAbstractText("");
+			idb.setAbstractText(null);
 		}
 	}
 
@@ -260,7 +269,11 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 
-		idb.setLanguage(languages);
+		if (languages.size() > 0){
+		    idb.setLanguage(languages);
+		} else {
+		    idb.setLanguage(null);
+		}
 	}
 
 	private void extractDateCreated(Element mods, IndexDocumentBean idb){
@@ -285,7 +298,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		if (dateCreated == null) {
 			idb.setDateCreated(dateCreated);
 		} else {
-			idb.setDateCreated(new Date(0));
+			idb.setDateCreated(null);
 		}
 
 	}
@@ -311,7 +324,12 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			identifiers.add(identifierBuilder.toString());
 			idb.getKeyword().add(idValue);
 		}
-		idb.setIdentifier(identifiers);
+
+		if (identifiers.size() > 0) {
+		    idb.setIdentifier(identifiers);
+		} else {
+		    idb.setIdentifier(null);
+		}
 	}
 
 	private void extractKeywords(Element mods, IndexDocumentBean idb) {
