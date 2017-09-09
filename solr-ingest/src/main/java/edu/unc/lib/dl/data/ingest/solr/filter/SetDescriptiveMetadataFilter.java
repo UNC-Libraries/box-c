@@ -109,9 +109,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		idb.setTitle(mainTitle);
 
 		if (otherTitles.size() > 0) {
-		    idb.setOtherTitle(otherTitles);
+			idb.setOtherTitle(otherTitles);
 		} else {
-		    idb.setOtherTitle(null);
+			idb.setOtherTitle(null);
 		}
 
 	}
@@ -191,14 +191,16 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 
 		if (contributors.size() > 0) {
-		    idb.setContributor(contributors);
+			idb.setContributor(contributors);
+		} else {
+			idb.setContributor(null);
 		}
 
 		if (creators.size() > 0) {
-		    idb.setCreator(creators);
+			idb.setCreator(creators);
 			idb.setCreatorSort(creators.get(0));
 		} else {
-		    idb.setCreator(null);
+			idb.setCreator(null);
 			idb.setCreatorSort(null);
 		}
 
@@ -216,9 +218,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 
 		if (flattened.size() == 0) {
-		    idb.setDepartment(null);
+			idb.setDepartment(null);
 		} else {
-		    idb.setDepartment(flattened);
+			idb.setDepartment(flattened);
 		}
 
 	}
@@ -249,7 +251,11 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 
 		}
 
-		idb.setSubject(subjects);
+		if (subjects.size() > 0) {
+			idb.setSubject(subjects);
+		} else {
+			idb.setSubject(null);
+		}
 	}
 
 	private void extractLanguages(Element mods, IndexDocumentBean idb){
@@ -270,9 +276,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 
 		if (languages.size() > 0){
-		    idb.setLanguage(languages);
+			idb.setLanguage(languages);
 		} else {
-		    idb.setLanguage(null);
+			idb.setLanguage(null);
 		}
 	}
 
@@ -326,9 +332,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		}
 
 		if (identifiers.size() > 0) {
-		    idb.setIdentifier(identifiers);
+			idb.setIdentifier(identifiers);
 		} else {
-		    idb.setIdentifier(null);
+			idb.setIdentifier(null);
 		}
 	}
 

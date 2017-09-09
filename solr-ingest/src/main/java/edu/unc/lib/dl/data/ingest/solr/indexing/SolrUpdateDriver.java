@@ -89,25 +89,25 @@ public class SolrUpdateDriver {
 			SolrInputDocument sid = new SolrInputDocument();
 			Map<String, Object> fields = idb.getFields();
 			for (Entry<String, Object> field : fields.entrySet()) {
-			    String fieldName = field.getKey();
+				String fieldName = field.getKey();
 
-			    // Avoid specifying the timestamp so it will get updated as part of this partial update
-                if (UPDATE_TIMESTAMP.equals(fieldName)) {
-                    continue;
-                }
+				// Avoid specifying the timestamp so it will get updated as part of this partial update
+				if (UPDATE_TIMESTAMP.equals(fieldName)) {
+					continue;
+				}
 
-                Object value = field.getValue();
+				Object value = field.getValue();
 
-                // Id field needs to be set like a non-partial update
-                if (ID.getSolrField().equals(fieldName)) {
-			        sid.addField(fieldName, value);
-			        continue;
-			    }
+				// Id field needs to be set like a non-partial update
+				if (ID.getSolrField().equals(fieldName)) {
+					sid.addField(fieldName, value);
+					continue;
+				}
 
-                // Allowing values and explicitly nulled fields through
-                Map<String, Object> partialUpdate = new HashMap<>();
-                partialUpdate.put(operation, value);
-                sid.setField(fieldName, partialUpdate);
+				// Allowing values and explicitly nulled fields through
+				Map<String, Object> partialUpdate = new HashMap<>();
+				partialUpdate.put(operation, value);
+				sid.setField(fieldName, partialUpdate);
 			}
 
 			if (log.isDebugEnabled())
