@@ -301,12 +301,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 
-		if (dateCreated == null) {
-			idb.setDateCreated(dateCreated);
-		} else {
-			idb.setDateCreated(null);
-		}
-
+		idb.setDateCreated(dateCreated);
 	}
 
 
@@ -370,7 +365,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		if (citationEl != null) {
 			idb.setCitation(citationEl.getValue().trim());
 		} else {
-			idb.setCitation("");
+			idb.setCitation(null);
 		}
 	}
 }
