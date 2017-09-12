@@ -42,7 +42,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
 		log.debug("Applying setRelationsFilter");
 
-		List<String> relations = new ArrayList<String>();
+		List<String> relations = new ArrayList<>();
 		Map<String, List<String>> triples = dip.getTriples();
 
 		// Retrieve the default web datastream
@@ -70,9 +70,7 @@ public class SetRelationsFilter extends AbstractIndexDocumentFilter {
 
 		// Retrieve and store label
 		List<String> label = triples.get(FedoraProperty.label.toString());
-		if (label != null) {
-			dip.getDocument().setLabel(label.get(0));
-		}
+		dip.getDocument().setLabel(label.get(0));
 
 		// Retrieve the default sort order for a container if specified
 		List<String> defaultSortOrder = triples.get(CDRProperty.sortOrder.toString());

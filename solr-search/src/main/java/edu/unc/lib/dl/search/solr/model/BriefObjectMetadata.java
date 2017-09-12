@@ -60,8 +60,6 @@ public interface BriefObjectMetadata {
 
 	public String getParentCollection();
 
-	public List<String> getScope();
-
 	public String getRollup();
 
 	public Long get_version_();
@@ -87,8 +85,6 @@ public interface BriefObjectMetadata {
 	public Integer getResourceTypeSort();
 
 	public String getCreatorSort();
-
-	public String getDefaultSortType();
 
 	public Long getDisplayOrder();
 

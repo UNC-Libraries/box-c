@@ -15,16 +15,18 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ID;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,19 +86,30 @@ public class SolrUpdateDriver {
 	 */
 	public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
 		try {
-			SolrInputDocument sid = updateSolrServer.getBinder().toSolrInputDocument(idb);
-			for (String fieldName : sid.getFieldNames()) {
-				if (!ID_FIELD.equals(fieldName)) {
-					SolrInputField inputField = sid.getField(fieldName);
-					// Adding in each non-null field value, except the timestamp field which gets cleared if not specified so
-					// that it always gets updated as part of a partial update
-					if (inputField != null && (inputField.getValue() != null || UPDATE_TIMESTAMP.equals(fieldName))) {
-						Map<String, Object> partialUpdate = new HashMap<String, Object>();
-						partialUpdate.put(operation, inputField.getValue());
-						sid.setField(fieldName, partialUpdate);
-					}
+			SolrInputDocument sid = new SolrInputDocument();
+			Map<String, Object> fields = idb.getFields();
+			for (Entry<String, Object> field : fields.entrySet()) {
+				String fieldName = field.getKey();
+
+				// Avoid specifying the timestamp so it will get updated as part of this partial update
+				if (UPDATE_TIMESTAMP.equals(fieldName)) {
+					continue;
 				}
+
+				Object value = field.getValue();
+
+				// Id field needs to be set like a non-partial update
+				if (ID.getSolrField().equals(fieldName)) {
+					sid.addField(fieldName, value);
+					continue;
+				}
+
+				// Allowing values and explicitly nulled fields through
+				Map<String, Object> partialUpdate = new HashMap<>();
+				partialUpdate.put(operation, value);
+				sid.setField(fieldName, partialUpdate);
 			}
+
 			if (log.isDebugEnabled())
 				log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
 			updateSolrServer.add(sid);

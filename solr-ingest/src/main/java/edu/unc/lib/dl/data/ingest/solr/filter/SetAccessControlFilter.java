@@ -30,6 +30,7 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -53,12 +54,14 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 		// Generate access control information
 		ObjectAccessControlsBean aclBean = dip.getAclBean();
 
-		List<String> status = new ArrayList<String>();
+		List<String> status = new ArrayList<>();
 		setAccessStatus(triples, status);
 		setPublicationStatus(dip, aclBean, status);
 		setObjectStateStatus(dip, aclBean, status);
 
-		dip.getDocument().setStatus(status);
+		IndexDocumentBean idb = dip.getDocument();
+
+		idb.setStatus(status);
 
 		String allowIndexingString = getFirstTripleValue(triples, ContentModelHelper.CDRProperty.allowIndexing.toString());
 		boolean allowIndexing = !"no".equals(allowIndexingString);
@@ -72,18 +75,21 @@ public class SetAccessControlFilter extends AbstractIndexDocumentFilter {
 			if (listGroups != null) {
 				readGroups.addAll(listGroups);
 			}
-			dip.getDocument().setReadGroup(new ArrayList<String>(readGroups));
+			idb.setReadGroup(new ArrayList<>(readGroups));
 		} else {
-			dip.getDocument().setReadGroup(new ArrayList<String>(0));
+			idb.setReadGroup(new ArrayList<String>());
 		}
 
 		// Populate the list of groups that can view administrative aspects of the object
 		Set<String> adminGroups = aclBean.getGroupsByPermission(Permission.viewAdminUI);
-		if (adminGroups.size() > 0)
-			dip.getDocument().setAdminGroup(new ArrayList<String>(adminGroups));
+		if (adminGroups.size() > 0) {
+			idb.setAdminGroup(new ArrayList<>(adminGroups));
+		} else {
+			idb.setAdminGroup(new ArrayList<String>());
+		}
 
 		// Add in flattened role group mappings
-		dip.getDocument().setRoleGroup(aclBean.roleGroupsToUnprefixedList());
+		idb.setRoleGroup(aclBean.roleGroupsToUnprefixedList());
 		if (log.isDebugEnabled())
 			log.debug("Role groups: {}", dip.getDocument().getRoleGroup());
 		dip.setAclBean(aclBean);

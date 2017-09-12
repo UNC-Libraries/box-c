@@ -15,8 +15,51 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ABSTRACT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ADMIN_GROUP;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_IDS;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ANCESTOR_PATH;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CITATION;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_MODEL;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_STATUS;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTENT_TYPE;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CONTRIBUTOR;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CREATOR;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.CREATOR_SORT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DATASTREAM;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DATE_ADDED;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DATE_CREATED;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DATE_UPDATED;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DEPARTMENT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.DISPLAY_ORDER;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FILESIZE;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FILESIZE_TOTAL;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.FULL_TEXT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ID;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.IDENTIFIER;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.IDENTIFIER_SORT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.IS_PART;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.KEYWORD;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.LABEL;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.LANGUAGE;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.LAST_INDEXED;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.OTHER_TITLES;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.PARENT_COLLECTION;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.READ_GROUP;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RELATIONS;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE_SORT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLE_GROUP;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ROLLUP_ID;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.STATUS;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.SUBJECT;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TIMESTAMP;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TITLE;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.VERSION;
+
 import java.text.ParseException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,77 +68,31 @@ import org.apache.solr.client.solrj.beans.Field;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
+@SuppressWarnings("unchecked")
+/**
+ *
+ * @author bbpennel
+ *
+ */
 public class IndexDocumentBean {
 	protected PID pid;
-	protected String id;
-	protected List<String> ancestorPath;
-	protected String ancestorIds;
-	protected String parentCollection;
-	protected String label;
-
-	protected List<String> scope;
-	protected String rollup;
-	protected Boolean isPart;
-	protected Long _version_;
-
-	protected List<String> datastream;
-	protected Long filesizeSort;
-	protected Long filesizeTotal;
-
-	protected List<String> relations;
-
-	protected List<String> contentModel;
-	protected String resourceType;
-	protected Integer resourceTypeSort;
-
-	protected String creatorSort;
-	protected String defaultSortType;
-	protected Long displayOrder;
-
-	protected List<String> contentType;
-
-	protected Date timestamp;
-	protected Date lastIndexed;
-
-	protected List<String> roleGroup;
-	protected List<String> readGroup;
-	protected List<String> adminGroup;
-	protected List<String> status;
-	protected List<String> contentStatus;
-
-	protected List<String> identifier;
-	protected String identifierSort;
-
-	// Descriptive fields
-	protected String title;
-	protected List<String> otherTitle;
-	protected String abstractText;
-	protected List<String> keyword;
-	protected List<String> subject;
-	protected List<String> language;
-	protected List<String> creator;
-	protected List<String> contributor;
-	protected List<String> department;
-
-	protected Date dateCreated;
-	protected Date dateAdded;
-	protected Date dateUpdated;
-
-	protected String citation;
-
-	protected String fullText;
+	private Map<String, Object> fields;
 
 	@Field("*_d")
 	protected Map<String, Object> dynamicFields;
 
+	public IndexDocumentBean() {
+	    fields = new HashMap<>();
+	}
+
 	public String getId() {
-		return id;
+		return (String) fields.get(ID.getSolrField());
 	}
 
 	@Field
 	public void setId(String id) {
-		this.id = id;
-		this.pid = new PID(this.id);
+		fields.put(ID.getSolrField(), id);
+		this.pid = new PID(id);
 	}
 
 	public PID getPid() {
@@ -103,389 +100,371 @@ public class IndexDocumentBean {
 	}
 
 	public List<String> getAncestorPath() {
-		return ancestorPath;
+		return (List<String>) fields.get(ANCESTOR_PATH.getSolrField());
 	}
 
 	@Field
 	public void setAncestorPath(List<String> ancestorPath) {
-		this.ancestorPath = ancestorPath;
+		fields.put(ANCESTOR_PATH.getSolrField(), ancestorPath);
 	}
 
 	public String getAncestorIds() {
-		return ancestorIds;
+		return (String) fields.get(ANCESTOR_IDS.getSolrField());
 	}
 
 	@Field
 	public void setAncestorIds(String ancestorIds) {
-		this.ancestorIds = ancestorIds;
+		fields.put(ANCESTOR_IDS.getSolrField(), ancestorIds);
 	}
 
 	public String getParentCollection() {
-		return parentCollection;
+		return (String) fields.get(PARENT_COLLECTION.getSolrField());
 	}
 
 	@Field
 	public void setParentCollection(String parentCollection) {
-		this.parentCollection = parentCollection;
+		fields.put(PARENT_COLLECTION.getSolrField(), parentCollection);
 	}
 
 	public String getLabel() {
-		return label;
+		return (String) fields.get(LABEL.getSolrField());
 	}
 
 	@Field
 	public void setLabel(String label) {
-		this.label = label;
-	}
-
-	public List<String> getScope() {
-		return scope;
-	}
-
-	@Field
-	public void setScope(List<String> scope) {
-		this.scope = scope;
+		fields.put(LABEL.getSolrField(), label);
 	}
 
 	public String getRollup() {
-		return rollup;
+		return (String) fields.get(ROLLUP_ID.getSolrField());
 	}
 
 	@Field
 	public void setRollup(String rollup) {
-		this.rollup = rollup;
+		fields.put(ROLLUP_ID.getSolrField(), rollup);
 	}
 
 	public Boolean getIsPart() {
-		return isPart;
+		return (Boolean) fields.get(IS_PART.getSolrField());
 	}
 
 	@Field
-	public void setIsPart(Boolean b) {
-		this.isPart = b;
+	public void setIsPart(Boolean isPart) {
+		fields.put(IS_PART.getSolrField(), isPart);
 	}
 
 	public Long get_version_() {
-		return _version_;
+		return (Long) fields.get(VERSION.getSolrField());
 	}
 
 	@Field
 	public void set_version_(Long _version_) {
-		this._version_ = _version_;
+		fields.put(VERSION.getSolrField(), _version_);
 	}
 
 	public List<String> getDatastream() {
-		return datastream;
+		return (List<String>) fields.get(DATASTREAM.getSolrField());
 	}
 
 	@Field
 	public void setDatastream(List<String> datastream) {
-		this.datastream = datastream;
+		fields.put(DATASTREAM.getSolrField(), datastream);
 	}
 
 	public Long getFilesizeSort() {
-		return filesizeSort;
+		return (Long) fields.get(FILESIZE.getSolrField());
 	}
 
 	@Field
 	public void setFilesizeSort(Long filesizeSort) {
-		this.filesizeSort = filesizeSort;
+		fields.put(FILESIZE.getSolrField(), filesizeSort);
 	}
 
 	public Long getFilesizeTotal() {
-		return filesizeTotal;
+		return (Long) fields.get(FILESIZE_TOTAL.getSolrField());
 	}
 
 	@Field
 	public void setFilesizeTotal(Long filesizeTotal) {
-		this.filesizeTotal = filesizeTotal;
+		fields.put(FILESIZE_TOTAL.getSolrField(), filesizeTotal);
 	}
 
 	public List<String> getRelations() {
-		return relations;
+		return (List<String>) fields.get(RELATIONS.getSolrField());
 	}
 
 	@Field
 	public void setRelations(List<String> relations) {
-		this.relations = relations;
+		fields.put(RELATIONS.getSolrField(), relations);
 	}
 
 	public List<String> getContentModel() {
-		return contentModel;
+		return (List<String>) fields.get(CONTENT_MODEL.getSolrField());
 	}
 
 	@Field
 	public void setContentModel(List<String> contentModel) {
-		this.contentModel = contentModel;
+		fields.put(CONTENT_MODEL.getSolrField(), contentModel);
 	}
 
 	public String getResourceType() {
-		return resourceType;
+		return (String) fields.get(RESOURCE_TYPE.getSolrField());
 	}
 
 	@Field
 	public void setResourceType(String resourceType) {
-		this.resourceType = resourceType;
+		fields.put(RESOURCE_TYPE.getSolrField(), resourceType);
 	}
 
 	public Integer getResourceTypeSort() {
-		return resourceTypeSort;
+		return (Integer) fields.get(RESOURCE_TYPE_SORT.getSolrField());
 	}
 
 	@Field
 	public void setResourceTypeSort(Integer resourceTypeSort) {
-		this.resourceTypeSort = resourceTypeSort;
+		fields.put(RESOURCE_TYPE_SORT.getSolrField(), resourceTypeSort);
 	}
 
 	public String getCreatorSort() {
-		return creatorSort;
+		return (String) fields.get(CREATOR_SORT.getSolrField());
 	}
 
 	@Field
 	public void setCreatorSort(String creatorSort) {
-		this.creatorSort = creatorSort;
-	}
-
-	public String getDefaultSortType() {
-		return defaultSortType;
-	}
-
-	@Field
-	public void setDefaultSortType(String defaultSortType) {
-		this.defaultSortType = defaultSortType;
+		fields.put(CREATOR_SORT.getSolrField(), creatorSort);
 	}
 
 	public Long getDisplayOrder() {
-		return displayOrder;
+		return (Long) fields.get(DISPLAY_ORDER.getSolrField());
 	}
 
 	@Field
 	public void setDisplayOrder(Long displayOrder) {
-		this.displayOrder = displayOrder;
+		fields.put(DISPLAY_ORDER.getSolrField(), displayOrder);
 	}
 
 	public List<String> getContentType() {
-		return contentType;
+		return (List<String>) fields.get(CONTENT_TYPE.getSolrField());
 	}
 
 	@Field
 	public void setContentType(List<String> contentType) {
-		this.contentType = contentType;
+		fields.put(CONTENT_TYPE.getSolrField(), contentType);
 	}
 
 	public Date getTimestamp() {
-		return timestamp;
+		return (Date) fields.get(TIMESTAMP.getSolrField());
 	}
 
 	@Field
 	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
+		fields.put(TIMESTAMP.getSolrField(), timestamp);
 	}
 
 	public Date getLastIndexed() {
-		return lastIndexed;
+		return (Date) fields.get(LAST_INDEXED.getSolrField());
 	}
 
 	@Field
 	public void setLastIndexed(Date lastIndexed) {
-		this.lastIndexed = lastIndexed;
+		fields.put(LAST_INDEXED.getSolrField(), lastIndexed);
 	}
 
 	public List<String> getRoleGroup() {
-		return roleGroup;
+		return (List<String>) fields.get(ROLE_GROUP.getSolrField());
 	}
 
 	@Field
 	public void setRoleGroup(List<String> roleGroup) {
-		this.roleGroup = roleGroup;
+		fields.put(ROLE_GROUP.getSolrField(), roleGroup);
 	}
 
 	public List<String> getReadGroup() {
-		return readGroup;
+		return (List<String>) fields.get(READ_GROUP.getSolrField());
 	}
 
 	@Field
 	public void setReadGroup(List<String> readGroup) {
-		this.readGroup = readGroup;
+		fields.put(READ_GROUP.getSolrField(), readGroup);
 	}
 
 	public List<String> getAdminGroup() {
-		return adminGroup;
+		return (List<String>) fields.get(ADMIN_GROUP.getSolrField());
 	}
 
 	@Field
 	public void setAdminGroup(List<String> adminGroup) {
-		this.adminGroup = adminGroup;
+		fields.put(ADMIN_GROUP.getSolrField(), adminGroup);
 	}
 
 	public List<String> getStatus() {
-		return status;
+		return (List<String>) fields.get(STATUS.getSolrField());
 	}
 
 	@Field
 	public void setStatus(List<String> status) {
-		this.status = status;
+		fields.put(STATUS.getSolrField(), status);
 	}
 
 	public List<String> getContentStatus() {
-		return contentStatus;
+		return (List<String>) fields.get(CONTENT_STATUS.getSolrField());
 	}
 
 	@Field
 	public void setContentStatus(List<String> contentStatus) {
-		this.contentStatus = contentStatus;
+		fields.put(CONTENT_STATUS.getSolrField(), contentStatus);
 	}
 
 	public List<String> getIdentifier() {
-		return identifier;
+		return (List<String>) fields.get(IDENTIFIER.getSolrField());
 	}
 
 	@Field
 	public void setIdentifier(List<String> identifier) {
-		this.identifier = identifier;
+		fields.put(IDENTIFIER.getSolrField(), identifier);
 	}
 
 	public String getIdentifierSort() {
-		return identifierSort;
+		return (String) fields.get(IDENTIFIER_SORT.getSolrField());
 	}
 
 	@Field
 	public void setIdentifierSort(String identifierSort) {
-		this.identifierSort = identifierSort;
+		fields.put(IDENTIFIER_SORT.getSolrField(), identifierSort);
 	}
 
 	public String getTitle() {
-		return title;
+		return (String) fields.get(TITLE.getSolrField());
 	}
 
 	@Field
 	public void setTitle(String title) {
-		this.title = title;
+		fields.put(TITLE.getSolrField(), title);
 	}
 
 	public List<String> getOtherTitle() {
-		return otherTitle;
+		return (List<String>) fields.get(OTHER_TITLES.getSolrField());
 	}
 
 	@Field
 	public void setOtherTitle(List<String> otherTitle) {
-		this.otherTitle = otherTitle;
+		fields.put(OTHER_TITLES.getSolrField(), otherTitle);
 	}
 
 	public String getAbstractText() {
-		return abstractText;
+		return (String) fields.get(ABSTRACT.getSolrField());
 	}
 
 	@Field("abstract")
 	public void setAbstractText(String abstractText) {
-		this.abstractText = abstractText;
+		fields.put(ABSTRACT.getSolrField(), abstractText);
 	}
 
 	public List<String> getKeyword() {
-		return keyword;
+		return (List<String>) fields.get(KEYWORD.getSolrField());
 	}
 
 	@Field
 	public void setKeyword(List<String> keyword) {
-		this.keyword = keyword;
+		fields.put(KEYWORD.getSolrField(), keyword);
 	}
 
 	public List<String> getSubject() {
-		return subject;
+		return (List<String>) fields.get(SUBJECT.getSolrField());
 	}
 
 	@Field
 	public void setSubject(List<String> subject) {
-		this.subject = subject;
+		fields.put(SUBJECT.getSolrField(), subject);
 	}
 
 	public List<String> getLanguage() {
-		return language;
+		return (List<String>) fields.get(LANGUAGE.getSolrField());
 	}
 
 	@Field
 	public void setLanguage(List<String> language) {
-		this.language = language;
+		fields.put(LANGUAGE.getSolrField(), language);
 	}
 
 	public List<String> getCreator() {
-		return creator;
+		return (List<String>) fields.get(CREATOR.getSolrField());
 	}
 
 	@Field
 	public void setCreator(List<String> creator) {
-		this.creator = creator;
+		fields.put(CREATOR.getSolrField(), creator);
 	}
 
 	public List<String> getContributor() {
-		return contributor;
+		return (List<String>) fields.get(CONTRIBUTOR.getSolrField());
 	}
 
 	@Field
 	public void setContributor(List<String> contributor) {
-		this.contributor = contributor;
+		fields.put(CONTRIBUTOR.getSolrField(), contributor);
 	}
 
 	public List<String> getDepartment() {
-		return department;
+		return (List<String>) fields.get(DEPARTMENT.getSolrField());
 	}
 
 	@Field
 	public void setDepartment(List<String> department) {
-		this.department = department;
+		fields.put(DEPARTMENT.getSolrField(), department);
 	}
 
 	public Date getDateCreated() {
-		return dateCreated;
+		return (Date) fields.get(DATE_CREATED.getSolrField());
 	}
 
 	@Field
 	public void setDateCreated(Date dateCreated) {
-		this.dateCreated = dateCreated;
+		fields.put(DATE_CREATED.getSolrField(), dateCreated);
 	}
 
 	public Date getDateAdded() {
-		return dateAdded;
+		return (Date) fields.get(DATE_ADDED.getSolrField());
 	}
 
 	@Field
 	public void setDateAdded(Date dateAdded) {
-		this.dateAdded = dateAdded;
+		fields.put(DATE_ADDED.getSolrField(), dateAdded);
 	}
 
 	public void setDateAdded(String dateAdded) throws ParseException {
-		this.dateAdded = DateTimeUtil.parseUTCToDate(dateAdded);
+		fields.put(DATE_ADDED.getSolrField(), DateTimeUtil.parseUTCToDate(dateAdded));
 	}
 
 	public Date getDateUpdated() {
-		return dateUpdated;
+		return (Date) fields.get(DATE_UPDATED.getSolrField());
 	}
 
 	@Field
 	public void setDateUpdated(Date dateUpdated) {
-		this.dateUpdated = dateUpdated;
+		fields.put(DATE_UPDATED.getSolrField(), dateUpdated);
 	}
 
 	public void setDateUpdated(String dateUpdated) throws ParseException {
-		this.dateUpdated = DateTimeUtil.parseUTCToDate(dateUpdated);
+		fields.put(DATE_UPDATED.getSolrField(), DateTimeUtil.parseUTCToDate(dateUpdated));
 	}
 
 	public String getCitation() {
-		return citation;
+		return (String) fields.get(CITATION.getSolrField());
 	}
 
 	@Field
 	public void setCitation(String citation) {
-		this.citation = citation;
+		fields.put(CITATION.getSolrField(), citation);
 	}
 
 	public String getFullText() {
-		return fullText;
+		return (String) fields.get(FULL_TEXT.getSolrField());
 	}
 
 	@Field
 	public void setFullText(String fullText) {
-		this.fullText = fullText;
+		fields.put(FULL_TEXT.getSolrField(), fullText);
 	}
 
 	public Map<String, Object> getDynamicFields() {
@@ -495,4 +474,13 @@ public class IndexDocumentBean {
 	public void setDynamicFields(Map<String, Object> dynamicFields) {
 		this.dynamicFields = dynamicFields;
 	}
+
+    /**
+     * Map containing all non-dynamic fields
+     *
+     * @return the fields
+     */
+    public Map<String, Object> getFields() {
+        return fields;
+    }
 }

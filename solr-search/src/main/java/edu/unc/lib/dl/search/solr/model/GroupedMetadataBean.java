@@ -142,11 +142,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	}
 
 	@Override
-	public List<String> getScope() {
-		return this.representative.getScope();
-	}
-
-	@Override
 	public String getRollup() {
 		return this.representative.getRollup();
 	}
@@ -209,11 +204,6 @@ public class GroupedMetadataBean implements BriefObjectMetadata {
 	@Override
 	public String getCreatorSort() {
 		return this.representative.getCreatorSort();
-	}
-
-	@Override
-	public String getDefaultSortType() {
-		return this.representative.getDefaultSortType();
 	}
 
 	@Override

@@ -61,12 +61,13 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	private List<Tag> tags;
 
 	public BriefObjectMetadataBean() {
-		countMap = new HashMap<String, Long>(2);
+		countMap = new HashMap<>(2);
 	}
 
 	// TODO getDefaultWebData getDefaultWebObject getFilesizeByDatastream
 
 	public String getIdWithoutPrefix() {
+		String id = getId();
 		int index = id.indexOf(":");
 		if (index != -1) {
 			return id.substring(index + 1);
@@ -98,12 +99,12 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	@Override
 	public CutoffFacet getPath() {
 		if (path == null) {
-			if (this.ancestorPath == null) {
-				this.path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.id + "," + this.title,
+			if (getAncestorPath() == null) {
+				this.path = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + getId() + "," + getTitle(),
 						0L);
 			} else {
 				path = new CutoffFacet(ancestorPathFacet);
-				path.addNode(id);
+				path.addNode(getId());
 			}
 		}
 		return path;
@@ -135,7 +136,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		String pid;
 		if (datastreamParts.length > 1) {
 			pid = datastreamParts[0];
-			if (pid.equals(this.id)) {
+			if (pid.equals(getId())) {
 				pid = null;
 			}
 			datastreamName = datastreamParts[1];
@@ -176,14 +177,14 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public void setRoleGroup(List<String> roleGroup) {
 		super.setRoleGroup(roleGroup);
 
-		groupRoleMap = new HashMap<String, Collection<String>>();
+		groupRoleMap = new HashMap<>();
 		if (roleGroup != null) {
 			for (String roleGroupPair : roleGroup) {
 				String[] roleGroupData = roleGroupPair.split("\\|");
 				if (roleGroupData.length == 2) {
 					Collection<String> roles = groupRoleMap.get(roleGroupData[1]);
 					if (roles == null) {
-						roles = new ArrayList<String>();
+						roles = new ArrayList<>();
 						groupRoleMap.put(roleGroupData[1], roles);
 					}
 					roles.add(roleGroupData[0]);
@@ -203,8 +204,8 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
 	@Override
 	public ObjectAccessControlsBean getAccessControlBean() {
-		if (this.accessControlBean == null && this.roleGroup != null) {
-			this.accessControlBean = new ObjectAccessControlsBean(pid, this.roleGroup);
+		if (this.accessControlBean == null && getRoleGroup() != null) {
+			this.accessControlBean = new ObjectAccessControlsBean(pid, getRoleGroup());
 		}
 		return this.accessControlBean;
 	}
@@ -214,15 +215,15 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	public void setRelations(List<String> relations) {
 		super.setRelations(relations);
 
-		this.relationsMap = new HashMap<String, List<String>>(this.relations.size());
-		for (String relation: this.relations) {
+		this.relationsMap = new HashMap<>(getRelations().size());
+		for (String relation: getRelations()) {
 			if (relation == null)
 				continue;
 			String[] rdfParts = relation.split("\\|", 2);
 
 			List<String> values = this.relationsMap.get(rdfParts[0]);
 			if (values == null) {
-				values = new ArrayList<String>();
+				values = new ArrayList<>();
 				this.relationsMap.put(rdfParts[0], values);
 			}
 			values.add(rdfParts[1]);
@@ -252,25 +253,25 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	@Override
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
-		sb.append("id: " + id + "\n");
-		sb.append("ancestorPath: " + ancestorPath + "\n");
+		sb.append("id: " + getId() + "\n");
+		sb.append("ancestorPath: " + getAncestorPath() + "\n");
 		sb.append("ancestorNames: " + ancestorNames + "\n");
-		sb.append("resourceType: " + resourceType + "\n");
-		sb.append("displayOrder: " + displayOrder + "\n");
-		sb.append("contentType: " + contentType + "\n");
-		sb.append("datastream: " + datastream + "\n");
-		sb.append("title: " + title + "\n");
-		sb.append("abstractText: " + abstractText + "\n");
-		sb.append("keyword: " + keyword + "\n");
-		sb.append("subject: " + subject + "\n");
-		sb.append("language: " + language + "\n");
-		sb.append("creator: " + creator + "\n");
-		sb.append("department: " + department + "\n");
-		sb.append("dateCreated: " + dateCreated + "\n");
-		sb.append("dateAdded: " + dateAdded + "\n");
-		sb.append("dateUpdated: " + dateUpdated + "\n");
-		sb.append("timestamp: " + timestamp + "\n");
-		sb.append("contentStatus: " + contentStatus + "\n");
+		sb.append("resourceType: " + getResourceType() + "\n");
+		sb.append("displayOrder: " + getDisplayOrder() + "\n");
+		sb.append("contentType: " + getContentType() + "\n");
+		sb.append("datastream: " + getDatastream() + "\n");
+		sb.append("title: " + getTitle() + "\n");
+		sb.append("abstractText: " + getAbstractText() + "\n");
+		sb.append("keyword: " + getKeyword() + "\n");
+		sb.append("subject: " + getSubject() + "\n");
+		sb.append("language: " + getLanguage() + "\n");
+		sb.append("creator: " + getCreator() + "\n");
+		sb.append("department: " + getDepartment() + "\n");
+		sb.append("dateCreated: " + getDateCreated() + "\n");
+		sb.append("dateAdded: " + getDateAdded() + "\n");
+		sb.append("dateUpdated: " + getDateUpdated() + "\n");
+		sb.append("timestamp: " + getTimestamp() + "\n");
+		sb.append("contentStatus: " + getContentStatus() + "\n");
 		return sb.toString();
 	}
 
@@ -282,11 +283,11 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 		}
 
 		if (objectPath == null) {
-			if (pathFactory != null && parentCollection != null) {
-				parentName = pathFactory.getName(parentCollection);
+			if (pathFactory != null && getParentCollection() != null) {
+				parentName = pathFactory.getName(getParentCollection());
 			}
 		} else {
-			parentName = objectPath.getName(parentCollection);
+			parentName = objectPath.getName(getParentCollection());
 		}
 
 		return parentName;
@@ -312,7 +313,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 	@Override
 	public void addTag(Tag t) {
 		if (this.tags == null)
-			this.tags = new ArrayList<Tag>();
+			this.tags = new ArrayList<>();
 		this.tags.add(t);
 	}
 

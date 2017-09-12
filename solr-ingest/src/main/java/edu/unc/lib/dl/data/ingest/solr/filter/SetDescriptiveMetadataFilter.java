@@ -95,7 +95,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 	private void extractTitles(Element mods, IndexDocumentBean idb) throws JDOMException {
 		List<?> titles = mods.getChildren("titleInfo", JDOMNamespaceUtil.MODS_V3_NS);
 		String mainTitle = null;
-		List<String> otherTitles = new ArrayList<String>();
+		List<String> otherTitles = new ArrayList<>();
 		for (Object titleInfoObj : titles) {
 			Element titleInfoEl = (Element) titleInfoObj;
 			for (Object titleObj : titleInfoEl.getChildren()) {
@@ -107,15 +107,20 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 		idb.setTitle(mainTitle);
-		if (otherTitles.size() > 0)
+
+		if (otherTitles.size() > 0) {
 			idb.setOtherTitle(otherTitles);
+		} else {
+			idb.setOtherTitle(null);
+		}
+
 	}
 
 	private void extractNamesAndAffiliations(Element mods, IndexDocumentBean idb, boolean splitDepartments)
 			throws JDOMException {
 		List<?> names = mods.getChildren("name", JDOMNamespaceUtil.MODS_V3_NS);
-		List<String> creators = new ArrayList<String>();
-		List<String> contributors = new ArrayList<String>();
+		List<String> creators = new ArrayList<>();
+		List<String> contributors = new ArrayList<>();
 
 		Element nameEl;
 		for (Object nameObj : names) {
@@ -185,41 +190,55 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			}
 		}
 
-		if (contributors.size() > 0)
+		if (contributors.size() > 0) {
 			idb.setContributor(contributors);
+		} else {
+			idb.setContributor(null);
+		}
+
 		if (creators.size() > 0) {
 			idb.setCreator(creators);
 			idb.setCreatorSort(creators.get(0));
+		} else {
+			idb.setCreator(null);
+			idb.setCreatorSort(null);
 		}
 
 		Map<String, List<List<String>>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
+		List<String> flattened = new ArrayList<>();
 		if (authTerms != null) {
 			List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
 
 			if (affiliationTerms != null) {
-			// Make the departments for the whole document into a form solr can take
-				List<String> flattened = new ArrayList<String>();
+				// Make the departments for the whole document into a form solr can take
 				for (List<String> path : affiliationTerms) {
 					flattened.addAll(path);
 				}
-
-				if (affiliationTerms != null && affiliationTerms.size() > 0) {
-					idb.setDepartment(flattened);
-				}
 			}
 		}
+
+		if (flattened.size() == 0) {
+			idb.setDepartment(null);
+		} else {
+			idb.setDepartment(flattened);
+		}
+
 	}
 
 	private void extractAbstract(Element mods, IndexDocumentBean idb) throws JDOMException {
 		String abstractText = mods.getChildText("abstract", JDOMNamespaceUtil.MODS_V3_NS);
-		if (abstractText != null)
+		if (abstractText != null) {
 			idb.setAbstractText(abstractText.trim());
+		} else {
+			idb.setAbstractText(null);
+		}
 	}
 
 	private void extractSubjects(Element mods, IndexDocumentBean idb) {
 		List<?> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+		List<String> subjects = new ArrayList<>();
 		if (subjectEls.size() > 0) {
-			List<String> subjects = new ArrayList<String>();
+
 			for (Object subjectObj: subjectEls) {
 				List<?> subjectParts = ((Element)subjectObj).getChildren();
 				for (Object subjectPart: subjectParts) {
@@ -229,16 +248,21 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 					}
 				}
 			}
-			if (subjects.size() > 0)
-				idb.setSubject(subjects);
+
 		}
 
+		if (subjects.size() > 0) {
+			idb.setSubject(subjects);
+		} else {
+			idb.setSubject(null);
+		}
 	}
 
 	private void extractLanguages(Element mods, IndexDocumentBean idb){
 		List<?> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
+		List<String> languages = new ArrayList<>();
+
 		if (languageEls.size() > 0) {
-			List<String> languages = new ArrayList<String>();
 			String languageTerm = null;
 			for (Object languageObj: languageEls) {
 				// Our schema only allows for iso639-2b languages at this point.
@@ -249,8 +273,12 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 						languages.add(languageTerm);
 				}
 			}
-			if (languages.size() > 0)
-				idb.setLanguage(languages);
+		}
+
+		if (languages.size() > 0){
+			idb.setLanguage(languages);
+		} else {
+			idb.setLanguage(null);
 		}
 	}
 
@@ -268,18 +296,19 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 					dateCreated = JDOMQueryUtil.parseISO6392bDateChild(originInfoEl, "dateCaptured", JDOMNamespaceUtil.MODS_V3_NS);
 				}
 				if (dateCreated != null) {
-					idb.setDateCreated(dateCreated);
-					return;
+					break;
 				}
 			}
 		}
+
+		idb.setDateCreated(dateCreated);
 	}
 
 
 
 	private void extractIdentifiers(Element mods, IndexDocumentBean idb){
 		List<?> identifierEls = mods.getChildren("identifier", JDOMNamespaceUtil.MODS_V3_NS);
-		List<String> identifiers = new ArrayList<String>();
+		List<String> identifiers = new ArrayList<>();
 		for (Object identifierObj: identifierEls) {
 			StringBuilder identifierBuilder = new StringBuilder();
 			Element identifierEl = (Element) identifierObj;
@@ -296,7 +325,12 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 			identifiers.add(identifierBuilder.toString());
 			idb.getKeyword().add(idValue);
 		}
-		idb.setIdentifier(identifiers);
+
+		if (identifiers.size() > 0) {
+			idb.setIdentifier(identifiers);
+		} else {
+			idb.setIdentifier(null);
+		}
 	}
 
 	private void extractKeywords(Element mods, IndexDocumentBean idb) {
@@ -320,7 +354,7 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		if (elements == null)
 			return;
 		for (Object elementObj: elements) {
-			String value = ((Element)elementObj).getValue();
+			String value = ((Element) elementObj).getValue();
 			if (value != null)
 				values.add(value);
 		}
@@ -330,6 +364,8 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		Element citationEl = JDOMQueryUtil.getChildByAttribute(mods, "note", JDOMNamespaceUtil.MODS_V3_NS, "type", "citation/reference");
 		if (citationEl != null) {
 			idb.setCitation(citationEl.getValue().trim());
+		} else {
+			idb.setCitation(null);
 		}
 	}
 }
