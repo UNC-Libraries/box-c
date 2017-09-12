@@ -36,8 +36,6 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -47,15 +45,14 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 /**
  * Data loader which retrieves repository data for objects.
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public class RepositoryObjectDataLoader {
     private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
 
-    private RepositoryObjectLoader repoObjLoader;
-
-    private AccessControlService aclService;
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     private FcrepoClient client;
 
@@ -156,7 +153,7 @@ public class RepositoryObjectDataLoader {
 
         PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
 
-        return repoObjLoader.getRepositoryObject(pid);
+        return repositoryObjectLoader.getRepositoryObject(pid);
     }
 
     /**
@@ -195,16 +192,6 @@ public class RepositoryObjectDataLoader {
         return null;
     }
 
-    /**
-     * Retrieve access control information for the given object
-     *
-     * @param obj
-     * @return
-     */
-    public ObjectAccessControlsBean getAccessControls(RepositoryObject obj) {
-        return aclService.getObjectAccessControls(obj.getPid());
-    }
-
     public void setClient(FcrepoClient client) {
         this.client = client;
     }
@@ -214,15 +201,7 @@ public class RepositoryObjectDataLoader {
     }
 
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
-    }
-
-    public AccessControlService getAclService() {
-        return aclService;
-    }
-
-    public void setAclService(AccessControlService aclService) {
-        this.aclService = aclService;
+        this.repositoryObjectLoader = repoObjLoader;
     }
 
     public TripleStoreQueryService getTripleStoreQueryService() {
