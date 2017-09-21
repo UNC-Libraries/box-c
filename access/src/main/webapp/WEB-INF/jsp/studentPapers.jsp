@@ -35,6 +35,7 @@
         				<label for="mp-dept">Department: </label><select id="mp-dept">
         					<option value=""></option>
         					<option value="/forms/art-mfa">Art MFA</option>
+        					<option value="/forms/planning">City and Regional Planning</option>
         					<option value="/forms/sph_ese_technical_report">Gillings ESE Technical Report</option>
         					<option value="/forms/sph_hb_cap_submission">Gillings HB Capstone</option>
         					<option value="/forms/sph_hp">Gillings Health Policy Management</option>
