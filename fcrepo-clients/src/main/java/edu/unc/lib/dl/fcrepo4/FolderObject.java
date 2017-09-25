@@ -86,7 +86,7 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created work object
      */
     public WorkObject addWork() {
-        return addWork(pidMinter.mintContentPid(), null);
+        return repoObjFactory.createWorkObject();
     }
 
     /**

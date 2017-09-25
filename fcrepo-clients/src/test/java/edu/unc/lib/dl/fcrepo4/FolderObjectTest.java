@@ -115,18 +115,13 @@ public class FolderObjectTest extends AbstractFedoraTest {
     public void addWorkTest() {
         WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
 
-        when(repoObjFactory.createWorkObject(any(Model.class)))
-                .thenReturn(childObj);
+        when(repoObjFactory.createWorkObject()).thenReturn(childObj);
 
-        folder.addWork();
+        WorkObject workObj = folder.addWork();
 
-        verify(repoObjFactory).createWorkObject((Model) isNull());
+        verify(repoObjFactory).createWorkObject();
 
-        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-        verify(repoObjFactory).addMember(eq(folder), captor.capture());
-
-        ContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof WorkObject);
-        assertEquals("Child did not have the expected pid", childPid, child.getPid());
+        assertTrue("Incorrect type of child added", workObj instanceof WorkObject);
+        assertEquals("Child did not have the expected pid", childPid, workObj.getPid());
     }
 }
