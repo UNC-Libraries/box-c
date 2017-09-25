@@ -29,14 +29,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -69,10 +68,10 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         eventType = Premis.VirusCheck;
         premisFile = File.createTempFile(depositUUID, ".ttl");
         premisFile.deleteOnExit();
-        premis = new FilePremisLogger(pid, premisFile, repository);
+        premis = new FilePremisLogger(pid, premisFile, pidMinter);
         date = new Date();
 
-        when(repository.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
+        when(pidMinter.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
             @Override
             public PID answer(InvocationOnMock invocation) throws Throwable {
                 String path = URIUtil.join(pid.getRepositoryPath(), RepositoryPathConstants.EVENTS_CONTAINER,

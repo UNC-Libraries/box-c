@@ -17,8 +17,10 @@ package edu.unc.lib.dl.event;
 
 import java.io.File;
 
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -29,12 +31,13 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class PremisLoggerFactory {
 
-    public PremisLogger createPremisLogger(PID pid, File file, Repository repository) {
-        return new FilePremisLogger(pid, file, repository);
+    public PremisLogger createPremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter) {
+        return new FilePremisLogger(pid, file, pidMinter);
     }
 
-    public PremisLogger createPremisLogger(RepositoryObject repoObject, Repository repository) {
-        return new RepositoryPremisLogger(repoObject, repository);
+    public PremisLogger createPremisLogger(RepositoryObject repoObject, RepositoryPIDMinter pidMinter,
+            RepositoryObjectLoader repoObjLoader, RepositoryObjectFactory repoObjFactory) {
+        return new RepositoryPremisLogger(repoObject, pidMinter, repoObjLoader, repoObjFactory);
     }
 
 }

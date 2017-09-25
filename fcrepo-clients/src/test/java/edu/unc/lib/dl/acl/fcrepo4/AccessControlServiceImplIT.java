@@ -38,7 +38,6 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl;
@@ -92,8 +91,6 @@ public class AccessControlServiceImplIT {
 
     private static final String UNIT_MANAGER_PRINC = "wilsontech";
 
-    private Repository repository;
-
     private ContentPathFactory pathFactory;
 
     private ObjectAclFactory aclFactory;
@@ -133,9 +130,8 @@ public class AccessControlServiceImplIT {
 
     @Before
     public void init() throws Exception {
-        repository = new Repository();
-        repository.setBaseUri(FCREPO_BASE_URI);
-        PIDs.setRepository(repository);
+
+        //repository.setBaseUri(FCREPO_BASE_URI);
 
         sparqlService = new FusekiSparqlQueryServiceImpl();
         ((FusekiSparqlQueryServiceImpl) sparqlService).setFusekiQueryURL(FUSEKI_BASE_URI);
