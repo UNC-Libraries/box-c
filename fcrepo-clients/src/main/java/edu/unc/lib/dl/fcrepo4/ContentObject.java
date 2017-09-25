@@ -21,7 +21,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -128,12 +127,4 @@ public abstract class ContentObject extends RepositoryObject {
         return fileObj;
     }
 
-    /**
-     * Retrieve access control information for this content object.
-     *
-     * @return
-     */
-    public ObjectAccessControlsBean getAccessControls() {
-        return dataLoader.getAccessControls(this);
-    }
 }
