@@ -55,9 +55,6 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  */
 public class ObjectPermissionEvaluatorIT {
 
-    private static final String FCREPO_BASE_URI =
-            "http://example.com/fcrepo/rest/";
-
     private static final String FUSEKI_PORT = System
             .getProperty("fuseki.dynamic.test.port", "48080");
 

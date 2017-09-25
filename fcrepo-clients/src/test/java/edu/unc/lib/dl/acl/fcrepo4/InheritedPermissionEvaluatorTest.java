@@ -47,8 +47,6 @@ public class InheritedPermissionEvaluatorTest {
     private static final String PATRON_PRINC = "everyone";
     private static final String STAFF_PRINC = "adminGrp";
 
-    private static final String REPO_BASE = "http://example.com/rest/";
-
     @Mock
     private ContentPathFactory pathFactory;
 

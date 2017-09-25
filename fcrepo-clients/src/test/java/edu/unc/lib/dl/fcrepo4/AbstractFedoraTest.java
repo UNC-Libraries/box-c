@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.Before;
@@ -39,8 +38,6 @@ public class AbstractFedoraTest {
     @Before
     public void initBase() {
         initMocks(this);
-
-        when(RepositoryPaths.getBaseUri()).thenReturn(FEDORA_BASE);
     }
 
 }

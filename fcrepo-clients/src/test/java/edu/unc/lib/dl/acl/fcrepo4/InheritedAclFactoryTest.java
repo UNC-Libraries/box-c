@@ -61,8 +61,6 @@ public class InheritedAclFactoryTest {
     private static final String MANAGE_PRINC = "manageGrp";
     private static final String OWNER_PRINC = "owner";
 
-    private static final String REPO_BASE = "http://example.com/rest/";
-
     @Mock
     private ContentPathFactory pathFactory;
 
