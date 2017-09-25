@@ -81,7 +81,7 @@ public class RepositoryPremisLogger implements PremisLogger {
         PID eventPid = PIDs.get(eventResc.getURI());
 
         try {
-            repoObjFactory.createPremisEventObject(eventPid, eventModel);
+            repoObjFactory.createPremisEvent(eventPid, eventModel);
         } catch (FedoraException e) {
             throw new ObjectPersistenceException("Failed to create event at " + eventPid, e);
         }
