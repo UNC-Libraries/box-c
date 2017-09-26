@@ -33,6 +33,9 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
+import org.fcrepo.client.PutBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -56,16 +59,25 @@ public class RepositoryObjectFactoryTest {
     private RepositoryObjectDataLoader dataLoader;
     @Mock
     private FcrepoClient fcrepoClient;
+    @Mock
+    private PutBuilder mockPutBuilder;
+    @Mock
+    private FcrepoResponse mockResponse;
 
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryPIDMinter pidMinter;
 
     @Before
-    public void init() {
+    public void init() throws FcrepoOperationFailedException {
         initMocks(this);
 
         repoObjFactory = new RepositoryObjectFactory();
+        repoObjFactory.setClient(fcrepoClient);
         pidMinter = new RepositoryPIDMinter();
+
+        when(fcrepoClient.put(any(URI.class))).thenReturn(mockPutBuilder);
+        when(mockPutBuilder.body(any(InputStream.class), any(String.class))).thenReturn(mockPutBuilder);
+        when(mockPutBuilder.perform()).thenReturn(mockResponse);
     }
 
     @Test
