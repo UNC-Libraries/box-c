@@ -43,7 +43,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.test.SelfReturningAnswer;
 
 /**
  *
@@ -53,6 +55,8 @@ import edu.unc.lib.dl.rdf.Premis;
  */
 public class RepositoryObjectFactoryTest {
 
+    @Mock
+    private LdpContainerFactory ldpFactory;
     @Mock
     private RepositoryObjectCacheLoader objectCacheLoader;
     @Mock
@@ -73,10 +77,11 @@ public class RepositoryObjectFactoryTest {
 
         repoObjFactory = new RepositoryObjectFactory();
         repoObjFactory.setClient(fcrepoClient);
+        repoObjFactory.setLdpFactory(ldpFactory);
         pidMinter = new RepositoryPIDMinter();
 
+        mockPutBuilder = mock(PutBuilder.class, new SelfReturningAnswer());
         when(fcrepoClient.put(any(URI.class))).thenReturn(mockPutBuilder);
-        when(mockPutBuilder.body(any(InputStream.class), any(String.class))).thenReturn(mockPutBuilder);
         when(mockPutBuilder.perform()).thenReturn(mockResponse);
     }
 
@@ -107,21 +112,23 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
-    public void createCollectionObjectTest() {
+    public void createCollectionObjectTest() throws Exception {
 
         CollectionObject obj = repoObjFactory.createCollectionObject();
         assertNotNull(obj);
 
-        verify(repoObjFactory).createCollectionObject((Model) isNull());
+        verify(ldpFactory).createIndirectContainer(any(URI.class), eq(PcdmModels.hasMember),
+                eq(RepositoryPathConstants.MEMBER_CONTAINER));
     }
 
     @Test
-    public void createFolderObjectTest() {
+    public void createFolderObjectTest() throws Exception {
 
         FolderObject obj = repoObjFactory.createFolderObject();
         assertNotNull(obj);
 
-        verify(repoObjFactory).createFolderObject((Model) isNull());
+        verify(ldpFactory).createIndirectContainer(any(URI.class), eq(PcdmModels.hasMember),
+                eq(RepositoryPathConstants.MEMBER_CONTAINER));
     }
 
     @Test
