@@ -130,7 +130,7 @@ public abstract class RepositoryObject {
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
             premisLog = new RepositoryPremisLogger(
-                    this, pidMinter, repoObjLoader, repoObjFactory);
+                    this, pidMinter, repoObjLoader, repoObjFactory, dataLoader);
         }
         return premisLog;
     }

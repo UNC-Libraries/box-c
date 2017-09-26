@@ -68,7 +68,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         eventType = Premis.VirusCheck;
         premisFile = File.createTempFile(depositUUID, ".ttl");
         premisFile.deleteOnExit();
-        premis = new FilePremisLogger(pid, premisFile, pidMinter);
+        premis = new FilePremisLogger(pid, premisFile, pidMinter, repoObjLoader, repoObjFactory, dataLoader);
         date = new Date();
 
         when(pidMinter.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
@@ -161,6 +161,7 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
 
     @Test
     public void getEventsTest() {
+
         Resource event1 = premis.buildEvent(Premis.Normalization, date)
                 .addEventDetail("Event 1").addSoftwareAgent("Agent 1")
                 .write();
