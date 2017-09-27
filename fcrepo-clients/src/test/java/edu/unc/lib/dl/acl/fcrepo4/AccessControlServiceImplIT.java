@@ -50,9 +50,6 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  */
 public class AccessControlServiceImplIT {
 
-    private static final String FCREPO_BASE_URI =
-            "http://example.com/fcrepo/rest/";
-
     private static final String FUSEKI_PORT = System
             .getProperty("fuseki.dynamic.test.port", "48080");
 
@@ -63,25 +60,25 @@ public class AccessControlServiceImplIT {
     private static final long CACHE_TIME_TO_LIVE = 100l;
 
     private static final String ADMIN_UNIT_1_PATH =
-            "http://example.com/fcrepo/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230";
+            "http://example.com/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230";
     private static final String COLL_1_PATH =
-            "http://example.com/fcrepo/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8";
+            "http://example.com/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8";
     private static final String COLL_1_WORK_1_PATH =
-            "http://example.com/fcrepo/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37";
+            "http://example.com/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37";
     private static final String COLL_1_FOLDER_1_PATH =
-            "http://example.com/fcrepo/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915";
+            "http://example.com/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915";
     private static final String COLL_1_WORK_2_PATH =
-            "http://example.com/fcrepo/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812";
+            "http://example.com/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812";
     private static final String COLL_2_PATH =
-            "http://example.com/fcrepo/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff";
+            "http://example.com/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff";
     private static final String COLL_2_WORK_1_PATH =
-            "http://example.com/fcrepo/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336";
+            "http://example.com/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336";
     private static final String COLL_2_WORK_2_PATH =
-            "http://example.com/fcrepo/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1";
+            "http://example.com/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1";
     private static final String COLL_3_PATH =
-            "http://example.com/fcrepo/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e";
+            "http://example.com/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e";
     private static final String ADMIN_UNIT_2_PATH =
-            "http://example.com/fcrepo/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40";
+            "http://example.com/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40";
 
     private static final String EVERYONE_PRINC = "everyone";
 
@@ -130,8 +127,6 @@ public class AccessControlServiceImplIT {
 
     @Before
     public void init() throws Exception {
-
-        //repository.setBaseUri(FCREPO_BASE_URI);
 
         sparqlService = new FusekiSparqlQueryServiceImpl();
         ((FusekiSparqlQueryServiceImpl) sparqlService).setFusekiQueryURL(FUSEKI_BASE_URI);
