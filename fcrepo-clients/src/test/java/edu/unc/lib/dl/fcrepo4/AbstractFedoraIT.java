@@ -51,6 +51,8 @@ public class AbstractFedoraIT {
     protected RepositoryObjectLoader repoObjLoader;
     @Autowired
     protected TransactionManager txManager;
+    @Autowired
+    protected RepositoryObjectDataLoader dataloader;
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
