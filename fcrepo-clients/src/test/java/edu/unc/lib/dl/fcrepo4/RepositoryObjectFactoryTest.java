@@ -19,8 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +26,9 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -35,15 +36,13 @@ import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.fcrepo.client.PostBuilder;
 import org.fcrepo.client.PutBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 
@@ -66,23 +65,35 @@ public class RepositoryObjectFactoryTest {
     @Mock
     private PutBuilder mockPutBuilder;
     @Mock
+    private PostBuilder mockPostBuilder;
+    @Mock
     private FcrepoResponse mockResponse;
 
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryPIDMinter pidMinter;
+    private List<URI> linkHeaders;
 
     @Before
-    public void init() throws FcrepoOperationFailedException {
+    public void init() throws FcrepoOperationFailedException, URISyntaxException {
         initMocks(this);
 
         repoObjFactory = new RepositoryObjectFactory();
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
         pidMinter = new RepositoryPIDMinter();
+        linkHeaders = new ArrayList<>();
+        URI testHeader = new URI("/path/to/resource");
+        linkHeaders.add(testHeader);
 
         mockPutBuilder = mock(PutBuilder.class, new SelfReturningAnswer());
         when(fcrepoClient.put(any(URI.class))).thenReturn(mockPutBuilder);
         when(mockPutBuilder.perform()).thenReturn(mockResponse);
+
+        mockPostBuilder = mock(PostBuilder.class, new SelfReturningAnswer());
+        when(fcrepoClient.post(any(URI.class))).thenReturn(mockPostBuilder);
+        when(mockPostBuilder.perform()).thenReturn(mockResponse);
+        when(mockResponse.getLinkHeaders(any(String.class))).thenReturn(linkHeaders);
+
     }
 
     @Test
@@ -98,8 +109,6 @@ public class RepositoryObjectFactoryTest {
 
         DepositRecord obj = repoObjFactory.createDepositRecord(null);
         assertNotNull(obj);
-
-        verify(repoObjFactory).createDepositRecord((Model) isNull());
     }
 
     @Test
@@ -107,8 +116,6 @@ public class RepositoryObjectFactoryTest {
 
         AdminUnit obj = repoObjFactory.createAdminUnit();
         assertNotNull(obj);
-
-        verify(repoObjFactory).createAdminUnit((Model) isNull());
     }
 
     @Test
@@ -116,9 +123,6 @@ public class RepositoryObjectFactoryTest {
 
         CollectionObject obj = repoObjFactory.createCollectionObject();
         assertNotNull(obj);
-
-        verify(ldpFactory).createIndirectContainer(any(URI.class), eq(PcdmModels.hasMember),
-                eq(RepositoryPathConstants.MEMBER_CONTAINER));
     }
 
     @Test
@@ -126,9 +130,6 @@ public class RepositoryObjectFactoryTest {
 
         FolderObject obj = repoObjFactory.createFolderObject();
         assertNotNull(obj);
-
-        verify(ldpFactory).createIndirectContainer(any(URI.class), eq(PcdmModels.hasMember),
-                eq(RepositoryPathConstants.MEMBER_CONTAINER));
     }
 
     @Test
@@ -136,8 +137,6 @@ public class RepositoryObjectFactoryTest {
 
         WorkObject obj = repoObjFactory.createWorkObject();
         assertNotNull(obj);
-
-        verify(repoObjFactory).createWorkObject((Model) isNull());
     }
 
     @Test
@@ -145,53 +144,44 @@ public class RepositoryObjectFactoryTest {
 
         FileObject obj = repoObjFactory.createFileObject();
         assertNotNull(obj);
-
-        verify(repoObjFactory).createFileObject((Model) isNull());
     }
 
     @Test
-    public void createBinaryTest() {
+    public void createBinaryTest() throws FcrepoOperationFailedException {
         URI binaryUri = URI.create(RepositoryPaths.getContentBase());
+        when(mockResponse.getLocation()).thenReturn(binaryUri);
 
         String slug = "slug";
         InputStream content = mock(InputStream.class);
         String filename = "file.ext";
         String mimetype = "application/octet-stream";
         String checksum = "checksum";
-        Model model = mock(Model.class);
 
         BinaryObject obj = repoObjFactory.createBinary(binaryUri, slug, content, filename,
-                mimetype, checksum, model);
+                mimetype, checksum, null);
 
-        assertEquals(binaryUri, obj.getPid().getRepositoryUri());
-        verify(repoObjFactory).createBinary(eq(binaryUri), eq(slug), eq(content), eq(filename),
-                eq(mimetype), eq(checksum), eq(model));
+        assertTrue(obj.getPid().getRepositoryPath().startsWith(binaryUri.toString()));
+     // check to see that client creates FcrepoResponse
+        verify(mockPostBuilder).perform();
     }
 
     @Test
-    public void createPremisEventTest() {
+    public void createPremisEventTest() throws FcrepoOperationFailedException {
+
         PID parentPid = pidMinter.mintContentPid();
         PID eventPid = pidMinter.mintPremisEventPid(parentPid);
         URI eventUri = eventPid.getRepositoryUri();
+        when(mockResponse.getLocation()).thenReturn(eventUri);
 
         final Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(eventPid.getRepositoryPath());
         resc.addProperty(Premis.hasEventType, Premis.Ingestion);
 
-        when(dataLoader.loadModel(any(RepositoryObject.class))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
-            @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
-                RepositoryObject premisObj = invocation.getArgumentAt(0, RepositoryObject.class);
-                premisObj.storeModel(model);
-                return dataLoader;
-            }
-        });
-
         PremisEventObject obj = repoObjFactory.createPremisEvent(eventPid, model);
-        assertEquals(eventPid, obj.getPid());
-        assertTrue(obj.getResource().hasProperty(Premis.hasEventType, Premis.Ingestion));
 
-        verify(repoObjFactory).createObject(eq(eventUri), any(Model.class));
+        assertEquals(eventPid, obj.getPid());
+        // check to see that client creates FcrepoResponse
+        verify(mockPutBuilder).perform();
     }
 
     @Test
@@ -205,8 +195,5 @@ public class RepositoryObjectFactoryTest {
         when(member.getPid()).thenReturn(memberPid);
 
         repoObjFactory.addMember(parent, member);
-
-        verify(repoObjFactory).createMemberLink(parentPid.getRepositoryUri(),
-                memberPid.getRepositoryUri());
     }
 }
