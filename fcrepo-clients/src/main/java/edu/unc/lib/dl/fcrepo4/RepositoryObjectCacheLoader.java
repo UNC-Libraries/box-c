@@ -79,7 +79,7 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     }
 
     /**
-     * @param repository the repository to set
+     * @param repoObjLoader the repository object loader to set
      */
     public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
@@ -92,8 +92,18 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         this.client = client;
     }
 
+    /**
+     * @param repositoryObjectDataLoader the repository object data loader to set
+     */
     public void setRepositoryObjectDataLoader(RepositoryObjectDataLoader repositoryObjectDataLoader) {
         this.repositoryObjectDataLoader = repositoryObjectDataLoader;
+    }
+
+    /**
+     * @param repoObjFactory the repository object data loader to set
+     */
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
     }
 
     private RepositoryObject instantiateRepositoryObject(PID pid, Model model, String etag) {

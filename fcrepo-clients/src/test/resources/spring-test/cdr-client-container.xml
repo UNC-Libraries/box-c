@@ -23,7 +23,7 @@
 		<property name="client" ref="fcrepoClient" />
 	</bean>
 
-	<bean id="repoObjFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
@@ -39,11 +39,12 @@
         <constructor-arg value="5" />
     </bean>
 	
-	<bean id="repositoyObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader">
+	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader">
         <property name="dataLoader" ref="repositoryObjectDataLoader" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
         <property name="cacheMaxSize" ref="cacheMaxSize" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 	</bean>
 	
 	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
@@ -52,13 +53,26 @@
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl"></bean>
+	<bean id="fusekiEndpointURL" class="java.lang.String">
+	    <constructor-arg value="" />
+	</bean>
+	
+	<bean id="fusekiQueryURL" class="java.lang.String">
+	    <constructor-arg value="" />
+	</bean>
+	
+	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
+	    <property name="fusekiEndpointURL" ref="fusekiEndpointURL" />
+	    <property name="fusekiQueryURL" ref="fusekiQueryURL" />
+	</bean>
 	
 	<bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+	    <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 	</bean>
 	
 	<bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">

@@ -38,7 +38,6 @@ import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -63,13 +62,12 @@ public class RepositoryObjectFactory {
 
     private RepositoryObjectLoader repoObjLoader;
 
-    private RepositoryPIDMinter pidMinter = new RepositoryPIDMinter();
+    private RepositoryPIDMinter pidMinter;
 
     /**
-     * Creates a new deposit record object with the given uuid.
+     * Creates a new deposit record object with the given model.
      * Properties in the supplied model will be added to the deposit record.
      *
-     * @param pid
      * @param model
      * @return
      * @throws FedoraException
@@ -103,9 +101,8 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new AdminUnit with the given pid
+     * Creates a new AdminUnit
      *
-     * @param pid
      * @return
      * @throws FedoraException
      */
@@ -114,15 +111,14 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new AdminUnit with the given pid and properties.
+     * Creates a new AdminUnit with the given model
      *
-     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
     public AdminUnit createAdminUnit(Model model) throws FedoraException {
-        PID pid = mintAndVerifyContentPID();
+        PID pid = pidMinter.mintContentPid();
 
         URI path = pid.getRepositoryUri();
 
@@ -152,9 +148,8 @@ public class RepositoryObjectFactory {
 
 
     /**
-     * Creates a new CollectionObject with the given pid
+     * Creates a new CollectionObject
      *
-     * @param pid
      * @return
      * @throws FedoraException
      */
@@ -163,15 +158,14 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new CollectionObject with the given pid and properties.
+     * Creates a new CollectionObject with the given model
      *
-     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
     public CollectionObject createCollectionObject(Model model) throws FedoraException {
-        PID pid = mintAndVerifyContentPID();
+        PID pid = pidMinter.mintContentPid();
 
         URI path = pid.getRepositoryUri();
 
@@ -184,9 +178,8 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new FolderObject with the given pid
+     * Creates a new FolderObject
      *
-     * @param pid
      * @return
      * @throws FedoraException
      */
@@ -195,15 +188,14 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new FolderObject with the given pid and properties.
+     * Creates a new FolderObject with the given model
      *
-     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
     public FolderObject createFolderObject(Model model) throws FedoraException {
-        PID pid = mintAndVerifyContentPID();
+        PID pid = pidMinter.mintContentPid();
 
         URI path = pid.getRepositoryUri();
 
@@ -216,9 +208,8 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new WorkObject with the given pid
+     * Creates a new WorkObject
      *
-     * @param pid
      * @return
      * @throws FedoraException
      */
@@ -227,15 +218,14 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new WorkObject with the given pid and properties.
+     * Creates a new WorkObject with the given model
      *
-     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
     public WorkObject createWorkObject(Model model) throws FedoraException {
-        PID pid = mintAndVerifyContentPID();
+        PID pid = pidMinter.mintContentPid();
 
         URI path = pid.getRepositoryUri();
 
@@ -248,9 +238,8 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new file object with the given PID.
+     * Creates a new file object
      *
-     * @param pid
      * @return
      * @throws FedoraException
      */
@@ -259,15 +248,14 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new file object with the given PID.
+     * Creates a new file object with the given model
      *
-     * @param pid
      * @param model
      * @return
      * @throws FedoraException
      */
     public FileObject createFileObject(Model model) throws FedoraException {
-        PID pid = mintAndVerifyContentPID();
+        PID pid = pidMinter.mintContentPid();
 
         URI path = pid.getRepositoryUri();
 
@@ -295,7 +283,6 @@ public class RepositoryObjectFactory {
 
     /**
     * Creates a binary resource at the given path.
-    * Creates a new file object with the given PID.
     *
     * @param path
     *        Repository path where the binary will be created
@@ -309,7 +296,6 @@ public class RepositoryObjectFactory {
     *        Mimetype of the content. Optional.
     * @param checksum
     *        SHA-1 digest of the content. Optional.
-    * @param pid
     * @param model
     *        Model containing additional triples to add to the new binary's metadata. Optional
     * @return URI of the newly created binary
@@ -359,7 +345,7 @@ public class RepositoryObjectFactory {
                 throw ClientFaultResolver.resolve(e);
             }
         }
-        PID pid = mintAndVerifyContentPID();
+        PID pid = pidMinter.mintContentPid();
         return new BinaryObject(pid, repoObjLoader, repoObjDataLoader, this);
          }
 
@@ -481,18 +467,16 @@ public class RepositoryObjectFactory {
         this.ldpFactory = ldpFactory;
     }
 
-    /**
-     * Throws a ObjectTypeMismatchException if the pid provided is not in the
-     * content path
-     *
-     * @param pid
-     */
-    protected PID mintAndVerifyContentPID() {
-        PID pid = pidMinter.mintContentPid();
-        if (!pid.getQualifier().equals(RepositoryPathConstants.CONTENT_BASE)) {
-            throw new ObjectTypeMismatchException("Requested object " + pid + " is not a content object.");
-        }
-        return pid;
+    public void setRepositoryObjectDataLoader(RepositoryObjectDataLoader repoObjDataLoader) {
+        this.repoObjDataLoader = repoObjDataLoader;
+    }
+
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+        this.pidMinter = pidMinter;
     }
 
     private void persistTripleToFedora(PID subject, String sparqlUpdate) {
