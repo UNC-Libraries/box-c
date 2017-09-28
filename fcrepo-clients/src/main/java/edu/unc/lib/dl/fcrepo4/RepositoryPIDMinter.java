@@ -22,7 +22,8 @@ import edu.unc.lib.dl.util.URIUtil;
 /**
 * Minter of PIDs for content objects, deposit records, and PREMIS events.
 *
-* @author bbpennel, harring
+* @author bbpennel
+* @author harring
 *
 */
 public class RepositoryPIDMinter {

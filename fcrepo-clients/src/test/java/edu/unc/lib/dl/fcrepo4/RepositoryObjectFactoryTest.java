@@ -81,6 +81,7 @@ public class RepositoryObjectFactoryTest {
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
         pidMinter = new RepositoryPIDMinter();
+        repoObjFactory.setPidMinter(pidMinter);
         linkHeaders = new ArrayList<>();
         URI testHeader = new URI("/path/to/resource");
         linkHeaders.add(testHeader);
