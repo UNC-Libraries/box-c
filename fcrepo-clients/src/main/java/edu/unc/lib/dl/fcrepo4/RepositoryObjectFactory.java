@@ -345,8 +345,7 @@ public class RepositoryObjectFactory {
                 throw ClientFaultResolver.resolve(e);
             }
         }
-        PID pid = pidMinter.mintContentPid();
-        return new BinaryObject(pid, repoObjLoader, repoObjDataLoader, this);
+        return new BinaryObject(PIDs.get(resultUri), repoObjLoader, repoObjDataLoader, this);
          }
 
     /**
