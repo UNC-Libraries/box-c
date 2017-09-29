@@ -31,6 +31,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -55,6 +56,8 @@ public class AbstractFedoraIT {
     protected RepositoryObjectDataLoader dataloader;
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+        // Override base uri for IT tests
+        TestHelper.setContentBase("http://localhost:48085/rest");
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
         // Create a parent object to put the binary into
         try (FcrepoResponse response = client.put(baseUri).perform()) {

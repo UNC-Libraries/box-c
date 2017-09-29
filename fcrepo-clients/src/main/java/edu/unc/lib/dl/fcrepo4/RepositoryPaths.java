@@ -32,11 +32,7 @@ public class RepositoryPaths {
     private static String baseHost;
 
     static {
-        baseUri = System.getProperty("fcrepo.baseUri");
-        if (!baseUri.endsWith("/")) {
-            baseUri += "/";
-        }
-        contentBase = URIUtil.join(baseUri, RepositoryPathConstants.CONTENT_BASE);
+        setContentBase(System.getProperty("fcrepo.baseUri"));
     }
 
     private RepositoryPaths() {
@@ -83,5 +79,13 @@ public class RepositoryPaths {
 
     public static String getVocabulariesBase() {
         return vocabulariesBase;
+    }
+
+    private static void setContentBase(String uri) {
+        baseUri = uri;
+        if (!baseUri.endsWith("/")) {
+            baseUri += "/";
+        }
+        contentBase = URIUtil.join(baseUri, RepositoryPathConstants.CONTENT_BASE);
     }
 }
