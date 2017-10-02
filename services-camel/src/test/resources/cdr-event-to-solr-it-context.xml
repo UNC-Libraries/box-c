@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:amq="http://activemq.apache.org/schema/core"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://activemq.apache.org/schema/core
+        http://activemq.apache.org/schema/core/activemq-core.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+        
+   
+   
+  
+  <!-- <amq:connectionFactory id="jmsFactory"
+        brokerURL="vm://localhost?broker.persistent=false&amp;broker.useJmx=false&amp;broker.enableStatistics=false"/> -->
+  
+  <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="concurrentConsumers" value="2" />
+    </bean>
+  
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+	    <property name="configuration" ref="jmsConfig" />
+	</bean>
+  
+  
+
+  <!-- JMS ConnectionFactory to use, configuring the embedded broker using XML -->
+  <amq:connectionFactory id="jmsFactory" brokerURL="vm://localhost"/>
+  
+  <amq:broker useJmx="false" persistent="false">
+    <amq:transportConnectors>
+      <amq:transportConnector uri="vm://localhost:61616" />
+    </amq:transportConnectors>
+  </amq:broker>
+  
+  <!-- <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL"> 
+                    <value>tcp://0.0.0.0:61616</value>
+                </property>
+            </bean>
+        </property>
+    </bean> -->
+  
+  <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+  
+  <bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+  <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+    <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
+  </bean>
+  
+  <bean id="cdrEventProcessor" class="edu.unc.lib.cdr.CdrEventProcessor">
+    </bean>
+    
+    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.cdr.CdrEventToSolrUpdateProcessor">
+        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
+    </bean>
+    
+    <bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.cdr.SolrUpdateProcessor" />
+    </bean>
+  
+  <camel:camelContext id="CdrServiceCdrEvents">
+        <camel:package>edu.unc.lib.cdr.cdrEvents</camel:package>
+    </camel:camelContext>
+  
+  <!-- <camel:camelContext id="CdrServiceSolrUpdate">
+        <camel:package>edu.unc.lib.cdr.solrUpdate</camel:package>
+    </camel:camelContext> -->
+  
+</beans>
