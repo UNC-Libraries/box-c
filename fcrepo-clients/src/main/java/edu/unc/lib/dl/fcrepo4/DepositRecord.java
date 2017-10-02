@@ -111,13 +111,14 @@ public class DepositRecord extends RepositoryObject {
      * @param children
      * @return the DepositRecord itself, to allow method chaining
      */
-    public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
+    public DepositRecord addIngestedObjects(List<Resource> children) {
         Model triples = ModelFactory.createDefaultModel();
-        Resource res = triples.createResource(depositPID.getURI());
+        Resource res = triples.createResource(getPid().getURI());
         for (Resource child : children) {
             res.addProperty(Cdr.hasIngestedObject, child);
         }
-        repoObjFactory.createRelationships(depositPID, triples);
+        // SPARQL update
+        repoObjFactory.createRelationships(getPid(), triples);
         return this;
     }
 

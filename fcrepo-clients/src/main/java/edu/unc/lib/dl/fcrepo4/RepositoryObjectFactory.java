@@ -74,6 +74,10 @@ public class RepositoryObjectFactory {
      */
     public DepositRecord createDepositRecord(Model model) throws FedoraException {
         PID pid = pidMinter.mintDepositRecordPid();
+        return createDepositRecord(pid, model);
+    }
+
+    public DepositRecord createDepositRecord(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add the deposit record type to the object being created

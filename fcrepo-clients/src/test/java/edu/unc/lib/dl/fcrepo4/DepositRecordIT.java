@@ -35,7 +35,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.event.FilePremisLogger;
@@ -53,14 +52,6 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class DepositRecordIT extends AbstractFedoraIT {
 
-    private PID pid;
-
-    @Before
-    public void init() {
-        // Generate a new ID every time so that tests don't conflict
-        pid = pidMinter.mintDepositRecordPid();
-    }
-
     @Test
     public void createDepositRecordTest() throws Exception {
 
@@ -75,6 +66,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void getInvalidDepositRecord() throws Exception {
+        PID pid = pidMinter.mintContentPid();
         // Create a dummy non-depositRecord object
         client.put(pid.getRepositoryUri()).perform().close();
 
@@ -86,7 +78,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     public void getDepositRecord() throws Exception {
         Model model = getDepositRecordModel();
 
-        repoObjFactory.createDepositRecord(model);
+        PID pid = repoObjFactory.createDepositRecord(model).getPid();
 
         DepositRecord record = repoObjLoader.getDepositRecord(pid);
 
@@ -141,6 +133,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     }
 
     public void addPremisEventsTest() throws Exception {
+        PID pid = pidMinter.mintDepositRecordPid();
         Model model = getDepositRecordModel();
 
         String details = "Event details";
@@ -155,7 +148,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
                 .write();
 
         // Push the events out to repository
-        DepositRecord record = repoObjFactory.createDepositRecord(model)
+        DepositRecord record = repoObjFactory.createDepositRecord(pid, model)
             .addPremisEvents(logger.getEvents());
 
         // Retrieve all the events added to this object
@@ -191,14 +184,14 @@ public class DepositRecordIT extends AbstractFedoraIT {
         depositedObjs.add(res1);
         depositedObjs.add(res2);
 
-        record.addIngestedObjects(pid, depositedObjs);
+        record.addIngestedObjects(depositedObjs);
 
         assertTrue(record.listDepositedObjects().size() == 2);
     }
 
     private Model getDepositRecordModel() {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(pid.getRepositoryUri().toString());
+        Resource resc = model.createResource("");
         resc.addProperty(RDF.type, Cdr.DepositRecord);
 
         return model;
