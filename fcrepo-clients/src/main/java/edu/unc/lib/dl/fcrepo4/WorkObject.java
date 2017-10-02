@@ -114,9 +114,8 @@ public class WorkObject extends ContentContainerObject {
      */
     public FileObject addDataFile(String filename, InputStream contentStream, String mimetype,
             String sha1Checksum) {
-        PID fileObjPid = pidMinter.mintContentPid();
 
-        return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum);
+        return addDataFile(contentStream, filename, mimetype, sha1Checksum);
     }
 
     /**
@@ -131,14 +130,15 @@ public class WorkObject extends ContentContainerObject {
      * @param sha1Checksum
      * @return
      */
-    public FileObject addDataFile(PID childPid, InputStream contentStream, String filename,
+    public FileObject addDataFile(InputStream contentStream, String filename,
             String mimetype, String sha1Checksum) {
-
-        Model model = ModelFactory.createDefaultModel();
-        model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
 
         // Create the file object
         FileObject fileObj = repoObjFactory.createFileObject(null);
+        PID childPid = fileObj.getPid();
+        Model model = ModelFactory.createDefaultModel();
+        model.createResource(childPid.getRepositoryPath()).addProperty(DC.title, filename);
+
         // Add the binary content to it as its original file
         fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 

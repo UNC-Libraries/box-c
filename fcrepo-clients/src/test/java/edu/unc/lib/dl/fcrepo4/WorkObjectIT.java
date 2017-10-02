@@ -29,6 +29,7 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -43,6 +44,12 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  *
  */
 public class WorkObjectIT extends AbstractFedoraIT {
+
+    @Before
+    public void init() throws Exception {
+        createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        repoObjLoader.init();
+    }
 
     @Test
     public void createWorkObjectTest() throws Exception {

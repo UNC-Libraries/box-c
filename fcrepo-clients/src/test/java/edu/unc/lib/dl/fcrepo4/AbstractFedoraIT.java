@@ -25,6 +25,7 @@ import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
+import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -55,9 +56,14 @@ public class AbstractFedoraIT {
     @Autowired
     protected RepositoryObjectDataLoader dataloader;
 
-    protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+    @Before
+    public void init_() {
         // Override base uri for IT tests
         TestHelper.setContentBase("http://localhost:48085/rest");
+    }
+
+    protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
         // Create a parent object to put the binary into
         try (FcrepoResponse response = client.put(baseUri).perform()) {

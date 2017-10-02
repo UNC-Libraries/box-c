@@ -22,13 +22,15 @@
 	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
 		<property name="client" ref="fcrepoClient" />
 	</bean>
+	
+	<bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
 
 	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-		<property name="pidMinter" ref="pidMinter" />
+		<property name="pidMinter" ref="repositoryPIDMinter" />
 	</bean>
 	
 	<bean id="cacheTimeToLive" class="java.lang.Long">
@@ -39,7 +41,7 @@
         <constructor-arg value="5" />
     </bean>
 	
-	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader">
+	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
         <property name="dataLoader" ref="repositoryObjectDataLoader" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
@@ -65,8 +67,6 @@
 	    <property name="fusekiEndpointURL" ref="fusekiEndpointURL" />
 	    <property name="fusekiQueryURL" ref="fusekiQueryURL" />
 	</bean>
-	
-	<bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
 	    <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
