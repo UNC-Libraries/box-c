@@ -52,11 +52,11 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createDepositRecordTest() throws Exception {
-        PID pid = pidMinter.mintDepositRecordPid();
-        URI uri = pid.getRepositoryUri();
-        String path = uri.getPath();
-
         DepositRecord depRec = repoObjFactory.createDepositRecord(null);
+        PID pid = depRec.getPid();
+        URI uri = pid.getRepositoryUri();
+        String path = uri.toString();
+
         assertEquals("Requested URI did not match result", uri, depRec.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -117,14 +117,14 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         FileObject fileObj = repoObjFactory.createFileObject();
         PID pid = fileObj.getPid();
         URI uri = pid.getRepositoryUri();
-        String objPath = uri.getPath();
+        String objPath = uri.toString();
 
         assertEquals("Requested URI did not match result", uri, fileObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
             Model respModel = RDFModelUtil.createModel(resp.getBody());
 
-            Resource respResc = respModel.getResource(uri.getPath());
+            Resource respResc = respModel.getResource(objPath);
             // Verify that the correct RDF types were applied
             assertTrue(respResc.hasProperty(RDF.type, Cdr.FileObject));
             assertTrue(respResc.hasProperty(RDF.type, PcdmModels.Object));
@@ -142,7 +142,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         WorkObject workObj = repoObjFactory.createWorkObject();
         PID pid = workObj.getPid();
         URI uri = pid.getRepositoryUri();
-        String objPath = uri.getPath();
+        String objPath = uri.toString();
 
         assertEquals("Requested URI did not match result", uri, workObj.getUri());
 
@@ -166,7 +166,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         FolderObject folderObj = repoObjFactory.createFolderObject();
         PID pid = folderObj.getPid();
         URI uri = pid.getRepositoryUri();
-        String objPath = uri.getPath();
+        String objPath = uri.toString();
         assertEquals("Requested URI did not match result", uri, folderObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
@@ -189,7 +189,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         AdminUnit adminUnit = repoObjFactory.createAdminUnit();
         PID pid = adminUnit.getPid();
         URI uri = pid.getRepositoryUri();
-        String objPath = uri.getPath();
+        String objPath = uri.toString();
 
         assertEquals("Requested URI did not match result", uri, adminUnit.getUri());
 
@@ -213,7 +213,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         CollectionObject collObj = repoObjFactory.createCollectionObject();
         PID pid = collObj.getPid();
         URI uri = pid.getRepositoryUri();
-        String objPath = uri.getPath();
+        String objPath = uri.toString();
         assertEquals("Requested URI did not match result", uri, collObj.getUri());
 
         try (FcrepoResponse resp = client.get(uri).perform()) {
