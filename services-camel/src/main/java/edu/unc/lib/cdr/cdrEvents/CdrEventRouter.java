@@ -47,8 +47,9 @@ public class CdrEventRouter extends RouteBuilder {
         .backOffMultiplier(2)
         .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("{{cdr.stream}}")
+        from("{{cdr.stream.camel}}")
             .routeId("CdrServiceCdrEvents")
+            .log(LoggingLevel.DEBUG, "CDR Event Message received")
             .bean(cdrEventProcessor)
             .filter(simple("${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.MOVE.getName() + "'"
                     + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REMOVE.getName() + "'"
