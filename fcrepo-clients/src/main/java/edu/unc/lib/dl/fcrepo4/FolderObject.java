@@ -86,20 +86,17 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created work object
      */
     public WorkObject addWork() {
-        return repoObjFactory.createWorkObject();
+        return addWork(null);
     }
 
     /**
-     * Creates and adds a new work with the provided pid and properties to this
-     * folder.
+     * Creates and adds a new work with the provided properties to this folder.
      *
-     * @param pid
-     *            pid for the new work
      * @param model
      *            optional additional properties for the work
      * @return the newly created work object
      */
-    public WorkObject addWork(PID childPid, Model model) {
+    public WorkObject addWork(Model model) {
         WorkObject work = repoObjFactory.createWorkObject(model);
         repoObjFactory.addMember(this, work);
 

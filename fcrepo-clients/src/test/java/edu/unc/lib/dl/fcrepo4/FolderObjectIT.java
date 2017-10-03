@@ -26,7 +26,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Test;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -42,7 +41,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
     @Test
     public void createFolderObjectTest() {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource();
+        Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Folder Title");
 
         FolderObject obj = repoObjFactory.createFolderObject(model);
@@ -69,24 +68,20 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addWorkTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject();
-
-        PID childPid = pidMinter.mintContentPid();
-
         Model childModel = ModelFactory.createDefaultModel();
-        Resource childResc = childModel.createResource(childPid.getRepositoryPath());
+        Resource childResc = childModel.createResource("");
         childResc.addProperty(DcElements.title, "Work Title");
 
-        obj.addWork(childPid, childModel);
-        WorkObject child = repoObjLoader.getWorkObject(childPid);
+        FolderObject obj = repoObjFactory.createFolderObject();
+        WorkObject work = obj.addWork(childModel);
 
-        assertNotNull(child);
-        assertObjectExists(childPid);
-        assertTrue(child.getTypes().contains(Cdr.Work.getURI()));
-        assertEquals("Work Title", child.getResource()
+        assertNotNull(work);
+        assertObjectExists(work.getPid());
+        assertTrue(work.getTypes().contains(Cdr.Work.getURI()));
+        assertEquals("Work Title", work.getResource()
                 .getProperty(DcElements.title).getString());
 
-        obj.getResource().hasProperty(PcdmModels.hasMember, child.getResource());
+        obj.getResource().hasProperty(PcdmModels.hasMember, work.getResource());
     }
 
     @Test
