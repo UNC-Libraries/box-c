@@ -16,12 +16,6 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
         
-   
-   
-  
-  <!-- <amq:connectionFactory id="jmsFactory"
-        brokerURL="vm://localhost?broker.persistent=false&amp;broker.useJmx=false&amp;broker.enableStatistics=false"/> -->
-  
   <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
         <property name="connectionFactory" ref="jmsFactory" />
         <property name="concurrentConsumers" value="2" />
@@ -30,8 +24,6 @@
     <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
 	    <property name="configuration" ref="jmsConfig" />
 	</bean>
-  
-  
 
   <!-- JMS ConnectionFactory to use, configuring the embedded broker using XML -->
   <amq:connectionFactory id="jmsFactory" brokerURL="vm://localhost"/>
@@ -41,16 +33,6 @@
       <amq:transportConnector uri="vm://localhost:61616" />
     </amq:transportConnectors>
   </amq:broker>
-  
-  <!-- <bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
-        <property name="connectionFactory">
-            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
-                <property name="brokerURL"> 
-                    <value>tcp://0.0.0.0:61616</value>
-                </property>
-            </bean>
-        </property>
-    </bean> -->
   
   <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
@@ -75,16 +57,15 @@
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
-    <bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.cdr.SolrUpdateProcessor" />
+    <bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
     </bean>
   
-  <camel:camelContext id="CdrServiceCdrEvents">
+  <camel:camelContext id="cdrServiceCdrEvents">
         <camel:package>edu.unc.lib.cdr.cdrEvents</camel:package>
     </camel:camelContext>
   
-  <!-- <camel:camelContext id="CdrServiceSolrUpdate">
+  <camel:camelContext id="cdrServiceSolrUpdate">
         <camel:package>edu.unc.lib.cdr.solrUpdate</camel:package>
-    </camel:camelContext> -->
+    </camel:camelContext>
   
 </beans>
