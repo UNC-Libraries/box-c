@@ -110,7 +110,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
         SolrDocumentList docListBefore = getDocumentList();
 
-        action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
+        action.performAction(new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD, "1"));
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
@@ -138,7 +138,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
         SolrDocumentList docListBefore = getDocumentList();
 
-        action.performAction(new SolrUpdateRequest(new PID("uuid:2"), IndexingActionType.RECURSIVE_ADD, "1", null));
+        action.performAction(new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD, "1"));
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
@@ -189,14 +189,14 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
     }
 
     protected Map<String, List<PID>> populateChildren() {
-        Map<String, List<PID>> children = new HashMap<String, List<PID>>();
+        Map<String, List<PID>> children = new HashMap<>();
         children.put("uuid:1", Arrays.asList(new PID("uuid:2"), new PID("uuid:3")));
         children.put("uuid:2", Arrays.asList(new PID("uuid:4"), new PID("uuid:6")));
         return children;
     }
 
     protected List<SolrInputDocument> populate() {
-        List<SolrInputDocument> docs = new ArrayList<SolrInputDocument>();
+        List<SolrInputDocument> docs = new ArrayList<>();
 
         SolrInputDocument newDoc = new SolrInputDocument();
         newDoc.addField("title", "Collections");

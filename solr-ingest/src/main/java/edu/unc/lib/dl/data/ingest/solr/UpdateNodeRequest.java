@@ -21,7 +21,7 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.message.ActionMessage;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -129,10 +129,6 @@ public class UpdateNodeRequest implements ActionMessage {
 
     public long getTimeStarted() {
         return this.timeStarted;
-    }
-
-    public long getActiveDuration() {
-        return this.timeFinished - this.timeStarted;
     }
 
     public ProcessingStatus getStatus() {
