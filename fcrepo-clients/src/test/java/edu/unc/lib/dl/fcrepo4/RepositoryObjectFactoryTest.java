@@ -68,6 +68,8 @@ public class RepositoryObjectFactoryTest {
     private PostBuilder mockPostBuilder;
     @Mock
     private FcrepoResponse mockResponse;
+    @Mock
+    private PID pid;
 
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryPIDMinter pidMinter;
@@ -76,7 +78,6 @@ public class RepositoryObjectFactoryTest {
     @Before
     public void init() throws FcrepoOperationFailedException, URISyntaxException {
         initMocks(this);
-
         repoObjFactory = new RepositoryObjectFactory();
         repoObjFactory.setClient(fcrepoClient);
         repoObjFactory.setLdpFactory(ldpFactory);
@@ -149,7 +150,8 @@ public class RepositoryObjectFactoryTest {
 
     @Test
     public void createBinaryTest() throws FcrepoOperationFailedException {
-        URI binaryUri = URI.create(RepositoryPaths.getContentBase());
+        PID pid = pidMinter.mintContentPid();
+        URI binaryUri = pid.getRepositoryUri();
         when(mockResponse.getLocation()).thenReturn(binaryUri);
 
         String slug = "slug";

@@ -75,12 +75,13 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createBinaryTest() throws Exception {
+        PID pid = pidMinter.mintContentPid();
         String binarySlug = "binary_test";
         String binaryPath = URIUtil.join(baseAddress, binarySlug);
-        URI serverUri = URI.create(baseAddress);
+        URI binaryUri = pid.getRepositoryUri();
 
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(binaryPath);
+        Resource resc = model.createResource(binaryUri.toString());
         resc.addProperty(RDF.type, PcdmUse.OriginalFile);
 
         String bodyString = "Test text";
@@ -88,7 +89,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject binObj = repoObjFactory.createBinary(serverUri, binarySlug, contentStream, filename, mimetype, null, model);
+        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()
