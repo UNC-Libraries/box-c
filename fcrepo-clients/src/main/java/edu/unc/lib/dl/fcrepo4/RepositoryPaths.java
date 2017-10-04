@@ -20,6 +20,12 @@ import java.net.URI;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
 
+/**
+ * Provides access to base URIs needed for interacting with the repository
+ *
+ * @author harring
+ *
+ */
 public class RepositoryPaths {
 
     private static String policiesBase;

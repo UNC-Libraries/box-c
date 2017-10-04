@@ -19,13 +19,14 @@ import java.util.UUID;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.URIUtil;
+
 /**
-* Minter of PIDs for content objects, deposit records, and PREMIS events.
-*
-* @author bbpennel
-* @author harring
-*
-*/
+ * Minter of PIDs for content objects, deposit records, and PREMIS events.
+ *
+ * @author bbpennel
+ * @author harring
+ *
+ */
 public class RepositoryPIDMinter {
 
     /**
