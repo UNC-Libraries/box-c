@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -88,7 +87,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         replicationDir = tmpFolder.newFolder("tmp");
         replicationDir.mkdir();
         PIDs.setRepository(repository);
-        processor = new ReplicationProcessor(repository, replicationDir.getAbsolutePath(), 3, 100L);
+        processor = new ReplicationProcessor(replicationDir.getAbsolutePath(), 3, 100L);
         initMocks(this);
 
         when(exchange.getIn()).thenReturn(message);
@@ -124,31 +123,6 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     }
 
     @Test
-    public void replicateFileInFedoraDatastoreTest() throws Exception {
-        // Create a parent object to put the binary into
-        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-        URI binaryUri = determineRepositoryPath(contentBase);
-
-        String bodyString = "Test text";
-        String filename = "test.txt";
-        String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
-        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
-
-        BinaryObject internalObj = repository.createBinary(binaryUri, "binary_test", contentStream,
-                filename, MIMETYPE, checksum, null);
-
-        when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
-        when(message.getHeader(CdrBinaryUri)).thenReturn(internalObj.getUri().toString());
-
-        processor.process(exchange);
-
-        String checksumPath = "/82/02/2e/82022e1782b92dce5461ee636a6c5bea8509ffee";
-        File replicatedFile = new File(replicationDir.getAbsolutePath() + checksumPath);
-        String replicatedContent = FileUtils.readFileToString(replicatedFile);
-        assertEquals(bodyString, replicatedContent);
-    }
-
-    @Test
     public void replicateFileStoredOnDiskTest() throws Exception {
         // Create a parent object to put the binary into
         URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
@@ -158,6 +132,8 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         File testFile = new File(filename);
         InputStream contentStream = new FileInputStream(testFile);
         String checksum = "9db3fcbaec92b9ccf9aa16f820184813080e77d2";
+
+        when(message.getHeader(CdrBinaryPath)).thenReturn(testFile.getAbsolutePath());
 
         BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream,
                 filename, MIMETYPE, null, null);
@@ -196,7 +172,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
     @Test (expected = ReplicationDestinationUnavailableException.class)
     public void badReplicationLocationTest() throws Exception {
-        processor = new ReplicationProcessor(repository, "/some/bad/location", 3, 100L);
+        processor = new ReplicationProcessor("/some/bad/location", 3, 100L);
     }
 
 }

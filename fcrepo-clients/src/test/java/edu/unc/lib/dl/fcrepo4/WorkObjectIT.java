@@ -29,6 +29,7 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DC;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -67,14 +68,14 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addDataFileTest() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject();
+        WorkObject obj = repoObjFactory.createWorkObject(null);
 
         String bodyString = "Content";
         String filename = "file.txt";
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        obj.addDataFile(filename, contentStream, mimetype, null);
+        obj.addDataFile(contentStream, filename, mimetype, null);
 
         List<ContentObject> members = obj.getMembers();
         assertEquals(1, members.size());
@@ -94,14 +95,14 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addPrimaryObjectAndSupplements() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject();
+        WorkObject obj = repoObjFactory.createWorkObject(null);
 
         // Create the primary object
         String bodyString = "Primary object";
         String filename = "primary.txt";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        FileObject primaryObj = obj.addDataFile(filename, contentStream, null, null);
+        FileObject primaryObj = obj.addDataFile(contentStream, filename, null, null);
         // Set it as the primary object for our work
         obj.setPrimaryObject(primaryObj.getPid());
 
@@ -110,11 +111,12 @@ public class WorkObjectIT extends AbstractFedoraIT {
         String filenameS = "s1.txt";
         InputStream contentStreamS = new ByteArrayInputStream(bodyStringS.getBytes());
 
-        FileObject supp = obj.addDataFile(filenameS, contentStreamS, null, null);
+        FileObject supp = obj.addDataFile(contentStreamS, filenameS, null, null);
 
         // Retrieve the primary object and verify it
         FileObject primaryResult = obj.getPrimaryObject();
         assertEquals(primaryObj.getPid(), primaryResult.getPid());
+        assertEquals(filename, primaryResult.getResource().getProperty(DC.title).getString());
 
         BinaryObject primaryBinary = primaryResult.getOriginalFile();
         assertEquals(filename, primaryBinary.getFilename());
@@ -137,7 +139,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addModsTest() throws Exception {
-        WorkObject obj = repoObjFactory.createWorkObject();
+        WorkObject obj = repoObjFactory.createWorkObject(null);
         String bodyString = "some MODS content";
         InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
         FileObject fileObj = obj.addDescription(modsStream);
@@ -154,7 +156,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addSourceMdTest() throws Exception {
-        WorkObject anotherObj = repoObjFactory.createWorkObject();
+        WorkObject anotherObj = repoObjFactory.createWorkObject(null);
         String sourceProfile = "some source md";
         String sourceMdBodyString = "source md content";
         String modsBodyString = "MODS content";

@@ -328,7 +328,7 @@ public class RepositoryObjectFactory {
                 .slug(slug)
                 .body(content, mimetype)
                 .filename(filename)
-                .digest(checksum)
+                .digestSha1(checksum)
                 .perform()) {
             resultUri = response.getLocation();
             describedBy = response.getLinkHeaders("describedby").get(0);

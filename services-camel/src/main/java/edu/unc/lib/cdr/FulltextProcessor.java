@@ -32,6 +32,7 @@ import org.apache.camel.Processor;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
- * 
+ *
  * @author lfarrell
  *
  */
@@ -75,7 +76,15 @@ public class FulltextProcessor implements Processor {
 
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
-        String text = extractText(binaryPath);
+        String text;
+        try {
+            text = extractText(binaryPath);
+        } catch (TikaException e) {
+            // Parsing issues aren't going to succeed on retry, so fail gently
+            log.error("Failed to extract text for {} due to parsing error", binaryUri, e);
+            return;
+        }
+
         int retryAttempt = 0;
 
         InputStream binaryStream = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8));
@@ -110,7 +119,7 @@ public class FulltextProcessor implements Processor {
         Metadata metadata = new Metadata();
 
         try (InputStream stream = new FileInputStream(new File(filepath))) {
-            parser.parse(stream, handler, metadata);
+            parser.parse(stream, handler, metadata, new ParseContext());
             return handler.toString();
         }
     }

@@ -31,6 +31,11 @@ import javax.xml.transform.TransformerException;
 
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -43,12 +48,6 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
-
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -317,6 +316,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
     private void setEmbargoUntil(Model model, Resource mainResource, Element dataRoot) {
 
         String embargoCode = dataRoot.getAttributeValue("embargo_code");
+        log.debug("Deposit {} has embargo code of {}", getDepositPID(), embargoCode);
 
         if (embargoCode != null) {
 
@@ -338,6 +338,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
             } else {
                 embargoEnd = null;
             }
+            log.debug("Setting embargo end date of {} for deposit {}", embargoEnd, getDepositPID());
 
             // If the embargo end date isn't coming from comp_date then make sure it hasn't already expired
             if (embargoEnd != null && embargoEnd != currentDate && embargoEnd.compareTo(currentDate) < 0) {

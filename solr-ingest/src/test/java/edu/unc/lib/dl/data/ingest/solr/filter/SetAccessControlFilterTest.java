@@ -198,7 +198,7 @@ public class SetAccessControlFilterTest {
 
     private void addPrincipalRoles(String principal, UserRole...roles) {
         Set<String> roleStrings = Arrays.stream(roles)
-                .map(r -> r.name())
+                .map(r -> r.getPropertyString())
                 .collect(Collectors.toSet());
 
         principalRoles.put(principal, roleStrings);

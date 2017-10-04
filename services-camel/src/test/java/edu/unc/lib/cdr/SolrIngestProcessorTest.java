@@ -41,7 +41,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -54,12 +54,12 @@ public class SolrIngestProcessorTest {
     @Mock
     private DocumentIndexingPackage dip;
     @Mock
-    private IndexDocumentBean docBean; 
+    private IndexDocumentBean docBean;
     @Mock
     private DocumentIndexingPipeline pipeline;
     @Mock
     private SolrUpdateDriver solrUpdateDriver;
-    private int maxRetries = 3; 
+    private int maxRetries = 3;
     private long retryDelay = 10;
 
     @Mock
@@ -79,7 +79,7 @@ public class SolrIngestProcessorTest {
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI)))
-                .thenReturn("http://fedora/test/object");
+                .thenReturn("http://fedora/content/45/66/76/67/45667667-ed3f-41fc-94cc-7764fc266075");
 
         when(dip.getDocument()).thenReturn(docBean);
         when(dipFactory.createDip(any(PID.class))).thenReturn(dip);

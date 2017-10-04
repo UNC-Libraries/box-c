@@ -17,6 +17,8 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
@@ -46,7 +48,10 @@ public abstract class ContentObject extends RepositoryObject {
      * @return the FileObject containing the BinaryObject for the MODS
      */
     public FileObject addDescription(InputStream modsStream) {
-        FileObject fileObj = createFileObject();
+        Model descModel = ModelFactory.createDefaultModel();
+        descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
+
+        FileObject fileObj = repoObjFactory.createFileObject(descModel);
 
         BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
         repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());

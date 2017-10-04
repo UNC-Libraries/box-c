@@ -97,6 +97,7 @@ public class AnalyticsTrackerUtil {
     public static class AnalyticsUserData {
         public String uip;
         public String cid;
+        public String userAgent;
 
         public AnalyticsUserData(HttpServletRequest request) {
 
@@ -136,6 +137,10 @@ public class AnalyticsTrackerUtil {
                 cid = DEFAULT_CID;
             }
 
+            userAgent = request.getHeader("User-Agent");
+            if (userAgent == null) {
+                userAgent = "";
+            }
         }
     }
 
@@ -171,12 +176,13 @@ public class AnalyticsTrackerUtil {
                 return;
             }
 
-            List<NameValuePair> params = new ArrayList<NameValuePair>();
+            List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("v", "1"));
             params.add(new BasicNameValuePair("tid", gaTrackingID));
             params.add(new BasicNameValuePair("cid", userData.cid));
             params.add(new BasicNameValuePair("t", "event"));
             params.add(new BasicNameValuePair("uip", userData.uip));
+            params.add(new BasicNameValuePair("ua", userData.userAgent));
             params.add(new BasicNameValuePair("an", "cdr"));
             params.add(new BasicNameValuePair("de", "UTF-8"));
             params.add(new BasicNameValuePair("ul", "en-us"));
