@@ -38,7 +38,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -51,7 +51,7 @@ public class DocumentIndexingPackageDataLoaderTest {
     private DocumentIndexingPackageDataLoader dataLoader;
 
     @Mock
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
     @Mock
     private DocumentIndexingPackage dip;
     @Mock
@@ -67,7 +67,7 @@ public class DocumentIndexingPackageDataLoaderTest {
         initMocks(this);
 
         dataLoader = new DocumentIndexingPackageDataLoader();
-        dataLoader.setRepository(repository);
+        dataLoader.setRepositoryObjectLoader(repoObjLoader);
 
         when(pid.getPid()).thenReturn("uuid:" + UUID.randomUUID().toString());
         when(dip.getPid()).thenReturn(pid);
@@ -78,7 +78,7 @@ public class DocumentIndexingPackageDataLoaderTest {
         InputStream modsStream = new FileInputStream(new File(
                 "src/test/resources/datastream/inventoryMods.xml"));
 
-        when(repository.getRepositoryObject(eq(pid))).thenReturn(contentObj);
+        when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getMODS()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(modsStream);
 
@@ -87,27 +87,27 @@ public class DocumentIndexingPackageDataLoaderTest {
         assertNotNull(modsElement);
         assertEquals("mods", modsElement.getName());
 
-        verify(repository).getRepositoryObject(any(PID.class));
+        verify(repoObjLoader).getRepositoryObject(any(PID.class));
     }
 
     @Test
     public void testLoadNoMods() throws Exception {
 
-        when(repository.getRepositoryObject(eq(pid))).thenReturn(contentObj);
+        when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getMODS()).thenReturn(null);
 
         Element modsElement = dataLoader.loadMods(dip);
 
         assertNull(modsElement);
 
-        verify(repository).getRepositoryObject(any(PID.class));
+        verify(repoObjLoader).getRepositoryObject(any(PID.class));
     }
 
     @Test(expected = IndexingException.class)
     public void testLoadBadMods() throws Exception {
         InputStream badModsStream = new ByteArrayInputStream("<mods:mod".getBytes());
 
-        when(repository.getRepositoryObject(eq(pid))).thenReturn(contentObj);
+        when(repoObjLoader.getRepositoryObject(eq(pid))).thenReturn(contentObj);
         when(contentObj.getMODS()).thenReturn(modsBinary);
         when(modsBinary.getBinaryStream()).thenReturn(badModsStream);
 

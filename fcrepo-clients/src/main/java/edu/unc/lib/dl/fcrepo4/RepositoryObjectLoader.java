@@ -138,7 +138,7 @@ public class RepositoryObjectLoader {
         return (DepositRecord) repoObj;
     }
 
-    protected RepositoryObject getRepositoryObject(PID pid) {
+    public RepositoryObject getRepositoryObject(PID pid) {
         try {
             return repositoryObjCache.get(pid);
         } catch (UncheckedExecutionException | ExecutionException e) {
