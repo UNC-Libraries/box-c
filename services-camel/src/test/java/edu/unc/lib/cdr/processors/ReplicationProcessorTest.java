@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr;
+package edu.unc.lib.cdr.processors;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
@@ -46,8 +46,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 
 public class ReplicationProcessorTest {
@@ -74,7 +74,7 @@ public class ReplicationProcessorTest {
     private BinaryObject binaryFcrepo;
 
     @Mock
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
 
     @Mock
     private Exchange exchange;
@@ -89,7 +89,7 @@ public class ReplicationProcessorTest {
         replicationDir = tmpFolder.newFolder("repl");
         replicationDir.mkdir();
 
-        processor = new ReplicationProcessor(repository, replicationDir.getAbsolutePath(), maxRetries, retryDelay);
+        processor = new ReplicationProcessor(repoObjLoader, replicationDir.getAbsolutePath(), maxRetries, retryDelay);
 
         file = File.createTempFile(fileName, "txt");
         file.deleteOnExit();
@@ -99,10 +99,9 @@ public class ReplicationProcessorTest {
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getOut()).thenReturn(message);
 
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn("http://fedora");
+        when(RepositoryPaths.getBaseUri()).thenReturn("http://fedora");
 
-        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
 
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn("http://fedora/test/replicate");
@@ -152,7 +151,7 @@ public class ReplicationProcessorTest {
 
     @Test(expected = ReplicationDestinationUnavailableException.class)
     public void testBadReplicationLocations() throws Exception {
-        processor = new ReplicationProcessor(repository, badReplicationLocations, maxRetries, retryDelay);
+        processor = new ReplicationProcessor(repoObjLoader, badReplicationLocations, maxRetries, retryDelay);
     }
 
     @Test(expected = RuntimeException.class)

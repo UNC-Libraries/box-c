@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr;
+package edu.unc.lib.cdr.processors;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
@@ -43,9 +43,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
+import edu.unc.lib.cdr.processors.ReplicationDestinationUnavailableException;
+import edu.unc.lib.cdr.processors.ReplicationException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 
 /**
  * Replicates binary files ingested into fedora to a series of one or more remote storage locations.
@@ -57,13 +59,14 @@ import edu.unc.lib.dl.fcrepo4.Repository;
 public class ReplicationProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(ReplicationProcessor.class);
 
-    private final Repository repository;
+    private final RepositoryObjectLoader repoObjLoader;
     private final String[] replicationLocations;
     private final int maxRetries;
     private final long retryDelay;
 
-    public ReplicationProcessor(Repository repository, String replicationLocations, int maxRetries, long retryDelay) {
-        this.repository = repository;
+    public ReplicationProcessor(RepositoryObjectLoader repoObjLoader, String replicationLocations,
+            int maxRetries, long retryDelay) {
+        this.repoObjLoader = repoObjLoader;
         this.replicationLocations = splitReplicationLocations(replicationLocations);
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;
@@ -144,7 +147,7 @@ public class ReplicationProcessor implements Processor {
         InputStream response = null;
 
         try {
-            BinaryObject binary = repository.getBinary(PIDs.get(uri));
+            BinaryObject binary = repoObjLoader.getBinaryObject(PIDs.get(uri));
             response = binary.getBinaryStream();
             Files.copy(response, Paths.get(binaryFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {

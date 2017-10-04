@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr;
+package edu.unc.lib.cdr.processors;
 
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
@@ -35,14 +35,13 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
- * 
+ *
  * @author bbpennel
+ * @author harring
  *
  */
 public class SolrIngestProcessorTest {
@@ -54,16 +53,14 @@ public class SolrIngestProcessorTest {
     @Mock
     private DocumentIndexingPackage dip;
     @Mock
-    private IndexDocumentBean docBean; 
+    private IndexDocumentBean docBean;
     @Mock
     private DocumentIndexingPipeline pipeline;
     @Mock
     private SolrUpdateDriver solrUpdateDriver;
-    private int maxRetries = 3; 
+    private int maxRetries = 3;
     private long retryDelay = 10;
 
-    @Mock
-    private Repository repository;
     @Mock
     private Exchange exchange;
     @Mock
@@ -73,9 +70,6 @@ public class SolrIngestProcessorTest {
     public void init() throws Exception {
         initMocks(this);
         processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, maxRetries, retryDelay);
-
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn("http://fedora");
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI)))

@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.cdr.solr;
 
-import static edu.unc.lib.cdr.JmsHeaderConstants.EVENT_TYPE;
-import static edu.unc.lib.cdr.JmsHeaderConstants.IDENTIFIER;
-import static edu.unc.lib.cdr.JmsHeaderConstants.RESOURCE_TYPE;
+import static edu.unc.lib.cdr.processors.JmsHeaderConstants.EVENT_TYPE;
+import static edu.unc.lib.cdr.processors.JmsHeaderConstants.IDENTIFIER;
+import static edu.unc.lib.cdr.processors.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -40,9 +40,8 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.cdr.SolrIngestProcessor;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.cdr.processors.SolrIngestProcessor;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  *
@@ -56,9 +55,6 @@ public class SolrRouterTest extends CamelSpringTestSupport {
     @EndpointInject(uri = "mock:fcrepo")
     private MockEndpoint resultEndpoint;
 
-    @BeanInject(value = "repository")
-    private Repository repo;
-
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
@@ -67,8 +63,7 @@ public class SolrRouterTest extends CamelSpringTestSupport {
 
     @Before
     public void init() {
-        PIDs.setRepository(repo);
-        when(repo.getBaseUri()).thenReturn(baseUri);
+        when(RepositoryPaths.getBaseUri()).thenReturn(baseUri);
     }
 
     @Override
