@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.processors;
+package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
@@ -49,10 +49,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -70,11 +69,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     protected FcrepoClient client;
 
     @Autowired
-    protected RepositoryObjectLoader repoObjLoader;
-
-    @Autowired
-    protected RepositoryObjectFactory repoObjFactory;
-
+    protected Repository repository;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -92,7 +87,8 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     public void init() throws IOException {
         replicationDir = tmpFolder.newFolder("tmp");
         replicationDir.mkdir();
-        processor = new ReplicationProcessor(repoObjLoader, replicationDir.getAbsolutePath(), 3, 100L);
+        PIDs.setRepository(repository);
+        processor = new ReplicationProcessor(repository, replicationDir.getAbsolutePath(), 3, 100L);
         initMocks(this);
 
         when(exchange.getIn()).thenReturn(message);
@@ -130,16 +126,15 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     @Test
     public void replicateFileInFedoraDatastoreTest() throws Exception {
         // Create a parent object to put the binary into
-        WorkObject workObj = repoObjFactory.createWorkObject();
-        String binarySlug = "binary_test";
-        URI binaryUri = workObj.getPid().getRepositoryUri();
+        URI contentBase = createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
+        URI binaryUri = determineRepositoryPath(contentBase);
 
         String bodyString = "Test text";
         String filename = "test.txt";
         String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject internalObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream,
+        BinaryObject internalObj = repository.createBinary(binaryUri, "binary_test", contentStream,
                 filename, MIMETYPE, checksum, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
@@ -164,7 +159,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         InputStream contentStream = new FileInputStream(testFile);
         String checksum = "9db3fcbaec92b9ccf9aa16f820184813080e77d2";
 
-        BinaryObject externalObj = repoObjFactory.createBinary(binaryUri, "external_binary_test", contentStream,
+        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream,
                 filename, MIMETYPE, null, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
@@ -190,7 +185,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         InputStream contentStream = new FileInputStream(testFile);
         String badChecksum = "41cfe91611de4f56689ca6258237c448d3f91a84";
 
-        BinaryObject externalObj = repoObjFactory.createBinary(binaryUri, "external_binary_test", contentStream,
+        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream,
                 filename, MIMETYPE, null, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(badChecksum);
@@ -201,7 +196,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
     @Test (expected = ReplicationDestinationUnavailableException.class)
     public void badReplicationLocationTest() throws Exception {
-        processor = new ReplicationProcessor(repoObjLoader, "/some/bad/location", 3, 100L);
+        processor = new ReplicationProcessor(repository, "/some/bad/location", 3, 100L);
     }
 
 }

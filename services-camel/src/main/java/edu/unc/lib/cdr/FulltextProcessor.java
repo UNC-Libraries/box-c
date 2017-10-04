@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.processors;
+package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -40,19 +40,19 @@ import org.xml.sax.SAXException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
- *
+ * 
  * @author lfarrell
  *
  */
 public class FulltextProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(FulltextProcessor.class);
 
-    private final RepositoryObjectLoader repoObjLoader;
+    private final Repository repository;
     private final String slug;
     private final String fileName;
 
@@ -61,8 +61,8 @@ public class FulltextProcessor implements Processor {
 
     private final static String MIMETYPE = "text/plain";
 
-    public FulltextProcessor(RepositoryObjectLoader repoObjLoader, String slug, String fileName, int maxRetries, long retryDelay) {
-        this.repoObjLoader = repoObjLoader;
+    public FulltextProcessor(Repository repository, String slug, String fileName, int maxRetries, long retryDelay) {
+        this.repository = repository;
         this.slug = slug;
         this.fileName = fileName;
         this.maxRetries = maxRetries;
@@ -82,7 +82,7 @@ public class FulltextProcessor implements Processor {
 
         while (true) {
             try {
-                BinaryObject binary = repoObjLoader.getBinaryObject(PIDs.get(binaryUri));
+                BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
                 FileObject parent = (FileObject) binary.getParent();
 
                 parent.addDerivative(slug, binaryStream, fileName, MIMETYPE, PcdmUse.ExtractedText);

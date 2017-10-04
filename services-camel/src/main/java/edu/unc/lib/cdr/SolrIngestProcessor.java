@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.unc.lib.cdr.processors;
+package edu.unc.lib.cdr;
 
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.processors;
+package edu.unc.lib.cdr;
 
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
@@ -42,7 +42,8 @@ import org.mockito.exceptions.base.MockitoException;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
@@ -68,7 +69,7 @@ public class AddDerivativeProcessorTest {
     private ExecResult result;
 
     @Mock
-    private RepositoryObjectLoader repoObjLoader;
+    private Repository repository;
 
     @Mock
     private Exchange exchange;
@@ -79,12 +80,14 @@ public class AddDerivativeProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
-        processor = new AddDerivativeProcessor(repoObjLoader, slug, fileExtension, mimetype, maxRetries, retryDelay);
+        processor = new AddDerivativeProcessor(repository, slug, fileExtension, mimetype, maxRetries, retryDelay);
         file = File.createTempFile(fileName, ".PNG");
         file.deleteOnExit();
         when(exchange.getIn()).thenReturn(message);
+        PIDs.setRepository(repository);
+        when(repository.getBaseUri()).thenReturn("http://fedora");
 
-        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
+        when(repository.getBinary(any(PID.class))).thenReturn(binary);
 
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn("http://fedora/test/original_file");
@@ -107,7 +110,7 @@ public class AddDerivativeProcessorTest {
     @Test
     public void createEnhancementTest() throws Exception {
 
-        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
+        when(repository.getBinary(any(PID.class))).thenReturn(binary);
         when(binary.getParent()).thenReturn(parent);
         when(message.getBody()).thenReturn(result);
 

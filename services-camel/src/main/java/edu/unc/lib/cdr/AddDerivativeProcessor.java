@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.cdr.processors;
+package edu.unc.lib.cdr;
 
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -35,20 +35,19 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  * Adds a derivative file to an existing file object
- *
+ * 
  * @author bbpennel
- * @author harring
  *
  */
 public class AddDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
-    private final RepositoryObjectLoader repoObjLoader;
+    private final Repository repository;
     private final String slug;
     private final String fileExtension;
     private final String mimetype;
@@ -56,9 +55,9 @@ public class AddDerivativeProcessor implements Processor {
     private final int maxRetries;
     private final long retryDelay;
 
-    public AddDerivativeProcessor(RepositoryObjectLoader repoObjLoader, String slug, String fileExtension,
+    public AddDerivativeProcessor(Repository repository, String slug, String fileExtension,
             String mimetype, int maxRetries, long retryDelay) {
-        this.repoObjLoader = repoObjLoader;
+        this.repository = repository;
         this.slug = slug;
         this.fileExtension = fileExtension;
         this.maxRetries = maxRetries;
@@ -98,7 +97,7 @@ public class AddDerivativeProcessor implements Processor {
             throws FileNotFoundException {
         InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
 
-        BinaryObject binary = repoObjLoader.getBinaryObject(PIDs.get(binaryUri));
+        BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
         FileObject parent = (FileObject) binary.getParent();
         parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
 
