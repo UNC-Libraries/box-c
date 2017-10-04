@@ -20,7 +20,7 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.cdr.processors.SolrIngestProcessor;
+import edu.unc.lib.cdr.SolrIngestProcessor;
 
 /**
  * Router which triggers the full indexing of individual objects to Solr.
