@@ -54,7 +54,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
     @Test
     public void createWorkObjectTest() throws Exception {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource();
+        Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Title");
 
         WorkObject obj = repoObjFactory.createWorkObject(model);

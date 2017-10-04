@@ -50,7 +50,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Before
     public void init() {
         model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource();
+        Resource resc = model.createResource("");
         resc.addProperty(DcElements.title, "Folder Title");
     }
 

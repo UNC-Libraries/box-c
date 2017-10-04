@@ -26,6 +26,7 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -97,5 +98,11 @@ public class AbstractFedoraIT {
     protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
         return objs.stream()
                 .filter(p -> p.getPid().equals(pid)).findAny().get();
+    }
+
+    @Test
+    public void dummyTest() throws Exception {
+        // a placeholder to prevent JUnit from displaying an error for this test,
+        // which isn't intended to have its own test cases
     }
 }

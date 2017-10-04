@@ -75,13 +75,14 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createBinaryTest() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+        // create parent for binary
+        WorkObject workObj = repoObjFactory.createWorkObject();
         String binarySlug = "binary_test";
-        String binaryPath = URIUtil.join(baseAddress, binarySlug);
-        URI binaryUri = pid.getRepositoryUri();
+        URI binaryUri = workObj.getPid().getRepositoryUri();
+        String binaryPath = URIUtil.join(binaryUri, binarySlug);
 
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(binaryUri.toString());
+        Resource resc = model.createResource(binaryPath);
         resc.addProperty(RDF.type, PcdmUse.OriginalFile);
 
         String bodyString = "Test text";
