@@ -116,36 +116,45 @@ public class RepositoryObjectFactoryTest {
     @Test
     public void createAdminUnitTest() {
 
-        AdminUnit obj = repoObjFactory.createAdminUnit();
+        AdminUnit obj = repoObjFactory.createAdminUnit(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createCollectionObjectTest() throws Exception {
 
-        CollectionObject obj = repoObjFactory.createCollectionObject();
+        CollectionObject obj = repoObjFactory.createCollectionObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createFolderObjectTest() throws Exception {
 
-        FolderObject obj = repoObjFactory.createFolderObject();
+        FolderObject obj = repoObjFactory.createFolderObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createWorkObjectTest() {
 
-        WorkObject obj = repoObjFactory.createWorkObject();
+        WorkObject obj = repoObjFactory.createWorkObject(null);
         assertNotNull(obj);
     }
 
     @Test
     public void createFileObjectTest() {
 
-        FileObject obj = repoObjFactory.createFileObject();
+        FileObject obj = repoObjFactory.createFileObject(null);
         assertNotNull(obj);
+    }
+
+    @Test
+    public void createFolderWithPidTest() {
+        PID pid = pidMinter.mintContentPid();
+
+        FileObject obj = repoObjFactory.createFileObject(pid, null);
+        assertNotNull(obj);
+        assertEquals(pid, obj.getPid());
     }
 
     @Test

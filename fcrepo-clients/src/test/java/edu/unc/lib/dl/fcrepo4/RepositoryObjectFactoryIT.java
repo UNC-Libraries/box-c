@@ -76,7 +76,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createBinaryTest() throws Exception {
         // create parent for binary
-        WorkObject workObj = repoObjFactory.createWorkObject();
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
         String binarySlug = "binary_test";
         URI binaryUri = workObj.getPid().getRepositoryUri();
         String binaryPath = URIUtil.join(binaryUri, binarySlug);
@@ -116,7 +116,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createFileObjectTest() throws Exception {
-        FileObject fileObj = repoObjFactory.createFileObject();
+        FileObject fileObj = repoObjFactory.createFileObject(null);
         PID pid = fileObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -141,7 +141,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
 
     @Test
     public void createWorkObjectTest() throws Exception {
-        WorkObject workObj = repoObjFactory.createWorkObject();
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
         PID pid = workObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -165,7 +165,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createFolderObjectTest() throws Exception {
 
-        FolderObject folderObj = repoObjFactory.createFolderObject();
+        FolderObject folderObj = repoObjFactory.createFolderObject(null);
         PID pid = folderObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -188,7 +188,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createAdminUnitTest() throws Exception {
 
-        AdminUnit adminUnit = repoObjFactory.createAdminUnit();
+        AdminUnit adminUnit = repoObjFactory.createAdminUnit(null);
         PID pid = adminUnit.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();
@@ -212,7 +212,7 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     @Test
     public void createCollectionObjectTest() throws Exception {
 
-        CollectionObject collObj = repoObjFactory.createCollectionObject();
+        CollectionObject collObj = repoObjFactory.createCollectionObject(null);
         PID pid = collObj.getPid();
         URI uri = pid.getRepositoryUri();
         String objPath = uri.toString();

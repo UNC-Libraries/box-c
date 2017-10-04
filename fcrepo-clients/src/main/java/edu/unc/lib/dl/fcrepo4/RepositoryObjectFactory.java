@@ -105,17 +105,7 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new AdminUnit
-     *
-     * @return
-     * @throws FedoraException
-     */
-    public AdminUnit createAdminUnit() throws FedoraException {
-        return createAdminUnit(null);
-    }
-
-    /**
-     * Creates a new AdminUnit with the given model
+     * Creates a new AdminUnit with the given model and a generated pid
      *
      * @param model
      * @return
@@ -124,6 +114,18 @@ public class RepositoryObjectFactory {
     public AdminUnit createAdminUnit(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
+        return createAdminUnit(pid, model);
+    }
+
+    /**
+     * Creates a new AdminUnit with the given model and provided pid
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public AdminUnit createAdminUnit(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -152,17 +154,7 @@ public class RepositoryObjectFactory {
 
 
     /**
-     * Creates a new CollectionObject
-     *
-     * @return
-     * @throws FedoraException
-     */
-    public CollectionObject createCollectionObject() throws FedoraException {
-        return createCollectionObject(null);
-    }
-
-    /**
-     * Creates a new CollectionObject with the given model
+     * Creates a new CollectionObject with the given model and a generated pid
      *
      * @param model
      * @return
@@ -171,6 +163,18 @@ public class RepositoryObjectFactory {
     public CollectionObject createCollectionObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
+        return createCollectionObject(pid, model);
+    }
+
+    /**
+     * Creates a new CollectionObject with the given model and pid
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public CollectionObject createCollectionObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -182,17 +186,7 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new FolderObject
-     *
-     * @return
-     * @throws FedoraException
-     */
-    public FolderObject createFolderObject() throws FedoraException {
-        return createFolderObject(null);
-    }
-
-    /**
-     * Creates a new FolderObject with the given model
+     * Creates a new FolderObject with the given model and a generated pid
      *
      * @param model
      * @return
@@ -201,6 +195,18 @@ public class RepositoryObjectFactory {
     public FolderObject createFolderObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
+        return createFolderObject(pid, model);
+    }
+
+    /**
+     * Creates a new FolderObject with the given model and pid
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public FolderObject createFolderObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -212,17 +218,7 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new WorkObject
-     *
-     * @return
-     * @throws FedoraException
-     */
-    public WorkObject createWorkObject() throws FedoraException {
-        return createWorkObject(null);
-    }
-
-    /**
-     * Creates a new WorkObject with the given model
+     * Creates a new WorkObject with the given model and a generated pid
      *
      * @param model
      * @return
@@ -231,6 +227,18 @@ public class RepositoryObjectFactory {
     public WorkObject createWorkObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
+        return createWorkObject(pid, model);
+    }
+
+    /**
+     * Creates a new WorkObject with the given model and pid
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public WorkObject createWorkObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
@@ -242,17 +250,7 @@ public class RepositoryObjectFactory {
     }
 
     /**
-     * Creates a new file object
-     *
-     * @return
-     * @throws FedoraException
-     */
-    public FileObject createFileObject() throws FedoraException {
-        return createFileObject(null);
-    }
-
-    /**
-     * Creates a new file object with the given model
+     * Creates a new file object with the given model and a generate pid
      *
      * @param model
      * @return
@@ -261,6 +259,18 @@ public class RepositoryObjectFactory {
     public FileObject createFileObject(Model model) throws FedoraException {
         PID pid = pidMinter.mintContentPid();
 
+        return createFileObject(pid, model);
+    }
+
+    /**
+     * Creates a new file object with the given model and pid
+     *
+     * @param pid
+     * @param model
+     * @return
+     * @throws FedoraException
+     */
+    public FileObject createFileObject(PID pid, Model model) throws FedoraException {
         URI path = pid.getRepositoryUri();
 
         // Add types to the object being created
