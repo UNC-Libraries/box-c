@@ -56,7 +56,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         parentPid = pidMinter.mintDepositRecordPid();
 
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(parentPid.getRepositoryUri().toString());
+        Resource resc = model.createResource("");
         resc.addProperty(RDF.type, Cdr.DepositRecord);
 
         parentObject = repoObjFactory.createDepositRecord(model);

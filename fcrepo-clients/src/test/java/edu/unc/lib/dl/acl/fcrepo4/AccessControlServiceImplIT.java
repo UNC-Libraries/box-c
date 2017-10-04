@@ -42,6 +42,7 @@ import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -127,6 +128,7 @@ public class AccessControlServiceImplIT {
 
     @Before
     public void init() throws Exception {
+        TestHelper.setContentBase("http://example.com/rest");
 
         sparqlService = new FusekiSparqlQueryServiceImpl();
         ((FusekiSparqlQueryServiceImpl) sparqlService).setFusekiQueryURL(FUSEKI_BASE_URI);
