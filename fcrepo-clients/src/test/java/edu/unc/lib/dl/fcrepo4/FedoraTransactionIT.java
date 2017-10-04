@@ -93,7 +93,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
         repoObjFactory.createFolderObject(model);
 
         FedoraTransaction subTx = txManager.startTransaction();
-        WorkObject workObj = repoObjFactory.createWorkObject();
+        WorkObject workObj = repoObjFactory.createWorkObject(null);
         subTx.close();
 
         assertNull(subTx.getTxUri());
@@ -110,7 +110,7 @@ public class FedoraTransactionIT extends AbstractFedoraIT {
     @Test
     public void cannotAccessObjectOutsideTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
-        FolderObject folder = repoObjFactory.createFolderObject();
+        FolderObject folder = repoObjFactory.createFolderObject(null);
 
         verifyNonTxStatusCode(folder.getPid(), 404);
         tx.close();

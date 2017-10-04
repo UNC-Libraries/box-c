@@ -55,7 +55,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void addFolderTest() throws Exception {
-        FolderObject obj = repoObjFactory.createFolderObject();
+        FolderObject obj = repoObjFactory.createFolderObject(null);
 
         FolderObject child = obj.addFolder();
 
@@ -72,7 +72,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
         Resource childResc = childModel.createResource("");
         childResc.addProperty(DcElements.title, "Work Title");
 
-        FolderObject obj = repoObjFactory.createFolderObject();
+        FolderObject obj = repoObjFactory.createFolderObject(null);
         WorkObject work = obj.addWork(childModel);
 
         assertNotNull(work);
@@ -86,7 +86,7 @@ public class FolderObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMembersTest() {
-        FolderObject obj = repoObjFactory.createFolderObject();
+        FolderObject obj = repoObjFactory.createFolderObject(null);
 
         WorkObject child1 = obj.addWork();
         FolderObject child2 = obj.addFolder();
