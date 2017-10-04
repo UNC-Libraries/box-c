@@ -22,7 +22,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.cdr.BinaryMetadataProcessor;
+import edu.unc.lib.cdr.processors.BinaryMetadataProcessor;
 import edu.unc.lib.dl.rdf.Cdr;
 
 /**
