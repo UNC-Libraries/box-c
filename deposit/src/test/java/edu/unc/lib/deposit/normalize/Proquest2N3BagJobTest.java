@@ -31,15 +31,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaders;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -48,6 +39,14 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -72,14 +71,14 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
         StreamSource xslStream = new StreamSource();
         xslStream.setSystemId(xslURL.toExternalForm());
         proquest2ModsTransformer = factory.newTransformer(xslStream);
-        
+
         Dataset dataset = TDBFactory.createDataset();
 
         job = new Proquest2N3BagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         job.setProquest2ModsTransformer(proquest2ModsTransformer);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);

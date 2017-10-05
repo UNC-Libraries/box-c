@@ -115,7 +115,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
     private void normalizePackage(File packageDir, Model model, Bag depositBag) {
 
         // Generate a uuid for the main object
-        PID mainPID = repository.mintContentPid();
+        PID mainPID = pidMinter.mintContentPid();
         Resource mainResource;
 
         // Identify the important files from the deposit
@@ -263,7 +263,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
         }
 
         // Create primary object child entry for the main document
-        PID primaryObjectPID = repository.mintContentPid();
+        PID primaryObjectPID = pidMinter.mintContentPid();
         Resource primaryObjectResource = model.createResource(primaryObjectPID.getURI());
         mainBag.add(primaryObjectResource);
 
@@ -283,7 +283,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
             String description = attachEl.getChildText("DISS_file_descr");
 
             // Make the child entry with a new uuid
-            PID pid = repository.mintContentPid();
+            PID pid = pidMinter.mintContentPid();
             Resource child = model.createResource(pid.getURI());
             mainBag.add(child);
 
@@ -303,7 +303,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
     private void setSourceMetadata(Model model, Resource mainResource, File dataFile) {
         // Add the data file as a metadata datastream of the main object
-        PID sourceMDPID = repository.mintContentPid();
+        PID sourceMDPID = pidMinter.mintContentPid();
         Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
         model.add(mainResource, CdrDeposit.hasDatastream, sourceMDResource);
         model.add(mainResource, CdrDeposit.hasSourceMetadata, sourceMDResource);

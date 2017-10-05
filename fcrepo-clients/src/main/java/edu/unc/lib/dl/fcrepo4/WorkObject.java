@@ -118,10 +118,16 @@ public class WorkObject extends ContentContainerObject {
         return addDataFile(contentStream, filename, mimetype, sha1Checksum, null);
     }
 
+    public FileObject addDataFile(InputStream contentStream, String filename,
+            String mimetype, String sha1Checksum, Model model) {
+        return addDataFile(contentStream, filename, mimetype, sha1Checksum, model);
+    }
+
     /**
      * Adds a new file object containing the provided input stream as its
      * original file, using the provided pid as the identifier for the new
      * FileObject.
+     *
      *
      * @param contentStream
      *            Inputstream containing the binary content for the data file. Required.
@@ -132,7 +138,7 @@ public class WorkObject extends ContentContainerObject {
      *            model containing properties for the new fileObject
      * @return
      */
-    public FileObject addDataFile(InputStream contentStream, String filename,
+    public FileObject addDataFile(PID filePid, InputStream contentStream, String filename,
             String mimetype, String sha1Checksum, Model model) {
 
         if (contentStream == null) {
@@ -145,7 +151,12 @@ public class WorkObject extends ContentContainerObject {
         model.getResource("").addProperty(DC.title, filename);
 
         // Create the file object
-        FileObject fileObj = repoObjFactory.createFileObject(model);
+        FileObject fileObj;
+        if (filePid == null) {
+            fileObj = repoObjFactory.createFileObject(model);
+        } else {
+            fileObj = repoObjFactory.createFileObject(filePid, model);
+        }
         // Add the binary content to it as its original file
         fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 

@@ -22,29 +22,31 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.query.Dataset;
 import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import org.apache.jena.query.Dataset;
-
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
+import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -55,7 +57,9 @@ public class AbstractFedoraDepositJobIT {
     @Autowired
     protected String serverAddress;
     @Autowired
-    protected Repository repository;
+    protected String baseAddress;
+    @Autowired
+    protected RepositoryPIDMinter pidMinter;
     @Autowired
     protected Dataset dataset;
     @Autowired
@@ -70,20 +74,22 @@ public class AbstractFedoraDepositJobIT {
     protected ActivityMetricsClient metricsClient;
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    
+
     protected File depositsDirectory;
     protected File depositDir;
     protected String jobUUID;
     protected String depositUUID;
     protected PID depositPid;
-    
+
     @Before
     public void initBase() throws Exception {
+        TestHelper.setContentBase(baseAddress);
+
         depositsDirectory = tmpFolder.newFolder("deposits");
-        
+
         jobUUID = UUID.randomUUID().toString();
 
-        depositPid = repository.mintDepositRecordPid();
+        depositPid = pidMinter.mintDepositRecordPid();
         depositUUID = depositPid.getId();
         depositDir = new File(depositsDirectory, depositUUID);
         depositDir.mkdir();
@@ -102,9 +108,27 @@ public class AbstractFedoraDepositJobIT {
             return baseUri;
         }
     }
-    
+
     protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
         return objs.stream()
                 .filter(p -> p.getPid().equals(pid)).findAny().get();
+    }
+
+    protected boolean objectExists(PID pid) throws Exception {
+        try (FcrepoResponse response = client.head(pid.getRepositoryUri())
+                .perform()) {
+            return true;
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+                return false;
+            }
+            throw new FedoraException("Failed to check on object " + pid
+                    + " during initialization", e);
+        }
+    }
+
+    @Test
+    public void dummyTest() {
+
     }
 }

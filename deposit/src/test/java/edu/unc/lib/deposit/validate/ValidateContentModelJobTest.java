@@ -69,7 +69,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         setField(job, "dataset", dataset);
         job.init();
 

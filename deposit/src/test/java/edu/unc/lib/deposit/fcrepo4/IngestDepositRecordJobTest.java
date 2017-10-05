@@ -47,6 +47,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -55,7 +56,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -66,14 +67,17 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 
     private IngestDepositRecordJob job;
 
+    @Mock
+    private RepositoryObjectFactory repoObjFactory;
+
     @Before
     public void setup() throws Exception {
-        when(repository.createDepositRecord(any(PID.class), any(Model.class)))
+        when(repoObjFactory.createDepositRecord(any(PID.class), any(Model.class)))
                 .thenReturn(depositRecord);
         PID eventPid = makePid("content");
-        when(repository.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
+        when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(eventPid);
         when(depositRecord.addPremisEvents(anyListOf(PremisEventObject.class))).thenReturn(depositRecord);
-        
+
         when(premisEventBuilder.addAuthorizingAgent(anyString())).thenReturn(premisEventBuilder);
     }
 
@@ -92,7 +96,8 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         job.setPremisLoggerFactory(premisLoggerFactory);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
+        setField(job, "repoObjFactory", repoObjFactory);
 
         job.init();
 
@@ -147,7 +152,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
         assertEquals(Cdr.DepositRecord, depositResc.getProperty(RDF.type).getObject());
 
         // Check that the deposit record was created
-        verify(repository).createDepositRecord(eq(depositPid), any(Model.class));
+        verify(repoObjFactory).createDepositRecord(eq(depositPid), any(Model.class));
 
         // Check that all manifests were added to the record
         ArgumentCaptor<File> manifestCaptor = ArgumentCaptor.forClass(File.class);
@@ -161,7 +166,7 @@ public class IngestDepositRecordJobTest extends AbstractDepositJobTest {
 
     private Resource getAIPResource() throws Exception {
         ArgumentCaptor<Model> depositRecordModelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repository).createDepositRecord(any(PID.class), depositRecordModelCaptor.capture());
+        verify(repoObjFactory).createDepositRecord(any(PID.class), depositRecordModelCaptor.capture());
         Model recordModel = depositRecordModelCaptor.getValue();
 
         return recordModel.getResource(depositPid.getRepositoryPath());
