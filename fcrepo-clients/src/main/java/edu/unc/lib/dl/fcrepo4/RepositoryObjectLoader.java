@@ -124,7 +124,7 @@ public class RepositoryObjectLoader {
     public PremisEventObject getPremisEventObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof PremisEventObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not a premis event");
+            throw new FedoraException("Object with pid " + pid + " is not a premis event");
         }
         return (PremisEventObject) repoObj;
     }

@@ -36,6 +36,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
+import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.EntityTag;
 
 /**
@@ -126,6 +127,8 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 obj =  new ContentRootObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
                 obj =  new AdminUnit(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
+            } else if (resc.hasProperty(Premis.hasEventType)) {
+                obj =  new PremisEventObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
             }
         } else if (isDepositPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
