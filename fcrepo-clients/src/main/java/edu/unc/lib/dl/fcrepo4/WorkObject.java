@@ -115,12 +115,12 @@ public class WorkObject extends ContentContainerObject {
     public FileObject addDataFile(InputStream contentStream, String filename, String mimetype,
             String sha1Checksum) {
 
-        return addDataFile(contentStream, filename, mimetype, sha1Checksum, null);
+        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, null);
     }
 
     public FileObject addDataFile(InputStream contentStream, String filename,
             String mimetype, String sha1Checksum, Model model) {
-        return addDataFile(contentStream, filename, mimetype, sha1Checksum, model);
+        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, model);
     }
 
     /**
