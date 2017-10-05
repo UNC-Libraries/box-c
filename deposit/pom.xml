@@ -92,6 +92,12 @@
 			<artifactId>fcrepo-clients</artifactId>
 		</dependency>
 		<dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>fcrepo-clients</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
 		</dependency>
