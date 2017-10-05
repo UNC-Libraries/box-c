@@ -62,7 +62,8 @@ public class FulltextProcessor implements Processor {
 
     private final static String MIMETYPE = "text/plain";
 
-    public FulltextProcessor(RepositoryObjectLoader repoObjLoader, String slug, String fileName, int maxRetries, long retryDelay) {
+    public FulltextProcessor(RepositoryObjectLoader repoObjLoader, String slug, String fileName,
+           int maxRetries, long retryDelay) {
         this.repoObjLoader = repoObjLoader;
         this.slug = slug;
         this.fileName = fileName;
