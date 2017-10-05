@@ -81,8 +81,6 @@ public class ObjectPermissionEvaluatorIT {
 
     @Before
     public void init() {
-        //repository.setBaseUri(FCREPO_BASE_URI);
-
         fusekiModel = createDefaultModel();
         Dataset ds = new DatasetImpl(fusekiModel);
         server = FusekiEmbeddedServer.create().setPort(parseInt(FUSEKI_PORT))

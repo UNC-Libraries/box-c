@@ -50,7 +50,6 @@ public class FileObjectIT extends AbstractFedoraIT {
     @Before
     public void init() throws Exception {
         createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
-        repoObjLoader.init();
     }
 
     @Test
