@@ -41,6 +41,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.cdr.helpers.TestHelper;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
@@ -48,11 +49,14 @@ import edu.unc.lib.dl.fedora.PID;
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class GetBinaryProcessorTest {
 
     private static final String FILE_CONTENT = "text content";
+    private static final String CONTENT_BASE_URI = "http://localhost:48085/rest";
+    private static final String TEST_URI = "http://localhost:48085/rest/content/12/34/56/78/1234567890";
 
     private GetBinaryProcessor processor;
 
@@ -78,6 +82,7 @@ public class GetBinaryProcessorTest {
 
     @Before
     public void init() throws Exception {
+        TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
 
         processor = new GetBinaryProcessor();
@@ -87,7 +92,7 @@ public class GetBinaryProcessorTest {
         when(exchange.getOut()).thenReturn(message);
 
         when(message.getHeader(eq(CdrBinaryUri)))
-                .thenReturn("http://fedora/content/12/34/56/78/1234567890");
+                .thenReturn(TEST_URI);
 
         when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
         when(binary.getBinaryStream()).thenReturn(new ByteArrayInputStream(FILE_CONTENT.getBytes()));

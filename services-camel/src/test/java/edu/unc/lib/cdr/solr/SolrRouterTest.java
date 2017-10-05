@@ -21,7 +21,6 @@ import static edu.unc.lib.cdr.JmsHeaderConstants.RESOURCE_TYPE;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,13 +34,11 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.SolrIngestProcessor;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  *
@@ -60,11 +57,6 @@ public class SolrRouterTest extends CamelSpringTestSupport {
 
     @BeanInject(value = "solrIngestProcessor")
     private SolrIngestProcessor solrIngestProcessor;
-
-    @Before
-    public void init() {
-        when(RepositoryPaths.getBaseUri()).thenReturn(baseUri);
-    }
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {

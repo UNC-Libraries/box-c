@@ -30,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import edu.unc.lib.cdr.helpers.TestHelper;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
@@ -45,6 +46,9 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  *
  */
 public class SolrIngestProcessorTest {
+
+    private static final String CONTENT_BASE_URI = "http://localhost:48085/rest";
+    private static final String TEST_URI = "http://localhost:48085/rest/content/12/34/56/78/90/1234567890";
 
     private SolrIngestProcessor processor;
 
@@ -68,12 +72,13 @@ public class SolrIngestProcessorTest {
 
     @Before
     public void init() throws Exception {
+        TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
         processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, maxRetries, retryDelay);
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI)))
-                .thenReturn("http://fedora/test/object");
+                .thenReturn(TEST_URI);
 
         when(dip.getDocument()).thenReturn(docBean);
         when(dipFactory.createDip(any(PID.class))).thenReturn(dip);

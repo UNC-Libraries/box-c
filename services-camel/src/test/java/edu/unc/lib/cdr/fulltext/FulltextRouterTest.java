@@ -22,7 +22,6 @@ import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,13 +35,11 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.FulltextProcessor;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 public class FulltextRouterTest extends CamelSpringTestSupport {
     private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
@@ -59,11 +56,6 @@ public class FulltextRouterTest extends CamelSpringTestSupport {
 
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
-
-    @Before
-    public void init() {
-        when(RepositoryPaths.getBaseUri()).thenReturn(baseUri);
-    }
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {

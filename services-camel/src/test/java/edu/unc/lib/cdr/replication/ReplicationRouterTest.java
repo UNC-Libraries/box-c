@@ -22,7 +22,6 @@ import static org.fcrepo.camel.FcrepoHeaders.FCREPO_BASE_URL;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_DATE_TIME;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_EVENT_TYPE;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,12 +32,9 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 public class ReplicationRouterTest extends CamelSpringTestSupport  {
 
@@ -58,11 +54,6 @@ public class ReplicationRouterTest extends CamelSpringTestSupport  {
 
     @Produce(uri = "direct:process.binary.original")
     protected ProducerTemplate template;
-
-    @Before
-    public void init() {
-        when(RepositoryPaths.getBaseUri()).thenReturn(baseUri);
-    }
 
     @Override
     protected AbstractApplicationContext createApplicationContext() {

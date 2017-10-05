@@ -47,7 +47,6 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 
 public class ReplicationProcessorTest {
@@ -98,8 +97,6 @@ public class ReplicationProcessorTest {
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getOut()).thenReturn(message);
-
-        when(RepositoryPaths.getBaseUri()).thenReturn("http://fedora");
 
         when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
 
