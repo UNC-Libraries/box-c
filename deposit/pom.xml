@@ -291,6 +291,10 @@
              </httpConnector>
              <systemProperties>
                  <systemProperty>
+                     <name>fcrepo.baseUri</name>
+                     <value>http://localhost:8080/fcrepo/rest/</value>
+                 </systemProperty>
+                 <systemProperty>
                      <name>deposit.properties.uri</name>
                      <value>file:${project.basedir}/target/${project.build.finalName}/deposit.properties</value>
                  </systemProperty>
