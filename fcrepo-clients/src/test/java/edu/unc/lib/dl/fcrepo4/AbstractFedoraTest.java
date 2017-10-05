@@ -20,6 +20,11 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import org.junit.Before;
 import org.mockito.Mock;
 
+/**
+ *
+ * @author harring
+ *
+ */
 public class AbstractFedoraTest {
 
     protected static final String FEDORA_BASE = "http://example.com/";
