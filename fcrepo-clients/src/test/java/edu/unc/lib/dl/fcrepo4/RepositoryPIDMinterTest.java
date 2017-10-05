@@ -18,6 +18,7 @@ package edu.unc.lib.dl.fcrepo4;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -27,8 +28,13 @@ import edu.unc.lib.dl.fedora.PID;
  * @author harring
  *
  */
-public class PIDMinterTest extends AbstractFedoraIT {
+public class RepositoryPIDMinterTest {
+    private RepositoryPIDMinter pidMinter;
 
+    @Before
+    public void init() {
+        pidMinter = new RepositoryPIDMinter();
+    }
 
     @Test
     public void mintDepositRecordPidTest() {

@@ -80,8 +80,6 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Autowired
     protected RepositoryPIDMinter pidMinter;
-//    @Autowired
-//    protected Repository repository;
 
     @Autowired
     protected PremisLoggerFactory premisLoggerFactory;
