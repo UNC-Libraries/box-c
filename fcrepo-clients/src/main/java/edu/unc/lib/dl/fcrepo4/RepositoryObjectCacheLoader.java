@@ -112,7 +112,9 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
         Resource resc = model.getResource(pid.getRepositoryPath());
 
-        if (isContentPID(pid)) {
+        if (resc.hasProperty(Premis.hasEventType)) {
+            obj =  new PremisEventObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
+        } else if (isContentPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.Work)) {
                 obj =  new WorkObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
@@ -127,8 +129,6 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
                 obj =  new ContentRootObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
                 obj =  new AdminUnit(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
-            } else if (resc.hasProperty(Premis.hasEventType)) {
-                obj =  new PremisEventObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
             }
         } else if (isDepositPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
