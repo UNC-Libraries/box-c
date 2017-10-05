@@ -45,4 +45,32 @@ public class PremisLoggerFactory {
         return new RepositoryPremisLogger(repoObject, pidMinter, repoObjLoader, repoObjFactory, repoObjDataLoader);
     }
 
+    /**
+     * @param pidMinter the pidMinter to set
+     */
+    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+        this.pidMinter = pidMinter;
+    }
+
+    /**
+     * @param repoObjLoader the repoObjLoader to set
+     */
+    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    /**
+     * @param repoObjFactory the repoObjFactory to set
+     */
+    public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    /**
+     * @param repoObjDataLoader the repoObjDataLoader to set
+     */
+    public void setRepoObjDataLoader(RepositoryObjectDataLoader repoObjDataLoader) {
+        this.repoObjDataLoader = repoObjDataLoader;
+    }
+
 }
