@@ -99,14 +99,6 @@ public class RepositoryObjectFactoryTest {
     }
 
     @Test
-    public void mintDepositRecordPidTest() {
-        PID pid = pidMinter.mintDepositRecordPid();
-
-        assertEquals(pid.getQualifier(), RepositoryPathConstants.DEPOSIT_RECORD_BASE);
-        assertTrue(pid.getQualifiedId().startsWith(RepositoryPathConstants.DEPOSIT_RECORD_BASE));
-    }
-
-    @Test
     public void createDepositRecordTest() {
 
         DepositRecord obj = repoObjFactory.createDepositRecord(null);

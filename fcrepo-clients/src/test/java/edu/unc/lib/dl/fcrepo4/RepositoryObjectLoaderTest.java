@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -44,7 +43,7 @@ import edu.unc.lib.dl.util.URIUtil;
 public class RepositoryObjectLoaderTest {
 
     @Mock
-    RepositoryObjectCacheLoader objectCacheLoader;
+    private RepositoryObjectCacheLoader objectCacheLoader;
     @Mock
     private RepositoryPIDMinter pidMinter;
 
@@ -77,8 +76,9 @@ public class RepositoryObjectLoaderTest {
         PID parentPid = pidMinter.mintContentPid();
         PID eventPid = pidMinter.mintPremisEventPid(parentPid);
 
-        PremisEventObject obj = repoObjLoader.getPremisEventObject(eventPid);
-        assertEquals(eventPid, obj.getPid());
+        when(objectCacheLoader.load(eq(eventPid))).thenReturn(mock(PremisEventObject.class));
+
+        assertNotNull(repoObjLoader.getPremisEventObject(eventPid));
     }
 
     @Test

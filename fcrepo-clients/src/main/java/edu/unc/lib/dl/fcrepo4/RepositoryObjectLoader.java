@@ -25,23 +25,20 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+
 /**
+ * Provides accessors to retrieve repository objects from a cache
  *
  * @author bbpennel
  * @author harring
  *
  */
-
 public class RepositoryObjectLoader {
-
-    private RepositoryObjectDataLoader dataLoader;
 
     private LoadingCache<PID, RepositoryObject> repositoryObjCache;
     private RepositoryObjectCacheLoader repositoryObjectCacheLoader;
     private long cacheTimeToLive;
     private long cacheMaxSize;
-
-    private RepositoryObjectFactory repoObjFactory;
 
     public void init() {
         repositoryObjCache = CacheBuilder.newBuilder()
@@ -51,7 +48,6 @@ public class RepositoryObjectLoader {
     }
 
     public void setDataLoader(RepositoryObjectDataLoader dataLoader) {
-        this.dataLoader = dataLoader;
     }
 
     public void setRepositoryObjectCacheLoader(RepositoryObjectCacheLoader cacheLoader) {
@@ -67,7 +63,6 @@ public class RepositoryObjectLoader {
     }
 
     public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
-        this.repoObjFactory = repoObjFactory;
     }
 
     public AdminUnit getAdminUnit(PID pid) {
@@ -127,7 +122,11 @@ public class RepositoryObjectLoader {
     }
 
     public PremisEventObject getPremisEventObject(PID pid) {
-        return new PremisEventObject(pid, this, dataLoader, repoObjFactory).validateType();
+        RepositoryObject repoObj = getRepositoryObject(pid);
+        if (!(repoObj instanceof PremisEventObject)) {
+            throw new FedoraException("Object with pid " + pid + "is not a premis event");
+        }
+        return (PremisEventObject) repoObj;
     }
 
     public DepositRecord getDepositRecord(PID pid) {

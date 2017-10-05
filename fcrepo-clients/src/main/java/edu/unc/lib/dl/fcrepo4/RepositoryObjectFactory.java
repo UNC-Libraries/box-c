@@ -89,7 +89,7 @@ public class RepositoryObjectFactory {
             URI createdUri = response.getLocation();
             // Add the manifests container
             ldpFactory.createDirectContainer(createdUri, Cdr.hasManifest,
-            RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
+                RepositoryPathConstants.DEPOSIT_MANIFEST_CONTAINER);
 
             // Add the premis event container
             addEventContainer(createdUri);
@@ -277,8 +277,8 @@ public class RepositoryObjectFactory {
         model = populateModelTypes(path, model, Arrays.asList(Cdr.FileObject, PcdmModels.Object));
 
         try (FcrepoResponse response = getClient().put(path)
-            .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
-            .perform()) {
+                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+                .perform()) {
             URI createdUri = response.getLocation();
             // Add PREMIS event container
             addEventContainer(createdUri);
@@ -322,14 +322,10 @@ public class RepositoryObjectFactory {
         }
         // Upload the binary and provided technical metadata
         URI resultUri;
-       // Track the URI where metadata updates would be made to for this binary
+        // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
-        try (FcrepoResponse response = getClient().post(path)
-                .slug(slug)
-                .body(content, mimetype)
-                .filename(filename)
-                .digestSha1(checksum)
-                .perform()) {
+        try (FcrepoResponse response = getClient().post(path).slug(slug).body(content, mimetype).filename(filename)
+                .digestSha1(checksum).perform()) {
             resultUri = response.getLocation();
             describedBy = response.getLinkHeaders("describedby").get(0);
         } catch (IOException e) {
@@ -337,22 +333,21 @@ public class RepositoryObjectFactory {
         } catch (FcrepoOperationFailedException e) {
             if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
                 throw new ChecksumMismatchException("Failed to create binary for " + path + ", provided SHA1 checksum "
-                    + checksum + " did not match the submitted content according to the repository.", e);
+                        + checksum + " did not match the submitted content according to the repository.", e);
             }
-                throw ClientFaultResolver.resolve(e);
-          }
+            throw ClientFaultResolver.resolve(e);
+        }
         if (model != null) {
             // Add in pcdm:File type to model
             model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
 
-            // If a model was provided, then add the triples to the new binary's metadata
+            // If a model was provided, then add the triples to the new binary's
+            // metadata
             // Turn model into sparql update query
             String sparqlUpdate = RDFModelUtil.createSparqlInsert(model);
             InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
 
-            try (FcrepoResponse response = getClient().patch(describedBy)
-                .body(sparqlStream)
-                .perform()) {
+            try (FcrepoResponse response = getClient().patch(describedBy).body(sparqlStream).perform()) {
             } catch (IOException e) {
                 throw new FedoraException("Unable to add triples to binary at " + path, e);
             } catch (FcrepoOperationFailedException e) {
@@ -360,7 +355,7 @@ public class RepositoryObjectFactory {
             }
         }
         return new BinaryObject(PIDs.get(resultUri), repoObjLoader, repoObjDataLoader, this);
-         }
+    }
 
     /**
      * Creates an event for the specified object.
@@ -508,25 +503,24 @@ public class RepositoryObjectFactory {
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
-        try (FcrepoResponse response = getClient().put(path)
-                .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
+        try (FcrepoResponse response = getClient().put(path).body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
                 .perform()) {
 
-             URI createdUri = response.getLocation();
+            URI createdUri = response.getLocation();
 
-             // Add PREMIS event container
-             addEventContainer(createdUri);
+            // Add PREMIS event container
+            addEventContainer(createdUri);
 
-             // Add the container for member objects
-             ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
-             RepositoryPathConstants.MEMBER_CONTAINER);
+            // Add the container for member objects
+            ldpFactory.createIndirectContainer(createdUri, PcdmModels.hasMember,
+                    RepositoryPathConstants.MEMBER_CONTAINER);
 
-             return createdUri;
+            return createdUri;
 
         } catch (IOException e) {
-             throw new FedoraException("Unable to create deposit record at " + path, e);
+            throw new FedoraException("Unable to create deposit record at " + path, e);
         } catch (FcrepoOperationFailedException e) {
-             throw ClientFaultResolver.resolve(e);
+            throw ClientFaultResolver.resolve(e);
         }
     }
 
@@ -537,13 +531,13 @@ public class RepositoryObjectFactory {
     private Model populateModelTypes(URI rescUri, Model model, List<Resource> types) {
         // Create an empty model if none was provided
         if (model == null) {
-        model = ModelFactory.createDefaultModel();
+            model = ModelFactory.createDefaultModel();
         }
 
         // Add the required type for DepositRecords
         Resource mainResc = model.getResource(rescUri.toString());
         for (Resource type : types) {
-        mainResc.addProperty(RDF.type, type);
+            mainResc.addProperty(RDF.type, type);
         }
 
         return model;
