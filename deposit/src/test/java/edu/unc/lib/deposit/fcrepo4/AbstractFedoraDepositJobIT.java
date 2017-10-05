@@ -28,6 +28,7 @@ import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,5 +125,10 @@ public class AbstractFedoraDepositJobIT {
             throw new FedoraException("Failed to check on object " + pid
                     + " during initialization", e);
         }
+    }
+
+    @Test
+    public void dummyTest() {
+
     }
 }
