@@ -35,19 +35,20 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 /**
  * Adds a derivative file to an existing file object
- * 
+ *
  * @author bbpennel
+ * @author harring
  *
  */
 public class AddDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
-    private final Repository repository;
+    private final RepositoryObjectLoader repoObjLoader;
     private final String slug;
     private final String fileExtension;
     private final String mimetype;
@@ -55,9 +56,9 @@ public class AddDerivativeProcessor implements Processor {
     private final int maxRetries;
     private final long retryDelay;
 
-    public AddDerivativeProcessor(Repository repository, String slug, String fileExtension,
+    public AddDerivativeProcessor(RepositoryObjectLoader repoObjLoader, String slug, String fileExtension,
             String mimetype, int maxRetries, long retryDelay) {
-        this.repository = repository;
+        this.repoObjLoader = repoObjLoader;
         this.slug = slug;
         this.fileExtension = fileExtension;
         this.maxRetries = maxRetries;
@@ -95,12 +96,11 @@ public class AddDerivativeProcessor implements Processor {
 
     private void ingestFile(String binaryUri, String binaryMimeType, String derivativePath)
             throws FileNotFoundException {
-        String filename = derivativePath.substring(derivativePath.lastIndexOf('/') + 1);
         InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
 
-        BinaryObject binary = repository.getBinary(PIDs.get(binaryUri));
+        BinaryObject binary = repoObjLoader.getBinaryObject(PIDs.get(binaryUri));
         FileObject parent = (FileObject) binary.getParent();
-        parent.addDerivative(slug, binaryStream, filename, binaryMimeType, PcdmUse.ThumbnailImage);
+        parent.addDerivative(slug, binaryStream, derivativePath, binaryMimeType, PcdmUse.ThumbnailImage);
 
         log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
     }

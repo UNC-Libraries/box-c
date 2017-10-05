@@ -42,11 +42,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.BinaryMetadataProcessor;
-import edu.unc.lib.cdr.CleanupBinaryProcessor;
-import edu.unc.lib.cdr.GetBinaryProcessor;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  *
@@ -72,25 +68,15 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
     @EndpointInject(uri = "mock:fcrepo")
     private MockEndpoint resultEndpoint;
 
-    @BeanInject(value = "repository")
-    private Repository repo;
-
     @Produce(uri = "direct:start")
     private ProducerTemplate template;
 
     @BeanInject(value = "binaryMetadataProcessor")
     private BinaryMetadataProcessor mdProcessor;
 
-    @BeanInject(value = "getBinaryProcessor")
-    private GetBinaryProcessor getBinaryProcessor;
-
-    @BeanInject(value = "cleanupBinaryProcessor")
-    private CleanupBinaryProcessor cleanupBinaryProcessor;
-
     @Before
     public void init() {
-        PIDs.setRepository(repo);
-        when(repo.getBaseUri()).thenReturn(baseUri);
+        when(RepositoryPaths.getBaseUri()).thenReturn(baseUri);
     }
 
     @Override
@@ -190,8 +176,6 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         assertMockEndpointsSatisfied();
 
         verify(mdProcessor).process(any(Exchange.class));
-        verify(getBinaryProcessor).process(any(Exchange.class));
-        verify(cleanupBinaryProcessor).process(any(Exchange.class));
     }
 
     @Test
@@ -213,7 +197,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(SOLR_INGEST_ROUTE);
 
-        Map<String, Object> headers = createEvent("container", Cdr.Work.getURI());
+        Map<String, Object> headers = createEvent("container", Container.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
@@ -231,19 +215,6 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         assertMockEndpointsSatisfied();
     }
 
-    @Test
-    public void testProcessFilterOutDescriptiveMDSolr() throws Exception {
-        getMockEndpoint("mock:direct-vm:solrIndexing").expectedMessageCount(0);
-
-        createContext(SOLR_INGEST_ROUTE);
-
-        Map<String, Object> headers = createEvent("container",
-                Cdr.FileObject.getURI(), Cdr.DescriptiveMetadata.getURI());
-        template.sendBodyAndHeaders("", headers);
-
-        assertMockEndpointsSatisfied();
-    }
-
     private void createContext(String routeName) throws Exception {
         context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
@@ -256,12 +227,12 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
         context.start();
     }
 
-    private static Map<String, Object> createEvent(final String identifier, final String... type) {
+    private static Map<String, Object> createEvent(final String identifier, final String type) {
 
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, identifier);
-        headers.put(RESOURCE_TYPE, String.join(",", type));
+        headers.put(RESOURCE_TYPE, type);
 
         return headers;
     }
