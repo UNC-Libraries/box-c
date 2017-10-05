@@ -35,7 +35,6 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.test.spring.CamelSpringTestSupport;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,92 +42,87 @@ import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.FulltextProcessor;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 public class FulltextRouterTest extends CamelSpringTestSupport {
     private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
     private static final String EXTRACTION_ROUTE = "ExtractingText";
-    
+
     @PropertyInject(value = "fcrepo.baseUri")
     private static String baseUri;
-    
+
     @EndpointInject(uri = "mock:fcrepo")
     protected MockEndpoint resultEndpoint;
-    
-    @BeanInject(value = "repository")
-    private Repository repo;
-    
+
     @BeanInject(value = "fulltextProcessor")
     private FulltextProcessor ftProcessor;
-    
+
     @Produce(uri = "direct:start")
     protected ProducerTemplate template;
-    
+
     @Before
     public void init() {
-        PIDs.setRepository(repo);
-        when(repo.getBaseUri()).thenReturn(baseUri);
+        when(RepositoryPaths.getBaseUri()).thenReturn(baseUri);
     }
-    
+
     @Override
     protected AbstractApplicationContext createApplicationContext() {
         return new ClassPathXmlApplicationContext("/service-context.xml", "/fulltext-context.xml");
     }
-    
+
     @Test
     public void testFullTextExtractionFilterValidMimeType() throws Exception {
         getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(1);
         createContext(ENHANCEMENT_ROUTE);
-        
+
         template.sendBodyAndHeaders("", createEvent());
-        
+
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testFullTextExtractionFilterInvalidMimeType() throws Exception {
         getMockEndpoint("mock:direct:fulltext.extraction").expectedMessageCount(0);
-        
+
         createContext(ENHANCEMENT_ROUTE);
-        
+
         Map<String, Object> headers = createEvent();
         headers.put(CdrBinaryMimeType, "image/png");
-        
+
         template.sendBodyAndHeaders("", headers);
-        
+
         assertMockEndpointsSatisfied();
     }
-    
+
     @Test
     public void testTextExtraction() throws Exception {
         createContext(EXTRACTION_ROUTE);
-        
+
         Map<String, Object> headers = createEvent();
         template.sendBodyAndHeaders("", headers);
-        
+
         verify(ftProcessor).process(any(Exchange.class));
     }
-    
+
     private void createContext(String routeName) throws Exception {
-        context.getRouteDefinition(routeName).adviceWith((ModelCamelContext) context, new AdviceWithRouteBuilder() {
+        context.getRouteDefinition(routeName).adviceWith(context, new AdviceWithRouteBuilder() {
             @Override
             public void configure() throws Exception {
                 replaceFromWith("direct:start");
                 mockEndpointsAndSkip("*");
             }
         });
-        
+
         context.start();
     }
-    
+
     private static Map<String, Object> createEvent() {
         final Map<String, Object> headers = new HashMap<>();
         headers.put(EVENT_TYPE, "ResourceCreation");
         headers.put(IDENTIFIER, "original_file");
         headers.put(RESOURCE_TYPE, Binary.getURI());
         headers.put(CdrBinaryMimeType, "text/plain");
-        
+
         return headers;
     }
 }

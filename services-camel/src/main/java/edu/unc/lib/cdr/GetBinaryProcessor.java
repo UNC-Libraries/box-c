@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -45,7 +45,7 @@ import edu.unc.lib.dl.fedora.PID;
 public class GetBinaryProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(GetBinaryProcessor.class);
 
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
 
     public GetBinaryProcessor() {
     }
@@ -77,7 +77,7 @@ public class GetBinaryProcessor implements Processor {
 
         log.debug("Binary for {} not found locally, downloading to {}.", pid.getURI(), binaryFile);
 
-        BinaryObject binary = repository.getBinary(pid);
+        BinaryObject binary = repoObjLoader.getBinaryObject(pid);
         try (InputStream response = binary.getBinaryStream()) {
             Files.copy(response, Paths.get(binaryFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
@@ -90,7 +90,7 @@ public class GetBinaryProcessor implements Processor {
     /**
      * @param repository the repository to set
      */
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 }
