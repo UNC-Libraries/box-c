@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -43,6 +44,9 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +68,9 @@ import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -97,6 +104,18 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Autowired
     private AccessControlService aclService;
+
+    @Autowired
+    private FcrepoClient fcrepoClient;
+
+    @Autowired
+    private RepositoryObjectFactory repoObjFactory;
+
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
+
+    @Autowired
+    private TransactionManager txManager;
 
     public IngestContentObjectsJob() {
         super();
@@ -135,7 +154,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Generate a list of object paths from this deposit already in fedora
         previouslyIngestedSet = new HashSet<>();
         for (String path : contentPaths) {
-            if (repository.objectExists(PIDs.get(path))) {
+            if (objectExists(PIDs.get(path))) {
                 previouslyIngestedSet.add(path);
             }
         }
@@ -162,7 +181,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
-        RepositoryObject destObj = repository.getRepositoryObject(destPid);
+        RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
                     + ", types does not support children");
@@ -293,7 +312,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
         PID childPid = PIDs.get(childResc.getURI());
 
-        PID workPid = repository.mintContentPid();
+        PID workPid = pidMinter.mintContentPid();
 
         // Construct a model for the new work using some of the properties from the child
         Model workModel = ModelFactory.createDefaultModel();
@@ -316,9 +335,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addAclProperties(childResc, workResc);
 
         WorkObject newWork  = null;
-        FedoraTransaction tx = repository.startTransaction();
+        FedoraTransaction tx = txManager.startTransaction();
         try {
-            newWork = repository.createWorkObject(workPid, workModel);
+            newWork = repoObjFactory.createWorkObject(workPid, workModel);
 
             addDescription(newWork);
             // Add the newly created work to its parent
@@ -436,7 +455,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         FolderObject obj = null;
         if (skipResumed(childResc)) {
             // Resuming, retrieve the existing folder object
-            obj = repository.getFolderObject(childPid);
+            obj = repoObjLoader.getFolderObject(childPid);
         } else {
             // Create the new folder
             Model model = ModelFactory.createDefaultModel();
@@ -446,9 +465,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             // Add acls to AIP
             addAclProperties(childResc, folderResc);
 
-            FedoraTransaction tx = repository.startTransaction();
+            FedoraTransaction tx = txManager.startTransaction();
             try {
-                obj = repository.createFolderObject(childPid, model);
+                obj = repoObjFactory.createFolderObject(childPid, model);
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
@@ -480,7 +499,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         AdminUnit obj = null;
         if (skipResumed(childResc)) {
             // Resuming, retrieve the existing admin unit object
-            obj = repository.getAdminUnit(childPid);
+            obj = repoObjLoader.getAdminUnit(childPid);
         } else {
             aclService.assertHasAccess(
                     "Depositor does not have permissions to create admin units",
@@ -494,9 +513,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             // Add acls to AIP
             addAclProperties(childResc, adminResc);
 
-            FedoraTransaction tx = repository.startTransaction();
+            FedoraTransaction tx = txManager.startTransaction();
             try {
-                obj = repository.createAdminUnit(childPid, model);
+                obj = repoObjFactory.createAdminUnit(childPid, model);
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
@@ -528,7 +547,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         CollectionObject obj = null;
         if (skipResumed(childResc)) {
             // Resuming, retrieve the existing collection unit object
-            obj = repository.getCollectionObject(childPid);
+            obj = repoObjLoader.getCollectionObject(childPid);
         } else {
             aclService.assertHasAccess(
                     "Depositor does not have permissions to create collections in " + parent.getPid(),
@@ -542,9 +561,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             // Add acls to AIP
             addAclProperties(childResc, collectionResc);
 
-            FedoraTransaction tx = repository.startTransaction();
+            FedoraTransaction tx = txManager.startTransaction();
             try {
-                obj = repository.createCollectionObject(childPid, model);
+                obj = repoObjFactory.createCollectionObject(childPid, model);
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
 
@@ -589,7 +608,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         WorkObject obj = null;
         boolean skip = skipResumed(childResc);
         if (skip) {
-            obj = repository.getWorkObject(childPid);
+            obj = repoObjLoader.getWorkObject(childPid);
             ingestChildren(obj, childResc, groupSet);
 
             // Avoid adding primaryObject relation for a resuming deposit if already present
@@ -606,9 +625,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             addAclProperties(childResc, workResc);
 
             // send txid along with uris for the following actions
-            FedoraTransaction tx = repository.startTransaction();
+            FedoraTransaction tx = txManager.startTransaction();
             try {
-                obj = repository.createWorkObject(childPid, model);
+                obj = repoObjFactory.createWorkObject(childPid, model);
                 // Add ingestion event for the work itself
                 addIngestionEventForChild(obj);
                 parent.addMember(obj);
@@ -774,5 +793,20 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         builder.addSoftwareAgent(SoftwareAgent.depositService.getFullname())
                 .addAuthorizingAgent(DepositField.depositorName.name())
                 .write();
+    }
+
+    private boolean objectExists(PID pid) {
+        try (FcrepoResponse response = fcrepoClient.head(pid.getRepositoryUri())
+                .perform()) {
+            return true;
+        } catch (IOException e) {
+            throw new FedoraException("Failed to close HEAD response for " + pid, e);
+        } catch (FcrepoOperationFailedException e) {
+            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
+                return false;
+            }
+            throw new FedoraException("Failed to check on object " + pid
+                    + " during initialization", e);
+        }
     }
 }

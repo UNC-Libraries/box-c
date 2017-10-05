@@ -52,7 +52,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -63,7 +63,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
     private PID depositPid;
 
     private ValidateFileAvailabilityJob job;
-    
+
     @Mock
     private StagingPolicyManager policyManager;
 
@@ -76,7 +76,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         job.setStagingPolicyManager(policyManager);
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
@@ -168,7 +168,7 @@ public class ValidateFileAvailabilityJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), eq(1));
     }
-    
+
     @Test
     public void badStagingLocation() {
         exception.expect(JobFailedException.class);

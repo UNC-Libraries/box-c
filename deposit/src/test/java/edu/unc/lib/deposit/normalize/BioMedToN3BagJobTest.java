@@ -27,6 +27,13 @@ import java.util.List;
 import javax.xml.transform.Transformer;
 import javax.xml.validation.Schema;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.input.sax.XMLReaders;
@@ -38,14 +45,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.DepositTestUtils;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -74,7 +73,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
     @Before
     public void init() throws Exception {
-        
+
         Dataset dataset = TDBFactory.createDataset();
 
         job = new BioMedToN3BagJob(jobUUID, depositUUID);
@@ -83,7 +82,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
         job.setDepositDirectory(depositDir);
         job.setMetsSipSchema(metsSipSchema);
         job.setSchematronValidator(validator);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
@@ -124,7 +123,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
         assertEquals("Incorrect aggregate child count", 5, childCount);
     }
-    
+
     @Test
     public void testSuccessful() throws Exception {
 
@@ -142,7 +141,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
         //assertTrue("N3 model file must exist after conversion", everythingFile.exists());
 
         Model model = job.getReadOnlyModel();
-        
+
         assertFalse("Model was empty", model.isEmpty());
 
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
@@ -172,11 +171,11 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
         long start = System.currentTimeMillis();
         job.run();
         log.info("Existing mods: {}", (System.currentTimeMillis() - start));
-        
+
         Model m = job.getReadOnlyModel();
         Bag depositBag = m.getBag(job.getDepositPID().getURI());
         Resource primaryResource = depositBag.iterator().nextNode().asResource();
-        
+
         File descriptionFile = new File(job.getDescriptionDir(), PIDs.get(primaryResource.getURI()).getUUID() + ".xml");
 
         assertTrue("Descriptive metadata file did not exist", descriptionFile.exists());

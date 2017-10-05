@@ -65,7 +65,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
         Bag depositBag = model.createBag(depositPID.getURI().toString());
 
         // Generate a uuid for the main object
-        PID mainPID = repository.mintContentPid();
+        PID mainPID = pidMinter.mintContentPid();
 
         // Identify the important file from the deposit
         Map<String, String> depositStatus = getDepositStatus();
