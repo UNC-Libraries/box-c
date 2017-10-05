@@ -48,7 +48,6 @@ public class RepositoryPremisLogger implements PremisLogger {
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
-    private RepositoryObjectDataLoader repoObjDataLoader;
 
     private RepositoryObject repoObject;
 
@@ -61,7 +60,6 @@ public class RepositoryPremisLogger implements PremisLogger {
         this.pidMinter = pidMinter;
         this.repoObjLoader = repoObjLoader;
         this.repoObjFactory = repoObjFactory;
-        this.repoObjDataLoader = repoObjDataLoader;
     }
 
     @Override
