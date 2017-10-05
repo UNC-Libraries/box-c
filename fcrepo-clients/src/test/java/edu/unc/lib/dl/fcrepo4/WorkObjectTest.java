@@ -192,7 +192,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         // Add the data file
         work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1);
 
-        ArgumentCaptor<PID> pidCaptor = ArgumentCaptor.forClass(PID.class);
+        ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
         verify(repoObjFactory).createFileObject(modelCaptor.capture());
 
@@ -206,7 +206,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addDataFileWithPropertiesTest() {
-        // Constructo model with extra properties to add to the data file
+        // Construct model with extra properties to add to the data file
         Model extraProperties = ModelFactory.createDefaultModel();
         Resource dataResc = extraProperties.getResource("");
         dataResc.addProperty(CdrAcl.patronAccess, PatronAccess.none.name());
@@ -216,7 +216,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         // Add the data file with properties
         FileObject fileObj = work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, extraProperties);
 
-        ArgumentCaptor<PID> pidCaptor = ArgumentCaptor.forClass(PID.class);
+        ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
 
         verify(repoObjFactory).createFileObject(modelCaptor.capture());
