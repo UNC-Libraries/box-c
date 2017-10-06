@@ -35,17 +35,20 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class SolrIngestProcessorTest {
+
+    private static final String CONTENT_BASE_URI = "http://localhost:48085/rest";
+    private static final String TEST_URI = "http://localhost:48085/rest/content/12/34/56/78/90/1234567890";
 
     private SolrIngestProcessor processor;
 
@@ -63,23 +66,19 @@ public class SolrIngestProcessorTest {
     private long retryDelay = 10;
 
     @Mock
-    private Repository repository;
-    @Mock
     private Exchange exchange;
     @Mock
     private Message message;
 
     @Before
     public void init() throws Exception {
+        TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
         processor = new SolrIngestProcessor(dipFactory, pipeline, solrUpdateDriver, maxRetries, retryDelay);
 
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn("http://fedora");
-
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI)))
-                .thenReturn("http://fedora/content/45/66/76/67/45667667-ed3f-41fc-94cc-7764fc266075");
+                .thenReturn(TEST_URI);
 
         when(dip.getDocument()).thenReturn(docBean);
         when(dipFactory.createDip(any(PID.class))).thenReturn(dip);

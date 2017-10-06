@@ -261,7 +261,7 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
             return;
         }
 
-        PID sourceMDPID = repository.mintContentPid();
+        PID sourceMDPID = pidMinter.mintContentPid();
         Resource sourceMDResource = model.createResource(sourceMDPID.getURI());
         model.add(rootResource, CdrDeposit.hasDatastream, sourceMDResource);
         model.add(rootResource, CdrDeposit.hasSourceMetadata, sourceMDResource);

@@ -47,6 +47,7 @@ import edu.unc.lib.dl.util.URIUtil;
  * metadata.
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class FileObject extends ContentObject {
@@ -54,8 +55,9 @@ public class FileObject extends ContentObject {
     private final String fileSetPath;
     private final URI fileSetUri;
 
-    protected FileObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected FileObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
 
         fileSetPath = URIUtil.join(pid.getRepositoryPath(), DATA_FILE_FILESET);
         fileSetUri = URI.create(fileSetPath);
@@ -89,7 +91,7 @@ public class FileObject extends ContentObject {
         Resource resc = fileModel.createResource(objectPath);
         resc.addProperty(RDF.type, PcdmUse.OriginalFile);
 
-        return repository.createBinary(fileSetUri, ORIGINAL_FILE, contentStream,
+        return repoObjFactory.createBinary(fileSetUri, ORIGINAL_FILE, contentStream,
                 filename, mimetype, sha1Checksum, fileModel);
     }
 
@@ -99,7 +101,7 @@ public class FileObject extends ContentObject {
      * @return
      */
     public BinaryObject getOriginalFile() {
-        return repository.getBinary(PIDs.get(constructOriginalFilePath()));
+        return repoObjLoader.getBinaryObject(PIDs.get(constructOriginalFilePath()));
     }
 
     private String constructOriginalFilePath() {
@@ -132,12 +134,12 @@ public class FileObject extends ContentObject {
         }
 
         // Create the derivative binary object
-        BinaryObject derivObj = repository.createBinary(fileSetUri, slug, contentStream, filename,
+        BinaryObject derivObj = repoObjFactory.createBinary(fileSetUri, slug, contentStream, filename,
                 mimetype, null, fileModel);
 
         if (associationRelation != null) {
             // Establish association with original file relation
-            repository.createRelationship(derivObj.getPid(),
+            repoObjFactory.createRelationship(derivObj.getPid(),
                     associationRelation, createResource(constructOriginalFilePath()));
         }
 
@@ -155,7 +157,7 @@ public class FileObject extends ContentObject {
         List<BinaryObject> binaries = new ArrayList<>();
         for (StmtIterator it = resc.listProperties(PcdmModels.hasFile); it.hasNext(); ) {
             PID binaryPid = PIDs.get(it.nextStatement().getResource().getURI());
-            binaries.add(repository.getBinary(binaryPid));
+            binaries.add(repoObjLoader.getBinaryObject(binaryPid));
         }
 
         return binaries;

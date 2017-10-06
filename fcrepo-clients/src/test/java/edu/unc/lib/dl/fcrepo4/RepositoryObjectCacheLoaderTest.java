@@ -55,12 +55,9 @@ public class RepositoryObjectCacheLoaderTest {
 
     private static String ETAG = "etag";
     private static final String ETAG_HEADER =  "\"etag\"";
-    private static final String REPO_BASE = "http://example.com/rest/";
 
     private RepositoryObjectCacheLoader objectCacheLoader;
 
-    @Mock
-    private Repository repository;
     @Mock
     private RepositoryObjectDataLoader dataLoader;
 
@@ -81,11 +78,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         objectCacheLoader = new RepositoryObjectCacheLoader();
         objectCacheLoader.setClient(client);
-        objectCacheLoader.setRepository(repository);
         objectCacheLoader.setRepositoryObjectDataLoader(dataLoader);
-
-        when(repository.getBaseUri()).thenReturn(REPO_BASE);
-        PIDs.setRepository(repository);
 
         pid = PIDs.get(UUID.randomUUID().toString());
     }

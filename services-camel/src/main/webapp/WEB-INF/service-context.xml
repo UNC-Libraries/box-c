@@ -36,47 +36,41 @@
 	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
 		<property name="client" ref="fcrepoClient" />
 	</bean>
+	
+	<bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
 
 	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+		<property name="pidMinter" ref="repositoryPIDMinter" />
 	</bean>
 
 	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
 		<property name="client" ref="fcrepoClient" />
-		<property name="repository" ref="repository" />
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 	
+	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+		<property name="dataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+		<property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
+		<property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+	</bean>
+	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="client" ref="fcrepoClient" />
-		<property name="repository" ref="repository" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 	</bean>
 	
 	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
 		<property name="fusekiEndpointURL" value="${triplestore.baseUrl}" />
 		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
-	</bean>
-
-	<bean id="repository" class="edu.unc.lib.dl.fcrepo4.Repository" init-method="init">
-		<property name="client" ref="fcrepoClient" />
-		<property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
-		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="baseUri" value="${fcrepo.baseUrl}" />
-		<property name="serverUri" value="${fcrepo.serverUri}" />
-	</bean>
-
-	<bean id="pids"
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetClass" value="edu.unc.lib.dl.fcrepo4.PIDs" />
-		<property name="targetMethod" value="setRepository" />
-		<property name="arguments">
-			<list>
-				<ref bean="repository" />
-			</list>
-		</property>
 	</bean>
 	
 	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
@@ -397,7 +391,7 @@
 	</bean>
 
 	<bean id="addSmallThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
-		<constructor-arg ref="repository"/>
+		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).SMALL_THUMBNAIL}"/>
 		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
 		<constructor-arg value="${cdr.enhancement.thumbnail.mimetype}" />
@@ -406,7 +400,7 @@
 	</bean>
 	
 	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
-		<constructor-arg ref="repository"/>
+		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).LARGE_THUMBNAIL}"/>
 		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
 		<constructor-arg value="${cdr.enhancement.thumbnail.mimetype}" />
@@ -415,7 +409,7 @@
 	</bean>
 	
 	<bean id="addAccessCopyProcessor" class="edu.unc.lib.cdr.AddDerivativeProcessor">
-		<constructor-arg ref="repository"/>
+		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).JPEG_2000}"/>
 		<constructor-arg value="${cdr.enhancement.jp2.fileExtension}" />
 		<constructor-arg value="${cdr.enhancement.jp2.mimetype}" />
@@ -424,7 +418,7 @@
 	</bean>
 	
 	<bean id="fulltextProcessor" class="edu.unc.lib.cdr.FulltextProcessor">
-		<constructor-arg ref="repository"/>
+		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).FULLTEXT_EXTRACTION}"/>
 		<constructor-arg value="${cdr.enhancement.fulltext.fileName}" />
 		<constructor-arg value="${error.maxRedeliveries}" />
@@ -438,7 +432,7 @@
 	</bean>
 	
 	<bean id="getBinaryProcessor" class="edu.unc.lib.cdr.GetBinaryProcessor">
-		<property name="repository" ref="repository"/>
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
 	</bean>
 	
 	<bean id="cleanupBinaryProcessor" class="edu.unc.lib.cdr.CleanupBinaryProcessor">
@@ -446,7 +440,7 @@
 	
 	<bean id="dipDataLoader"
 		class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
-		<property name="repository" ref="repository" />
+		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 	</bean>
 	
 	<bean id="dipFactory"

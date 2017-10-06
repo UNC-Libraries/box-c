@@ -29,7 +29,6 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -38,14 +37,10 @@ import edu.unc.lib.dl.rdf.PcdmUse;
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class FileObjectIT extends AbstractFedoraIT {
-
-    @Autowired
-    private Repository repository;
-
-    private PID pid;
 
     private static final String origBodyString = "Original data";
     private static final String origFilename = "original.txt";
@@ -54,26 +49,20 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Before
     public void init() throws Exception {
-        // Generate a new ID every time so that tests don't conflict
-        pid = PIDs.get(RepositoryPathConstants.CONTENT_BASE + "/" + UUID.randomUUID().toString());
-
         createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
     }
 
     @Test
     public void createFileObjectTest() throws Exception {
-
-        FileObject fileObj = repository.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
 
         assertNotNull(fileObj);
-        assertEquals(pid.getRepositoryPath(), fileObj.getPid().getRepositoryPath());
-
         assertObjectExists(fileObj.getPid());
     }
 
     @Test
     public void addOriginalFileTest() throws Exception {
-        FileObject fileObj = repository.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Prep file and add
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
@@ -87,7 +76,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
     @Test
     public void getMultipleBinariesTest() throws Exception {
-        FileObject fileObj = repository.createFileObject(pid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
 
         // Add the original
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
@@ -134,7 +123,7 @@ public class FileObjectIT extends AbstractFedoraIT {
 
         client.put(objPid.getRepositoryUri()).perform().close();
 
-        repository.getFileObject(objPid);
+        repoObjLoader.getFileObject(objPid);
     }
 
     private void verifyOriginalFile(BinaryObject origObj) {

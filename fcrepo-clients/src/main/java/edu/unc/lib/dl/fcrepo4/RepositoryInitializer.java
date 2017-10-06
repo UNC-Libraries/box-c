@@ -19,14 +19,13 @@ import java.io.IOException;
 import java.net.URI;
 
 import org.apache.http.HttpStatus;
-import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoOperationFailedException;
-import org.fcrepo.client.FcrepoResponse;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.util.URIUtil;
@@ -38,8 +37,6 @@ import edu.unc.lib.dl.util.URIUtil;
  *
  */
 public class RepositoryInitializer {
-
-    private Repository repository;
 
     private RepositoryObjectFactory objFactory;
 
@@ -65,7 +62,7 @@ public class RepositoryInitializer {
     }
 
     private URI createContainer(String id, String title) {
-        String containerString = URIUtil.join(repository.getBaseUri(), id);
+        String containerString = URIUtil.join(RepositoryPaths.getBaseUri(), id);
         URI containerUri = URI.create(containerString);
 
         // Abort initialization of already present container
@@ -115,10 +112,6 @@ public class RepositoryInitializer {
             throw new FedoraException("Failed to check on object " + uri
                     + " during initialization", e);
         }
-    }
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
     }
 
     public void setObjFactory(RepositoryObjectFactory objFactory) {

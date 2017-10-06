@@ -42,7 +42,6 @@ import org.junit.Test;
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
@@ -56,9 +55,6 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  */
 public class ObjectPermissionEvaluatorIT {
 
-    private static final String FCREPO_BASE_URI =
-            "http://example.com/fcrepo/rest/";
-
     private static final String FUSEKI_PORT = System
             .getProperty("fuseki.dynamic.test.port", "48080");
 
@@ -69,9 +65,7 @@ public class ObjectPermissionEvaluatorIT {
     private final static String PRINC_GRP2 = "group2";
 
     private static final long CACHE_MAX_SIZE = 100l;
-    private static final long CACHE_TIME_TO_LIVE = 100l;
-
-    private Repository repository;
+    private static final long CACHE_TIME_TO_LIVE = 100L;
 
     private ObjectAclFactory aclFactory;
 
@@ -87,10 +81,6 @@ public class ObjectPermissionEvaluatorIT {
 
     @Before
     public void init() {
-        repository = new Repository();
-        repository.setBaseUri(FCREPO_BASE_URI);
-        PIDs.setRepository(repository);
-
         fusekiModel = createDefaultModel();
         Dataset ds = new DatasetImpl(fusekiModel);
         server = FusekiEmbeddedServer.create().setPort(parseInt(FUSEKI_PORT))

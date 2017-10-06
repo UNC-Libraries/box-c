@@ -56,7 +56,6 @@ import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -116,14 +115,14 @@ public class ExtractTechnicalMetadataJobTest extends AbstractDepositJobTest {
     public void init() throws Exception {
         job = new ExtractTechnicalMetadataJob(jobUUID, depositUUID);
         job.setDepositDirectory(depositDir);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         job.setHttpClient(httpClient);
         job.setProcessFilesLocally(true);
         job.setBaseFitsUri(FITS_BASE_URI);
 
         // Setup logging dependencies
         premisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
-        when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+        when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(premisLogger);
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
         job.setPremisLoggerFactory(premisLoggerFactory);

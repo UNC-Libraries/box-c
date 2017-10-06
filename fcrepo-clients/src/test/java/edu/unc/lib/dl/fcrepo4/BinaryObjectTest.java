@@ -17,7 +17,6 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +43,11 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.URIUtil;
 
+/**
+ *
+ * @author harring
+ *
+ */
 public class BinaryObjectTest extends AbstractFedoraTest {
     @Mock
     private PID mockPid;
@@ -54,6 +58,8 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
     private ByteArrayInputStream stream;
 
+    private URI baseUri;
+
     @Before
     public void init() throws URISyntaxException {
         MockitoAnnotations.initMocks(this);
@@ -61,12 +67,12 @@ public class BinaryObjectTest extends AbstractFedoraTest {
         byte[] buf = new byte[10];
         stream = new ByteArrayInputStream(buf);
 
-        URI repoUri = new URI(FEDORA_BASE);
-        when(mockPid.getRepositoryUri()).thenReturn(repoUri);
-        when(repository.getMetadataUri(any(PID.class))).thenReturn(
-                URI.create(URIUtil.join(repoUri, RepositoryPathConstants.FCR_METADATA)));
+        baseUri = new URI(FEDORA_BASE);
 
-        binObj = new BinaryObject(mockPid, repository, dataLoader);
+        when(mockPid.getRepositoryUri()).thenReturn(baseUri);
+        when(mockPid.getRepositoryPath()).thenReturn(baseUri.toString());
+
+        binObj = new BinaryObject(mockPid, repoObjLoader, dataLoader, repoObjFactory);
 
         when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);
 
@@ -81,7 +87,9 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
     @Test
     public void testGetMetadataUri() {
-        assertEquals(FEDORA_BASE + RepositoryPathConstants.FCR_METADATA, binObj.getMetadataUri().toString());
+        URI repoUri = URI.create(URIUtil.join(
+                baseUri, RepositoryPathConstants.FCR_METADATA));
+        assertEquals(repoUri.toString(), binObj.getMetadataUri().toString());
     }
 
     @Test

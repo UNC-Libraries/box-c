@@ -23,18 +23,4 @@
 		<property name="location" value="classpath:config.properties"/>
 	</bean>
 
-	<bean id="repository" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.fcrepo4.Repository"/>
-	</bean>
-
-	<bean id="pids"
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetClass" value="edu.unc.lib.dl.fcrepo4.PIDs" />
-		<property name="targetMethod" value="setRepository" />
-		<property name="arguments">
-			<list>
-				<ref bean="repository" />
-			</list>
-		</property>
-	</bean>
 </beans>

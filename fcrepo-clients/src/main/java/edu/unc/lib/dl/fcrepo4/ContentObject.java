@@ -23,7 +23,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -33,12 +32,14 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * Represents a generic repository object within the main content tree.
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public abstract class ContentObject extends RepositoryObject {
 
-    protected ContentObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected ContentObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     /**
@@ -47,15 +48,14 @@ public abstract class ContentObject extends RepositoryObject {
      * @return the FileObject containing the BinaryObject for the MODS
      */
     public FileObject addDescription(InputStream modsStream) {
-        PID childPid = repository.mintContentPid();
         Model descModel = ModelFactory.createDefaultModel();
-        descModel.getResource(childPid.getURI()).addProperty(RDF.type, Cdr.DescriptiveMetadata);
+        descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
 
-        FileObject fileObj = repository.createFileObject(childPid, descModel);
+        FileObject fileObj = repoObjFactory.createFileObject(descModel);
 
         BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
-        repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
-        repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
+        repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
+        repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
         return fileObj;
     }
 
@@ -82,12 +82,12 @@ public abstract class ContentObject extends RepositoryObject {
         FileObject fileObj = createFileObject();
 
         BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
-        repository.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
-        repository.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
-        repository.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
+        repoObjFactory.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
+        repoObjFactory.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
+        repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
 
         BinaryObject mods = fileObj.addDerivative(null, modsStream, null, "text/plain", null);
-        repository.createRelationship(pid, Cdr.hasMods, mods.getResource());
+        repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
 
         return fileObj;
     }
@@ -101,7 +101,7 @@ public abstract class ContentObject extends RepositoryObject {
         Statement s = res.getProperty(PcdmModels.hasRelatedObject);
         if (s != null) {
             PID fileObjPid = PIDs.get(s.getResource().getURI());
-            return repository.getFileObject(fileObjPid);
+            return repoObjLoader.getFileObject(fileObjPid);
         } else {
             return null;
         }
@@ -121,24 +121,15 @@ public abstract class ContentObject extends RepositoryObject {
         Statement s = res.getProperty(Cdr.hasMods);
         if (s != null) {
             PID binPid = PIDs.get(s.getResource().getURI());
-            return repository.getBinary(binPid);
+            return repoObjLoader.getBinaryObject(binPid);
         } else {
             return null;
         }
     }
 
     private FileObject createFileObject() {
-        PID childPid = repository.mintContentPid();
-        FileObject fileObj = repository.createFileObject(childPid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(null);
         return fileObj;
     }
 
-    /**
-     * Retrieve access control information for this content object.
-     *
-     * @return
-     */
-    public ObjectAccessControlsBean getAccessControls() {
-        return dataLoader.getAccessControls(this);
-    }
 }

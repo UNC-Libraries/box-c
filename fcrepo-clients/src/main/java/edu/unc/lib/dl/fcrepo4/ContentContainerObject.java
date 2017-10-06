@@ -34,8 +34,9 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public abstract class ContentContainerObject extends ContentObject {
 
-    protected ContentContainerObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected ContentContainerObject(PID pid, RepositoryObjectLoader repoObjLoader,
+            RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     /**
@@ -61,7 +62,7 @@ public abstract class ContentContainerObject extends ContentObject {
         for (StmtIterator it = resc.listProperties(PcdmModels.hasMember); it.hasNext(); ) {
             String memberUri = it.nextStatement().getResource().toString();
 
-            members.add((ContentObject) repository.getRepositoryObject(PIDs.get(memberUri)));
+            members.add((ContentObject) repoObjLoader.getRepositoryObject(PIDs.get(memberUri)));
         }
 
         return members;

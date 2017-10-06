@@ -115,6 +115,13 @@
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>fcrepo-clients</artifactId>
 	</dependency>
+	
+	<dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>fcrepo-clients</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
 
 	<dependency>
 		<groupId>edu.unc.lib.cdr</groupId>
@@ -263,7 +270,6 @@
 			<reuseForks>false</reuseForks>
 			<argLine>${jacoco.agent.it.arg}</argLine>
 			<systemPropertyVariables>
-				<fcrepo.dynamic.test.port>${fcrepo.dynamic.test.port}</fcrepo.dynamic.test.port>
 				<project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
 			</systemPropertyVariables>
 		</configuration>

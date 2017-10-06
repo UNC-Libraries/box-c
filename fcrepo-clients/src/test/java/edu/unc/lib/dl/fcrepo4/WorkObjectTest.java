@@ -87,7 +87,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         resc.addProperty(RDF.type, PcdmModels.Object);
         resc.addProperty(RDF.type, Cdr.Work);
 
-        work = new WorkObject(pid, repository, dataLoader);
+        work = new WorkObject(pid, repoObjLoader, dataLoader, repoObjFactory);
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
         when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
@@ -128,7 +128,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         work.setPrimaryObject(primaryPid);
 
-        verify(repository).createRelationship(pid, Cdr.primaryObject, primaryResc);
+        verify(repoObjFactory).createRelationship(pid, Cdr.primaryObject, primaryResc);
     }
 
     @Test(expected = InvalidRelationshipException.class)
@@ -138,7 +138,8 @@ public class WorkObjectTest extends AbstractFedoraTest {
         try {
             work.setPrimaryObject(primaryPid);
         } finally {
-            verify(repository, never()).createRelationship(any(PID.class), eq(Cdr.primaryObject), any(Resource.class));
+            verify(repoObjFactory, never())
+                    .createRelationship(any(PID.class), eq(Cdr.primaryObject), any(Resource.class));
         }
     }
 
@@ -147,7 +148,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());
 
-        when(repository.getFileObject(eq(primaryPid))).thenReturn(fileObj);
+        when(repoObjLoader.getFileObject(eq(primaryPid))).thenReturn(fileObj);
 
         resc.addProperty(Cdr.primaryObject, primaryResc);
 
@@ -161,7 +162,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         FileObject resultObj = work.getPrimaryObject();
 
         assertNull(resultObj);
-        verify(repository, never()).getFileObject(any(PID.class));
+        verify(repoObjLoader, never()).getFileObject(any(PID.class));
     }
 
     @Test
@@ -169,7 +170,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         work.addMember(fileObj);
 
-        verify(repository).addMember(eq(work), eq(fileObj));
+        verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
     @Test(expected = ObjectTypeMismatchException.class)
@@ -178,63 +179,55 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         work.addMember(folderObj);
 
-        verify(repository).addMember(any(ContentObject.class), any(ContentObject.class));
+        verify(repoObjFactory).addMember(any(ContentObject.class), any(ContentObject.class));
     }
 
     @Test
     public void addDataFileTest() {
         PID dataFilePid = makePid();
-        when(repository.mintContentPid()).thenReturn(dataFilePid);
+        when(pidMinter.mintContentPid()).thenReturn(dataFilePid);
 
-        when(repository.createFileObject(any(PID.class), any(Model.class))).thenReturn(fileObj);
+        when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file
         work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1);
 
-        ArgumentCaptor<PID> pidCaptor = ArgumentCaptor.forClass(PID.class);
+        ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
-        verify(repository).createFileObject(pidCaptor.capture(), modelCaptor.capture());
+        verify(repoObjFactory).createFileObject(modelCaptor.capture());
 
-        PID fileObjPid = pidCaptor.getValue();
         Model fileObjModel = modelCaptor.getValue();
-        Resource fileObjResc = fileObjModel.getResource(fileObjPid.getURI());
 
-        assertTrue(fileObjResc.hasProperty(DC.title, FILENAME));
+        assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
 
         verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1);
-        verify(repository).addMember(eq(work), eq(fileObj));
+        verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
     @Test
     public void addDataFileWithPropertiesTest() {
-        PID dataFilePid = makePid();
-
-        // Constructo model with extra properties to add to the data file
+        // Construct model with extra properties to add to the data file
         Model extraProperties = ModelFactory.createDefaultModel();
-        Resource dataResc = extraProperties.getResource(dataFilePid.getURI());
+        Resource dataResc = extraProperties.getResource("");
         dataResc.addProperty(CdrAcl.patronAccess, PatronAccess.none.name());
 
-        when(repository.createFileObject(eq(dataFilePid), any(Model.class))).thenReturn(fileObj);
+        when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file with properties
-        work.addDataFile(dataFilePid, contentStream, FILENAME, MIMETYPE, SHA1, extraProperties);
+        FileObject fileObj = work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, extraProperties);
 
-        ArgumentCaptor<PID> pidCaptor = ArgumentCaptor.forClass(PID.class);
+        ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
 
-        verify(repository).createFileObject(pidCaptor.capture(), modelCaptor.capture());
+        verify(repoObjFactory).createFileObject(modelCaptor.capture());
 
-        PID fileObjPid = pidCaptor.getValue();
         Model fileObjModel = modelCaptor.getValue();
-        Resource fileObjResc = fileObjModel.getResource(fileObjPid.getURI());
 
-        assertEquals("PID used to create file object did not match the provided value",
-                dataFilePid, fileObjPid);
-        assertTrue(fileObjResc.hasProperty(DC.title, FILENAME));
-        assertTrue(fileObjResc.hasProperty(CdrAcl.patronAccess, PatronAccess.none.name()));
+        assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
+        assertTrue(fileObjModel.contains(null, CdrAcl.patronAccess, PatronAccess.none.name()));
 
         verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1);
-        verify(repository).addMember(eq(work), eq(fileObj));
+        verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
     @Test(expected = IllegalArgumentException.class)

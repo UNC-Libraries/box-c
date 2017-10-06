@@ -27,12 +27,14 @@ import edu.unc.lib.dl.rdf.Cdr;
  * may hold work objects or folder objects directly inside of them.
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class FolderObject extends ContentContainerObject {
 
-    protected FolderObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected FolderObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     @Override
@@ -50,7 +52,7 @@ public class FolderObject extends ContentContainerObject {
                     + " as a member of WorkObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 
@@ -60,22 +62,20 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created folder object
      */
     public FolderObject addFolder() {
-        return addFolder(repository.mintContentPid(), null);
+        return addFolder(null);
     }
 
     /**
      * Creates and adds a new folder with the provided pid and properties to this
      * folder.
      *
-     * @param pid
-     *            pid for the new folder
      * @param model
      *            properties for the new folder
      * @return the newly created folder object
      */
-    public FolderObject addFolder(PID childPid, Model model) {
-        FolderObject work = repository.createFolderObject(childPid, model);
-        repository.addMember(this, work);
+    public FolderObject addFolder(Model model) {
+        FolderObject work = repoObjFactory.createFolderObject(model);
+        repoObjFactory.addMember(this, work);
 
         return work;
     }
@@ -86,22 +86,19 @@ public class FolderObject extends ContentContainerObject {
      * @return the newly created work object
      */
     public WorkObject addWork() {
-        return addWork(repository.mintContentPid(), null);
+        return addWork(null);
     }
 
     /**
-     * Creates and adds a new work with the provided pid and properties to this
-     * folder.
+     * Creates and adds a new work with the provided properties to this folder.
      *
-     * @param pid
-     *            pid for the new work
      * @param model
      *            optional additional properties for the work
      * @return the newly created work object
      */
-    public WorkObject addWork(PID childPid, Model model) {
-        WorkObject work = repository.createWorkObject(childPid, model);
-        repository.addMember(this, work);
+    public WorkObject addWork(Model model) {
+        WorkObject work = repoObjFactory.createWorkObject(model);
+        repoObjFactory.addMember(this, work);
 
         return work;
     }

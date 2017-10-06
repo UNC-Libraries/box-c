@@ -39,12 +39,14 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  * supplemental.
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class WorkObject extends ContentContainerObject {
 
-    protected WorkObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected WorkObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     @Override
@@ -70,7 +72,7 @@ public class WorkObject extends ContentContainerObject {
         }
 
         // Add the relation
-        repository.createRelationship(pid, Cdr.primaryObject, primaryResc);
+        repoObjFactory.createRelationship(pid, Cdr.primaryObject, primaryResc);
     }
 
     /**
@@ -86,7 +88,7 @@ public class WorkObject extends ContentContainerObject {
             return null;
         }
 
-        return repository.getFileObject(
+        return repoObjLoader.getFileObject(
                 PIDs.get(primaryStmt.getResource().getURI()));
     }
 
@@ -97,7 +99,7 @@ public class WorkObject extends ContentContainerObject {
                     + " as a member of WorkObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 
@@ -112,9 +114,13 @@ public class WorkObject extends ContentContainerObject {
      */
     public FileObject addDataFile(InputStream contentStream, String filename, String mimetype,
             String sha1Checksum) {
-        PID fileObjPid = repository.mintContentPid();
 
-        return addDataFile(fileObjPid, contentStream, filename, mimetype, sha1Checksum, null);
+        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, null);
+    }
+
+    public FileObject addDataFile(InputStream contentStream, String filename,
+            String mimetype, String sha1Checksum, Model model) {
+        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, model);
     }
 
     /**
@@ -122,7 +128,7 @@ public class WorkObject extends ContentContainerObject {
      * original file, using the provided pid as the identifier for the new
      * FileObject.
      *
-     * @param childPid
+     *
      * @param contentStream
      *            Inputstream containing the binary content for the data file. Required.
      * @param filename
@@ -132,7 +138,7 @@ public class WorkObject extends ContentContainerObject {
      *            model containing properties for the new fileObject
      * @return
      */
-    public FileObject addDataFile(PID childPid, InputStream contentStream, String filename,
+    public FileObject addDataFile(PID filePid, InputStream contentStream, String filename,
             String mimetype, String sha1Checksum, Model model) {
 
         if (contentStream == null) {
@@ -142,15 +148,20 @@ public class WorkObject extends ContentContainerObject {
         if (model == null) {
             model = ModelFactory.createDefaultModel();
         }
-        model.getResource(childPid.getURI()).addProperty(DC.title, filename);
+        model.getResource("").addProperty(DC.title, filename);
 
         // Create the file object
-        FileObject fileObj = repository.createFileObject(childPid, model);
+        FileObject fileObj;
+        if (filePid == null) {
+            fileObj = repoObjFactory.createFileObject(model);
+        } else {
+            fileObj = repoObjFactory.createFileObject(filePid, model);
+        }
         // Add the binary content to it as its original file
         fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
 
         // Add the new file object as a member of this Work
-        repository.addMember(this, fileObj);
+        repoObjFactory.addMember(this, fileObj);
 
         return fileObj;
     }

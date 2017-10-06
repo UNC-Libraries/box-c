@@ -34,12 +34,14 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpStatus;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -49,6 +51,9 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoOperationFailedException;
+import org.fcrepo.client.HeadBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -70,11 +75,14 @@ import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -106,6 +114,21 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     private PremisLoggerFactory mockPremisLoggerFactory;
 
     @Mock
+    private RepositoryObjectLoader repoObjLoader;
+    @Mock
+    private RepositoryObjectFactory repoObjFactory;
+    @Mock
+    private TransactionManager txManager;
+    @Mock
+    private FcrepoClient fcrepoClient;
+
+    @Mock
+    private FedoraTransaction mockTx;
+
+    @Mock
+    private HeadBuilder headBuilder;
+
+    @Mock
     private PremisLogger mockPremisLogger;
 
     private PremisEventBuilder mockPremisEventBuilder;
@@ -132,7 +155,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        job.setRepository(repository);
         setField(job, "premisLoggerFactory", mockPremisLoggerFactory);
         setField(job, "aclService", aclService);
         setField(job, "dataset", dataset);
@@ -140,6 +162,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "metricsClient", metricsClient);
+        setField(job, "pidMinter", pidMinter);
+        setField(job, "repoObjLoader", repoObjLoader);
+        setField(job, "repoObjFactory", repoObjFactory);
+        setField(job, "fcrepoClient", fcrepoClient);
+        setField(job, "txManager", txManager);
         job.init();
 
         depositPid = job.getDepositPID();
@@ -153,7 +180,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         // Setup logging dependencies
         mockPremisEventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
-        when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+        when(mockPremisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(mockPremisLogger);
         when(mockPremisLogger.buildEvent(any(Resource.class))).thenReturn(mockPremisEventBuilder);
 
@@ -162,6 +189,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         // Get a writeable model
         model = job.getWritableModel();
         depBag = model.createBag(depositPid.getRepositoryPath());
+
+        when(fcrepoClient.head(any(URI.class))).thenReturn(headBuilder);
+
+        when(txManager.startTransaction()).thenReturn(mockTx);
+        doThrow(new TransactionCancelledException()).when(mockTx).cancel(any(Exception.class));
     }
 
     private void setupDestination() {
@@ -176,7 +208,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         destinationObj = mock(FolderObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
     }
 
     /**
@@ -186,7 +218,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     public void ingestEmptyFolderTest() {
 
         FolderObject folder = mock(FolderObject.class);
-        when(repository.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
         PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         Bag folderBag = model.createBag(folderPid.getRepositoryPath());
@@ -199,13 +231,13 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(repository).createFolderObject(eq(folderPid), any(Model.class));
+        verify(repoObjFactory).createFolderObject(eq(folderPid), any(Model.class));
         verify(destinationObj).addMember(eq(folder));
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
     }
 
     private Bag setupWork(PID workPid, WorkObject work) {
-        when(repository.createWorkObject(any(PID.class), any(Model.class))).thenReturn(work);
+        when(repoObjFactory.createWorkObject(any(PID.class), any(Model.class))).thenReturn(work);
         when(work.getPid()).thenReturn(workPid);
 
         Bag workBag = model.createBag(workPid.getRepositoryPath());
@@ -244,7 +276,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(repository).createWorkObject(eq(workPid), any(Model.class));
+        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
         verify(destinationObj).addMember(eq(work));
 
         verify(work).addDataFile(eq(mainPid), any(InputStream.class), eq(mainLoc),
@@ -325,10 +357,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void ingestFileObjectAsWorkTest() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        when(repository.mintContentPid()).thenReturn(workPid);
+        when(pidMinter.mintContentPid()).thenReturn(workPid);
         WorkObject work = mock(WorkObject.class);
         when(work.getPid()).thenReturn(workPid);
-        when(repository.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
+        when(repoObjFactory.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
 
         String fileLoc = "text.txt";
         String fileMime = "text/plain";
@@ -343,8 +375,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.run();
 
         // Verify that a work object was generated and added to the destination
-        verify(repository).mintContentPid();
-        verify(repository).createWorkObject(eq(workPid), any(Model.class));
+        verify(pidMinter).mintContentPid();
+        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
         verify(destinationObj).addMember(eq(work));
 
         // Verify that a FileObject was added to the generated work as primary obj
@@ -359,10 +391,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test(expected = JobFailedException.class)
     public void ingestfileObjectAsWorkNoStaging() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        when(repository.mintContentPid()).thenReturn(workPid);
+        when(pidMinter.mintContentPid()).thenReturn(workPid);
         WorkObject work = mock(WorkObject.class);
         when(work.getPid()).thenReturn(workPid);
-        when(repository.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
+        when(repoObjFactory.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
 
         PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
 
@@ -388,7 +420,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         WorkObject work = mock(WorkObject.class);
         Bag workBag = setupWork(workPid, work);
-        when(repository.getWorkObject(eq(workPid))).thenReturn(work);
+        when(repoObjLoader.getWorkObject(eq(workPid))).thenReturn(work);
 
         Model workModel = ModelFactory.createDefaultModel();
         Resource workResc = workModel.createResource(workPid.getRepositoryPath())
@@ -412,25 +444,25 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 .thenReturn(mockFileObj);
         when(mockFileObj.getPid()).thenReturn(mainPid).thenReturn(supPid);
 
-        when(repository.objectExists(eq(workPid))).thenReturn(true);
-        when(repository.objectExists(eq(mainPid))).thenReturn(true);
+        HeadBuilder notFoundBuilder = mock(HeadBuilder.class);
+        when(fcrepoClient.head(eq(supPid.getRepositoryUri()))).thenReturn(notFoundBuilder);
+        when(notFoundBuilder.perform()).thenThrow(new FcrepoOperationFailedException(
+                destinationPid.getRepositoryUri(), HttpStatus.SC_NOT_FOUND, ""));
 
         job.run();
 
         // Check that the work object was retrieved rather than created
-        verify(repository).objectExists(eq(workPid));
-        verify(repository, never()).createWorkObject(any(PID.class));
-        verify(repository).getWorkObject(any(PID.class));
+        // verify(repository).objectExists(eq(workPid));
+        verify(repoObjFactory, never()).createWorkObject(any(PID.class), any(Model.class));
+        verify(repoObjLoader).getWorkObject(any(PID.class));
 
         // Main file object should not be touched
-        verify(repository).objectExists(eq(mainPid));
         verify(work, never()).addDataFile(eq(mainPid), any(InputStream.class),
                 anyString(), anyString(), anyString(), any(Model.class));
-        verify(repository, never()).getFileObject(eq(mainPid));
+        verify(repoObjLoader, never()).getFileObject(eq(mainPid));
 
         // Supplemental file should be created
-        verify(repository).objectExists(eq(supPid));
-        verify(repository, never()).getFileObject(eq(supPid));
+        verify(repoObjLoader, never()).getFileObject(eq(supPid));
         verify(work).addDataFile(eq(supPid), any(InputStream.class), eq(supLoc),
                 eq(supMime), anyString(), any(Model.class));
 
@@ -452,14 +484,12 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         String fileMime = "text/plain";
         PID filePid = addFileObject(depBag, fileLoc, fileMime);
 
-        when(repository.objectExists(eq(filePid))).thenReturn(true);
-
         job.closeModel();
 
         job.run();
 
         // Check that the generated work was neither generated nor linked
-        verify(repository, never()).createWorkObject(any(PID.class), any(Model.class));
+        verify(repoObjFactory, never()).createWorkObject(any(PID.class), any(Model.class));
         verify(destinationObj, never()).addMember(any(ContentObject.class));
 
         // Only tick should be from preprocessing
@@ -473,6 +503,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
      */
     @Test
     public void resumeIngestNoCompleteTest() throws Exception {
+        when(headBuilder.perform()).thenThrow(
+                new FcrepoOperationFailedException(destinationPid.getRepositoryUri(),
+                        HttpStatus.SC_NOT_FOUND, ""));
+
         // Mark the deposit as resumed
         when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
 
@@ -487,10 +521,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         AdminUnit adminUnit = mock(AdminUnit.class);
-        when(repository.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
+        when(repoObjFactory.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
 
         PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         Bag adminBag = model.createBag(adminPid.getRepositoryPath());
@@ -504,7 +538,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(repository).createAdminUnit(eq(adminPid), modelCaptor.capture());
+        verify(repoObjFactory).createAdminUnit(eq(adminPid), modelCaptor.capture());
         verify(destinationObj).addMember(eq(adminUnit));
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 
@@ -517,7 +551,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     public void ingestAdminUnitNoPermissionTest() {
         destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         // Throw access exception for creating admin unit
         doThrow(new AccessRestrictionException()).when(aclService)
@@ -525,7 +559,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                         eq(Permission.createAdminUnit));
 
         AdminUnit adminUnit = mock(AdminUnit.class);
-        when(repository.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
+        when(repoObjFactory.createAdminUnit(any(PID.class), any(Model.class))).thenReturn(adminUnit);
 
         PID adminPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         Bag adminBag = model.createBag(adminPid.getRepositoryPath());
@@ -544,10 +578,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         CollectionObject collection = mock(CollectionObject.class);
-        when(repository.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
+        when(repoObjFactory.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
 
         PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         Bag collectionBag = model.createBag(collectionPid.getRepositoryPath());
@@ -562,7 +596,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(repository).createCollectionObject(eq(collectionPid), modelCaptor.capture());
+        verify(repoObjFactory).createCollectionObject(eq(collectionPid), modelCaptor.capture());
         verify(destinationObj).addMember(eq(collection));
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
 
@@ -576,7 +610,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
-        when(repository.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
+        when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
 
         // Throw access exception for creating collection
         doThrow(new AccessRestrictionException()).when(aclService)
@@ -584,7 +618,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                         eq(Permission.createCollection));
 
         CollectionObject collection = mock(CollectionObject.class);
-        when(repository.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
+        when(repoObjFactory.createCollectionObject(any(PID.class), any(Model.class))).thenReturn(collection);
 
         PID collectionPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         Bag collectionBag = model.createBag(collectionPid.getRepositoryPath());
@@ -601,7 +635,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void ingestFolderWithAcls() {
         FolderObject folder = mock(FolderObject.class);
-        when(repository.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
         PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
         when(folder.getPid()).thenReturn(folderPid);
@@ -616,7 +650,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(repository).createFolderObject(eq(folderPid), modelCaptor.capture());
+        verify(repoObjFactory).createFolderObject(eq(folderPid), modelCaptor.capture());
 
         Model aipModel = modelCaptor.getValue();
         Resource aipResc = aipModel.getResource(folderPid.getRepositoryPath());
@@ -648,7 +682,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         job.run();
 
-        verify(repository).createWorkObject(eq(workPid), modelCaptor.capture());
+        verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
 
         Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
         assertTrue("Work object did not contain assigned restriction",
@@ -665,10 +699,10 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     @Test
     public void ingestFileObjAsWorkWithAcls() throws Exception {
         PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        when(repository.mintContentPid()).thenReturn(workPid);
+        when(pidMinter.mintContentPid()).thenReturn(workPid);
         WorkObject work = mock(WorkObject.class);
         when(work.getPid()).thenReturn(workPid);
-        when(repository.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
+        when(repoObjFactory.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
 
         String fileLoc = "text.txt";
         String fileMime = "text/plain";
@@ -685,7 +719,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.run();
 
         // Verify that a work object was generated and added to the destination
-        verify(repository).createWorkObject(eq(workPid), modelCaptor.capture());
+        verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
 
         Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
         assertTrue("Acl property from file should have been added to surrounding Work",

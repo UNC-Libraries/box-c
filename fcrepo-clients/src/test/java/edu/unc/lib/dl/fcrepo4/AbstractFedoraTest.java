@@ -15,12 +15,16 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.junit.Before;
 import org.mockito.Mock;
 
+/**
+ *
+ * @author harring
+ *
+ */
 public class AbstractFedoraTest {
 
     protected static final String FEDORA_BASE = "http://example.com/";
@@ -28,16 +32,17 @@ public class AbstractFedoraTest {
     @Mock
     protected RepositoryObjectDataLoader dataLoader;
     @Mock
-    protected Repository repository;
+    protected RepositoryPaths repoPaths;
+    @Mock
+    protected RepositoryObjectLoader repoObjLoader;
+    @Mock
+    protected RepositoryObjectFactory repoObjFactory;
+    @Mock
+    protected RepositoryPIDMinter pidMinter;
 
     @Before
     public void initBase() {
         initMocks(this);
-
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
-
-        when(repository.getRepositoryObjectDataLoader()).thenReturn(dataLoader);
     }
 
 }

@@ -39,7 +39,6 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -48,16 +47,11 @@ public class InheritedPermissionEvaluatorTest {
     private static final String PATRON_PRINC = "everyone";
     private static final String STAFF_PRINC = "adminGrp";
 
-    private static final String REPO_BASE = "http://example.com/rest/";
-
     @Mock
     private ContentPathFactory pathFactory;
 
     @Mock
     private ObjectPermissionEvaluator objectPermissionEvaluator;
-
-    @Mock
-    private Repository repository;
 
     private InheritedPermissionEvaluator evaluator;
 
@@ -70,9 +64,6 @@ public class InheritedPermissionEvaluatorTest {
     @Before
     public void init() {
         initMocks(this);
-
-        when(repository.getBaseUri()).thenReturn(REPO_BASE);
-        PIDs.setRepository(repository);
 
         evaluator = new InheritedPermissionEvaluator();
         evaluator.setObjectPermissionEvaluator(objectPermissionEvaluator);

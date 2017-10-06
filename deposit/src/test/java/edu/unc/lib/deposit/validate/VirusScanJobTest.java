@@ -50,7 +50,6 @@ import com.philvarner.clamavj.ScanResult.Status;
 
 import edu.unc.lib.deposit.fcrepo4.AbstractDepositJobTest;
 import edu.unc.lib.deposit.work.JobFailedException;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -60,7 +59,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -83,7 +82,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         job.setJobUUID(jobUUID);
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         job.setClamScan(clamScan);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "dataset", dataset);
@@ -97,7 +96,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
         depositPid = job.getDepositPID();
 
-        when(repository.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
+        when(pidMinter.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
             @Override
             public PID answer(InvocationOnMock invocation) throws Throwable {
                 PID pid = mock(PID.class);
@@ -131,9 +130,9 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
         verify(jobStatusFactory, times(2)).incrCompletion(eq(jobUUID), eq(1));
 
         verify(premisLogger, times(3)).buildEvent(eq(Premis.VirusCheck));
-        verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
-        verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class), any(Repository.class));
-        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class), any(Repository.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(file2Pid), any(File.class));
+        verify(premisLoggerFactory).createPremisLogger(eq(depositPid), any(File.class));
     }
 
     @Test
@@ -165,8 +164,8 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
 
             // Only the file that passed should have a premis log
             verify(premisLogger).buildEvent(eq(Premis.VirusCheck));
-            verify(premisLoggerFactory).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
-            verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class), any(Repository.class));
+            verify(premisLoggerFactory).createPremisLogger(any(PID.class), any(File.class));
+            verify(premisLoggerFactory).createPremisLogger(eq(file1Pid), any(File.class));
         }
     }
 
@@ -195,7 +194,7 @@ public class VirusScanJobTest extends AbstractDepositJobTest {
             verify(jobStatusFactory, never()).incrCompletion(anyString(), anyInt());
 
             // No premis logs should have been created
-            verify(premisLoggerFactory, never()).createPremisLogger(any(PID.class), any(File.class), any(Repository.class));
+            verify(premisLoggerFactory, never()).createPremisLogger(any(PID.class), any(File.class));
         }
     }
 

@@ -46,8 +46,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 
 public class ReplicationProcessorTest {
@@ -71,7 +70,10 @@ public class ReplicationProcessorTest {
     private BinaryObject binary;
 
     @Mock
-    private Repository repository;
+    private BinaryObject binaryFcrepo;
+
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
 
     @Mock
     private Exchange exchange;
@@ -96,10 +98,7 @@ public class ReplicationProcessorTest {
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getOut()).thenReturn(message);
 
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn("http://fedora");
-
-        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
 
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn("http://fedora/test/replicate");

@@ -27,7 +27,11 @@
 	</bean>
 	
 	<bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
-	</bean>
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
+        <property name="repoObjDataLoader" ref="repositoryObjectDataLoader" />
+        <property name="repoObjFactory" ref="repositoryObjectFactory" />
+    </bean>
 	
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">

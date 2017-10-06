@@ -17,8 +17,11 @@ package edu.unc.lib.dl.event;
 
 import java.io.File;
 
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -29,12 +32,45 @@ import edu.unc.lib.dl.fedora.PID;
 
 public class PremisLoggerFactory {
 
-    public PremisLogger createPremisLogger(PID pid, File file, Repository repository) {
-        return new FilePremisLogger(pid, file, repository);
+    private RepositoryPIDMinter pidMinter;
+    private RepositoryObjectLoader repoObjLoader;
+    private RepositoryObjectFactory repoObjFactory;
+    private RepositoryObjectDataLoader repoObjDataLoader;
+
+    public PremisLogger createPremisLogger(PID pid, File file) {
+        return new FilePremisLogger(pid, file, pidMinter, repoObjLoader, repoObjFactory, repoObjDataLoader);
     }
 
-    public PremisLogger createPremisLogger(RepositoryObject repoObject, Repository repository) {
-        return new RepositoryPremisLogger(repoObject, repository);
+    public PremisLogger createPremisLogger(RepositoryObject repoObject) {
+        return new RepositoryPremisLogger(repoObject, pidMinter, repoObjLoader, repoObjFactory, repoObjDataLoader);
+    }
+
+    /**
+     * @param pidMinter the pidMinter to set
+     */
+    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+        this.pidMinter = pidMinter;
+    }
+
+    /**
+     * @param repoObjLoader the repoObjLoader to set
+     */
+    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    /**
+     * @param repoObjFactory the repoObjFactory to set
+     */
+    public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    /**
+     * @param repoObjDataLoader the repoObjDataLoader to set
+     */
+    public void setRepoObjDataLoader(RepositoryObjectDataLoader repoObjDataLoader) {
+        this.repoObjDataLoader = repoObjDataLoader;
     }
 
 }

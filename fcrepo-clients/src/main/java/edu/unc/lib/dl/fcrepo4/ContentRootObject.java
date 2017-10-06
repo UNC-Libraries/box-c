@@ -29,8 +29,9 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class ContentRootObject extends ContentContainerObject {
 
-    protected ContentRootObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected ContentRootObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     @Override
@@ -40,7 +41,7 @@ public class ContentRootObject extends ContentContainerObject {
                     + " as a member of ContentRootObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 

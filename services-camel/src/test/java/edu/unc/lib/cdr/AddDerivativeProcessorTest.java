@@ -41,8 +41,7 @@ import org.mockito.exceptions.base.MockitoException;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
@@ -70,7 +69,7 @@ public class AddDerivativeProcessorTest {
     private ExecResult result;
 
     @Mock
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
 
     @Mock
     private Exchange exchange;
@@ -81,14 +80,12 @@ public class AddDerivativeProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
-        processor = new AddDerivativeProcessor(repository, slug, fileExtension, mimetype, maxRetries, retryDelay);
+        processor = new AddDerivativeProcessor(repoObjLoader, slug, fileExtension, mimetype, maxRetries, retryDelay);
         file = File.createTempFile(fileName, ".PNG");
         file.deleteOnExit();
         when(exchange.getIn()).thenReturn(message);
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn("http://fedora");
 
-        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
 
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn("http://fedora/test/original_file");
@@ -103,7 +100,7 @@ public class AddDerivativeProcessorTest {
         extensionlessPath = file.getAbsolutePath().split("\\.")[0];
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(extensionlessPath);
-        extensionlessName= new File(extensionlessPath).getName();
+        extensionlessName = new File(extensionlessPath).getName();
 
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
         when(message.getBody()).thenReturn(result);
@@ -112,7 +109,7 @@ public class AddDerivativeProcessorTest {
     @Test
     public void createEnhancementTest() throws Exception {
 
-        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
         when(binary.getParent()).thenReturn(parent);
         when(message.getBody()).thenReturn(result);
 
@@ -127,7 +124,7 @@ public class AddDerivativeProcessorTest {
 
         when(binary.getParent())
                 .thenThrow(new MockitoException("Can't add derivative"))
-                .thenReturn(parent);;
+                .thenReturn(parent);
 
         processor.process(exchange);
 

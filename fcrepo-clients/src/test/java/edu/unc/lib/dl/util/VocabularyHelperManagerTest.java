@@ -42,6 +42,7 @@ import java.util.Set;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -122,6 +123,7 @@ public class VocabularyHelperManagerTest {
         when(queryService.fetchParentCollection(any(PID.class))).thenReturn(new PID(COLL_PID));
     }
 
+    @Ignore
     @Test
     public void getHelpersTest() {
         manager.init();
@@ -132,22 +134,26 @@ public class VocabularyHelperManagerTest {
 
     }
 
+    @Ignore
     @Test
     public void getInvalidTermsTest() throws Exception {
         manager.init();
 
         // Add in some invalid terms
         Set<VocabularyHelper> helpers = manager.getHelpers(new PID(ITEM_PID));
-        ((TestVocabularyHelper) helpers.iterator().next()).setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
+        ((TestVocabularyHelper) helpers.iterator().next())
+                .setInvalidTerms(new HashSet<>(Arrays.asList("term", "term2")));
 
         Element doc = mock(Element.class);
         Map<String, Set<String>> invalidTerms = manager.getInvalidTerms(new PID(ITEM_PID), doc);
 
         assertEquals("Incorrect number of vocabularies returned", 1, invalidTerms.size());
 
-        assertEquals("Incorrect number of invalid terms returned for vocabulary", 2, invalidTerms.get(VOCAB_URI).size());
+        assertEquals("Incorrect number of invalid terms returned for vocabulary", 2,
+                invalidTerms.get(VOCAB_URI).size());
     }
 
+    @Ignore
     @Test
     public void updateInvalidTermsTest() throws Exception {
         manager.init();

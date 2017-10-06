@@ -52,7 +52,6 @@ import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -61,8 +60,6 @@ public class InheritedAclFactoryTest {
     private static final String PATRON_PRINC = "everyone";
     private static final String MANAGE_PRINC = "manageGrp";
     private static final String OWNER_PRINC = "owner";
-
-    private static final String REPO_BASE = "http://example.com/rest/";
 
     @Mock
     private ContentPathFactory pathFactory;
@@ -73,9 +70,6 @@ public class InheritedAclFactoryTest {
     @Mock
     private ObjectAclFactory objectAclFactory;
 
-    @Mock
-    private Repository repository;
-
     private InheritedAclFactory aclFactory;
 
     private List<PID> ancestorPids;
@@ -85,9 +79,6 @@ public class InheritedAclFactoryTest {
     @Before
     public void init() {
         initMocks(this);
-
-        when(repository.getBaseUri()).thenReturn(REPO_BASE);
-        PIDs.setRepository(repository);
 
         aclFactory = new InheritedAclFactory();
         aclFactory.setObjectAclFactory(objectAclFactory);
