@@ -88,7 +88,7 @@ public class ReplicationProcessorTest {
         replicationDir = tmpFolder.newFolder("repl");
         replicationDir.mkdir();
 
-        processor = new ReplicationProcessor(repoObjLoader, replicationDir.getAbsolutePath(), maxRetries, retryDelay);
+        processor = new ReplicationProcessor(replicationDir.getAbsolutePath(), maxRetries, retryDelay);
 
         file = File.createTempFile(fileName, "txt");
         file.deleteOnExit();
@@ -137,7 +137,7 @@ public class ReplicationProcessorTest {
 
     @Test(expected = ReplicationDestinationUnavailableException.class)
     public void testBadReplicationLocations() throws Exception {
-        processor = new ReplicationProcessor(repoObjLoader, badReplicationLocations, maxRetries, retryDelay);
+        processor = new ReplicationProcessor(badReplicationLocations, maxRetries, retryDelay);
     }
 
     @Test(expected = RuntimeException.class)

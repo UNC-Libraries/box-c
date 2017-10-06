@@ -40,8 +40,6 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-
 /**
  * Replicates binary files ingested into fedora to a series of one or more remote storage locations.
  * It checksums the remote file to make sure it's the same file that was originally ingested.
@@ -56,7 +54,7 @@ public class ReplicationProcessor implements Processor {
     private final int maxRetries;
     private final long retryDelay;
 
-    public ReplicationProcessor(RepositoryObjectLoader repoObjLoader, String replicationLocations,
+    public ReplicationProcessor(String replicationLocations,
             int maxRetries, long retryDelay) {
         this.replicationLocations = splitReplicationLocations(replicationLocations);
         this.maxRetries = maxRetries;

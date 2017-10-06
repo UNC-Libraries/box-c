@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.test.junit4.CamelTestSupport;
@@ -50,9 +49,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -68,9 +65,6 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
     @Autowired
     protected FcrepoClient client;
-
-    @Autowired
-    protected RepositoryObjectLoader repoObjLoader;
 
     @Autowired
     protected RepositoryObjectFactory repoObjFactory;
@@ -92,7 +86,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     public void init() throws IOException {
         replicationDir = tmpFolder.newFolder("tmp");
         replicationDir.mkdir();
-        processor = new ReplicationProcessor(repoObjLoader, replicationDir.getAbsolutePath(), 3, 100L);
+        processor = new ReplicationProcessor(replicationDir.getAbsolutePath(), 3, 100L);
         initMocks(this);
 
         when(exchange.getIn()).thenReturn(message);
@@ -177,7 +171,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
     @Test (expected = ReplicationDestinationUnavailableException.class)
     public void badReplicationLocationTest() throws Exception {
-        processor = new ReplicationProcessor(repoObjLoader, "/some/bad/location", 3, 100L);
+        processor = new ReplicationProcessor("/some/bad/location", 3, 100L);
     }
 
 }
