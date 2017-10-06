@@ -357,8 +357,8 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
+					    <fcrepo.dynamic.test.port>48085</fcrepo.dynamic.test.port>
 						<fcrepo.baseUri>http://localhost:48085/rest</fcrepo.baseUri>
-						<buildDirectory>${project.build.directory}</buildDirectory>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
