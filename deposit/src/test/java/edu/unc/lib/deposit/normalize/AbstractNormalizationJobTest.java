@@ -55,13 +55,14 @@ public abstract class AbstractNormalizationJobTest extends AbstractDepositJobTes
     public void initNorm() throws Exception {
         String pidString =  UUID.randomUUID().toString();
         PID premisEventPid = PIDs.get(pidString);
-        when(repository.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
+        when(pidMinter.mintPremisEventPid(any(PID.class))).thenReturn(premisEventPid);
         Answer<PID> answer = new Answer<PID>() {
+            @Override
             public PID answer(InvocationOnMock invocation) throws Throwable {
                 return PIDs.get(UUID.randomUUID().toString());
             }
         };
-        when(repository.mintContentPid()).thenAnswer(answer);
+        when(pidMinter.mintContentPid()).thenAnswer(answer);
     }
 
     protected File verifyStagingLocationExists(Resource resource, File depositDirectory,

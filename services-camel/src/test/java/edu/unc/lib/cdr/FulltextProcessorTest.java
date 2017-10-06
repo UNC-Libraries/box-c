@@ -43,15 +43,12 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
 
 public class FulltextProcessorTest {
-
     private FulltextProcessor processor;
-
     private final String slug = "full_text";
     private final String fileName = "full_text.txt";
     private final String testText = "Test text, see if it can be extracted.";
@@ -68,7 +65,7 @@ public class FulltextProcessorTest {
     private FileObject parent;
 
     @Mock
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
 
     @Mock
     private Exchange exchange;
@@ -82,16 +79,15 @@ public class FulltextProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
-        processor = new FulltextProcessor(repository, slug, fileName, maxRetries, retryDelay);
+        processor = new FulltextProcessor(repoObjLoader, slug, fileName, maxRetries, retryDelay);
         file = File.createTempFile(fileName, "txt");
         file.deleteOnExit();
         when(exchange.getIn()).thenReturn(message);
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn("http://fedora");
 
-        when(repository.getBinary(any(PID.class))).thenReturn(binary);
+        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
 
         when(message.getHeader(eq(FCREPO_URI))).thenReturn(BINARY_URI);
+
 
         try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
             writeFile.write(testText);

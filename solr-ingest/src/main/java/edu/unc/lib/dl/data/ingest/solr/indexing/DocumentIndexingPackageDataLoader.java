@@ -37,8 +37,8 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ManagementClient;
@@ -63,7 +63,7 @@ import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 public class DocumentIndexingPackageDataLoader {
     private static final Logger log = LoggerFactory.getLogger(DocumentIndexingPackageDataLoader.class);
 
-    private Repository repository;
+    private RepositoryObjectLoader repoObjLoader;
 
     private ManagementClient managementClient ;
     private AccessClient accessClient;
@@ -94,7 +94,7 @@ public class DocumentIndexingPackageDataLoader {
     }
 
     public ContentObject getContentObject(DocumentIndexingPackage dip) throws IndexingException {
-        RepositoryObject repoObj = repository.getRepositoryObject(dip.getPid());
+        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(dip.getPid());
         if (!(repoObj instanceof ContentObject)) {
             throw new IndexingException("Object " + dip.getPid() + " is not a ContentObject");
         }
@@ -117,8 +117,8 @@ public class DocumentIndexingPackageDataLoader {
         this.cacheMaxSize = cacheMaxSize;
     }
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
     @Deprecated

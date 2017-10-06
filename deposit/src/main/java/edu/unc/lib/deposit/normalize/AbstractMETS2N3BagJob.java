@@ -21,10 +21,12 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.List;
+
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
 
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.filter.ElementFilter;
@@ -34,8 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
-
-import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
@@ -49,7 +49,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -114,7 +114,7 @@ public abstract class AbstractMETS2N3BagJob extends AbstractDepositJob {
             if (cids != null && cids.contains("info:fedora/")) {
                 continue;
             }
-            PID pid = repository.mintContentPid();
+            PID pid = pidMinter.mintContentPid();
             if (cids == null) {
                 div.setAttribute("CONTENTIDS", pid.getURI());
             } else {

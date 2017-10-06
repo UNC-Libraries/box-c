@@ -28,12 +28,13 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -50,6 +51,9 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class IngestDepositRecordJob extends AbstractDepositJob {
+    @Autowired
+    private RepositoryObjectFactory repoObjFactory;
+
     private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
     public IngestDepositRecordJob() {
@@ -88,7 +92,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         // Create the deposit record object in Fedora
         DepositRecord depositRecord;
         try {
-            depositRecord = repository.createDepositRecord(depositPID, aipModel)
+            depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel)
                     .addPremisEvents(premisDepositLogger.getEvents());
 
             // Add manifest files
@@ -103,7 +107,7 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
             List<Resource> children = new ArrayList<>();
             // walks through the bag and adds children to the list
             DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
-            depositRecord.addIngestedObjects(depositPID, children);
+            depositRecord.addIngestedObjects(children);
 
         } catch (IOException | FedoraException e) {
             failJob(e, "Failed to ingest deposit record {0}", depositPID);
@@ -146,10 +150,5 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
         }
 
         return aipObjResc;
-    }
-
-    @Override
-    public void setRepository(Repository repository) {
-        this.repository = repository;
     }
 }

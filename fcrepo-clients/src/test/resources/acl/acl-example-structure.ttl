@@ -26,7 +26,7 @@
 @prefix config:  <info:fedoraconfig/> .
 @prefix dc:  <http://purl.org/dc/elements/1.1/> .
 
-<http://example.com/fcrepo/rest/content/collections>
+<http://example.com/rest/content/collections>
         rdf:type               fedora:Container ;
         rdf:type               fedora:Resource ;
         rdf:type               cdr:ContentRoot ;
@@ -38,13 +38,13 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/collections/event> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/collections/member> ;
-        pcdm:hasMember         <http://example.com/fcrepo/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230> ;
-        pcdm:hasMember         <http://example.com/fcrepo/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40> .
+        fedora:hasParent       <http://example.com/rest/content> ;
+        ldp:contains           <http://example.com/rest/content/collections/event> ;
+        ldp:contains           <http://example.com/rest/content/collections/member> ;
+        pcdm:hasMember         <http://example.com/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230> ;
+        pcdm:hasMember         <http://example.com/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40> .
 
-<http://example.com/fcrepo/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230>
+<http://example.com/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230>
         rdf:type               fedora:Container ;
         rdf:type               fedora:Resource ;
         rdf:type               cdr:AdminUnit ;
@@ -59,13 +59,13 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230/members> ;
-        pcdm:hasMember         <http://example.com/fcrepo/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff> ;
-        pcdm:hasMember         <http://example.com/fcrepo/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8> ;
-        pcdm:hasMember         <http://example.com/fcrepo/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e>.
+        fedora:hasParent       <http://example.com/rest/content/> ;
+        ldp:contains           <http://example.com/rest/content/e7/4a/e8/b4/e74ae8b4-873f-49cc-81d1-d728b75fa230/members> ;
+        pcdm:hasMember         <http://example.com/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff> ;
+        pcdm:hasMember         <http://example.com/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8> ;
+        pcdm:hasMember         <http://example.com/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e>.
 
-<http://example.com/fcrepo/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8>
+<http://example.com/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Collection ;
         rdf:type               fedora:Resource ;
@@ -79,12 +79,12 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8/members> ;
-        pcdm:hasMember        <http://example.com/fcrepo/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37> ;
-        pcdm:hasMember        <http://example.com/fcrepo/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915> .
+        fedora:hasParent       <http://example.com/rest/content/> ;
+        ldp:contains           <http://example.com/rest/content/c5/e9/ca/ba/c5e9caba-4773-4d37-9204-89df4f6b28c8/members> ;
+        pcdm:hasMember        <http://example.com/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37> ;
+        pcdm:hasMember        <http://example.com/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915> .
 
-<http://example.com/fcrepo/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff>
+<http://example.com/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Collection ;
         rdf:type               fedora:Resource ;
@@ -99,12 +99,12 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff/members> ;
-        pcdm:hasMember        <http://example.com/fcrepo/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336> ;
-        pcdm:hasMember        <http://example.com/fcrepo/rest/content/9c/a5/46/23/9ca54623-9ad4-42c6-8a0c-4e445d716aca> .
+        fedora:hasParent       <http://example.com/rest/content/> ;
+        ldp:contains           <http://example.com/rest/content/b5/78/75/3e/b578753e-4f6c-44b8-a68c-a0c7112308ff/members> ;
+        pcdm:hasMember        <http://example.com/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336> ;
+        pcdm:hasMember        <http://example.com/rest/content/9c/a5/46/23/9ca54623-9ad4-42c6-8a0c-4e445d716aca> .
 
-<http://example.com/fcrepo/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e>
+<http://example.com/rest/content/11/01/68/55/11016855-da92-47c8-a42f-bcf0f104620e>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Collection ;
         rdf:type               fedora:Resource ;
@@ -117,9 +117,9 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> .
+        fedora:hasParent       <http://example.com/rest/content/> .
 
-<http://example.com/fcrepo/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915>
+<http://example.com/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915>
         rdf:type               fedora:Container ;
         rdf:type               fedora:Resource ;
         rdf:type               pcdm:Object ;
@@ -133,11 +133,11 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> ;
-        ldp:contains           <http://example.com/fcrepo/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915/members> ;
-        pcdm:hasMember        <http://example.com/fcrepo/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812> .
+        fedora:hasParent       <http://example.com/rest/content/> ;
+        ldp:contains           <http://example.com/rest/content/b0/c1/92/ba/b0c192ba-6960-49d4-a29c-ef386934b915/members> ;
+        pcdm:hasMember        <http://example.com/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812> .
 
-<http://example.com/fcrepo/rest/content/9c/a5/46/23/9ca54623-9ad4-42c6-8a0c-4e445d716aca>
+<http://example.com/rest/content/9c/a5/46/23/9ca54623-9ad4-42c6-8a0c-4e445d716aca>
         rdf:type               fedora:Container ;
         rdf:type               fedora:Resource ;
         rdf:type               pcdm:Object ;
@@ -150,10 +150,10 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> ;
-        pcdm:hasMember        <http://example.com/fcrepo/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1> .
+        fedora:hasParent       <http://example.com/rest/content/> ;
+        pcdm:hasMember        <http://example.com/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1> .
 
-<http://example.com/fcrepo/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812>
+<http://example.com/rest/content/d6/e5/f1/ce/d6e5f1ce-c09c-413d-a273-f5cf44660812>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Work ;
         rdf:type               fedora:Resource ;
@@ -166,9 +166,9 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> .
+        fedora:hasParent       <http://example.com/rest/content/> .
 
-<http://example.com/fcrepo/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37>
+<http://example.com/rest/content/93/e1/15/27/93e11527-dbb6-416a-86db-3092fea52f37>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Work ;
         rdf:type               fedora:Resource ;
@@ -181,9 +181,9 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> .
+        fedora:hasParent       <http://example.com/rest/content/> .
 
-<http://example.com/fcrepo/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1>
+<http://example.com/rest/content/21/3b/ee/6a/213bee6a-1018-4cc2-8c6f-459864ef23b1>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Work ;
         rdf:type               fedora:Resource ;
@@ -195,9 +195,9 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> .
+        fedora:hasParent       <http://example.com/rest/content/> .
 
-<http://example.com/fcrepo/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336>
+<http://example.com/rest/content/1f/b9/ec/31/1fb9ec31-5bca-48a0-b819-9ba636146336>
         rdf:type               fedora:Container ;
         rdf:type               cdr:Work ;
         rdf:type               fedora:Resource ;
@@ -209,9 +209,9 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> .
+        fedora:hasParent       <http://example.com/rest/content/> .
 
-<http://example.com/fcrepo/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40>
+<http://example.com/rest/content/92/47/7c/1a/92477c1a-ad7d-46ce-a708-4132c1eecd40>
         rdf:type               fedora:Container ;
         rdf:type               fedora:Resource ;
         rdf:type               cdr:AdminUnit ;
@@ -225,4 +225,4 @@
         rdf:type               ldp:RDFSource ;
         rdf:type               ldp:Container ;
         fedora:writable        "true"^^<http://www.w3.org/2001/XMLSchema#boolean> ;
-        fedora:hasParent       <http://example.com/fcrepo/rest/content/> .
+        fedora:hasParent       <http://example.com/rest/content/> .

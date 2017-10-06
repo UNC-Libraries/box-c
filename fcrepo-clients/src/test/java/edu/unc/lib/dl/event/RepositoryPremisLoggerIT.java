@@ -53,15 +53,16 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
     @Before
     public void init() throws Exception {
-        parentPid = repository.mintDepositRecordPid();
+        parentPid = pidMinter.mintDepositRecordPid();
 
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(parentPid.getRepositoryUri().toString());
+        Resource resc = model.createResource("");
         resc.addProperty(RDF.type, Cdr.DepositRecord);
 
-        parentObject = repository.createDepositRecord(parentPid, model);
+        parentObject = repoObjFactory.createDepositRecord(model);
 
-        logger = new RepositoryPremisLogger(parentObject, repository);
+        logger = new RepositoryPremisLogger(parentObject, pidMinter,
+                repoObjLoader, repoObjFactory, dataloader);
     }
 
     @Test
@@ -103,7 +104,8 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         PID event3Pid = PIDs.get(event3Resc.getURI());
 
         // Make a new logger to make sure everything is clean
-        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, repository);
+        PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, pidMinter,
+                repoObjLoader, repoObjFactory, dataloader);
 
         // Retrieve all of the events
         List<PID> eventPids = retrieveLogger.listEvents();

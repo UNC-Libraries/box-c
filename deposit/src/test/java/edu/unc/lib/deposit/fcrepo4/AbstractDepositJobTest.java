@@ -40,35 +40,38 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class AbstractDepositJobTest {
 
-    protected static final String FEDORA_BASE = "http://example.com/rest/";
+    protected static final String FEDORA_BASE = "http://localhost:48085/rest/";
     protected static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
-    
+
     @Mock
     protected RepositoryObjectDataLoader dataLoader;
     @Mock
-    public Repository repository;
+    protected TransactionManager txManager;
+
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
-    
+
     protected File depositsDirectory;
     protected File depositDir;
-    
+
     @Mock
     protected JobStatusFactory jobStatusFactory;
     @Mock
@@ -83,12 +86,14 @@ public class AbstractDepositJobTest {
     protected ActivityMetricsClient metricsClient;
     @Mock
     protected Resource testResource;
-    
+    @Mock
+    protected RepositoryPIDMinter pidMinter;
+
     protected String jobUUID;
-    
+
     protected String depositUUID;
     protected PID depositPid;
-    
+
     protected Dataset dataset;
     @Mock
     protected FedoraTransaction tx;
@@ -96,29 +101,29 @@ public class AbstractDepositJobTest {
     @Before
     public void initBase() throws Exception {
         initMocks(this);
-        
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
-        when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class), any(Repository.class)))
+
+        TestHelper.setContentBase(FEDORA_BASE);
+
+        when(premisLoggerFactory.createPremisLogger(any(PID.class), any(File.class)))
                 .thenReturn(premisLogger);
         when(premisLogger.buildEvent(any(Resource.class))).thenReturn(premisEventBuilder);
         when(premisEventBuilder.addEventDetail(anyString(), Matchers.<Object>anyVararg())).thenReturn(premisEventBuilder);
         when(premisEventBuilder.addSoftwareAgent(anyString())).thenReturn(premisEventBuilder);
         when(premisEventBuilder.create()).thenReturn(testResource);
-        
+
         tmpFolder.create();
         depositsDirectory = tmpFolder.newFolder("deposits");
-        
+
         jobUUID = UUID.randomUUID().toString();
 
         depositUUID = UUID.randomUUID().toString();
         depositDir = new File(depositsDirectory, depositUUID);
         depositDir.mkdir();
         depositPid = PIDs.get(RepositoryPathConstants.DEPOSIT_RECORD_BASE, depositUUID);
-        
+
         dataset = TDBFactory.createDataset();
-        
-        when(repository.startTransaction()).thenReturn(tx);
+
+        when(txManager.startTransaction()).thenReturn(tx);
         doAnswer(new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {

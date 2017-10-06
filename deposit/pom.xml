@@ -92,6 +92,12 @@
 			<artifactId>fcrepo-clients</artifactId>
 		</dependency>
 		<dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>fcrepo-clients</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+		<dependency>
 			<groupId>org.jdom</groupId>
 			<artifactId>jdom</artifactId>
 		</dependency>
@@ -242,7 +248,6 @@
             <reuseForks>false</reuseForks>
             <argLine>${jacoco.agent.it.arg}</argLine>
             <systemPropertyVariables>
-                <fcrepo.dynamic.test.port>${fcrepo.dynamic.test.port}</fcrepo.dynamic.test.port>
                 <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
             </systemPropertyVariables>
         </configuration>
@@ -284,6 +289,10 @@
                  <port>8191</port>
              </httpConnector>
              <systemProperties>
+                 <systemProperty>
+                     <name>fcrepo.baseUri</name>
+                     <value>http://localhost:8080/fcrepo/rest/</value>
+                 </systemProperty>
                  <systemProperty>
                      <name>deposit.properties.uri</name>
                      <value>file:${project.basedir}/target/${project.build.finalName}/deposit.properties</value>

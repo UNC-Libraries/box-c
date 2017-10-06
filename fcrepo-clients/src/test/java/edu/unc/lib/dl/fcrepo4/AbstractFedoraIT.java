@@ -26,14 +26,21 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 
+/**
+ *
+ * @author harring
+ *
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml"})
 public class AbstractFedoraIT {
@@ -45,14 +52,24 @@ public class AbstractFedoraIT {
     protected FcrepoClient client;
 
     @Autowired
-    protected Repository repository;
+    protected RepositoryPIDMinter pidMinter;
+    @Autowired
+    protected RepositoryObjectFactory repoObjFactory;
+    @Autowired
+    protected RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    protected TransactionManager txManager;
+    @Autowired
+    protected RepositoryObjectDataLoader dataloader;
 
     @Before
-    public void initBase() {
-        PIDs.setRepository(repository);
+    public void init_() {
+        // Override base uri for IT tests
+        TestHelper.setContentBase("http://localhost:48085/rest");
     }
 
     protected URI createBaseContainer(String name) throws IOException, FcrepoOperationFailedException {
+
         URI baseUri = URI.create(URIUtil.join(baseAddress, name));
         // Create a parent object to put the binary into
         try (FcrepoResponse response = client.put(baseUri).perform()) {
@@ -86,5 +103,11 @@ public class AbstractFedoraIT {
     protected ContentObject findContentObjectByPid(List<ContentObject> objs, final PID pid) {
         return objs.stream()
                 .filter(p -> p.getPid().equals(pid)).findAny().get();
+    }
+
+    @Test
+    public void dummyTest() throws Exception {
+        // a placeholder to prevent JUnit from displaying an error for this test,
+        // which isn't intended to have its own test cases
     }
 }

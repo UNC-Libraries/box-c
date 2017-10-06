@@ -51,7 +51,7 @@ import edu.unc.lib.deposit.staging.StagingException;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.DepositConstants;
@@ -79,7 +79,7 @@ public abstract class AbstractDepositJob implements Runnable {
     private DepositStatusFactory depositStatusFactory;
 
     @Autowired
-    protected Repository repository;
+    protected RepositoryPIDMinter pidMinter;
 
     @Autowired
     protected PremisLoggerFactory premisLoggerFactory;
@@ -222,14 +222,6 @@ public abstract class AbstractDepositJob implements Runnable {
         return eventsDirectory;
     }
 
-    public Repository getRepository() {
-        return repository;
-    }
-
-    public void setRepository(Repository repository) {
-        this.repository = repository;
-    }
-
     public PremisLoggerFactory getPremisLoggerFactory() {
         return premisLoggerFactory;
     }
@@ -250,7 +242,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
     /**
      * Resolves a staged file href and returns a URI for that href.
-     * 
+     *
      * @param href
      * @return
      * @throws StagingException
@@ -311,7 +303,7 @@ public abstract class AbstractDepositJob implements Runnable {
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
             }
-            return premisLoggerFactory.createPremisLogger(pid, file, repository);
+            return premisLoggerFactory.createPremisLogger(pid, file);
         } catch (Exception e) {
             failJob(e, "Unexpected problem with deposit events file {0}.", file.getAbsoluteFile().toString());
         }
@@ -376,7 +368,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
     /**
      * Retrieve a list of PID to value pairs for the given property
-     * 
+     *
      * @param model
      * @param property
      * @return

@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.util.RDFModelUtil.TURTLE_MIMETYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -22,12 +23,13 @@ import java.net.URI;
 
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.URIUtil;
@@ -41,14 +43,10 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
 
     private RepositoryInitializer repoInitializer;
 
-    @Autowired
-    private RepositoryObjectFactory objFactory;
-
     @Before
     public void init() {
         repoInitializer = new RepositoryInitializer();
-        repoInitializer.setObjFactory(objFactory);
-        repoInitializer.setRepository(repository);
+        repoInitializer.setObjFactory(repoObjFactory);
         repoInitializer.setFcrepoClient(client);
     }
 
@@ -68,9 +66,17 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
                 contentContainerUri, RepositoryPathConstants.CONTENT_ROOT_ID);
         URI contentRootUri = URI.create(contentRootString);
         assertObjectExists(contentRootUri);
-        Model crModel = repository.getObjectModel(contentRootUri);
-        Resource crResc = crModel.getResource(contentRootUri.toString());
-        assertTrue(crResc.hasProperty(RDF.type, Cdr.ContentRoot));
+
+        try (FcrepoResponse response = client.get(contentRootUri)
+                .accept(TURTLE_MIMETYPE)
+                .perform()) {
+
+            Model crModel = ModelFactory.createDefaultModel();
+            crModel.read(response.getBody(), null, Lang.TURTLE.getName());
+
+            Resource crResc = crModel.getResource(contentRootUri.toString());
+            assertTrue(crResc.hasProperty(RDF.type, Cdr.ContentRoot));
+        }
 
         URI depositContainerUri = getContainerUri(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
         assertObjectExists(depositContainerUri);
@@ -117,7 +123,7 @@ public class RepositoryInitializerIT extends AbstractFedoraIT {
     }
 
     private URI getContainerUri(String id) {
-        String containerString = URIUtil.join(repository.getBaseUri(), id);
+        String containerString = URIUtil.join(RepositoryPaths.getBaseUri(), id);
         return URI.create(containerString);
     }
 }

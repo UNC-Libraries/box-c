@@ -22,20 +22,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.filter.ElementFilter;
 
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -71,8 +72,8 @@ public class METSHelper {
     }
 
     protected void initIdMap() {
-        elementsById = new HashMap<String, Element>();
-        Iterator<Element> els = (Iterator<Element>) mets.getRootElement()
+        elementsById = new HashMap<>();
+        Iterator<Element> els = mets.getRootElement()
                 .getDescendants(new ElementFilter());
         while (els.hasNext()) {
             Element el = els.next();
@@ -89,20 +90,20 @@ public class METSHelper {
 
     protected Iterator<Element> getDivs() {
         // add deposit-level parent (represented as structMap or bag div)
-        Element topContainer = (Element) mets.getRootElement().getChild(
+        Element topContainer = mets.getRootElement().getChild(
                 "structMap", METS_NS);
         Element firstdiv = topContainer.getChild("div", METS_NS);
         if (firstdiv != null
                 && "Bag".equals(firstdiv.getAttributeValue("TYPE"))) {
             topContainer = firstdiv;
         }
-        Iterator<Element> divs = (Iterator<Element>) topContainer
+        Iterator<Element> divs = topContainer
                 .getDescendants(new ElementFilter("div", JDOMNamespaceUtil.METS_NS));
         return divs;
     }
 
     protected Iterator<Element> getFptrs() {
-        Iterator<Element> fptrs = (Iterator<Element>) mets.getRootElement()
+        Iterator<Element> fptrs = mets.getRootElement()
                 .getChild("structMap", METS_NS)
                 .getDescendants(new ElementFilter("fptr", JDOMNamespaceUtil.METS_NS));
         return fptrs;
@@ -135,6 +136,8 @@ public class METSHelper {
 
             // record file location
             m.add(object, CdrDeposit.stagingLocation, href);
+
+            m.add(object, RDF.type, Cdr.FileObject);
 
             // record mimetype
             if (fileEl.getAttributeValue("MIMETYPE") != null) {

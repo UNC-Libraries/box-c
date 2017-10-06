@@ -22,19 +22,17 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import org.apache.jena.rdf.model.Model;
 
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -44,6 +42,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class FolderObjectTest extends AbstractFedoraTest {
@@ -56,14 +55,13 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Before
     public void init() {
-        initMocks(this);
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        folder = new FolderObject(pid, repository, dataLoader);
+        folder = new FolderObject(pid, repoObjLoader, dataLoader, repoObjFactory);
 
         childPid = PIDs.get(UUID.randomUUID().toString());
-        when(repository.mintContentPid()).thenReturn(childPid);
+        when(pidMinter.mintContentPid()).thenReturn(childPid);
     }
 
     @Test
@@ -96,17 +94,17 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addFolderTest() {
-        FolderObject childFolder = new FolderObject(childPid, repository, dataLoader);
+        FolderObject childFolder = new FolderObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
 
-        when(repository.createFolderObject(any(PID.class), any(Model.class)))
+        when(repoObjFactory.createFolderObject(any(Model.class)))
                 .thenReturn(childFolder);
 
         folder.addFolder();
 
-        verify(repository).createFolderObject(eq(childPid), (Model) isNull());
+        verify(repoObjFactory).createFolderObject((Model) isNull());
 
         ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-        verify(repository).addMember(eq(folder), captor.capture());
+        verify(repoObjFactory).addMember(eq(folder), captor.capture());
 
         ContentObject child = captor.getValue();
         assertTrue("Incorrect type of child added", child instanceof FolderObject);
@@ -115,20 +113,14 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addWorkTest() {
-        WorkObject childObj = new WorkObject(childPid, repository, dataLoader);
+        WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
+        when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
 
-        when(repository.createWorkObject(any(PID.class), any(Model.class)))
-                .thenReturn(childObj);
+        WorkObject workObj = folder.addWork();
 
-        folder.addWork();
+        verify(repoObjFactory).createWorkObject(null);
 
-        verify(repository).createWorkObject(eq(childPid), (Model) isNull());
-
-        ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-        verify(repository).addMember(eq(folder), captor.capture());
-
-        ContentObject child = captor.getValue();
-        assertTrue("Incorrect type of child added", child instanceof WorkObject);
-        assertEquals("Child did not have the expected pid", childPid, child.getPid());
+        assertTrue("Incorrect type of child added", workObj instanceof WorkObject);
+        assertEquals("Child did not have the expected pid", childPid, workObj.getPid());
     }
 }

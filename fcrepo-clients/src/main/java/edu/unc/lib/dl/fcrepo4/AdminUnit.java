@@ -29,8 +29,9 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class AdminUnit extends ContentContainerObject {
 
-    protected AdminUnit(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected AdminUnit(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     @Override
@@ -39,7 +40,7 @@ public class AdminUnit extends ContentContainerObject {
             throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
                     + " as a member of AdminUnit " + pid.getQualifiedId());
         }
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 

@@ -54,7 +54,8 @@ public class ReplicationProcessor implements Processor {
     private final int maxRetries;
     private final long retryDelay;
 
-    public ReplicationProcessor(String replicationLocations, int maxRetries, long retryDelay) {
+    public ReplicationProcessor(String replicationLocations,
+            int maxRetries, long retryDelay) {
         this.replicationLocations = splitReplicationLocations(replicationLocations);
         this.maxRetries = maxRetries;
         this.retryDelay = retryDelay;

@@ -31,15 +31,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaders;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeUtils;
-import org.junit.Before;
-import org.junit.Test;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -48,6 +39,14 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.input.sax.XMLReaders;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeUtils;
+import org.junit.Before;
+import org.junit.Test;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -72,14 +71,14 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
         StreamSource xslStream = new StreamSource();
         xslStream.setSystemId(xslURL.toExternalForm());
         proquest2ModsTransformer = factory.newTransformer(xslStream);
-        
+
         Dataset dataset = TDBFactory.createDataset();
 
         job = new Proquest2N3BagJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
         job.setProquest2ModsTransformer(proquest2ModsTransformer);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         job.setPremisLoggerFactory(premisLoggerFactory);
         setField(job, "dataset", dataset);
         setField(job, "depositsDirectory", depositsDirectory);
@@ -129,27 +128,18 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
         String primObjLocation = primObj.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), primObjLocation).exists());
 
-        // Check that attachments were added
+        // Check that only the main file object was added
         NodeIterator childIt = mainBag.iterator();
-        int countChildren = 0;
-        while (childIt.hasNext()) {
-            countChildren++;
-            Resource child = (Resource) childIt.next();
+        assertTrue(childIt.hasNext());
 
-            // Make sure all of the children have valid staging locations assigned
-            File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
+        Resource child = (Resource) childIt.next();
+        // Ensure that the main file has a valid staging location
+        File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
 
-            // Make sure the label is being set, using the description if provided
-            if ("attached1.pdf".equals(childFile.getName())) {
-                assertEquals("Provided label was not set for child", "Attached pdf", child.getProperty(CdrDeposit.label)
-                        .getString());
-            } else {
-                assertEquals("File name not set as child label", childFile.getName(), child.getProperty(CdrDeposit.label)
-                        .getString());
-            }
-        }
+        assertEquals("File name not set as label", childFile.getName(), child.getProperty(CdrDeposit.label)
+                .getString());
 
-        assertEquals("Incorrect aggregate child count", 1, countChildren);
+        assertFalse("Only one child file should be present", childIt.hasNext());
 
         SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
         Document modsDoc = sb.build(descriptionFile);
@@ -206,6 +196,8 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
         while (childIt.hasNext()) {
             countChildren++;
             Resource child = (Resource) childIt.next();
+
+            assertTrue("Attachment resource is not a file object", child.hasProperty(RDF.type, Cdr.FileObject));
 
             // Make sure all of the children have valid staging locations assigned
             File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");

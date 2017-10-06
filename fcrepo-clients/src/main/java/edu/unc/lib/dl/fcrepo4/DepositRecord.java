@@ -38,12 +38,14 @@ import edu.unc.lib.dl.rdf.Cdr;
  * A Deposit Record repository object, which tracks information pertaining to a single deposit.
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class DepositRecord extends RepositoryObject {
 
-    protected DepositRecord(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected DepositRecord(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     /**
@@ -73,7 +75,7 @@ public class DepositRecord extends RepositoryObject {
     public BinaryObject addManifest(InputStream manifestStream, String filename, String mimetype)
             throws FedoraException {
         URI manifestsUri = getManifestsUri();
-        return repository.createBinary(manifestsUri, null, manifestStream, filename,
+        return repoObjFactory.createBinary(manifestsUri, null, manifestStream, filename,
                 mimetype, null, null);
     }
 
@@ -89,7 +91,7 @@ public class DepositRecord extends RepositoryObject {
         if (!this.pid.containsComponent(pid)) {
             return null;
         }
-        return repository.getBinary(pid);
+        return repoObjLoader.getBinaryObject(pid);
     }
 
     /**
@@ -109,13 +111,14 @@ public class DepositRecord extends RepositoryObject {
      * @param children
      * @return the DepositRecord itself, to allow method chaining
      */
-    public DepositRecord addIngestedObjects(PID depositPID, List<Resource> children) {
+    public DepositRecord addIngestedObjects(List<Resource> children) {
         Model triples = ModelFactory.createDefaultModel();
-        Resource res = triples.createResource(depositPID.getURI());
+        Resource res = triples.createResource(getPid().getURI());
         for (Resource child : children) {
             res.addProperty(Cdr.hasIngestedObject, child);
         }
-        repository.createRelationships(depositPID, triples);
+        // SPARQL update
+        repoObjFactory.createRelationships(getPid(), triples);
         return this;
     }
 

@@ -15,7 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,9 +37,8 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
+
 /**
- *
- *
  * @author harring
  */
 public class AdminUnitTest extends AbstractFedoraTest {
@@ -59,7 +59,9 @@ public class AdminUnitTest extends AbstractFedoraTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        unit = new AdminUnit(pid, repository, dataLoader);
+        unit = new AdminUnit(pid, repoObjLoader, dataLoader, repoObjFactory);
+
+        pidMinter = new RepositoryPIDMinter();
 
         collectionChildPid = PIDs.get(UUID.randomUUID().toString());
         when(collectionChildObj.getPid()).thenReturn(collectionChildPid);
@@ -104,10 +106,10 @@ public class AdminUnitTest extends AbstractFedoraTest {
     @Test
     public void addCollectionObjectMemberTest() {
         unit.addMember(collectionChildObj);
-        repository.mintContentPid();
+        pidMinter.mintContentPid();
 
         ArgumentCaptor<ContentObject> captor = ArgumentCaptor.forClass(ContentObject.class);
-        verify(repository).addMember(eq(unit), captor.capture());
+        verify(repoObjFactory).addMember(eq(unit), captor.capture());
 
         ContentObject child = captor.getValue();
         assertTrue("Incorrect type of child added", child instanceof CollectionObject);

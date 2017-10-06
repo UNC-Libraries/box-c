@@ -48,8 +48,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -68,7 +67,8 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     protected FcrepoClient client;
 
     @Autowired
-    protected Repository repository;
+    protected RepositoryObjectFactory repoObjFactory;
+
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -86,7 +86,6 @@ public class ReplicationProcessorIT extends CamelTestSupport {
     public void init() throws IOException {
         replicationDir = tmpFolder.newFolder("tmp");
         replicationDir.mkdir();
-        PIDs.setRepository(repository);
         processor = new ReplicationProcessor(replicationDir.getAbsolutePath(), 3, 100L);
         initMocks(this);
 
@@ -135,7 +134,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
         when(message.getHeader(CdrBinaryPath)).thenReturn(testFile.getAbsolutePath());
 
-        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream,
+        BinaryObject externalObj = repoObjFactory.createBinary(binaryUri, "external_binary_test", contentStream,
                 filename, MIMETYPE, null, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
@@ -161,7 +160,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         InputStream contentStream = new FileInputStream(testFile);
         String badChecksum = "41cfe91611de4f56689ca6258237c448d3f91a84";
 
-        BinaryObject externalObj = repository.createBinary(binaryUri, "external_binary_test", contentStream,
+        BinaryObject externalObj = repoObjFactory.createBinary(binaryUri, "external_binary_test", contentStream,
                 filename, MIMETYPE, null, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(badChecksum);

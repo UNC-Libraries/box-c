@@ -16,8 +16,6 @@
 package edu.unc.lib.dl.fedora;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,10 +26,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -55,15 +51,8 @@ public class ContentPathFactoryTest {
 
     private PID collectionsPid;
 
-    @Mock
-    private Repository repository;
-
     @Before
     public void init() {
-        initMocks(this);
-
-        PIDs.setRepository(repository);
-        when(repository.getBaseUri()).thenReturn(FEDORA_BASE);
 
         model = ModelFactory.createDefaultModel();
 

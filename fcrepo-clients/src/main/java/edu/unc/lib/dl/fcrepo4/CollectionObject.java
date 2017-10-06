@@ -30,8 +30,9 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class CollectionObject extends ContentContainerObject {
 
-    protected CollectionObject(PID pid, Repository repository, RepositoryObjectDataLoader dataLoader) {
-        super(pid, repository, dataLoader);
+    protected CollectionObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory);
     }
 
     @Override
@@ -52,7 +53,7 @@ public class CollectionObject extends ContentContainerObject {
                     + " as a member of WorkObject " + pid.getQualifiedId());
         }
 
-        repository.addMember(this, member);
+        repoObjFactory.addMember(this, member);
         return this;
     }
 

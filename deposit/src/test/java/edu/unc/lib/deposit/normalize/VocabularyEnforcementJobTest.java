@@ -33,6 +33,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.tdb.TDBFactory;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
@@ -41,12 +46,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-
-import org.apache.jena.query.Dataset;
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.tdb.TDBFactory;
 
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
@@ -68,7 +67,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
     @Mock
     private VocabularyHelper mockHelper;
-    
+
     private PID rescPid;
 
     @Before
@@ -78,14 +77,14 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
         job = new VocabularyEnforcementJob();
         job.setDepositUUID(depositUUID);
         job.setDepositDirectory(depositDir);
-        job.setRepository(repository);
+        setField(job, "pidMinter", pidMinter);
         setField(job, "depositsDirectory", depositsDirectory);
         setField(job, "jobStatusFactory", jobStatusFactory);
         setField(job, "depositStatusFactory", depositStatusFactory);
         setField(job, "vocabManager", vocabManager);
         setField(job, "dataset", dataset);
 
-        PID depositPid = repository.mintContentPid();
+        PID depositPid = pidMinter.mintContentPid();
         depositStatus = new HashMap<>();
         depositStatus.put(DepositField.containerId.name(), depositPid.toString());
         when(depositStatusFactory.get(anyString())).thenReturn(depositStatus);
@@ -94,7 +93,7 @@ public class VocabularyEnforcementJobTest extends AbstractNormalizationJobTest {
 
         Model model = job.getWritableModel();
         Bag depositBag = model.createBag(job.getDepositPID().getURI());
-        rescPid = repository.mintContentPid();
+        rescPid = pidMinter.mintContentPid();
         Resource mainResource = model.createResource(rescPid.getURI());
         depositBag.add(mainResource);
         job.closeModel();

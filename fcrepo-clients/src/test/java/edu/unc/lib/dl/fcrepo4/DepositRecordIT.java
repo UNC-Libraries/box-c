@@ -35,7 +35,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
-import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.event.FilePremisLogger;
@@ -53,20 +52,12 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class DepositRecordIT extends AbstractFedoraIT {
 
-    private PID pid;
-
-    @Before
-    public void init() {
-        // Generate a new ID every time so that tests don't conflict
-        pid = repository.mintDepositRecordPid();
-    }
-
     @Test
     public void createDepositRecordTest() throws Exception {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repository.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(model);
 
         assertNotNull(record);
 
@@ -75,20 +66,21 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void getInvalidDepositRecord() throws Exception {
+        PID pid = pidMinter.mintContentPid();
         // Create a dummy non-depositRecord object
         client.put(pid.getRepositoryUri()).perform().close();
 
         // Try (and fail) to retrieve it as a deposit record
-        repository.getDepositRecord(pid);
+        repoObjLoader.getDepositRecord(pid);
     }
 
     @Test
     public void getDepositRecord() throws Exception {
         Model model = getDepositRecordModel();
 
-        repository.createDepositRecord(pid, model);
+        PID pid = repoObjFactory.createDepositRecord(model).getPid();
 
-        DepositRecord record = repository.getDepositRecord(pid);
+        DepositRecord record = repoObjLoader.getDepositRecord(pid);
 
         assertTrue(record.getTypes().contains(Cdr.DepositRecord.getURI()));
     }
@@ -98,7 +90,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         Model model = getDepositRecordModel();
 
-        DepositRecord record = repository.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(model);
 
         String bodyString1 = "Manifest info";
         String filename1 = "manifest1.txt";
@@ -141,11 +133,12 @@ public class DepositRecordIT extends AbstractFedoraIT {
     }
 
     public void addPremisEventsTest() throws Exception {
+        PID pid = pidMinter.mintDepositRecordPid();
         Model model = getDepositRecordModel();
 
         String details = "Event details";
         // Prep the events prior to ingest
-        PremisLogger logger = new FilePremisLogger(pid, null, repository);
+        PremisLogger logger = new FilePremisLogger(pid, null, pidMinter, repoObjLoader, repoObjFactory, dataloader);
         logger.buildEvent(Premis.Ingestion)
                 .addAuthorizingAgent(SoftwareAgent.depositService.toString())
                 .addEventDetail("Event details")
@@ -155,7 +148,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
                 .write();
 
         // Push the events out to repository
-        DepositRecord record = repository.createDepositRecord(pid, model)
+        DepositRecord record = repoObjFactory.createDepositRecord(pid, model)
             .addPremisEvents(logger.getEvents());
 
         // Retrieve all the events added to this object
@@ -174,7 +167,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
     @Test
     public void addObjectsTest() throws Exception {
         Model model = getDepositRecordModel();
-        DepositRecord record = repository.createDepositRecord(pid, model);
+        DepositRecord record = repoObjFactory.createDepositRecord(model);
 
         URI obj1Uri;
         URI obj2Uri;
@@ -191,14 +184,14 @@ public class DepositRecordIT extends AbstractFedoraIT {
         depositedObjs.add(res1);
         depositedObjs.add(res2);
 
-        record.addIngestedObjects(pid, depositedObjs);
+        record.addIngestedObjects(depositedObjs);
 
         assertTrue(record.listDepositedObjects().size() == 2);
     }
 
     private Model getDepositRecordModel() {
         Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.createResource(pid.getRepositoryUri().toString());
+        Resource resc = model.createResource("");
         resc.addProperty(RDF.type, Cdr.DepositRecord);
 
         return model;

@@ -93,6 +93,7 @@
 		<jena.fuseki.version>2.4.1</jena.fuseki.version>
 		<project.copyrightYear>2008</project.copyrightYear>
 		<maven.failsafe.version>2.20</maven.failsafe.version>
+		<maven.surefire.version>2.20</maven.surefire.version>
 	</properties>
 
 	<distributionManagement>
@@ -272,7 +273,7 @@
 					<excludes>
 						<exclude>clamavj/**</exclude>
 						<exclude>oai4solr/**</exclude>
-            <exclude>staging-areas/**</exclude>
+			<exclude>staging-areas/**</exclude>
 						<exclude>**/*.properties</exclude>
 					</excludes>
 					<properties>
@@ -328,6 +329,37 @@
 					</execution>
 				</executions>
 				<inherited>false</inherited>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<systemPropertyVariables>
+						<fcrepo.baseUri>http://example.com/rest</fcrepo.baseUri>
+						<buildDirectory>${project.build.directory}</buildDirectory>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven.surefire.version}</version>
+				<configuration>
+					<systemPropertyVariables>
+						<fcrepo.baseUri>http://example.com/rest</fcrepo.baseUri>
+						<buildDirectory>${project.build.directory}</buildDirectory>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<fcrepo.baseUri>http://localhost:48085/rest</fcrepo.baseUri>
+					</systemPropertyVariables>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -470,7 +502,14 @@
 			<dependency>
 				<groupId>edu.unc.lib.cdr</groupId>
 				<artifactId>fcrepo-clients</artifactId>
-				<version>4.0-SNAPSHOT</version>
+				<version>${cdr.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>edu.unc.lib.cdr</groupId>
+				<artifactId>fcrepo-clients</artifactId>
+				<version>${cdr.version}</version>
+				<type>test-jar</type>
+				<scope>test</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.codehaus.jackson</groupId>
