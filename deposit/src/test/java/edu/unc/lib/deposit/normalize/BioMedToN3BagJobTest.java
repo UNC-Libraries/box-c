@@ -119,6 +119,7 @@ public class BioMedToN3BagJobTest extends AbstractNormalizationJobTest {
 
             Resource child = (Resource) childIt.next();
             verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
+            assertTrue("Child resource is not a file object", child.hasProperty(RDF.type, Cdr.FileObject));
         }
 
         assertEquals("Incorrect aggregate child count", 5, childCount);
