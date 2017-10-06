@@ -48,9 +48,9 @@ import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.Repository;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -59,7 +59,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/service-context.xml", "/cdr-event-to-solr-it-context.xml"})
+@ContextConfiguration({"/service-context.xml", "/cdr-event-routing-it-context.xml"})
 public class CdrEventRoutingIT {
 
     private static final String USER_ID = "user";
@@ -71,9 +71,6 @@ public class CdrEventRoutingIT {
 
     @Autowired
     private SolrUpdateProcessor solrUpdateProcessor;
-
-    @Autowired
-    private Repository repository;
 
     @Autowired
     private CamelContext cdrServiceSolrUpdate;
@@ -89,8 +86,7 @@ public class CdrEventRoutingIT {
     public void init() throws Exception {
         initMocks(this);
 
-        when(repository.getBaseUri()).thenReturn(BASE_URI);
-        PIDs.setRepository(repository);
+        TestHelper.setContentBase(BASE_URI);
 
         solrUpdateProcessor.setSolrIndexingActionMap(mockActionMap);
 
