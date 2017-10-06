@@ -110,6 +110,13 @@
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>metadata</artifactId>
 	</dependency>
+
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>persistence</artifactId>
+		<scope>test</scope>
+		<version>${cdr.version}</version>
+	</dependency>
 	
 	<dependency>
 		<groupId>edu.unc.lib.cdr</groupId>
@@ -257,7 +264,6 @@
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 </dependencies>
 
 	<build>
