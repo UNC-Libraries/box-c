@@ -33,7 +33,7 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class PIDsTest {
 
-    private static final String FEDORA_BASE = "http://localhost:48085/rest/";
+    private static final String FEDORA_BASE = "http://example.com/rest/";
 
     private static final String TEST_UUID = "95553b02-0256-4c73-b423-f12d070501e8";
 
