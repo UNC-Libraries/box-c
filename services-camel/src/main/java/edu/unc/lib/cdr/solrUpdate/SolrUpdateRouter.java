@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.cdr.solrUpdate;
 
+import static org.apache.camel.LoggingLevel.DEBUG;
+
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -38,8 +40,9 @@ public class SolrUpdateRouter extends RouteBuilder {
         .backOffMultiplier(2)
         .retryAttemptedLogLevel(LoggingLevel.WARN);
 
-        from("{{cdr.solrupdate.stream}}")
+        from("{{cdr.solrupdate.stream.camel}}")
             .routeId("CdrServiceSolrUpdate")
+            .log(DEBUG, "Received solr update message")
             .bean(solrUpdateProcessor);
 
     }
