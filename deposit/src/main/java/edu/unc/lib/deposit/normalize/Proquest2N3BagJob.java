@@ -286,6 +286,7 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
             PID pid = pidMinter.mintContentPid();
             Resource child = model.createResource(pid.getURI());
             mainBag.add(child);
+            model.add(child, RDF.type, Cdr.FileObject);
 
             // Use the description as a label if one was provided
             if (description != null && description.trim().length() > 0) {

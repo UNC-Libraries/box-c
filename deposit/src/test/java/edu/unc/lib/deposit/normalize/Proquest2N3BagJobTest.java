@@ -128,27 +128,18 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
         String primObjLocation = primObj.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue("Default web object file did not exist", new File(job.getDepositDirectory(), primObjLocation).exists());
 
-        // Check that attachments were added
+        // Check that only the main file object was added
         NodeIterator childIt = mainBag.iterator();
-        int countChildren = 0;
-        while (childIt.hasNext()) {
-            countChildren++;
-            Resource child = (Resource) childIt.next();
+        assertTrue(childIt.hasNext());
 
-            // Make sure all of the children have valid staging locations assigned
-            File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
+        Resource child = (Resource) childIt.next();
+        // Ensure that the main file has a valid staging location
+        File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
 
-            // Make sure the label is being set, using the description if provided
-            if ("attached1.pdf".equals(childFile.getName())) {
-                assertEquals("Provided label was not set for child", "Attached pdf", child.getProperty(CdrDeposit.label)
-                        .getString());
-            } else {
-                assertEquals("File name not set as child label", childFile.getName(), child.getProperty(CdrDeposit.label)
-                        .getString());
-            }
-        }
+        assertEquals("File name not set as label", childFile.getName(), child.getProperty(CdrDeposit.label)
+                .getString());
 
-        assertEquals("Incorrect aggregate child count", 1, countChildren);
+        assertFalse("Only one child file should be present", childIt.hasNext());
 
         SAXBuilder sb = new SAXBuilder(XMLReaders.NONVALIDATING);
         Document modsDoc = sb.build(descriptionFile);
@@ -205,6 +196,8 @@ public class Proquest2N3BagJobTest extends AbstractNormalizationJobTest {
         while (childIt.hasNext()) {
             countChildren++;
             Resource child = (Resource) childIt.next();
+
+            assertTrue("Attachment resource is not a file object", child.hasProperty(RDF.type, Cdr.FileObject));
 
             // Make sure all of the children have valid staging locations assigned
             File childFile = verifyStagingLocationExists(child, job.getDepositDirectory(), "Child content");
