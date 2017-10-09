@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
@@ -118,15 +119,25 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         assertEquals(childrenBag.size(), 1);
 
-        Resource file = (Resource) childrenBag.iterator().next();
+        // Verify work was generated for file
+        Resource workResc = (Resource) childrenBag.iterator().next();
+        Bag workBag = model.getBag(workResc);
+        assertEquals("Work label was not set", "lorem.txt",
+                workResc.getProperty(CdrDeposit.label).getString());
+        assertTrue(workResc.hasProperty(RDF.type, Cdr.Work));
 
+        NodeIterator workIt = workBag.iterator();
+        assertTrue(workIt.hasNext());
+
+        // Verify that file and its properties were added to work
+        Resource file = workIt.next().asResource();
         assertEquals("File label was not set", "lorem.txt",
                 file.getProperty(CdrDeposit.label).getString());
-        assertEquals("Content model was not set", Cdr.FileObject.getURI(),
-                file.getPropertyResourceValue(RDF.type).getURI());
+        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
 
         String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
 
+        assertFalse("Only one file should be present in work", workIt.hasNext());
     }
 }

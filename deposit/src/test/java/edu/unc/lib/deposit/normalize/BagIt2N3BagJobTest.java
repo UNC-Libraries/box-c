@@ -17,11 +17,13 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -30,10 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.rdf.model.Bag;
@@ -44,6 +42,10 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.tdb.TDBFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -57,9 +59,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
 
     private Map<String, String> status;
 
+    @Captor
+    private ArgumentCaptor<String> filePathCaptor;
+
     @Before
     public void setup() throws Exception {
-        status = new HashMap<String, String>();
+        status = new HashMap<>();
         when(depositStatusFactory.get(anyString())).thenReturn(status);
         Dataset dataset = TDBFactory.createDataset();
 
@@ -79,25 +84,25 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         status.put(DepositField.fileName.name(), "Test File");
         status.put(DepositField.extras.name(), "{\"accessionNumber\" : \"123456\", \"mediaId\" : \"789\"}");
         String absoluteSourcePath = "file://" + Paths.get(sourcePath).toAbsolutePath().toString();
-        
+
         job.run();
 
         Model model = job.getReadOnlyModel();
         Bag depositBag = model.getBag(job.getDepositPID().getURI());
-        
+
         assertEquals(depositBag.size(), 1);
-        
+
         Bag bagFolder = model.getBag((Resource) depositBag.iterator().next());
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
         assertTrue("Missing RDF type", bagFolder.hasProperty(RDF.type, Cdr.Folder ));
-        
+
         Resource folder = (Resource) bagFolder.iterator().next();
-        
+
         assertEquals("Folder label was not set", folder.getProperty(CdrDeposit.label).getString(), "test");
         assertTrue("Missing RDF type", folder.hasProperty(RDF.type, Cdr.Folder));
-        
+
         Bag childrenBag = model.getBag(folder.getURI());
-        
+
         assertEquals(childrenBag.size(), 2);
 
         // Put children into a map since we can't guarantee order from jena
@@ -107,41 +112,54 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
             Resource file = (Resource) childIt.next();
             children.put(file.getProperty(CdrDeposit.label).getString(), file);
         }
-        
-        ArgumentCaptor<String> filePathCaptor = ArgumentCaptor.forClass(String.class);
+
+        // Verify that all manifests were added.
         verify(depositStatusFactory, times(2)).addManifest(anyString(), filePathCaptor.capture());
         List<String> capturedFilePaths = Arrays.asList(absoluteSourcePath + "/bagit.txt",
                 absoluteSourcePath + "/manifest-md5.txt");
         assertEquals(capturedFilePaths, filePathCaptor.getAllValues());
-        
-        Resource file = children.get("lorem.txt");
-        assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
-        assertEquals("Checksum was not set", "fa5c89f3c88b81bfd5e821b0316569af",
-                file.getProperty(CdrDeposit.md5sum).getString());
-        assertEquals("File location not set", absoluteSourcePath + "/data/test/lorem.txt",
-                file.getProperty(CdrDeposit.stagingLocation).getString());
-        
-        Resource file2 = children.get("ipsum.txt");
-        assertTrue("Missing RDF type", file2.hasProperty(RDF.type, Cdr.FileObject));
-        assertEquals("Checksum was not set", "e78f5438b48b39bcbdea61b73679449d",
-                file2.getProperty(CdrDeposit.md5sum).getString());
-        assertEquals("File location not set", absoluteSourcePath + "/data/test/ipsum.txt",
-                file2.getProperty(CdrDeposit.stagingLocation).getString());
-        
+
+        // Verify that files and their properties were added
+        assertFileAdded(children.get("lorem.txt"), "fa5c89f3c88b81bfd5e821b0316569af",
+                absoluteSourcePath + "/data/test/lorem.txt");
+
+        assertFileAdded(children.get("ipsum.txt"), "e78f5438b48b39bcbdea61b73679449d",
+                absoluteSourcePath + "/data/test/ipsum.txt");
+
+        // Verify that the
         File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
         assertTrue(modsFile.exists());
-        
+
         Set<String> cleanupSet = new HashSet<>();
         StmtIterator it = depositBag.listProperties(CdrDeposit.cleanupLocation);
         while (it.hasNext()) {
             Statement stmt = it.nextStatement();
             cleanupSet.add(stmt.getString());
         }
-        
+
         assertEquals("Incorrect number of objects identified for cleanup", 3, cleanupSet.size());
         assertTrue("Cleanup of bag not set", cleanupSet.contains(absoluteSourcePath + "/"));
         assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(0)));
         assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
+    }
+
+    private void assertFileAdded(Resource workResc, String md5sum, String fileLocation) {
+        Model model = workResc.getModel();
+
+        assertTrue("Missing RDF type", workResc.hasProperty(RDF.type, Cdr.Work));
+        Bag workBag = model.getBag(workResc);
+
+        NodeIterator workIt = workBag.iterator();
+        assertTrue(workIt.hasNext());
+
+        Resource file = workIt.next().asResource();
+        assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
+        assertEquals("Checksum was not set", md5sum,
+                file.getProperty(CdrDeposit.md5sum).getString());
+        assertEquals("File location not set", fileLocation,
+                file.getProperty(CdrDeposit.stagingLocation).getString());
+
+        assertFalse(workIt.hasNext());
     }
 
     @Test(expected = JobFailedException.class)

@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.jdom2.Document;
@@ -32,11 +36,6 @@ import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -49,7 +48,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 /**
  * Abstract deposit normalization job which processes walks file system paths to interpret them into n3 and MODS for
  * deposit
- * 
+ *
  * @author lfarrell
  */
 public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
@@ -94,7 +93,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     /**
      * Creates and returns a Jena Resource for the given path representing a file,
      * adding it to the hierarchy for the deposit
-     * 
+     *
      * @param sourceBag
      * @param filepath
      * @return
@@ -102,10 +101,25 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     protected Resource getFileResource(Bag sourceBag, String filepath) {
         Bag parentBag = getParentBag(sourceBag, filepath);
 
+        String filename = filepath.substring(filepath.lastIndexOf("/") + 1);
+
+        // Construct a work to contain this file
+        PID workPid = createPID();
+        Bag workBag = sourceBag.getModel().createBag(workPid.getURI());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, filename);
+
+        parentBag.add(workBag);
+
         PID pid = createPID();
 
+        // Generate the file object and add to work
         Resource fileResource = sourceBag.getModel().createResource(pid.getURI());
-        parentBag.add(fileResource);
+        fileResource.addProperty(RDF.type, Cdr.FileObject);
+
+        fileResource.addProperty(CdrDeposit.label, filename);
+
+        workBag.add(fileResource);
 
         return fileResource;
     }
@@ -113,7 +127,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
     /**
      * Creates and returns a Jena Bag for the given filepath representing a folder, and adds
      * it to the hierarchy for the deposit
-     * 
+     *
      * @param sourceBag
      * @param filepath
      * @param model
@@ -140,7 +154,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
     /**
      * Returns a Jena Bag object for the parent folder of the given filepath, creating the parent if it is not present.
-     * 
+     *
      * @param sourceBag
      * @param filepath
      * @return
@@ -194,7 +208,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 
     /**
      * Adds additional metadata fields for the root bag container if they are provided
-     * 
+     *
      * @param containerPID
      * @param status
      */
