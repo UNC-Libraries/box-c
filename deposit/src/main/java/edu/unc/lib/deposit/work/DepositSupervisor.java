@@ -42,6 +42,7 @@ import edu.unc.lib.deposit.normalize.BagIt2N3BagJob;
 import edu.unc.lib.deposit.normalize.BioMedToN3BagJob;
 import edu.unc.lib.deposit.normalize.CDRMETS2N3BagJob;
 import edu.unc.lib.deposit.normalize.DirectoryToBagJob;
+import edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob;
 import edu.unc.lib.deposit.normalize.Proquest2N3BagJob;
 import edu.unc.lib.deposit.normalize.Simple2N3BagJob;
 import edu.unc.lib.deposit.normalize.UnpackDepositJob;
@@ -596,6 +597,11 @@ public class DepositSupervisor implements WorkerListener {
             } else if (!successfulJobs.contains(conversion.getClassName())) {
                 return conversion;
             }
+        }
+
+        // Normalize all fileObjects into Works
+        if (!successfulJobs.contains(NormalizeFileObjectsJob.class.getName())) {
+            return makeJob(NormalizeFileObjectsJob.class, depositUUID);
         }
 
         // Validate object structure and properties

@@ -151,6 +151,10 @@
 		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
 	</bean>
 	
+	<bean id="NormalizeFileObjectsJob" class="edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob"
+        scope="prototype">
+    </bean>
+	
 	<bean id="aclValidator" class="edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator">
 	</bean>
 	
