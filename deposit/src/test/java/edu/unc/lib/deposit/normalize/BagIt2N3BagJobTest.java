@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.normalize;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
@@ -143,23 +142,12 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         assertTrue("Cleanup of manifest not set", cleanupSet.contains(capturedFilePaths.get(1)));
     }
 
-    private void assertFileAdded(Resource workResc, String md5sum, String fileLocation) {
-        Model model = workResc.getModel();
-
-        assertTrue("Missing RDF type", workResc.hasProperty(RDF.type, Cdr.Work));
-        Bag workBag = model.getBag(workResc);
-
-        NodeIterator workIt = workBag.iterator();
-        assertTrue(workIt.hasNext());
-
-        Resource file = workIt.next().asResource();
+    private void assertFileAdded(Resource file, String md5sum, String fileLocation) {
         assertTrue("Missing RDF type", file.hasProperty(RDF.type, Cdr.FileObject));
         assertEquals("Checksum was not set", md5sum,
                 file.getProperty(CdrDeposit.md5sum).getString());
         assertEquals("File location not set", fileLocation,
                 file.getProperty(CdrDeposit.stagingLocation).getString());
-
-        assertFalse(workIt.hasNext());
     }
 
     @Test(expected = JobFailedException.class)
