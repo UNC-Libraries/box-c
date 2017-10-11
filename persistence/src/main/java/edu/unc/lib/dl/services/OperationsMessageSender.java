@@ -83,10 +83,13 @@ public class OperationsMessageSender {
             subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
         }
 
+
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         add.addContent(reorderedEl);
-        for (PID re : reordered) {
-            reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+        if (reordered != null) {
+            for (PID re : reordered) {
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+            }
         }
 
         Document msg = contentEl.getDocument();
@@ -135,7 +138,8 @@ public class OperationsMessageSender {
     }
 
     /**
-     * Sends a Move operation message, indicating that objects are being moved from source containers to destination containers.
+     * Sends a Move operation message, indicating that objects are being moved
+     * from source containers to destination containers.
      *
      * @param userid id of user who triggered the operation
      * @param sources containers objects moved from
@@ -167,8 +171,10 @@ public class OperationsMessageSender {
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         move.addContent(reorderedEl);
-        for (PID re : reordered) {
-            reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+        if (reordered != null) {
+            for (PID re : reordered) {
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+            }
         }
 
         Document msg = contentEl.getDocument();
@@ -189,8 +195,10 @@ public class OperationsMessageSender {
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         reorder.addContent(reorderedEl);
-        for (PID re : reordered) {
-            reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+        if (reordered != null) {
+            for (PID re : reordered) {
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+            }
         }
 
         Document msg = contentEl.getDocument();
