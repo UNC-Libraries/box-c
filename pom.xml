@@ -94,6 +94,8 @@
 		<project.copyrightYear>2008</project.copyrightYear>
 		<maven.failsafe.version>2.20</maven.failsafe.version>
 		<maven.surefire.version>2.20</maven.surefire.version>
+		<activemq.core.version>5.7.0</activemq.core.version>
+		<activemq.version>5.14.1</activemq.version>
 	</properties>
 
 	<distributionManagement>
