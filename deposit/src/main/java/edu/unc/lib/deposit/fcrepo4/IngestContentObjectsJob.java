@@ -211,6 +211,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         } catch (DepositException | FedoraException | IOException e) {
             failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
         }
+
+        // TODO verify objects present in fcrepo
     }
 
     /**
@@ -697,23 +699,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             return null;
         }
         return stmt.getString();
-    }
-
-    /**
-     * Return an iterator for the children of the given resource, base on what
-     * type of container it is.
-     *
-     * @param resc
-     * @return
-     */
-    private NodeIterator getChildIterator(Resource resc) {
-        if (resc.hasProperty(RDF.type, RDF.Bag)) {
-            return resc.getModel().getBag(resc).iterator();
-        } else if (resc.hasProperty(RDF.type, RDF.Seq)) {
-            return resc.getModel().getSeq(resc).iterator();
-        } else {
-            return null;
-        }
     }
 
     private void addAclProperties(Resource dResc, Resource aResc) {
