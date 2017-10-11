@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.deposit.work;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,10 +29,15 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.apache.jena.query.Dataset;
+import org.apache.jena.query.ReadWrite;
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +60,11 @@ import edu.unc.lib.deposit.validate.ValidateContentModelJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
 import edu.unc.lib.deposit.validate.ValidateMODS;
 import edu.unc.lib.deposit.validate.VirusScanJob;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
@@ -94,6 +105,12 @@ public class DepositSupervisor implements WorkerListener {
 
     @Autowired
     private List<WorkerPool> depositWorkerPools;
+
+    @Autowired
+    private OperationsMessageSender opsMessageSender;
+
+    @Autowired
+    private Dataset dataset;
 
     @Autowired
     private QueueInfoDAO queueDAO;
@@ -679,6 +696,9 @@ public class DepositSupervisor implements WorkerListener {
 
             depositEmailHandler.sendDepositResults(depositUUID);
 
+            // Send message indicating the deposit has completed
+            sendDepositCompleteEvent(depositUUID);
+
             // schedule cleanup job after the configured delay
             Job cleanJob = makeJob(CleanupDepositJob.class, depositUUID);
             LOG.info("Queuing {} for deposit {}",
@@ -775,4 +795,27 @@ public class DepositSupervisor implements WorkerListener {
         }
     }
 
+    private void sendDepositCompleteEvent(String depositUUID) {
+        Map<String, String> depositStatus = depositStatusFactory.get(depositUUID);
+        PID depositPid = PIDs.get(DEPOSIT_RECORD_BASE, depositUUID);
+        dataset.begin(ReadWrite.READ);
+        Model model = dataset.getNamedModel(depositPid.getRepositoryPath()).begin();
+
+        Bag depositBag = model.getBag(depositPid.getRepositoryPath());
+
+        PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
+
+        List<String> added = new ArrayList<>();
+        DepositGraphUtils.walkChildrenDepthFirst(depositBag, added, true);
+        List<PID> addedPids = added.stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
+
+        if (dataset.isInTransaction()) {
+            dataset.commit();
+            dataset.end();
+        }
+
+        // Send message indicating the deposit has completed
+        opsMessageSender.sendAddOperation(depositStatus.get(DepositField.depositorName.name()),
+                Arrays.asList(destPid), addedPids, null, depositUUID);
+    }
 }
