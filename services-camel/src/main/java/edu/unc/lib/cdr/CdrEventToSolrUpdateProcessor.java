@@ -167,6 +167,7 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
             entry.addContent(new Element("children", ATOM_NS).setText(childrenStr));
         }
 
+        log.debug("Sending solr update message for {} of type {}", pid, solrActionType.toString());
         sendMessage(msg);
     }
 }

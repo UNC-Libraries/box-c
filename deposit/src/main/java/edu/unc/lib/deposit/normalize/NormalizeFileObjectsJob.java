@@ -51,6 +51,14 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  */
 public class NormalizeFileObjectsJob extends AbstractDepositJob {
 
+    public NormalizeFileObjectsJob() {
+        super();
+    }
+
+    public NormalizeFileObjectsJob(String uuid, String depositUUID) {
+        super(uuid, depositUUID);
+    }
+
     @Override
     public void runJob() {
         Model model = getWritableModel();
