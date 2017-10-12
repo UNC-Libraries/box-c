@@ -252,6 +252,22 @@ public class SolrSearchService {
     /**
      * Adds access restrictions to the provided query string buffer. If there
      * are no access groups in the provided group set, then an
+     * AccessRestrictionException is thrown.
+     *
+     * @param query
+     *            string buffer containing the query to append access groups to.
+     * @return The original query restricted to results available to the
+     *         provided access groups
+     * @throws AccessRestrictionException
+     *             thrown if no groups are provided.
+     */
+    public StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
+        return this.addAccessRestrictions(query, null);
+    }
+
+    /**
+     * Adds access restrictions to the provided query string buffer. If there
+     * are no access groups in the provided group set, then an
      * AccessRestrictionException is thrown as it is invalid for a user to have
      * no permissions. If the user is an admin, then do not restrict access
      *
@@ -264,11 +280,7 @@ public class SolrSearchService {
      * @throws AccessRestrictionException
      *             thrown if no groups are provided.
      */
-    protected StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
-        return this.addAccessRestrictions(query, null);
-    }
-
-    protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
+    public StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
             throws AccessRestrictionException {
         // Skip adding permission filters if disabled for this search service
         if (disablePermissionFiltering) {
@@ -965,6 +977,13 @@ public class SolrSearchService {
 
     public void setFacetFieldUtil(FacetFieldUtil facetFieldUtil) {
         this.facetFieldUtil = facetFieldUtil;
+    }
+
+    /**
+     * @param globalPermissionEvaluator the globalPermissionEvaluator to set
+     */
+    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
+        this.globalPermissionEvaluator = globalPermissionEvaluator;
     }
 
     /**
