@@ -140,6 +140,24 @@ public class GlobalPermissionEvaluatorTest {
         assertTrue(evaluator.hasGlobalPermission(principalsCombined, Permission.markForDeletion));
     }
 
+    @Test
+    public void hasGlobalPrincipalTest() {
+        addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
+
+        evaluator = new GlobalPermissionEvaluator(configProperties);
+
+        assertTrue(evaluator.hasGlobalPrincipal(principals));
+    }
+
+    @Test
+    public void noGlobalPrincipalTest() {
+        addGlobalAssignment(UserRole.canManage, PRINC_GRP2);
+
+        evaluator = new GlobalPermissionEvaluator(configProperties);
+
+        assertFalse(evaluator.hasGlobalPrincipal(principals));
+    }
+
     private void addGlobalAssignment(UserRole role, String principal) {
         configProperties.setProperty(
                 GlobalPermissionEvaluator.GLOBAL_PROP_PREFIX + role.name(), principal);
