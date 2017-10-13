@@ -15,17 +15,26 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -38,25 +47,49 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.IndexingActionType;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
     private static final Logger log = LoggerFactory.getLogger(UpdateTreeActionTest.class);
 
+    private PID pid1;
+    private PID pid2;
+    private PID pid3;
+    private PID pid4;
+    private PID pid5;
+    private PID pid6;
+    private PID nonExistentPid;
+
     @Mock
-    protected TripleStoreQueryService tsqs;
+    private SparqlQueryService sparqlQueryService;
+    @Mock
+    private QueryExecution mockQueryExecution;
+    @Mock
+    private ResultSet mockResultSet;
+    @Mock
+    private QuerySolution mockQuerySolution;
+    @Mock
+    private Literal mockLiteral;
+
     @Mock
     protected DocumentIndexingPipeline pipeline;
     @Mock
     private DocumentIndexingPackageDataLoader loader;
+    @Mock
     private DocumentIndexingPackageFactory factory;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     protected Map<String, List<PID>> children;
 
@@ -66,39 +99,50 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
     public void setup() throws Exception {
         initMocks(this);
 
+        pid1 = makePid();
+        pid2 = makePid();
+        pid3 = makePid();
+        pid4 = makePid();
+        pid5 = makePid();
+        pid6 = makePid();
+        nonExistentPid = makePid();
+
+        // Establish basic containment relations
+        mockContainerMembers(pid2, pid4, pid6);
+        mockContainerMembers(pid1, pid2, pid3);
+
         server.add(populate());
         server.commit();
 
-        when(tsqs.queryResourceIndex(anyString())).thenReturn(Arrays.asList(Arrays.asList("3")));
-
-        children = populateChildren();
-
-        when(loader.loadChildren(any(DocumentIndexingPackage.class))).thenAnswer(new Answer<List<PID>>() {
-
-            @Override
-            public List<PID> answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                PID pid = ((DocumentIndexingPackage) args[0]).getPid();
-
-                if (pid.getPid().equals("uuid:doesnotexist")) {
-                    throw new IndexingException("");
-                }
-
-                return children.get(pid.getPid());
-            }
-        });
+        when(sparqlQueryService.executeQuery(anyString())).thenReturn(mockQueryExecution);
+        when(mockQueryExecution.execSelect()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(mockQuerySolution).thenReturn(null);
+        when(mockQuerySolution.getLiteral(eq("count"))).thenReturn(mockLiteral);
 
         action = getAction();
-
-        action.setTsqs(tsqs);
+        action.setSparqlQueryService(sparqlQueryService);
         action.setPipeline(pipeline);
         action.setSolrUpdateDriver(driver);
         action.setAddDocumentMode(false);
-        action.setCollectionsPid(new PID("uuid:1"));
-        factory = new DocumentIndexingPackageFactory();
-        factory.setDataLoader(loader);
         action.setFactory(factory);
-        action.init();
+        action.setRepositoryObjectLoader(repositoryObjectLoader);
+
+        // Mock factory to produce DIPs
+        when(factory.createDip(any(PID.class), any(DocumentIndexingPackage.class)))
+                .thenAnswer(new Answer<DocumentIndexingPackage>() {
+            @Override
+            public DocumentIndexingPackage answer(InvocationOnMock invocation) throws Throwable {
+                PID pid = invocation.getArgumentAt(0, PID.class);
+                DocumentIndexingPackage dip = mock(DocumentIndexingPackage.class);
+
+                IndexDocumentBean document = new IndexDocumentBean();
+                document.setId(pid.getId());
+
+                when(dip.getDocument()).thenReturn(document);
+
+                return dip;
+            }
+        });
     }
 
     protected UpdateTreeAction getAction() {
@@ -107,92 +151,71 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
     @Test
     public void testVerifyUpdated() throws Exception {
-
         SolrDocumentList docListBefore = getDocumentList();
 
-        action.performAction(new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD, "1"));
+        action.performAction(new SolrUpdateRequest(pid2.getRepositoryPath(),
+                RECURSIVE_ADD, "1"));
+
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        log.debug("Docs: " + docListBefore);
-        log.debug("Docs: " + docListAfter);
-
         // Verify that only the object itself and its children, excluding orphans, were updated
-        for (SolrDocument docAfter : docListAfter) {
-            String id = (String) docAfter.getFieldValue("id");
-            for (SolrDocument docBefore : docListBefore) {
-                if (id.equals(docBefore.getFieldValue("id"))) {
-                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id)) {
-                        assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-                    }
-                    else assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-                }
-            }
-        }
+        assertOnlySolrRecordsModified(docListBefore, docListAfter, pid2, pid4, pid6);
     }
 
     @Test
     public void danglingContains() throws Exception {
-        children.put("uuid:4", Arrays.asList(new PID("uuid:doesnotexist")));
+        // Add containment of non-existent object
+        mockContainerMembers(pid4, nonExistentPid);
 
         SolrDocumentList docListBefore = getDocumentList();
 
-        action.performAction(new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD, "1"));
+        action.performAction(new SolrUpdateRequest(pid2.getRepositoryPath(),
+                IndexingActionType.RECURSIVE_ADD, "1"));
+
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        // Verify that all appropriate objects were updated, and that the dangling contains didn't create a record
-        for (SolrDocument docAfter : docListAfter) {
-            String id = (String) docAfter.getFieldValue("id");
-            if ("uuid:doesnotexist".equals(id)) {
-                fail("Record for dangling exists");
-            }
-            for (SolrDocument docBefore : docListBefore) {
-                if (id.equals(docBefore.getFieldValue("id"))) {
-                    if ("uuid:1".equals(id) || "uuid:3".equals(id) || "uuid:5".equals(id)) {
-                        assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-                    }
-                    else
-                        assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
-                }
-            }
-        }
+        assertOnlySolrRecordsModified(docListBefore, docListAfter, pid2, pid4, pid6);
     }
 
     @Test
     public void testNoDescendents() throws Exception {
+        mockContainerMembers(pid1, pid2, pid3);
+        mockContainerMembers(pid2, pid4, pid6);
+        ContentObject obj6 = mock(ContentObject.class);
+        when(obj6.getPid()).thenReturn(pid6);
+        when(repositoryObjectLoader.getRepositoryObject(eq(pid6))).thenReturn(obj6);
 
         SolrDocumentList docListBefore = getDocumentList();
 
-        when(tsqs.queryResourceIndex(anyString())).thenReturn(new ArrayList<List<String>>());
-
-        action.performAction(new SolrUpdateRequest("uuid:6", IndexingActionType.RECURSIVE_ADD));
+        action.performAction(new SolrUpdateRequest(pid6.getRepositoryPath(), IndexingActionType.RECURSIVE_ADD));
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
 
-        // Verify that only the object itself and its children, excluding orphans, were updated
+        assertOnlySolrRecordsModified(docListBefore, docListAfter, pid6);
+    }
+
+    private void assertOnlySolrRecordsModified(SolrDocumentList docListBefore, SolrDocumentList docListAfter,
+            PID... modifiedPids) {
+
         for (SolrDocument docAfter : docListAfter) {
             String id = (String) docAfter.getFieldValue("id");
+            Long afterVersion = (Long) docAfter.getFieldValue("_version_");
+
             for (SolrDocument docBefore : docListBefore) {
                 if (id.equals(docBefore.getFieldValue("id"))) {
-                    if ("uuid:6".equals(id)) {
-                        assertFalse(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
+                    if (isChildPid(id, modifiedPids)) {
+                        assertNotEquals(afterVersion, docBefore.getFieldValue("_version_"));
+                    } else {
+                        assertEquals(afterVersion, docBefore.getFieldValue("_version_"));
                     }
-                    else
-                        assertTrue(docAfter.getFieldValue("_version_").equals(docBefore.getFieldValue("_version_")));
                 }
             }
         }
-    }
-
-    protected Map<String, List<PID>> populateChildren() {
-        Map<String, List<PID>> children = new HashMap<>();
-        children.put("uuid:1", Arrays.asList(new PID("uuid:2"), new PID("uuid:3")));
-        children.put("uuid:2", Arrays.asList(new PID("uuid:4"), new PID("uuid:6")));
-        return children;
     }
 
     protected List<SolrInputDocument> populate() {
@@ -200,8 +223,8 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
         SolrInputDocument newDoc = new SolrInputDocument();
         newDoc.addField("title", "Collections");
-        newDoc.addField("id", "uuid:1");
-        newDoc.addField("rollup", "uuid:1");
+        newDoc.addField("id", pid1.getId());
+        newDoc.addField("rollup", pid1.getId());
         newDoc.addField("roleGroup", "");
         newDoc.addField("readGroup", "");
         newDoc.addField("adminGroup", "");
@@ -211,64 +234,106 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "A collection");
-        newDoc.addField("id", "uuid:2");
-        newDoc.addField("rollup", "uuid:2");
+        newDoc.addField("id", pid2.getId());
+        newDoc.addField("rollup", pid2.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
-        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1));
         newDoc.addField("resourceType", "Collection");
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "Subfolder 1");
-        newDoc.addField("id", "uuid:4");
-        newDoc.addField("rollup", "uuid:4");
+        newDoc.addField("id", pid4.getId());
+        newDoc.addField("rollup", pid4.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
-        newDoc.addField("ancestorIds", "/uuid:1/uuid:2/uuid:4");
-        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2, pid4));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid2));
         newDoc.addField("resourceType", "Folder");
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "Orphaned");
-        newDoc.addField("id", "uuid:5");
-        newDoc.addField("rollup", "uuid:5");
+        newDoc.addField("id", pid5.getId());
+        newDoc.addField("rollup", pid5.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
-        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("ancestorIds", "");
+        newDoc.addField("ancestorPath", Collections.emptyList());
         newDoc.addField("resourceType", "File");
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "File");
-        newDoc.addField("id", "uuid:6");
-        newDoc.addField("rollup", "uuid:6");
+        newDoc.addField("id", pid6.getId());
+        newDoc.addField("rollup", pid6.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
-        newDoc.addField("ancestorIds", "/uuid:1/uuid:2");
-        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1", "2,uuid:2"));
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid2));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1, pid2));
         newDoc.addField("resourceType", "File");
         docs.add(newDoc);
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "Second collection");
-        newDoc.addField("id", "uuid:3");
-        newDoc.addField("rollup", "uuid:3");
+        newDoc.addField("id", pid3.getId());
+        newDoc.addField("rollup", pid3.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
-        newDoc.addField("ancestorIds", "/uuid:1/uuid:3");
-        newDoc.addField("ancestorPath", Arrays.asList("1,uuid:1"));
+        newDoc.addField("ancestorIds", makeAncestorIds(pid1, pid3));
+        newDoc.addField("ancestorPath", makeAncestorPath(pid1));
         newDoc.addField("resourceType", "Collection");
         docs.add(newDoc);
 
         return docs;
+    }
+
+    private String makeAncestorIds(PID... pids) {
+        return "/" + Arrays.stream(pids).map(p -> p.getId()).collect(Collectors.joining("/"));
+    }
+
+    private List<String> makeAncestorPath(PID... pids) {
+        List<String> result = new ArrayList<>();
+        int i = 0;
+        for (PID pid : pids) {
+            i++;
+            result.add(i + "," + pid.getId());
+        }
+        return result;
+    }
+
+    private PID makePid() {
+        return PIDs.get(UUID.randomUUID().toString());
+    }
+
+    private boolean isChildPid(String id, PID... pids) {
+        for (PID pid : pids) {
+            if (pid.getId().equals(id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void mockContainerMembers(PID pid, PID... childPids) {
+        ContentContainerObject container = mock(ContentContainerObject.class);
+        when(container.getPid()).thenReturn(pid);
+
+        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(container);
+
+        List<ContentObject> members = new ArrayList<>();
+        for (PID childPid : childPids) {
+            ContentObject memberObj = mock(ContentObject.class);
+            when(memberObj.getPid()).thenReturn(childPid);
+            members.add(memberObj);
+        }
+        when(container.getMembers()).thenReturn(members);
     }
 }
