@@ -13,6 +13,10 @@
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
         
+    <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
+        <value>${access.group.admin}</value>
+    </util:set>
+
     <bean id="solrFullUpdatePipeline"
         class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
         <property name="filters">
@@ -30,6 +34,88 @@
                 <ref bean="setRecordDatesFilter" />
                 <ref bean="setRelationsFilter" />
                 <ref bean="setStatusTagsFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrAccessControlUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setAccessControlFilter" />
+                <ref bean="setRelationsFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrMoveUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setAccessControlFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrDescriptionUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setDescriptiveMetadataFilter" />
+                <ref bean="setContentStatusFilter" />
+                <ref bean="setRelationsFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrDatastreamUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamContentFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrFullTextUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setFullTextFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrUpdateTypePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrSetDWOPipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setContentStatusFilter" />
+                <ref bean="setRelationsFilter" />
             </list>
         </property>
     </bean>
@@ -152,7 +238,7 @@
         <property name="pipeline" ref="solrFullUpdatePipeline" />
     </bean>
     
-<!--    <bean id="updateDescriptionAction"
+    <bean id="updateDescriptionAction"
         class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
         <property name="pipeline" ref="solrDescriptionUpdatePipeline" />
         <property name="addDocumentMode" value="false" />
@@ -174,7 +260,6 @@
         class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="solrSearchService" ref="queryLayer" />
-        <property name="collectionsPid" ref="collectionsPid" />
         <property name="accessGroups" ref="accessGroups" />
         <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
     </bean>
@@ -183,7 +268,6 @@
         class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="solrSettings" ref="solrSettings" />
-        <property name="collectionsPid" ref="collectionsPid" />
         <property name="solrSearchService" ref="queryLayer" />
         <property name="accessGroups" ref="accessGroups" />
         <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
@@ -193,7 +277,6 @@
         class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction">
         <property name="deleteAction" ref="deleteSolrTreeAction" />
         <property name="pipeline" ref="solrFullUpdatePipeline" />
-        <property name="collectionsPid" ref="collectionsPid" />
         <property name="solrSearchService" ref="queryLayer" />
         <property name="accessGroups" ref="accessGroups" />
         <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
@@ -248,13 +331,13 @@
         <property name="pipeline" ref="solrSetDWOPipeline" />
         <property name="addDocumentMode" value="false" />
         <property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
-    </bean> -->
+    </bean>
     
     <util:map id="solrIndexingActionMap"
         key-type="edu.unc.lib.dl.util.IndexingActionType"
         value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
         <entry key="ADD" value-ref="updateObjectAction" />
-    <!--    <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
+        <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
         <entry key="UPDATE_DATASTREAMS" value-ref="updateDatastreamsAction" />
         <entry key="UPDATE_FULL_TEXT" value-ref="updateFullTextAction" />
         <entry key="RECURSIVE_REINDEX" value-ref="indexTreeInplaceAction" />
@@ -269,7 +352,7 @@
         <entry key="MOVE" value-ref="moveObjectsAction" />
         <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
         <entry key="UPDATE_TYPE" value-ref="updateTypeAction" />
-        <entry key="SET_DEFAULT_WEB_OBJECT" value-ref="updateDWOAction" />-->
+        <entry key="SET_DEFAULT_WEB_OBJECT" value-ref="updateDWOAction" />
     </util:map>
     
     <bean id="dipDataLoader"
