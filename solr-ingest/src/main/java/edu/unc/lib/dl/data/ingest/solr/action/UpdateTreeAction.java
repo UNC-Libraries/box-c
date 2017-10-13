@@ -30,8 +30,8 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
- * Updates an object and all of its descendants using the pipeline provided. No cleanup is performed on any of the
- * updated objects.
+ * Updates an object and all of its descendants using the pipeline provided. No
+ * cleanup is performed on any of the updated objects.
  *
  * @author bbpennel
  *

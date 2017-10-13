@@ -23,7 +23,9 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
- * 
+ * Action which clears index records and then regenerates them for the specified
+ * object and all of its children.
+ *
  * @author bbpennel
  *
  */
@@ -39,9 +41,9 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        log.debug("Starting clean indexing of {}", updateRequest.getPid().getPid());
+        log.debug("Starting clean indexing of {}", updateRequest.getPid());
 
-        SolrUpdateRequest deleteRequest = new SolrUpdateRequest(updateRequest.getPid().getPid(),
+        SolrUpdateRequest deleteRequest = new SolrUpdateRequest(updateRequest.getPid().getRepositoryPath(),
                 IndexingActionType.DELETE_SOLR_TREE);
         deleteAction.performAction(deleteRequest);
 
@@ -53,8 +55,7 @@ public class IndexTreeCleanAction extends UpdateTreeAction {
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Finished clean indexing of {}.  {} objects updated in {}ms",
-                    updateRequest.getPid()
-                    .getPid(), updateRequest.getChildrenPending(),
+                    updateRequest.getPid().getRepositoryPath(), updateRequest.getChildrenPending(),
                     System.currentTimeMillis() - updateRequest.getTimeStarted()));
         }
     }
