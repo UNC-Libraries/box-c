@@ -25,6 +25,9 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.exception.OrphanedObjectException;
 import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -40,18 +43,15 @@ public class RecursiveTreeIndexer {
     private final SolrUpdateRequest updateRequest;
     private boolean addDocumentMode = true;
 
-    public RecursiveTreeIndexer(SolrUpdateRequest updateRequest, UpdateTreeAction action) {
-        this.updateRequest = updateRequest;
-        this.action = action;
-    }
-
     public RecursiveTreeIndexer(SolrUpdateRequest updateRequest, UpdateTreeAction action, boolean addDocumentMode) {
         this.updateRequest = updateRequest;
         this.action = action;
         this.addDocumentMode = addDocumentMode;
     }
 
-    public void index(PID pid, DocumentIndexingPackage parent) throws IndexingException {
+    public void index(RepositoryObject repoObj, DocumentIndexingPackage parent) throws IndexingException {
+        PID pid = repoObj.getPid();
+
         DocumentIndexingPackage dip = null;
         try {
             // Force wait before each document being indexed
@@ -60,9 +60,9 @@ public class RecursiveTreeIndexer {
             }
 
             // Get the DIP for the next object being indexed
-            dip = this.action.getDocumentIndexingPackage(pid, parent);
+            dip = this.action.getDocumentIndexingPackage(repoObj.getPid(), parent);
             if (dip == null) {
-                throw new IndexingException("No document indexing package was retrieved for " + pid.getPid());
+                throw new IndexingException("No document indexing package was retrieved for " + pid);
             }
 
             // Perform document populating pipeline
@@ -79,19 +79,19 @@ public class RecursiveTreeIndexer {
             this.updateRequest.incrementChildrenProcessed();
 
         } catch (InterruptedException e) {
-            log.warn("Indexing of {} was interrupted", updateRequest.getPid().getPid());
+            log.warn("Indexing of {} was interrupted", pid);
             return;
         } catch (UnsupportedContentModelException e) {
-            log.info("Invalid content model on object {}, skipping its children", pid.getPid(), e);
+            log.info("Invalid content model on object {}, skipping its children", pid, e);
             return;
         } catch (OrphanedObjectException e) {
-            log.info("Object {} was orphaned, skipping its children", pid.getPid(), e);
+            log.info("Object {} was orphaned, skipping its children", pid, e);
             return;
         } catch (IndexingException e) {
-            log.warn("Failed to index {}", pid.getPid(), e);
+            log.warn("Failed to index {}", pid, e);
         } catch (Exception e) {
-            log.error("An unexpected exception occurred while indexing {}, skipping its children", pid.getPid(), e);
-            return;
+            throw new IndexingException("An unexpected exception occurred while indexing "
+                    + pid.toString(), e);
         } finally {
             // Clear parent bond to allow memory cleanup
             if (dip != null) {
@@ -101,13 +101,19 @@ public class RecursiveTreeIndexer {
 
         // Start indexing the children
         if (dip != null) {
-            this.indexChildren(dip, dip.getChildren());
+            if (repoObj instanceof ContentContainerObject) {
+                ContentContainerObject containerObj = (ContentContainerObject) repoObj;
+                List<ContentObject> children = containerObj.getMembers();
+                if (children != null && children.size() > 0) {
+                    this.indexChildren(dip, children);
+                }
+            }
         }
     }
 
-    public void indexChildren(DocumentIndexingPackage parent, List<PID> children) throws IndexingException {
+    public void indexChildren(DocumentIndexingPackage parent, List<ContentObject> children) throws IndexingException {
         if (children != null) {
-            for (PID child : children) {
+            for (ContentObject child : children) {
                 this.index(child, parent);
             }
         }
