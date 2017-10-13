@@ -17,32 +17,40 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.UUID;
+
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
+import org.apache.jena.rdf.model.Literal;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
+import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  * @author bbpennel
- * @date Mar 13, 2014
  */
 public class IndexTreeCleanActionTest {
 
-    @Mock
-    private TripleStoreQueryService tsqs;
     @Mock
     private SolrUpdateDriver driver;
     @Mock
@@ -53,27 +61,55 @@ public class IndexTreeCleanActionTest {
     private SolrUpdateRequest request;
     @Mock
     private DocumentIndexingPackageDataLoader loader;
+    @Mock
     private DocumentIndexingPackageFactory factory;
+    @Mock
+    private RepositoryObjectLoader repositoryObjectLoader;
+    @Mock
+    private DocumentIndexingPackage dip;
+
+    @Mock
+    private SparqlQueryService sparqlQueryService;
+    @Mock
+    private QueryExecution mockQueryExecution;
+    @Mock
+    private ResultSet mockResultSet;
+    @Mock
+    private QuerySolution mockQuerySolution;
+    @Mock
+    private Literal mockLiteral;
+
+    @Mock
+    private ContentContainerObject containerObj;
+
+    private PID pid;
 
     private IndexTreeCleanAction action;
 
     @Before
     public void setup() throws Exception {
-
         initMocks(this);
 
-        when(request.getPid()).thenReturn(new PID("pid"));
+        pid = PIDs.get(UUID.randomUUID().toString());
+        when(request.getPid()).thenReturn(pid);
 
         action = new IndexTreeCleanAction();
         action.setDeleteAction(deleteAction);
-        action.setTsqs(tsqs);
+        action.setSparqlQueryService(sparqlQueryService);
         action.setPipeline(pipeline);
         action.setSolrUpdateDriver(driver);
-        action.setCollectionsPid(new PID("uuid:1"));
-        factory = new DocumentIndexingPackageFactory();
-        factory.setDataLoader(loader);
         action.setFactory(factory);
-        action.init();
+        action.setRepositoryObjectLoader(repositoryObjectLoader);
+
+        when(sparqlQueryService.executeQuery(anyString())).thenReturn(mockQueryExecution);
+        when(mockQueryExecution.execSelect()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(mockQuerySolution).thenReturn(null);
+        when(mockQuerySolution.getLiteral(eq("count"))).thenReturn(mockLiteral);
+
+        when(repositoryObjectLoader.getRepositoryObject(eq(pid))).thenReturn(containerObj);
+
+        when(factory.createDip(any(PID.class), any(DocumentIndexingPackage.class)))
+                .thenReturn(dip);
     }
 
     @Test
@@ -86,8 +122,13 @@ public class IndexTreeCleanActionTest {
         verify(driver).addDocument(any(IndexDocumentBean.class));
     }
 
+    /**
+     * Verify that action is always performed in add mode, so no update requests.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testPerformActionChangeAddMode() throws Exception {
+    public void testIgnoreUpdateMode() throws Exception {
 
         action.setAddDocumentMode(false);
 
