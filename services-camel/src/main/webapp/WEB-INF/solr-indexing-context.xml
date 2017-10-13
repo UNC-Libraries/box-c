@@ -314,7 +314,7 @@
     </bean>
     
     <bean id="moveObjectsAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.MoveObjectsAction">
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
         <property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
     </bean>
