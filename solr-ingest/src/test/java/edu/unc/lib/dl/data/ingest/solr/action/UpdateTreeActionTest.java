@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -90,8 +89,6 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
     private DocumentIndexingPackageFactory factory;
     @Mock
     private RepositoryObjectLoader repositoryObjectLoader;
-
-    protected Map<String, List<PID>> children;
 
     protected UpdateTreeAction action;
 

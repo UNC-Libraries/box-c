@@ -40,6 +40,9 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
                     + updateRequest.getClass().getName());
         }
         ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
+        if (childSetRequest.getChildren() == null || childSetRequest.getChildren().size() == 0) {
+            throw new IllegalArgumentException("Update request must specify one or more children for indexing");
+        }
 
         // Calculate total number of objects to be indexed
         int indexTargetTotal = 0;
