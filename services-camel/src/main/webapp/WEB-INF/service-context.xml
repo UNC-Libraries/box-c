@@ -437,8 +437,8 @@
 		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
 	</bean>
 
-	<camel:camelContext id="MetaServicesRouter">
-		<camel:package>edu.unc.lib.cdr.routing</camel:package>
+	<camel:camelContext id="FcrepoTriplestoreIndexer">
+		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
 	</camel:camelContext>
 
 	<camel:camelContext id="CdrServiceImageEnhancements">
@@ -457,8 +457,7 @@
 		<camel:package>edu.unc.lib.cdr.solr</camel:package>
 	</camel:camelContext>
 	
-	<camel:camelContext id="FcrepoTriplestoreIndexer">
-		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
+	<camel:camelContext id="MetaServicesRouter">
+		<camel:package>edu.unc.lib.cdr.routing</camel:package>
 	</camel:camelContext>
-	
 </beans>
