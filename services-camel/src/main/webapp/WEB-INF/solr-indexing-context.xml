@@ -66,7 +66,7 @@
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
-                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setDatastreamFilter" />
                 <ref bean="setDescriptiveMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setRelationsFilter" />
@@ -81,7 +81,7 @@
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
-                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setDatastreamFilter" />
             </list>
         </property>
     </bean>
@@ -91,7 +91,7 @@
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
-                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setDatastreamFilter" />
                 <ref bean="setFullTextFilter" />
             </list>
         </property>
@@ -113,7 +113,7 @@
         <property name="filters">
             <list>
                 <ref bean="setRecordDatesFilter" />
-                <ref bean="setDatastreamContentFilter" />
+                <ref bean="setDatastreamFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setRelationsFilter" />
             </list>
@@ -308,14 +308,15 @@
     </bean>
     
     <bean id="addSetToParentAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateChildSetAction">
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
         <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
     </bean>
     
     <bean id="moveObjectsAction"
-        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
         <property name="pipeline" ref="solrMoveUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
         <property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
     </bean>
     
