@@ -28,3 +28,4 @@ target
 fcrepo-cdr-fesl
 fcrepo-irods-storage
 services-worker
+**/activemq-data
