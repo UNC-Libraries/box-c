@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.solr.client.solrj.SolrServer;
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrServer;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -44,8 +44,8 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 public class SolrUpdateDriver {
     private static final Logger log = LoggerFactory.getLogger(SolrUpdateDriver.class);
 
-    private SolrServer solrServer;
-    private SolrServer updateSolrServer;
+    private SolrClient solrClient;
+    private SolrClient updateSolrClient;
     private SolrSettings solrSettings;
 
     @Autowired
@@ -60,13 +60,21 @@ public class SolrUpdateDriver {
 
     public void init() {
         log.debug("Instantiating concurrent udpate solr server for " + solrSettings.getUrl());
-        solrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), autoPushCount, updateThreads);
-        updateSolrServer = new ConcurrentUpdateSolrServer(solrSettings.getUrl(), autoPushCount, updateThreads);
+
+
+        solrClient = new ConcurrentUpdateSolrClient.Builder(solrSettings.getUrl())
+                .withThreadCount(updateThreads)
+                .withQueueSize(autoPushCount)
+                .build();
+        updateSolrClient = new ConcurrentUpdateSolrClient.Builder(solrSettings.getUrl())
+                .withThreadCount(updateThreads)
+                .withQueueSize(autoPushCount)
+                .build();
     }
 
     public void addDocument(IndexDocumentBean idb) throws IndexingException {
         try {
-            solrServer.addBean(idb);
+            solrClient.addBean(idb);
         } catch (IOException e) {
             throw new IndexingException("Failed to add document to solr", e);
         } catch (SolrServerException e) {
@@ -84,14 +92,14 @@ public class SolrUpdateDriver {
      */
     public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
         try {
-            SolrInputDocument sid = updateSolrServer.getBinder().toSolrInputDocument(idb);
+            SolrInputDocument sid = updateSolrClient.getBinder().toSolrInputDocument(idb);
             for (String fieldName : sid.getFieldNames()) {
                 if (!ID_FIELD.equals(fieldName)) {
                     SolrInputField inputField = sid.getField(fieldName);
                     // Adding in each non-null field value, except the timestamp field which gets cleared
                     // if not specified so that it always gets updated as part of a partial update
                     if (inputField != null && (inputField.getValue() != null || UPDATE_TIMESTAMP.equals(fieldName))) {
-                        Map<String, Object> partialUpdate = new HashMap<String, Object>();
+                        Map<String, Object> partialUpdate = new HashMap<>();
                         partialUpdate.put(operation, inputField.getValue());
                         sid.setField(fieldName, partialUpdate);
                     }
@@ -100,7 +108,7 @@ public class SolrUpdateDriver {
             if (log.isDebugEnabled()) {
                 log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
             }
-            updateSolrServer.add(sid);
+            updateSolrClient.add(sid);
         } catch (IOException e) {
             throw new IndexingException("Failed to add document to solr", e);
         } catch (SolrServerException e) {
@@ -114,7 +122,7 @@ public class SolrUpdateDriver {
 
     public void delete(String pid) throws IndexingException {
         try {
-            solrServer.deleteById(pid);
+            solrClient.deleteById(pid);
         } catch (IOException e) {
             throw new IndexingException("Failed to delete document from solr", e);
         } catch (SolrServerException e) {
@@ -124,7 +132,7 @@ public class SolrUpdateDriver {
 
     public void deleteByQuery(String query) throws IndexingException {
         try {
-            solrServer.deleteByQuery(query);
+            solrClient.deleteByQuery(query);
         } catch (IOException e) {
             throw new IndexingException("Failed to add document batch to solr", e);
         } catch (SolrServerException e) {
@@ -137,8 +145,8 @@ public class SolrUpdateDriver {
      */
     public void commit() throws IndexingException {
         try {
-            solrServer.commit();
-            updateSolrServer.commit();
+            solrClient.commit();
+            updateSolrClient.commit();
         } catch (SolrServerException e) {
             throw new IndexingException("Failed to commit changes to solr", e);
         } catch (IOException e) {
@@ -162,12 +170,18 @@ public class SolrUpdateDriver {
         this.updateThreads = updateThreads;
     }
 
-    public void setSolrServer(SolrServer solrServer) {
-        this.solrServer = solrServer;
+    /**
+     * @param solrClient the solrClient to set
+     */
+    public void setSolrClient(SolrClient solrClient) {
+        this.solrClient = solrClient;
     }
 
-    public void setUpdateSolrServer(SolrServer solrServer) {
-        this.updateSolrServer = solrServer;
+    /**
+     * @param updateSolrClient the updateSolrClient to set
+     */
+    public void setUpdateSolrClient(SolrClient updateSolrClient) {
+        this.updateSolrClient = updateSolrClient;
     }
 
     public void setSolrSettings(SolrSettings solrSettings) {

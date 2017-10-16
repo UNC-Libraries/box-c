@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -24,8 +25,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServer;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
@@ -69,7 +70,8 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  */
 public class SolrSearchService {
     private static final Logger LOG = LoggerFactory.getLogger(SolrSearchService.class);
-    private SolrServer server;
+
+    private SolrClient solrClient;
     @Autowired
     protected SolrSettings solrSettings;
     @Autowired
@@ -85,7 +87,7 @@ public class SolrSearchService {
      * Establish the SolrServer object according to the configuration specified in settings.
      */
     protected void initializeSolrServer() {
-        server = solrSettings.getSolrServer();
+        solrClient = solrSettings.getSolrClient();
     }
 
     /**
@@ -129,9 +131,9 @@ public class SolrSearchService {
 
         LOG.debug("getObjectById query: " + solrQuery.toString());
         try {
-            queryResponse = server.query(solrQuery);
+            queryResponse = executeQuery(solrQuery);
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
+            LOG.error("Error retrieving Solr object request", e);
             return null;
         }
 
@@ -184,9 +186,9 @@ public class SolrSearchService {
 
         LOG.debug("getObjectsById query: " + solrQuery.toString());
         try {
-            queryResponse = server.query(solrQuery);
+            queryResponse = executeQuery(solrQuery);
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
+            LOG.error("Error retrieving Solr object request", e);
             return null;
         }
 
@@ -330,9 +332,9 @@ public class SolrSearchService {
 
         LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
         try {
-            queryResponse = server.query(solrQuery);
+            queryResponse = executeQuery(solrQuery);
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
+            LOG.error("Error retrieving Solr object request", e);
             return null;
         }
         FacetField facetField = queryResponse.getFacetField(solrFieldName);
@@ -351,7 +353,7 @@ public class SolrSearchService {
      * @return
      */
     public CutoffFacet getAncestorPath(String pid, AccessGroupSet accessGroups) {
-        List<String> resultFields = new ArrayList<String>();
+        List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
@@ -390,9 +392,9 @@ public class SolrSearchService {
 
         LOG.debug("query: " + solrQuery.toString());
         try {
-            queryResponse = server.query(solrQuery);
+            queryResponse = executeQuery(solrQuery);
         } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
+            LOG.error("Error retrieving Solr object request", e);
             return null;
         }
 
@@ -424,7 +426,12 @@ public class SolrSearchService {
      * @throws SolrServerException
      */
     protected QueryResponse executeQuery(SolrQuery query) throws SolrServerException {
-        return server.query(query);
+        try {
+            return solrClient.query(query);
+        } catch (IOException e) {
+            throw new SolrServerException(e);
+        }
+
     }
 
     /**
@@ -756,19 +763,21 @@ public class SolrSearchService {
     @SuppressWarnings("unchecked")
     protected SearchResultResponse executeSearch(SolrQuery query, SearchState searchState,
             boolean isRetrieveFacetsRequest, boolean returnQuery) throws SolrServerException {
-        QueryResponse queryResponse = server.query(query);
+        QueryResponse queryResponse = executeQuery(query);
 
         GroupResponse groupResponse = queryResponse.getGroupResponse();
         SearchResultResponse response = new SearchResultResponse();
         if (groupResponse != null) {
-            List<BriefObjectMetadata> groupResults = new ArrayList<BriefObjectMetadata>();
+            List<BriefObjectMetadata> groupResults = new ArrayList<>();
             for (GroupCommand groupCmd : groupResponse.getValues()) {
                 // response.setResultCount(groupCmd.getMatches());
                 response.setResultCount(groupCmd.getNGroups());
                 for (Group group : groupCmd.getValues()) {
+                    List<BriefObjectMetadataBean> beans = solrClient.getBinder()
+                            .getBeans(BriefObjectMetadataBean.class, group.getResult());
+
                     GroupedMetadataBean grouped = new GroupedMetadataBean(group.getGroupValue(),
-                            this.server.getBinder().getBeans(BriefObjectMetadataBean.class, group.getResult()),
-                            group.getResult().getNumFound());
+                            beans, group.getResult().getNumFound());
                     groupResults.add(grouped);
                 }
             }
@@ -847,7 +856,7 @@ public class SolrSearchService {
         solrQuery.setQuery(query.toString());
         solrQuery.addField(field);
 
-        queryResponse = server.query(solrQuery);
+        queryResponse = executeQuery(solrQuery);
         if (queryResponse.getResults().getNumFound() > 0) {
             return queryResponse.getResults().get(0).getFieldValue(field);
         }
@@ -864,7 +873,7 @@ public class SolrSearchService {
             solrQuery.addField(field);
         }
 
-        queryResponse = server.query(solrQuery);
+        queryResponse = executeQuery(solrQuery);
         if (queryResponse.getResults().getNumFound() > 0) {
             return queryResponse.getResults().get(0).getFieldValueMap();
         }
@@ -897,14 +906,14 @@ public class SolrSearchService {
         solrQuery.setFacetLimit(maxValuesPerField);
         solrQuery.setFacetSort("index");
 
-        QueryResponse queryResponse = server.query(solrQuery);
+        QueryResponse queryResponse = executeQuery(solrQuery);
         // Determine initial capacity for the result list
         int numberValues = 0;
         for (FacetField facet : queryResponse.getFacetFields()) {
             numberValues += facet.getValueCount();
         }
 
-        java.util.Collection<String> fieldValues = new java.util.HashSet<String>(numberValues);
+        java.util.Collection<String> fieldValues = new java.util.HashSet<>(numberValues);
         for (FacetField facet : queryResponse.getFacetFields()) {
             for (Count count : facet.getValues()) {
                 fieldValues.add(count.getName());
@@ -928,7 +937,7 @@ public class SolrSearchService {
         solrQuery.setQuery("id:" + SolrSettings.sanitize(pid));
         solrQuery.setRows(0);
 
-        queryResponse = server.query(solrQuery);
+        queryResponse = executeQuery(solrQuery);
 
         return queryResponse.getResults().getNumFound() > 0;
     }

@@ -65,7 +65,7 @@ public class AbstractSolrQueryLayerTest {
 
         File dataDir = tmpFolder.newFolder("solrdata");
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
-        container = new CoreContainer("src/test/resources/config", configFile);
+        container = new CoreContainer("src/test/resources/config");
 
         server = new EmbeddedSolrServer(container, "access-master");
 
@@ -97,6 +97,6 @@ public class AbstractSolrQueryLayerTest {
 
     @After
     public void tearDown() throws Exception {
-        server.shutdown();
+        server.close();
     }
 }
