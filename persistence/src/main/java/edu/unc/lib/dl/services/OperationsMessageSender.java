@@ -306,7 +306,6 @@ public class OperationsMessageSender {
         XMLOutputter out = new XMLOutputter();
         final String msgStr = out.outputString(msg);
 
-        System.out.println("Msg:" + msgStr);
         this.jmsTemplate.send(new MessageCreator() {
 
             @Override

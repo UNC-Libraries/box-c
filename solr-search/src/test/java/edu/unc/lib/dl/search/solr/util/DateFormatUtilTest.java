@@ -29,10 +29,6 @@ public class DateFormatUtilTest {
 
     private final static String TIMESTAMP = "2017-12-12T01:20:55.111Z";
 
-    public DateFormatUtilTest() {
-        // TODO Auto-generated constructor stub
-    }
-
     @Test
     public void testFormatNoDate() {
         assertNull(DateFormatUtil.getFormattedDate(null, true, true));
