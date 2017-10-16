@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -77,6 +77,10 @@ public class SolrSearchService {
     @Autowired
     protected FacetFieldFactory facetFieldFactory;
     protected FacetFieldUtil facetFieldUtil;
+
+    private boolean disablePermissionFiltering;
+
+    protected GlobalPermissionEvaluator globalPermissionEvaluator;
 
     public SolrSearchService() {
     }
@@ -248,6 +252,22 @@ public class SolrSearchService {
     /**
      * Adds access restrictions to the provided query string buffer. If there
      * are no access groups in the provided group set, then an
+     * AccessRestrictionException is thrown.
+     *
+     * @param query
+     *            string buffer containing the query to append access groups to.
+     * @return The original query restricted to results available to the
+     *         provided access groups
+     * @throws AccessRestrictionException
+     *             thrown if no groups are provided.
+     */
+    public StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
+        return this.addAccessRestrictions(query, null);
+    }
+
+    /**
+     * Adds access restrictions to the provided query string buffer. If there
+     * are no access groups in the provided group set, then an
      * AccessRestrictionException is thrown as it is invalid for a user to have
      * no permissions. If the user is an admin, then do not restrict access
      *
@@ -260,31 +280,33 @@ public class SolrSearchService {
      * @throws AccessRestrictionException
      *             thrown if no groups are provided.
      */
-    protected StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
-        return this.addAccessRestrictions(query, null);
-    }
-
-    protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
+    public StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
             throws AccessRestrictionException {
-        return this.addAccessRestrictions(query, accessGroups, searchSettings.getAllowPatronAccess());
-    }
+        // Skip adding permission filters if disabled for this search service
+        if (disablePermissionFiltering) {
+            return query;
+        }
 
-    protected StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups,
-            boolean allowPatronAccess) throws AccessRestrictionException {
+        // Agent must provide access groups
         if (accessGroups == null || accessGroups.size() == 0) {
             accessGroups = GroupsThreadStore.getGroups();
             if (accessGroups == null || accessGroups.size() == 0) {
                 throw new AccessRestrictionException("No access groups were provided.");
             }
         }
-        if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
-            String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
-            if (allowPatronAccess) {
-                query.append(" AND (").append("readGroup:(").append(joinedGroups).append(')')
-                        .append(" OR adminGroup:(").append(joinedGroups).append("))");
-            } else {
-                query.append(" AND adminGroup:(").append(joinedGroups).append(')');
-            }
+
+        // If the agent has any global permissions then no filtering is necessary.
+        if (globalPermissionEvaluator.hasGlobalPrincipal(accessGroups)) {
+            return query;
+        }
+
+        boolean allowPatronAccess = searchSettings.getAllowPatronAccess();
+        String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
+        if (allowPatronAccess) {
+            query.append(" AND (").append("readGroup:(").append(joinedGroups).append(')')
+                    .append(" OR adminGroup:(").append(joinedGroups).append("))");
+        } else {
+            query.append(" AND adminGroup:(").append(joinedGroups).append(')');
         }
         return query;
     }
@@ -351,7 +373,7 @@ public class SolrSearchService {
      * @return
      */
     public CutoffFacet getAncestorPath(String pid, AccessGroupSet accessGroups) {
-        List<String> resultFields = new ArrayList<String>();
+        List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
 
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
@@ -761,7 +783,7 @@ public class SolrSearchService {
         GroupResponse groupResponse = queryResponse.getGroupResponse();
         SearchResultResponse response = new SearchResultResponse();
         if (groupResponse != null) {
-            List<BriefObjectMetadata> groupResults = new ArrayList<BriefObjectMetadata>();
+            List<BriefObjectMetadata> groupResults = new ArrayList<>();
             for (GroupCommand groupCmd : groupResponse.getValues()) {
                 // response.setResultCount(groupCmd.getMatches());
                 response.setResultCount(groupCmd.getNGroups());
@@ -904,7 +926,7 @@ public class SolrSearchService {
             numberValues += facet.getValueCount();
         }
 
-        java.util.Collection<String> fieldValues = new java.util.HashSet<String>(numberValues);
+        java.util.Collection<String> fieldValues = new java.util.HashSet<>(numberValues);
         for (FacetField facet : queryResponse.getFacetFields()) {
             for (Count count : facet.getValues()) {
                 fieldValues.add(count.getName());
@@ -955,6 +977,20 @@ public class SolrSearchService {
 
     public void setFacetFieldUtil(FacetFieldUtil facetFieldUtil) {
         this.facetFieldUtil = facetFieldUtil;
+    }
+
+    /**
+     * @param globalPermissionEvaluator the globalPermissionEvaluator to set
+     */
+    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
+        this.globalPermissionEvaluator = globalPermissionEvaluator;
+    }
+
+    /**
+     * @param disablePermissionFiltering the disablePermissionFiltering to set
+     */
+    public void setDisablePermissionFiltering(boolean disablePermissionFiltering) {
+        this.disablePermissionFiltering = disablePermissionFiltering;
     }
 
 }

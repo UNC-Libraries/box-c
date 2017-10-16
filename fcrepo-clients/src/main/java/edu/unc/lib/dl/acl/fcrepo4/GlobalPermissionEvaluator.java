@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.fcrepo4;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -35,9 +36,11 @@ public class GlobalPermissionEvaluator {
 
     protected static final String GLOBAL_PROP_PREFIX = "cdr.acl.globalRoles.";
     private Map<String, Set<String>> globalPrincipalToPermissions;
+    private Set<String> globalPrincipals;
 
     public GlobalPermissionEvaluator(Properties properties) {
         storeGlobalPrincipals(properties);
+        globalPrincipals = Collections.unmodifiableSet(globalPrincipalToPermissions.keySet());
     }
 
     private void storeGlobalPrincipals(Properties properties) {
@@ -79,5 +82,15 @@ public class GlobalPermissionEvaluator {
             }
             return permissions.contains(permission.name());
         });
+    }
+
+    /**
+     * Returns true if any of the provided principals is assigned a global role
+     *
+     * @param agentPrincipals
+     * @return true if agentPrincipals contains a global principal
+     */
+    public boolean hasGlobalPrincipal(Set<String> agentPrincipals) {
+        return globalPrincipals.stream().anyMatch(agentPrincipals::contains);
     }
 }
