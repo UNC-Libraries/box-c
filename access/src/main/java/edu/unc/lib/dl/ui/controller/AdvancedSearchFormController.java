@@ -54,7 +54,7 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
         SAXBuilder builder = new SAXBuilder();
         Document document = null;
 
-        try (InputStream responseStream = this.getClass().getResourceAsStream("mappings/dropdownMappings.xml")) {
+        try (InputStream responseStream = this.getClass().getResourceAsStream("/mappings/dropdownMappings.xml")) {
             document = builder.build(responseStream);
             Element rootNode = document.getRootElement();
             Element element = rootNode.getChild("mapping");
