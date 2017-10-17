@@ -18,6 +18,8 @@ package edu.unc.lib.cdr;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.cdr.headers.CdrFcrepoHeaders.CdrBinaryUri;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,7 +32,6 @@ import java.net.URI;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.camel.test.junit4.CamelTestSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.fcrepo.client.FcrepoClient;
@@ -54,6 +55,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -63,11 +65,10 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration({"/spring-test/test-fedora-container.xml","/spring-test/cdr-client-container.xml"})
-public class GetBinaryProcessorIT extends CamelTestSupport {
+public class GetBinaryProcessorIT {
 
     private static final String BINARY_CONTENT = "binary content";
     private static final String MIMETYPE = "text/plain";
-
 
     private GetBinaryProcessor processor;
 
@@ -96,9 +97,13 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
     @Before
     public void init() throws Exception {
         initMocks(this);
+        TestHelper.setContentBase("http://localhost:48085/rest");
+
+        File tempFileDir = tmpFolder.newFolder();
 
         processor = new GetBinaryProcessor();
         processor.setRepositoryObjectLoader(repoObjLoader);
+        processor.setTempDirectory(tempFileDir.getAbsolutePath());
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getOut()).thenReturn(message);
@@ -128,7 +133,7 @@ public class GetBinaryProcessorIT extends CamelTestSupport {
     @Test
     public void binaryNotFoundTest() throws Exception {
         File localFile = tmpFolder.newFile();
-        tmpFolder.delete();
+        localFile.delete();
 
         when(message.getHeader(CdrBinaryPath)).thenReturn(localFile.getAbsolutePath());
 

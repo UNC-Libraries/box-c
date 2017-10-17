@@ -407,6 +407,7 @@
 	
 	<bean id="getBinaryProcessor" class="edu.unc.lib.cdr.GetBinaryProcessor">
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+		<property name="tempDirectory" value="${services.tempDirectory}" />
 	</bean>
 	
 	<bean id="cleanupBinaryProcessor" class="edu.unc.lib.cdr.CleanupBinaryProcessor">
