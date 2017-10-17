@@ -3,6 +3,7 @@
 /*/.settings
 /*/target
 /*/bin
+!/etc/bin
 /*/tmp
 /*/dist
 /*/doc
@@ -28,3 +29,4 @@ target
 fcrepo-cdr-fesl
 fcrepo-irods-storage
 services-worker
+**/activemq-data
