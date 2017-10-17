@@ -29,12 +29,6 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl"
-		destroy-method="destroy">
-		<property name="itqlEndpointURL"
-			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
-		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#" />
-	</bean>
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init">
 		<property name="fedoraContextUrl"
@@ -63,7 +57,6 @@
 		init-method="init" destroy-method="destroy">
 		<property name="accessClient" ref="accessClient" />
 		<property name="managementClient" ref="managementClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="maxThreads" value="5" />
 		<property name="threadGroupPrefix" value="Access" />
 	</bean>
@@ -76,7 +69,6 @@
 	</bean>
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
 		<property name="accessClient" ref="accessClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
 
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
