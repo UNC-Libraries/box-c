@@ -20,11 +20,8 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -34,16 +31,13 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class AbstractSearchController extends AbstractSolrSearchController {
     protected @Resource(name = "tagProviders")
     List<TagProvider> tagProviders;
-
-    @Autowired
-    protected PID collectionsPid;
 
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
             SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),

@@ -58,7 +58,6 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -67,12 +66,11 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 /**
  * Responds to requests to generate an XML document containing metadata for objects in the selected set of objects,
  * and sends the document to the provided email address.
- * 
+ *
  * @author sreenug
  * @author bbpennel
  * @date Jul 7, 2015
@@ -90,8 +88,6 @@ public class ExportXMLController {
     @Resource
     @Qualifier("forwardedAccessClient")
     private AccessClient client;
-    @Resource(name = "forwardedManagementClient")
-    private ManagementClient managementClient;
     @Autowired
     private AccessControlService aclService;
 
@@ -106,7 +102,7 @@ public class ExportXMLController {
 
     /**
      * Exports an XML document containing metadata for all objects specified plus all of their children
-     * 
+     *
      * @param exportRequest
      * @param request
      * @return
@@ -134,7 +130,7 @@ public class ExportXMLController {
             objects.add(0, container);
 
             for (BriefObjectMetadata object : objects) {
-                pids.add(object.getPid().getPid());
+                pids.add(object.getPid().toString());
             }
         }
 
@@ -152,7 +148,7 @@ public class ExportXMLController {
 
     /**
      * Generates an XML document containing metadata for all objects in the provided list of PIDs.
-     * 
+     *
      * @param exportRequest
      * @return
      * @throws IOException
@@ -205,7 +201,7 @@ public class ExportXMLController {
 
     /**
      * Runnable which performs the work of retrieving metadata documents and compiling them into the export document.
-     * 
+     *
      * @author bbpennel
      * @date Jul 7, 2015
      */
@@ -245,11 +241,10 @@ public class ExportXMLController {
                         try {
                             Document objectDoc = new Document();
                             Element objectEl = new Element("object");
-                            objectEl.setAttribute("pid", pid.getPid());
+                            objectEl.setAttribute("pid", pid.toString());
                             objectDoc.addContent(objectEl);
 
-                            DatastreamDocument modsDS = managementClient
-                                    .getXMLDatastreamIfExists(pid, Datastream.MD_DESCRIPTIVE.getName());
+                            DatastreamDocument modsDS = null;
 
                             if (modsDS != null) {
                                 objectEl.addContent(separator);

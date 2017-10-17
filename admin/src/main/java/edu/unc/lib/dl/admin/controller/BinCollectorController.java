@@ -60,7 +60,6 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
-import edu.unc.lib.dl.ui.util.FedoraUtil;
 
 /**
  * @author bbpennel
@@ -77,8 +76,6 @@ public class BinCollectorController {
     protected SolrQueryLayerService queryLayer;
     @Autowired
     protected SearchSettings searchSettings;
-    @Autowired
-    private FedoraUtil fedoraUtil;
     @Autowired
     private AccessControlService aclService;
 

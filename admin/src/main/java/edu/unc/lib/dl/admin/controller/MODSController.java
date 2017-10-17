@@ -52,13 +52,12 @@ import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -72,8 +71,6 @@ public class MODSController extends AbstractSwordController {
     private String swordUsername;
     @Autowired
     private String swordPassword;
-    @Autowired
-    private TripleStoreQueryService tripleStoreQueryService;
 
     private Map<String, String> namespaces;
 
@@ -197,7 +194,7 @@ public class MODSController extends AbstractSwordController {
             } else {
                 if (statusCode == HttpStatus.SC_BAD_REQUEST || statusCode == HttpStatus.SC_NOT_FOUND) {
                     // Ensure that the object actually exists
-                    PID existingPID = tripleStoreQueryService.verify(new PID(pid));
+                    PID existingPID = null;
                     if (existingPID == null) {
                         throw new Exception(
                                 "Unable to retrieve MODS.  Object " + pid + " does not exist in the repository.");
@@ -241,9 +238,5 @@ public class MODSController extends AbstractSwordController {
 
     public void setSwordPassword(String swordPassword) {
         this.swordPassword = swordPassword;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
     }
 }
