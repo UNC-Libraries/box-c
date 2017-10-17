@@ -78,7 +78,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	protected SearchStateFactory searchStateFactory;
 	protected PID collectionsPid;
 	protected ObjectPathFactory pathFactory;
-	
+
 	private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
 
 	/**
@@ -114,7 +114,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		SearchState searchState = searchStateFactory.createSearchState();
 		searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
-		searchState.setRowsPerPage(50);
+		searchState.setRowsPerPage(250);
 		searchState.setFacetsToRetrieve(null);
 		ArrayList<String> resultFields = new ArrayList<String>();
 		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
@@ -129,25 +129,25 @@ public class SolrQueryLayerService extends SolrSearchService {
 	public SearchResultResponse getDepartmentList(AccessGroupSet accessGroups, String pid) {
 		SearchState searchState;
 		Boolean has_pid = (pid != null) ? true : false;
-			
+
 		searchState = searchStateFactory.createFacetSearchState(SearchFieldKeys.DEPARTMENT.name(), "index",
 				Integer.MAX_VALUE);
 
 		SearchRequest searchRequest = new SearchRequest(searchState, accessGroups, true);
 		searchRequest.setRootPid(pid);
 		BriefObjectMetadata selectedContainer = null;
-		
+
 		if (has_pid) {
 			selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
 					false);
 		}
-		
+
 		SearchResultResponse results = getSearchResults(searchRequest);
 
 		if (has_pid) {
 			results.setSelectedContainer(selectedContainer);
 		}
-		
+
 		if (results.getFacetFields() != null && results.getFacetFields().size() > 0) {
 			FacetFieldObject deptField = results.getFacetFields().get(0);
 			if (deptField != null) {
@@ -336,15 +336,15 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
-		
+
 		// Sort neighbors using the default sort
 		addSort(solrQuery, "default", true);
-		
-		
+
+
 		// Query for ids in this container in groups of NEIGHBOR_SEEK_PAGE_SIZE until we find the offset of the object
 		solrQuery.setRows(NEIGHBOR_SEEK_PAGE_SIZE);
 		solrQuery.setFields("id");
-		
+
 		long total = -1;
 		int start = 0;
 		pageLoop: do {
@@ -363,33 +363,33 @@ public class SolrQueryLayerService extends SolrSearchService {
 				return null;
 			}
 		} while (start < total);
-		
+
 		// Wasn't found, no neighbors shall be forthcoming
 		if (start >= total) {
 			return null;
 		}
-		
+
 		// Calculate the starting index for the window, so that object is as close to the middle as possible
 		long left = start - (windowSize / 2);
 		long right = start + (windowSize / 2);
-		
+
 		if (left < 0) {
 			right -= left;
 			left = 0;
 		}
-		
+
 		if (right >= total) {
 			left -= (right - total) + 1;
 			if (left < 0) {
 				left = 0;
 			}
 		}
-		
+
 		// Query for the windowSize of objects
 		solrQuery.setFields(new String[0]);
 		solrQuery.setRows(windowSize);
 		solrQuery.setStart((int) left);
-		
+
 		try {
 			QueryResponse queryResponse = this.executeQuery(solrQuery);
 			return queryResponse.getBeans(BriefObjectMetadataBean.class);
@@ -516,7 +516,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
 		// Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
 		solrQuery.setFacetSort("index");
-		
+
 		try {
 			startTime = System.currentTimeMillis();
 			QueryResponse queryResponse = this.executeQuery(solrQuery);
