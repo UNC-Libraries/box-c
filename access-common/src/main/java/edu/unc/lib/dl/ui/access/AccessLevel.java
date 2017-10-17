@@ -20,9 +20,9 @@ import edu.unc.lib.dl.acl.util.UserRole;
 
 /**
  * Stores cached details about a user's highest level of access
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class AccessLevel {
     private String username;
@@ -51,7 +51,7 @@ public class AccessLevel {
 
     public void setHighestRole(UserRole highestRole) {
         this.highestRole = highestRole;
-        if (this.highestRole != null && this.highestRole.getPermissions().contains(Permission.viewAdminUI)) {
+        if (this.highestRole != null && this.highestRole.getPermissions().contains(Permission.viewHidden)) {
             this.viewAdmin = true;
         }
     }

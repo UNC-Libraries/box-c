@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.access;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.servlet.FilterChain;
 import javax.servlet.RequestDispatcher;
@@ -28,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -38,12 +39,15 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
  * Stores global access level information. This information is only suitable for informing UI decisions and access to
  * CDR application level information, not in place of FRACAS.  Optionally, it will also deny access if the filter does
  * not determine the user to be an admin.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class StoreAccessLevelFilter extends OncePerRequestFilter implements ServletContextAware {
     private static final long MAX_CACHE_AGE = 1000 * 60 * 10;
+
+    @Autowired
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     @Autowired
     private SolrQueryLayerService queryLayer;
@@ -70,8 +74,13 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
                 accessLevel = new AccessLevel(username);
                 session.setAttribute("accessLevel", accessLevel);
                 AccessGroupSet groups = GroupsThreadStore.getGroups();
-                if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
-                    accessLevel.setHighestRole(UserRole.administrator);
+                if (globalPermissionEvaluator.hasGlobalPrincipal(groups)) {
+                    Set<UserRole> roles = globalPermissionEvaluator.getGlobalUserRoles(groups);
+                    if (roles.contains(UserRole.administrator)) {
+                        accessLevel.setHighestRole(UserRole.administrator);
+                    } else {
+                        accessLevel.setHighestRole(UserRole.canAccess);
+                    }
                 } else {
                     // Check for viewAdmin
                     boolean viewAdmin = queryLayer.hasAdminViewPermission(groups);
@@ -83,7 +92,7 @@ public class StoreAccessLevelFilter extends OncePerRequestFilter implements Serv
                         // else if (queryLayer.hasRole(groups, UserRole.processor))
                         // accessLevel.setHighestRole(UserRole.processor);
                         // else accessLevel.setHighestRole(UserRole.observer);
-                        accessLevel.setHighestRole(UserRole.canView);
+                        accessLevel.setHighestRole(UserRole.canAccess);
                     }
                 }
             }
