@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
@@ -44,7 +45,7 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -53,7 +54,8 @@ public class SearchController extends AbstractSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(SearchController.class);
 
     /**
-     * Handle the input from the search form and redirect the user to a search result page
+     * Handle the input from the search form and redirect the user to a search
+     * result page
      *
      * @param query
      * @param queryType
@@ -125,7 +127,8 @@ public class SearchController extends AbstractSearchController {
     }
 
     /**
-     * Retrieve search results, including the recursive children of the currently selected container
+     * Retrieve search results, including the recursive children of the
+     * currently selected container
      *
      * @param pid
      * @param request
@@ -133,16 +136,14 @@ public class SearchController extends AbstractSearchController {
      * @return
      */
     @RequestMapping(value = "search/{pid}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody
-    Map<String, Object> searchJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+    public @ResponseBody Map<String, Object> searchJSON(@PathVariable("pid") String pid, HttpServletRequest request,
             HttpServletResponse response) {
         SearchResultResponse resultResponse = getSearchResults(getSearchRequest(pid, request));
         return getResults(resultResponse, "search", request);
     }
 
     @RequestMapping(value = "search", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody
-    Map<String, Object> searchJSON(HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody Map<String, Object> searchJSON(HttpServletRequest request, HttpServletResponse response) {
         SearchResultResponse resultResponse = getSearchResults(getSearchRequest(null, request));
         return getResults(resultResponse, "search", request);
     }
@@ -173,17 +174,16 @@ public class SearchController extends AbstractSearchController {
      * @return
      */
     @RequestMapping(value = "list/{pid}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody
-    Map<String, Object> listJSON(@PathVariable("pid") String pid, HttpServletRequest request,
+    public @ResponseBody Map<String, Object> listJSON(@PathVariable("pid") String pid, HttpServletRequest request,
             HttpServletResponse response) {
         SearchResultResponse resultResponse = getSearchResults(getListRequest(pid, request));
         return getResults(resultResponse, "list", request);
     }
 
     @RequestMapping(value = "list", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody
-    Map<String, Object> listJSON(HttpServletRequest request, HttpServletResponse response) {
-        SearchResultResponse resultResponse = getSearchResults(getListRequest(collectionsPid.getPid(), request));
+    public @ResponseBody Map<String, Object> listJSON(HttpServletRequest request, HttpServletResponse response) {
+        SearchResultResponse resultResponse = getSearchResults(
+                getListRequest(RepositoryPaths.getContentRootPid().toString(), request));
         return getResults(resultResponse, "list", request);
     }
 
@@ -203,8 +203,7 @@ public class SearchController extends AbstractSearchController {
         return searchRequest;
     }
 
-    private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod,
-            HttpServletRequest request) {
+    private Map<String, Object> getResults(SearchResultResponse resp, String queryMethod, HttpServletRequest request) {
         AccessGroupSet groups = GroupsThreadStore.getGroups();
         List<Map<String, Object>> resultList = SerializationUtil.resultsToList(resp, groups);
         Map<String, Object> results = new HashMap<>();

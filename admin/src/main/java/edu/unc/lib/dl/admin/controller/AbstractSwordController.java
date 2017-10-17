@@ -45,12 +45,13 @@ import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class AbstractSwordController extends AbstractSolrSearchController {
     private static final Logger log = LoggerFactory.getLogger(AbstractSwordController.class);
+    private static final int INITIAL_BUFFER_SIZE = 2048;
     public static final ContentType APPLICATION_ATOM_XML_UTF8 = ContentType.create(
             "application/atom+xml", Consts.UTF_8);
 
@@ -88,7 +89,7 @@ public class AbstractSwordController extends AbstractSolrSearchController {
             // Pass the users groups along with the request
             method.addHeader(HttpClientUtil.FORWARDED_GROUPS_HEADER, GroupsThreadStore.getGroupString());
             method.addHeader("Content-Type", "application/atom+xml");
-            StringWriter stringWriter = new StringWriter(2048);
+            StringWriter stringWriter = new StringWriter(INITIAL_BUFFER_SIZE);
             StringEntity requestEntity;
             entry.writeTo(stringWriter);
             requestEntity = new StringEntity(stringWriter.toString(), APPLICATION_ATOM_XML_UTF8);
@@ -108,15 +109,15 @@ public class AbstractSwordController extends AbstractSolrSearchController {
             if (statusCode == HttpStatus.SC_NO_CONTENT) {
                 // success
                 return "";
-            } else if (statusCode >= 400 && statusCode <= 500) {
-                if (statusCode == 500) {
+            } else if (statusCode >= HttpStatus.SC_BAD_REQUEST && statusCode <= HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                if (statusCode == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
                     log.warn("Failed to upload " + datastream + " " + method.getURI());
                 }
                 // probably a validation problem
                 responseString = EntityUtils.toString(httpResp.getEntity(), "UTF-8");
                 return responseString;
             } else {
-                response.setStatus(500);
+                response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
                 throw new Exception("Failure to update fedora content due to response of: " + httpResp.getStatusLine()
                         + "\nPath was: " + method.getURI());
             }

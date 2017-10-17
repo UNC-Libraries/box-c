@@ -59,7 +59,7 @@ import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -77,8 +77,8 @@ public class AccessControlController extends AbstractSwordController {
     private String swordPassword;
 
     private final List<String> targetResultFields = Arrays.asList(SearchFieldKeys.ID.name(),
-            SearchFieldKeys.TITLE.name(),  SearchFieldKeys.STATUS.name(),
-            SearchFieldKeys.ROLE_GROUP.name(), SearchFieldKeys.ANCESTOR_PATH.name());
+            SearchFieldKeys.TITLE.name(), SearchFieldKeys.STATUS.name(), SearchFieldKeys.ROLE_GROUP.name(),
+            SearchFieldKeys.ANCESTOR_PATH.name());
 
     private final List<String> parentResultFields = Arrays.asList(SearchFieldKeys.ID.name(),
             SearchFieldKeys.STATUS.name(), SearchFieldKeys.ROLE_GROUP.name());
@@ -92,8 +92,7 @@ public class AccessControlController extends AbstractSwordController {
     }
 
     @RequestMapping(value = "acl/{pid}", method = RequestMethod.GET)
-    public String getAccessControl(@PathVariable("pid") String pid, Model model,
-            HttpServletResponse response) {
+    public String getAccessControl(@PathVariable("pid") String pid, Model model, HttpServletResponse response) {
         model.addAttribute("pid", pid);
 
         // Retrieve ancestor information about the targeted object
@@ -137,13 +136,12 @@ public class AccessControlController extends AbstractSwordController {
                 model.addAttribute("accessControlXML", accessControlXML);
                 model.addAttribute("targetACLs", accessControlElement);
             } else {
-                log.error("Failed to retrieve access control document for " + pid + ": "
-                        + httpResp.getStatusLine());
+                log.error("Failed to retrieve access control document for " + pid + ": " + httpResp.getStatusLine());
                 response.setStatus(statusCode);
                 return null;
             }
         } catch (IOException | JDOMException e) {
-            response.setStatus(500);
+            response.setStatus(HttpStatus.SC_INTERNAL_SERVER_ERROR);
             log.error("Failed to retrieve access control document for " + pid, e);
             return null;
         }
@@ -178,7 +176,8 @@ public class AccessControlController extends AbstractSwordController {
                     rolesGranted.put(role, groupList);
                 }
                 String group = roleParts[1];
-                // If the map already contains this group, then it is marked explicitly as not inherited
+                // If the map already contains this group, then it is marked
+                // explicitly as not inherited
                 groupList.add(new RoleGrant(group, true));
             }
         }
@@ -190,19 +189,19 @@ public class AccessControlController extends AbstractSwordController {
     }
 
     @RequestMapping(value = "acl/{pid}", method = RequestMethod.PUT)
-    public @ResponseBody
-    String saveAccessControl(@PathVariable("pid") String pid,
-            HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody String saveAccessControl(@PathVariable("pid") String pid, HttpServletRequest request,
+            HttpServletResponse response) {
         String datastream = "ACL";
 
         return this.updateDatastream(pid, datastream, request, response);
     }
 
     @RequestMapping(value = "acl/getGroups", method = RequestMethod.GET)
-    public @ResponseBody
-    Collection<String> getAllAccessGroups() throws AccessRestrictionException, SolrServerException {
+    public @ResponseBody Collection<String> getAllAccessGroups()
+            throws AccessRestrictionException, SolrServerException {
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-        return this.queryLayer.getDistinctFieldValues(accessGroupFields, 500, accessGroups);
+        return this.queryLayer.getDistinctFieldValues(accessGroupFields, HttpStatus.SC_INTERNAL_SERVER_ERROR,
+                accessGroups);
     }
 
     public static class RoleGrant {
