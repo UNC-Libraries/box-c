@@ -20,8 +20,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -59,17 +57,9 @@ public class AbstractSearchController extends AbstractSolrSearchController {
         searchState.setResultFields(resultsFieldList);
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
         List<BriefObjectMetadata> objects = resultResponse.getResultList();
         queryLayer.getChildrenCounts(objects, searchRequest);
-
-        // Add tags
-        for (BriefObjectMetadata record : objects) {
-            for (TagProvider provider : this.tagProviders) {
-                provider.addTags(record, accessGroups);
-            }
-        }
 
         return resultResponse;
     }
