@@ -184,6 +184,7 @@
 	
 	<bean id="getBinaryProcessor" class="edu.unc.lib.cdr.GetBinaryProcessor">
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader"/>
+		<property name="tempDirectory" value="${services.tempDirectory}" />
 	</bean>
 	
 	<bean id="cleanupBinaryProcessor" class="edu.unc.lib.cdr.CleanupBinaryProcessor">
@@ -196,8 +197,8 @@
 		<property name="baseUrl" value="${fcrepo.baseUrl}"/>
 	</bean>
 
-	<camel:camelContext id="MetaServicesRouter">
-		<camel:package>edu.unc.lib.cdr.routing</camel:package>
+	<camel:camelContext id="FcrepoTriplestoreIndexer">
+		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
 	</camel:camelContext>
 
 	<camel:camelContext id="CdrServiceImageEnhancements">
@@ -216,8 +217,8 @@
 		<camel:package>edu.unc.lib.cdr.cdrEvents</camel:package>
 	</camel:camelContext>
 	
-	<camel:camelContext id="FcrepoTriplestoreIndexer">
-		<camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
+	<!-- Initialize metaServicesRouter after the routes it depends on -->
+	<camel:camelContext id="MetaServicesRouter">
+		<camel:package>edu.unc.lib.cdr.routing</camel:package>
 	</camel:camelContext>
-	
 </beans>

@@ -47,7 +47,13 @@ public class GetBinaryProcessor implements Processor {
 
     private RepositoryObjectLoader repoObjLoader;
 
+    private File tempDirectory;
+
     public GetBinaryProcessor() {
+    }
+
+    public void setTempDirectory(String tempDirectoryString) {
+        tempDirectory = new File(tempDirectoryString);
     }
 
     @Override
@@ -72,7 +78,8 @@ public class GetBinaryProcessor implements Processor {
     }
 
     private File downloadBinary(PID pid) throws IOException {
-        File binaryFile = File.createTempFile(pid.getId(), null);
+        File binaryFile = new File(tempDirectory, pid.getId() + "." + System.currentTimeMillis());
+        binaryFile.createNewFile();
         binaryFile.deleteOnExit();
 
         log.debug("Binary for {} not found locally, downloading to {}.", pid.getURI(), binaryFile);

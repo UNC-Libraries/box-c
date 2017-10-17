@@ -3,6 +3,7 @@
 /*/.settings
 /*/target
 /*/bin
+!/etc/bin
 /*/tmp
 /*/dist
 /*/doc

@@ -85,8 +85,11 @@ public class GetBinaryProcessorTest {
         TestHelper.setContentBase(CONTENT_BASE_URI);
         initMocks(this);
 
+        File tempFileDir = tmpFolder.newFolder();
+
         processor = new GetBinaryProcessor();
         processor.setRepositoryObjectLoader(repoObjLoader);
+        processor.setTempDirectory(tempFileDir.getAbsolutePath());
 
         when(exchange.getIn()).thenReturn(message);
         when(exchange.getOut()).thenReturn(message);
