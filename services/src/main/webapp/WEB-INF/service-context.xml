@@ -41,12 +41,6 @@
 		<property name="ignoreResourceNotFound" value="false"/>
 	</bean>
 
-	<bean id="tripleStoreQueryService"
-		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl" destroy-method="destroy">
-		<property name="itqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
-		<property name="sparqlEndpointURL" value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/sparql/"/>
-		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#"/>
-	</bean>
 	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
@@ -77,9 +71,6 @@
 	</bean>
 	
 	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject">
-			<ref bean="tripleStoreQueryService" />
-		</property>
 		<property name="targetMethod">
 			<value>fetchByRepositoryPath</value>
 		</property>
@@ -93,7 +84,6 @@
 	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init" destroy-method="destroy">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
 		<property name="threadGroupPrefix" value="Services"/>
 		<property name="serviceTimeout" value="${services.dataservice.timeout:12000}" />
