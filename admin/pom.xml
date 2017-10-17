@@ -28,7 +28,7 @@
 			</testResource>
 		</testResources>
 		<plugins>
-		    <plugin>
+			<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-war-plugin</artifactId>
 			<version>3.1.0</version>
@@ -49,6 +49,7 @@
 				<scanIntervalSeconds>2</scanIntervalSeconds>
 				<stopKey>STOP</stopKey>
 				<webApp>
+				    <webInfIncludeJarPattern>.*access-common-.*</webInfIncludeJarPattern>
 					<contextPath>/admin</contextPath>
 					<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
 					<extraClasspath>${basedir}/target/test-classes/</extraClasspath>
@@ -89,10 +90,14 @@
 						<name>log.dir</name>
 						<value>${project.basedir}/target/</value>
 					</systemProperty>
+					<systemProperty>
+						<name>fcrepo.baseUri</name>
+						<value>http://localhost:8080/fcrepo/rest/</value>
+				 </systemProperty>
 				</systemProperties>
 			</configuration>
 		</plugin>
-    </plugins>
+	</plugins>
 	</build>
 	<dependencies>
 		<!-- Logging -->
