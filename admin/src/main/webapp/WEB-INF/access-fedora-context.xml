@@ -27,38 +27,6 @@
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
-
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl"
-		destroy-method="destroy">
-		<property name="itqlEndpointURL"
-			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
-		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#" />
-	</bean>
-	
-	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="fedoraHost" value="${fedora.host:localhost}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
-		<property name="accessClient" ref="accessClient"></property>
-	</bean>
-	
-	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="fedoraHost" value="${fedora.host:localhost}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
-			</list>
-		</property>
-		<property name="accessClient" ref="forwardedAccessClient"></property>
-	</bean>
 	
 	<bean id="forwardedAccessClient" class="edu.unc.lib.dl.fedora.AccessClient"
 		init-method="init">
@@ -83,8 +51,6 @@
 	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService"
 		init-method="init" destroy-method="destroy">
 		<property name="accessClient" ref="forwardedAccessClient" />
-		<property name="managementClient" ref="forwardedManagementClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="maxThreads" value="5" />
 		<property name="threadGroupPrefix" value="Access" />
 		<property name="serviceTimeout" value="${access.dataservice.timeout:5000}" />
@@ -138,24 +104,9 @@
 		<property name="solrQueryLayer" ref="queryLayer" />
 	</bean>
 	
-	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject">
-			<ref bean="tripleStoreQueryService" />
-		</property>
-		<property name="targetMethod">
-			<value>fetchByRepositoryPath</value>
-		</property>
-		<property name="arguments">
-			<list>
-				<value>/Collections</value>
-			</list>
-		</property>
-	</bean>
-	
 	<bean id="ingestSourceManager" class="edu.unc.lib.dl.admin.collect.IngestSourceManager"
 			init-method="init">
 		<property name="configPath" value="${repo.dir}/ingestSources.json" />
-		<property name="tripleService" ref="tripleStoreQueryService" />
 	</bean>
 	
 	<bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
