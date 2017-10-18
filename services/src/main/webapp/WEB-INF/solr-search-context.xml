@@ -91,7 +91,6 @@
 		<property name="searchSettings" ref="searchSettings" />
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
-		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="pathFactory" ref="pathFactory" />
 	</bean>
 	

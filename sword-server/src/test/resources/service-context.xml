@@ -53,30 +53,6 @@
 		<constructor-arg value="/tmp" />
 	</bean>
 
-	<bean id="forwardedManagementClient" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg index="0"
-			value="edu.unc.lib.dl.fedora.ManagementClient" />
-	</bean>
-
-	<bean id="accessClient" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.fedora.AccessClient" />
-	</bean>
-
-	<bean id="tripleStoreQueryService" class="org.mockito.Mockito"
-		factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.util.TripleStoreQueryService" />
-	</bean>
-
-	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
-		<property name="managementClient" ref="forwardedManagementClient" />
-		<property name="accessClient" ref="accessClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="schematronValidator" ref="schematronValidator" />
-		<property name="available" value="true" />
-	</bean>
-
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
 		<property name="schemas">
@@ -115,8 +91,6 @@
 
 	<bean id="depositReportingUtil"
 		class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="accessClient" ref="accessClient" />
 	</bean>
 
 	<!-- Deposit Handlers -->

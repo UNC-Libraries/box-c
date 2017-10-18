@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,8 +33,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**
@@ -46,9 +43,6 @@ import edu.unc.lib.dl.util.ResourceType;
 public class ContentModelController {
 
     private static final Logger log = LoggerFactory.getLogger(ContentModelController.class);
-
-    @Autowired
-    private DigitalObjectManager dom;
 
     @RequestMapping(value = "edit/editType", method = RequestMethod.POST)
     public @ResponseBody Object editResourceType(@RequestBody EditResourceTypeRequest editRequest,
@@ -94,7 +88,7 @@ public class ContentModelController {
         }
 
         public void setPids(List<String> pids) {
-            this.pids = new ArrayList<PID>(pids.size());
+            this.pids = new ArrayList<>(pids.size());
             for (String id : pids) {
                 this.pids.add(new PID(id));
             }
@@ -117,18 +111,18 @@ public class ContentModelController {
         public void run() {
             Long start = System.currentTimeMillis();
 
-            try {
-                GroupsThreadStore.storeGroups(editRequest.groupSet);
-                GroupsThreadStore.storeUsername(editRequest.user);
-
-                try {
-                    dom.editResourceType(editRequest.pids, editRequest.getNewType(), editRequest.user);
-                } catch (UpdateException e) {
-                    log.warn("Failed to edit model to {}", editRequest.newType, e);
-                }
-            } finally {
-                GroupsThreadStore.clearStore();
-            }
+//            try {
+//                GroupsThreadStore.storeGroups(editRequest.groupSet);
+//                GroupsThreadStore.storeUsername(editRequest.user);
+//
+//                try {
+//                    dom.editResourceType(editRequest.pids, editRequest.getNewType(), editRequest.user);
+//                } catch (UpdateException e) {
+//                    log.warn("Failed to edit model to {}", editRequest.newType, e);
+//                }
+//            } finally {
+//                GroupsThreadStore.clearStore();
+//            }
 
             log.info("Finished changing content models for {} object(s) in {}ms",
                     editRequest.pids.size(), (System.currentTimeMillis() - start));

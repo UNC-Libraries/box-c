@@ -20,38 +20,22 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.AuthCredentials;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
-import edu.unc.lib.dl.fedora.AccessClient;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public abstract class AbstractFedoraManager {
     private static Logger LOG = Logger.getLogger(AbstractFedoraManager.class);
 
     @Autowired
-    protected AccessClient accessClient;
-    @Autowired
-    protected TripleStoreQueryService tripleStoreQueryService;
-    @Autowired
     protected String swordPath;
-    protected PID collectionsPidObject;
-    @Autowired
-    protected AccessControlService aclService;
-
-    public void init() {
-        collectionsPidObject = this.tripleStoreQueryService.fetchByRepositoryPath("/Collections");
-    }
 
     protected String readFileAsString(String filePath) throws java.io.IOException {
         LOG.debug("Loading path file " + filePath);
@@ -69,7 +53,7 @@ public abstract class AbstractFedoraManager {
 
         PID targetPID = null;
         if (pidString.trim().length() == 0) {
-            targetPID = collectionsPidObject;
+            targetPID = RepositoryPaths.getContentRootPid();
         } else {
             targetPID = new DatastreamPID(pidString);
         }
@@ -80,30 +64,11 @@ public abstract class AbstractFedoraManager {
         if (config.getAdminDepositor() != null && config.getAdminDepositor().equals(auth.getUsername())) {
             return true;
         }
-        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
-
-        return aclBean.hasPermission(groups, permission);
-    }
-
-    public AccessClient getAccessClient() {
-        return accessClient;
-    }
-
-    public void setAccessClient(AccessClient accessClient) {
-        this.accessClient = accessClient;
-    }
-
-    public TripleStoreQueryService getTripleStoreQueryService() {
-        return tripleStoreQueryService;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
-    }
-
-    public PID getCollectionsPidObject() {
-        return collectionsPidObject;
+        throw new RuntimeException("Not implemented");
+//        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
+//        AccessGroupSet groups = GroupsThreadStore.getGroups();
+//
+//        return aclBean.hasPermission(groups, permission);
     }
 
     public String getSwordPath() {
@@ -112,9 +77,5 @@ public abstract class AbstractFedoraManager {
 
     public void setSwordPath(String swordPath) {
         this.swordPath = swordPath;
-    }
-
-    public void setAclService(AccessControlService aclService) {
-        this.aclService = aclService;
     }
 }

@@ -15,14 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,9 +30,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * API controller for creating new containers
@@ -47,9 +41,6 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 public class AddContainerController {
     private static final Logger log = LoggerFactory.getLogger(AddContainerController.class);
 
-    @Autowired
-    private DigitalObjectManager digitalObjectManager;
-
     @RequestMapping(value = "edit/create_container/{id}", method = RequestMethod.POST)
     public @ResponseBody
     String createContainer(@PathVariable("id") String parentId, @RequestParam("name") String name,
@@ -57,32 +48,32 @@ public class AddContainerController {
             @RequestParam(value = "description", required = false) MultipartFile description, Model model,
             HttpServletRequest request, HttpServletResponse response) {
         PID parent = new PID(parentId);
-        try {
-            String user = request.getHeader("On-Behalf-Of");
-            if (user == null) {
-                user = request.getRemoteUser();
-            }
-
-            ContentModelHelper.Model extraModel = null;
-            if (type != null && type.equals("collection")) {
-                extraModel = ContentModelHelper.Model.COLLECTION;
-            } else if (type != null && type.equals("aggregate")) {
-                extraModel = ContentModelHelper.Model.AGGREGATE_WORK;
-            }
-
-            byte[] mods = null;
-            if (description != null && !description.isEmpty()) {
-                mods = description.getBytes();
-            }
-
-            PID containerPid = digitalObjectManager.createContainer(name, parent, extraModel, user, mods);
-            response.setStatus(201);
-            return "{\"pid\": \"" + containerPid.getPid() + "\"}";
-        } catch (IOException e) {
-            log.error("Unexpected IO exception", e);
-        } catch (IngestException e) {
-            log.error("Unexpected exception", e);
-        }
+//        try {
+//            String user = request.getHeader("On-Behalf-Of");
+//            if (user == null) {
+//                user = request.getRemoteUser();
+//            }
+//
+//            ContentModelHelper.Model extraModel = null;
+//            if (type != null && type.equals("collection")) {
+//                extraModel = ContentModelHelper.Model.COLLECTION;
+//            } else if (type != null && type.equals("aggregate")) {
+//                extraModel = ContentModelHelper.Model.AGGREGATE_WORK;
+//            }
+//
+//            byte[] mods = null;
+//            if (description != null && !description.isEmpty()) {
+//                mods = description.getBytes();
+//            }
+//
+//            PID containerPid = digitalObjectManager.createContainer(name, parent, extraModel, user, mods);
+//            response.setStatus(201);
+//            return "{\"pid\": \"" + containerPid.getPid() + "\"}";
+//        } catch (IOException e) {
+//            log.error("Unexpected IO exception", e);
+//        } catch (IngestException e) {
+//            log.error("Unexpected exception", e);
+//        }
         response.setStatus(500);
         return "{\"error\": \"An error occurred while attempting to create a container in " + parent + "\"}";
     }

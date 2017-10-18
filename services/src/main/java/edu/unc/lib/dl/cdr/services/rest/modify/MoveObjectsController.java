@@ -38,13 +38,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.IngestException;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -52,10 +49,10 @@ import edu.unc.lib.dl.util.TripleStoreQueryService;
 public class MoveObjectsController {
     private static final Logger log = LoggerFactory.getLogger(MoveObjectsController.class);
 
-    @Autowired
-    private TripleStoreQueryService tripleStoreQueryService;
-    @Autowired
-    private DigitalObjectManager digitalObjectManager;
+//    @Autowired
+//    private TripleStoreQueryService tripleStoreQueryService;
+//    @Autowired
+//    private DigitalObjectManager digitalObjectManager;
 
     private final Long TIME_TO_LIVE_AFTER_FINISH = 12000L;
 
@@ -150,14 +147,6 @@ public class MoveObjectsController {
         return results;
     }
 
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
-    }
-
-    public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-        this.digitalObjectManager = digitalObjectManager;
-    }
-
     public static class MoveRequest {
         private String destination;
         private List<String> moved;
@@ -178,7 +167,7 @@ public class MoveObjectsController {
         }
 
         public List<PID> getMovedPids() {
-            List<PID> movedPids = new ArrayList<PID>(moved.size());
+            List<PID> movedPids = new ArrayList<>(moved.size());
             for (String id : moved) {
                 movedPids.add(new PID(id));
             }
@@ -226,26 +215,26 @@ public class MoveObjectsController {
 
         @Override
         public void run() {
-            try {
-                log.info("Move of {} objects to {} for user {} has begun", new Object[] {
-                        request.getMoved().size(), request.getDestination(), request.getUser() });
-
-                moveRequests.put(request.getId(), request);
-
-                GroupsThreadStore.storeGroups(groups);
-                GroupsThreadStore.storeUsername(request.getUser());
-                digitalObjectManager.move(request.getMovedPids(), new PID(request.getDestination()),
-                        request.getUser(), "Moved through API");
-
-                operationMetrics.incrMoves();
-                log.info("Finished move operation of {} objects to destination {} for user {}", new Object[] {
-                        request.getMoved().size(), request.getDestination(), GroupsThreadStore.getUsername() });
-            } catch (IngestException e) {
-                log.error("Failed to move objects to {}", request.getDestination(), e);
-            } finally {
-                request.setFinishedAt(System.currentTimeMillis());
-                GroupsThreadStore.clearStore();
-            }
+//            try {
+//                log.info("Move of {} objects to {} for user {} has begun", new Object[] {
+//                        request.getMoved().size(), request.getDestination(), request.getUser() });
+//
+//                moveRequests.put(request.getId(), request);
+//
+//                GroupsThreadStore.storeGroups(groups);
+//                GroupsThreadStore.storeUsername(request.getUser());
+//                digitalObjectManager.move(request.getMovedPids(), new PID(request.getDestination()),
+//                        request.getUser(), "Moved through API");
+//
+//                operationMetrics.incrMoves();
+//                log.info("Finished move operation of {} objects to destination {} for user {}", new Object[] {
+//                        request.getMoved().size(), request.getDestination(), GroupsThreadStore.getUsername() });
+//            } catch (IngestException e) {
+//                log.error("Failed to move objects to {}", request.getDestination(), e);
+//            } finally {
+//                request.setFinishedAt(System.currentTimeMillis());
+//                GroupsThreadStore.clearStore();
+//            }
         }
     }
 }

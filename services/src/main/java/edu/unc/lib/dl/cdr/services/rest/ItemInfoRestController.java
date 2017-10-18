@@ -34,17 +34,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.ServletContextAware;
 
+import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -57,9 +56,6 @@ public class ItemInfoRestController implements ServletContextAware {
 
     @Resource
     private SolrSearchService solrSearchService;
-
-    @Resource
-    protected TripleStoreQueryService tripleStoreQueryService;
 
     @Resource(name = "contextUrl")
     protected String contextUrl = null;
@@ -104,7 +100,7 @@ public class ItemInfoRestController implements ServletContextAware {
 
         IdListRequest listRequest = new IdListRequest(ids, resultFields, groupSet);
         List<BriefObjectMetadata> listResults = solrSearchService.getObjectsById(listRequest);
-        Map<String, String> results = new HashMap<String,String>(listResults.size());
+        Map<String, String> results = new HashMap<>(listResults.size());
 
         for (BriefObjectMetadata result: listResults) {
             results.put(result.getId(), Long.toString(result.get_version_()));
@@ -120,9 +116,5 @@ public class ItemInfoRestController implements ServletContextAware {
     @Override
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
     }
 }
