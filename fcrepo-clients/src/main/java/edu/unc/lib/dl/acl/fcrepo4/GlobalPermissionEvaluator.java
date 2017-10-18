@@ -17,6 +17,7 @@ package edu.unc.lib.dl.acl.fcrepo4;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -36,6 +37,7 @@ public class GlobalPermissionEvaluator {
 
     protected static final String GLOBAL_PROP_PREFIX = "cdr.acl.globalRoles.";
     private Map<String, Set<String>> globalPrincipalToPermissions;
+    private Map<String, UserRole> globalPrincipalToRole;
     private Set<String> globalPrincipals;
 
     public GlobalPermissionEvaluator(Properties properties) {
@@ -44,6 +46,8 @@ public class GlobalPermissionEvaluator {
     }
 
     private void storeGlobalPrincipals(Properties properties) {
+        globalPrincipalToRole = new HashMap<>();
+
         // Transform properties defining global role assignments into a lookup
         // table of global principals to permissions.
         // A principal cannot be assigned to more than one global role
@@ -60,6 +64,9 @@ public class GlobalPermissionEvaluator {
                                 "Invalid global role " + p.getValue() +
                                 " defined for " + p.getKey());
                     }
+                    // Add principal to role mapping
+                    globalPrincipalToRole.put(p.getKey(), role);
+
                     // Expand role assignment into permissions
                     return role.getPermissions().stream()
                             .map(q -> q.name()).collect(Collectors.toSet());
@@ -92,5 +99,19 @@ public class GlobalPermissionEvaluator {
      */
     public boolean hasGlobalPrincipal(Set<String> agentPrincipals) {
         return globalPrincipals.stream().anyMatch(agentPrincipals::contains);
+    }
+
+    /**
+     * Returns a set of UserRoles which are globally assigned to the provided
+     * principals
+     *
+     * @param agentPrincipals
+     * @return set of UserRoles globally assigned to the principals
+     */
+    public Set<UserRole> getGlobalUserRoles(Set<String> agentPrincipals) {
+        return agentPrincipals.stream()
+                .filter(p -> globalPrincipalToRole.containsKey(p))
+                .map(p -> globalPrincipalToRole.get(p))
+                .collect(Collectors.toSet());
     }
 }

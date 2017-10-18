@@ -36,6 +36,7 @@ public class RepositoryPaths {
     private static String serverUri;
     private static String baseUri;
     private static String baseHost;
+    private static PID contentRootPid;
 
     static {
         setContentBase(System.getProperty("fcrepo.baseUri"));
@@ -71,6 +72,10 @@ public class RepositoryPaths {
         return contentBase;
     }
 
+    public static PID getContentRootPid() {
+        return contentRootPid;
+    }
+
     public static String getDepositRecordBase() {
         return depositRecordBase;
     }
@@ -93,5 +98,6 @@ public class RepositoryPaths {
             baseUri += "/";
         }
         contentBase = URIUtil.join(baseUri, RepositoryPathConstants.CONTENT_BASE);
+        contentRootPid = PIDs.get(URIUtil.join(contentBase, RepositoryPathConstants.CONTENT_ROOT_ID));
     }
 }

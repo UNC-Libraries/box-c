@@ -30,12 +30,6 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl"
-		destroy-method="destroy">
-		<property name="itqlEndpointURL"
-			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService" />
-		<property name="serverModelUri" value="rmi://${mulgara.model.uri}/server1#" />
-	</bean>
 	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
 		init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl"
@@ -65,7 +59,6 @@
 		init-method="init" destroy-method="destroy">
 		<property name="accessClient" ref="forwardedAccessClient" />
 		<property name="managementClient" ref="forwardedManagementClient" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="maxThreads" value="5" />
 		<property name="threadGroupPrefix" value="Access" />
 		<property name="serviceTimeout" value="${access.dataservice.timeout:5000}" />
@@ -124,18 +117,4 @@
 		<property name="solrQueryLayer" ref="queryLayer" />
 	</bean>
 
-	<bean id="collectionsPid"
-		class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetObject">
-			<ref bean="tripleStoreQueryService" />
-		</property>
-		<property name="targetMethod">
-			<value>fetchByRepositoryPath</value>
-		</property>
-		<property name="arguments">
-			<list>
-				<value>/Collections</value>
-			</list>
-		</property>
-	</bean>
 </beans>

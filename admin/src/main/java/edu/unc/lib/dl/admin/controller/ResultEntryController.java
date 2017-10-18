@@ -31,13 +31,12 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -62,9 +61,6 @@ public class ResultEntryController extends AbstractSearchController {
             throw new ResourceNotFoundException("The requested record either does not exist or is not accessible");
         }
 
-        for (TagProvider provider : this.tagProviders) {
-            provider.addTags(entryBean, accessGroups);
-        }
         return SerializationUtil.metadataToJSON(entryBean, accessGroups);
     }
 }

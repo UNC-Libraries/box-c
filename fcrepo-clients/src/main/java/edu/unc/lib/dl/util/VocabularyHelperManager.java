@@ -32,6 +32,7 @@ import org.jdom2.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
@@ -69,8 +70,6 @@ public class VocabularyHelperManager {
     // Configuration info per vocabulary, uri to properties map
     private Map<String, Map<String, String>> vocabInfoMap;
 
-    private PID collectionsPID;
-
     private Boolean initialized = false;
 
     private final Namespace[] defaultSelectorNamespaces = new Namespace[] {
@@ -78,16 +77,8 @@ public class VocabularyHelperManager {
     };
 
     public synchronized void init() {
-        // Wait for the repository to be up before loading vocabularies
-//        managementClient.waitForRepositoryAvailable();
-//
 //        log.debug("Initializing vocabulary helpers");
 //        initialized = true;
-//
-//        // Scan fedora for objects with the vocabulary content model
-//        vocabInfoMap = queryService.fetchVocabularyInfo();
-//
-//        pidToVocabApplication = queryService.fetchVocabularyMapping();
 //
 //        // Instantiate helper classes per vocabulary definition
 //        instantiateVocabularyHelpers();
@@ -362,7 +353,7 @@ public class VocabularyHelperManager {
             return;
         }
 
-        Map<String, Set<String>> appLevelMap = pidToVocabApplication.get(collectionsPID.getURI());
+        Map<String, Set<String>> appLevelMap = pidToVocabApplication.get(RepositoryPaths.getContentRootPid().getURI());
         if (pid != null) {
             Map<String, Set<String>> collectionLevel = pidToVocabApplication.get(pid.getURI());
             if (collectionLevel != null) {
@@ -445,7 +436,4 @@ public class VocabularyHelperManager {
 //        return results;
     }
 
-    public void setCollectionsPID(PID collectionsPID) {
-        this.collectionsPID = collectionsPID;
-    }
 }

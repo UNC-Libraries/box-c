@@ -33,20 +33,24 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 @Controller
 @RequestMapping(value = {"/", ""})
 public class DashboardController extends AbstractSolrSearchController {
+    private static final int ROWS_PER_PAGE = 5000;
+    private static final int FACET_CUTOFF = 2;
+    private static final String FACET_STRING = "1,*";
+
     @RequestMapping(method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
         SearchState collectionsState = this.searchStateFactory.createSearchState();
         collectionsState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
-        collectionsState.setRowsPerPage(5000);
-        CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
-        depthFacet.setCutoff(2);
+        collectionsState.setRowsPerPage(ROWS_PER_PAGE);
+        CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), FACET_STRING);
+        depthFacet.setCutoff(FACET_CUTOFF);
         collectionsState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
 
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();

@@ -15,7 +15,18 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,9 +34,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
-import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 
 /**
@@ -37,6 +47,28 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 @Controller
 @RequestMapping("/advancedSearch")
 public class AdvancedSearchFormController extends AbstractSolrSearchController {
+    HashMap<String, String> dropdownVals = new HashMap<String, String>();
+
+    @PostConstruct
+    public void init() throws IOException, JDOMException {
+        SAXBuilder builder = new SAXBuilder();
+        Document document = null;
+
+        try (InputStream responseStream = this.getClass().getResourceAsStream("/mappings/dropdownMappings.xml")) {
+            document = builder.build(responseStream);
+            Element rootNode = document.getRootElement();
+            Element element = rootNode.getChild("mapping");
+            List<Element> list = element.getChildren("pair");
+
+            for (int i = 0; i < list.size(); i++) {
+                Element node = list.get(i);
+                String dropdownKey = node.getAttribute("key").getValue();
+                String dropdownVal = node.getTextTrim();
+
+                dropdownVals.put(dropdownKey, dropdownVal);
+            }
+        }
+    }
 
     @RequestMapping(method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
@@ -53,7 +85,7 @@ public class AdvancedSearchFormController extends AbstractSolrSearchController {
 
             model.addAttribute("pageSubtitle", "Advanced Search");
 
-            model.addAttribute("formatMap", LookupMappingsSettings.getMapping("advancedFormats"));
+            model.addAttribute("formatMap", dropdownVals);
             return "advancedSearch";
         }
 
