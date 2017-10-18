@@ -65,8 +65,4 @@ define('containerRecord', ['module', 'jquery', 'StructureView', 'jquery-ui'], fu
 		e.preventDefault();
 	});
 	selectTab(collectionTabs, containerSettings.defaultView);
-	
-	$("#sort_select").change(function(){
-		$("#result_sort_form").submit();
-	});
 });
