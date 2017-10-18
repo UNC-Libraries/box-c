@@ -20,37 +20,31 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-import org.apache.solr.common.util.DateUtil;
-
 /**
+ * Utility method for formatting dates to use in solr queries
  *
  * @author bbpennel
  *
  */
 public abstract class DateFormatUtil {
-    public static String getFormattedDate(String dateString, boolean inclusive, boolean endRange) {
-        return getFormattedDate(dateString, "yyyy-MM-dd'T'hh:mm:ss'Z'", inclusive, endRange);
+    public static SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    static {
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     /**
-     * Returns a date string formatted in ISO-8601, using UTC time.  The date is adjusted for use
-     * in ranges, either being the start or end of the range, and inclusive or exclusive.  The incoming date must
-     * be formatted in ISO-8601 format, and can have degrees of precision including from yyyy, yyyy-mm, yyyy-mm-dd
-     * or yyyy-mm-ddThh:mm:ss.SSS.  The modification to the date various based on inclusivity, side of the range
-     * it represents, and the level of precision in the date.
-     * @param dateString
-     * @param format
-     * @param inclusive
-     * @param endRange
-     * @return
-     * @throws NumberFormatException
+     * Processes an ISO-8601 timestamp and returns it adjusted for use in solr date ranges.
+     *
+     * @param dateString date string in iso-8601 format for adjustment.  Supports yyyy, yyyy-mm, yyyy-mm-dd
+     * or yyyy-mm-ddThh:mm:ss.SSS formats.
+     * @param inclusive whether to include the exact provided timestamp or not
+     * @param endRange indicates whether the date being formatted is at the beginning or end of the date range
+     * @return adjusted date in ISO-8601 format
      */
-    public static String getFormattedDate(String dateString, String format, boolean inclusive, boolean endRange)
-            throws NumberFormatException {
+    public static String getFormattedDate(String dateString, boolean inclusive, boolean endRange) {
         if (dateString == null || dateString.length() == 0) {
             return null;
         }
-
 
         if (dateString.contains("T") && dateString.contains("Z")) {
             //If the string is a full timestamp, is already in UTC and it is an inclusive request, simply return
@@ -58,18 +52,18 @@ public abstract class DateFormatUtil {
                 return dateString;
             } else {
                 //If it wasn't inclusive, then add or subtract 1 second
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                 Calendar calendar = Calendar.getInstance();
                 try {
                     calendar.setTime(formatter.parse(dateString));
                     if (!inclusive) {
                         if (endRange) {
-                            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) - 1);
+                            calendar.add(Calendar.MILLISECOND, -1);
                         } else {
-                            calendar.set(Calendar.SECOND, calendar.get(Calendar.SECOND) + 1);
+                            calendar.add(Calendar.MILLISECOND, 1);
                         }
                     }
-                    return org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(calendar.getTime());
+
+                    return formatter.format(calendar.getTime());
                 } catch (ParseException e) {
                     return null;
                 }
@@ -78,21 +72,21 @@ public abstract class DateFormatUtil {
 
         String[] dateArray = dateString.split("[-TZ]+");
 
-        Calendar calendar = Calendar.getInstance();
-
-        calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
+        // Extract the units of the date to the highest level of precision provided
         if (dateArray.length >= 1) {
             calendar.set(Calendar.YEAR, Integer.parseInt(dateArray[0]));
         }
         if (dateArray.length >= 2) {
             calendar.set(Calendar.MONTH, Integer.parseInt(dateArray[1]) - 1);
         } else {
+            // Month is 0 based
             calendar.set(Calendar.MONTH, 0);
         }
         if (dateArray.length >= 3) {
@@ -101,45 +95,30 @@ public abstract class DateFormatUtil {
             calendar.set(Calendar.DATE, 1);
         }
 
+        // Adjust the date by one increment of the significant unit if it
+        // is either an inclusive end of range, or an exclusive start of a range
         if (dateArray.length == 1) {
-            if (inclusive) {
-                if (endRange) {
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 1);
-                    calendar.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND) - 1);
-                }
-            } else {
-                if (!endRange) {
-                    calendar.set(Calendar.YEAR, calendar.get(Calendar.YEAR) + 1);
-                }
+            if (inclusive == endRange) {
+                calendar.add(Calendar.YEAR, 1);
             }
         }
 
         if (dateArray.length == 2) {
-            if (inclusive) {
-                if (endRange) {
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) + 1);
-                    calendar.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND) - 1);
-                }
-            } else {
-                if (!endRange) {
-                    calendar.set(Calendar.MONTH, calendar.get(Calendar.MONTH) + 1);
-                }
+            if (inclusive == endRange) {
+                calendar.add(Calendar.MONTH, 1);
             }
         }
 
         if (dateArray.length == 3) {
-            if (inclusive) {
-                if (endRange) {
-                    calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + 1);
-                    calendar.set(Calendar.MILLISECOND, calendar.get(Calendar.MILLISECOND) - 1);
-                }
-            } else {
-                if (!endRange) {
-                    calendar.set(Calendar.DATE, calendar.get(Calendar.DATE) + 1);
-                }
+            if (inclusive == endRange) {
+                calendar.add(Calendar.DATE, 1);
             }
         }
 
-        return DateUtil.getThreadLocalDateFormat().format(calendar.getTime());
+        // Subtract one millisecond from the timestamp to go from
+        // 2000 to 1999-12-31T23:59:59:999Z
+        calendar.add(Calendar.MILLISECOND, -1);
+
+        return formatter.format(calendar.getTime());
     }
 }

@@ -19,7 +19,6 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<fcrepo-camel.version>4.5.0</fcrepo-camel.version>
 		<camel.version>2.18.0</camel.version>
-		<activemq.version>5.14.1</activemq.version>
 		<tika.version>1.16</tika.version>
 	</properties>
 
@@ -109,6 +108,13 @@
 	<dependency>
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>metadata</artifactId>
+	</dependency>
+
+	<dependency>
+		<groupId>edu.unc.lib.cdr</groupId>
+		<artifactId>persistence</artifactId>
+		<scope>test</scope>
+		<version>${cdr.version}</version>
 	</dependency>
 	
 	<dependency>
@@ -257,7 +263,6 @@
 			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
-
 </dependencies>
 
 	<build>

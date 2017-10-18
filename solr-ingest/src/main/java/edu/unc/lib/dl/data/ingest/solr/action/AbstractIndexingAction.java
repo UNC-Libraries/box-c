@@ -36,7 +36,7 @@ import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -46,7 +46,6 @@ public abstract class AbstractIndexingAction implements IndexingAction {
     protected SolrUpdateDriver solrUpdateDriver;
     @Autowired
     protected SolrSearchService solrSearchService;
-    protected PID collectionsPid;
     @Autowired
     protected SearchSettings searchSettings;
     protected AccessGroupSet accessGroups;
@@ -65,7 +64,7 @@ public abstract class AbstractIndexingAction implements IndexingAction {
      * @return
      */
     protected BriefObjectMetadataBean getRootAncestorPath(SolrUpdateRequest updateRequest) throws IndexingException {
-        List<String> resultFields = new ArrayList<String>();
+        List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ID.name());
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
         resultFields.add(SearchFieldKeys.RESOURCE_TYPE.name());
@@ -98,10 +97,6 @@ public abstract class AbstractIndexingAction implements IndexingAction {
 
     public void setSolrSearchService(SolrSearchService solrSearchService) {
         this.solrSearchService = solrSearchService;
-    }
-
-    public void setCollectionsPid(PID collectionsPid) {
-        this.collectionsPid = collectionsPid;
     }
 
     public void setSearchSettings(SearchSettings searchSettings) {

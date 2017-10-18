@@ -118,15 +118,13 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
 
         assertEquals(childrenBag.size(), 1);
 
+        // Verify that file and its properties were added to work
         Resource file = (Resource) childrenBag.iterator().next();
-
         assertEquals("File label was not set", "lorem.txt",
                 file.getProperty(CdrDeposit.label).getString());
-        assertEquals("Content model was not set", Cdr.FileObject.getURI(),
-                file.getPropertyResourceValue(RDF.type).getURI());
+        assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
 
         String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
-
     }
 }

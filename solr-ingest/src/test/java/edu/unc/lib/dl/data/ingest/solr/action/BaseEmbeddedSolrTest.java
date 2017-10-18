@@ -18,7 +18,6 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
@@ -44,20 +43,17 @@ public class BaseEmbeddedSolrTest extends Assert {
     @Before
     public void setUp() throws Exception {
 
-        File home = new File( "src/test/resources/config" );
-        File configFile = new File( home, "solr.xml" );
-
         System.setProperty("solr.data.dir", "src/test/resources/config/data/");
-        container = new CoreContainer("src/test/resources/config", configFile);
+        container = new CoreContainer("src/test/resources/config");
 
         server = new EmbeddedSolrServer(container, "access-master");
 
         driver = new SolrUpdateDriver();
-        driver.setSolrServer(server);
-        driver.setUpdateSolrServer(server);
+        driver.setSolrClient(server);
+        driver.setUpdateSolrClient(server);
     }
 
-    protected SolrDocumentList getDocumentList(String query, String fieldList) throws SolrServerException {
+    protected SolrDocumentList getDocumentList(String query, String fieldList) throws Exception {
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.set("q", query);
         params.set("fl", fieldList);
@@ -65,13 +61,13 @@ public class BaseEmbeddedSolrTest extends Assert {
         return qResp.getResults();
     }
 
-    protected SolrDocumentList getDocumentList() throws SolrServerException {
+    protected SolrDocumentList getDocumentList() throws Exception {
         return getDocumentList("*:*", "id,resourceType,_version_");
     }
 
     @After
     public void tearDown() throws Exception {
-        server.shutdown();
+        server.close();
         log.debug("Cleaning up data directory");
         File dataDir = new File("src/test/resources/config/data");
         FileUtils.deleteDirectory(dataDir);

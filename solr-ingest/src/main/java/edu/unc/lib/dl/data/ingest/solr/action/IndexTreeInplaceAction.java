@@ -15,12 +15,15 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import java.util.Date;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -36,7 +39,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        log.debug("Starting inplace indexing of {}", updateRequest.getPid().getPid());
+        log.debug("Starting inplace indexing of {}", updateRequest.getPid().getRepositoryPath());
 
         super.performAction(updateRequest);
 
@@ -47,7 +50,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Finished inplace indexing of {}.  {} objects updated in {}ms",
-                    updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
+                    updateRequest.getPid().getRepositoryPath(), updateRequest.getChildrenPending(),
                     System.currentTimeMillis() - updateRequest.getTimeStarted()));
         }
     }
@@ -55,6 +58,8 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
     public void deleteStaleChildren(SolrUpdateRequest updateRequest) throws IndexingException {
         try {
             long startTime = updateRequest.getTimeStarted();
+            Date startDate = new Date(startTime);
+            String isoDate = DateFormatUtil.formatter.format(startDate);
 
             StringBuilder query = new StringBuilder();
 
@@ -71,9 +76,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
             // Target any children with timestamp older than start time.
             query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()))
-                    .append(":[* TO ")
-                    .append(org.apache.solr.common.util.DateUtil.getThreadLocalDateFormat().format(startTime))
-                    .append("]");
+                    .append(":[* TO ").append(isoDate).append("]");
 
             solrUpdateDriver.deleteByQuery(query.toString());
         } catch (Exception e) {

@@ -89,7 +89,7 @@ public class JMSMessageUtil {
 
         /**
          * Finds an action that matches the full action uri provided.
-         * 
+         *
          * @param value
          * @return
          */
@@ -139,7 +139,7 @@ public class JMSMessageUtil {
 
         /**
          * Finds an action that matches the full action uri provided.
-         * 
+         *
          * @param value
          * @return
          */
@@ -188,7 +188,7 @@ public class JMSMessageUtil {
 
         /**
          * Finds an action that matches the full action uri provided.
-         * 
+         *
          * @param value
          * @return
          */
@@ -209,8 +209,7 @@ public class JMSMessageUtil {
         if (message == null) {
             return null;
         }
-        return message.getRootElement()
-                .getChild("summary", JDOMNamespaceUtil.ATOM_NS).getText();
+        return message.getRootElement().getChildTextTrim("summary", JDOMNamespaceUtil.ATOM_NS);
     }
 
     public static String getAction(Document message) {
@@ -233,7 +232,7 @@ public class JMSMessageUtil {
 
     /**
      * Retrieves the relationship of triple change messages
-     * 
+     *
      * @param message
      * @return
      */
@@ -244,7 +243,7 @@ public class JMSMessageUtil {
     /**
      * Retrieves the object component of triples in relationship change
      * messages.
-     * 
+     *
      * @param message
      * @return
      */

@@ -86,30 +86,22 @@
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-core</artifactId>
-			<version>4.3.0</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>slf4j-jdk14</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-			</exclusions>
+			<version>${solr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
-			<version>4.3.0</version>
+			<version>${solr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-dataimporthandler</artifactId>
-			<version>4.3.0</version>
-			<type>jar</type>
-			<scope>compile</scope>
+			<version>${solr.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-test-framework</artifactId>
-			<version>4.3.0</version>
+			<version>${solr.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -21,11 +21,13 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.data.ingest.solr.ChildSetRequest;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Updates each object specified in the update request and all of their children.
+ *
  * @author bbpennel
- * @date Jun 29, 2015
  */
 public class UpdateTreeSetAction extends UpdateTreeAction {
 
@@ -38,6 +40,9 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
                     + updateRequest.getClass().getName());
         }
         ChildSetRequest childSetRequest = (ChildSetRequest) updateRequest;
+        if (childSetRequest.getChildren() == null || childSetRequest.getChildren().size() == 0) {
+            throw new IllegalArgumentException("Update request must specify one or more children for indexing");
+        }
 
         // Calculate total number of objects to be indexed
         int indexTargetTotal = 0;
@@ -49,12 +54,13 @@ public class UpdateTreeSetAction extends UpdateTreeAction {
         // Index the tree for each pid in the set
         RecursiveTreeIndexer treeIndexer = new RecursiveTreeIndexer(updateRequest, this, this.addDocumentMode);
         for (PID pid : childSetRequest.getChildren()) {
-            treeIndexer.index(pid, null);
+            RepositoryObject obj = repositoryObjectLoader.getRepositoryObject(pid);
+            treeIndexer.index(obj, null);
         }
 
         if (log.isDebugEnabled()) {
             log.debug("Finished updating tree of {}.  {} objects updated in {} ms.", new Object[] {
-                    updateRequest.getPid().getPid(), updateRequest.getChildrenPending(),
+                    updateRequest.getPid().toString(), updateRequest.getChildrenPending(),
                     (System.currentTimeMillis() - updateRequest.getTimeStarted()) });
         }
     }

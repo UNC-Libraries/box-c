@@ -133,6 +133,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         PID childPid = makePid(CONTENT_BASE);
         Resource childResc = model.getResource(childPid.getRepositoryPath());
         childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(CdrDeposit.stagingLocation, "path");
         objBag.add(childResc);
 
         objBag.addProperty(Cdr.primaryObject, childResc);
@@ -145,6 +146,41 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
 
         verify(aclValidator).validate(eq(objBag));
         verify(aclValidator).validate(eq(childResc));
+    }
+
+    @Test(expected = JobFailedException.class)
+    public void missingStagingLocationTest() {
+        PID objPid = makePid(CONTENT_BASE);
+        Bag objBag = model.createBag(objPid.getRepositoryPath());
+        objBag.addProperty(RDF.type, Cdr.Work);
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        objBag.add(childResc);
+
+        objBag.addProperty(Cdr.primaryObject, childResc);
+
+        depBag.add(objBag);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    @Test
+    public void fileObjectOutsideOfWorkTest() {
+
+        PID childPid = makePid(CONTENT_BASE);
+        Resource childResc = model.getResource(childPid.getRepositoryPath());
+        childResc.addProperty(RDF.type, Cdr.FileObject);
+        childResc.addProperty(CdrDeposit.stagingLocation, "path");
+
+        depBag.add(childResc);
+
+        job.closeModel();
+
+        job.run();
     }
 
     @Test(expected = JobFailedException.class)

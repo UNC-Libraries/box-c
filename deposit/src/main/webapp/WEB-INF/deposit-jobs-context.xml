@@ -26,6 +26,27 @@
 		<property name="failedTextTemplate" ref="failedTextTemplate" />
 	</bean>
 	
+	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        destroy-method="stop">
+        <property name="connectionFactory">
+            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
+                <property name="brokerURL">
+                    <value>${jms.broker.uri}</value>
+                </property>
+            </bean>
+        </property>
+    </bean>
+	
+	<bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+        <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
+    </bean>
+	
 	<bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
         <property name="pidMinter" ref="pidMinter" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
@@ -150,6 +171,10 @@
 		scope="prototype">
 		<property name="proquest2ModsTransformer" ref="proquest2ModsTransformer" />
 	</bean>
+	
+	<bean id="NormalizeFileObjectsJob" class="edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob"
+        scope="prototype">
+    </bean>
 	
 	<bean id="aclValidator" class="edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator">
 	</bean>

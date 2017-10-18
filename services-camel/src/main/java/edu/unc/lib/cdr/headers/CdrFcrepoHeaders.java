@@ -17,7 +17,7 @@ package edu.unc.lib.cdr.headers;
 
 /**
  * Constants for Apache Camel object enhancement services
- * 
+ *
  * @author lfarrell
  *
  */
@@ -30,4 +30,6 @@ public abstract class CdrFcrepoHeaders {
     public static final String CdrBinaryChecksum = "CdrChecksum";
 
     public static final String CdrBinaryUri = "CdrBinaryUri";
+
+    public static final String CdrSolrUpdateAction = "CdrSolrUpdateAction";
 }

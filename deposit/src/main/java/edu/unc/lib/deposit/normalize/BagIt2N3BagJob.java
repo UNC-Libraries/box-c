@@ -21,15 +21,12 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.vocabulary.RDF;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import gov.loc.repository.bagit.Bag;
@@ -42,7 +39,7 @@ import gov.loc.repository.bagit.utilities.SimpleResult;
 
 /**
  * Transforms bagit bags stored in a staging location into n3 for deposit
- * 
+ *
  * @author bbpennel
  * @author daines
  * @date Nov 9, 2015
@@ -95,8 +92,6 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
         Collection<BagFile> payload = bag.getPayload();
 
-        Property labelProp = CdrDeposit.label;
-        Property typeProp = RDF.type;
         Property md5sumProp = CdrDeposit.md5sum;
         Property locationProp = CdrDeposit.stagingLocation;
         Property cleanupLocProp = CdrDeposit.cleanupLocation;
@@ -115,10 +110,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 
             Resource fileResource = getFileResource(sourceBag, filePath);
 
-            // add checksum, size, label
-            String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
-            model.add(fileResource, labelProp, filename);
-            model.add(fileResource, typeProp, Cdr.FileObject);
+            // add checksums
             if (checksums.containsKey(Manifest.Algorithm.MD5)) {
                 model.add(fileResource, md5sumProp, checksums.get(Manifest.Algorithm.MD5));
             }

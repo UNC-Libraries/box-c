@@ -200,7 +200,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(SOLR_INGEST_ROUTE);
 
-        Map<String, Object> headers = createEvent("container", Cdr.Work.getURI());
+        Map<String, Object> headers = createEvent(RESOURCE_TYPE, Cdr.Work.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();
@@ -212,7 +212,7 @@ public class MetaServicesRouterTest extends CamelSpringTestSupport {
 
         createContext(SOLR_INGEST_ROUTE);
 
-        Map<String, Object> headers = createEvent(FILE_ID, Binary.getURI());
+        Map<String, Object> headers = createEvent(RESOURCE_TYPE, Binary.getURI());
         template.sendBodyAndHeaders("", headers);
 
         assertMockEndpointsSatisfied();

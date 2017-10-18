@@ -88,9 +88,6 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 
             if (!isDir) {
                 Resource fileResource = getFileResource(sourceBag, filePathString);
-                model.add(fileResource, CdrDeposit.label, filename);
-
-                model.add(fileResource, RDF.type, Cdr.FileObject);
 
                 // Find staged path for the file
                 Path storedPath = Paths.get(file.getAbsolutePath());

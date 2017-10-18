@@ -22,8 +22,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.solr.client.solrj.SolrServer;
-import org.apache.solr.client.solrj.impl.HttpSolrServer;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,7 @@ public class SolrSettings extends AbstractSettings {
     private HashMap<String, String> fieldNameToKey;
 
     public SolrSettings() {
-        fieldNames = new HashMap<String, String>();
+        fieldNames = new HashMap<>();
     }
 
     /**
@@ -86,22 +86,17 @@ public class SolrSettings extends AbstractSettings {
     }
 
     /**
-     * Retrieve a SolrServer object according to the configuration specified in settings.
+     * Gets a SolrClient object using the current settings.
+     *
+     * @return
      */
-    public SolrServer getSolrServer() {
-        SolrServer server = null;
-        try {
-            LOG.debug("Establishing Solr server:" + getUrl());
-            server = new HttpSolrServer(getUrl());
-            ((HttpSolrServer) server).setSoTimeout(getSocketTimeout()); // socket read timeout
-            ((HttpSolrServer) server).setConnectionTimeout(getConnectionTimeout());
-            ((HttpSolrServer) server).setDefaultMaxConnectionsPerHost(getDefaultMaxConnectionsPerHost());
-            ((HttpSolrServer) server).setMaxTotalConnections(getMaxConnections());
-            ((HttpSolrServer) server).setMaxRetries(maxRetries);
-        } catch (Exception e) {
-            LOG.error("Error initializing Solr Server instance", e);
-        }
-        return server;
+    public SolrClient getSolrClient() {
+        // TODO use HttpClient with config properties
+
+        SolrClient solr = new HttpSolrClient.Builder(getUrl())
+                .build();
+
+        return solr;
     }
 
     private static Pattern escapeReservedWords
@@ -143,7 +138,7 @@ public class SolrSettings extends AbstractSettings {
             return null;
         }
         Matcher matcher = splitTermFragmentsRegex.matcher(value);
-        List<String> fragments = new ArrayList<String>();
+        List<String> fragments = new ArrayList<>();
         while (matcher.find()) {
             if (matcher.groupCount() == 4) {
                 boolean quoted = matcher.group(2) != null;

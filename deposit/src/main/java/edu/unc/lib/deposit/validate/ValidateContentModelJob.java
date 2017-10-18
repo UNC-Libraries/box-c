@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.deposit.validate;
 
+import static edu.unc.lib.dl.rdf.CdrDeposit.stagingLocation;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -164,6 +166,10 @@ public class ValidateContentModelJob extends AbstractDepositJob{
                     failJob(null, "Could not determine the type of object {0}", childResc.getURI());
                 }
 
+                if (childResc.hasProperty(RDF.type, Cdr.FileObject)) {
+                    validateFileObject(childResc, parentResc);
+                }
+
                 // Verify that ACL assignments for this object are okay
                 aclValidator.validate(childResc);
 
@@ -188,13 +194,15 @@ public class ValidateContentModelJob extends AbstractDepositJob{
         return null;
     }
 
-    private NodeIterator getChildIterator(Resource resc) {
-        if (resc.hasProperty(RDF.type, RDF.Bag)) {
-            return resc.getModel().getBag(resc).iterator();
-        } else if (resc.hasProperty(RDF.type, RDF.Seq)) {
-            return resc.getModel().getSeq(resc).iterator();
-        } else {
-            return null;
+    private void validateFileObject(Resource resc, Resource parentResc) {
+        if (!parentResc.hasProperty(RDF.type, Cdr.Work)) {
+            failJob(null, "FileObject must be contained by Work, but FileObject {0}"
+                    + " was contained by non-work parent {1}",
+                    resc.getURI(), parentResc.getURI());
+        }
+
+        if (!resc.hasProperty(stagingLocation)) {
+            failJob(null, "No staging location provided for file ({0})", resc.getURI());
         }
     }
 
