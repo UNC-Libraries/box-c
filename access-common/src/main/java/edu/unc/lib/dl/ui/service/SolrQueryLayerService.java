@@ -113,7 +113,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         SearchState searchState = searchStateFactory.createSearchState();
         searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
-        searchState.setRowsPerPage(50);
+        searchState.setRowsPerPage(250);
         searchState.setFacetsToRetrieve(null);
         ArrayList<String> resultFields = new ArrayList<String>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
