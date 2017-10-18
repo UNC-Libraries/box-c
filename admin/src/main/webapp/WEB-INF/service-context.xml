@@ -157,19 +157,6 @@
 		<property name="configPath" value="${repo.dir}/collector.json" />
 	</bean>
 	
-	
-	
-	<!-- JMX -->
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-		lazy-init="false">
-		<property name="beans">
-			<map>
-				<entry key="cdr-admin:name=searchSettings" value-ref="searchSettings" />
-			</map>
-		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
-	</bean>
-	
 	<util:map id="vocabHelperClassMap">
 		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
 		<entry key="JSONVocabulary" value="edu.unc.lib.dl.util.JSONVocabularyHelper"/>

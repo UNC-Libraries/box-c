@@ -18,13 +18,10 @@ package edu.unc.lib.dl.admin.controller;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
@@ -34,8 +31,6 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
  *
  */
 public class AbstractSearchController extends AbstractSolrSearchController {
-    protected @Resource(name = "tagProviders")
-    List<TagProvider> tagProviders;
 
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
             SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),

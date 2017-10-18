@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
@@ -42,7 +41,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Controller;
@@ -55,7 +53,6 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
@@ -85,9 +82,6 @@ public class ExportXMLController {
     private SolrQueryLayerService queryLayer;
     @Autowired
     private JavaMailSender mailSender;
-    @Resource
-    @Qualifier("forwardedAccessClient")
-    private AccessClient client;
     @Autowired
     private AccessControlService aclService;
 

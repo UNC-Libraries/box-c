@@ -28,43 +28,6 @@
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
 	
-	<bean id="forwardedAccessClient" class="edu.unc.lib.dl.fedora.AccessClient"
-		init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
-			</list>
-		</property>
-	</bean>
-	
-	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol:https}://${fedora.host:localhost}${fedora.port:443}/${fedora.context:fedora}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
-	</bean>
-	
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService"
-		init-method="init" destroy-method="destroy">
-		<property name="accessClient" ref="forwardedAccessClient" />
-		<property name="maxThreads" value="5" />
-		<property name="threadGroupPrefix" value="Access" />
-		<property name="serviceTimeout" value="${access.dataservice.timeout:5000}" />
-	</bean>
-	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
-		<property name="fedoraUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-	</bean>
-	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
-		<property name="accessClient" ref="forwardedAccessClient" />
-		<property name="fedoraUtil" ref="fedoraUtil" />
-		<property name="fedoraHost" value="${fedora.host:localhost}" />
-	</bean>
-	
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
 		<property name="fedoraPath"
 			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
@@ -87,20 +50,12 @@
 		</property>
 	</bean>
 	
-	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
-		init-method="init">
-		<property name="aclEndpointUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/addons/fesl/" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-	</bean>
-	
 	<bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
 	</bean>
 	
 	<bean id="lorisUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
-		<property name="accessControlService" ref="accessControlService" />
+		<!-- <property name="accessControlService" ref="accessControlService" /> -->
 		<property name="solrQueryLayer" ref="queryLayer" />
 	</bean>
 	
