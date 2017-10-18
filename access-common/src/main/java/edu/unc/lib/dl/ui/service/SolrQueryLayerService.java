@@ -42,6 +42,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
@@ -75,7 +76,6 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 public class SolrQueryLayerService extends SolrSearchService {
     private static final Logger LOG = LoggerFactory.getLogger(SolrQueryLayerService.class);
     protected SearchStateFactory searchStateFactory;
-    protected PID collectionsPid;
     protected ObjectPathFactory pathFactory;
 
     private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
@@ -91,7 +91,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         searchRequest.setAccessGroups(accessGroups);
 
         SearchState searchState = searchStateFactory.createTitleListSearchState();
-        List<String> resourceTypes = new ArrayList<String>();
+        List<String> resourceTypes = new ArrayList<>();
         resourceTypes.add(searchSettings.resourceTypeCollection);
         searchState.setResourceTypes(resourceTypes);
         searchState.setRowsPerPage(searchSettings.defaultListResultsPerPage);
@@ -115,7 +115,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
         searchState.setRowsPerPage(50);
         searchState.setFacetsToRetrieve(null);
-        ArrayList<String> resultFields = new ArrayList<String>();
+        ArrayList<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
         resultFields.add(SearchFieldKeys.TITLE.name());
         resultFields.add(SearchFieldKeys.ID.name());
@@ -650,7 +650,8 @@ public class SolrQueryLayerService extends SolrSearchService {
         if (rootNode == null) {
             rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
             if (rootPath == null) {
-                rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1," + this.collectionsPid.getPid());
+                rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(),
+                        "1," + RepositoryPaths.getContentRootPid().getUUID());
                 browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
             }
 
@@ -739,7 +740,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         if (browseRequest.isIncludeFiles() && browseState.getRowsPerPage() > 0) {
             browseState.getResourceTypes().add(searchSettings.resourceTypeFile);
             SearchState fileSearchState = new SearchState(browseState);
-            List<String> resourceTypes = new ArrayList<String>();
+            List<String> resourceTypes = new ArrayList<>();
             resourceTypes.add(searchSettings.resourceTypeFile);
             fileSearchState.setResourceTypes(resourceTypes);
             CutoffFacet ancestorPath =
@@ -776,7 +777,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         SolrQuery directMatchQuery = this.generateSearch(directMatchRequest);
         QueryResponse directMatchResponse = this.executeQuery(directMatchQuery);
         String idField = solrSettings.getFieldName(SearchFieldKeys.ID.name());
-        Set<String> directMatchIds = new HashSet<String>(directMatchResponse.getResults().size());
+        Set<String> directMatchIds = new HashSet<>(directMatchResponse.getResults().size());
         for (SolrDocument document : directMatchResponse.getResults()) {
             directMatchIds.add((String) document.getFirstValue(idField));
         }
@@ -1021,10 +1022,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         this.searchStateFactory = searchStateFactory;
     }
 
-    public void setCollectionsPid(PID collectionsPid) {
-        this.collectionsPid = collectionsPid;
-    }
-
     /**
      * Get the number of departments represented in the collection
      *
@@ -1138,7 +1135,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         query.addFacetField("contentType");
         query.setFacetLimit(-1);
 
-        HashMap<String, Long> counts = new HashMap<String, Long>();
+        HashMap<String, Long> counts = new HashMap<>();
 
         try {
             response = this.executeQuery(query);
