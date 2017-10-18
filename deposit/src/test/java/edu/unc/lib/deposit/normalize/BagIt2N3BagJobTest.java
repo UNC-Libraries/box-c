@@ -125,7 +125,7 @@ public class BagIt2N3BagJobTest extends AbstractNormalizationJobTest {
         assertFileAdded(children.get("ipsum.txt"), "e78f5438b48b39bcbdea61b73679449d",
                 absoluteSourcePath + "/data/test/ipsum.txt");
 
-        // Verify that the
+        // Verify that the description file for the bag exists
         File modsFile = new File(job.getDescriptionDir(), PIDs.get(bagFolder.getURI()).getUUID() + ".xml");
         assertTrue(modsFile.exists());
 

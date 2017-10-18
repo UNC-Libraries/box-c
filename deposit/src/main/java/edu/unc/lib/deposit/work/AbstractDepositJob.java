@@ -392,7 +392,7 @@ public abstract class AbstractDepositJob implements Runnable {
     }
 
     /**
-     * Return an iterator for the children of the given resource, base on what
+     * Return an iterator for the children of the given resource, based on what
      * type of container it is.
      *
      * @param resc
