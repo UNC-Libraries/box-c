@@ -41,7 +41,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -50,7 +49,6 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
@@ -61,9 +59,6 @@ public class MODSValidationUIPFilterTest extends Assert {
     private SchematronValidator schematronValidator;
     private MODSValidationUIPFilter filter;
 
-    @Mock
-    private TripleStoreQueryService queryService;
-
     @Before
     public void init() {
         initMocks(this);
@@ -71,8 +66,6 @@ public class MODSValidationUIPFilterTest extends Assert {
         filter = new MODSValidationUIPFilter();
 
         filter.setSchematronValidator(schematronValidator);
-
-        filter.setQueryService(queryService);
     }
 
     @Test

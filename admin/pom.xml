@@ -85,7 +85,7 @@
 					</systemProperty>
 					<systemProperty>
 						<name>acl.properties.uri</name>
-						<value>classpath:acl-config.properties</value>
+						<value>file:${project.basedir}/target/${project.build.finalName}/acl-config.properties</value>
 					</systemProperty>
 					<systemProperty>
 						<name>log.dir</name>
@@ -94,7 +94,7 @@
 					<systemProperty>
 						<name>fcrepo.baseUri</name>
 						<value>http://localhost:8080/fcrepo/rest/</value>
-				 </systemProperty>
+				    </systemProperty>
 				</systemProperties>
 			</configuration>
 		</plugin>

@@ -17,7 +17,6 @@ package edu.unc.lib.dl.update;
 
 import java.util.List;
 
-import javax.annotation.Resource;
 import javax.xml.XMLConstants;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -34,7 +33,6 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
@@ -49,10 +47,6 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
     private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
     private SchematronValidator schematronValidator;
     private final Validator modsValidator;
-
-    @Resource
-    private TripleStoreQueryService queryService;
-
 
     public MODSValidationUIPFilter() {
         SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -150,9 +144,5 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
 
     public void setSchematronValidator(SchematronValidator schematronValidator) {
         this.schematronValidator = schematronValidator;
-    }
-
-    public void setQueryService(TripleStoreQueryService queryService) {
-        this.queryService = queryService;
     }
 }

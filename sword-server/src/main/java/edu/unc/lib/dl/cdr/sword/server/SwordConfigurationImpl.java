@@ -15,15 +15,10 @@
  */
 package edu.unc.lib.dl.cdr.sword.server;
 
-import javax.annotation.Resource;
-
 import org.swordapp.server.SwordConfiguration;
 
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
-
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -37,9 +32,6 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     private String authType = null;
     private int maxUploadSize = -1;
     private String tempDirectory = null;
-    @Resource
-    private TripleStoreQueryService tripleStoreQueryService;
-    private PID collectionsPidObject;
     private String basePath;
     private String swordPath;
     private String swordVersion = null;
@@ -49,10 +41,6 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     private String adminDepositor = null;
 
     public SwordConfigurationImpl() {
-    }
-
-    public void init() {
-        collectionsPidObject = tripleStoreQueryService.fetchByRepositoryPath("/Collections");
     }
 
     @Override
@@ -119,18 +107,6 @@ public class SwordConfigurationImpl implements SwordConfiguration {
     @Override
     public int getMaxUploadSize() {
         return this.maxUploadSize;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
-    }
-
-    public PID getCollectionsPidObject() {
-        return collectionsPidObject;
-    }
-
-    public void setCollectionsPidObject(PID collectionsPidObject) {
-        this.collectionsPidObject = collectionsPidObject;
     }
 
     public String getBasePath() {
