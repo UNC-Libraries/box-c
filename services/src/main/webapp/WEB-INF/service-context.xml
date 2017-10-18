@@ -89,7 +89,7 @@
 		<property name="targetMethod" value="rollbackAllFailed" />
 	</bean>
 	
-	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
 		<property name="jobDetail" ref="rollbackMoveJobDetail" />
 		<property name="repeatCount" value="0"/>
 		<property name="repeatInterval" value="1"/>

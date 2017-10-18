@@ -20,6 +20,7 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>
 			/WEB-INF/service-context.xml
+			/WEB-INF/access-fedora-context.xml
 			/WEB-INF/solr-search-context.xml
 			/WEB-INF/sword-context.xml
 		</param-value>

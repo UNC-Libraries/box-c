@@ -30,6 +30,23 @@
 				<directory>src/test/resources</directory>
 			</testResource>
 		</testResources>
+		<plugins>
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-war-plugin</artifactId>
+			<version>3.1.0</version>
+			<configuration>
+				<webResources>
+					<resource>
+						<filtering>true</filtering>
+						<directory>../etc</directory>
+						<include>server.properties</include>
+						<include>acl-config.properties</include>
+					</resource>
+				</webResources>
+			</configuration>
+		</plugin>
+	</plugins>
 	</build>
 	<description>Application for accessing the Carolina Digital Repository</description>
 	<dependencies>
@@ -146,7 +163,7 @@
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<version>2.2.3</version>
+			<version>2.3.0</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
