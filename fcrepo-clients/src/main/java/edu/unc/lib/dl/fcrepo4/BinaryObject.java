@@ -38,7 +38,8 @@ public class BinaryObject extends RepositoryObject {
 
     private String filename;
     private String mimetype;
-    private String checksum;
+    private String sha1Checksum;
+    private String md5Checksum;
     private Long filesize;
 
     private URI metadataUri;
@@ -123,16 +124,33 @@ public class BinaryObject extends RepositoryObject {
      * @return
      * @throws FedoraException
      */
-    public String getChecksum() throws FedoraException {
-        if (checksum == null) {
-            checksum = getResource().getProperty(Premis.hasMessageDigest)
+    public String getSha1Checksum() throws FedoraException {
+        if (sha1Checksum == null) {
+            sha1Checksum = getResource().getProperty(Premis.hasMessageDigest)
                     .getObject().toString();
         }
-        return checksum;
+        return sha1Checksum;
     }
 
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
+    /**
+     * Get the MD5 checksum for the stored binary content
+     * @return
+     * @throws FedoraException
+     */
+    public String getMd5Checksum() throws FedoraException {
+        if (md5Checksum == null) {
+            md5Checksum = getResource().getProperty(Premis.hasMessageDigest)
+                    .getObject().toString();
+        }
+        return md5Checksum;
+    }
+
+    public void setSha1Checksum(String sha1) {
+        this.sha1Checksum = sha1;
+    }
+
+    public void setMd5Checksum(String md5) {
+        this.md5Checksum = md5;
     }
 
     /**

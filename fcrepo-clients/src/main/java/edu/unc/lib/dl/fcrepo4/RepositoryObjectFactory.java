@@ -316,7 +316,7 @@ public class RepositoryObjectFactory {
     * @throws FedoraException
     */
     public BinaryObject createBinary(URI path, String slug, InputStream content, String filename, String mimetype,
-            String checksum, Model model) throws FedoraException {
+            String sha1Checksum, String md5Checksum, Model model) throws FedoraException {
         if (content == null) {
             throw new IllegalArgumentException("Cannot create a binary object from a null content stream");
         }
@@ -325,15 +325,25 @@ public class RepositoryObjectFactory {
         // Track the URI where metadata updates would be made to for this binary
         URI describedBy;
         try (FcrepoResponse response = getClient().post(path).slug(slug).body(content, mimetype).filename(filename)
-                .digestSha1(checksum).perform()) {
+                .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
             resultUri = response.getLocation();
             describedBy = response.getLinkHeaders("describedby").get(0);
         } catch (IOException e) {
             throw new FedoraException("Unable to create binary at " + path, e);
         } catch (FcrepoOperationFailedException e) {
+            // if one or more checksums don't match
             if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
-                throw new ChecksumMismatchException("Failed to create binary for " + path + ", provided SHA1 checksum "
-                        + checksum + " did not match the submitted content according to the repository.", e);
+                if (sha1Checksum == null) {
+                    throw new ChecksumMismatchException("Failed to create binary for " + path + ", md5 checksum "
+                            + md5Checksum + " did not match the submitted content according to the repository.", e);
+                } else if (md5Checksum == null) {
+                    throw new ChecksumMismatchException("Failed to create binary for " + path + ", sha1 checksum "
+                            + sha1Checksum + " did not match the submitted content according to the repository.", e);
+                } else {
+                    throw new ChecksumMismatchException("Failed to create binary for " + path + ", md5 checksum "
+                            + md5Checksum + " and sha1 checksum " + sha1Checksum
+                            + " did not match the submitted content according to the repository.", e);
+                }
             }
             throw ClientFaultResolver.resolve(e);
         }
