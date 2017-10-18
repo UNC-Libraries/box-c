@@ -390,9 +390,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
         // Pull out file properties if they are present
         String mimetype = getPropertyValue(childResc, CdrDeposit.mimetype);
-        // TODO accomodate either sha1 or md5 checksums being provided
+
         String sha1 = getPropertyValue(childResc, CdrDeposit.sha1sum);
-        // String md5 = getPropertyValue(childResc, CdrDeposit.md5sum);
+        String md5 = getPropertyValue(childResc, CdrDeposit.md5sum);
+
         String label = getPropertyValue(childResc, CdrDeposit.label);
 
         File file = new File(getStagedUri(stagingPath));
@@ -410,7 +411,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         FileObject fileObj;
         try (InputStream fileStream = new FileInputStream(file)) {
             // Add the file to the work as the datafile of its own FileObject
-            fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1, aipModel);
+            fileObj = work.addDataFile(childPid, fileStream, filename, mimetype, sha1, md5, aipModel);
             // Record the size of the file for throughput stats
             metricsClient.incrDepositFileThroughput(getDepositUUID(), file.length());
 
