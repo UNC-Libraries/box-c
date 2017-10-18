@@ -24,6 +24,7 @@ import org.apache.camel.builder.RouteBuilder;
 import edu.unc.lib.cdr.SolrUpdateProcessor;
 
 /**
+ * Route for performing solr updates for update requests.
  *
  * @author lfarrell
  *

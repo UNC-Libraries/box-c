@@ -60,7 +60,7 @@ public class RecursiveTreeIndexer {
             }
 
             // Get the DIP for the next object being indexed
-            dip = this.action.getDocumentIndexingPackage(repoObj.getPid(), parent);
+            dip = this.action.getDocumentIndexingPackage(pid, parent);
             if (dip == null) {
                 throw new IndexingException("No document indexing package was retrieved for " + pid);
             }

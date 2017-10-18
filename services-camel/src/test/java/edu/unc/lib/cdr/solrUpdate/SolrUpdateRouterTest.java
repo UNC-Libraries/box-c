@@ -35,6 +35,12 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.unc.lib.cdr.SolrUpdateProcessor;
 
+/**
+ *
+ * @author lfarrell
+ * @author bbpennel
+ *
+ */
 public class SolrUpdateRouterTest extends CamelSpringTestSupport {
     private static final String SOLR_UPDATE_ROUTE = "CdrServiceSolrUpdate";
 

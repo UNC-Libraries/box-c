@@ -36,16 +36,19 @@ public class CdrEventProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
         Document document = MessageUtil.getDocumentBody(in);
-
-        try {
-            String actionType = document.getRootElement().getChild("title", ATOM_NS).getTextTrim();
-            in.setHeader(CdrSolrUpdateAction, actionType);
-
-            // Pass the body document along for future processors
-            in.setBody(document);
-        } catch (NullPointerException e) {
-            in.setHeader(CdrSolrUpdateAction, "none");
+        if (document == null) {
+            return;
         }
+
+        String actionType = document.getRootElement().getChildTextTrim("title", ATOM_NS);
+        if (actionType == null) {
+            in.setHeader(CdrSolrUpdateAction, null);
+            return;
+        }
+        in.setHeader(CdrSolrUpdateAction, actionType);
+
+        // Pass the body document along for future processors
+        in.setBody(document);
     }
 
 }

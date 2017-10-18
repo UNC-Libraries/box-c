@@ -154,7 +154,6 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
     }
 
     private void offer(String pid, IndexingActionType solrActionType, List<String> children) {
-
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);

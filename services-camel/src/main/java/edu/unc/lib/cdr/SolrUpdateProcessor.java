@@ -37,6 +37,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
+ * Processes solr update messages, triggering the requested solr update action.
  *
  * @author lfarrell
  *

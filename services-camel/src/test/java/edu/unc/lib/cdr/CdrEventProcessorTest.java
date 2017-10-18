@@ -129,7 +129,7 @@ public class CdrEventProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrSolrUpdateAction, "none");
+        verify(message).setHeader(CdrSolrUpdateAction, null);
     }
 
     private Element createAtomEntry(Document msg, String operation) {
