@@ -40,7 +40,6 @@ import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
 /**
@@ -57,8 +56,6 @@ public class FedoraDataService {
     private edu.unc.lib.dl.fedora.AccessClient accessClient = null;
 
     private edu.unc.lib.dl.fedora.ManagementClient managementClient = null;
-
-    private edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService = null;
 
     private String threadGroupPrefix = "";
 
@@ -218,14 +215,6 @@ public class FedoraDataService {
         this.managementClient = managementClient;
     }
 
-    public edu.unc.lib.dl.util.TripleStoreQueryService getTripleStoreQueryService() {
-        return tripleStoreQueryService;
-    }
-
-    public void setTripleStoreQueryService(edu.unc.lib.dl.util.TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
-    }
-
     public int getMaxThreads() {
         return maxThreads;
     }
@@ -312,7 +301,7 @@ public class FedoraDataService {
         public Content call() {
             LOG.debug("Get path info for " + pid.getPid());
             // add path info
-            List<PathInfo> path = tripleStoreQueryService.lookupRepositoryPathInfo(pid);
+            List<PathInfo> path = null;
             if (path == null || path.size() == 0) {
                 throw new ServiceException("No path information was returned for " + pid.getPid());
             }
@@ -370,7 +359,7 @@ public class FedoraDataService {
         @Override
         public Content call() {
             LOG.debug("Get parent collection for " + pid.getPid());
-            PID parentCollection = tripleStoreQueryService.fetchParentCollection(pid);
+            PID parentCollection = null;
             if (parentCollection == null) {
                 return null;
             }
@@ -397,7 +386,7 @@ public class FedoraDataService {
             try {
                 this.storeGroupsOnCurrentThread();
                 LOG.debug("Get Order within Parent for " + pid.getPid());
-                PID container = tripleStoreQueryService.fetchContainer(pid);
+                PID container = null;
                 byte[] structMapBytes = getAccessClient().getDatastreamDissemination(container, "MD_CONTENTS", null)
                         .getStream();
                 SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -431,18 +420,7 @@ public class FedoraDataService {
         public Content call() {
             try {
                 this.storeGroupsOnCurrentThread();
-                String webObject = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(pid,
-                        ContentModelHelper.CDRProperty.defaultWebObject.toString());
-                if (webObject != null) {
-                    Document foxml;
-                    foxml = managementClient.getObjectXML(new PID(webObject));
-                    if (foxml != null) {
-                        Element webObjectElement = new Element("defaultWebObject");
-                        webObjectElement.setAttribute("id", webObject);
-                        webObjectElement.addContent(foxml.getRootElement().detach());
-                        return webObjectElement;
-                    }
-                }
+                String webObject = null;
             } catch (Exception e) {
                 throw new ServiceException(e);
             } finally {

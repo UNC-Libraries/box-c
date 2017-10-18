@@ -158,6 +158,44 @@ public class GlobalPermissionEvaluatorTest {
         assertFalse(evaluator.hasGlobalPrincipal(principals));
     }
 
+    @Test
+    public void getGlobalUserRoles() {
+        addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
+        addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
+
+        evaluator = new GlobalPermissionEvaluator(configProperties);
+
+        Set<UserRole> roles = evaluator.getGlobalUserRoles(principals);
+
+        assertTrue(roles.contains(UserRole.canManage));
+    }
+
+    @Test
+    public void getGlobalMultipleUserRoles() {
+        principals = new HashSet<>(Arrays.asList(PRINC_GRP1, PRINC_GRP2));
+
+        addGlobalAssignment(UserRole.canManage, PRINC_GRP1);
+        addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
+
+        evaluator = new GlobalPermissionEvaluator(configProperties);
+
+        Set<UserRole> roles = evaluator.getGlobalUserRoles(principals);
+
+        assertTrue(roles.contains(UserRole.canManage));
+        assertTrue(roles.contains(UserRole.canDescribe));
+    }
+
+    @Test
+    public void getNoGlobalUserRoles() {
+        addGlobalAssignment(UserRole.canDescribe, PRINC_GRP2);
+
+        evaluator = new GlobalPermissionEvaluator(configProperties);
+
+        Set<UserRole> roles = evaluator.getGlobalUserRoles(principals);
+
+        assertTrue(roles.isEmpty());
+    }
+
     private void addGlobalAssignment(UserRole role, String principal) {
         configProperties.setProperty(
                 GlobalPermissionEvaluator.GLOBAL_PROP_PREFIX + role.name(), principal);

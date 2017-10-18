@@ -18,32 +18,19 @@ package edu.unc.lib.dl.admin.controller;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.annotation.Resource;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class AbstractSearchController extends AbstractSolrSearchController {
-    protected @Resource(name = "tagProviders")
-    List<TagProvider> tagProviders;
-
-    @Autowired
-    protected PID collectionsPid;
 
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
             SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),
@@ -65,17 +52,9 @@ public class AbstractSearchController extends AbstractSolrSearchController {
         searchState.setResultFields(resultsFieldList);
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
         List<BriefObjectMetadata> objects = resultResponse.getResultList();
         queryLayer.getChildrenCounts(objects, searchRequest);
-
-        // Add tags
-        for (BriefObjectMetadata record : objects) {
-            for (TagProvider provider : this.tagProviders) {
-                provider.addTags(record, accessGroups);
-            }
-        }
 
         return resultResponse;
     }

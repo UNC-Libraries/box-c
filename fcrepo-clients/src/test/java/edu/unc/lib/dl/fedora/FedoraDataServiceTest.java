@@ -49,7 +49,6 @@ public class FedoraDataServiceTest extends Assert {
 
         dataService.setAccessClient(accessClient);
         dataService.setManagementClient(managementClient);
-        dataService.setTripleStoreQueryService(tripleStoreQueryService);
         dataService.setMaxThreads(5);
         dataService.init();
     }

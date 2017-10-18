@@ -13,14 +13,6 @@
 		<property name="ignoreResourceNotFound" value="false"/>
 	</bean>
 
-	<bean id="tripleStoreQueryService"
-		class="edu.unc.lib.dl.util.TripleStoreQueryServiceMulgaraImpl">
-		<property name="itqlEndpointURL"
-			value="${mulgara.protocol}://${mulgara.host}${mulgara.port}/${mulgara.context}/services/ItqlBeanService"/>
-		<property name="serverModelUri" value="rmi://${fedora.host}/server1#"/>
-		<property name="name" value="${fedora.admin.username}"/>
-		<property name="pass" value="${fedora.admin.password}"/>
-	</bean>	
 	<bean id="managementClient" scope="prototype" class="edu.unc.lib.dl.fedora.ManagementClient" init-method="init" destroy-method="destroy">
 		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
 		<property name="username" value="${fedora.admin.username}" />
@@ -34,11 +26,9 @@
 	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService">
 		<property name="accessClient" ref="accessClient"/>
 		<property name="managementClient" ref="managementClient"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="accessControlUtils" ref="accessControlUtils"/>
 	</bean>
 	<bean id="accessControlUtils" class="edu.unc.lib.dl.fedora.AccessControlUtils">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
 		<property name="cacheDepth" value="4"/>
 		<property name="cacheLimit" value="5000"/>
 		<property name="cacheResetTime" value="1"/>

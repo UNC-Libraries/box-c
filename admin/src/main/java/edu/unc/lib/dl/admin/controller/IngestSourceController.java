@@ -76,8 +76,8 @@ public class IngestSourceController {
         }
 
         Map<String, Object> result = new HashMap<>();
-        result.put("sources", sourceManager.listSources(destination));
-        result.put("candidates", sourceManager.listCandidates(destination));
+//        result.put("sources", sourceManager.listSources(destination));
+//        result.put("candidates", sourceManager.listCandidates(destination));
 
         return result;
     }

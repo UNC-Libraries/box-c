@@ -18,12 +18,10 @@ package edu.unc.lib.dl.admin.controller;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -48,17 +46,15 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.tags.TagProvider;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.VocabularyHelper;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -72,16 +68,11 @@ public class MODSController extends AbstractSwordController {
     private String swordUsername;
     @Autowired
     private String swordPassword;
-    @Autowired
-    private TripleStoreQueryService tripleStoreQueryService;
 
     private Map<String, String> namespaces;
 
     @Autowired
     private VocabularyHelperManager vocabularies;
-
-    protected @Resource(name = "tagProviders")
-    List<TagProvider> tagProviders;
 
     @PostConstruct
     public void init() {
@@ -120,7 +111,7 @@ public class MODSController extends AbstractSwordController {
     Map<String, Object> editDescription(@PathVariable("pid") String pid, HttpServletResponse response) {
         response.setContentType("application/json");
 
-        Map<String, Object> results = new LinkedHashMap<String, Object>();
+        Map<String, Object> results = new LinkedHashMap<>();
 
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
@@ -129,10 +120,6 @@ public class MODSController extends AbstractSwordController {
         BriefObjectMetadataBean resultObject = queryLayer.getObjectById(objectRequest);
         if (resultObject == null) {
             throw new InvalidRecordRequestException();
-        }
-
-        for (TagProvider provider : tagProviders) {
-            provider.addTags(resultObject, accessGroups);
         }
 
         results.put("resultObject", resultObject);
@@ -197,7 +184,7 @@ public class MODSController extends AbstractSwordController {
             } else {
                 if (statusCode == HttpStatus.SC_BAD_REQUEST || statusCode == HttpStatus.SC_NOT_FOUND) {
                     // Ensure that the object actually exists
-                    PID existingPID = tripleStoreQueryService.verify(new PID(pid));
+                    PID existingPID = null;
                     if (existingPID == null) {
                         throw new Exception(
                                 "Unable to retrieve MODS.  Object " + pid + " does not exist in the repository.");
@@ -241,9 +228,5 @@ public class MODSController extends AbstractSwordController {
 
     public void setSwordPassword(String swordPassword) {
         this.swordPassword = swordPassword;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
     }
 }

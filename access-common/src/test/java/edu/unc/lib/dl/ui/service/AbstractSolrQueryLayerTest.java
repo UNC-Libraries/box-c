@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -87,7 +86,6 @@ public class AbstractSolrQueryLayerTest {
         facetUtil.setSolrSettings(solrSettings);
 
         queryLayer = new SolrQueryLayerService();
-        queryLayer.setCollectionsPid(new PID("cdr:Collections"));
         queryLayer.setSearchSettings(searchSettings);
         queryLayer.setSolrSettings(solrSettings);
         queryLayer.setSearchStateFactory(stateFactory);
