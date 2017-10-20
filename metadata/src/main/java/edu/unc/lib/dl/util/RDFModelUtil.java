@@ -22,6 +22,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -36,7 +38,7 @@ import org.apache.jena.riot.RDFFormat;
 /**
  * Utility containing common methods for manipulating and transforming RDF
  * models
- * 
+ *
  * @author bbpennel
  *
  */
@@ -56,7 +58,7 @@ public class RDFModelUtil {
 
     /**
      * Serializes and streams the provided model as serialized turtle
-     * 
+     *
      * @param model
      * @return
      * @throws IOException
@@ -67,7 +69,7 @@ public class RDFModelUtil {
 
     /**
      * Serializes and streams the provided model, using the specified format
-     * 
+     *
      * @param model
      * @param format
      * @return
@@ -82,7 +84,7 @@ public class RDFModelUtil {
 
     /**
      * Returns a model built from the given turtle input stream
-     * 
+     *
      * @param inStream
      * @return
      */
@@ -95,7 +97,7 @@ public class RDFModelUtil {
     /**
      * Convert the given model into a SPARQL update query which inserts all of
      * the properties in the model.
-     * 
+     *
      * @param model
      * @return sparql update query which adds all properties from the given
      *         model
@@ -131,7 +133,6 @@ public class RDFModelUtil {
                 }
                 query.append(" .\n");
             }
-
         }
 
         query.append("}\nWHERE {}");
@@ -139,20 +140,112 @@ public class RDFModelUtil {
         return query.toString();
     }
 
+    /**
+     * Create a SPARQL update query to add one property to a resource
+     *
+     * @param subjUri
+     * @param property
+     * @param object
+     * @return
+     */
     public static String createSparqlInsert(String subjUri, Property property,
-            Resource object) {
-        return buildSparqlInsert(subjUri, property, "<" + object.getURI() + ">");
-    }
+            Object object) {
 
-    public static String createSparqlInsert(String subjUri, Property property,
-            String value) {
-        return buildSparqlInsert(subjUri, property, "\"" + value + "\"");
-    }
+        String objectString = getObjectAsString(object);
 
-    private static String buildSparqlInsert(String subjUri, Property property,
-            String object) {
         StringBuilder query = new StringBuilder();
-        query.append("INSERT {\n");
+        addInsert(query, subjUri, property, objectString);
+        query.append("\nWHERE {}");
+
+        return query.toString();
+    }
+
+    /**
+     * Constructs a sparql query which replaces all instances of a property on a resource with a new valu
+     *
+     * @param subjUri
+     * @param property
+     * @param object
+     * @return
+     */
+    public static String createSparqlReplace(String subjUri, Property property,
+            Object object) {
+
+        String objectString = getObjectAsString(object);
+
+        String subjString = getSubjectString(subjUri);
+
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE { ");
+        query.append(subjString).append(" <").append(property.getURI()).append("> ?obj . }\n");
+
+        addInsert(query, subjUri, property, objectString);
+
+        query.append("\nWHERE {");
+        query.append(subjString).append(" <").append(property.getURI()).append("> ?obj . }");
+
+        return query.toString();
+    }
+
+    /**
+     * Constructs a sparql update query to delete all instances of a property from a resource.
+     *
+     * @param subjUri
+     * @param property
+     * @return
+     */
+    public static String createSparqlDelete(String subjUri, Property property, Object object) {
+        String subjString = getSubjectString(subjUri);
+
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE { ");
+        query.append(subjString).append(" <").append(property.getURI()).append('>');
+
+        // If no object was specified for deletion, then select for all values of property
+        if (object == null) {
+            query.append(" ?obj . }\n");
+        } else {
+            query.append(' ').append(getObjectAsString(object)).append(" . }\n");
+        }
+
+        query.append("\nWHERE {");
+        if (object == null) {
+            query.append(subjString).append(" <").append(property.getURI()).append("> ?obj . }");
+        } else {
+            query.append('}');
+        }
+
+        return query.toString();
+    }
+
+    /**
+     * Returns a string representation of a resource or a typed literal based on
+     * the type of object provided. If the object is not a known XSD datatype or
+     * resource, null is returned.
+     *
+     * @param object
+     * @return
+     */
+    public static String getObjectAsString(Object object) {
+        if (object instanceof Resource) {
+            return '<' + ((Resource) object).getURI() + '>';
+        } else if (object instanceof String) {
+            return '"' + object.toString() + '"';
+        } else {
+            RDFDatatype type = TypeMapper.getInstance().getTypeByClass(object.getClass());
+            if (type == null) {
+                throw new IllegalArgumentException("Cannot convert object of type " + object.getClass()
+                        + ", only supported XSD datatypes and Resources are supported.");
+            }
+            String typeUri = type.getURI();
+
+            return '"' + object.toString() + "\"^^<" + typeUri + ">";
+        }
+    }
+
+    private static void addInsert(StringBuilder query, String subjUri, Property property,
+            String object) {
+        query.append("INSERT {");
 
         if (subjUri == null) {
             query.append(" <>");
@@ -161,8 +254,14 @@ public class RDFModelUtil {
         }
 
         query.append(" <").append(property.getURI()).append("> ")
-                .append(object).append(" .\n").append("}\nWHERE {}");
+                .append(object).append(" . ").append("}");
+    }
 
-        return query.toString();
+    private static String getSubjectString(String subjUri) {
+        if (subjUri == null) {
+            return "<>";
+        } else {
+            return "<" + subjUri + ">";
+        }
     }
 }

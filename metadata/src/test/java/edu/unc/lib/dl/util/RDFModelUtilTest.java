@@ -16,13 +16,19 @@
 package edu.unc.lib.dl.util;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.update.UpdateAction;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.junit.Test;
 
@@ -33,36 +39,35 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class RDFModelUtilTest {
+    private static String RESC_URI = "http://example.com/resource";
 
     @Test
     public void createSparqlInsertTest() {
-        String rescUri = "http://example.com/resource";
         Property booleanProperty = createProperty("http://example.com/booleanProperty");
 
         // Define a set of properties to add to a resource
         Model insertModel = ModelFactory.createDefaultModel();
-        Resource resc = insertModel.createResource(rescUri);
+        Resource resc = insertModel.createResource(RESC_URI);
         resc.addProperty(RDF.type, Cdr.Collection);
         resc.addLiteral(booleanProperty, false);
         resc.addProperty(DcElements.title, "Title");
 
         // Define a hash uri resource off of the main resource
-        String hashUri = rescUri + "#event";
+        String hashUri = RESC_URI + "#event";
         Resource hashResc = insertModel.createResource(hashUri);
         hashResc.addProperty(Premis.hasEventType, Premis.Capture);
-        hashResc.addProperty(Premis.hasEventDetail, "Success");
 
         // Build the update query
         String query = RDFModelUtil.createSparqlInsert(insertModel);
 
         // Make a model that the query will be applied to
         Model destModel = ModelFactory.createDefaultModel();
-        Resource destResc = destModel.createResource(rescUri);
+        Resource destResc = destModel.createResource(RESC_URI);
         destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
 
         // Execute the query on the destination model to see that it works
@@ -80,19 +85,100 @@ public class RDFModelUtilTest {
 
     @Test
     public void createSparqlSingleResourceInsertTest() {
-        String rescUri = "http://example.com/resource";
-        
-        String query = RDFModelUtil.createSparqlInsert(rescUri, RDF.type, PcdmModels.Object);
-        
+        String query = RDFModelUtil.createSparqlInsert(RESC_URI, RDF.type, PcdmModels.Object);
+
         // Make a model that the query will be applied to
         Model destModel = ModelFactory.createDefaultModel();
-        Resource destResc = destModel.createResource(rescUri);
+        Resource destResc = destModel.createResource(RESC_URI);
         destResc.addProperty(RDF.type, Fcrepo4Repository.Container);
-        
+
         // Execute the query on the destination model to see that it works
         UpdateAction.parseExecute(query, destModel);
-        
+
         assertTrue(destResc.hasProperty(RDF.type, Fcrepo4Repository.Container));
         assertTrue(destResc.hasProperty(RDF.type, PcdmModels.Object));
+    }
+
+    @Test
+    public void getObjectAsStringStringTest() {
+        String objString = RDFModelUtil.getObjectAsString("test");
+
+        assertEquals("\"test\"", objString);
+    }
+
+    @Test
+    public void getObjectAsStringResourceTest() {
+        Resource resc = ModelFactory.createDefaultModel().getResource(RESC_URI);
+        String objString = RDFModelUtil.getObjectAsString(resc);
+
+        assertEquals("<" + RESC_URI + ">", objString);
+    }
+
+    @Test
+    public void getObjectAsStringBooleanTest() {
+        String objString = RDFModelUtil.getObjectAsString(false);
+
+        assertEquals("\"false\"^^<http://www.w3.org/2001/XMLSchema#boolean>", objString);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getObjectAsStringNonapplicableTest() {
+        RDFModelUtil.getObjectAsString(new Object());
+    }
+
+    @Test
+    public void createSparqlReplaceTest() {
+        String expectedTitle = "Title";
+
+        String sparql = RDFModelUtil.createSparqlReplace(RESC_URI, DC.title, expectedTitle);
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(RESC_URI);
+        resc.addProperty(DC.title, "1");
+        resc.addProperty(DC.title, "2");
+
+        UpdateRequest request = UpdateFactory.create(sparql);
+        UpdateAction.execute(request, model);
+
+        StmtIterator stmtIt = resc.listProperties(DC.title);
+        assertEquals(expectedTitle, stmtIt.next().getString());
+        assertFalse(stmtIt.hasNext());
+    }
+
+    @Test
+    public void createSparqlDeleteWithObject() {
+        String deleteTitle = "Delete me";
+        String retainTitle = "Keep me";
+
+        String sparql = RDFModelUtil.createSparqlDelete(RESC_URI, DC.title, deleteTitle);
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(RESC_URI);
+        resc.addProperty(DC.title, retainTitle);
+        resc.addProperty(DC.title, deleteTitle);
+
+        // Execute the query
+        UpdateRequest request = UpdateFactory.create(sparql);
+        UpdateAction.execute(request, model);
+
+        StmtIterator stmtIt = resc.listProperties(DC.title);
+        assertEquals(retainTitle, stmtIt.next().getString());
+        assertFalse(stmtIt.hasNext());
+    }
+
+    @Test
+    public void createSparqlDeleteNullObject() {
+        String sparql = RDFModelUtil.createSparqlDelete(RESC_URI, DC.title, null);
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(RESC_URI);
+        resc.addProperty(DC.title, "Title1");
+        resc.addProperty(DC.title, "Title2");
+
+        // Execute the query
+        UpdateRequest request = UpdateFactory.create(sparql);
+        UpdateAction.execute(request, model);
+
+        assertFalse(resc.hasProperty(DC.title));
     }
 }
