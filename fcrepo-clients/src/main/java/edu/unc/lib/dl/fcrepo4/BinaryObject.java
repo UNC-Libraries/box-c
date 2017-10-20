@@ -17,8 +17,11 @@ package edu.unc.lib.dl.fcrepo4;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
@@ -35,6 +38,9 @@ import edu.unc.lib.dl.rdf.Premis;
  *
  */
 public class BinaryObject extends RepositoryObject {
+
+    private static final String SHA1_PREFIX = "urn:sha1:";
+    private static final String MD5_PREFIX = "urn:md5:";
 
     private String filename;
     private String mimetype;
@@ -120,15 +126,34 @@ public class BinaryObject extends RepositoryObject {
     }
 
     /**
+     * Get the list of checksums for the stored binary content
+     * @return
+     * @throws FedoraException
+     */
+    private List<String> getChecksums() throws FedoraException {
+        StmtIterator it = getResource().listProperties(Premis.hasMessageDigest);
+        ArrayList<String> checksums = new ArrayList<>();
+        while (it.hasNext()) {
+            checksums.add(it.next().getObject().toString());
+        }
+        return checksums;
+    }
+
+    /**
      * Get the SHA-1 checksum for the stored binary content
      * @return
      * @throws FedoraException
      */
     public String getSha1Checksum() throws FedoraException {
         if (sha1Checksum == null) {
-            sha1Checksum = getResource().getProperty(Premis.hasMessageDigest)
-                    .getObject().toString();
-        }
+            List<String> checksums = getChecksums();
+            for (String checksum : checksums) {
+                if (checksum.startsWith(SHA1_PREFIX)) {
+                    sha1Checksum = checksum;
+                    break;
+                }
+            }
+       }
         return sha1Checksum;
     }
 
@@ -139,8 +164,13 @@ public class BinaryObject extends RepositoryObject {
      */
     public String getMd5Checksum() throws FedoraException {
         if (md5Checksum == null) {
-            md5Checksum = getResource().getProperty(Premis.hasMessageDigest)
-                    .getObject().toString();
+            List<String> checksums = getChecksums();
+            for (String checksum : checksums) {
+                if (checksum.startsWith(MD5_PREFIX)) {
+                    md5Checksum = checksum;
+                    break;
+                }
+            }
         }
         return md5Checksum;
     }

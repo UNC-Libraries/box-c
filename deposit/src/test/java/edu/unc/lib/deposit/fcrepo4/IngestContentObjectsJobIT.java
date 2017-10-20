@@ -89,6 +89,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private static final String FILE1_LOC = "pdf.pdf";
     private static final String FILE1_MIMETYPE = "application/pdf";
     private static final String FILE1_SHA1 = "7185198c0f158a3b3caa3f387efa3df990d2a904";
+    private static final String FILE1_MD5 = "b5808604069f9f61d94e0660409616ba";
     private static final long FILE1_SIZE = 739L;
     private static final String FILE2_LOC = "text.txt";
     private static final String FILE2_MIMETYPE = "text/plain";
@@ -224,8 +225,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         workBag.addProperty(RDF.type, Cdr.Work);
         workBag.addProperty(CdrDeposit.label, label);
 
-        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1);
-        PID supPid = addFileObject(workBag, FILE2_LOC, FILE2_MIMETYPE, null);
+        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        PID supPid = addFileObject(workBag, FILE2_LOC, FILE2_MIMETYPE, null, null);
 
         depBag.add(workBag);
 
@@ -248,7 +249,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
 
         // Verify that the properties of the primary object were added
         FileObject primaryObj = mWork.getPrimaryObject();
-        assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_SIZE);
+        assertBinaryProperties(primaryObj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
 
         // Check the right number of members are present
         List<ContentObject> workMembers = mWork.getMembers();
@@ -257,7 +258,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertNotNull(supObj);
 
         // Verify the properties and content of the supplemental file
-        assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, FILE2_SIZE);
+        assertBinaryProperties(supObj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
         // Verify that ingestion event gets added for work
         List<PremisEventObject> eventsWork = mWork.getPremisLog().getEvents();
         assertEquals(2, eventsWork.size());
@@ -290,7 +291,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Model model = job.getWritableModel();
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
-        PID filePid = addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1);
+        PID filePid = addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, null);
 
         job.closeModel();
 
@@ -311,7 +312,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FileObject primaryFile = ((WorkObject) mWork).getPrimaryObject();
         assertEquals("File object should have the originally provided pid",
                 filePid, primaryFile.getPid());
-        assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_SIZE);
+        assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, null, FILE1_SIZE);
 
         List<BinaryObject> fileBinaries = primaryFile.getBinaryObjects();
         assertEquals("Incorrect number of binaries for file", 2, fileBinaries.size());
@@ -324,7 +325,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     /**
-     * Ensure that deposit fails on a checksum mismatch for a single file deposit
+     * Ensure that deposit fails on a sha1 checksum mismatch for a single file deposit
      */
     @Test(expected = TransactionCancelledException.class)
     public void ingestFileObjectChecksumMismatch() throws Exception {
@@ -332,7 +333,23 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         String badSha1 = "111111111111111111111111111111111111";
-        addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1);
+        addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null);
+
+        job.closeModel();
+
+        job.run();
+    }
+
+    /**
+     * Ensure that deposit fails on a md5 checksum mismatch for a single file deposit
+     */
+    @Test(expected = TransactionCancelledException.class)
+    public void ingestFileObjectMd5ChecksumMismatch() throws Exception {
+        Model model = job.getWritableModel();
+        Bag depBag = model.createBag(depositPid.getRepositoryPath());
+
+        String badMd5 = "111111111111111111111111111111111111";
+        addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, null, badMd5);
 
         job.closeModel();
 
@@ -379,8 +396,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         depBag.add(folderBag);
 
         // Add children, where the second child is invalid due to missing location
-        PID file1Pid = addFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1);
-        PID file2Pid = addFileObject(folderBag, null, FILE2_MIMETYPE, null);
+        PID file1Pid = addFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        PID file2Pid = addFileObject(folderBag, null, FILE2_MIMETYPE, null, null);
 
         job.closeModel();
 
@@ -432,8 +449,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             file1Obj = workB.getPrimaryObject();
         }
 
-        assertBinaryProperties(file1Obj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_SIZE);
-        assertBinaryProperties(file2Obj, FILE2_LOC, FILE2_MIMETYPE, null, FILE2_SIZE);
+        assertBinaryProperties(file1Obj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
+        assertBinaryProperties(file2Obj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
 
         assertClickCount(3);
     }
@@ -458,7 +475,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             previousBag = folderBag;
         }
 
-        addFileObject(previousBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1);
+        addFileObject(previousBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
 
         job.closeModel();
 
@@ -476,7 +493,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertEquals("Incorrect number of children in last tier", 1, members.size());
         WorkObject work = (WorkObject) members.get(0);
         FileObject primaryFile = work.getPrimaryObject();
-        assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_SIZE);
+        assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
 
         assertClickCount(nestingDepth + 1);
     }
@@ -498,7 +515,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         workBag.addProperty(RDF.type, Cdr.FileObject);
         workBag.addProperty(CdrDeposit.label, label);
 
-        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1);
+        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
 
         depBag.add(workBag);
 
@@ -660,13 +677,17 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     private void assertBinaryProperties(FileObject fileObj, String loc, String mimetype,
-            String sha1, long size) {
+            String sha1, String md5, long size) {
         BinaryObject binary = fileObj.getOriginalFile();
         assertEquals(loc, binary.getFilename());
         if (sha1 != null) {
-            assertEquals("urn:sha1:" + sha1, binary.getChecksum());
+            assertEquals("urn:sha1:" + sha1, binary.getSha1Checksum());
         } else {
-            assertNotNull(binary.getChecksum());
+            assertNotNull(binary.getSha1Checksum());
+        }
+        // md5 isn't required, so not all tests will need to ensure it isn't null
+        if (md5 != null) {
+            assertEquals("urn:md5:" + md5, binary.getMd5Checksum());
         }
         assertEquals(size, binary.getFilesize().longValue());
         assertEquals(mimetype, binary.getMimetype());
@@ -678,7 +699,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     }
 
     private PID addFileObject(Bag parent, String stagingLocation,
-                String mimetype, String sha1) throws Exception {
+                String mimetype, String sha1, String md5) throws Exception {
         PID filePid = pidMinter.mintContentPid();
 
         Resource fileResc = parent.getModel().createResource(filePid.getRepositoryPath());
@@ -690,6 +711,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         fileResc.addProperty(CdrDeposit.mimetype, mimetype);
         if (sha1 != null) {
             fileResc.addProperty(CdrDeposit.sha1sum, sha1);
+        }
+        if (md5 != null) {
+            fileResc.addProperty(CdrDeposit.md5sum, md5);
         }
 
         parent.add(fileResc);
