@@ -42,6 +42,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -63,6 +64,8 @@ public class RepositoryObjectFactory {
     private RepositoryObjectLoader repoObjLoader;
 
     private RepositoryPIDMinter pidMinter;
+
+    private SparqlUpdateService sparqlUpdateService;
 
     /**
      * Creates a new deposit record object with the given model.
@@ -487,19 +490,17 @@ public class RepositoryObjectFactory {
         this.pidMinter = pidMinter;
     }
 
+    /**
+     * @param sparqlUpdateService the sparqlUpdateService to set
+     */
+    public void setSparqlUpdateService(SparqlUpdateService sparqlUpdateService) {
+        this.sparqlUpdateService = sparqlUpdateService;
+    }
+
     private void persistTripleToFedora(PID subject, String sparqlUpdate) {
         URI uri = getMetadataUri(subject);
 
-        InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
-
-        try (FcrepoResponse response = getClient().patch(uri)
-                .body(sparqlStream)
-                .perform()) {
-        } catch (IOException e) {
-            throw new FedoraException("Unable to add relationship to object " + subject.getId(), e);
-        } catch (FcrepoOperationFailedException e) {
-            throw ClientFaultResolver.resolve(e);
-        }
+        sparqlUpdateService.executeUpdate(uri.toString(), sparqlUpdate);
     }
 
     private URI createContentContainerObject(URI path, Model model) throws FedoraException {
