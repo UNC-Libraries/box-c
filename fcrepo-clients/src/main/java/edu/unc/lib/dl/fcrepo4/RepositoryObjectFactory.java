@@ -333,17 +333,8 @@ public class RepositoryObjectFactory {
         } catch (FcrepoOperationFailedException e) {
             // if one or more checksums don't match
             if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
-                if (sha1Checksum == null) {
-                    throw new ChecksumMismatchException("Failed to create binary for " + path + ", md5 checksum "
-                            + md5Checksum + " did not match the submitted content according to the repository.", e);
-                } else if (md5Checksum == null) {
-                    throw new ChecksumMismatchException("Failed to create binary for " + path + ", sha1 checksum "
-                            + sha1Checksum + " did not match the submitted content according to the repository.", e);
-                } else {
-                    throw new ChecksumMismatchException("Failed to create binary for " + path + ", md5 checksum "
-                            + md5Checksum + " and sha1 checksum " + sha1Checksum
-                            + " did not match the submitted content according to the repository.", e);
-                }
+                throw new ChecksumMismatchException("Failed to create binary for " + path + ", since checksum(s)"
+                        + " did not match the submitted content according to the repository.", e);
             }
             throw ClientFaultResolver.resolve(e);
         }
