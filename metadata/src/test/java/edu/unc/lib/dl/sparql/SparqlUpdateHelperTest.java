@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.util;
+package edu.unc.lib.dl.sparql;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createProperty;
 import static org.junit.Assert.assertEquals;
@@ -43,7 +43,7 @@ import edu.unc.lib.dl.rdf.Premis;
  * @author bbpennel
  *
  */
-public class RDFModelUtilTest {
+public class SparqlUpdateHelperTest {
     private static String RESC_URI = "http://example.com/resource";
 
     @Test
@@ -63,7 +63,7 @@ public class RDFModelUtilTest {
         hashResc.addProperty(Premis.hasEventType, Premis.Capture);
 
         // Build the update query
-        String query = RDFModelUtil.createSparqlInsert(insertModel);
+        String query = SparqlUpdateHelper.createSparqlInsert(insertModel);
 
         // Make a model that the query will be applied to
         Model destModel = ModelFactory.createDefaultModel();
@@ -85,7 +85,7 @@ public class RDFModelUtilTest {
 
     @Test
     public void createSparqlSingleResourceInsertTest() {
-        String query = RDFModelUtil.createSparqlInsert(RESC_URI, RDF.type, PcdmModels.Object);
+        String query = SparqlUpdateHelper.createSparqlInsert(RESC_URI, RDF.type, PcdmModels.Object);
 
         // Make a model that the query will be applied to
         Model destModel = ModelFactory.createDefaultModel();
@@ -101,7 +101,7 @@ public class RDFModelUtilTest {
 
     @Test
     public void getObjectAsStringStringTest() {
-        String objString = RDFModelUtil.getObjectAsString("test");
+        String objString = SparqlUpdateHelper.getObjectAsString("test");
 
         assertEquals("\"test\"", objString);
     }
@@ -109,28 +109,28 @@ public class RDFModelUtilTest {
     @Test
     public void getObjectAsStringResourceTest() {
         Resource resc = ModelFactory.createDefaultModel().getResource(RESC_URI);
-        String objString = RDFModelUtil.getObjectAsString(resc);
+        String objString = SparqlUpdateHelper.getObjectAsString(resc);
 
         assertEquals("<" + RESC_URI + ">", objString);
     }
 
     @Test
     public void getObjectAsStringBooleanTest() {
-        String objString = RDFModelUtil.getObjectAsString(false);
+        String objString = SparqlUpdateHelper.getObjectAsString(false);
 
         assertEquals("\"false\"^^<http://www.w3.org/2001/XMLSchema#boolean>", objString);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void getObjectAsStringNonapplicableTest() {
-        RDFModelUtil.getObjectAsString(new Object());
+        SparqlUpdateHelper.getObjectAsString(new Object());
     }
 
     @Test
     public void createSparqlReplaceTest() {
         String expectedTitle = "Title";
 
-        String sparql = RDFModelUtil.createSparqlReplace(RESC_URI, DC.title, expectedTitle);
+        String sparql = SparqlUpdateHelper.createSparqlReplace(RESC_URI, DC.title, expectedTitle);
 
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(RESC_URI);
@@ -150,7 +150,7 @@ public class RDFModelUtilTest {
         String deleteTitle = "Delete me";
         String retainTitle = "Keep me";
 
-        String sparql = RDFModelUtil.createSparqlDelete(RESC_URI, DC.title, deleteTitle);
+        String sparql = SparqlUpdateHelper.createSparqlDelete(RESC_URI, DC.title, deleteTitle);
 
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(RESC_URI);
@@ -168,7 +168,7 @@ public class RDFModelUtilTest {
 
     @Test
     public void createSparqlDeleteNullObject() {
-        String sparql = RDFModelUtil.createSparqlDelete(RESC_URI, DC.title, null);
+        String sparql = SparqlUpdateHelper.createSparqlDelete(RESC_URI, DC.title, null);
 
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(RESC_URI);
