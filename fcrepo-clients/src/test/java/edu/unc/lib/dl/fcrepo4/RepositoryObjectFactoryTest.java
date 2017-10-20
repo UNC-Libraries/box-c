@@ -159,10 +159,10 @@ public class RepositoryObjectFactoryTest {
         InputStream content = mock(InputStream.class);
         String filename = "file.ext";
         String mimetype = "application/octet-stream";
-        String checksum = "checksum";
+        String sha1Checksum = "checksum";
 
         BinaryObject obj = repoObjFactory.createBinary(binaryUri, slug, content, filename,
-                mimetype, checksum, null);
+                mimetype, sha1Checksum, null, null);
 
         assertTrue(obj.getPid().getRepositoryPath().startsWith(binaryUri.toString()));
      // check to see that client creates FcrepoResponse

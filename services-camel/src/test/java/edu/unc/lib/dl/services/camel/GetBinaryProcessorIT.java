@@ -113,7 +113,7 @@ public class GetBinaryProcessorIT {
         PID pid = pidMinter.mintContentPid();
         WorkObject work = repoObjFactory.createWorkObject(pid, null);
         FileObject fileObj = work.addDataFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), "file",
-                MIMETYPE, null);
+                MIMETYPE, null, null);
 
         when(message.getHeader(CdrBinaryUri)).thenReturn(
                 fileObj.getOriginalFile().getPid().getRepositoryPath());

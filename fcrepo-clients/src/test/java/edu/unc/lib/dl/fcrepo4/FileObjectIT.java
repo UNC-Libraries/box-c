@@ -46,6 +46,7 @@ public class FileObjectIT extends AbstractFedoraIT {
     private static final String origFilename = "original.txt";
     private static final String origMimetype = "text/plain";
     private static final String origSha1Checksum = DigestUtils.sha1Hex(origBodyString);
+    private static final String origMd5Checksum = DigestUtils.md5Hex(origBodyString);
 
     @Before
     public void init() throws Exception {
@@ -66,7 +67,8 @@ public class FileObjectIT extends AbstractFedoraIT {
 
         // Prep file and add
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        BinaryObject origObj = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum);
+        BinaryObject origObj = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum,
+                origMd5Checksum);
 
         verifyOriginalFile(origObj);
 
@@ -80,21 +82,24 @@ public class FileObjectIT extends AbstractFedoraIT {
 
         // Add the original
         InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
-        BinaryObject bObj3 = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum);
+        BinaryObject bObj3 = fileObj.addOriginalFile(contentStream, origFilename, origMimetype, origSha1Checksum,
+                origMd5Checksum);
 
         // Construct the derivative objects
         String textBodyString = "Extracted text";
         String textFilename = "extracted.txt";
         String textMimetype = "text/plain";
         InputStream textContentStream = new ByteArrayInputStream(textBodyString.getBytes());
-        BinaryObject bObj1 = fileObj.addDerivative("text", textContentStream, textFilename, textMimetype, PcdmUse.ExtractedText);
+        BinaryObject bObj1 = fileObj.addDerivative("text", textContentStream, textFilename, textMimetype,
+                PcdmUse.ExtractedText);
         assertNotNull(bObj1);
 
         String thumbBodyString = "";
         String thumbFilename = "thumb.png";
         String thumbMimetype = "image/png";
         InputStream thumbContentStream = new ByteArrayInputStream(thumbBodyString.getBytes());
-        BinaryObject bObj2 = fileObj.addDerivative("thumb", thumbContentStream, thumbFilename, thumbMimetype, PcdmUse.ThumbnailImage);
+        BinaryObject bObj2 = fileObj.addDerivative("thumb", thumbContentStream, thumbFilename, thumbMimetype,
+                PcdmUse.ThumbnailImage);
         assertNotNull(bObj1);
 
         // Retrieve the binary objects directly
@@ -118,7 +123,7 @@ public class FileObjectIT extends AbstractFedoraIT {
     }
 
     @Test(expected = ObjectTypeMismatchException.class)
-    public void getNonFileObject() throws Exception{
+    public void getNonFileObject() throws Exception {
         PID objPid = PIDs.get("uuid:" + UUID.randomUUID().toString());
 
         client.put(objPid.getRepositoryUri()).perform().close();
@@ -134,13 +139,12 @@ public class FileObjectIT extends AbstractFedoraIT {
         assertEquals(filename, bObj.getFilename());
         assertEquals(mimetype, bObj.getMimetype());
 
-        String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream()))
-                .lines().collect(Collectors.joining("\n"));
+        String respString = new BufferedReader(new InputStreamReader(bObj.getBinaryStream())).lines()
+                .collect(Collectors.joining("\n"));
         assertEquals("Original content did not match submitted value", bodyString, respString);
     }
 
     private BinaryObject findBinaryByPid(List<BinaryObject> binaries, PID pid) {
-        return binaries.stream()
-                .filter(p -> p.getPid().equals(pid)).findAny().get();
+        return binaries.stream().filter(p -> p.getPid().equals(pid)).findAny().get();
     }
 }
