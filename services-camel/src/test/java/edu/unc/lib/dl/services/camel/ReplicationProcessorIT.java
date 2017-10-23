@@ -50,6 +50,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 
 /**
@@ -84,6 +85,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
 
     @Before
     public void init() throws IOException {
+        TestHelper.setContentBase(baseAddress);
         replicationDir = tmpFolder.newFolder("tmp");
         replicationDir.mkdir();
         processor = new ReplicationProcessor(replicationDir.getAbsolutePath(), 3, 100L);
