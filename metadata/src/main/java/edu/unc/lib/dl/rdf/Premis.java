@@ -104,6 +104,9 @@ public class Premis {
     public static final Property hasEventRelatedAgentAuthorizor = createProperty(
             "http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/aut");
 
+    public static final Property hasEventRelatedAgentImplementor = createProperty(
+            "http://id.loc.gov/vocabulary/preservation/eventRelatedAgentRole/imp");
+
     public static final Property hasEventRelatedObject = createProperty(
 "http://www.loc.gov/premis/rdf/v1#hasEventRelatedObject");
 
@@ -192,7 +195,7 @@ public class Premis {
             "http://www.loc.gov/premis/rdf/v1#TermOfRestriction");
 
     /** Premis event types
-     * 
+     *
      */
     public static final Resource Capture = createResource("http://id.loc.gov/vocabulary/preservation/eventType/cap");
 

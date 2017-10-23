@@ -138,6 +138,12 @@ public class PremisEventBuilder {
         return this;
     }
 
+    public PremisEventBuilder addImplementorAgent(String agent) {
+        addAgent(Premis.hasEventRelatedAgentImplementor, PremisAgentType.Person, "#implementorAgent", agent);
+
+        return this;
+    }
+
     /**
      * Add details describing the creation of a derivative datastream
      *
