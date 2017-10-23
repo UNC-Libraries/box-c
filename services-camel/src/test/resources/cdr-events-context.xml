@@ -22,7 +22,7 @@
 	</bean>
 	
 	<camel:camelContext id="CdrServiceCdrEvents">
-		<camel:package>edu.unc.lib.cdr.cdrEvents</camel:package>
+		<camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
 	</camel:camelContext>
 	
 </beans>

@@ -69,11 +69,11 @@
     </bean>
   
   <camel:camelContext id="cdrServiceCdrEvents">
-        <camel:package>edu.unc.lib.cdr.cdrEvents</camel:package>
+        <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
     </camel:camelContext>
   
   <camel:camelContext id="cdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.cdr.solrUpdate</camel:package>
+        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
     </camel:camelContext>
   
 </beans>
