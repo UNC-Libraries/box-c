@@ -24,28 +24,23 @@ import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.fedora.AccessClient;
-import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class FedoraObjectUIPProcessor implements UIPProcessor {
     private static Logger log = Logger.getLogger(FedoraObjectUIPProcessor.class);
 
-    private DigitalObjectManager digitalObjectManager;
+//    private DigitalObjectManager digitalObjectManager;
     private UIPUpdatePipeline pipeline;
-    private AccessClient accessClient;
+//    private AccessClient accessClient;
     private OperationsMessageSender operationsMessageSender;
-    private AccessControlService aclService;
+//    private AccessControlService aclService;
 
     private Map<String, Datastream> virtualDatastreamMap;
 
@@ -63,12 +58,12 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 
         FedoraObjectUIP fuip = (FedoraObjectUIP) uip;
 
-        if (fuip.getIncomingData().containsKey("ACL")
-                && !aclService.hasAccess(uip.getPID(), GroupsThreadStore.getGroups(), Permission.editAccessControl)) {
-            throw new UpdateException("Insufficient privileges to update access controls for " + uip.getPID());
-        }
-
-        fuip.storeOriginalDatastreams(accessClient);
+//        if (fuip.getIncomingData().containsKey("ACL")
+//                && !aclService.hasAccess(uip.getPID(), GroupsThreadStore.getGroups(), Permission.editAccessControl)) {
+//            throw new UpdateException("Insufficient privileges to update access controls for " + uip.getPID());
+//        }
+//
+//        fuip.storeOriginalDatastreams(accessClient);
 
         uip = pipeline.processUIP(uip);
         Map<String, File> modifiedFiles = uip.getModifiedFiles();
@@ -80,8 +75,8 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
                     Datastream datastream = Datastream.getDatastream(modifiedFile.getKey());
                     if (datastream != null && modifiedFile.getValue() != null) {
                         log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID());
-                        digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
-                                uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
+//                        digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
+//                                uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
                     }
                 }
             } else {
@@ -92,10 +87,10 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
                 // The reasoning for filtering it down at this step is that other datastreams may have been involved in
                 // early steps to compute the new value for the targeted datastream, but we don't want to commit those
                 // changes
-                digitalObjectManager.addOrReplaceDatastream(uip.getPID(), targetedDatastream,
-                        modifiedFiles.get(targetedDatastream.getName()),
-                        uip.getMimetype(targetedDatastream.getName()),
-                        uip.getUser(), uip.getMessage());
+//                digitalObjectManager.addOrReplaceDatastream(uip.getPID(), targetedDatastream,
+//                        modifiedFiles.get(targetedDatastream.getName()),
+//                        uip.getMimetype(targetedDatastream.getName()),
+//                        uip.getUser(), uip.getMessage());
             }
 
             // Issue indexing operations based on the data updated
@@ -137,14 +132,6 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
         return this.virtualDatastreamMap.get(datastreamName);
     }
 
-    public DigitalObjectManager getDigitalObjectManager() {
-        return digitalObjectManager;
-    }
-
-    public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-        this.digitalObjectManager = digitalObjectManager;
-    }
-
     public UIPUpdatePipeline getPipeline() {
         return pipeline;
     }
@@ -153,23 +140,11 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
         this.pipeline = pipeline;
     }
 
-    public AccessClient getAccessClient() {
-        return accessClient;
-    }
-
-    public void setAccessClient(AccessClient accessClient) {
-        this.accessClient = accessClient;
-    }
-
     public void setVirtualDatastreamMap(Map<String, Datastream> virtualDatastreamMap) {
         this.virtualDatastreamMap = virtualDatastreamMap;
     }
 
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
-    }
-
-    public void setAclService(AccessControlService aclService) {
-        this.aclService = aclService;
     }
 }

@@ -40,54 +40,6 @@
 		</property>
 		<property name="ignoreResourceNotFound" value="false"/>
 	</bean>
-
-	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="fedoraHost" value="${fedora.host:localhost}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
-		<property name="accessClient" ref="accessClient"/>
-	</bean>
-	<bean id="forwardedManagementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init" destroy-method="destroy">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="fedoraHost" value="${fedora.host:localhost}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-		<property name="accessClient" ref="accessClient"/>
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
-			</list>
-		</property>
-	</bean>
-	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient" init-method="init">
-		<property name="fedoraContextUrl" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.admin.username}" />
-		<property name="password" value="${fedora.admin.password}" />
-	</bean>
-	
-	<bean id="collectionsPid" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
-		<property name="targetMethod">
-			<value>fetchByRepositoryPath</value>
-		</property>
-		<property name="arguments">
-			<list>
-				<value>/Collections</value>
-			</list>
-		</property>
-	</bean>
-	
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService" init-method="init" destroy-method="destroy">
-		<property name="accessClient" ref="accessClient"/>
-		<property name="managementClient" ref="managementClient"/>
-		<property name="maxThreads" value="${fedoraDataService.maxThreads}"/>
-		<property name="threadGroupPrefix" value="Services"/>
-		<property name="serviceTimeout" value="${services.dataservice.timeout:12000}" />
-	</bean>
   
 	<!-- a pooling based JMS provider -->
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory" destroy-method="stop">
@@ -137,7 +89,7 @@
 		<property name="targetMethod" value="rollbackAllFailed" />
 	</bean>
 	
-	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+	<bean id="moveRollbackTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerFactoryBean">
 		<property name="jobDetail" ref="rollbackMoveJobDetail" />
 		<property name="repeatCount" value="0"/>
 		<property name="repeatInterval" value="1"/>
@@ -163,14 +115,6 @@
 	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
 		<property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
-
-	<bean id="accessControlService" class="edu.unc.lib.dl.fedora.FedoraAccessControlService"
-		init-method="init">
-		<property name="aclEndpointUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}/addons/fesl/" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-	</bean>
 	
 	<util:map id="vocabHelperClassMap">
 		<entry key="Affiliation" value="edu.unc.lib.dl.xml.DepartmentOntologyUtil"/>
@@ -179,7 +123,6 @@
 	
 	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">
 		<property name="helperClasses" ref="vocabHelperClassMap" />
-		<property name="collectionsPID" ref="collectionsPid" />
 	</bean>
 	
 	<bean id="bulkMetadataQueueName" class="java.lang.String">
@@ -234,7 +177,6 @@
 	</bean>
 	
 	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
-		<property name="accessClient" ref="accessClient" />
 		<property name="fedoraUtil" ref="fedoraUtil" />
 		<property name="fedoraHost" value="${fedora.host:localhost}" />
 	</bean>

@@ -32,22 +32,16 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.fedora.ManagementClient;
-import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.ingest.IngestException;
-import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.update.AtomPubMetadataUIP;
 import edu.unc.lib.dl.update.UIPException;
 import edu.unc.lib.dl.update.UIPProcessor;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.update.UpdateOperation;
-import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.ErrorURIRegistry;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -55,9 +49,9 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
 
     private static Logger log = Logger.getLogger(ContainerManagerImpl.class);
 
-    private DigitalObjectManager digitalObjectManager;
+//    private DigitalObjectManager digitalObjectManager;
     private UIPProcessor uipProcessor;
-    private ManagementClient managementClient;
+//    private ManagementClient managementClient;
     private DepositReportingUtil depositReportingUtil;
 
     private DepositReceipt updateMetadata(String editIRI, Deposit deposit, AuthCredentials auth,
@@ -155,16 +149,16 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
                     "Insufficient privileges to delete object " + targetPID.getPid());
         }
 
-        try {
-            this.digitalObjectManager.delete(targetPID, auth.getUsername(), "Deleted by " + auth.getUsername());
-        } catch (NotFoundException e) {
-            throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404,
-                    "Unable to delete the object " + targetPID.getPid()
-                    + ".  The object was not found in the repository.");
-        } catch (IngestException e) {
-            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
-                    "Failed to delete object " + targetPID.getPid(), e);
-        }
+//        try {
+//            this.digitalObjectManager.delete(targetPID, auth.getUsername(), "Deleted by " + auth.getUsername());
+//        } catch (NotFoundException e) {
+//            throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404,
+//                    "Unable to delete the object " + targetPID.getPid()
+//                    + ".  The object was not found in the repository.");
+//        } catch (IngestException e) {
+//            throw new SwordError(ErrorURIRegistry.INGEST_EXCEPTION, 500,
+//                    "Failed to delete object " + targetPID.getPid(), e);
+//        }
     }
 
     /**
@@ -224,31 +218,23 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
     }
 
     private void setInProgress(PID targetPID, Deposit deposit, DepositReceipt receipt) throws SwordError {
-        String state = tripleStoreQueryService.fetchState(targetPID);
-        if (deposit.isInProgress() != Boolean.parseBoolean(state)) {
-            try {
-                log.debug("Updating active state of in-progress item");
-                managementClient.addLiteralStatement(targetPID, FedoraProperty.Active.getFragment(),
-                        FedoraProperty.Active.getNamespace(), "Active", null);
-                receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress()) ? "" : "not")
-                        + " in-progress");
-            } catch (FedoraException e) {
-                throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500, "Failed to update active state for "
-                        + targetPID.getPid());
-            }
-        }
-    }
-
-    public void setDigitalObjectManager(DigitalObjectManager digitalObjectManager) {
-        this.digitalObjectManager = digitalObjectManager;
+//        String state = tripleStoreQueryService.fetchState(targetPID);
+//        if (deposit.isInProgress() != Boolean.parseBoolean(state)) {
+//            try {
+//                log.debug("Updating active state of in-progress item");
+//                managementClient.addLiteralStatement(targetPID, FedoraProperty.Active.getFragment(),
+//                        FedoraProperty.Active.getNamespace(), "Active", null);
+//                receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress()) ? "" : "not")
+//                        + " in-progress");
+//            } catch (FedoraException e) {
+//                throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500, "Failed to update active state for "
+//                        + targetPID.getPid());
+//            }
+//        }
     }
 
     public void setUipProcessor(UIPProcessor uipProcessor) {
         this.uipProcessor = uipProcessor;
-    }
-
-    public void setManagementClient(ManagementClient managementClient) {
-        this.managementClient = managementClient;
     }
 
     public void setDepositReportingUtil(DepositReportingUtil depositReportingUtil) {

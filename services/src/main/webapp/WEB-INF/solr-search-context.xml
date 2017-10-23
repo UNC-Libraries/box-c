@@ -91,8 +91,9 @@
 		<property name="searchSettings" ref="searchSettings" />
 		<property name="searchStateFactory" ref="searchStateFactory" />
 		<property name="facetFieldUtil" ref="facetFieldUtil" />
-		<property name="collectionsPid" ref="collectionsPid" />
 		<property name="pathFactory" ref="pathFactory" />
+		<property name="disablePermissionFiltering" value="false" />
+		<property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
 	</bean>
 	
 	<bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">

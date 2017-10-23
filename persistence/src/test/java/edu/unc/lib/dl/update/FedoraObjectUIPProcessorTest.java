@@ -44,7 +44,6 @@ import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.ClientUtils;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.DigitalObjectManager;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -59,17 +58,14 @@ public class FedoraObjectUIPProcessorTest extends Assert {
         when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
 
         UIPUpdatePipeline pipeline = mock(UIPUpdatePipeline.class);
-        DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
 
         FedoraObjectUIPProcessor uipProcessor = new FedoraObjectUIPProcessor();
-        uipProcessor.setAccessClient(accessClient);
-        uipProcessor.setDigitalObjectManager(digitalObjectManager);
         uipProcessor.setPipeline(pipeline);
 
 
         PID pid = new PID("uuid:test");
 
-        Map<String,File> modifiedFiles = new HashMap<String,File>();
+        Map<String,File> modifiedFiles = new HashMap<>();
         modifiedFiles.put(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(), mock(File.class));
         modifiedFiles.put(ContentModelHelper.Datastream.MD_TECHNICAL.getName(), null);
         modifiedFiles.put(ContentModelHelper.Datastream.AUDIT.getName(), mock(File.class));
@@ -87,14 +83,10 @@ public class FedoraObjectUIPProcessorTest extends Assert {
 
         verify(uip, times(1)).getModifiedFiles();
         verify(uip, times(1)).storeOriginalDatastreams(any(AccessClient.class));
-        verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), anyString(), anyString());
-        verify(digitalObjectManager, times(1)).addOrReplaceDatastream(any(PID.class), eq(Datastream.AUDIT), any(File.class), anyString(), anyString(), anyString());
-        verify(digitalObjectManager, times(1)).addOrReplaceDatastream(any(PID.class), eq(Datastream.MD_DESCRIPTIVE), any(File.class), anyString(), anyString(), anyString());
 
         //Check reaction to null modified files, shouldn't do any updates
         when(uip.getModifiedFiles()).thenReturn(null);
         uipProcessor.process(uip);
-        verify(digitalObjectManager, times(2)).addOrReplaceDatastream(any(PID.class), any(Datastream.class), any(File.class), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -103,14 +95,14 @@ public class FedoraObjectUIPProcessorTest extends Assert {
         AccessControlService aclService = mock(AccessControlService.class);
         when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(Permission.editAccessControl)))
             .thenReturn(true);
-        processor.setAclService(aclService);
+//        processor.setAclService(aclService);
 
         InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataUnpublish.xml"));
         Abdera abdera = new Abdera();
         Parser parser = abdera.getParser();
         Document<Entry> entryDoc = parser.parse(entryPart);
         Entry entry = entryDoc.getRoot();
-        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<>();
         org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
         org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
         rdfElement.addContent(descElement);
@@ -142,15 +134,15 @@ public class FedoraObjectUIPProcessorTest extends Assert {
         when(pipeline.processUIP(any(UpdateInformationPackage.class))).thenReturn(uip);
         processor.setPipeline(pipeline);
         processor.setVirtualDatastreamMap(new HashMap<String,Datastream>());
-        DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
-        processor.setDigitalObjectManager(digitalObjectManager);
+//        DigitalObjectManager digitalObjectManager = mock(DigitalObjectManager.class);
+//        processor.setDigitalObjectManager(digitalObjectManager);
         processor.setOperationsMessageSender(mock(OperationsMessageSender.class));
 
         processor.process(uip);
     }
 
     public Map<String, File> getModifiedFiles(Map<String, org.jdom2.Element> modifiedData) {
-        Map<String, File> modifiedFiles = new HashMap<String, File>();
+        Map<String, File> modifiedFiles = new HashMap<>();
         for (java.util.Map.Entry<String, ?> modified : modifiedData.entrySet()) {
             Element modifiedElement = (Element)modified.getValue();
             try {

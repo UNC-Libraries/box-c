@@ -48,18 +48,6 @@
 		<constructor-arg
 			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
 	</bean>
-	
-	<bean id="digitalObjectManager" class="edu.unc.lib.dl.services.DigitalObjectManagerImpl">
-		<property name="managementClient" ref="managementClient"/>
-		<property name="forwardedManagementClient" ref="forwardedManagementClient"/>
-		<property name="accessClient" ref="accessClient"/>
-		<property name="operationsMessageSender" ref="operationsMessageSender"/>
-		<property name="aclService" ref="accessControlService"/>
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService"/>
-		<property name="schematronValidator" ref="schematronValidator"/>
-		<property name="available" value="true"/>
-		<property name="collectionsPid" ref="collectionsPid"/>
-	</bean>
 
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
@@ -74,12 +62,6 @@
 					value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch"/>
 			</map>
 		</property>
-	</bean>
-
-	<bean id="pidGenerator" class="edu.unc.lib.dl.pidgen.UUIDPIDGenerator"
-		init-method="init">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="verifyUnique" value="false" />
 	</bean>
 	
 	<!-- Update processing -->
@@ -104,9 +86,9 @@
 	</util:map>
 	
 	<bean id="fedoraUIPProcessor" class="edu.unc.lib.dl.update.FedoraObjectUIPProcessor">
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
-		<property name="accessClient" ref="accessClient"/>
-		<property name="aclService" ref="accessControlService"/>
+		<!-- <property name="digitalObjectManager" ref="digitalObjectManager"/> -->
+		<!-- <property name="accessClient" ref="accessClient"/>
+		<property name="aclService" ref="accessControlService"/> -->
 		<property name="pipeline" ref="uipPipeline"/>
 		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
 		<property name="operationsMessageSender" ref="operationsMessageSender" />
@@ -114,8 +96,7 @@
 	
 	<!-- SWORD config -->
 
-	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
-		init-method="init">
+	<bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl">
 		<property name="authType" value="Basic"/>
 		<property name="swordPath" ref="swordPath"/>
 		<property name="basePath" value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}"/>
@@ -128,23 +109,20 @@
 	</bean>
 	
 	<bean id="depositReportingUtil" class="edu.unc.lib.dl.cdr.sword.server.util.DepositReportingUtil">
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
-		<property name="accessClient" ref="accessClient"/>
+		<!-- <property name="tripleStoreQueryService" ref="tripleStoreQueryService" /> -->
+		<!-- <property name="accessClient" ref="accessClient"/> -->
 	</bean>
 	
-	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl"
-		init-method="init">
+	<bean id="collectionListManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl">
 		<property name="pageSize" value="50"/>
 	</bean>
 	
-	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl"
-		init-method="init">
+	<bean id="collectionDepositManager" class="edu.unc.lib.dl.cdr.sword.server.managers.CollectionDepositManagerImpl">
 		<property name="packageHandlers" ref="packageHandlers" />
 		<property name="priorityDepositors" value="${sword.priorityDepositors:''}" />
 	</bean>
 	
-	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" 
-		init-method="init">
+	<bean id="serviceDocumentManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ServiceDocumentManagerImpl" >
 		<property name="acceptedPackaging" ref="packageHandlers" />
 	</bean>
 	
@@ -177,23 +155,18 @@
 		<property name="jedisPool" ref="jedisPool" />
 	</bean>
 	
-	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl"
-		init-method="init">
-		<property name="digitalObjectManager" ref="digitalObjectManager"/>
+	<bean id="containerManager" class="edu.unc.lib.dl.cdr.sword.server.managers.ContainerManagerImpl">
 		<property name="uipProcessor" ref="fedoraUIPProcessor"/>
-		<property name="managementClient" ref="forwardedManagementClient"/>
 		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	
-	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl"
-		init-method="init">
+	<bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl">
 		<property name="fedoraHost" value="${fedora.host:localhost}" />
 		<property name="fedoraPath" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}"/>
 		<property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
 	</bean>
 	
-	<bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl"
-		init-method="init">
+	<bean id="statementManager" class="edu.unc.lib.dl.cdr.sword.server.managers.StatementManagerImpl">
 		<property name="depositReportingUtil" ref="depositReportingUtil"/>
 	</bean>
 	

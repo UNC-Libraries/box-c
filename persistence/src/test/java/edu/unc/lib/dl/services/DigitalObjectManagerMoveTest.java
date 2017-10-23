@@ -46,6 +46,7 @@ import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
@@ -75,6 +76,7 @@ import edu.unc.lib.dl.xml.JDOMQueryUtil;
  * @author bbpennel
  * @date Jan 30, 2015
  */
+@Ignore
 public class DigitalObjectManagerMoveTest {
 
     private DigitalObjectManagerImpl digitalMan;

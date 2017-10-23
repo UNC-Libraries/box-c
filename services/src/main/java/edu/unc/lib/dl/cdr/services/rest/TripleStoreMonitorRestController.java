@@ -17,8 +17,8 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import java.util.Collections;
 import java.util.Map;
+
 import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 
 import org.slf4j.Logger;
@@ -32,13 +32,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.ServletContextAware;
 
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
-
 /**
  * @author Gregory Jansen
- * 
+ *
  */
 @Controller
 @RequestMapping(value = { "/triplestoremonitor" })
@@ -49,16 +45,8 @@ public class TripleStoreMonitorRestController implements ServletContextAware {
 
     private Map<String, String> mulgaraUpResponse = Collections.singletonMap("status", "ok");
 
-    @Resource
-    private TripleStoreQueryService tripleStoreQueryService;
-
-    public TripleStoreQueryService getTripleStoreQueryService() {
-        return tripleStoreQueryService;
-    }
-
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
-    }
+//    @Resource
+//    private TripleStoreQueryService tripleStoreQueryService;
 
     @PostConstruct
     public void init() {
@@ -68,22 +56,23 @@ public class TripleStoreMonitorRestController implements ServletContextAware {
     @RequestMapping(value = { "", "/" }, method = RequestMethod.GET)
     public @ResponseBody
     Map<String, ? extends Object> getInfo() throws MulgaraDown {
-        LOG.debug("getInfo()");
-        String error = null;
-        try {
-            PID fedoraObjPID = this.getTripleStoreQueryService().verify(
-                    ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID());
-            if (fedoraObjPID == null) {
-                error = "Cannot find " + ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID();
-            }
-        } catch (RuntimeException e) {
-            error = e.getLocalizedMessage();
-        }
-        if (error != null) {
-            throw new MulgaraDown(error);
-        } else {
-            return this.mulgaraUpResponse;
-        }
+//        LOG.debug("getInfo()");
+//        String error = null;
+//        try {
+//            PID fedoraObjPID = this.getTripleStoreQueryService().verify(
+//                    ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID());
+//            if (fedoraObjPID == null) {
+//                error = "Cannot find " + ContentModelHelper.Fedora_PID.FEDORA_OBJECT.getPID();
+//            }
+//        } catch (RuntimeException e) {
+//            error = e.getLocalizedMessage();
+//        }
+//        if (error != null) {
+//            throw new MulgaraDown(error);
+//        } else {
+//            return this.mulgaraUpResponse;
+//        }
+        return null;
     }
 
     static class MulgaraDown extends Exception {
@@ -100,7 +89,7 @@ public class TripleStoreMonitorRestController implements ServletContextAware {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.springframework.web.context.ServletContextAware#setServletContext(javax.servlet.ServletContext)
      */
     @Override

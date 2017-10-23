@@ -24,7 +24,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,8 +33,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.DigitalObjectManager;
-import edu.unc.lib.dl.update.UpdateException;
 
 /**
  * @author bbpennel
@@ -45,9 +42,6 @@ import edu.unc.lib.dl.update.UpdateException;
 public class EditDefaultWebObjectController {
 
     private static final Logger log = LoggerFactory.getLogger(EditDefaultWebObjectController.class);
-
-    @Autowired
-    private DigitalObjectManager dom;
 
     @RequestMapping(value = "edit/editDefaultWebObject", method = RequestMethod.POST)
     public @ResponseBody Object editDefaultWebObject(@RequestBody EditDWORequest editRequest,
@@ -75,7 +69,7 @@ public class EditDefaultWebObjectController {
         private Boolean clear = false;
 
         public void setPids(List<String> pids) {
-            this.pids = new ArrayList<PID>(pids.size());
+            this.pids = new ArrayList<>(pids.size());
             for (String id : pids) {
                 this.pids.add(new PID(id));
             }
@@ -122,19 +116,19 @@ public class EditDefaultWebObjectController {
         public void run() {
             Long start = System.currentTimeMillis();
 
-            try {
-                GroupsThreadStore.storeGroups(editRequest.getGroupSet());
-                GroupsThreadStore.storeUsername(editRequest.getUser());
-
-                dom.editDefaultWebObject(editRequest.getPids(), editRequest.getClear(), editRequest.getUser());
-            } catch (UpdateException e) {
-                log.warn("Failed to change default web object", e);
-            } finally {
-                GroupsThreadStore.clearStore();
-            }
-
-            log.info("Finished changing default web object for {} object(s) in {}ms", editRequest.pids.size(),
-                    (System.currentTimeMillis() - start));
+//            try {
+//                GroupsThreadStore.storeGroups(editRequest.getGroupSet());
+//                GroupsThreadStore.storeUsername(editRequest.getUser());
+//
+//                dom.editDefaultWebObject(editRequest.getPids(), editRequest.getClear(), editRequest.getUser());
+//            } catch (UpdateException e) {
+//                log.warn("Failed to change default web object", e);
+//            } finally {
+//                GroupsThreadStore.clearStore();
+//            }
+//
+//            log.info("Finished changing default web object for {} object(s) in {}ms", editRequest.pids.size(),
+//                    (System.currentTimeMillis() - start));
         }
 
     }

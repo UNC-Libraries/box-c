@@ -82,6 +82,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  * @author Gregory Jansen
  *
  */
+@Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class DigitalObjectManagerImplTest {
@@ -188,7 +189,7 @@ public class DigitalObjectManagerImplTest {
         // setup mocks
         when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
         PID container = new PID("test:container");
-        ArrayList<PID> refs = new ArrayList<PID>();
+        ArrayList<PID> refs = new ArrayList<>();
         refs.add(container);
         when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
         when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
@@ -196,7 +197,7 @@ public class DigitalObjectManagerImplTest {
         when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
                 any(Namespace.class), any(PID.class))).thenReturn(true);
 
-        ArrayList<URI> cms = new ArrayList<URI>();
+        ArrayList<URI> cms = new ArrayList<>();
         cms.add(ContentModelHelper.Model.CONTAINER.getURI());
         when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
@@ -224,7 +225,7 @@ public class DigitalObjectManagerImplTest {
         // setup mocks
         when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
         PID container = new PID("test:container");
-        ArrayList<PID> refs = new ArrayList<PID>();
+        ArrayList<PID> refs = new ArrayList<>();
         refs.add(container);
         refs.add(new PID("test:randomReference"));
         when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
@@ -246,7 +247,7 @@ public class DigitalObjectManagerImplTest {
         // setup mocks
         when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
         PID container = new PID("test:container");
-        ArrayList<PID> refs = new ArrayList<PID>();
+        ArrayList<PID> refs = new ArrayList<>();
         refs.add(container);
         when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
         when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
@@ -254,7 +255,7 @@ public class DigitalObjectManagerImplTest {
         when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
                 any(Namespace.class), any(PID.class))).thenReturn(true);
 
-        ArrayList<URI> cms = new ArrayList<URI>();
+        ArrayList<URI> cms = new ArrayList<>();
         cms.add(ContentModelHelper.Model.CONTAINER.getURI());
         when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
@@ -299,7 +300,7 @@ public class DigitalObjectManagerImplTest {
         // setup mocks
         when(tripleStoreQueryService.fetchAllContents(any(PID.class))).thenReturn(new ArrayList<PID>());
         PID container = new PID("test:container");
-        ArrayList<PID> refs = new ArrayList<PID>();
+        ArrayList<PID> refs = new ArrayList<>();
         refs.add(container);
         when(tripleStoreQueryService.fetchObjectReferences(any(PID.class))).thenReturn(refs);
         when(tripleStoreQueryService.fetchContainer(any(PID.class))).thenReturn(container, container, container);
@@ -307,7 +308,7 @@ public class DigitalObjectManagerImplTest {
         when(forwardedManagementClient.purgeObjectRelationship(any(PID.class), any(String.class),
                 any(Namespace.class), any(PID.class))).thenReturn(true);
 
-        ArrayList<URI> cms = new ArrayList<URI>();
+        ArrayList<URI> cms = new ArrayList<>();
         cms.add(ContentModelHelper.Model.CONTAINER.getURI());
         when(tripleStoreQueryService.lookupContentModels(any(PID.class))).thenReturn(cms);
 
