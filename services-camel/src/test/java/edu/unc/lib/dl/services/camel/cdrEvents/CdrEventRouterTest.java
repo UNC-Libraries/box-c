@@ -32,8 +32,8 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.dl.services.camel.CdrEventProcessor;
-import edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor;
+import edu.unc.lib.dl.services.camel.cdrEvents.processor.CdrEventProcessor;
+import edu.unc.lib.dl.services.camel.solr.processor.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**

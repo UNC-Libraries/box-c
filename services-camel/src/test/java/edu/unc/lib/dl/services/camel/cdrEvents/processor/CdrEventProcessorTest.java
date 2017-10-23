@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel;
+package edu.unc.lib.dl.services.camel.cdrEvents.processor;
 
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
@@ -39,6 +39,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.services.camel.cdrEvents.processor.CdrEventProcessor;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**

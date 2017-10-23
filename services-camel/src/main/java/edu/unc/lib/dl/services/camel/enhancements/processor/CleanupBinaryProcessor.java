@@ -13,42 +13,46 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel;
+package edu.unc.lib.dl.services.camel.enhancements.processor;
 
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryPath;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
-import org.jdom2.Document;
-
-import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**
- * Processes CDR Events, extracting the body and headers
+ * Cleans up a temporary binary if it exists
  *
- * @author lfarrell
+ * @author bbpennel
  *
  */
-public class CdrEventProcessor implements Processor {
+public class CleanupBinaryProcessor implements Processor {
+
+    private final String tempRoot;
+
+    public CleanupBinaryProcessor() {
+        tempRoot = System.getProperty("java.io.tmpdir");
+    }
+
     @Override
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
-        Document document = MessageUtil.getDocumentBody(in);
-        if (document == null) {
+
+        String binaryPath = (String) in.getHeader(CdrBinaryPath);
+
+        if (binaryPath == null || !binaryPath.startsWith(tempRoot)) {
             return;
         }
 
-        String actionType = document.getRootElement().getChildTextTrim("title", ATOM_NS);
-        if (actionType == null) {
-            in.setHeader(CdrSolrUpdateAction, null);
-            return;
-        }
-        in.setHeader(CdrSolrUpdateAction, actionType);
+        Files.deleteIfExists(Paths.get(binaryPath));
 
-        // Pass the body document along for future processors
-        in.setBody(document);
+        // Remove the now deleted binary path from the message
+        in.removeHeader(CdrBinaryPath);
+        exchange.getOut().setHeaders(in.getHeaders());
     }
 
 }

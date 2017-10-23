@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel;
+package edu.unc.lib.dl.services.camel.replication.processor;
 /**
  * 
  * @author harring

@@ -22,8 +22,8 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.dl.services.camel.CdrEventProcessor;
-import edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor;
+import edu.unc.lib.dl.services.camel.cdrEvents.processor.CdrEventProcessor;
+import edu.unc.lib.dl.services.camel.solr.processor.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**

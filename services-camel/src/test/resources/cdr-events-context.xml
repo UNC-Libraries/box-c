@@ -14,11 +14,11 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="cdrEventToSolrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.solr.processor.CdrEventToSolrUpdateProcessor" />
 	</bean>
 	
 	<bean id="cdrEventProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.CdrEventProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.cdrEvents.processor.CdrEventProcessor" />
 	</bean>
 	
 	<camel:camelContext id="CdrServiceCdrEvents">
