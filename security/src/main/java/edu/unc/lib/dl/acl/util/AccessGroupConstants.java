@@ -17,10 +17,11 @@ package edu.unc.lib.dl.acl.util;
 
 /**
  * Constants related to access control groups
- * 
+ *
  * @author bbpennel
  *
  */
+@Deprecated
 public class AccessGroupConstants {
     public final static String PUBLIC_GROUP = "public";
     public final static String AUTHENTICATED_GROUP = "authenticated";
