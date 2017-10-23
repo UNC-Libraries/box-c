@@ -59,7 +59,7 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/service-context.xml", "/cdr-event-routing-it-context.xml"})
+@ContextConfiguration({"/cdr-event-routing-it-context.xml"})
 public class CdrEventRoutingIT {
 
     private static final String USER_ID = "user";
