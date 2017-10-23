@@ -50,14 +50,14 @@
     <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
   </bean>
   
-  <bean id="cdrEventProcessor" class="edu.unc.lib.cdr.CdrEventProcessor">
+  <bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.CdrEventProcessor">
     </bean>
     
-    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.cdr.CdrEventToSolrUpdateProcessor">
+    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor">
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
-    <bean id="solrUpdateProcessor" class="edu.unc.lib.cdr.SolrUpdateProcessor">
+    <bean id="solrUpdateProcessor" class="edu.unc.lib.dl.services.camel.SolrUpdateProcessor">
     </bean>
   
   <camel:camelContext id="cdrServiceCdrEvents">
