@@ -14,19 +14,19 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="addSmallThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.AddDerivativeProcessor" />
 	</bean>
 	
 	<bean id="addLargeThumbnailProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.AddDerivativeProcessor" />
 	</bean>
 	
 	<bean id="addAccessCopyProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.AddDerivativeProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.AddDerivativeProcessor" />
 	</bean>
 
 	<camel:camelContext id="CdrServiceEnhancements">
-		<camel:package>edu.unc.lib.cdr.images</camel:package>
+		<camel:package>edu.unc.lib.dl.services.camel.images</camel:package>
 	</camel:camelContext>
 	
 </beans>

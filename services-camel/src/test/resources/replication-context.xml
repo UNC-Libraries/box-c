@@ -14,11 +14,11 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="replicationProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.cdr.ReplicationProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.ReplicationProcessor" />
 	</bean>
 
 	<camel:camelContext id="CdrServiceReplication">
-		<camel:package>edu.unc.lib.cdr.replication</camel:package>
+		<camel:package>edu.unc.lib.dl.services.camel.replication</camel:package>
 	</camel:camelContext>
 	
 </beans>
