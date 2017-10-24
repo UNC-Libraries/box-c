@@ -28,7 +28,6 @@ import org.fcrepo.client.FcrepoResponse;
 
 import edu.unc.lib.dl.fcrepo4.ClientFaultResolver;
 import edu.unc.lib.dl.fedora.FedoraException;
-import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
  * Execute sparql update queries against a fedora repository
