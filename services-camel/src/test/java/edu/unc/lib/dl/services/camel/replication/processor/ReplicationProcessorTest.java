@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel;
+package edu.unc.lib.dl.services.camel.replication.processor;
 
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
@@ -48,6 +48,9 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.camel.replication.processor.ReplicationDestinationUnavailableException;
+import edu.unc.lib.dl.services.camel.replication.processor.ReplicationException;
+import edu.unc.lib.dl.services.camel.replication.processor.ReplicationProcessor;
 
 public class ReplicationProcessorTest {
     private ReplicationProcessor processor;

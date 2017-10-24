@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package edu.unc.lib.dl.services.camel;
+package edu.unc.lib.dl.services.camel.solr.processor;
 
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;

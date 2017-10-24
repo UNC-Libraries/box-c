@@ -39,9 +39,9 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
-import edu.unc.lib.dl.services.camel.CleanupBinaryProcessor;
-import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
+import edu.unc.lib.dl.services.camel.enhancements.processor.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.enhancements.processor.CleanupBinaryProcessor;
+import edu.unc.lib.dl.services.camel.enhancements.processor.GetBinaryProcessor;
 import edu.unc.lib.dl.rdf.Cdr;
 
 /**

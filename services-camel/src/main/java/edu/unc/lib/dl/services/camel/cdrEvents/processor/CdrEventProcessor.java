@@ -13,46 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel;
+package edu.unc.lib.dl.services.camel.cdrEvents.processor;
 
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryPath;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
+import org.jdom2.Document;
+
+import edu.unc.lib.dl.services.camel.util.MessageUtil;
 
 /**
- * Cleans up a temporary binary if it exists
+ * Processes CDR Events, extracting the body and headers
  *
- * @author bbpennel
+ * @author lfarrell
  *
  */
-public class CleanupBinaryProcessor implements Processor {
-
-    private final String tempRoot;
-
-    public CleanupBinaryProcessor() {
-        tempRoot = System.getProperty("java.io.tmpdir");
-    }
-
+public class CdrEventProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         final Message in = exchange.getIn();
-
-        String binaryPath = (String) in.getHeader(CdrBinaryPath);
-
-        if (binaryPath == null || !binaryPath.startsWith(tempRoot)) {
+        Document document = MessageUtil.getDocumentBody(in);
+        if (document == null) {
             return;
         }
 
-        Files.deleteIfExists(Paths.get(binaryPath));
+        String actionType = document.getRootElement().getChildTextTrim("title", ATOM_NS);
+        if (actionType == null) {
+            in.setHeader(CdrSolrUpdateAction, null);
+            return;
+        }
+        in.setHeader(CdrSolrUpdateAction, actionType);
 
-        // Remove the now deleted binary path from the message
-        in.removeHeader(CdrBinaryPath);
-        exchange.getOut().setHeaders(in.getHeaders());
+        // Pass the body document along for future processors
+        in.setBody(document);
     }
 
 }

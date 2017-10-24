@@ -19,7 +19,7 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.dl.services.camel.ReplicationProcessor;
+import edu.unc.lib.dl.services.camel.replication.processor.ReplicationProcessor;
 
 /**
  * Routes binary files for replication to remote storage devices
