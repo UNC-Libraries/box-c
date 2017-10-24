@@ -74,7 +74,7 @@
 		<cdr.version>4.0-SNAPSHOT</cdr.version>
 		<spring.version>4.3.2.RELEASE</spring.version>
 		<fcrepo.version>3.8.0</fcrepo.version>
-		<fcrepo4.version>4.7.0</fcrepo4.version>
+		<fcrepo4.version>4.7.4</fcrepo4.version>
 		<spring.security.version>4.3.2.RELEASE</spring.security.version>
 		<spring.ws.version>2.3.0.RELEASE</spring.ws.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
