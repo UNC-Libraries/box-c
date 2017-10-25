@@ -14,7 +14,7 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="cdrEventToSolrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.solr.processor.CdrEventToSolrUpdateProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor" />
 	</bean>
 	
 	<bean id="cdrEventProcessor" class="org.mockito.Mockito" factory-method="mock">

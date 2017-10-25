@@ -366,7 +366,7 @@
         <property name="dataLoader" ref="dipDataLoader" />
     </bean>
     
-    <bean id="solrIngestProcessor" class="edu.unc.lib.dl.services.camel.SolrIngestProcessor">
+    <bean id="solrIngestProcessor" class="edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor">
         <constructor-arg ref="dipFactory" />
         <constructor-arg ref="solrFullUpdatePipeline" />
         <constructor-arg ref="solrUpdateDriver" />
@@ -374,11 +374,11 @@
         <constructor-arg value="${error.retryDelay}" />
     </bean>
     
-    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor">
+    <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor">
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
-    <bean id="solrUpdateProcessor" class="edu.unc.lib.dl.services.camel.SolrUpdateProcessor">
+    <bean id="solrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
         <property name="solrIndexingActionMap" ref="solrIndexingActionMap"/>
     </bean>
     

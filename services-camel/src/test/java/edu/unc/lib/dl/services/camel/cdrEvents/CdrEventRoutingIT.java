@@ -50,7 +50,7 @@ import edu.unc.lib.dl.data.ingest.solr.action.IndexingAction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.services.camel.solr.processor.SolrUpdateProcessor;
+import edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.IndexingActionType;
 

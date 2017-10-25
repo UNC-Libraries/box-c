@@ -39,8 +39,6 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.dl.services.camel.enhancements.processor.FulltextProcessor;
-
 public class FulltextRouterTest extends CamelSpringTestSupport {
     private static final String ENHANCEMENT_ROUTE = "CdrServiceFulltextExtraction";
     private static final String EXTRACTION_ROUTE = "ExtractingText";

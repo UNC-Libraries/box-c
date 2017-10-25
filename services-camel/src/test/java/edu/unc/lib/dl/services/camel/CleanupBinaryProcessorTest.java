@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.enhancements.processor;
+package edu.unc.lib.dl.services.camel;
 
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.junit.Assert.assertFalse;
@@ -34,8 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
-
-import edu.unc.lib.dl.services.camel.enhancements.processor.CleanupBinaryProcessor;
 
 /**
  *

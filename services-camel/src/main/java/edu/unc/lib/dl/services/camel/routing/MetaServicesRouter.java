@@ -23,9 +23,9 @@ import org.apache.camel.PropertyInject;
 import org.apache.camel.builder.RouteBuilder;
 
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.services.camel.enhancements.processor.BinaryMetadataProcessor;
-import edu.unc.lib.dl.services.camel.enhancements.processor.CleanupBinaryProcessor;
-import edu.unc.lib.dl.services.camel.enhancements.processor.GetBinaryProcessor;
+import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
+import edu.unc.lib.dl.services.camel.CleanupBinaryProcessor;
+import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
 
 /**
  * Meta router which sequences all service routes to run on events.

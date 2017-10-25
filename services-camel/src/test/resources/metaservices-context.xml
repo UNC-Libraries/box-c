@@ -14,15 +14,15 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="binaryMetadataProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.enhancements.processor.BinaryMetadataProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor" />
 	</bean>
 	
 	<bean id="getBinaryProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.enhancements.processor.GetBinaryProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.GetBinaryProcessor" />
 	</bean>
 	
 	<bean id="cleanupBinaryProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.enhancements.processor.CleanupBinaryProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor" />
 	</bean>
 
 	<camel:camelContext id="CdrMetaServicesRouter">

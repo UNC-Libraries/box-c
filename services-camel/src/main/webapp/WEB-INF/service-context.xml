@@ -134,14 +134,14 @@
 	</bean>
 
 	<!-- Processors -->
-	<bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.CdrEventProcessor">
+	<bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">
 	</bean>
 	
 	<bean id="binaryMetadataProcessor" class="edu.unc.lib.dl.services.camel.BinaryMetadataProcessor">
 		<constructor-arg value="${fcrepo.binaryBase}"/>
 	</bean>
 
-	<bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.AddDerivativeProcessor">
+	<bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
 		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).SMALL_THUMBNAIL}"/>
 		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
@@ -150,7 +150,7 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
-	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.AddDerivativeProcessor">
+	<bean id="addLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
 		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).LARGE_THUMBNAIL}"/>
 		<constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
@@ -159,7 +159,7 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
-	<bean id="addAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.AddDerivativeProcessor">
+	<bean id="addAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
 		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).JPEG_2000}"/>
 		<constructor-arg value="${cdr.enhancement.jp2.fileExtension}" />
@@ -168,7 +168,7 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
-	<bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.FulltextProcessor">
+	<bean id="fulltextProcessor" class="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor">
 		<constructor-arg ref="repositoryObjectLoader"/>
 		<constructor-arg value="#{T(edu.unc.lib.dl.fcrepo4.RepositoryPathConstants).FULLTEXT_EXTRACTION}"/>
 		<constructor-arg value="${cdr.enhancement.fulltext.fileName}" />
@@ -176,7 +176,7 @@
 		<constructor-arg value="${error.retryDelay}" />
 	</bean>
 	
-	<bean id="replicationProcessor" class="edu.unc.lib.dl.services.camel.ReplicationProcessor">
+	<bean id="replicationProcessor" class="edu.unc.lib.dl.services.camel.replication.ReplicationProcessor">
 		<constructor-arg value="${cdr.replication.locations}" />
 		<constructor-arg value="${error.maxRedeliveries}" />
 		<constructor-arg value="${error.retryDelay}" />

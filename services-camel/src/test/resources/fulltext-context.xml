@@ -14,7 +14,7 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="fulltextProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.enhancements.processor.FulltextProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor" />
 	</bean>
 
 	<camel:camelContext id="CdrServiceFulltextExtraction">

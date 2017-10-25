@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.enhancements.processor;
+package edu.unc.lib.dl.services.camel.fulltext;
 
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -46,7 +46,7 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmUse;
-import edu.unc.lib.dl.services.camel.enhancements.processor.FulltextProcessor;
+import edu.unc.lib.dl.services.camel.fulltext.FulltextProcessor;
 
 public class FulltextProcessorTest {
     private FulltextProcessor processor;

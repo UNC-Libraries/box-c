@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.replication.processor;
+package edu.unc.lib.dl.services.camel.replication;
 
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
@@ -50,9 +50,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.services.camel.replication.processor.ReplicationDestinationUnavailableException;
-import edu.unc.lib.dl.services.camel.replication.processor.ReplicationException;
-import edu.unc.lib.dl.services.camel.replication.processor.ReplicationProcessor;
+import edu.unc.lib.dl.services.camel.replication.ReplicationDestinationUnavailableException;
+import edu.unc.lib.dl.services.camel.replication.ReplicationException;
+import edu.unc.lib.dl.services.camel.replication.ReplicationProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 

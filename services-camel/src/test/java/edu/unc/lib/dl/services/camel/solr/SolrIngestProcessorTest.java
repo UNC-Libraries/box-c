@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.solr.processor;
+package edu.unc.lib.dl.services.camel.solr;
 
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.mockito.Matchers.any;
@@ -37,7 +37,6 @@ import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.services.camel.solr.processor.SolrIngestProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
