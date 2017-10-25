@@ -28,12 +28,14 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 import edu.unc.lib.dl.util.TripleStoreQueryService.PathInfo;
 
+@Ignore
 public class FedoraDataServiceTest extends Assert {
     private FedoraDataService dataService;
     private AccessClient accessClient;
@@ -107,7 +109,7 @@ public class FedoraDataServiceTest extends Assert {
         PID parent = new PID("uuid:collection");
 
         //Setup getPathInfo
-        List<PathInfo> pathInfo = new ArrayList<PathInfo>();
+        List<PathInfo> pathInfo = new ArrayList<>();
         PathInfo pathNode = new PathInfo();
         pathNode.setPid(parent);
         pathNode.setLabel("Collection");
@@ -155,7 +157,7 @@ public class FedoraDataServiceTest extends Assert {
         this.setupObjectView();
 
         //Setup getPathInfo, with no path nodes
-        List<PathInfo> pathInfo = new ArrayList<PathInfo>();
+        List<PathInfo> pathInfo = new ArrayList<>();
         when(tripleStoreQueryService.lookupRepositoryPathInfo(any(PID.class))).thenReturn(pathInfo);
 
         Document objectView = dataService.getObjectViewXML(pid);
@@ -174,7 +176,7 @@ public class FedoraDataServiceTest extends Assert {
         this.setupObjectView();
 
         //Setup getPathInfo, with no path nodes
-        List<PathInfo> pathInfo = new ArrayList<PathInfo>();
+        List<PathInfo> pathInfo = new ArrayList<>();
         when(tripleStoreQueryService.lookupRepositoryPathInfo(any(PID.class))).thenReturn(pathInfo);
 
         Document objectView = null;
