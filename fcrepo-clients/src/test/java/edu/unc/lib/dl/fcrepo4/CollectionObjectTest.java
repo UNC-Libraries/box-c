@@ -64,7 +64,7 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        collection = new CollectionObject(pid, repoObjLoader, dataLoader, repoObjFactory);
+        collection = new CollectionObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
 
         folderChildPid = PIDs.get(UUID.randomUUID().toString());
         when(folderChildObj.getPid()).thenReturn(folderChildPid);

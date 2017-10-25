@@ -104,7 +104,7 @@ public class RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
-        DepositRecord depositRecord = new DepositRecord(pid, repoObjLoader, repoObjDataLoader, this);
+        DepositRecord depositRecord = new DepositRecord(pid, repoObjLoader, repoObjDataLoader, this, pidMinter);
         return depositRecord;
     }
 
@@ -137,7 +137,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new AdminUnit(pid, repoObjLoader, repoObjDataLoader, this);
+        return new AdminUnit(pid, repoObjLoader, repoObjDataLoader, this, pidMinter);
     }
 
     /**
@@ -186,7 +186,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new CollectionObject(pid, repoObjLoader, repoObjDataLoader, this);
+        return new CollectionObject(pid, repoObjLoader, repoObjDataLoader, this, pidMinter);
     }
 
     /**
@@ -218,7 +218,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new FolderObject(pid, repoObjLoader, repoObjDataLoader, this);
+        return new FolderObject(pid, repoObjLoader, repoObjDataLoader, this, pidMinter);
     }
 
     /**
@@ -250,7 +250,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new WorkObject(pid, repoObjLoader, repoObjDataLoader, this);
+        return new WorkObject(pid, repoObjLoader, repoObjDataLoader, this, pidMinter);
     }
 
     /**
@@ -296,7 +296,7 @@ public class RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
-        return new FileObject(pid, repoObjLoader, repoObjDataLoader, this);
+        return new FileObject(pid, repoObjLoader, repoObjDataLoader, this, pidMinter);
     }
 
     /**

@@ -45,7 +45,7 @@ public class BinaryObject extends RepositoryObject {
 
     protected BinaryObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
             RepositoryObjectFactory repoObjFactory) {
-        super(pid, repoObjLoader, dataLoader, repoObjFactory);
+        super(pid, repoObjLoader, dataLoader, repoObjFactory, null);
 
         metadataUri = RepositoryPaths.getMetadataUri(pid);
     }

@@ -58,7 +58,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        folder = new FolderObject(pid, repoObjLoader, dataLoader, repoObjFactory);
+        folder = new FolderObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
 
         childPid = PIDs.get(UUID.randomUUID().toString());
         when(pidMinter.mintContentPid()).thenReturn(childPid);
@@ -94,7 +94,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addFolderTest() {
-        FolderObject childFolder = new FolderObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
+        FolderObject childFolder = new FolderObject(childPid, repoObjLoader, dataLoader, repoObjFactory, null);
 
         when(repoObjFactory.createFolderObject(any(Model.class)))
                 .thenReturn(childFolder);
@@ -113,7 +113,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addWorkTest() {
-        WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory);
+        WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory, null);
         when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
 
         WorkObject workObj = folder.addWork();
