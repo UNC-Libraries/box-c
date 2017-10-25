@@ -124,7 +124,7 @@ public class SparqlUpdateHelper {
         addInsert(query, subjUri, property, objectString);
 
         query.append("\nWHERE {");
-        query.append(subjString).append(" <").append(property.getURI()).append("> ?obj . }");
+        query.append(subjString).append(" ?pred ?obj . }");
 
         return query.toString();
     }

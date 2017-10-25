@@ -146,6 +146,24 @@ public class SparqlUpdateHelperTest {
     }
 
     @Test
+    public void createSparqlReplaceAddOnlyTest() {
+        String expectedTitle = "Title";
+
+        String sparql = SparqlUpdateHelper.createSparqlReplace(RESC_URI, DC.title, expectedTitle);
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(RESC_URI);
+        resc.addProperty(DC.contributor, "contrib");
+
+        UpdateRequest request = UpdateFactory.create(sparql);
+        UpdateAction.execute(request, model);
+
+        StmtIterator stmtIt = resc.listProperties(DC.title);
+        assertEquals(expectedTitle, stmtIt.next().getString());
+        assertFalse(stmtIt.hasNext());
+    }
+
+    @Test
     public void createSparqlDeleteWithObject() {
         String deleteTitle = "Delete me";
         String retainTitle = "Keep me";
