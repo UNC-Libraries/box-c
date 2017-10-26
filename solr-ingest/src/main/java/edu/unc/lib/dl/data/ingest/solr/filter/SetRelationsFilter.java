@@ -32,7 +32,8 @@ import edu.unc.lib.dl.rdf.Cdr;
 /**
  * Populates the relations field with the primary object and invalid terms.
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public class SetRelationsFilter implements IndexDocumentFilter{
