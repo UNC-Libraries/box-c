@@ -180,6 +180,12 @@
 		<property name="fedoraUtil" ref="fedoraUtil" />
 		<property name="fedoraHost" value="${fedora.host:localhost}" />
 	</bean>
+	
+	<bean id="markForDeletionService" class="edu.unc.lib.dl.persist.services.delete.MarkForDeletionService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
+    </bean>
 
 	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>

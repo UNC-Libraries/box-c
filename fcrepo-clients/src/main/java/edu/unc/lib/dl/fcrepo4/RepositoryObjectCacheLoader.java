@@ -108,6 +108,13 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         this.repoObjFactory = repoObjFactory;
     }
 
+    /**
+     * @param pidMinter the pidMinter to set
+     */
+    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+        this.pidMinter = pidMinter;
+    }
+
     private RepositoryObject instantiateRepositoryObject(PID pid, Model model, String etag) {
         RepositoryObject obj = null;
 

@@ -38,10 +38,6 @@
         <property name="sparqlUpdateService" ref="sparqlUpdateService" />
     </bean>
     
-    <bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
-        <property name="fcrepoClient" ref="fcrepoClient" />
-    </bean>
-    
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
