@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.headers;
+package edu.unc.lib.dl.services.camel.util;
 
 /**
  * Constants for Apache Camel object enhancement services

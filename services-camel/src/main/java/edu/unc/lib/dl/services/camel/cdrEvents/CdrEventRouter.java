@@ -16,14 +16,13 @@
 
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.dl.services.camel.CdrEventProcessor;
-import edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor;
+import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**

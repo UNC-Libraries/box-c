@@ -21,7 +21,7 @@
 	</bean>
 	
 	<bean id="solrIngestProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.SolrIngestProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.solr.SolrIngestProcessor" />
 	</bean>
 	
 	<camel:camelContext id="CdrServiceSolr">

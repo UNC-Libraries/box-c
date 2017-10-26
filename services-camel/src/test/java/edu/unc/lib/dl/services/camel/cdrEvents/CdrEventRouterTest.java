@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -32,8 +32,7 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.dl.services.camel.CdrEventProcessor;
-import edu.unc.lib.dl.services.camel.CdrEventToSolrUpdateProcessor;
+import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
 /**

@@ -15,11 +15,11 @@
  */
 package edu.unc.lib.dl.services.camel.routing;
 
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
+import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
-import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Container;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -39,10 +39,10 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.services.camel.BinaryMetadataProcessor;
 import edu.unc.lib.dl.services.camel.CleanupBinaryProcessor;
 import edu.unc.lib.dl.services.camel.GetBinaryProcessor;
-import edu.unc.lib.dl.rdf.Cdr;
 
 /**
  *

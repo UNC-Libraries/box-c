@@ -8,7 +8,7 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.SolrUpdateProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
 	</bean>
 
 	<camel:camelContext id="CdrServiceSolrUpdate">

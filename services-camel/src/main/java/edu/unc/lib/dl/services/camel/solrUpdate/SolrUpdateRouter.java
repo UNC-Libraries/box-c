@@ -21,8 +21,6 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.dl.services.camel.SolrUpdateProcessor;
-
 /**
  * Route for performing solr updates for update requests.
  *

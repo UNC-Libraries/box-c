@@ -19,8 +19,6 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.dl.services.camel.FulltextProcessor;
-
 /**
  * Routes ingests with full text available through a pipeline to extract
  * the full text and add it as an object in fedora.

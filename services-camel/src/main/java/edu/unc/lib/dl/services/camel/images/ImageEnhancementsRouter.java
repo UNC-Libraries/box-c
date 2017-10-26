@@ -19,8 +19,6 @@ import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 
-import edu.unc.lib.dl.services.camel.AddDerivativeProcessor;
-
 /**
  * Router which triggers the creation of thumbnails when applicable binaries
  * are written.

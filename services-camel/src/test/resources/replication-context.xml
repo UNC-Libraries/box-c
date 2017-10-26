@@ -14,7 +14,7 @@
 		http://camel.apache.org/schema/spring/camel-spring.xsd">
 	
 	<bean id="replicationProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.ReplicationProcessor" />
+		<constructor-arg value="edu.unc.lib.dl.services.camel.replication.ReplicationProcessor" />
 	</bean>
 
 	<camel:camelContext id="CdrServiceReplication">

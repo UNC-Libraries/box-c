@@ -33,8 +33,6 @@ import org.junit.Test;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import edu.unc.lib.dl.services.camel.SolrUpdateProcessor;
-
 /**
  *
  * @author lfarrell
