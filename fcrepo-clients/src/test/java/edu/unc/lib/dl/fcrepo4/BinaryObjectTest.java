@@ -152,8 +152,8 @@ public class BinaryObjectTest extends AbstractFedoraTest {
         assertEquals("abcd1234", binObj.getSha1Checksum());
 
         binObj.setSha1Checksum(null);
-        resource.addProperty(Premis.hasMessageDigest, "12345-67890");
-        assertEquals("12345-67890", binObj.getSha1Checksum());
+        resource.addProperty(Premis.hasMessageDigest, "urn:sha1:12345-67890");
+        assertEquals("urn:sha1:12345-67890", binObj.getSha1Checksum());
     }
 
     @Test
