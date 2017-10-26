@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ID;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -103,6 +104,11 @@ public class SolrUpdateDriver {
                     sid.addField(fieldName, value);
                     continue;
                 }
+
+                // Allowing values and explicitly nulled fields through
+                Map<String, Object> partialUpdate = new HashMap<>();
+                partialUpdate.put(operation, value);
+                sid.setField(fieldName, partialUpdate);
             }
 
             if (log.isDebugEnabled()) {
