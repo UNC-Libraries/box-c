@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;

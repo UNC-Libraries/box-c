@@ -16,7 +16,7 @@
 
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;

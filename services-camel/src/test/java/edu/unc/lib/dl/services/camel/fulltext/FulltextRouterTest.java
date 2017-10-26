@@ -18,7 +18,7 @@ package edu.unc.lib.dl.services.camel.fulltext;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.EVENT_TYPE;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.IDENTIFIER;
 import static edu.unc.lib.dl.services.camel.JmsHeaderConstants.RESOURCE_TYPE;
-import static edu.unc.lib.dl.services.camel.headers.CdrFcrepoHeaders.CdrBinaryMimeType;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.rdf.Fcrepo4Repository.Binary;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
