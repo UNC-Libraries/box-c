@@ -69,7 +69,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
     public String getIdWithoutPrefix() {
         String id = getId();
-        int index =id.indexOf(":");
+        int index = id.indexOf(":");
         if (index != -1) {
             return id.substring(index + 1);
         }
@@ -229,7 +229,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
 
             List<String> values = this.relationsMap.get(rdfParts[0]);
             if (values == null) {
-                values = new ArrayList<String>();
+                values = new ArrayList<>();
                 this.relationsMap.put(rdfParts[0], values);
             }
             values.add(rdfParts[1]);
