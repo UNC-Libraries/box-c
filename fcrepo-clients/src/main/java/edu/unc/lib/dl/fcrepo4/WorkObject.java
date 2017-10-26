@@ -110,17 +110,18 @@ public class WorkObject extends ContentContainerObject {
      * @param filename
      * @param mimetype
      * @param sha1Checksum
+     * @param md5Checksum
      * @return
      */
     public FileObject addDataFile(InputStream contentStream, String filename, String mimetype,
-            String sha1Checksum) {
+            String sha1Checksum, String md5Checksum) {
 
-        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, null);
+        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, md5Checksum, null);
     }
 
     public FileObject addDataFile(InputStream contentStream, String filename,
-            String mimetype, String sha1Checksum, Model model) {
-        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, model);
+            String mimetype, String sha1Checksum, String md5Checksum, Model model) {
+        return addDataFile(null, contentStream, filename, mimetype, sha1Checksum, md5Checksum, model);
     }
 
     /**
@@ -139,7 +140,7 @@ public class WorkObject extends ContentContainerObject {
      * @return
      */
     public FileObject addDataFile(PID filePid, InputStream contentStream, String filename,
-            String mimetype, String sha1Checksum, Model model) {
+            String mimetype, String sha1Checksum, String md5Checksum, Model model) {
 
         if (contentStream == null) {
             throw new IllegalArgumentException("A non-null contentstream is required");
@@ -158,7 +159,7 @@ public class WorkObject extends ContentContainerObject {
             fileObj = repoObjFactory.createFileObject(filePid, model);
         }
         // Add the binary content to it as its original file
-        fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum);
+        fileObj.addOriginalFile(contentStream, filename, mimetype, sha1Checksum, md5Checksum);
 
         // Add the new file object as a member of this Work
         repoObjFactory.addMember(this, fileObj);

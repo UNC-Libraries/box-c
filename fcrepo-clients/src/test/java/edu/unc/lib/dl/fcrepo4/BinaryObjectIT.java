@@ -56,7 +56,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
         String checksum = "82022e1782b92dce5461ee636a6c5bea8509ffee";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject obj = repoObjFactory.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null);
+        BinaryObject obj = repoObjFactory.createBinary(uri, "binary_test", contentStream, filename, mimetype, checksum, null, null);
 
         // Verify that the body of the binary is retrieved
         InputStream resultStream = obj.getBinaryStream();
@@ -68,7 +68,7 @@ public class BinaryObjectIT extends AbstractFedoraIT {
         assertEquals(filename, obj.getFilename());
         assertEquals(mimetype, obj.getMimetype());
         assertEquals(9L, obj.getFilesize().longValue());
-        assertEquals("urn:sha1:" + checksum, obj.getChecksum());
+        assertEquals("urn:sha1:" + checksum, obj.getSha1Checksum());
 
         assertTrue(obj.getResource().hasProperty(RDF.type, Fcrepo4Repository.Binary));
     }

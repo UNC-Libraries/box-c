@@ -81,7 +81,7 @@ public class FileObject extends ContentObject {
      * @return
      */
     public BinaryObject addOriginalFile(InputStream contentStream, String filename,
-            String mimetype, String sha1Checksum) {
+            String mimetype, String sha1Checksum, String md5Checksum) {
 
         // Construct the path to where the original file will be created
         String objectPath = constructOriginalFilePath();
@@ -92,7 +92,7 @@ public class FileObject extends ContentObject {
         resc.addProperty(RDF.type, PcdmUse.OriginalFile);
 
         return repoObjFactory.createBinary(fileSetUri, ORIGINAL_FILE, contentStream,
-                filename, mimetype, sha1Checksum, fileModel);
+                filename, mimetype, sha1Checksum, md5Checksum, fileModel);
     }
 
     /**
@@ -135,7 +135,7 @@ public class FileObject extends ContentObject {
 
         // Create the derivative binary object
         BinaryObject derivObj = repoObjFactory.createBinary(fileSetUri, slug, contentStream, filename,
-                mimetype, null, fileModel);
+                mimetype, null, null, fileModel);
 
         if (associationRelation != null) {
             // Establish association with original file relation

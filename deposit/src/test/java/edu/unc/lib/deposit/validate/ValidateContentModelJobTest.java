@@ -168,7 +168,7 @@ public class ValidateContentModelJobTest extends AbstractDepositJobTest {
         job.run();
     }
 
-    @Test
+    @Test(expected = JobFailedException.class)
     public void fileObjectOutsideOfWorkTest() {
 
         PID childPid = makePid(CONTENT_BASE);

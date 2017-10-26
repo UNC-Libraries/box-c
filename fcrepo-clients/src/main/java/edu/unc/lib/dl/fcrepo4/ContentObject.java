@@ -53,7 +53,7 @@ public abstract class ContentObject extends RepositoryObject {
 
         FileObject fileObj = repoObjFactory.createFileObject(descModel);
 
-        BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null);
+        BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null, null);
         repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
         repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
         return fileObj;
@@ -81,7 +81,7 @@ public abstract class ContentObject extends RepositoryObject {
         }
         FileObject fileObj = createFileObject();
 
-        BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null);
+        BinaryObject orig = fileObj.addOriginalFile(sourceMdStream, null, "text/plain", null, null);
         repoObjFactory.createProperty(orig.getPid(), Cdr.hasSourceMetadataProfile, sourceProfile);
         repoObjFactory.createRelationship(orig.getPid(), RDF.type, Cdr.SourceMetadata);
         repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());

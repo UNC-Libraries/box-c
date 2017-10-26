@@ -90,7 +90,8 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
         String mimetype = "text/plain";
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
 
-        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype, null, model);
+        BinaryObject binObj = repoObjFactory.createBinary(binaryUri, binarySlug, contentStream, filename, mimetype,
+                null, null, model);
 
         try (FcrepoResponse resp = client.get(binObj.getUri()).perform()) {
             String respString = new BufferedReader(new InputStreamReader(resp.getBody())).lines()

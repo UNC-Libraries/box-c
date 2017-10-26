@@ -62,6 +62,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
     private static final String FILENAME = "file.txt";
     private static final String MIMETYPE = "plain/txt";
     private static final String SHA1 = "sha";
+    private static final String MD5 = "md5";
 
     private PID pid;
 
@@ -190,7 +191,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file
-        work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1);
+        work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
 
         ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -200,7 +201,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
 
-        verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1);
+        verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
@@ -214,7 +215,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file with properties
-        FileObject fileObj = work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, extraProperties);
+        FileObject fileObj = work.addDataFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5, extraProperties);
 
         ArgumentCaptor.forClass(PID.class);
         ArgumentCaptor<Model> modelCaptor = ArgumentCaptor.forClass(Model.class);
@@ -226,14 +227,14 @@ public class WorkObjectTest extends AbstractFedoraTest {
         assertTrue(fileObjModel.contains(null, DC.title, FILENAME));
         assertTrue(fileObjModel.contains(null, CdrAcl.patronAccess, PatronAccess.none.name()));
 
-        verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1);
+        verify(fileObj).addOriginalFile(contentStream, FILENAME, MIMETYPE, SHA1, MD5);
         verify(repoObjFactory).addMember(eq(work), eq(fileObj));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addDataFileNoContentTest() {
 
-        work.addDataFile(null, FILENAME, MIMETYPE, SHA1);
+        work.addDataFile(null, FILENAME, MIMETYPE, SHA1, MD5);
     }
 
     private PID makePid() {

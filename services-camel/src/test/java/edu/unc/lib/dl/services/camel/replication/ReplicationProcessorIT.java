@@ -140,7 +140,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         when(message.getHeader(CdrBinaryPath)).thenReturn(testFile.getAbsolutePath());
 
         BinaryObject externalObj = repoObjFactory.createBinary(binaryUri, "external_binary_test", contentStream,
-                filename, MIMETYPE, null, null);
+                filename, MIMETYPE, null, null, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(checksum);
         when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());
@@ -166,7 +166,7 @@ public class ReplicationProcessorIT extends CamelTestSupport {
         String badChecksum = "41cfe91611de4f56689ca6258237c448d3f91a84";
 
         BinaryObject externalObj = repoObjFactory.createBinary(binaryUri, "external_binary_test", contentStream,
-                filename, MIMETYPE, null, null);
+                filename, MIMETYPE, null, null, null);
 
         when(message.getHeader(CdrBinaryChecksum)).thenReturn(badChecksum);
         when(message.getHeader(CdrBinaryUri)).thenReturn(externalObj.getUri().toString());

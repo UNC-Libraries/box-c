@@ -76,7 +76,7 @@ public class DepositRecord extends RepositoryObject {
             throws FedoraException {
         URI manifestsUri = getManifestsUri();
         return repoObjFactory.createBinary(manifestsUri, null, manifestStream, filename,
-                mimetype, null, null);
+                mimetype, null, null, model);
     }
 
     /**
