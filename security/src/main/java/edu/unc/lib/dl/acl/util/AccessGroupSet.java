@@ -40,6 +40,10 @@ public class AccessGroupSet extends HashSet<String> {
         addAccessGroups(groups);
     }
 
+    public AccessGroupSet(AccessGroupSet groups) {
+        super(groups);
+    }
+
     public void addAccessGroups(String[] groups) {
         if (groups == null) {
             return;
@@ -62,9 +66,8 @@ public class AccessGroupSet extends HashSet<String> {
      * Determines is any of the objects contained within the specified
      * collection are present in the access group set. If the objects contain
      * pid prefixes, they are stripped off before checking
-     * 
-     * @param c
-     *            collection to be checked for matches.
+     *
+     * @param c collection to be checked for matches.
      * @return true if this collection contains any objects from the specified
      *         collection
      */
@@ -76,7 +79,7 @@ public class AccessGroupSet extends HashSet<String> {
         String nextKey;
         int pidDelimiter;
         while (cIt.hasNext()) {
-            nextKey = (String)cIt.next();
+            nextKey = cIt.next();
             pidDelimiter = nextKey.lastIndexOf('/');
             if (pidDelimiter > -1) {
                 nextKey = nextKey.substring(pidDelimiter + 1);
@@ -120,6 +123,7 @@ public class AccessGroupSet extends HashSet<String> {
         return sb.toString();
     }
 
+    @Override
     public String toString() {
         return this.joinAccessGroups(" ", "", true);
     }

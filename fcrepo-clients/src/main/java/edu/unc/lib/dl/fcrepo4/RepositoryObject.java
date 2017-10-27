@@ -55,11 +55,13 @@ public abstract class RepositoryObject {
     protected PremisLogger premisLog;
 
     protected RepositoryObject(PID pid, RepositoryObjectLoader repositoryObjectLoader,
-            RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory) {
+            RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory,
+            RepositoryPIDMinter pidMinter) {
         this.repoObjLoader = repositoryObjectLoader;
         this.pid = pid;
         this.dataLoader = dataLoader;
         this.repoObjFactory = repoObjFactory;
+        this.pidMinter = pidMinter;
     }
 
     /**

@@ -31,8 +31,8 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 public class CollectionObject extends ContentContainerObject {
 
     protected CollectionObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
-            RepositoryObjectFactory repoObjFactory) {
-        super(pid, repoObjLoader, dataLoader, repoObjFactory);
+            RepositoryObjectFactory repoObjFactory, RepositoryPIDMinter pidMinter) {
+        super(pid, repoObjLoader, dataLoader, repoObjFactory, pidMinter);
     }
 
     @Override

@@ -88,7 +88,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         resc.addProperty(RDF.type, PcdmModels.Object);
         resc.addProperty(RDF.type, Cdr.Work);
 
-        work = new WorkObject(pid, repoObjLoader, dataLoader, repoObjFactory);
+        work = new WorkObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
         when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {

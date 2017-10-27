@@ -17,7 +17,7 @@ package edu.unc.lib.dl.acl.util;
 
 /**
  * Constants related to access principals
- * 
+ *
  * @author bbpennel
  *
  */
@@ -25,5 +25,6 @@ public abstract class AccessPrincipalConstants {
 
     public final static String PUBLIC_PRINC = "everyone";
     public final static String AUTHENTICATED_PRINC = "authenticated";
+    public final static String USER_NAMESPACE = "unc:onyen:";
 
 }

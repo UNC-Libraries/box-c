@@ -32,7 +32,7 @@ public class PremisEventObject extends RepositoryObject implements Comparable<Pr
 
     public PremisEventObject(PID pid, RepositoryObjectLoader repositoryObjectLoader,
             RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory) {
-        super(pid, repositoryObjectLoader, dataLoader, repoObjFactory);
+        super(pid, repositoryObjectLoader, dataLoader, repoObjFactory, null);
     }
 
     @Override

@@ -22,9 +22,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -38,6 +40,11 @@ public class PIDsTest {
     private static final String TEST_UUID = "95553b02-0256-4c73-b423-f12d070501e8";
 
     private static final String TEST_PATH = "/95/55/3b/02/";
+
+    @Before
+    public void init() {
+        TestHelper.setContentBase(FEDORA_BASE);
+    }
 
     public String fakeRepositoryPath(String qualifier, String component) {
         String path = RepositoryPaths.getBaseUri() + qualifier + TEST_PATH + TEST_UUID;

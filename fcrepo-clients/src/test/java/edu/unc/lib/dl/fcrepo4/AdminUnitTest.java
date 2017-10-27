@@ -59,7 +59,7 @@ public class AdminUnitTest extends AbstractFedoraTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        unit = new AdminUnit(pid, repoObjLoader, dataLoader, repoObjFactory);
+        unit = new AdminUnit(pid, repoObjLoader, dataLoader, repoObjFactory, null);
 
         pidMinter = new RepositoryPIDMinter();
 

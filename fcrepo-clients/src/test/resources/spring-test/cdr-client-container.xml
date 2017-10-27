@@ -31,6 +31,7 @@
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="pidMinter" ref="repositoryPIDMinter" />
+		<property name="sparqlUpdateService" ref="sparqlUpdateService" />
 	</bean>
 	
 	<bean id="cacheTimeToLive" class="java.lang.Long">
@@ -54,6 +55,10 @@
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 	</bean>
+	
+	<bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
 	
 	<bean id="fusekiEndpointURL" class="java.lang.String">
 	    <constructor-arg value="" />
