@@ -194,8 +194,8 @@ public class Premis {
     public static final Resource TermOfRestriction = createResource(
             "http://www.loc.gov/premis/rdf/v1#TermOfRestriction");
 
-    /** Premis event types
-     *
+    /**
+     * Premis event types
      */
     public static final Resource Capture = createResource("http://id.loc.gov/vocabulary/preservation/eventType/cap");
 

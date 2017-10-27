@@ -67,8 +67,7 @@ public class AccessGroupSet extends HashSet<String> {
      * collection are present in the access group set. If the objects contain
      * pid prefixes, they are stripped off before checking
      *
-     * @param c
-     *            collection to be checked for matches.
+     * @param c collection to be checked for matches.
      * @return true if this collection contains any objects from the specified
      *         collection
      */

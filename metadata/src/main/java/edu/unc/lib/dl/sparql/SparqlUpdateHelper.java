@@ -103,7 +103,7 @@ public class SparqlUpdateHelper {
     }
 
     /**
-     * Constructs a sparql query which replaces all instances of a property on a resource with a new valu
+     * Constructs a sparql query which replaces all instances of a property on a resource with a new value
      *
      * @param subjUri
      * @param property
