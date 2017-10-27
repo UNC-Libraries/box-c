@@ -128,6 +128,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         idb.setTitle(mainTitle);
         if (otherTitles.size() > 0) {
             idb.setOtherTitle(otherTitles);
+        } else {
+            idb.setOtherTitle(null);
         }
     }
 
@@ -208,23 +210,32 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
 
         if (contributors.size() > 0) {
             idb.setContributor(contributors);
+        } else {
+            idb.setContributor(null);
         }
         if (creators.size() > 0) {
             idb.setCreator(creators);
             idb.setCreatorSort(creators.get(0));
+        } else {
+            idb.setCreator(null);
+            idb.setCreatorSort(null);
         }
 
         Map<String, List<List<String>>> authTerms = vocabManager.getAuthoritativeForms(idb.getPid(), mods);
+        List<String> flattened = new ArrayList<>();
         if (authTerms != null) {
             List<List<String>> affiliationTerms = authTerms.get(AFFIL_URI);
 
-            if (affiliationTerms != null && affiliationTerms.size() > 0) {
-            // Make the departments for the whole document into a form solr can take
-                List<String> flattened = new ArrayList<>();
+            if (affiliationTerms != null) {
+                // Make the departments for the whole document into a form solr can take
                 for (List<String> path : affiliationTerms) {
                     flattened.addAll(path);
                 }
-                idb.setDepartment(flattened);
+                if (flattened.size() == 0) {
+                    idb.setDepartment(null);
+                } else {
+                    idb.setDepartment(flattened);
+                }
             }
         }
     }
@@ -233,13 +244,15 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         String abstractText = mods.getChildText("abstract", JDOMNamespaceUtil.MODS_V3_NS);
         if (abstractText != null) {
             idb.setAbstractText(abstractText.trim());
+        } else {
+            idb.setAbstractText(null);
         }
     }
 
     private void extractSubjects(Element mods, IndexDocumentBean idb) {
         List<?> subjectEls = mods.getChildren("subject", JDOMNamespaceUtil.MODS_V3_NS);
+        List<String> subjects = new ArrayList<>();
         if (subjectEls.size() > 0) {
-            List<String> subjects = new ArrayList<>();
             for (Object subjectObj: subjectEls) {
                 List<?> subjectParts = ((Element)subjectObj).getChildren();
                 for (Object subjectPart: subjectParts) {
@@ -249,17 +262,19 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     }
                 }
             }
-            if (subjects.size() > 0) {
-                idb.setSubject(subjects);
-            }
+        }
+        if (subjects.size() > 0) {
+            idb.setSubject(subjects);
+        } else {
+            idb.setSubject(null);
         }
 
     }
 
     private void extractLanguages(Element mods, IndexDocumentBean idb) {
         List<?> languageEls = mods.getChildren("language", JDOMNamespaceUtil.MODS_V3_NS);
+        List<String> languages = new ArrayList<>();
         if (languageEls.size() > 0) {
-            List<String> languages = new ArrayList<>();
             String languageTerm = null;
             for (Object languageObj: languageEls) {
                 // Our schema only allows for iso639-2b languages at this point.
@@ -271,9 +286,11 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                     }
                 }
             }
-            if (languages.size() > 0) {
-                idb.setLanguage(languages);
-            }
+        }
+        if (languages.size() > 0) {
+            idb.setLanguage(languages);
+        } else {
+            idb.setLanguage(null);
         }
     }
 
@@ -316,6 +333,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 idb.setDateCreated(dateIssued);
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
+            } else {
+                idb.setDateCreated(null);
             }
         }
     }
@@ -339,7 +358,12 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
             identifiers.add(identifierBuilder.toString());
             idb.getKeyword().add(idValue);
         }
-        idb.setIdentifier(identifiers);
+        if (identifiers.size() > 0) {
+            idb.setIdentifier(identifiers);
+        } else {
+            idb.setIdentifier(null);
+        }
+
     }
 
     private void extractKeywords(Element mods, IndexDocumentBean idb) {
@@ -377,6 +401,8 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 mods, "note", JDOMNamespaceUtil.MODS_V3_NS, "type", "citation/reference");
         if (citationEl != null) {
             idb.setCitation(citationEl.getValue().trim());
+        } else {
+            idb.setCitation(null);
         }
     }
 

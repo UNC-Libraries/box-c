@@ -58,6 +58,7 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
 
         IndexDocumentBean idb = dip.getDocument();
 
+        List<String> status = new ArrayList<>();
         List<String> readPrincipals = new ArrayList<>();
         List<String> staffPrincipals = new ArrayList<>();
         Map<String, Set<String>> principalRoles = aclFactory.getPrincipalRoles(dip.getPid());
@@ -88,6 +89,7 @@ public class SetAccessControlFilter implements IndexDocumentFilter {
         idb.setRoleGroup(denormalizedRolePrincipals);
         idb.setAdminGroup(staffPrincipals);
         idb.setReadGroup(readPrincipals);
+        idb.setStatus(status);
     }
 
     /**
