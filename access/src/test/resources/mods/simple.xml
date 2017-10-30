@@ -1,0 +1,9 @@
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <mods:titleInfo>
+    <mods:title>Object Title</mods:title>
+  </mods:titleInfo>
+  <mods:name type="corporate">
+    <mods:namePart>unc</mods:namePart>
+  </mods:name>
+  <mods:abstract>A short abstract.</mods:abstract>
+</mods:mods>

@@ -6,15 +6,15 @@
 	<xsl:import href="/recordTransformations/languageNames.xsl"/>
 	<xsl:import href="/recordTransformations/scriptNames.xsl"/>
 	<xsl:output method="xml" omit-xml-declaration="yes" indent="no"/>
-	<!-- 
-	Transforms a mods record into a table formatted according to the needs of the 
-	full record page in the CDR public UI.  
+	<!--
+	Transforms a mods record into a table formatted according to the needs of the
+	full record page in the CDR public UI.
 	Author: Ben Pennell
 	Last edited: May 2015: Sonoe Nakasone
 	 -->
 	<xsl:variable name="newline"><xsl:text>
 	</xsl:text></xsl:variable>
-	
+
 	<!-- mods:name -->
 	<xsl:template match="*[local-name() = 'name']" mode="brief">
 		<xsl:variable name="displayForm" select="./*[local-name() = 'displayForm']"/>
@@ -71,7 +71,7 @@
 				<xsl:if test="boolean($termsOfAddress)">
 					<xsl:text>, </xsl:text><xsl:value-of select="$termsOfAddress"/>
 				</xsl:if>
-				
+
 				<xsl:if test="boolean($dateName)">
 					<xsl:text>, </xsl:text><xsl:value-of select="$dateName"/>
 				</xsl:if>
@@ -85,9 +85,9 @@
 				</xsl:for-each>
 			</xsl:otherwise>
 		</xsl:choose>
-		
+
 		<br/><xsl:value-of select="$newline"/>
-		
+
 		<xsl:variable name="orcid" select="*[local-name() = 'nameIdentifier' and @type = 'orcid']"/>
 		<xsl:if test="boolean($orcid)">
 			<xsl:variable name="orcid_id">
@@ -100,7 +100,7 @@
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:variable>
-			
+
 			<span>
 				<a>
 					<xsl:attribute name="href">
@@ -110,7 +110,7 @@
 				</a><br/><xsl:value-of select="$newline"/>
 			</span>
 		</xsl:if>
-		
+
 		<xsl:variable name="affiliation" select="*[local-name() = 'affiliation']"/>
 		<xsl:if test="boolean($affiliation)">
 			<span>
@@ -120,7 +120,7 @@
 				</xsl:for-each>
 			</span>
 		</xsl:if>
-		
+
 		<xsl:variable name="description" select="*[local-name() = 'description']"/>
 		<xsl:if test="boolean($description)">
 			<xsl:text>Description:  </xsl:text><xsl:value-of select="$description"/><br/><xsl:value-of select="$newline"/>
@@ -131,7 +131,7 @@
 		<xsl:for-each-group select="*[local-name() = 'name']" group-by="@displayLabel, .[not(@displayLabel)]/*[local-name() = 'role']/*[local-name() = 'roleTerm']/text(), local-name(.[not(@displayLabel)][./not(*[local-name() = 'role']/*[local-name() = 'roleTerm'])])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
-				
+
 				<th>
 					<xsl:choose>
 						<xsl:when test="$groupKey = local-name()">
@@ -158,12 +158,12 @@
 		<xsl:if test="boolean($nonSort)">
 			<xsl:value-of select="$nonSort"/><xsl:text> </xsl:text>
 		</xsl:if>
-		
+
 		<xsl:variable name="title" select="*[local-name() = 'title']"/>
 		<xsl:if test="boolean($title)">
 			<xsl:value-of select="$title"/>
 		</xsl:if>
-		
+
 		<xsl:variable name="subTitle" select="*[local-name() = 'subTitle']"/>
 		<xsl:if test="boolean($subTitle)">
 			<xsl:text>: </xsl:text><xsl:value-of select="$subTitle"/>
@@ -175,18 +175,18 @@
 		<xsl:if test="boolean($nonSort)">
 			<xsl:value-of select="$nonSort"/><xsl:text> </xsl:text>
 		</xsl:if>
-		
+
 		<xsl:variable name="title" select="*[local-name() = 'title']"/>
 		<xsl:if test="boolean($title)">
 			<xsl:value-of select="$title"/>
 		</xsl:if>
-		
+
 		<xsl:variable name="subTitle" select="*[local-name() = 'subTitle']"/>
 		<xsl:if test="boolean($subTitle)">
 			<xsl:text>: </xsl:text><xsl:value-of select="$subTitle"/>
 		</xsl:if>
 		<xsl:value-of select="$newline"/>
-		
+
 		<xsl:variable name="partNumber" select="*[local-name() = 'partNumber']"/>
 		<xsl:if test="boolean($partNumber)">
 			<xsl:for-each select="$partNumber">
@@ -239,8 +239,8 @@
 	</xsl:template>
 	<!-- mods:originInfo mods:originInfo/place-->
 	<xsl:template name="modsOriginPlaces">
-		
-		
+
+
 		<xsl:variable name="place" select="*[local-name() = 'originInfo']/*[local-name() = 'place']"/>
 		<xsl:if test="boolean($place)">
 			<tr>
@@ -250,19 +250,19 @@
 						<xsl:for-each select="*[local-name() = 'placeTerm']">
 							<xsl:value-of select="."/><br/><xsl:value-of select="$newline"/>
 						</xsl:for-each>
-						
+
 					</xsl:for-each>
 				</td>
 			</tr>
 		</xsl:if>
-	
-		
+
+
 	</xsl:template>
 	<!-- Template for a simple name / value pair display -->
 	<xsl:template name="modsField">
 		<xsl:param name="label"/>
 		<xsl:param name="field"/>
-	
+
 		<xsl:if test="boolean($field)">
 			<tr>
 				<th><xsl:value-of select="$label"/></th>
@@ -274,10 +274,10 @@
 			</tr>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<xsl:template name="modsGroupedField">
 		<xsl:param name="defaultLabel"/>
-		<xsl:param name="field"/>	
+		<xsl:param name="field"/>
 		<xsl:if test="boolean($field)">
 			<xsl:for-each-group select="$field" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
 				<xsl:variable name="groupKey" select="current-grouping-key()"/>
@@ -301,7 +301,7 @@
 			</xsl:for-each-group>
 		</xsl:if>
 	</xsl:template>
-	
+
 	<xsl:template name="modsGroupedFieldWithType">
 		<xsl:param name="defaultLabel"/>
 		<xsl:param name="field"/>
@@ -367,10 +367,10 @@
 			</xsl:for-each-group>
 		</xsl:if>
 	</xsl:template>
-<!-- mods:originInfo dates -->	
+<!-- mods:originInfo dates -->
 	<xsl:template name="modsOriginDates">
 		<xsl:for-each-group select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']" group-by="../@displayLabel, local-name(.[not(../@displayLabel)])[. != '']">
-			<xsl:variable name="groupKey" select="current-grouping-key()"/>	
+			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
 				<th>
 					<xsl:choose>
@@ -414,11 +414,11 @@
 						</xsl:if>
 						<br/><xsl:value-of select="$newline"/>
 					</xsl:for-each>
-	
+
 					<br/><xsl:value-of select="$newline"/>
 				</td>
 			</tr>
-		
+
 		</xsl:for-each-group>
 	</xsl:template>
 
@@ -472,7 +472,7 @@
 							</xsl:if>
 							<br/><xsl:value-of select="$newline"/>
 						</xsl:if>
-					</xsl:for-each>		
+					</xsl:for-each>
 				</td>
 			</tr>
 		</xsl:for-each-group>
@@ -482,7 +482,7 @@
 		<xsl:value-of select="*[local-name() = 'scale']"/>
 		<xsl:if test="*[local-name() = 'projection']">
 			<xsl:if test="*[local-name() = 'scale']">
-				<xsl:text> ; </xsl:text> 
+				<xsl:text> ; </xsl:text>
 			</xsl:if>
 			<xsl:value-of select="*[local-name() = 'projection']"/>
 		</xsl:if>
@@ -520,7 +520,7 @@
 											<xsl:text>, </xsl:text>
 										</xsl:if>
 										<xsl:value-of select="text()"/>
-									</xsl:for-each>			
+									</xsl:for-each>
 								</xsl:when>
 								<xsl:when test="local-name() = 'cartographics'">
 									<xsl:call-template name="cartographics"/>
@@ -612,9 +612,9 @@
 									<xsl:if test="position() != 1">
 										<xsl:text>, </xsl:text>
 									</xsl:if>
-									
+
 									<xsl:value-of select="."/>
-									
+
 									<xsl:if test="position() = last()">
 										<xsl:text>)</xsl:text>
 									</xsl:if>
@@ -675,7 +675,7 @@
 	</xsl:template>
 
 	<!-- mods:part -->
-	<xsl:template name="modsParts">		
+	<xsl:template name="modsParts">
 		<xsl:for-each-group select="*[local-name() = 'part']" group-by="@displayLabel, local-name(.[not(@displayLabel)])[. != '']">
 			<xsl:variable name="groupKey" select="current-grouping-key()"/>
 			<tr>
@@ -710,7 +710,7 @@
 											<br/><xsl:value-of select="$newline"/>
 										</xsl:for-each>
 									</xsl:when>
-									
+
 									<xsl:when test="local-name() = 'extent'">
 										<xsl:for-each select="./*">
 											<xsl:choose>
@@ -718,7 +718,7 @@
 													<xsl:value-of select="concat(upper-case(substring(local-name(),1,1)), substring(local-name(),2))"/>
 													<xsl:text>: </xsl:text><xsl:value-of select="text()"/>
 												</xsl:when>
-												
+
 												<xsl:when test="local-name() = 'total'">
 													<xsl:choose>
 														<xsl:when test="../@unit">
@@ -740,7 +740,7 @@
 											<br/><xsl:value-of select="$newline"/>
 										</xsl:for-each>
 									</xsl:when>
-										
+
 									<xsl:when test="local-name()='date'">
 										<xsl:choose>
 											<xsl:when test="@point='start'">
@@ -775,9 +775,9 @@
 											</xsl:otherwise>
 										</xsl:choose>
 									</xsl:when>
-									
+
 									<xsl:when test="local-name()= 'text'">
-						
+
 										<xsl:choose>
 											<xsl:when test="boolean(@type)">
 												<xsl:choose>
@@ -799,13 +799,13 @@
 									</xsl:when>
 								</xsl:choose>
 							</xsl:for-each>
-						</xsl:for-each>						
+						</xsl:for-each>
 				</td>
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-	
-	<!-- mods:relatedItem -->	
+
+	<!-- mods:relatedItem -->
 	<!-- Related items can contain any kind of item, so just reusing the other templates and nesting in an extra table-->
 	<xsl:template name="modsRelatedItems">
 		<xsl:for-each-group select="*[local-name() = 'relatedItem']" group-by="@displayLabel, .[not(@displayLabel)]/@type, local-name(.[not(@displayLabel) and not(@type)])[. != '']">
@@ -818,36 +818,36 @@
 							<xsl:text>Related:</xsl:text> <br/>
 							<xsl:value-of>Description</xsl:value-of>
 						</xsl:when>
-	   					<xsl:when test="$groupKey = 'preceding'">
-	   						<xsl:attribute name="title">Information about a predecessor to this resource</xsl:attribute>
-	   						<xsl:text>Related:</xsl:text> <br/>
-	   						<xsl:value-of>Preceeding resource</xsl:value-of>
-	   					</xsl:when>
-	  					<xsl:when test="$groupKey = 'succeeding'">
-	  						<xsl:attribute name="title">Information about a successor to this resource</xsl:attribute>
-	  						<xsl:text>Related:</xsl:text> <br/>
-	  						<xsl:value-of>Succeeding resource</xsl:value-of>
-	  					</xsl:when>
-	  					<xsl:when test="$groupKey = 'original'">
-	  						<xsl:attribute name="title">Information about the original version of this resource</xsl:attribute>
-	  						<xsl:text>Related:</xsl:text> <br/>
-	  						<xsl:value-of>Original version</xsl:value-of>
-	  					</xsl:when>
-	   					<xsl:when test="$groupKey = 'constituent'">
-	   						<xsl:attribute name="title">Description of a part, subset, or supplement of this resource</xsl:attribute>
-	   						<xsl:text>Related:</xsl:text> <br/>
-	   						<xsl:value-of>Part or supplement</xsl:value-of>
-	   					</xsl:when>
-	   					<xsl:when test="$groupKey = 'series'">
-	   						<xsl:attribute name="title">Series in which the resource was issued</xsl:attribute>
-	   						<xsl:text>Related:</xsl:text> <br/>
-	   						<xsl:value-of>Series</xsl:value-of>
-	   					</xsl:when>
-	   					<xsl:when test="$groupKey = 'otherVersion'">
-	   						<xsl:attribute name="title">Another version of the resource; a change in intellectual content</xsl:attribute>
-	   						<xsl:text>Related:</xsl:text> <br/>
-	   						<xsl:value-of>Version or edition</xsl:value-of>
-	   					</xsl:when>				
+						<xsl:when test="$groupKey = 'preceding'">
+							<xsl:attribute name="title">Information about a predecessor to this resource</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Preceeding resource</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'succeeding'">
+							<xsl:attribute name="title">Information about a successor to this resource</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Succeeding resource</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'original'">
+							<xsl:attribute name="title">Information about the original version of this resource</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Original version</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'constituent'">
+							<xsl:attribute name="title">Description of a part, subset, or supplement of this resource</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Part or supplement</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'series'">
+							<xsl:attribute name="title">Series in which the resource was issued</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Series</xsl:value-of>
+						</xsl:when>
+						<xsl:when test="$groupKey = 'otherVersion'">
+							<xsl:attribute name="title">Another version of the resource; a change in intellectual content</xsl:attribute>
+							<xsl:text>Related:</xsl:text> <br/>
+							<xsl:value-of>Version or edition</xsl:value-of>
+						</xsl:when>
 						<xsl:when test="$groupKey = 'otherFormat'">
 							<xsl:attribute name="title">The resource in another physical format, but same content</xsl:attribute>
 							<xsl:text>Related:</xsl:text> <br/>
@@ -861,92 +861,94 @@
 							<xsl:attribute name="title">Information about a review of this resource</xsl:attribute>
 							<xsl:text>Related:</xsl:text> <br/>
 							<xsl:value-of>Review</xsl:value-of>
-						</xsl:when>	
+						</xsl:when>
 						<xsl:when test="$groupKey = 'host'">
 							<xsl:attribute name="title">Information about the item or collection this resource is part of</xsl:attribute>
 							<xsl:text>Related:</xsl:text> <br/>
 							<xsl:value-of>Host item or collection</xsl:value-of>
-						</xsl:when>	
+						</xsl:when>
 						<xsl:otherwise>
 							<xsl:value-of select="concat(upper-case(substring($groupKey,1,1)), substring($groupKey,2))"/>
 						</xsl:otherwise>
-					</xsl:choose>	
+					</xsl:choose>
 				</th>
 				<td>
-					<table>
-						<xsl:call-template name="modsNames"/>
-						<xsl:call-template name="modsTitles"/>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Publisher</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'publisher']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Issuance</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'issuance']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Frequency</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'frequency']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Edition</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'edition']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsOriginPlaces"/>
-						<xsl:call-template name="modsOriginDates"/>
-						
-						<xsl:call-template name="modsGroupedField">
-							<xsl:with-param name="defaultLabel">Type of Resource</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'typeOfResource']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Genre</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'genre']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsLanguages"/>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Target Audience</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'targetAudience']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Note</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'identifier']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsSubjects"/>
-						<xsl:call-template name="modsClassifications"/>
-						<xsl:call-template name="modsAbstract"/>
-						<xsl:call-template name="modsLocations"/>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Access Conditions</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'accessCondition']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsParts"/>
-					</table>
+					<xsl:if test="*[not(local-name() = 'relatedItem')]">
+						<table>
+							<xsl:call-template name="modsNames"/>
+							<xsl:call-template name="modsTitles"/>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Publisher</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'publisher']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Issuance</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'issuance']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Frequency</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'frequency']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Edition</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'edition']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsOriginPlaces"/>
+							<xsl:call-template name="modsOriginDates"/>
+
+							<xsl:call-template name="modsGroupedField">
+								<xsl:with-param name="defaultLabel">Type of Resource</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'typeOfResource']"/>
+							</xsl:call-template>
+
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Genre</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'genre']"/>
+							</xsl:call-template>
+
+							<xsl:call-template name="modsLanguages"/>
+
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
+							</xsl:call-template>
+
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Target Audience</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'targetAudience']"/>
+							</xsl:call-template>
+
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Note</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
+							</xsl:call-template>
+
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'identifier']"/>
+							</xsl:call-template>
+
+							<xsl:call-template name="modsSubjects"/>
+							<xsl:call-template name="modsClassifications"/>
+							<xsl:call-template name="modsAbstract"/>
+							<xsl:call-template name="modsLocations"/>
+
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Access Conditions</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'accessCondition']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsParts"/>
+						</table>
+					</xsl:if>
 				</td>
 			</tr>
 		</xsl:for-each-group>
 	</xsl:template>
-	
+
 	<xsl:template match="*[local-name() = 'mods']">
 		<xsl:variable name="name" select="*[local-name() = 'name']"/>
 		<xsl:variable name="titleInfo" select="*[local-name() = 'titleInfo']"/>
 		<xsl:if test="boolean($name) or boolean($titleInfo)">
-			<table> 
+			<table>
 				<xsl:call-template name="modsNames"/>
 				<xsl:call-template name="modsTitles"/>
 			</table>
@@ -964,7 +966,7 @@
 		<xsl:variable name="classification" select="*[local-name() = 'classification']"/>
 		<xsl:variable name="abstract" select="*[local-name() = 'abstract' and @type='Content advice']"/>
 		<xsl:variable name="targetAudience" select="*[local-name() = 'targetAudience']"/>
-		
+
 		<xsl:if test="boolean($language) or boolean($typeOfResource) or boolean($genre) or boolean($identifier) or boolean($classification) or boolean($targetAudience) or boolean ($abstract)">
 			<table>
 				<xsl:call-template name="modsLanguages"/>
@@ -988,15 +990,15 @@
 				</xsl:call-template>
 			</table>
 		</xsl:if>
-		
-		
+
+
 		<xsl:variable name="publisher" select="*[local-name() = 'originInfo']/*[local-name() = 'publisher']"/>
 		<xsl:variable name="issuance" select="*[local-name() = 'originInfo']/*[local-name() = 'issuance']"/>
 		<xsl:variable name="frequency" select="*[local-name() = 'originInfo']/*[local-name() = 'frequency']"/>
 		<xsl:variable name="edition" select="*[local-name() = 'originInfo']/*[local-name() = 'edition']"/>
 		<xsl:variable name="place" select="*[local-name() = 'originInfo']/*[local-name() = 'place']"/>
 		<xsl:variable name="originDate" select="*[local-name() = 'originInfo']/*[contains(local-name(), 'date') or local-name() = 'copyrightDate']"/>
-		
+
 		<xsl:if test="boolean($publisher) or boolean($issuance) or boolean($frequency) or boolean($edition) or boolean($place) or boolean($originDate)">
 			<table>
 				<xsl:call-template name="modsField">
@@ -1018,8 +1020,8 @@
 				<xsl:call-template name="modsOriginPlaces"/>
 				<xsl:call-template name="modsOriginDates"/>
 			</table>
-		</xsl:if>		
-		
+		</xsl:if>
+
 		<xsl:variable name="location" select="*[local-name() = 'location']"/>
 		<xsl:variable name="physicalDescription" select="*[local-name() = 'physicalDescription']"/>
 		<xsl:variable name="part" select="*[local-name() = 'part']"/>
@@ -1030,7 +1032,7 @@
 				<xsl:call-template name="modsParts"/>
 			</table>
 		</xsl:if>
-		
+
 		<xsl:variable name="note" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
 		<xsl:variable name="accessCondition" select="*[local-name() = 'accessCondition' and not(child::*)]"/>
 		<xsl:variable name="rightsHolder" select="*[local-name() = 'accessCondition']/*[local-name() = 'rights.holder']/*[local-name() = 'name']"/>
@@ -1050,38 +1052,38 @@
 				</xsl:call-template>
 			</table>
 		</xsl:if>
-		
-		
+
+
 		<xsl:variable name="tableOfContents" select="*[local-name() = 'tableOfContents']" />
-			
+
 		<xsl:if test="boolean($tableOfContents) and not ($tableOfContents[@shareable])">
-	
+
 			<table>
 				<xsl:call-template name="modsGroupedFieldWithType">
 					<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
 					<xsl:with-param name="field" select="$tableOfContents"/>
 				</xsl:call-template>
-				
+
 			</table>
 		</xsl:if>
-		
+
 		<xsl:variable name="relatedItem" select="*[local-name() = 'relatedItem']"/>
 		<xsl:if test="boolean($relatedItem)">
 			<table>
 				<xsl:call-template name="modsRelatedItems"/>
 			</table>
 		</xsl:if>
-	</xsl:template>	
-	
+	</xsl:template>
+
 	<xsl:template match="/">
 		<view>
 			<xsl:apply-templates select="/*[local-name() = 'mods']"/>
 		</view>
 	</xsl:template>
-	
+
 	<xsl:function name="cdrfn:substring-after-last" as="xs:string">
 		<xsl:param name="value" as="xs:string?"/>
-		<xsl:param name="separator" as="xs:string"/>		
+		<xsl:param name="separator" as="xs:string"/>
 		<xsl:choose>
 			<xsl:when test="contains($value, $separator)">
 				<xsl:value-of select="cdrfn:substring-after-last(substring-after($value, $separator), $separator)" />
