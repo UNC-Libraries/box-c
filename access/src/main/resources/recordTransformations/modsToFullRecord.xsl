@@ -873,7 +873,7 @@
 					</xsl:choose>	
 				</th>
 				<td>
-					<xsl:if test="* != ''">
+					<xsl:if test="/*/relatedItem/*[not(@*)]">
 						<table>
 							<xsl:call-template name="modsNames"/>
 							<xsl:call-template name="modsTitles"/>
