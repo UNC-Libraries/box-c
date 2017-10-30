@@ -873,70 +873,72 @@
 					</xsl:choose>	
 				</th>
 				<td>
-					<table>
-						<xsl:call-template name="modsNames"/>
-						<xsl:call-template name="modsTitles"/>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Publisher</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'publisher']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Issuance</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'issuance']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Frequency</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'frequency']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsField">
-							<xsl:with-param name="label">Edition</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'edition']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsOriginPlaces"/>
-						<xsl:call-template name="modsOriginDates"/>
-						
-						<xsl:call-template name="modsGroupedField">
-							<xsl:with-param name="defaultLabel">Type of Resource</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'typeOfResource']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Genre</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'genre']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsLanguages"/>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Target Audience</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'targetAudience']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Note</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'identifier']"/>
-						</xsl:call-template>
-						
-						<xsl:call-template name="modsSubjects"/>
-						<xsl:call-template name="modsClassifications"/>
-						<xsl:call-template name="modsAbstract"/>
-						<xsl:call-template name="modsLocations"/>
-						
-						<xsl:call-template name="modsGroupedFieldWithType">
-							<xsl:with-param name="defaultLabel">Access Conditions</xsl:with-param>
-							<xsl:with-param name="field" select="*[local-name() = 'accessCondition']"/>
-						</xsl:call-template>
-						<xsl:call-template name="modsParts"/>
-					</table>
+					<xsl:if test="/*/relatedItem/*[not(@*)]">
+						<table>
+							<xsl:call-template name="modsNames"/>
+							<xsl:call-template name="modsTitles"/>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Publisher</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'publisher']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Issuance</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'issuance']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Frequency</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'frequency']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsField">
+								<xsl:with-param name="label">Edition</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'originInfo']/*[local-name() = 'edition']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsOriginPlaces"/>
+							<xsl:call-template name="modsOriginDates"/>
+							
+							<xsl:call-template name="modsGroupedField">
+								<xsl:with-param name="defaultLabel">Type of Resource</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'typeOfResource']"/>
+							</xsl:call-template>
+							
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Genre</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'genre']"/>
+							</xsl:call-template>
+							
+							<xsl:call-template name="modsLanguages"/>
+							
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Table of Contents</xsl:with-param>
+							</xsl:call-template>
+							
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Target Audience</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'targetAudience']"/>
+							</xsl:call-template>
+							
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Note</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'note' and not(@type = 'admin')]"/>
+							</xsl:call-template>
+							
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Identifier</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'identifier']"/>
+							</xsl:call-template>
+							
+							<xsl:call-template name="modsSubjects"/>
+							<xsl:call-template name="modsClassifications"/>
+							<xsl:call-template name="modsAbstract"/>
+							<xsl:call-template name="modsLocations"/>
+							
+							<xsl:call-template name="modsGroupedFieldWithType">
+								<xsl:with-param name="defaultLabel">Access Conditions</xsl:with-param>
+								<xsl:with-param name="field" select="*[local-name() = 'accessCondition']"/>
+							</xsl:call-template>
+							<xsl:call-template name="modsParts"/>
+						</table>
+					</xsl:if>
 				</td>
 			</tr>
 		</xsl:for-each-group>
