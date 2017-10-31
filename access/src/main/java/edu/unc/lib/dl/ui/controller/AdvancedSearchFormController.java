@@ -17,7 +17,7 @@ package edu.unc.lib.dl.ui.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -47,7 +47,7 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 @Controller
 @RequestMapping("/advancedSearch")
 public class AdvancedSearchFormController extends AbstractSolrSearchController {
-    HashMap<String, String> dropdownVals = new HashMap<String, String>();
+    LinkedHashMap<String, String> dropdownVals = new LinkedHashMap<String, String>();
 
     @PostConstruct
     public void init() throws IOException, JDOMException {
