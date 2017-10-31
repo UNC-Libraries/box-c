@@ -31,6 +31,7 @@ import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 
 /**
+ * Service that manages the creation of containers
  *
  * @author harring
  *
@@ -46,46 +47,46 @@ public class AddContainerService {
      * @param agent security principals of the agent making request.
      * @param ids ids of objects to mark for deletion
      */
-    public void addContainer(AgentPrincipals agent, PID childPid, Resource containerType) {
+    public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
 
      // Create the new container
         Model model = ModelFactory.createDefaultModel();
-        Resource childResc = model.getResource(childPid.getRepositoryPath());
-        ContentContainerObject parent = null;
+        Resource parentResc = model.getResource(parentPid.getRepositoryPath());
+        ContentContainerObject child = null;
         // Create the appropriate container
         if (Cdr.AdminUnit.equals(containerType)) {
             aclService.assertHasAccess(
                     "User does not have permissions to create admin units",
-                    childPid, agent.getPrincipals(), Permission.createAdminUnit);
+                    parentPid, agent.getPrincipals(), Permission.createAdminUnit);
 
-            parent = repoObjFactory.createAdminUnit(model);
-            repoObjFactory.createMemberLink(parent.getPid().getRepositoryUri(), URI.create(childResc.getURI()));
+            child = repoObjFactory.createAdminUnit(model);
+            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
         } else if (Cdr.Collection.equals(containerType)) {
             aclService.assertHasAccess(
                     "User does not have permissions to create collections",
-                    childPid, agent.getPrincipals(), Permission.createCollection);
+                    parentPid, agent.getPrincipals(), Permission.createCollection);
 
-            parent = repoObjFactory.createCollectionObject(model);
-            repoObjFactory.createMemberLink(parent.getPid().getRepositoryUri(), URI.create(childResc.getURI()));
+            child = repoObjFactory.createCollectionObject(model);
+            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
         } else if (Cdr.Folder.equals(containerType)) {
             aclService.assertHasAccess(
                     "User does not have permissions to create collections",
-                    childPid, agent.getPrincipals(), Permission.ingest);
+                    parentPid, agent.getPrincipals(), Permission.ingest);
 
-            parent = repoObjFactory.createFolderObject(model);
-            repoObjFactory.createMemberLink(parent.getPid().getRepositoryUri(), URI.create(childResc.getURI()));
+            child = repoObjFactory.createFolderObject(model);
+            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
         } else if (Cdr.Work.equals(containerType)) {
             aclService.assertHasAccess(
                     "User does not have permissions to create collections",
-                    childPid, agent.getPrincipals(), Permission.ingest);
+                    parentPid, agent.getPrincipals(), Permission.ingest);
 
-            parent = repoObjFactory.createWorkObject(model);
-            repoObjFactory.createMemberLink(parent.getPid().getRepositoryUri(), URI.create(childResc.getURI()));
+            child = repoObjFactory.createWorkObject(model);
+            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
         }
 
-        parent.getPremisLog().buildEvent(Premis.Creation)
+        child.getPremisLog().buildEvent(Premis.Creation)
         .addImplementorAgent(agent.getUsernameUri())
-        .addEventDetail("Container added for pid " + childPid)
+        .addEventDetail("Container added at destination " + parentPid)
         .write();
 
     }

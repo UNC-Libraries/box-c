@@ -52,38 +52,38 @@ public class AddContainerController {
     @Autowired
     private AddContainerService addContainerService;
 
-    @RequestMapping(value = "edit/create_container/admin/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create_container/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id) {
-        return update(AgentPrincipals.createFromThread(), id, Cdr.AdminUnit);
+        return createContainer(id, Cdr.AdminUnit);
     }
 
     @RequestMapping(value = "edit/create_container/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createCollection(@PathVariable("id") String id) {
-        return update(AgentPrincipals.createFromThread(), id, Cdr.Collection);
+        return createContainer(id, Cdr.Collection);
     }
 
     @RequestMapping(value = "edit/create_container/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createFolder(@PathVariable("id") String id) {
-        return update(AgentPrincipals.createFromThread(), id, Cdr.Folder);
+        return createContainer(id, Cdr.Folder);
     }
 
     @RequestMapping(value = "edit/create_container/work/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createWork(@PathVariable("id") String id) {
-        return update(AgentPrincipals.createFromThread(), id, Cdr.Work);
+        return createContainer(id, Cdr.Work);
     }
 
-    private ResponseEntity<Object> update(AgentPrincipals agent, String id, Resource containerType) {
+    private ResponseEntity<Object> createContainer(String id, Resource containerType) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "create");
 
-        PID childPid = PIDs.get(id);
+        PID parentPid = PIDs.get(id);
 
         try {
-            addContainerService.addContainer(agent, childPid, containerType);
+            addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, containerType);
         } catch (AccessRestrictionException | AuthorizationException e) {
             result.put("error", e.getMessage());
             return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
