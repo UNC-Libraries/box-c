@@ -271,6 +271,8 @@ public class SetDatastreamContentFilter extends AbstractIndexDocumentFilter {
 				return ContentCategory.video;
 			if (mimetypeType.equals("audio"))
 				return ContentCategory.audio;
+			if (mimetypeType.equals("text"))
+				return ContentCategory.text;
 		}
 
 		String contentCategory = (String)this.contentTypeProperties.get("mime." + mimetype);
