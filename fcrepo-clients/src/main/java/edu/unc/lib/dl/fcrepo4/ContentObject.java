@@ -37,9 +37,9 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public abstract class ContentObject extends RepositoryObject {
 
-    protected ContentObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
-            RepositoryObjectFactory repoObjFactory, RepositoryPIDMinter pidMinter) {
-        super(pid, repoObjLoader, dataLoader, repoObjFactory, pidMinter);
+    protected ContentObject(PID pid, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
+        super(pid, dataLoader, repoObjFactory);
     }
 
     /**
@@ -101,7 +101,7 @@ public abstract class ContentObject extends RepositoryObject {
         Statement s = res.getProperty(PcdmModels.hasRelatedObject);
         if (s != null) {
             PID fileObjPid = PIDs.get(s.getResource().getURI());
-            return repoObjLoader.getFileObject(fileObjPid);
+            return dataLoader.getRepositoryObject(fileObjPid, FileObject.class);
         } else {
             return null;
         }
@@ -121,7 +121,7 @@ public abstract class ContentObject extends RepositoryObject {
         Statement s = res.getProperty(Cdr.hasMods);
         if (s != null) {
             PID binPid = PIDs.get(s.getResource().getURI());
-            return repoObjLoader.getBinaryObject(binPid);
+            return dataLoader.getRepositoryObject(binPid, BinaryObject.class);
         } else {
             return null;
         }

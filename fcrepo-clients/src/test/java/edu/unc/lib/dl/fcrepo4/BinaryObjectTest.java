@@ -72,7 +72,7 @@ public class BinaryObjectTest extends AbstractFedoraTest {
         when(mockPid.getRepositoryUri()).thenReturn(baseUri);
         when(mockPid.getRepositoryPath()).thenReturn(baseUri.toString());
 
-        binObj = new BinaryObject(mockPid, repoObjLoader, dataLoader, repoObjFactory);
+        binObj = new BinaryObject(mockPid, dataLoader, repoObjFactory);
 
         when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);
 

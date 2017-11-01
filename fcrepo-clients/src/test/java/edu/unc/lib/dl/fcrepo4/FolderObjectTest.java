@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.junit.Before;
@@ -56,12 +55,11 @@ public class FolderObjectTest extends AbstractFedoraTest {
     @Before
     public void init() {
 
-        pid = PIDs.get(UUID.randomUUID().toString());
+        pid = pidMinter.mintContentPid();
 
-        folder = new FolderObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
+        folder = new FolderObject(pid, dataLoader, repoObjFactory);
 
-        childPid = PIDs.get(UUID.randomUUID().toString());
-        when(pidMinter.mintContentPid()).thenReturn(childPid);
+        childPid = pidMinter.mintContentPid();
     }
 
     @Test
@@ -94,7 +92,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addFolderTest() {
-        FolderObject childFolder = new FolderObject(childPid, repoObjLoader, dataLoader, repoObjFactory, null);
+        FolderObject childFolder = new FolderObject(childPid, dataLoader, repoObjFactory);
 
         when(repoObjFactory.createFolderObject(any(Model.class)))
                 .thenReturn(childFolder);
@@ -113,7 +111,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addWorkTest() {
-        WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory, null);
+        WorkObject childObj = new WorkObject(childPid, dataLoader, repoObjFactory);
         when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
 
         WorkObject workObj = folder.addWork();

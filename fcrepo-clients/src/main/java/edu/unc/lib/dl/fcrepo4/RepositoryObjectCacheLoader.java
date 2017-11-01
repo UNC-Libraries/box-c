@@ -47,11 +47,9 @@ import edu.unc.lib.dl.util.EntityTag;
  */
 public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObject> {
 
-    private RepositoryObjectLoader repoObjLoader;
     private FcrepoClient client;
     private RepositoryObjectDataLoader repositoryObjectDataLoader;
     private RepositoryObjectFactory repoObjFactory;
-    private RepositoryPIDMinter pidMinter;
 
     protected RepositoryObjectCacheLoader() {
     }
@@ -81,13 +79,6 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
     }
 
     /**
-     * @param repoObjLoader the repository object loader to set
-     */
-    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
-    }
-
-    /**
      * @param client the client to set
      */
     public void setClient(FcrepoClient client) {
@@ -108,41 +99,34 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         this.repoObjFactory = repoObjFactory;
     }
 
-    /**
-     * @param pidMinter the pidMinter to set
-     */
-    public void setPidMinter(RepositoryPIDMinter pidMinter) {
-        this.pidMinter = pidMinter;
-    }
-
     private RepositoryObject instantiateRepositoryObject(PID pid, Model model, String etag) {
         RepositoryObject obj = null;
 
         Resource resc = model.getResource(pid.getRepositoryPath());
 
         if (resc.hasProperty(Premis.hasEventType)) {
-            obj =  new PremisEventObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
+            obj =  new PremisEventObject(pid, repositoryObjectDataLoader, repoObjFactory);
         } else if (isContentPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.Work)) {
-                obj = new WorkObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new WorkObject(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.FileObject)) {
-                obj = new FileObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new FileObject(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
-                obj = new BinaryObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
+                obj = new BinaryObject(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Folder)) {
-                obj = new FolderObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new FolderObject(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.Collection)) {
-                obj = new CollectionObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new CollectionObject(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.ContentRoot)) {
-                obj = new ContentRootObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new ContentRootObject(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Cdr.AdminUnit)) {
-                obj = new AdminUnit(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new AdminUnit(pid, repositoryObjectDataLoader, repoObjFactory);
             }
         } else if (isDepositPID(pid)) {
             if (resc.hasProperty(RDF.type, Cdr.DepositRecord)) {
-                obj = new DepositRecord(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory, pidMinter);
+                obj = new DepositRecord(pid, repositoryObjectDataLoader, repoObjFactory);
             } else if (resc.hasProperty(RDF.type, Fcrepo4Repository.Binary)) {
-                obj = new BinaryObject(pid, repoObjLoader, repositoryObjectDataLoader, repoObjFactory);
+                obj = new BinaryObject(pid, repositoryObjectDataLoader, repoObjFactory);
             }
         }
 
@@ -162,5 +146,12 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
 
     private boolean isDepositPID(PID pid) {
         return pid.getQualifier().equals(RepositoryPathConstants.DEPOSIT_RECORD_BASE);
+    }
+
+    /**
+     * @param repoObjFactory the repoObjFactory to set
+     */
+    public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
     }
 }

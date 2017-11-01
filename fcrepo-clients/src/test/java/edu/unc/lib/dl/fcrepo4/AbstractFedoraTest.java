@@ -34,15 +34,15 @@ public class AbstractFedoraTest {
     @Mock
     protected RepositoryPaths repoPaths;
     @Mock
-    protected RepositoryObjectLoader repoObjLoader;
-    @Mock
     protected RepositoryObjectFactory repoObjFactory;
-    @Mock
+
     protected RepositoryPIDMinter pidMinter;
 
     @Before
     public void initBase() {
         initMocks(this);
+
+        pidMinter = new RepositoryPIDMinter();
     }
 
 }

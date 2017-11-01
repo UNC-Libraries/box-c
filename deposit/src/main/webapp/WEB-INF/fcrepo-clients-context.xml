@@ -45,7 +45,6 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
 		<property name="pidMinter" ref="pidMinter" />
-		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
 	</bean>
@@ -56,13 +55,14 @@
 	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+		<property name="pidMinter" ref="pidMinter" />
 	</bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
 		<property name="client" ref="fcrepoClient" />
-		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 	</bean>
 	
 	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">

@@ -88,7 +88,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         resc.addProperty(RDF.type, PcdmModels.Object);
         resc.addProperty(RDF.type, Cdr.Work);
 
-        work = new WorkObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
+        work = new WorkObject(pid, dataLoader, repoObjFactory);
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
         when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
@@ -149,7 +149,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());
 
-        when(repoObjLoader.getFileObject(eq(primaryPid))).thenReturn(fileObj);
+        when(dataLoader.getRepositoryObject(eq(primaryPid), eq(FileObject.class))).thenReturn(fileObj);
 
         resc.addProperty(Cdr.primaryObject, primaryResc);
 
@@ -163,7 +163,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         FileObject resultObj = work.getPrimaryObject();
 
         assertNull(resultObj);
-        verify(repoObjLoader, never()).getFileObject(any(PID.class));
+        verify(dataLoader, never()).getRepositoryObject(any(PID.class), eq(FileObject.class));
     }
 
     @Test
@@ -185,9 +185,6 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addDataFileTest() {
-        PID dataFilePid = makePid();
-        when(pidMinter.mintContentPid()).thenReturn(dataFilePid);
-
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file

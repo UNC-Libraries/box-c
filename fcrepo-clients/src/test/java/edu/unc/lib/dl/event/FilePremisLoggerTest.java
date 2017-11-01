@@ -18,8 +18,6 @@ package edu.unc.lib.dl.event;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,18 +32,17 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+import org.mockito.Mock;
 
 import edu.unc.lib.dl.fcrepo4.AbstractFedoraTest;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.PremisAgentType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
-import edu.unc.lib.dl.util.URIUtil;
 
 /**
  *
@@ -59,6 +56,8 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
     private File premisFile;
     private PremisLogger premis;
     private Date date;
+    @Mock
+    private RepositoryObjectLoader repoObjLoader;
 
     @Before
     public void setup() throws Exception {
@@ -70,15 +69,6 @@ public class FilePremisLoggerTest extends AbstractFedoraTest {
         premisFile.deleteOnExit();
         premis = new FilePremisLogger(pid, premisFile, pidMinter, repoObjLoader, repoObjFactory, dataLoader);
         date = new Date();
-
-        when(pidMinter.mintPremisEventPid(any(PID.class))).thenAnswer(new Answer<PID>() {
-            @Override
-            public PID answer(InvocationOnMock invocation) throws Throwable {
-                String path = URIUtil.join(pid.getRepositoryPath(), RepositoryPathConstants.EVENTS_CONTAINER,
-                        UUID.randomUUID().toString());
-                return PIDs.get(path);
-            }
-        });
     }
 
     @Test

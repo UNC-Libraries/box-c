@@ -36,7 +36,10 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -54,9 +57,13 @@ public class RepositoryObjectDataLoader {
 
     private RepositoryObjectLoader repositoryObjectLoader;
 
+    private RepositoryObjectFactory repositoryObjectFactory;
+
     private FcrepoClient client;
 
     private TripleStoreQueryService tripleStoreQueryService;
+
+    protected RepositoryPIDMinter pidMinter;
 
     /**
      * Loads and assigns the RDF types for the given object
@@ -116,6 +123,35 @@ public class RepositoryObjectDataLoader {
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
+    }
+
+    /**
+     * Retrieves a RepositoryObject identified by pid
+     *
+     * @param pid
+     * @return
+     */
+    public RepositoryObject getRepositoryObject(PID pid) {
+        return repositoryObjectLoader.getRepositoryObject(pid);
+    }
+
+    /**
+     * Retrieves a RepositoryObject of the type provided
+     *
+     * @param pid
+     * @param type class of the type of object to retrieve
+     * @return
+     * @throws ObjectTypeMismatchException thrown if the retrieved object does
+     *             not match the requested type
+     */
+    public <T extends RepositoryObject> T getRepositoryObject(PID pid, Class<T> type)
+            throws ObjectTypeMismatchException {
+        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
+        if (!type.isInstance(repoObj)) {
+            throw new ObjectTypeMismatchException("Requested object " + pid + " is not a " + type.getName());
+        }
+
+        return type.cast(repoObj);
     }
 
     /**
@@ -192,6 +228,11 @@ public class RepositoryObjectDataLoader {
         return null;
     }
 
+    public PremisLogger getPremisLog(RepositoryObject repoObj) {
+        return new RepositoryPremisLogger(
+                repoObj, pidMinter, repositoryObjectLoader, repositoryObjectFactory, this);
+    }
+
     public void setClient(FcrepoClient client) {
         this.client = client;
     }
@@ -204,11 +245,21 @@ public class RepositoryObjectDataLoader {
         this.repositoryObjectLoader = repoObjLoader;
     }
 
-    public TripleStoreQueryService getTripleStoreQueryService() {
-        return tripleStoreQueryService;
-    }
-
     public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
         this.tripleStoreQueryService = tripleStoreQueryService;
+    }
+
+    /**
+     * @param repositoryObjectFactory the repositoryObjectFactory to set
+     */
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
+        this.repositoryObjectFactory = repositoryObjectFactory;
+    }
+
+    /**
+     * @param pidMinter the pidMinter to set
+     */
+    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+        this.pidMinter = pidMinter;
     }
 }

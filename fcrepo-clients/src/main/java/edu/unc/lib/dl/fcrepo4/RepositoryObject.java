@@ -23,7 +23,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -36,11 +35,9 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public abstract class RepositoryObject {
 
-    protected RepositoryObjectLoader repoObjLoader;
     // Loader for lazy loading data about this object when requested
     protected RepositoryObjectDataLoader dataLoader;
     protected RepositoryObjectFactory repoObjFactory;
-    protected RepositoryPIDMinter pidMinter;
 
     // The identifier and path information for this object
     protected PID pid;
@@ -54,14 +51,11 @@ public abstract class RepositoryObject {
 
     protected PremisLogger premisLog;
 
-    protected RepositoryObject(PID pid, RepositoryObjectLoader repositoryObjectLoader,
-            RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory,
-            RepositoryPIDMinter pidMinter) {
-        this.repoObjLoader = repositoryObjectLoader;
+    protected RepositoryObject(PID pid, RepositoryObjectDataLoader dataLoader,
+            RepositoryObjectFactory repoObjFactory) {
         this.pid = pid;
         this.dataLoader = dataLoader;
         this.repoObjFactory = repoObjFactory;
-        this.pidMinter = pidMinter;
     }
 
     /**
@@ -131,8 +125,7 @@ public abstract class RepositoryObject {
      */
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
-            premisLog = new RepositoryPremisLogger(
-                    this, pidMinter, repoObjLoader, repoObjFactory, dataLoader);
+            premisLog = dataLoader.getPremisLog(this);
         }
         return premisLog;
     }

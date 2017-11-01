@@ -24,13 +24,17 @@
 	</bean>
 	
 	<bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
+	
+	<bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
 
 	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
-		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
-		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="pidMinter" ref="repositoryPIDMinter" />
+		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
 	</bean>
 	
 	<bean id="cacheTimeToLive" class="java.lang.Long">
@@ -46,13 +50,14 @@
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
         <property name="cacheMaxSize" ref="cacheMaxSize" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 	</bean>
 	
 	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="pidMinter" ref="pidMinter" />
 	</bean>
 	
 	<bean id="fusekiEndpointURL" class="java.lang.String">
@@ -69,11 +74,9 @@
 	</bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
-	    <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="pidMinter" ref="repositoryPIDMinter" />
 	</bean>
 	
 	<bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">

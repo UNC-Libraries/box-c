@@ -202,7 +202,7 @@ public class FilePremisLogger implements PremisLogger {
                 }
                 stmtIt.close();
                 // Construct the event object with a presupplied model
-                PremisEventObject event = new PremisEventObject(eventPid, repoObjLoader,
+                PremisEventObject event = new PremisEventObject(eventPid,
                         repoObjDataLoader, repoObjFactory);
                 event.storeModel(eventModel);
 
