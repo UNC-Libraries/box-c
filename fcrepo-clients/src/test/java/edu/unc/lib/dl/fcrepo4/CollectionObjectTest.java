@@ -74,9 +74,9 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Collection.getURI());
-        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 collection.setTypes(types);
                 return dataLoader;
             }
@@ -88,9 +88,9 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 collection.setTypes(types);
                 return dataLoader;
             }

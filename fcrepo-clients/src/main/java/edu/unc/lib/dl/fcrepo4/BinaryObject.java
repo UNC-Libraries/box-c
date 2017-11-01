@@ -50,7 +50,7 @@ public class BinaryObject extends RepositoryObject {
 
     private URI metadataUri;
 
-    protected BinaryObject(PID pid, RepositoryObjectDataLoader dataLoader,
+    protected BinaryObject(PID pid, RepositoryObjectDriver dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
 

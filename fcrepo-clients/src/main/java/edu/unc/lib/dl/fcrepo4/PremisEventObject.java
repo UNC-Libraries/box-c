@@ -30,7 +30,7 @@ import edu.unc.lib.dl.rdf.Premis;
 public class PremisEventObject extends RepositoryObject implements Comparable<PremisEventObject> {
     private static final Logger log = LoggerFactory.getLogger(PremisEventObject.class);
 
-    public PremisEventObject(PID pid, RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory) {
+    public PremisEventObject(PID pid, RepositoryObjectDriver dataLoader, RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
     }
 

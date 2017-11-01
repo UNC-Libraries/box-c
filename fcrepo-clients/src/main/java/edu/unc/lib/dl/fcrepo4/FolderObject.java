@@ -32,7 +32,7 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class FolderObject extends ContentContainerObject {
 
-    protected FolderObject(PID pid, RepositoryObjectDataLoader dataLoader,
+    protected FolderObject(PID pid, RepositoryObjectDriver dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
     }

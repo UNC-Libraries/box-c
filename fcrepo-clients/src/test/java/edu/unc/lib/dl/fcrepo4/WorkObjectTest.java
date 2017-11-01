@@ -91,17 +91,17 @@ public class WorkObjectTest extends AbstractFedoraTest {
         work = new WorkObject(pid, dataLoader, repoObjFactory);
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
-        when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 work.setTypes(types);
                 return dataLoader;
             }
         });
 
-        when(dataLoader.loadModel(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadModel(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 work.storeModel(model);
                 return dataLoader;
             }

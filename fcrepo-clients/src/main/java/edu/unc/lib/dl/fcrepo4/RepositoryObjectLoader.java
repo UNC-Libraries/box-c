@@ -47,7 +47,7 @@ public class RepositoryObjectLoader {
                 .build(repositoryObjectCacheLoader);
     }
 
-    public void setDataLoader(RepositoryObjectDataLoader dataLoader) {
+    public void setDataLoader(RepositoryObjectDriver dataLoader) {
     }
 
     public void setRepositoryObjectCacheLoader(RepositoryObjectCacheLoader cacheLoader) {

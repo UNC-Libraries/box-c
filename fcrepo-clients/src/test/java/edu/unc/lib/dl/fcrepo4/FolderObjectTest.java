@@ -66,9 +66,9 @@ public class FolderObjectTest extends AbstractFedoraTest {
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 folder.setTypes(types);
                 return dataLoader;
             }
@@ -79,9 +79,9 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
-        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 folder.setTypes(Arrays.asList());
                 return dataLoader;
             }

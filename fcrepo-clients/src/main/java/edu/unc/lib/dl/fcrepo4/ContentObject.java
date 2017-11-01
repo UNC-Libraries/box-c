@@ -37,7 +37,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public abstract class ContentObject extends RepositoryObject {
 
-    protected ContentObject(PID pid, RepositoryObjectDataLoader dataLoader,
+    protected ContentObject(PID pid, RepositoryObjectDriver dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
     }

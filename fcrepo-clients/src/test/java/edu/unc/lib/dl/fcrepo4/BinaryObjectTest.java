@@ -96,9 +96,9 @@ public class BinaryObjectTest extends AbstractFedoraTest {
     public void testValidateType() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(Fcrepo4Repository.Binary.toString());
-         when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+         when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                  binObj.setTypes(types);
                  return dataLoader;
              }
@@ -109,9 +109,9 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
-        when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-             public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 binObj.setTypes(Arrays.asList());
                 return dataLoader;
              }

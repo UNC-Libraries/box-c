@@ -36,7 +36,7 @@ import edu.unc.lib.dl.fedora.PID;
 public abstract class RepositoryObject {
 
     // Loader for lazy loading data about this object when requested
-    protected RepositoryObjectDataLoader dataLoader;
+    protected RepositoryObjectDriver dataLoader;
     protected RepositoryObjectFactory repoObjFactory;
 
     // The identifier and path information for this object
@@ -51,7 +51,7 @@ public abstract class RepositoryObject {
 
     protected PremisLogger premisLog;
 
-    protected RepositoryObject(PID pid, RepositoryObjectDataLoader dataLoader,
+    protected RepositoryObject(PID pid, RepositoryObjectDriver dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         this.pid = pid;
         this.dataLoader = dataLoader;

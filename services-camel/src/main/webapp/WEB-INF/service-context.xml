@@ -47,11 +47,11 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="ldpFactory" ref="ldpContainerFactory" />
 		<property name="pidMinter" ref="repositoryPIDMinter" />
-		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
 		<property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
 	</bean>
 
-	<bean id="repositoryObjectDataLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader">
+	<bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
@@ -60,7 +60,7 @@
 	</bean>
 	
 	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
-		<property name="dataLoader" ref="repositoryObjectDataLoader" />
+		<property name="dataLoader" ref="repositoryObjectDriver" />
 		<property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
 		<property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
 		<property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
@@ -68,7 +68,7 @@
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
 		<property name="client" ref="fcrepoClient" />
-		<property name="repositoryObjectDataLoader" ref="repositoryObjectDataLoader" />
+		<property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 	</bean>
 	

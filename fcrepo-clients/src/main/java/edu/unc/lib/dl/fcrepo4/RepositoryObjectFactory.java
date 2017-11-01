@@ -60,7 +60,7 @@ public class RepositoryObjectFactory {
 
     private FcrepoClient client;
 
-    private RepositoryObjectDataLoader repoObjDataLoader;
+    private RepositoryObjectDriver repoObjDataLoader;
 
     private RepositoryPIDMinter pidMinter;
 
@@ -478,7 +478,7 @@ public class RepositoryObjectFactory {
         this.ldpFactory = ldpFactory;
     }
 
-    public void setRepositoryObjectDataLoader(RepositoryObjectDataLoader repoObjDataLoader) {
+    public void setRepositoryObjectDriver(RepositoryObjectDriver repoObjDataLoader) {
         this.repoObjDataLoader = repoObjDataLoader;
     }
 

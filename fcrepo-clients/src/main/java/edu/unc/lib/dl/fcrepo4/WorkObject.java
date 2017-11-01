@@ -44,7 +44,7 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class WorkObject extends ContentContainerObject {
 
-    protected WorkObject(PID pid, RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory) {
+    protected WorkObject(PID pid, RepositoryObjectDriver dataLoader, RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
     }
 

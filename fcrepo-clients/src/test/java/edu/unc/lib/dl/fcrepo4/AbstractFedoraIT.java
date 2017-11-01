@@ -60,7 +60,7 @@ public class AbstractFedoraIT {
     @Autowired
     protected TransactionManager txManager;
     @Autowired
-    protected RepositoryObjectDataLoader dataloader;
+    protected RepositoryObjectDriver dataloader;
 
     @Before
     public void init_() {

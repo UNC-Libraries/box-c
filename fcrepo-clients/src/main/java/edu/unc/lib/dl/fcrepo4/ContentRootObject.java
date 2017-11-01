@@ -29,7 +29,7 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class ContentRootObject extends ContentContainerObject {
 
-    protected ContentRootObject(PID pid, RepositoryObjectDataLoader dataLoader,
+    protected ContentRootObject(PID pid, RepositoryObjectDriver dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
     }

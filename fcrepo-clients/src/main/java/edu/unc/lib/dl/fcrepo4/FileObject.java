@@ -55,7 +55,7 @@ public class FileObject extends ContentObject {
     private final String fileSetPath;
     private final URI fileSetUri;
 
-    protected FileObject(PID pid, RepositoryObjectDataLoader dataLoader,
+    protected FileObject(PID pid, RepositoryObjectDriver dataLoader,
             RepositoryObjectFactory repoObjFactory) {
         super(pid, dataLoader, repoObjFactory);
 

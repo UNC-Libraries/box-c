@@ -46,14 +46,15 @@ import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
- * Data loader which retrieves repository data for objects.
+ * Service that provides data and clients to interact with an object's data
+ * model.
  *
  * @author bbpennel
  * @author harring
  *
  */
-public class RepositoryObjectDataLoader {
-    private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
+public class RepositoryObjectDriver {
+    private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDriver.class);
 
     private RepositoryObjectLoader repositoryObjectLoader;
 
@@ -72,7 +73,7 @@ public class RepositoryObjectDataLoader {
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDataLoader loadTypes(RepositoryObject obj) throws FedoraException {
+    public RepositoryObjectDriver loadTypes(RepositoryObject obj) throws FedoraException {
         List<String> types = new ArrayList<>();
         // Iterate through all type properties and add to list
         Resource resc = obj.getModel().getResource(obj.getPid().getRepositoryUri().toString());
@@ -94,7 +95,7 @@ public class RepositoryObjectDataLoader {
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
+    public RepositoryObjectDriver loadModel(RepositoryObject obj) throws FedoraException {
         URI metadataUri = obj.getMetadataUri();
         // If the object is up to date and has already loaded the model then we're done
         if (obj.hasModel() && obj.isUnmodified()) {
