@@ -37,7 +37,7 @@ import edu.unc.lib.dl.search.solr.util.ContentCategory;
 /**
  * Assigns content-type field for a Solr record. The field contains a category (e.g., "image")
  * and an extension (e.g., ".jpg") for binary content that is contained by the represented object.
- * 
+ *
  * @author harring
  *
  */
@@ -76,7 +76,7 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
         String filepath = binObj.getFilename();
         String mimetype = binObj.getMimetype();
         log.debug("The binary has filepath {} and mimetype {}", filepath, mimetype);
-        ArrayList<String> contentTypes = new ArrayList<String>();
+        ArrayList<String> contentTypes = new ArrayList<>();
         extractContentType(filepath, mimetype, contentTypes);
         dip.getDocument().setContentType(contentTypes);
     }
@@ -140,6 +140,9 @@ public class SetContentTypeFilter implements IndexDocumentFilter {
             }
             if (mimetypeType.equals("audio")) {
                 return ContentCategory.audio;
+            }
+            if (mimetypeType.equals("text")) {
+                return ContentCategory.text;
             }
         }
 
