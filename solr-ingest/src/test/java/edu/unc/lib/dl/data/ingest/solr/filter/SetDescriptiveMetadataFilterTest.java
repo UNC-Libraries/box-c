@@ -18,13 +18,10 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -63,13 +60,14 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
  */
 public class SetDescriptiveMetadataFilterTest {
 
+    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
     private static final String PID_STRING = "uuid:07d9594f-310d-4095-ab67-79a1056e7430";
 
     @Mock
     private DocumentIndexingPackageDataLoader loader;
     @Mock
     private DocumentIndexingPackage dip;
-    @Mock
+
     private IndexDocumentBean idb;
     @Mock
     private ContentObject contentObj;
@@ -99,11 +97,13 @@ public class SetDescriptiveMetadataFilterTest {
 
         when(pid.getId()).thenReturn(PID_STRING);
 
+        idb = new IndexDocumentBean();
+        idb.setTitle("Title");
+
         when(dip.getDocument()).thenReturn(idb);
         when(dip.getPid()).thenReturn(pid);
         when(dip.getContentObject()).thenReturn(contentObj);
         when(contentObj.getResource()).thenReturn(objResc);
-        when(idb.getTitle()).thenReturn("Title");
 
         filter = new SetDescriptiveMetadataFilter();
         setField(filter, "vocabManager", vocabManager);
@@ -116,40 +116,33 @@ public class SetDescriptiveMetadataFilterTest {
                 "src/test/resources/datastream/inventoryMods.xml")));
         when(dip.getMods()).thenReturn(modsDoc.detachRootElement());
 
-        List<String> keywords = new ArrayList<>();
-        when(idb.getKeyword()).thenReturn(keywords);
-
         filter.filter(dip);
 
-        verify(idb).setTitle(eq("Paper title"));
-        verify(idb, never()).setOtherTitle(anyListOf(String.class));
+        assertEquals("Paper title", idb.getTitle());
+        assertNull(idb.getOtherTitle());
 
-        verify(idb).setCreator(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Test, author"));
-        verify(idb).setCreatorSort("Test, author");
+        assertTrue(idb.getCreator().contains("Test, author"));
+        assertEquals("Test, author", idb.getCreatorSort());
 
-        verify(idb).setContributor(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Test, author"));
-        assertTrue(listCaptor.getValue().contains("Test, contributor"));
+        List<String> contributors = idb.getContributor();
+        assertTrue(contributors.contains("Test, author"));
+        assertTrue(contributors.contains("Test, contributor"));
 
-        verify(idb, never()).setDepartment(anyListOf(String.class));
+        assertNull(idb.getDepartment());
 
-        verify(idb).setAbstractText("Abstract text");
+        assertEquals("Abstract text", idb.getAbstractText());
 
-        verify(idb).setSubject(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Test resource"));
+        assertTrue(idb.getSubject().contains("Test resource"));
 
-        verify(idb).setLanguage(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("English"));
+        assertTrue(idb.getLanguage().contains("English"));
 
-        verify(idb).setDateCreated(dateCaptor.capture());
-        Date dateCreated = dateCaptor.getValue();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
-        assertEquals("2006-04", dateFormat.format(dateCreated));
+        assertEquals("2006-04", dateFormat.format(idb.getDateCreated()));
 
-        verify(idb).setIdentifier(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("local|abc123"));
-        assertFalse(listCaptor.getValue().contains("uri|http://example.com"));
+        List<String> ids = idb.getIdentifier();
+        assertTrue(ids.contains("local|abc123"));
+        assertFalse(ids.contains("uri|http://example.com"));
+
+        List<String> keywords = idb.getKeyword();
         assertTrue(keywords.contains("abc123"));
 
         assertTrue(keywords.contains("Dissertation"));
@@ -158,7 +151,7 @@ public class SetDescriptiveMetadataFilterTest {
         assertTrue(keywords.contains("phys note"));
         assertTrue(keywords.contains("Cited source"));
 
-        verify(idb).setCitation(eq("citation text"));
+        assertEquals("citation text", idb.getCitation());
     }
 
     /*
@@ -173,10 +166,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setDateCreated(dateCaptor.capture());
-        Date dateIssued = dateCaptor.getValue();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
-        assertEquals("2006-05", dateFormat.format(dateIssued));
+        assertEquals("2006-05", dateFormat.format(idb.getDateCreated()));
     }
 
     /*
@@ -191,10 +181,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setDateCreated(dateCaptor.capture());
-        Date dateCaptured = dateCaptor.getValue();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
-        assertEquals("2006-03", dateFormat.format(dateCaptured));
+        assertEquals("2006-03", dateFormat.format(idb.getDateCreated()));
     }
 
     @Test
@@ -206,12 +193,10 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setCreator(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Repo, Boxy"));
-        verify(idb).setContributor(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Boxy"));
-        verify(idb).setCreatorSort(stringCaptor.capture());
-        assertEquals("Repo, Boxy", stringCaptor.getValue());
+        assertTrue(idb.getCreator().contains("Repo, Boxy"));
+        assertEquals("Repo, Boxy", idb.getCreatorSort());
+
+        assertTrue(idb.getContributor().contains("Boxy"));
     }
 
     @Test
@@ -223,11 +208,10 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setCreator(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Test, Creator1"));
-        assertTrue(listCaptor.getValue().contains("Test, Creator2"));
-        verify(idb).setCreatorSort("Test, Creator1");
+        assertTrue(idb.getCreator().contains("Test, Creator1"));
+        assertTrue(idb.getCreator().contains("Test, Creator2"));
 
+        assertEquals("Test, Creator1", idb.getCreatorSort());
     }
 
     @Test
@@ -246,8 +230,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setDepartment(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("Music"));
+        assertTrue(idb.getDepartment().contains("Music"));
     }
 
     @Test
@@ -259,7 +242,7 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb, never()).setLanguage(anyListOf(String.class));
+        assertNull(idb.getLanguage());
     }
 
     @Test
@@ -271,34 +254,34 @@ public class SetDescriptiveMetadataFilterTest {
 
         filter.filter(dip);
 
-        verify(idb).setLanguage(listCaptor.capture());
-        assertTrue(listCaptor.getValue().contains("English"));
-        assertTrue(listCaptor.getValue().contains("Cherokee"));
+        assertTrue(idb.getLanguage().contains("English"));
+        assertTrue(idb.getLanguage().contains("Cherokee"));
     }
 
     @Test
     public void noMODS() throws Exception {
-        when(idb.getTitle()).thenReturn(null);
+        Date dateAdded = new Date();
+        idb.setDateAdded(dateAdded);
+
+        idb.setTitle(null);
+
         when(objResc.hasProperty(DcElements.title)).thenReturn(true);
         Statement titleStmt = mock(Statement.class);
         when(titleStmt.getString()).thenReturn("test label");
         when(objResc.getProperty(DcElements.title)).thenReturn(titleStmt);
 
-        when(idb.getKeyword()).thenReturn(new ArrayList<String>());
-
         filter.filter(dip);
 
-        verify(idb, never()).setAbstractText(any(String.class));
-        verify(idb, never()).setLanguage(anyListOf(String.class));
-        verify(idb, never()).setSubject(anyListOf(String.class));
-        verify(idb, never()).setDateCreated(any(Date.class));
-        verify(idb, never()).setCitation(any(String.class));
-        verify(idb, never()).setIdentifier(anyListOf(String.class));
-        verify(idb).setTitle(stringCaptor.capture());
-        // check that title and keyword still get set in spite of no mods
-        assertEquals("test label", stringCaptor.getValue());
-        assertTrue(idb.getKeyword().contains(PID_STRING));
+        assertNull(idb.getAbstractText());
+        assertNull(idb.getLanguage());
+        assertNull(idb.getSubject());
+        assertNull(idb.getCitation());
+        assertNull(idb.getIdentifier());
 
+        // check that title, keyword and date created still get set
+        assertEquals("test label", idb.getTitle());
+        assertEquals(dateAdded, idb.getDateCreated());
+        assertTrue(idb.getKeyword().contains(PID_STRING));
     }
 
 }

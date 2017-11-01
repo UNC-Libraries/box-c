@@ -87,6 +87,9 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
         if (dip.getDocument().getTitle() == null) {
             idb.setTitle(getAlternativeTitle(dip));
         }
+        if (dip.getDocument().getDateCreated() == null) {
+            idb.setDateCreated(idb.getDateAdded());
+        }
         idb.getKeyword().add(dip.getPid().getId());
     }
 
@@ -333,8 +336,6 @@ public class SetDescriptiveMetadataFilter implements IndexDocumentFilter {
                 idb.setDateCreated(dateIssued);
             } else if (dateCaptured != null) {
                 idb.setDateCreated(dateCaptured);
-            } else {
-                idb.setDateCreated(null);
             }
         }
     }
