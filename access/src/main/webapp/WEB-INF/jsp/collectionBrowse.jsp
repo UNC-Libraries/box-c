@@ -36,3 +36,4 @@
 	<c:param name="entryTemplate">searchResults/browseResultEntry.jsp</c:param>
 </c:import>
 </div>
+<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/collectionBrowse"></script>

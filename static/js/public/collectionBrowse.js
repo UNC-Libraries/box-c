@@ -6,7 +6,7 @@ require.config({
 	}
 });
 
-define('sortSubmit', ['module', 'jquery'], function(module, $) {
+define('collectionBrowse', ['module', 'jquery'], function(module, $) {
 	$("#sort_select").on("change", function() {
 		$("#result_sort_form").submit();
 	});
