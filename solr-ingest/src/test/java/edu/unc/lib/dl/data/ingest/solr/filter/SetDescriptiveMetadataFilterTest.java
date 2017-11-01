@@ -28,6 +28,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,9 +125,12 @@ public class SetDescriptiveMetadataFilterTest {
 	@Test
 	public void noMODS() throws Exception {
 		DocumentIndexingPackage dip = factory.createDip("uuid:item");
+		IndexDocumentBean idb = dip.getDocument();
+		
+		Date dateAdded = new Date();
+		idb.setDateAdded(dateAdded);
 
 		filter.filter(dip);
-		IndexDocumentBean idb = dip.getDocument();
 
 		assertNull(idb.getCreator());
 		assertNull(idb.getContributor());
@@ -137,6 +141,7 @@ public class SetDescriptiveMetadataFilterTest {
 
 		assertEquals(idb.getId(), dip.getPid().getPid());
 		assertEquals("Label", idb.getTitle());
+		assertEquals(dateAdded, idb.getDateCreated());
 	}
 
 }

@@ -89,6 +89,9 @@ public class SetDescriptiveMetadataFilter extends AbstractIndexDocumentFilter {
 		if (dip.getDocument().getTitle() == null) {
 			idb.setTitle(dip.getLabel());
 		}
+		if (dip.getDocument().getDateCreated() == null) {
+			idb.setDateCreated(idb.getDateAdded());
+		}
 		idb.getKeyword().add(dip.getPid().getPid());
 	}
 
