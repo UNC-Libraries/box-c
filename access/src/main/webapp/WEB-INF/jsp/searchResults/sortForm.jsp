@@ -55,4 +55,3 @@
 		<input type="hidden" name="container" value="${resultResponse.selectedContainer.id}" />
 	</c:if>
 </form>
-<script type="text/javascript" src="/static/js/lib/require.js" data-main="/static/js/public/sortSubmit"></script>
