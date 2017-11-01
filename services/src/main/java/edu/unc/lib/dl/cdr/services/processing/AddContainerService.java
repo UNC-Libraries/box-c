@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import java.net.URI;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -25,7 +23,10 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
@@ -40,54 +41,59 @@ public class AddContainerService {
 
     private AccessControlService aclService;
     private RepositoryObjectFactory repoObjFactory;
+    private RepositoryObjectLoader repoObjLoader;
+    private TransactionManager txManager;
 
     /**
-     * Mark each pid for deletion using the agent principals provided.
+     * Creates a new container as a child of the given parent using the agent principals provided.
      *
      * @param agent security principals of the agent making request.
-     * @param ids ids of objects to mark for deletion
+     * @param parentPid pid of parent obj to add child container to
+     * @param containerType the type of new container to be created
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
 
-     // Create the new container
-        Model model = ModelFactory.createDefaultModel();
-        Resource parentResc = model.getResource(parentPid.getRepositoryPath());
-        ContentContainerObject child = null;
-        // Create the appropriate container
-        if (Cdr.AdminUnit.equals(containerType)) {
-            aclService.assertHasAccess(
-                    "User does not have permissions to create admin units",
-                    parentPid, agent.getPrincipals(), Permission.createAdminUnit);
+        FedoraTransaction tx = txManager.startTransaction();
+        try {
+            // Create the new container
+            Model model = ModelFactory.createDefaultModel();
+            model.createResource(parentPid.getRepositoryPath());
+            ContentContainerObject child = null;
+            // Create the appropriate container
+            if (Cdr.AdminUnit.equals(containerType)) {
+                aclService.assertHasAccess(
+                        "User does not have permissions to create admin units",
+                        parentPid, agent.getPrincipals(), Permission.createAdminUnit);
+                child = repoObjFactory.createAdminUnit(model);
+            } else if (Cdr.Collection.equals(containerType)) {
+                aclService.assertHasAccess(
+                        "User does not have permissions to create collections",
+                        parentPid, agent.getPrincipals(), Permission.createCollection);
+                child = repoObjFactory.createCollectionObject(model);
+            } else if (Cdr.Folder.equals(containerType)) {
+                aclService.assertHasAccess(
+                        "User does not have permissions to create collections",
+                        parentPid, agent.getPrincipals(), Permission.ingest);
+                child = repoObjFactory.createFolderObject(model);
+            } else if (Cdr.Work.equals(containerType)) {
+                aclService.assertHasAccess(
+                        "User does not have permissions to create collections",
+                        parentPid, agent.getPrincipals(), Permission.ingest);
+                child = repoObjFactory.createWorkObject(model);
+            }
 
-            child = repoObjFactory.createAdminUnit(model);
-            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
-        } else if (Cdr.Collection.equals(containerType)) {
-            aclService.assertHasAccess(
-                    "User does not have permissions to create collections",
-                    parentPid, agent.getPrincipals(), Permission.createCollection);
+            ContentContainerObject parent = (ContentContainerObject ) repoObjLoader.getRepositoryObject(parentPid);
+            repoObjFactory.addMember(parent, child);
 
-            child = repoObjFactory.createCollectionObject(model);
-            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
-        } else if (Cdr.Folder.equals(containerType)) {
-            aclService.assertHasAccess(
-                    "User does not have permissions to create collections",
-                    parentPid, agent.getPrincipals(), Permission.ingest);
-
-            child = repoObjFactory.createFolderObject(model);
-            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
-        } else if (Cdr.Work.equals(containerType)) {
-            aclService.assertHasAccess(
-                    "User does not have permissions to create collections",
-                    parentPid, agent.getPrincipals(), Permission.ingest);
-
-            child = repoObjFactory.createWorkObject(model);
-            repoObjFactory.createMemberLink(URI.create(parentResc.getURI()), child.getPid().getRepositoryUri());
+            child.getPremisLog().buildEvent(Premis.Creation)
+            .addImplementorAgent(agent.getUsernameUri())
+            .addEventDetail("Container added at destination " + parentPid)
+            .write();
+        } catch(Exception e) {
+            tx.cancel();
+        } finally {
+            tx.close();
         }
-
-        child.getPremisLog().buildEvent(Premis.Creation)
-        .addImplementorAgent(agent.getUsernameUri())
-        .addEventDetail("Container added at destination " + parentPid)
-        .write();
 
     }
 
@@ -103,6 +109,20 @@ public class AddContainerService {
      */
     public void setRepositoryObjectFactory(RepositoryObjectFactory repoObjFactory) {
         this.repoObjFactory = repoObjFactory;
+    }
+
+    /**
+     * @param repoObjLoader the object loader to set
+     */
+    public void setRepositoryObjectLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    /**
+     * @param txManager the transaction manager to set
+     */
+    public void setTransactionManager(TransactionManager txManager) {
+        this.txManager = txManager;
     }
 
 }
