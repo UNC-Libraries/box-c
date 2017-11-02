@@ -72,12 +72,12 @@ public class AddContainerService {
                 child = repoObjFactory.createCollectionObject(model);
             } else if (Cdr.Folder.equals(containerType)) {
                 aclService.assertHasAccess(
-                        "User does not have permissions to create collections",
+                        "User does not have permissions to create folders",
                         parentPid, agent.getPrincipals(), Permission.ingest);
                 child = repoObjFactory.createFolderObject(model);
             } else if (Cdr.Work.equals(containerType)) {
                 aclService.assertHasAccess(
-                        "User does not have permissions to create collections",
+                        "User does not have permissions to create works",
                         parentPid, agent.getPrincipals(), Permission.ingest);
                 child = repoObjFactory.createWorkObject(model);
             }
@@ -90,7 +90,7 @@ public class AddContainerService {
             .addEventDetail("Container added at destination " + parentPid)
             .write();
         } catch(Exception e) {
-            tx.cancel();
+            tx.cancel(e);
         } finally {
             tx.close();
         }
