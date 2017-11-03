@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
@@ -62,17 +62,17 @@ public class FilePremisLogger implements PremisLogger {
 
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
-    private RepositoryObjectDataLoader repoObjDataLoader;
+    private RepositoryObjectDriver repoObjDriver;
     private RepositoryObjectFactory repoObjFactory;
 
     public FilePremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
-            RepositoryObjectFactory repoObjFactory, RepositoryObjectDataLoader repoObjDataLoader) {
+            RepositoryObjectFactory repoObjFactory, RepositoryObjectDriver repoObjDriver) {
         this.objectPid = pid;
         this.premisFile = file;
         this.pidMinter = pidMinter;
         this.repoObjLoader = repoObjLoader;
         this.repoObjFactory = repoObjFactory;
-        this.repoObjDataLoader = repoObjDataLoader;
+        this.repoObjDriver = repoObjDriver;
     }
 
     /**
@@ -202,8 +202,8 @@ public class FilePremisLogger implements PremisLogger {
                 }
                 stmtIt.close();
                 // Construct the event object with a presupplied model
-                PremisEventObject event = new PremisEventObject(eventPid, repoObjLoader,
-                        repoObjDataLoader, repoObjFactory);
+                PremisEventObject event = new PremisEventObject(eventPid,
+                        repoObjDriver, repoObjFactory);
                 event.storeModel(eventModel);
 
                 events.add(event);

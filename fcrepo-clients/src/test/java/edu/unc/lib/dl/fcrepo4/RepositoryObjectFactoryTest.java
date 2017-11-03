@@ -59,7 +59,7 @@ public class RepositoryObjectFactoryTest {
     @Mock
     private RepositoryObjectCacheLoader objectCacheLoader;
     @Mock
-    private RepositoryObjectDataLoader dataLoader;
+    private RepositoryObjectDriver driver;
     @Mock
     private FcrepoClient fcrepoClient;
     @Mock

@@ -50,9 +50,9 @@ public class BinaryObject extends RepositoryObject {
 
     private URI metadataUri;
 
-    protected BinaryObject(PID pid, RepositoryObjectLoader repoObjLoader, RepositoryObjectDataLoader dataLoader,
+    protected BinaryObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
-        super(pid, repoObjLoader, dataLoader, repoObjFactory, null);
+        super(pid, driver, repoObjFactory);
 
         metadataUri = RepositoryPaths.getMetadataUri(pid);
     }
@@ -67,7 +67,7 @@ public class BinaryObject extends RepositoryObject {
 
     @Override
     public RepositoryObject getParent() {
-        return dataLoader.getParentObject(this);
+        return driver.getParentObject(this);
     }
 
     /**
@@ -77,7 +77,7 @@ public class BinaryObject extends RepositoryObject {
      * @throws FedoraException
      */
     public InputStream getBinaryStream() throws FedoraException {
-        return dataLoader.getBinaryStream(this);
+        return driver.getBinaryStream(this);
     }
 
     /**

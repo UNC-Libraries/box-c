@@ -59,9 +59,7 @@ public class AdminUnitTest extends AbstractFedoraTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        unit = new AdminUnit(pid, repoObjLoader, dataLoader, repoObjFactory, null);
-
-        pidMinter = new RepositoryPIDMinter();
+        unit = new AdminUnit(pid, driver, repoObjFactory);
 
         collectionChildPid = PIDs.get(UUID.randomUUID().toString());
         when(collectionChildObj.getPid()).thenReturn(collectionChildPid);
@@ -72,11 +70,11 @@ public class AdminUnitTest extends AbstractFedoraTest {
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Collection.getURI(), Cdr.AdminUnit.getURI());
-        when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 unit.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -86,11 +84,11 @@ public class AdminUnitTest extends AbstractFedoraTest {
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
-        when(dataLoader.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(unit))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 unit.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 

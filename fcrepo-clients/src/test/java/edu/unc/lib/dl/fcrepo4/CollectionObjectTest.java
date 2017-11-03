@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Arrays;
 import java.util.List;
@@ -60,15 +59,13 @@ public class CollectionObjectTest extends AbstractFedoraTest {
 
     @Before
     public void init() {
-        initMocks(this);
-
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        collection = new CollectionObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
+        collection = new CollectionObject(pid, driver, repoObjFactory);
 
-        folderChildPid = PIDs.get(UUID.randomUUID().toString());
+        folderChildPid = pidMinter.mintContentPid();
         when(folderChildObj.getPid()).thenReturn(folderChildPid);
-        workChildPid = PIDs.get(UUID.randomUUID().toString());
+        workChildPid = pidMinter.mintContentPid();
         when(workChildObj.getPid()).thenReturn(workChildPid);
 
     }
@@ -77,11 +74,11 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Collection.getURI());
-        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 collection.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -91,11 +88,11 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 collection.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 

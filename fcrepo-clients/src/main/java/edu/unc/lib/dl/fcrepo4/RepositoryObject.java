@@ -23,7 +23,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
-import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -36,11 +35,9 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public abstract class RepositoryObject {
 
-    protected RepositoryObjectLoader repoObjLoader;
     // Loader for lazy loading data about this object when requested
-    protected RepositoryObjectDataLoader dataLoader;
+    protected RepositoryObjectDriver driver;
     protected RepositoryObjectFactory repoObjFactory;
-    protected RepositoryPIDMinter pidMinter;
 
     // The identifier and path information for this object
     protected PID pid;
@@ -54,14 +51,11 @@ public abstract class RepositoryObject {
 
     protected PremisLogger premisLog;
 
-    protected RepositoryObject(PID pid, RepositoryObjectLoader repositoryObjectLoader,
-            RepositoryObjectDataLoader dataLoader, RepositoryObjectFactory repoObjFactory,
-            RepositoryPIDMinter pidMinter) {
-        this.repoObjLoader = repositoryObjectLoader;
+    protected RepositoryObject(PID pid, RepositoryObjectDriver driver,
+            RepositoryObjectFactory repoObjFactory) {
         this.pid = pid;
-        this.dataLoader = dataLoader;
+        this.driver = driver;
         this.repoObjFactory = repoObjFactory;
-        this.pidMinter = pidMinter;
     }
 
     /**
@@ -80,7 +74,7 @@ public abstract class RepositoryObject {
      * @throws FedoraException
      */
     public Model getModel() throws FedoraException {
-        dataLoader.loadModel(this);
+        driver.loadModel(this);
         return model;
     }
 
@@ -131,8 +125,7 @@ public abstract class RepositoryObject {
      */
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
-            premisLog = new RepositoryPremisLogger(
-                    this, pidMinter, repoObjLoader, repoObjFactory, dataLoader);
+            premisLog = driver.getPremisLog(this);
         }
         return premisLog;
     }
@@ -225,7 +218,7 @@ public abstract class RepositoryObject {
      */
     public List<String> getTypes() throws FedoraException {
         if (types == null) {
-            dataLoader.loadTypes(this);
+            driver.loadTypes(this);
         }
         return types;
     }
@@ -260,7 +253,7 @@ public abstract class RepositoryObject {
             return false;
         }
 
-        String remoteEtag = dataLoader.getEtag(this);
+        String remoteEtag = driver.getEtag(this);
         return remoteEtag.equals(getEtag());
     }
 }

@@ -88,22 +88,22 @@ public class WorkObjectTest extends AbstractFedoraTest {
         resc.addProperty(RDF.type, PcdmModels.Object);
         resc.addProperty(RDF.type, Cdr.Work);
 
-        work = new WorkObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
+        work = new WorkObject(pid, driver, repoObjFactory);
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
-        when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 work.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
-        when(dataLoader.loadModel(eq(work))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadModel(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 work.storeModel(model);
-                return dataLoader;
+                return driver;
             }
         });
     }
@@ -149,7 +149,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());
 
-        when(repoObjLoader.getFileObject(eq(primaryPid))).thenReturn(fileObj);
+        when(driver.getRepositoryObject(eq(primaryPid), eq(FileObject.class))).thenReturn(fileObj);
 
         resc.addProperty(Cdr.primaryObject, primaryResc);
 
@@ -163,7 +163,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         FileObject resultObj = work.getPrimaryObject();
 
         assertNull(resultObj);
-        verify(repoObjLoader, never()).getFileObject(any(PID.class));
+        verify(driver, never()).getRepositoryObject(any(PID.class), eq(FileObject.class));
     }
 
     @Test
@@ -185,9 +185,6 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addDataFileTest() {
-        PID dataFilePid = makePid();
-        when(pidMinter.mintContentPid()).thenReturn(dataFilePid);
-
         when(repoObjFactory.createFileObject(any(Model.class))).thenReturn(fileObj);
 
         // Add the data file

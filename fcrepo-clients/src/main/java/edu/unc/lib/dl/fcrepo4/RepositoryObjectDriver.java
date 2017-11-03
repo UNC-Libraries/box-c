@@ -36,27 +36,35 @@ import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.event.RepositoryPremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
 /**
- * Data loader which retrieves repository data for objects.
+ * Service that provides data and clients to interact with an object's data
+ * model.
  *
  * @author bbpennel
  * @author harring
  *
  */
-public class RepositoryObjectDataLoader {
-    private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDataLoader.class);
+public class RepositoryObjectDriver {
+    private static final Logger log = LoggerFactory.getLogger(RepositoryObjectDriver.class);
 
     private RepositoryObjectLoader repositoryObjectLoader;
+
+    private RepositoryObjectFactory repositoryObjectFactory;
 
     private FcrepoClient client;
 
     private TripleStoreQueryService tripleStoreQueryService;
+
+    protected RepositoryPIDMinter pidMinter;
 
     /**
      * Loads and assigns the RDF types for the given object
@@ -65,7 +73,7 @@ public class RepositoryObjectDataLoader {
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDataLoader loadTypes(RepositoryObject obj) throws FedoraException {
+    public RepositoryObjectDriver loadTypes(RepositoryObject obj) throws FedoraException {
         List<String> types = new ArrayList<>();
         // Iterate through all type properties and add to list
         Resource resc = obj.getModel().getResource(obj.getPid().getRepositoryUri().toString());
@@ -87,7 +95,7 @@ public class RepositoryObjectDataLoader {
      * @return
      * @throws FedoraException
      */
-    public RepositoryObjectDataLoader loadModel(RepositoryObject obj) throws FedoraException {
+    public RepositoryObjectDriver loadModel(RepositoryObject obj) throws FedoraException {
         URI metadataUri = obj.getMetadataUri();
         // If the object is up to date and has already loaded the model then we're done
         if (obj.hasModel() && obj.isUnmodified()) {
@@ -116,6 +124,35 @@ public class RepositoryObjectDataLoader {
         } catch (FcrepoOperationFailedException e) {
             throw ClientFaultResolver.resolve(e);
         }
+    }
+
+    /**
+     * Retrieves a RepositoryObject identified by pid
+     *
+     * @param pid
+     * @return
+     */
+    public RepositoryObject getRepositoryObject(PID pid) {
+        return repositoryObjectLoader.getRepositoryObject(pid);
+    }
+
+    /**
+     * Retrieves a RepositoryObject of the type provided
+     *
+     * @param pid
+     * @param type class of the type of object to retrieve
+     * @return
+     * @throws ObjectTypeMismatchException thrown if the retrieved object does
+     *             not match the requested type
+     */
+    public <T extends RepositoryObject> T getRepositoryObject(PID pid, Class<T> type)
+            throws ObjectTypeMismatchException {
+        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
+        if (!type.isInstance(repoObj)) {
+            throw new ObjectTypeMismatchException("Requested object " + pid + " is not a " + type.getName());
+        }
+
+        return type.cast(repoObj);
     }
 
     /**
@@ -192,6 +229,11 @@ public class RepositoryObjectDataLoader {
         return null;
     }
 
+    public PremisLogger getPremisLog(RepositoryObject repoObj) {
+        return new RepositoryPremisLogger(
+                repoObj, pidMinter, repositoryObjectLoader, repositoryObjectFactory);
+    }
+
     public void setClient(FcrepoClient client) {
         this.client = client;
     }
@@ -204,11 +246,21 @@ public class RepositoryObjectDataLoader {
         this.repositoryObjectLoader = repoObjLoader;
     }
 
-    public TripleStoreQueryService getTripleStoreQueryService() {
-        return tripleStoreQueryService;
-    }
-
     public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
         this.tripleStoreQueryService = tripleStoreQueryService;
+    }
+
+    /**
+     * @param repositoryObjectFactory the repositoryObjectFactory to set
+     */
+    public void setRepositoryObjectFactory(RepositoryObjectFactory repositoryObjectFactory) {
+        this.repositoryObjectFactory = repositoryObjectFactory;
+    }
+
+    /**
+     * @param pidMinter the pidMinter to set
+     */
+    public void setPidMinter(RepositoryPIDMinter pidMinter) {
+        this.pidMinter = pidMinter;
     }
 }

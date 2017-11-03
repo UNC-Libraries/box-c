@@ -27,7 +27,6 @@ import org.apache.jena.rdf.model.Resource;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.PremisEventObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
@@ -54,8 +53,7 @@ public class RepositoryPremisLogger implements PremisLogger {
     private List<PremisEventObject> events;
 
     public RepositoryPremisLogger(RepositoryObject repoObject, RepositoryPIDMinter pidMinter,
-            RepositoryObjectLoader repoObjLoader, RepositoryObjectFactory repoObjFactory,
-            RepositoryObjectDataLoader repoObjDataLoader) {
+            RepositoryObjectLoader repoObjLoader, RepositoryObjectFactory repoObjFactory) {
         this.repoObject = repoObject;
         this.pidMinter = pidMinter;
         this.repoObjLoader = repoObjLoader;

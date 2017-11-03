@@ -40,7 +40,7 @@ import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.event.PremisLoggerFactory;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectDataLoader;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
@@ -62,7 +62,7 @@ public class AbstractDepositJobTest {
     protected static final String TX_URI = "http://localhost:48085/rest/tx:99b58d30-06f5-477b-a44c-d614a9049d38";
 
     @Mock
-    protected RepositoryObjectDataLoader dataLoader;
+    protected RepositoryObjectDriver driver;
     @Mock
     protected TransactionManager txManager;
 

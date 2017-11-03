@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
 import org.junit.Before;
@@ -56,23 +55,22 @@ public class FolderObjectTest extends AbstractFedoraTest {
     @Before
     public void init() {
 
-        pid = PIDs.get(UUID.randomUUID().toString());
+        pid = pidMinter.mintContentPid();
 
-        folder = new FolderObject(pid, repoObjLoader, dataLoader, repoObjFactory, null);
+        folder = new FolderObject(pid, driver, repoObjFactory);
 
-        childPid = PIDs.get(UUID.randomUUID().toString());
-        when(pidMinter.mintContentPid()).thenReturn(childPid);
+        childPid = pidMinter.mintContentPid();
     }
 
     @Test
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 folder.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -81,11 +79,11 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
-        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDataLoader>() {
+        when(driver.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
-            public RepositoryObjectDataLoader answer(InvocationOnMock invocation) throws Throwable {
+            public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 folder.setTypes(Arrays.asList());
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -94,7 +92,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addFolderTest() {
-        FolderObject childFolder = new FolderObject(childPid, repoObjLoader, dataLoader, repoObjFactory, null);
+        FolderObject childFolder = new FolderObject(childPid, driver, repoObjFactory);
 
         when(repoObjFactory.createFolderObject(any(Model.class)))
                 .thenReturn(childFolder);
@@ -113,7 +111,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addWorkTest() {
-        WorkObject childObj = new WorkObject(childPid, repoObjLoader, dataLoader, repoObjFactory, null);
+        WorkObject childObj = new WorkObject(childPid, driver, repoObjFactory);
         when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
 
         WorkObject workObj = folder.addWork();
