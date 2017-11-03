@@ -60,17 +60,12 @@
         <property name="pidMinter" ref="pidMinter" />
 	</bean>
 	
-	<bean id="fusekiEndpointURL" class="java.lang.String">
-	    <constructor-arg value="" />
-	</bean>
-	
 	<bean id="fusekiQueryURL" class="java.lang.String">
-	    <constructor-arg value="" />
+	    <constructor-arg value="http://localhost:8080/fuseki/test" />
 	</bean>
-	
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
-	    <property name="fusekiEndpointURL" ref="fusekiEndpointURL" />
-	    <property name="fusekiQueryURL" ref="fusekiQueryURL" />
+
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
+		<property name="fusekiQueryURL" ref="fusekiQueryURL" />
 	</bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
