@@ -181,6 +181,13 @@
 		<property name="fedoraHost" value="${fedora.host:localhost}" />
 	</bean>
 	
+	<bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">
+	    <property name="aclService" ref="aclService" />
+	    <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+	    <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+	    <property name="transactionManager" ref="transactionManager" />
+	</bean>
+	
 	<bean id="markForDeletionService" class="edu.unc.lib.dl.persist.services.delete.MarkForDeletionService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
