@@ -60,7 +60,7 @@ public class RepositoryObjectFactory {
 
     private FcrepoClient client;
 
-    private RepositoryObjectDriver repoObjDataLoader;
+    private RepositoryObjectDriver repoObjDriver;
 
     private RepositoryPIDMinter pidMinter;
 
@@ -102,7 +102,7 @@ public class RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
-        DepositRecord depositRecord = new DepositRecord(pid, repoObjDataLoader, this);
+        DepositRecord depositRecord = new DepositRecord(pid, repoObjDriver, this);
         return depositRecord;
     }
 
@@ -135,7 +135,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new AdminUnit(pid, repoObjDataLoader, this);
+        return new AdminUnit(pid, repoObjDriver, this);
     }
 
     /**
@@ -184,7 +184,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new CollectionObject(pid, repoObjDataLoader, this);
+        return new CollectionObject(pid, repoObjDriver, this);
     }
 
     /**
@@ -216,7 +216,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new FolderObject(pid, repoObjDataLoader, this);
+        return new FolderObject(pid, repoObjDriver, this);
     }
 
     /**
@@ -248,7 +248,7 @@ public class RepositoryObjectFactory {
 
         createContentContainerObject(pid.getRepositoryUri(), model);
 
-        return new WorkObject(pid, repoObjDataLoader, this);
+        return new WorkObject(pid, repoObjDriver, this);
     }
 
     /**
@@ -294,7 +294,7 @@ public class RepositoryObjectFactory {
             throw ClientFaultResolver.resolve(e);
         }
 
-        return new FileObject(pid, repoObjDataLoader, this);
+        return new FileObject(pid, repoObjDriver, this);
     }
 
     /**
@@ -357,7 +357,7 @@ public class RepositoryObjectFactory {
                 throw ClientFaultResolver.resolve(e);
             }
         }
-        return new BinaryObject(PIDs.get(resultUri), repoObjDataLoader, this);
+        return new BinaryObject(PIDs.get(resultUri), repoObjDriver, this);
     }
 
     /**
@@ -375,11 +375,11 @@ public class RepositoryObjectFactory {
 
         URI createdUri = createObject(eventPid.getRepositoryUri(), model);
 
-        return new PremisEventObject(PIDs.get(createdUri), repoObjDataLoader, this);
+        return new PremisEventObject(PIDs.get(createdUri), repoObjDriver, this);
     }
 
     public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
-        return new PremisEventObject(pid, repoObjDataLoader, this).validateType();
+        return new PremisEventObject(pid, repoObjDriver, this).validateType();
     }
 
     /**
@@ -478,8 +478,8 @@ public class RepositoryObjectFactory {
         this.ldpFactory = ldpFactory;
     }
 
-    public void setRepositoryObjectDriver(RepositoryObjectDriver repoObjDataLoader) {
-        this.repoObjDataLoader = repoObjDataLoader;
+    public void setRepositoryObjectDriver(RepositoryObjectDriver repoObjDriver) {
+        this.repoObjDriver = repoObjDriver;
     }
 
     public void setPidMinter(RepositoryPIDMinter pidMinter) {

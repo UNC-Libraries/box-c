@@ -62,17 +62,17 @@ public class FilePremisLogger implements PremisLogger {
 
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
-    private RepositoryObjectDriver repoObjDataLoader;
+    private RepositoryObjectDriver repoObjDriver;
     private RepositoryObjectFactory repoObjFactory;
 
     public FilePremisLogger(PID pid, File file, RepositoryPIDMinter pidMinter, RepositoryObjectLoader repoObjLoader,
-            RepositoryObjectFactory repoObjFactory, RepositoryObjectDriver repoObjDataLoader) {
+            RepositoryObjectFactory repoObjFactory, RepositoryObjectDriver repoObjDriver) {
         this.objectPid = pid;
         this.premisFile = file;
         this.pidMinter = pidMinter;
         this.repoObjLoader = repoObjLoader;
         this.repoObjFactory = repoObjFactory;
-        this.repoObjDataLoader = repoObjDataLoader;
+        this.repoObjDriver = repoObjDriver;
     }
 
     /**
@@ -203,7 +203,7 @@ public class FilePremisLogger implements PremisLogger {
                 stmtIt.close();
                 // Construct the event object with a presupplied model
                 PremisEventObject event = new PremisEventObject(eventPid,
-                        repoObjDataLoader, repoObjFactory);
+                        repoObjDriver, repoObjFactory);
                 event.storeModel(eventModel);
 
                 events.add(event);

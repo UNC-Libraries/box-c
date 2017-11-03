@@ -55,9 +55,9 @@ public class FileObject extends ContentObject {
     private final String fileSetPath;
     private final URI fileSetUri;
 
-    protected FileObject(PID pid, RepositoryObjectDriver dataLoader,
+    protected FileObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
-        super(pid, dataLoader, repoObjFactory);
+        super(pid, driver, repoObjFactory);
 
         fileSetPath = URIUtil.join(pid.getRepositoryPath(), DATA_FILE_FILESET);
         fileSetUri = URI.create(fileSetPath);
@@ -101,7 +101,7 @@ public class FileObject extends ContentObject {
      * @return
      */
     public BinaryObject getOriginalFile() {
-        return dataLoader.getRepositoryObject(PIDs.get(constructOriginalFilePath()),
+        return driver.getRepositoryObject(PIDs.get(constructOriginalFilePath()),
                 BinaryObject.class);
     }
 
@@ -159,7 +159,7 @@ public class FileObject extends ContentObject {
         for (StmtIterator it = resc.listProperties(PcdmModels.hasFile); it.hasNext(); ) {
             PID binaryPid = PIDs.get(it.nextStatement().getResource().getURI());
 
-            binaries.add(dataLoader.getRepositoryObject(binaryPid, BinaryObject.class));
+            binaries.add(driver.getRepositoryObject(binaryPid, BinaryObject.class));
         }
 
         return binaries;

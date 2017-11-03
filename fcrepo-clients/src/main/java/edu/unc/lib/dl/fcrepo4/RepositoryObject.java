@@ -36,7 +36,7 @@ import edu.unc.lib.dl.fedora.PID;
 public abstract class RepositoryObject {
 
     // Loader for lazy loading data about this object when requested
-    protected RepositoryObjectDriver dataLoader;
+    protected RepositoryObjectDriver driver;
     protected RepositoryObjectFactory repoObjFactory;
 
     // The identifier and path information for this object
@@ -51,10 +51,10 @@ public abstract class RepositoryObject {
 
     protected PremisLogger premisLog;
 
-    protected RepositoryObject(PID pid, RepositoryObjectDriver dataLoader,
+    protected RepositoryObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
         this.pid = pid;
-        this.dataLoader = dataLoader;
+        this.driver = driver;
         this.repoObjFactory = repoObjFactory;
     }
 
@@ -74,7 +74,7 @@ public abstract class RepositoryObject {
      * @throws FedoraException
      */
     public Model getModel() throws FedoraException {
-        dataLoader.loadModel(this);
+        driver.loadModel(this);
         return model;
     }
 
@@ -125,7 +125,7 @@ public abstract class RepositoryObject {
      */
     public PremisLogger getPremisLog() {
         if (premisLog == null) {
-            premisLog = dataLoader.getPremisLog(this);
+            premisLog = driver.getPremisLog(this);
         }
         return premisLog;
     }
@@ -218,7 +218,7 @@ public abstract class RepositoryObject {
      */
     public List<String> getTypes() throws FedoraException {
         if (types == null) {
-            dataLoader.loadTypes(this);
+            driver.loadTypes(this);
         }
         return types;
     }
@@ -253,7 +253,7 @@ public abstract class RepositoryObject {
             return false;
         }
 
-        String remoteEtag = dataLoader.getEtag(this);
+        String remoteEtag = driver.getEtag(this);
         return remoteEtag.equals(getEtag());
     }
 }

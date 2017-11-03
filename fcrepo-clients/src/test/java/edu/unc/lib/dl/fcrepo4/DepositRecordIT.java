@@ -138,7 +138,7 @@ public class DepositRecordIT extends AbstractFedoraIT {
 
         String details = "Event details";
         // Prep the events prior to ingest
-        PremisLogger logger = new FilePremisLogger(pid, null, pidMinter, repoObjLoader, repoObjFactory, dataloader);
+        PremisLogger logger = new FilePremisLogger(pid, null, pidMinter, repoObjLoader, repoObjFactory, driver);
         logger.buildEvent(Premis.Ingestion)
                 .addAuthorizingAgent(SoftwareAgent.depositService.toString())
                 .addEventDetail("Event details")

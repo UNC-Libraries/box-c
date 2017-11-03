@@ -57,7 +57,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
         pid = pidMinter.mintContentPid();
 
-        folder = new FolderObject(pid, dataLoader, repoObjFactory);
+        folder = new FolderObject(pid, driver, repoObjFactory);
 
         childPid = pidMinter.mintContentPid();
     }
@@ -66,11 +66,11 @@ public class FolderObjectTest extends AbstractFedoraTest {
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 folder.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -79,11 +79,11 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
-        when(dataLoader.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadTypes(eq(folder))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 folder.setTypes(Arrays.asList());
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -92,7 +92,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addFolderTest() {
-        FolderObject childFolder = new FolderObject(childPid, dataLoader, repoObjFactory);
+        FolderObject childFolder = new FolderObject(childPid, driver, repoObjFactory);
 
         when(repoObjFactory.createFolderObject(any(Model.class)))
                 .thenReturn(childFolder);
@@ -111,7 +111,7 @@ public class FolderObjectTest extends AbstractFedoraTest {
 
     @Test
     public void addWorkTest() {
-        WorkObject childObj = new WorkObject(childPid, dataLoader, repoObjFactory);
+        WorkObject childObj = new WorkObject(childPid, driver, repoObjFactory);
         when(repoObjFactory.createWorkObject(any(Model.class))).thenReturn(childObj);
 
         WorkObject workObj = folder.addWork();

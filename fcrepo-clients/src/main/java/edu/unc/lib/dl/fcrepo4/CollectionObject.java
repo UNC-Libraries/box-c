@@ -30,9 +30,9 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class CollectionObject extends ContentContainerObject {
 
-    protected CollectionObject(PID pid, RepositoryObjectDriver dataLoader,
+    protected CollectionObject(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
-        super(pid, dataLoader, repoObjFactory);
+        super(pid, driver, repoObjFactory);
     }
 
     @Override

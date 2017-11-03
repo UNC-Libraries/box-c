@@ -29,9 +29,9 @@ import edu.unc.lib.dl.rdf.PcdmModels;
  */
 public class AdminUnit extends ContentContainerObject {
 
-    protected AdminUnit(PID pid, RepositoryObjectDriver dataLoader,
+    protected AdminUnit(PID pid, RepositoryObjectDriver driver,
             RepositoryObjectFactory repoObjFactory) {
-        super(pid, dataLoader, repoObjFactory);
+        super(pid, driver, repoObjFactory);
     }
 
     @Override

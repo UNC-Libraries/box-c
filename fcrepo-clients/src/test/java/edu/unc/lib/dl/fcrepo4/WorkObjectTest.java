@@ -88,22 +88,22 @@ public class WorkObjectTest extends AbstractFedoraTest {
         resc.addProperty(RDF.type, PcdmModels.Object);
         resc.addProperty(RDF.type, Cdr.Work);
 
-        work = new WorkObject(pid, dataLoader, repoObjFactory);
+        work = new WorkObject(pid, driver, repoObjFactory);
 
         types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Work.getURI());
-        when(dataLoader.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadTypes(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 work.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
-        when(dataLoader.loadModel(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadModel(eq(work))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 work.storeModel(model);
-                return dataLoader;
+                return driver;
             }
         });
     }
@@ -149,7 +149,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         PID primaryPid = makePid();
         Resource primaryResc = createResource(primaryPid.getURI());
 
-        when(dataLoader.getRepositoryObject(eq(primaryPid), eq(FileObject.class))).thenReturn(fileObj);
+        when(driver.getRepositoryObject(eq(primaryPid), eq(FileObject.class))).thenReturn(fileObj);
 
         resc.addProperty(Cdr.primaryObject, primaryResc);
 
@@ -163,7 +163,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
         FileObject resultObj = work.getPrimaryObject();
 
         assertNull(resultObj);
-        verify(dataLoader, never()).getRepositoryObject(any(PID.class), eq(FileObject.class));
+        verify(driver, never()).getRepositoryObject(any(PID.class), eq(FileObject.class));
     }
 
     @Test

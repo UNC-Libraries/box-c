@@ -62,7 +62,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
         parentObject = repoObjFactory.createDepositRecord(model);
 
         logger = new RepositoryPremisLogger(parentObject, pidMinter,
-                repoObjLoader, repoObjFactory, dataloader);
+                repoObjLoader, repoObjFactory);
     }
 
     @Test
@@ -105,7 +105,7 @@ public class RepositoryPremisLoggerIT extends AbstractFedoraIT {
 
         // Make a new logger to make sure everything is clean
         PremisLogger retrieveLogger = new RepositoryPremisLogger(parentObject, pidMinter,
-                repoObjLoader, repoObjFactory, dataloader);
+                repoObjLoader, repoObjFactory);
 
         // Retrieve all of the events
         List<PID> eventPids = retrieveLogger.listEvents();

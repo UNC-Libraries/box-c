@@ -61,7 +61,7 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     public void init() {
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        collection = new CollectionObject(pid, dataLoader, repoObjFactory);
+        collection = new CollectionObject(pid, driver, repoObjFactory);
 
         folderChildPid = pidMinter.mintContentPid();
         when(folderChildObj.getPid()).thenReturn(folderChildPid);
@@ -74,11 +74,11 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     public void isValidTypeTest() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Collection.getURI());
-        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 collection.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 
@@ -88,11 +88,11 @@ public class CollectionObjectTest extends AbstractFedoraTest {
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
         List<String> types = Arrays.asList(PcdmModels.Object.getURI(), Cdr.Folder.getURI());
-        when(dataLoader.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadTypes(eq(collection))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 collection.setTypes(types);
-                return dataLoader;
+                return driver;
             }
         });
 

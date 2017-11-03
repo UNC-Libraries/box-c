@@ -59,7 +59,7 @@ public class RepositoryObjectCacheLoaderTest {
     private RepositoryObjectCacheLoader objectCacheLoader;
 
     @Mock
-    private RepositoryObjectDriver dataLoader;
+    private RepositoryObjectDriver driver;
 
     private FcrepoClient client;
     @Mock
@@ -78,7 +78,7 @@ public class RepositoryObjectCacheLoaderTest {
 
         objectCacheLoader = new RepositoryObjectCacheLoader();
         objectCacheLoader.setClient(client);
-        objectCacheLoader.setRepositoryObjectDriver(dataLoader);
+        objectCacheLoader.setRepositoryObjectDriver(driver);
 
         pid = PIDs.get(UUID.randomUUID().toString());
     }

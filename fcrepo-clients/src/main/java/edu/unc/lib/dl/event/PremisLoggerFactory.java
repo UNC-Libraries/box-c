@@ -35,14 +35,14 @@ public class PremisLoggerFactory {
     private RepositoryPIDMinter pidMinter;
     private RepositoryObjectLoader repoObjLoader;
     private RepositoryObjectFactory repoObjFactory;
-    private RepositoryObjectDriver repoObjDataLoader;
+    private RepositoryObjectDriver repoObjDriver;
 
     public PremisLogger createPremisLogger(PID pid, File file) {
-        return new FilePremisLogger(pid, file, pidMinter, repoObjLoader, repoObjFactory, repoObjDataLoader);
+        return new FilePremisLogger(pid, file, pidMinter, repoObjLoader, repoObjFactory, repoObjDriver);
     }
 
     public PremisLogger createPremisLogger(RepositoryObject repoObject) {
-        return new RepositoryPremisLogger(repoObject, pidMinter, repoObjLoader, repoObjFactory, repoObjDataLoader);
+        return new RepositoryPremisLogger(repoObject, pidMinter, repoObjLoader, repoObjFactory);
     }
 
     /**
@@ -67,10 +67,10 @@ public class PremisLoggerFactory {
     }
 
     /**
-     * @param repoObjDataLoader the repoObjDataLoader to set
+     * @param repoObjDriver the repoObjDriver to set
      */
-    public void setRepoObjDataLoader(RepositoryObjectDriver repoObjDataLoader) {
-        this.repoObjDataLoader = repoObjDataLoader;
+    public void setRepoObjDriver(RepositoryObjectDriver repoObjDriver) {
+        this.repoObjDriver = repoObjDriver;
     }
 
 }

@@ -69,7 +69,6 @@
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-        <property name="dataLoader" ref="repositoryObjectDriver" />
     </bean>
     
     <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">

@@ -72,9 +72,9 @@ public class BinaryObjectTest extends AbstractFedoraTest {
         when(mockPid.getRepositoryUri()).thenReturn(baseUri);
         when(mockPid.getRepositoryPath()).thenReturn(baseUri.toString());
 
-        binObj = new BinaryObject(mockPid, dataLoader, repoObjFactory);
+        binObj = new BinaryObject(mockPid, driver, repoObjFactory);
 
-        when(dataLoader.loadModel(binObj)).thenReturn(dataLoader);
+        when(driver.loadModel(binObj)).thenReturn(driver);
 
         setupModel();
     }
@@ -96,11 +96,11 @@ public class BinaryObjectTest extends AbstractFedoraTest {
     public void testValidateType() {
         // Return the correct RDF types
         List<String> types = Arrays.asList(Fcrepo4Repository.Binary.toString());
-         when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+         when(driver.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
             public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                  binObj.setTypes(types);
-                 return dataLoader;
+                 return driver;
              }
          });
 
@@ -109,11 +109,11 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
     @Test(expected = ObjectTypeMismatchException.class)
     public void invalidTypeTest() {
-        when(dataLoader.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
+        when(driver.loadTypes(eq(binObj))).thenAnswer(new Answer<RepositoryObjectDriver>() {
             @Override
              public RepositoryObjectDriver answer(InvocationOnMock invocation) throws Throwable {
                 binObj.setTypes(Arrays.asList());
-                return dataLoader;
+                return driver;
              }
         });
 
@@ -122,7 +122,7 @@ public class BinaryObjectTest extends AbstractFedoraTest {
 
     @Test
     public void testGetBinaryStream() {
-        when(dataLoader.getBinaryStream(binObj)).thenReturn(stream);
+        when(driver.getBinaryStream(binObj)).thenReturn(stream);
         assertEquals(binObj.getBinaryStream(), stream);
     }
 

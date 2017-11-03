@@ -30,7 +30,7 @@ public class AbstractFedoraTest {
     protected static final String FEDORA_BASE = "http://example.com/";
 
     @Mock
-    protected RepositoryObjectDriver dataLoader;
+    protected RepositoryObjectDriver driver;
     @Mock
     protected RepositoryPaths repoPaths;
     @Mock

@@ -231,7 +231,7 @@ public class RepositoryObjectDriver {
 
     public PremisLogger getPremisLog(RepositoryObject repoObj) {
         return new RepositoryPremisLogger(
-                repoObj, pidMinter, repositoryObjectLoader, repositoryObjectFactory, this);
+                repoObj, pidMinter, repositoryObjectLoader, repositoryObjectFactory);
     }
 
     public void setClient(FcrepoClient client) {

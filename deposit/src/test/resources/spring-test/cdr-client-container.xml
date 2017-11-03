@@ -31,7 +31,7 @@
 	<bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
 	    <property name="pidMinter" ref="pidMinter" />
 	    <property name="repoObjLoader" ref="repositoryObjectLoader" />
-        <property name="repoObjDataLoader" ref="repositoryObjectDriver" />
+        <property name="repoObjDriver" ref="repositoryObjectDriver" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
 	</bean>
 
@@ -110,7 +110,7 @@
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-        <property name="dataLoader" ref="repositoryObjectDriver" />
+        <property name="driver" ref="repositoryObjectDriver" />
     </bean>
     
     <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
