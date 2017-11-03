@@ -56,7 +56,7 @@
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 		<property name="pidMinter" ref="repositoryPIDMinter" />
-		<property name="sparqlQueryServiceService" ref="sparqlQueryServiceService" />
+		<property name="sparqlQueryService" ref="sparqlQueryService" />
 	</bean>
 	
 	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
