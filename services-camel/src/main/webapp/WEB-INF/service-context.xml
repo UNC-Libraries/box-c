@@ -54,9 +54,9 @@
 	<bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 		<property name="pidMinter" ref="repositoryPIDMinter" />
+		<property name="sparqlQueryServiceService" ref="sparqlQueryServiceService" />
 	</bean>
 	
 	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
@@ -69,11 +69,6 @@
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-	</bean>
-	
-	<bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
-		<property name="fusekiEndpointURL" value="${triplestore.baseUrl}" />
-		<property name="fusekiQueryURL" value="${triplestore.queryService}" />
 	</bean>
 	
 	<bean id="vocabManager" class="edu.unc.lib.dl.util.VocabularyHelperManager">

@@ -54,24 +54,23 @@
     <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="pidMinter" ref="pidMinter" />
     </bean>
     
     <bean id="fusekiEndpointURL" class="java.lang.String">
-        <constructor-arg value="" />
+        <property name="sparqlQueryServiceService" ref="sparqlQueryServiceService" />
     </bean>
     
     <bean id="fusekiQueryURL" class="java.lang.String">
-        <constructor-arg value="" />
-    </bean>
-    
-    <bean id="tripleStoreQueryService" class="edu.unc.lib.dl.util.TripleStoreQueryServiceFusekiImpl">
-        <property name="fusekiEndpointURL" ref="fusekiEndpointURL" />
-        <property name="fusekiQueryURL" ref="fusekiQueryURL" />
-    </bean>
-    
+	    <constructor-arg value="http://localhost:8080/fuseki/test" />
+	</bean>
+
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
+		<property name="fusekiQueryURL" ref="fusekiQueryURL" />
+	</bean>
+	
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
