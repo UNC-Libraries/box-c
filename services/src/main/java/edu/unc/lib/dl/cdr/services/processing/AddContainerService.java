@@ -83,7 +83,7 @@ public class AddContainerService {
             }
 
             ContentContainerObject parent = (ContentContainerObject ) repoObjLoader.getRepositoryObject(parentPid);
-            repoObjFactory.addMember(parent, child);
+            parent.addMember(child);
 
             child.getPremisLog().buildEvent(Premis.Creation)
             .addImplementorAgent(agent.getUsernameUri())
