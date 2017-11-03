@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -28,9 +29,12 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.impl.ModelCom;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -39,7 +43,6 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -47,6 +50,8 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
@@ -70,8 +75,6 @@ public class AddContainerServiceTest {
     @Mock
     private FedoraTransaction tx;
     @Mock
-    private ContentContainerObject childContainer;
-    @Mock
     private AgentPrincipals agent;
     @Mock
     private AccessGroupSet groups;
@@ -89,12 +92,17 @@ public class AddContainerServiceTest {
         when(agent.getPrincipals()).thenReturn(groups);
 
         eventBuilder = mock(PremisEventBuilder.class, new SelfReturningAnswer());
-        when(childContainer.getPremisLog()).thenReturn(premisLogger);
         when(premisLogger.buildEvent(eq(Premis.Creation))).thenReturn(eventBuilder);
 
         when(txManager.startTransaction()).thenReturn(tx);
 
-        doThrow(new TransactionCancelledException()).when(tx).cancel();
+        doAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                throw new TransactionCancelledException("", invocation.getArgumentAt(0, Throwable.class));
+            }
+
+        }).when(tx).cancel(any(Throwable.class));
 
         parentPid = PIDs.get(UUID.randomUUID().toString());
 
@@ -107,8 +115,6 @@ public class AddContainerServiceTest {
 
     @Test(expected = TransactionCancelledException.class)
     public void insufficientAccessTest() {
-        FolderObject folder = mock(FolderObject.class);
-        when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(ingest));
 
@@ -116,20 +122,49 @@ public class AddContainerServiceTest {
             service.addContainer(agent, parentPid, Cdr.Folder);
         } catch (TransactionCancelledException e) {
             assertEquals(AccessRestrictionException.class, e.getCause().getClass());
+            throw new TransactionCancelledException();
         }
     }
 
     @Test(expected = TransactionCancelledException.class)
-    public void invalidObjectTypeTest() {
+    public void addCollectionToFolderTest() {
+        FolderObject folder = mock(FolderObject.class);
         CollectionObject collection = mock(CollectionObject.class);
-        when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
-        doThrow(new TransactionCancelledException()).when(tx).cancel();
+        when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
+        when(repoObjFactory.createCollectionObject(any(ModelCom.class))).thenReturn(collection);
+        doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
-        service.addContainer(agent, parentPid, Cdr.AdminUnit);
+        try {
+            service.addContainer(agent, parentPid, Cdr.Collection);
+        } catch (TransactionCancelledException e) {
+            assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
+            throw new TransactionCancelledException();
+        }
     }
 
     @Test
-    public void addCollectionToAdminUnitTest() {
+    public void addFolderToCollectionTest() {
+        CollectionObject collection = mock(CollectionObject.class);
+        FolderObject folder = mock(FolderObject.class);
+        when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
+        when(repoObjFactory.createFolderObject(any(ModelCom.class))).thenReturn(folder);
+        when(folder.getPremisLog()).thenReturn(premisLogger);
+
+        service.addContainer(agent, parentPid, Cdr.Folder);
+
+        verify(premisLogger).buildEvent(eq(Premis.Creation));
+        verify(eventBuilder).write();
+    }
+
+    @Test
+    public void addWorkToFolderTest() {
+        WorkObject work = mock(WorkObject.class);
+        FolderObject folder = mock(FolderObject.class);
+        when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
+        when(repoObjFactory.createWorkObject(any(ModelCom.class))).thenReturn(work);
+        when(work.getPremisLog()).thenReturn(premisLogger);
+
+        service.addContainer(agent, parentPid, Cdr.Work);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
