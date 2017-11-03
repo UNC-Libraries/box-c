@@ -55,9 +55,9 @@
 	<bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
 		<property name="client" ref="fcrepoClient" />
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="pidMinter" ref="pidMinter" />
+		<property name="sparqlQueryService" ref="sparqlQueryService" />
 	</bean>
 	
 	<bean id="fusekiQueryURL" class="java.lang.String">
