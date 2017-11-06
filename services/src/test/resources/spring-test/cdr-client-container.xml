@@ -46,7 +46,6 @@
     </bean>
 	
 	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
-        <property name="driver" ref="repositoryObjectDriver" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
         <property name="cacheTimeToLive" ref="cacheTimeToLive" />
         <property name="cacheMaxSize" ref="cacheMaxSize" />
@@ -57,7 +56,7 @@
 		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 		<property name="tripleStoreQueryService" ref="tripleStoreQueryService" />
 		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="pidMinter" ref="pidMinter" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
 	</bean>
 	
 	<bean id="fusekiEndpointURL" class="java.lang.String">
