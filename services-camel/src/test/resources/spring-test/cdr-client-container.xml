@@ -56,11 +56,7 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="pidMinter" ref="pidMinter" />
-    </bean>
-    
-    <bean id="fusekiEndpointURL" class="java.lang.String">
-        <property name="sparqlQueryServiceService" ref="sparqlQueryServiceService" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
     </bean>
     
     <bean id="fusekiQueryURL" class="java.lang.String">
