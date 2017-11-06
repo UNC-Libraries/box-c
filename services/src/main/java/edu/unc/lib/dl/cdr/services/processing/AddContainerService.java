@@ -89,7 +89,7 @@ public class AddContainerService {
             .addImplementorAgent(agent.getUsernameUri())
             .addEventDetail("Container added at destination " + parentPid)
             .write();
-        } catch(Exception e) {
+        } catch (Exception e) {
             tx.cancel(e);
         } finally {
             tx.close();

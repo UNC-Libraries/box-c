@@ -52,25 +52,25 @@ public class AddContainerController {
     @Autowired
     private AddContainerService addContainerService;
 
-    @RequestMapping(value = "edit/create_container/adminUnit/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id) {
         return createContainer(id, Cdr.AdminUnit);
     }
 
-    @RequestMapping(value = "edit/create_container/collection/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createCollection(@PathVariable("id") String id) {
         return createContainer(id, Cdr.Collection);
     }
 
-    @RequestMapping(value = "edit/create_container/folder/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createFolder(@PathVariable("id") String id) {
         return createContainer(id, Cdr.Folder);
     }
 
-    @RequestMapping(value = "edit/create_container/work/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<Object> createWork(@PathVariable("id") String id) {
         return createContainer(id, Cdr.Work);
