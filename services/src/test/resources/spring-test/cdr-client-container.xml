@@ -76,7 +76,7 @@
 		<property name="pidMinter" ref="repositoryPIDMinter" />
 	</bean>
 	
-	<bean id="txManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+	<bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
 	    <property name="client" ref="fcrepoClient" />
 	</bean>
 	
