@@ -26,7 +26,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -43,8 +43,6 @@ import edu.unc.lib.dl.util.ResourceType;
  */
 @Controller
 public class SearchActionController extends AbstractSolrSearchController {
-  //  @Autowired(required = true)
-    protected String collectionsPid = "cdr:collection";
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
 
     @RequestMapping("/search/{pid}")
@@ -110,7 +108,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 
     @RequestMapping("/listContents")
     public String listContents(Model model, HttpServletRequest request) {
-        return listContents(PIDs.get(collectionsPid).getURI(), model, request);
+        return listContents(RepositoryPaths.getContentRootPid().getURI(), model, request);
     }
 
     @RequestMapping("/collections")
@@ -169,9 +167,5 @@ public class SearchActionController extends AbstractSolrSearchController {
         model.addAttribute("resultResponse", resultResponse);
 
         return resultResponse;
-    }
-
-    public void setCollectionsPid(String collectionsPid) {
-        this.collectionsPid = collectionsPid;
     }
 }
