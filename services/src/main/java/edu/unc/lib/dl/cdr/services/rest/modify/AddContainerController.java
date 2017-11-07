@@ -35,7 +35,6 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.AddContainerService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 
@@ -81,15 +80,19 @@ public class AddContainerController {
         result.put("action", "create");
 
         PID parentPid = PIDs.get(id);
+        result.put("pid", parentPid.getUUID());
 
         try {
             addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, containerType);
-        } catch (AccessRestrictionException | AuthorizationException e) {
+        } catch (Exception e) {
             result.put("error", e.getMessage());
-            return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-        } catch (FedoraException e) {
-            log.error("Failed to create container for {}",  e);
-            result.put("error", e.toString());
+            Throwable t = e.getCause();
+            if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to create container for {}",  e);
+                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+            }
         }
 
         result.put("timestamp", System.currentTimeMillis());
