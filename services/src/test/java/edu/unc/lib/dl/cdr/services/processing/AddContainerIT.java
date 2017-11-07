@@ -15,14 +15,17 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -41,11 +44,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
+import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -92,9 +98,8 @@ public class AddContainerIT {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void test() throws UnsupportedOperationException, Exception {
+    public void testAddCollectionToAdminUnit() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
-        List<String> idList = Arrays.asList(parentPid.getUUID());
 
         AdminUnit parent = repositoryObjectFactory.createAdminUnit(parentPid, null);
 
@@ -108,11 +113,56 @@ public class AddContainerIT {
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertTrue(idList.containsAll((List<String>) respMap.get("pids")));
+        assertEquals(parentPid.getUUID(), respMap.get("pid"));
         assertEquals("create", respMap.get("action"));
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testAddAdminUnitToCollection() throws UnsupportedOperationException, Exception {
+        PID parentPid = makePid();
+
+        CollectionObject parent = repositoryObjectFactory.createCollectionObject(parentPid, null);
+
+        assertChildContainerNotAdded(parent);
+
+        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID()))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        assertChildContainerNotAdded(parent);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(parentPid.getUUID(), respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
+    }
+
+    @Test
+    public void testAuthorizationFailure() throws Exception {
+        PID pid = makePid();
+        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
+
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(ingest));
+
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + pid.getUUID()))
+            .andExpect(status().isForbidden())
+            .andReturn();
+
+        assertChildContainerNotAdded(folder);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(pid.getUUID(), respMap.get("pid"));
+        assertEquals("create", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
+    }
+
     private void assertChildContainerAdded(ContentContainerObject parent) {
+        // Refresh the model
+        parent = repositoryObjectLoader.getAdminUnit(parent.getPid());
         if (parent.getMembers().size() != 0) {
             assertTrue(parent.getMembers().get(0) instanceof ContentContainerObject);
         } else {
