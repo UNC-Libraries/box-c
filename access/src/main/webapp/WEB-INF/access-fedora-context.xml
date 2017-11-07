@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2008 The University of North Carolina at Chapel Hill Licensed 
 	under the Apache License, Version 2.0 (the "License"); you may not use this 
@@ -72,7 +71,7 @@
 		<property name="gaTrackingID" ref="gaTrackingID" />
 	</bean>
 	
-	<bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+	 <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
 		<property name="accessClient" ref="forwardedAccessClient" />
 		<property name="fedoraUtil" ref="fedoraUtil" />
 		<property name="fedoraHost" value="${fedora.host:localhost}" />
@@ -96,7 +95,7 @@
 		<property name="externalContentPath" value="${external.base.url}" />
 	</bean>
 	
-	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+<!--  	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="staticMethod"
 			value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings" />
 		<property name="arguments">
@@ -115,6 +114,6 @@
 	<bean id="lorisUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
 		<property name="accessControlService" ref="accessControlService" />
 		<property name="solrQueryLayer" ref="queryLayer" />
-	</bean>
+	</bean>-->
 
 </beans>
