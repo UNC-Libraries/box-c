@@ -105,7 +105,7 @@
 				<ref bean="solrSettings" />
 			</list>
 		</property>
-	</bean>
+	</bean> -->
 	
 	<bean id="lorisContentService" class="edu.unc.lib.dl.ui.service.LorisContentService">
 		<property name="applicationPathSettings" ref="applicationPathSettings" />
@@ -114,6 +114,6 @@
 	<bean id="lorisUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
 		<property name="accessControlService" ref="accessControlService" />
 		<property name="solrQueryLayer" ref="queryLayer" />
-	</bean>-->
+	</bean>
 
 </beans>

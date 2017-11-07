@@ -21,13 +21,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -39,13 +38,13 @@ import edu.unc.lib.dl.util.ResourceType;
 /**
  * Controller which interprets the provided search state, from either the last search state in the session or from GET
  * parameters, as well as actions performed on the state, and retrieves search results using it.
- * 
+ *
  * @author bbpennel
  */
 @Controller
 public class SearchActionController extends AbstractSolrSearchController {
-    @Autowired(required = true)
-    protected PID collectionsPid;
+  //  @Autowired(required = true)
+    protected String collectionsPid = "cdr:collection";
     private static final Logger LOG = LoggerFactory.getLogger(SearchActionController.class);
 
     @RequestMapping("/search/{pid}")
@@ -90,7 +89,7 @@ public class SearchActionController extends AbstractSolrSearchController {
     @RequestMapping("/list")
     public String list(Model model, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-        searchRequest.setRootPid(collectionsPid.getPid());
+   //     searchRequest.setRootPid(collectionsPid.getPid());
         searchRequest.setApplyCutoffs(true);
         model.addAttribute("queryMethod", "list");
         model.addAttribute("facetQueryMethod", "search");
@@ -111,7 +110,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 
     @RequestMapping("/listContents")
     public String listContents(Model model, HttpServletRequest request) {
-        return listContents(collectionsPid.getPid(), model, request);
+        return listContents(PIDs.get(collectionsPid).getURI(), model, request);
     }
 
     @RequestMapping("/collections")
@@ -172,7 +171,7 @@ public class SearchActionController extends AbstractSolrSearchController {
         return resultResponse;
     }
 
-    public void setCollectionsPid(PID collectionsPid) {
+    public void setCollectionsPid(String collectionsPid) {
         this.collectionsPid = collectionsPid;
     }
 }
