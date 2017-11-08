@@ -39,10 +39,12 @@
 				<configuration>
 					<scanIntervalSeconds>2</scanIntervalSeconds>
 					<stopKey>STOP</stopKey>
-					<webApp>
-						<contextPath>/</contextPath>
-						<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-					</webApp>
+				<webApp>
+					<webInfIncludeJarPattern>.*access-common-.*</webInfIncludeJarPattern>
+					<contextPath>/access</contextPath>
+					<allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+					<extraClasspath>${basedir}/target/test-classes/</extraClasspath>
+				</webApp>
 					<contextHandlers>
 						<contextHandler implementation="org.eclipse.jetty.server.handler.ContextHandler">
 							<contextPath>/static</contextPath>
