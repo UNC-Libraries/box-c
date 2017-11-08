@@ -177,7 +177,7 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     *
+     * Retrieves parent container of the current object
      * @param child
      * @param membershipRelation
      * @return
@@ -204,7 +204,7 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     *
+     * Retrieves parent container of the current object
      * @param child
      * @return
      */
@@ -213,7 +213,7 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     *
+     * Retrieves parent object of the current object
      * @param obj
      * @return
      */
