@@ -408,14 +408,11 @@ public class RepositoryObjectFactory {
      *
      * @param parentUri
      * @param memberUri
-     * @return
      * @throws FedoraException
      */
-    public URI createMemberLink(URI parentUri, URI memberUri) throws FedoraException {
+    public void createMemberLink(URI parentUri, URI memberUri) throws FedoraException {
         String memberContainer = URIUtil.join(parentUri, RepositoryPathConstants.MEMBER_CONTAINER);
-
-        return ldpFactory.createIndirectProxy(URI.create(memberContainer),
-                parentUri, memberUri);
+        ldpFactory.createIndirectProxy(URI.create(memberContainer), parentUri, memberUri);
     }
 
     /**
