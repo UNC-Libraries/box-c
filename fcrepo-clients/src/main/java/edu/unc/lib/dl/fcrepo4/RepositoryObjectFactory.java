@@ -422,7 +422,7 @@ public class RepositoryObjectFactory {
      * @param object
      */
     public void createRelationship(PID subject, Property property, Resource object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getRepositoryPath(), property, object);
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object);
         persistTripleToFedora(subject, sparqlUpdate);
     }
 
