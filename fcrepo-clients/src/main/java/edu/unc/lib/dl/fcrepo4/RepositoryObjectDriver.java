@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QuerySolution;
+import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -43,7 +46,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.util.TripleStoreQueryService;
+import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  * Service that provides data and clients to interact with an object's data
@@ -62,7 +65,7 @@ public class RepositoryObjectDriver {
 
     private FcrepoClient client;
 
-    private TripleStoreQueryService tripleStoreQueryService;
+    private SparqlQueryService sparqlQueryService;
 
     protected RepositoryPIDMinter pidMinter;
 
@@ -174,7 +177,43 @@ public class RepositoryObjectDriver {
     }
 
     /**
-     *
+     * Retrieves parent container of the current object
+     * @param child
+     * @param membershipRelation
+     * @return
+     */
+    public PID fetchContainer(PID child, Resource membershipRelation) {
+        Resource relationship = (membershipRelation != null) ? membershipRelation : PcdmModels.hasMember;
+
+        String queryString = String.format("select ?pid where { ?pid <%1$s> <%2$s> }", relationship, child.getURI());
+
+        try (QueryExecution qexec = sparqlQueryService.executeQuery(queryString)) {
+            ResultSet results = qexec.execSelect();
+
+            for (; results.hasNext();) {
+                QuerySolution soln = results.nextSolution();
+                Resource res = soln.getResource("pid");
+
+                if (res != null) {
+                    return PIDs.get(res.getURI());
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Retrieves parent container of the current object
+     * @param child
+     * @return
+     */
+    public PID fetchContainer(PID child) {
+        return fetchContainer(child, null);
+    }
+
+    /**
+     * Retrieves parent object of the current object
      * @param obj
      * @return
      */
@@ -188,7 +227,7 @@ public class RepositoryObjectDriver {
             resourceType = PcdmModels.hasMember;
         }
 
-        PID pid = tripleStoreQueryService.fetchContainer(obj.getPid(), resourceType);
+        PID pid = fetchContainer(obj.getPid(), resourceType);
 
         return repositoryObjectLoader.getRepositoryObject(pid);
     }
@@ -246,8 +285,12 @@ public class RepositoryObjectDriver {
         this.repositoryObjectLoader = repoObjLoader;
     }
 
-    public void setTripleStoreQueryService(TripleStoreQueryService tripleStoreQueryService) {
-        this.tripleStoreQueryService = tripleStoreQueryService;
+    public SparqlQueryService getSparqlQueryService() {
+        return sparqlQueryService;
+    }
+
+    public void setSparqlQueryService(SparqlQueryService SparqlQueryService) {
+        this.sparqlQueryService = SparqlQueryService;
     }
 
     /**
