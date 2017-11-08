@@ -78,9 +78,9 @@ public class AddContainerController {
     private ResponseEntity<Object> createContainer(String id, Resource containerType) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "create");
+        result.put("pid", id);
 
         PID parentPid = PIDs.get(id);
-        result.put("pid", parentPid.getUUID());
 
         try {
             addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, containerType);

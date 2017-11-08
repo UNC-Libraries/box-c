@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -55,37 +53,35 @@ public class AddContainerService {
 
         FedoraTransaction tx = txManager.startTransaction();
         try {
-            // Create the new container
-            Model model = ModelFactory.createDefaultModel();
-            model.createResource(parentPid.getRepositoryPath());
             ContentContainerObject child = null;
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create admin units",
                         parentPid, agent.getPrincipals(), Permission.createAdminUnit);
-                child = repoObjFactory.createAdminUnit(model);
+                child = repoObjFactory.createAdminUnit(null);
             } else if (Cdr.Collection.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create collections",
                         parentPid, agent.getPrincipals(), Permission.createCollection);
-                child = repoObjFactory.createCollectionObject(model);
+                child = repoObjFactory.createCollectionObject(null);
             } else if (Cdr.Folder.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create folders",
                         parentPid, agent.getPrincipals(), Permission.ingest);
-                child = repoObjFactory.createFolderObject(model);
+                child = repoObjFactory.createFolderObject(null);
             } else if (Cdr.Work.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create works",
                         parentPid, agent.getPrincipals(), Permission.ingest);
-                child = repoObjFactory.createWorkObject(model);
+                child = repoObjFactory.createWorkObject(null);
             }
 
-            ContentContainerObject parent = (ContentContainerObject ) repoObjLoader.getRepositoryObject(parentPid);
+            ContentContainerObject parent = (ContentContainerObject) repoObjLoader.getRepositoryObject(parentPid);
             parent.addMember(child);
 
-            child.getPremisLog().buildEvent(Premis.Creation)
+            child.getPremisLog()
+            .buildEvent(Premis.Creation)
             .addImplementorAgent(agent.getUsernameUri())
             .addEventDetail("Container added at destination " + parentPid)
             .write();
