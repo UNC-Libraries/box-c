@@ -410,7 +410,6 @@ public class RepositoryObjectFactory {
      *
      * @param parentUri
      * @param memberUri
-     * @return
      * @throws FedoraException
      */
     public void createMemberLink(URI parentUri, URI memberUri) throws FedoraException {

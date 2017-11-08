@@ -27,10 +27,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
-import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -96,7 +96,6 @@ public class AddContainerIT {
         GroupsThreadStore.clearStore();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testAddCollectionToAdminUnit() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
@@ -117,7 +116,6 @@ public class AddContainerIT {
         assertEquals("create", respMap.get("action"));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testAddAdminUnitToCollection() throws UnsupportedOperationException, Exception {
         PID parentPid = makePid();
