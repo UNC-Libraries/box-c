@@ -101,10 +101,10 @@ public class SearchActionController extends AbstractSolrSearchController {
 	public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
 		searchRequest.getSearchState().setResourceTypes(
-				Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+				Arrays.asList(ResourceType.Aggregate.name()));
 		searchRequest.setRootPid(pid);
 		searchRequest.setApplyCutoffs(false);
-		searchRequest.getSearchState().setRollup(true);
+		searchRequest.getSearchState().setRollup(false);
 		model.addAttribute("queryMethod", "listContents");
 		return search(searchRequest, model, request);
 	}
