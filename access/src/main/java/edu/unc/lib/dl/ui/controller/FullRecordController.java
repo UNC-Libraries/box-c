@@ -277,8 +277,10 @@ public class FullRecordController extends AbstractSolrSearchController {
 		// Populate file list
 		if (settings.getViews().contains(ContainerView.LIST_CONTENTS.name())) {
 			SearchState searchState = stateFactory.createSearchState();
+			
 			searchState.setResourceTypes(
-					Arrays.asList(ResourceType.Aggregate.name()));
+					Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+			searchState.setIncludeParts(false);
 			SearchRequest listContentsRequest = new SearchRequest();
 			listContentsRequest.setSearchState(searchState);
 			listContentsRequest.setRetrieveFacets(false);

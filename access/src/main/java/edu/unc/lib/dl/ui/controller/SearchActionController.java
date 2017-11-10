@@ -100,8 +100,9 @@ public class SearchActionController extends AbstractSolrSearchController {
 	@RequestMapping("/listContents/{pid}")
 	public String listContents(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
 		SearchRequest searchRequest = generateSearchRequest(request);
+		SearchState searchState = searchRequest.getSearchState();
 		searchRequest.getSearchState().setResourceTypes(
-				Arrays.asList(ResourceType.Aggregate.name()));
+				Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
 		searchRequest.setRootPid(pid);
 		searchRequest.setApplyCutoffs(false);
 		searchRequest.getSearchState().setRollup(false);
