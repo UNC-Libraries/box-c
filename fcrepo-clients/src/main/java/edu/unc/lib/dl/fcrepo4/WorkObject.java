@@ -76,7 +76,6 @@ public class WorkObject extends ContentContainerObject {
         if (!resc.hasProperty(PcdmModels.hasMember, primaryResc)) {
             throw new InvalidRelationshipException("Primary object must be a member of the Work");
         }
-
         // Add the relation
         repoObjFactory.createExclusiveRelationship(pid, Cdr.primaryObject, primaryResc);
     }

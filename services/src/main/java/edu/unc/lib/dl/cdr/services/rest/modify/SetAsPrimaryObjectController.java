@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.cdr.services.processing.SetPrimaryObjectService;
+import edu.unc.lib.dl.cdr.services.processing.SetAsPrimaryObjectService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
@@ -43,20 +43,20 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 @Controller
-public class SetPrimaryObjectController {
+public class SetAsPrimaryObjectController {
 
-    private static final Logger log = LoggerFactory.getLogger(SetPrimaryObjectController.class);
+    private static final Logger log = LoggerFactory.getLogger(SetAsPrimaryObjectController.class);
 
     @Autowired
-    private SetPrimaryObjectService setPrimaryObjectService;
+    private SetAsPrimaryObjectService setAsPrimaryObjectService;
 
-    @RequestMapping(value = "/edit/setPrimaryObject/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/edit/setAsPrimaryObject/{id}", method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<Object> setPrimaryObject(@PathVariable("id") String id) {
-        return setPrimary(id);
+    public ResponseEntity<Object> setAsPrimaryObject(@PathVariable("id") String id) {
+        return setAsPrimary(id);
     }
 
-    private ResponseEntity<Object> setPrimary(String id) {
+    private ResponseEntity<Object> setAsPrimary(String id) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "setPrimaryObject");
         result.put("pid", id);
@@ -64,7 +64,7 @@ public class SetPrimaryObjectController {
         PID fileObjPid = PIDs.get(id);
 
         try {
-            setPrimaryObjectService.setPrimaryObject(AgentPrincipals.createFromThread(), fileObjPid);
+            setAsPrimaryObjectService.setAsPrimaryObject(AgentPrincipals.createFromThread(), fileObjPid);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();
@@ -75,6 +75,7 @@ public class SetPrimaryObjectController {
                 return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
             }
         }
+        result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
