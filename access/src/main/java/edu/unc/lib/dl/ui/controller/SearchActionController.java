@@ -87,7 +87,7 @@ public class SearchActionController extends AbstractSolrSearchController {
     @RequestMapping("/list")
     public String list(Model model, HttpServletRequest request) {
         SearchRequest searchRequest = generateSearchRequest(request);
-   //     searchRequest.setRootPid(collectionsPid.getPid());
+        searchRequest.setRootPid(RepositoryPaths.getContentRootPid().getURI());
         searchRequest.setApplyCutoffs(true);
         model.addAttribute("queryMethod", "list");
         model.addAttribute("facetQueryMethod", "search");
