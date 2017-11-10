@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static org.junit.Assert.assertEquals;
