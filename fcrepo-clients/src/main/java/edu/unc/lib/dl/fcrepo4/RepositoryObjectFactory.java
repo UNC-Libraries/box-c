@@ -416,13 +416,24 @@ public class RepositoryObjectFactory {
     }
 
     /**
+     * Creates a triple in Fedora by replacing the current property with the given property parameter
+     * @param subject
+     * @param property the new property value
+     * @param object
+     */
+    public void createExclusiveRelationship(PID subject, Property property, Resource object) {
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object);
+        persistTripleToFedora(subject, sparqlUpdate);
+    }
+
+    /**
      * Creates a triple in Fedora from the given parameters
      * @param subject
      * @param property
      * @param object
      */
     public void createRelationship(PID subject, Property property, Resource object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object);
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(subject.getRepositoryPath(), property, object);
         persistTripleToFedora(subject, sparqlUpdate);
     }
 

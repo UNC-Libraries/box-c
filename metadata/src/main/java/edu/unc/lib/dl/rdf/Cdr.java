@@ -94,7 +94,7 @@ public class Cdr {
     public static final Property invalidTerm = createProperty(
             "http://cdr.unc.edu/definitions/model#invalidTerm" );
 
-    /** Relation from an AggregateWork to a child which will be treated as the primary
+    /** Relation from a work to a child which will be treated as the primary
      *  object for this work.
      */
     public static final Property primaryObject = createProperty(

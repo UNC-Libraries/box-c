@@ -29,11 +29,12 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.InvalidRelationshipException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.PcdmModels;
 
 /**
- * A repository object which represents a single Work, and should contain one or
+ * A repository object which represents a single work, and should contain one or
  * more data files. A work may have a single primary object which is considered
  * the main work file, in which case the other data files are considered to be
  * supplemental.
@@ -57,13 +58,19 @@ public class WorkObject extends ContentContainerObject {
     }
 
     /**
-     * Set the object with the given PID as the primary object for this Work.
-     * The primary object must be contained by this Work.
+     * Set the object with the given PID as the primary object for this work.
+     * The primary object must be a file object and must be contained by this work.
      *
      * @param primaryPid
      */
     public void setPrimaryObject(PID primaryPid) {
-        // Check that the object is contained by this Work
+        RepositoryObject repoObj = driver.getRepositoryObject(primaryPid);
+        if (!(repoObj instanceof FileObject)) {
+            throw new InvalidOperationForObjectType("Cannot set " + primaryPid.getUUID()
+                    + " as primary object, since objects of type " + repoObj.getClass().getName()
+                    + " are not eligible.");
+        }
+        // Check that the file object is contained by this work
         Resource resc = getResource();
         Resource primaryResc = createResource(primaryPid.getRepositoryPath());
         if (!resc.hasProperty(PcdmModels.hasMember, primaryResc)) {
@@ -71,7 +78,7 @@ public class WorkObject extends ContentContainerObject {
         }
 
         // Add the relation
-        repoObjFactory.createRelationship(pid, Cdr.primaryObject, primaryResc);
+        repoObjFactory.createExclusiveRelationship(pid, Cdr.primaryObject, primaryResc);
     }
 
     /**
