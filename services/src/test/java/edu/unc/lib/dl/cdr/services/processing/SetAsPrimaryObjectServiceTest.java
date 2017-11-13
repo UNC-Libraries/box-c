@@ -15,32 +15,34 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.UUID;
 
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 
 /**
  *
@@ -62,12 +64,14 @@ public class SetAsPrimaryObjectServiceTest {
     @Mock
     private FileObject fileObj;
     @Mock
+    private FolderObject folderObj;
+    @Mock
     private RepositoryObjectFactory factory;
     @Mock
     private Resource primaryResc;
 
     private PID fileObjPid;
-    private PID workObjPid;
+    private PID folderObjPid;
     private SetAsPrimaryObjectService service;
 
     @Before
@@ -75,15 +79,7 @@ public class SetAsPrimaryObjectServiceTest {
         initMocks(this);
 
         fileObjPid = makePid();
-        workObjPid = makePid();
-
-        doAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                return null;
-            }
-
-        }).when(workObj).setPrimaryObject(fileObjPid);
+        folderObjPid = makePid();
 
         when(agent.getPrincipals()).thenReturn(groups);
         when(repoObjLoader.getRepositoryObject(eq(fileObjPid))).thenReturn(fileObj);
@@ -100,8 +96,28 @@ public class SetAsPrimaryObjectServiceTest {
         service.setAsPrimaryObject(agent, fileObjPid);
 
         verify(workObj).setPrimaryObject(fileObjPid);
-        verify(factory).createExclusiveRelationship(any(PID.class), any(Property.class), any(Resource.class));
+    }
 
+    @Test(expected = AccessRestrictionException.class)
+    public void insufficientAccessTest() {
+        doThrow(new AccessRestrictionException()).when(aclService)
+        .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSet.class), eq(editResourceType));
+
+        service.setAsPrimaryObject(agent, fileObjPid);
+    }
+
+    @Test(expected = InvalidOperationForObjectType.class)
+    public void setNonFileAsPrimaryTest() {
+        when(repoObjLoader.getRepositoryObject(eq(folderObjPid))).thenReturn(folderObj);
+
+        service.setAsPrimaryObject(agent, folderObjPid);
+    }
+
+    @Test(expected = InvalidOperationForObjectType.class)
+    public void setPrimaryObjectOnNonWork() {
+        when(fileObj.getParent()).thenReturn(folderObj);
+
+        service.setAsPrimaryObject(agent, fileObjPid);
     }
 
     private PID makePid() {
