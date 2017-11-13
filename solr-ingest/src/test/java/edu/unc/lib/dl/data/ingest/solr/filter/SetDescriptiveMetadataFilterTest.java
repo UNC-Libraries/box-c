@@ -55,7 +55,8 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
 
 /**
  *
- * @author bbpennel, harring
+ * @author bbpennel
+ * @author harring
  *
  */
 public class SetDescriptiveMetadataFilterTest {
