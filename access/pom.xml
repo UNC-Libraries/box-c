@@ -63,11 +63,19 @@
 					<systemProperties>
 						<systemProperty>
 							<name>server.properties.uri</name>
-							<value>file:${project.basedir}/../etc/server.properties</value>
+							<value>classpath:server.properties</value>
+						</systemProperty>
+						<systemProperty>
+							<name>acl.properties.uri</name>
+							<value>file:${project.basedir}/target/${project.build.finalName}/acl-config.properties</value>
 						</systemProperty>
 						<systemProperty>
 							<name>log.dir</name>
 							<value>${project.basedir}/target/</value>
+						</systemProperty>
+						<systemProperty>
+							<name>fcrepo.baseUri</name>
+							<value>http://localhost:8080/fcrepo/rest/</value>
 						</systemProperty>
 					</systemProperties>
 				</configuration>
