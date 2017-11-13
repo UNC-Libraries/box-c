@@ -116,7 +116,7 @@
 	<filter>
 		<filter-name>storeAccessLevelFilter</filter-name>
 		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	</filter>
+	</filter> 
 	<filter-mapping>
 		<filter-name>storeAccessLevelFilter</filter-name>
 		<url-pattern>/*</url-pattern>
