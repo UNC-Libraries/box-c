@@ -107,12 +107,12 @@ public class SetAsPrimaryObjectIT {
         PID fileObjPid = makePid();
         PID parentPid = makePid();
 
-        FileObject fileObj = repositoryObjectFactory.createFileObject(fileObjPid, model);
+        FileObject fileObj = repositoryObjectFactory.createFileObject(fileObjPid, null);
         InputStream stream = new FileInputStream("src/test/resources/txt.txt");
         WorkObject parent = repositoryObjectFactory.createWorkObject(parentPid, null);
 
-        model.getResource(fileObjPid.getRepositoryPath())
-            .addProperty(PcdmModels.memberOf, parentPid.getRepositoryPath());
+        model.getResource(parentPid.getRepositoryPath())
+            .addProperty(PcdmModels.hasMember, fileObjPid.getRepositoryPath());
         parent.addMember(fileObj);
 
         assertPrimaryObjectNotSet(parent);
