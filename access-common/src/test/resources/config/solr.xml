@@ -23,7 +23,7 @@
   sharedLib: path to a lib directory that will be shared across all cores
 -->
 <solr persistent="false">
-  <cores adminPath="/admin/cores" defaultCoreName="access-master">
-    <core name="access-master" instanceDir="access" />
+  <cores adminPath="/admin/cores" defaultCoreName="access">
+    <core name="access" instanceDir="access" />
   </cores>
 </solr>
