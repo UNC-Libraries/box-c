@@ -103,6 +103,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 		SearchState searchState = searchRequest.getSearchState();
 		searchRequest.getSearchState().setResourceTypes(
 				Arrays.asList(ResourceType.Aggregate.name(), ResourceType.File.name()));
+		searchState.setIncludeParts(false);
 		searchRequest.setRootPid(pid);
 		searchRequest.setApplyCutoffs(false);
 		searchRequest.getSearchState().setRollup(false);
