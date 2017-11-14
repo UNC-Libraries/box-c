@@ -46,7 +46,7 @@ public class BaseEmbeddedSolrTest extends Assert {
         System.setProperty("solr.data.dir", "src/test/resources/config/data/");
         container = new CoreContainer("src/test/resources/config");
 
-        server = new EmbeddedSolrServer(container, "access-master");
+        server = new EmbeddedSolrServer(container, "access");
 
         driver = new SolrUpdateDriver();
         driver.setSolrClient(server);
