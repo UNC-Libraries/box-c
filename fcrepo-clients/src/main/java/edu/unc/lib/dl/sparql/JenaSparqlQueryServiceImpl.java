@@ -35,6 +35,10 @@ public class JenaSparqlQueryServiceImpl implements SparqlQueryService {
         this.model = model;
     }
 
+    public Model getModel() {
+        return model;
+    }
+
     @Override
     public QueryExecution executeQuery(String queryString) {
         Query query = QueryFactory.create(queryString);
