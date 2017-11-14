@@ -21,13 +21,9 @@ import static org.junit.Assert.assertNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -54,7 +50,6 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -75,17 +70,15 @@ public class SetAsPrimaryObjectIT {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
     private AccessControlService aclService;
+//    @Autowired
+//    private Model model;
+    @Autowired
+    private JenaSparqlQueryServiceImpl queryService;
 
-    private SparqlQueryService queryService;
-    private Model model;
     private MockMvc mvc;
 
     @Before
     public void init() {
-
-        model = ModelFactory.createDefaultModel();
-
-        queryService = new JenaSparqlQueryServiceImpl(model);
 
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
@@ -108,10 +101,9 @@ public class SetAsPrimaryObjectIT {
         PID parentPid = makePid();
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(fileObjPid, null);
-        InputStream stream = new FileInputStream("src/test/resources/txt.txt");
         WorkObject parent = repositoryObjectFactory.createWorkObject(parentPid, null);
 
-        model.getResource(parentPid.getRepositoryPath())
+        queryService.getModel().getResource(parentPid.getRepositoryPath())
             .addProperty(PcdmModels.hasMember, fileObjPid.getRepositoryPath());
         parent.addMember(fileObj);
 
@@ -126,7 +118,7 @@ public class SetAsPrimaryObjectIT {
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals(parentPid.getUUID(), respMap.get("pid"));
-        assertEquals("create", respMap.get("action"));
+        assertEquals("setAsPrimaryObject", respMap.get("action"));
     }
 
     private void assertPrimaryObjectSet(WorkObject parent, FileObject fileObj) {
