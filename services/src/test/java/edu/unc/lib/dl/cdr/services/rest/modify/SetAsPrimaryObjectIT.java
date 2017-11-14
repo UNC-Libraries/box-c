@@ -63,7 +63,7 @@ import edu.unc.lib.dl.test.TestHelper;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml", "/add-container-it-servlet.xml"})
+@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml", "/set-as-primary-object-it-servlet.xml"})
 @WebAppConfiguration
 public class SetAsPrimaryObjectIT {
 
@@ -113,8 +113,7 @@ public class SetAsPrimaryObjectIT {
 
         model.getResource(fileObjPid.getRepositoryPath())
             .addProperty(PcdmModels.memberOf, parentPid.getRepositoryPath());
-        parent.addDataFile(fileObjPid, stream, "txt.txt", null, null, "1cb251ec0d568de6a929b520c4aed8d1", model);
-
+        parent.addMember(fileObj);
 
         assertPrimaryObjectNotSet(parent);
 
