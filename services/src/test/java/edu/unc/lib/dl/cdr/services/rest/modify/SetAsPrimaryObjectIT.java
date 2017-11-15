@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -76,9 +77,10 @@ public class SetAsPrimaryObjectIT {
     @Autowired
     private AccessControlService aclService;
     @Autowired
-    private JenaSparqlQueryServiceImpl queryService;
+    private Model queryModel;
 
     private MockMvc mvc;
+    private JenaSparqlQueryServiceImpl queryService;
     private WorkObject parent;
     private PID parentPid;
     private FileObject fileObj;
@@ -90,6 +92,8 @@ public class SetAsPrimaryObjectIT {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .build();
+
+        queryService = new JenaSparqlQueryServiceImpl(queryModel);
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
@@ -109,9 +113,7 @@ public class SetAsPrimaryObjectIT {
 
     @Test
     public void setPrimaryObjectTest() throws UnsupportedOperationException, Exception {
-        queryService.getModel().getResource(parentPid.getRepositoryPath())
-            .addProperty(PcdmModels.hasMember, fileObj.getResource());
-        parent.addMember(fileObj);
+        addFileObjAsMember();
 
         assertPrimaryObjectNotSet(parent);
 
@@ -131,6 +133,8 @@ public class SetAsPrimaryObjectIT {
     public void testAuthorizationFailure() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSet.class), eq(editResourceType));
+
+        addFileObjAsMember();
 
         MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + fileObjPid.getUUID()))
             .andExpect(status().isForbidden())
@@ -175,6 +179,13 @@ public class SetAsPrimaryObjectIT {
 
     private PID makePid() {
         return PIDs.get(UUID.randomUUID().toString());
+    }
+
+    private void addFileObjAsMember() {
+        queryService.getModel().getResource(parentPid.getRepositoryPath())
+                .addProperty(PcdmModels.hasMember, fileObj.getResource());
+        parent.addMember(fileObj);
+
     }
 
     private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
