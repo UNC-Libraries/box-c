@@ -102,7 +102,7 @@
 		<property name="solrSettings" ref="solrSettings" />
 	</bean> 
 	
-		<bean name="aclPropertiesURI" class="java.lang.System"
+	<bean name="aclPropertiesURI" class="java.lang.System"
 			factory-method="getProperty">
 		<constructor-arg index="0" value="acl.properties.uri" />
 	</bean>
