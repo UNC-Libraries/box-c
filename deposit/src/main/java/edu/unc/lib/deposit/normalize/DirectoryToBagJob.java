@@ -115,7 +115,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 				try (InputStream fileStream = new FileInputStream(fullPath)) {
 					checksum = DigestUtils.md5Hex(fileStream);
 				} catch (IOException e) {
-					failJob(e, "Unable to compute checksum. File not found at  {}", fullPath);
+					failJob(e, "Unable to compute checksum. File not found at  {0}", fullPath);
 				}
 				
 				model.add(fileResource, hasModelProp, simpleResource);
@@ -130,7 +130,7 @@ public class DirectoryToBagJob extends AbstractFileServerToBagJob {
 						model.add(fileResource, locationProp, stagedURI.toString());
 					}
 				} catch (StagingException e) {
-					failJob(e, "Unable to get staged path for file {}", storedPath);
+					failJob(e, "Unable to get staged path for file {0}", storedPath);
 				}
 			} else {
 				Bag folderBag = getFolderBag(sourceBag, filePathString);

@@ -129,7 +129,7 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 			model.add(primaryResource, dprop(model, stagingLocation),
 					DepositConstants.DATA_DIR + "/" + UriUtils.encodePathSegment(contentFile.getName(), "UTF-8"));
 		} catch (UnsupportedEncodingException e) {
-			failJob(e, "Failed to add staging location for {} due to encoding issues", contentFile.getName());
+			failJob(e, "Failed to add staging location for {0} due to encoding issues", contentFile.getName());
 		}
 	}
 

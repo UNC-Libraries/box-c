@@ -239,7 +239,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 					mods.addContent(identifier);
 				}
 			} catch (IOException e) {
-				failJob(e, "Failed to parse extras data for {}", getDepositPID());
+				failJob(e, "Failed to parse extras data for {0}", getDepositPID());
 				log.error("Failed to parse extras data for {}", this.getDepositPID(), e);
 			}
 		}
@@ -252,7 +252,7 @@ public abstract class AbstractFileServerToBagJob extends AbstractDepositJob {
 			try (FileOutputStream fos = new FileOutputStream(modsFile)) {
 				new XMLOutputter(org.jdom2.output.Format.getPrettyFormat()).output(mods.getDocument(), fos);
 			} catch (IOException e) {
-				failJob(e, "Unable to write descriptive metadata for bag deposit {}", getDepositPID());
+				failJob(e, "Unable to write descriptive metadata for bag deposit {0}", getDepositPID());
 			}
 			
 		}

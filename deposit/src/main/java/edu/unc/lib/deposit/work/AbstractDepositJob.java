@@ -273,7 +273,7 @@ public abstract class AbstractDepositJob implements Runnable {
 					try {
 						Files.move(file.toPath(), Paths.get(file.getAbsolutePath() + ".backup." + System.currentTimeMillis()));
 					} catch (IOException e2) {
-						failJob(e2, "Failed to backup corrupt log file for object {}.", pid);
+						failJob(e2, "Failed to backup corrupt log file for object {0}.", pid);
 					}
 					dom = createNewEventsFile(pid, file);
 				}
@@ -289,7 +289,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
 			return file;
 		} catch (IOException e) {
-			failJob(e, "Unexpected problem with deposit events file {}.", file.getAbsoluteFile());
+			failJob(e, "Unexpected problem with deposit events file {0}.", file.getAbsoluteFile());
 		}
 
 		return null;
