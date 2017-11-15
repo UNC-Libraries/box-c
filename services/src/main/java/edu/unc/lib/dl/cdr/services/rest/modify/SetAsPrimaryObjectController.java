@@ -58,7 +58,7 @@ public class SetAsPrimaryObjectController {
 
     private ResponseEntity<Object> setAsPrimary(String id) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "setPrimaryObject");
+        result.put("action", "setAsPrimaryObject");
         result.put("pid", id);
 
         PID fileObjPid = PIDs.get(id);
@@ -67,8 +67,7 @@ public class SetAsPrimaryObjectController {
             setAsPrimaryObjectService.setAsPrimaryObject(AgentPrincipals.createFromThread(), fileObjPid);
         } catch (Exception e) {
             result.put("error", e.getMessage());
-            Throwable t = e.getCause();
-            if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
                 log.error("Failed to set primary object with pid " + fileObjPid, e);
