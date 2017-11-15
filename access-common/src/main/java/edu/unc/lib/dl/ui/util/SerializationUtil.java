@@ -42,7 +42,7 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.util.DateTimeUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -165,7 +165,7 @@ public class SerializationUtil {
 
         if (metadata.getAncestorPathFacet() != null) {
             result.put("ancestorPath", cutoffFacetToMap(metadata.getAncestorPathFacet()));
-            result.put("objectPath", metadata.getObjectPath().getEntries());
+        //    result.put("objectPath", metadata.getObjectPath().getEntries());
         }
 
         if (metadata.getAncestorNames() != null) {
