@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright 2008 The University of North Carolina at Chapel Hill
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,15 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -39,13 +45,14 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.FileObject;
+import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
@@ -67,15 +74,15 @@ public class SetAsPrimaryObjectIT {
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
     private AccessControlService aclService;
-//    @Autowired
-//    private Model model;
     @Autowired
     private JenaSparqlQueryServiceImpl queryService;
 
     private MockMvc mvc;
+    private WorkObject parent;
+    private PID parentPid;
+    private FileObject fileObj;
+    private PID fileObjPid;
 
     @Before
     public void init() {
@@ -88,6 +95,11 @@ public class SetAsPrimaryObjectIT {
 
         GroupsThreadStore.storeUsername("user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+
+        fileObjPid = makePid();
+        fileObj = repositoryObjectFactory.createFileObject(fileObjPid, null);
+        parentPid = makePid();
+        parent = repositoryObjectFactory.createWorkObject(parentPid, null);
     }
 
     @After
@@ -97,14 +109,8 @@ public class SetAsPrimaryObjectIT {
 
     @Test
     public void setPrimaryObjectTest() throws UnsupportedOperationException, Exception {
-        PID fileObjPid = makePid();
-        PID parentPid = makePid();
-
-        FileObject fileObj = repositoryObjectFactory.createFileObject(fileObjPid, null);
-        WorkObject parent = repositoryObjectFactory.createWorkObject(parentPid, null);
-
         queryService.getModel().getResource(parentPid.getRepositoryPath())
-            .addProperty(PcdmModels.hasMember, fileObjPid.getRepositoryPath());
+            .addProperty(PcdmModels.hasMember, fileObj.getResource());
         parent.addMember(fileObj);
 
         assertPrimaryObjectNotSet(parent);
@@ -117,13 +123,50 @@ public class SetAsPrimaryObjectIT {
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals(parentPid.getUUID(), respMap.get("pid"));
+        assertEquals(fileObjPid.getUUID(), respMap.get("pid"));
         assertEquals("setAsPrimaryObject", respMap.get("action"));
+    }
+
+    @Test
+    public void testAuthorizationFailure() throws Exception {
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSet.class), eq(editResourceType));
+
+        MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + fileObjPid.getUUID()))
+            .andExpect(status().isForbidden())
+            .andReturn();
+
+        assertPrimaryObjectNotSet(parent);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(fileObjPid.getUUID(), respMap.get("pid"));
+        assertEquals("setAsPrimaryObject", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
+    }
+
+    @Test
+    public void addFolderAsPrimaryObjectTest() throws UnsupportedOperationException, Exception {
+        PID folderObjPid = makePid();
+
+        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderObjPid, null);
+
+        MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + folderObjPid.getUUID()))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+            assertPrimaryObjectNotSet(parent);
+
+            // Verify response from api
+            Map<String, Object> respMap = getMapFromResponse(result);
+            assertEquals(folderObjPid.getUUID(), respMap.get("pid"));
+            assertEquals("setAsPrimaryObject", respMap.get("action"));
+            assertTrue(respMap.containsKey("error"));
     }
 
     private void assertPrimaryObjectSet(WorkObject parent, FileObject fileObj) {
         assertNotNull(parent.getPrimaryObject());
-        assertEquals(parent.getPrimaryObject(), fileObj);
+        assertEquals(parent.getPrimaryObject().getPid(), fileObj.getPid());
     }
 
     private void assertPrimaryObjectNotSet(WorkObject parent) {
