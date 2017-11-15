@@ -135,7 +135,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 				URI stagedURI = stages.getStagedURI(storedPath.toUri());
 				model.add(fileResource, locationProp, stagedURI.toString());
 			} catch (StagingException e) {
-				failJob(e, "Unable to get staged path for file {}", storedPath);
+				failJob(e, "Unable to get staged path for file {0}", storedPath);
 			}
 			
 		}
@@ -151,7 +151,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 					model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 				}
 			} catch (StagingException e) {
-				failJob(e, "Unable to get staged path for file {}", path);
+				failJob(e, "Unable to get staged path for file {0}", path);
 			}
 		}
 		
@@ -164,7 +164,7 @@ public class BagIt2N3BagJob extends AbstractFileServerToBagJob {
 				model.add(depositBag, dprop(model, DepositRelationship.cleanupLocation), stagedURI.toString());
 			}
 		} catch (StagingException e) {
-			failJob(e, "Unable to get staged path for file {}", storedPath);
+			failJob(e, "Unable to get staged path for file {0}", storedPath);
 		}
 		
 	}
