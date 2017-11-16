@@ -60,8 +60,8 @@ public class OperationsMessageSender {
      * @param userid id of user who triggered the operation
      * @param destinations containers objects were added to
      * @param added objects added
-     * @param reordered reordered
-     * @param depositId id of deposit
+     * @param reordered reordered (optional)
+     * @param depositId id of deposit (optional)
      * @return id of operation message
      */
     public String sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
@@ -71,24 +71,25 @@ public class OperationsMessageSender {
         Element add = new Element("add", CDR_MESSAGE_NS);
         contentEl.addContent(add);
 
-        add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
+        if (depositId != null) {
+            add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
+        }
 
         for (PID destination : destinations) {
-            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
         }
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         add.addContent(subjects);
         for (PID sub : added) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
         }
 
-
-        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-        add.addContent(reorderedEl);
         if (reordered != null) {
+            Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
+            add.addContent(reorderedEl);
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
             }
         }
 
@@ -115,19 +116,19 @@ public class OperationsMessageSender {
         Element remove = new Element("remove", CDR_MESSAGE_NS);
         contentEl.addContent(remove);
 
-        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         remove.addContent(subjects);
         for (PID sub : removed) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
         }
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         remove.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
             }
         }
 
@@ -155,25 +156,25 @@ public class OperationsMessageSender {
         Element move = new Element("move", CDR_MESSAGE_NS);
         contentEl.addContent(move);
 
-        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
 
         Element oldParents = new Element("oldParents", CDR_MESSAGE_NS);
         move.addContent(oldParents);
         for (PID old : sources) {
-            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.getPid()));
+            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.toString()));
         }
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         move.addContent(subjects);
         for (PID sub : moved) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
         }
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         move.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
             }
         }
 
@@ -191,13 +192,13 @@ public class OperationsMessageSender {
         Element reorder = new Element("reorder", CDR_MESSAGE_NS);
         contentEl.addContent(reorder);
 
-        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         reorder.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
             }
         }
 
@@ -234,7 +235,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         publishEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
         }
 
         Document msg = contentEl.getDocument();
@@ -265,7 +266,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         newTypeEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
         }
 
         Document msg = contentEl.getDocument();
@@ -293,7 +294,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         indexEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
         }
 
         Document msg = contentEl.getDocument();
@@ -338,7 +339,7 @@ public class OperationsMessageSender {
                 .addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));
         entry.addContent(new Element("title", ATOM_NS)
                 .setText(operation).setAttribute("type", "text"));
-        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getPid()).setAttribute("type", "text"));
+        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.toString()).setAttribute("type", "text"));
         Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
         entry.addContent(content);
         return content;
