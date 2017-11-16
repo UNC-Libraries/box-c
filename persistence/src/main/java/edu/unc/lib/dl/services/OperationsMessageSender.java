@@ -76,20 +76,20 @@ public class OperationsMessageSender {
         }
 
         for (PID destination : destinations) {
-            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
+            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
         }
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         add.addContent(subjects);
         for (PID sub : added) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         if (reordered != null) {
             Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
             add.addContent(reorderedEl);
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -116,19 +116,19 @@ public class OperationsMessageSender {
         Element remove = new Element("remove", CDR_MESSAGE_NS);
         contentEl.addContent(remove);
 
-        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
+        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         remove.addContent(subjects);
         for (PID sub : removed) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         remove.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -156,25 +156,25 @@ public class OperationsMessageSender {
         Element move = new Element("move", CDR_MESSAGE_NS);
         contentEl.addContent(move);
 
-        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
+        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
 
         Element oldParents = new Element("oldParents", CDR_MESSAGE_NS);
         move.addContent(oldParents);
         for (PID old : sources) {
-            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.toString()));
+            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.getRepositoryPath()));
         }
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         move.addContent(subjects);
         for (PID sub : moved) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         move.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -192,13 +192,13 @@ public class OperationsMessageSender {
         Element reorder = new Element("reorder", CDR_MESSAGE_NS);
         contentEl.addContent(reorder);
 
-        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.toString()));
+        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         reorder.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.toString()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -235,7 +235,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         publishEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -266,7 +266,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         newTypeEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -294,7 +294,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         indexEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.toString()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -339,7 +339,8 @@ public class OperationsMessageSender {
                 .addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));
         entry.addContent(new Element("title", ATOM_NS)
                 .setText(operation).setAttribute("type", "text"));
-        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.toString()).setAttribute("type", "text"));
+        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getRepositoryPath())
+                .setAttribute("type", "text"));
         Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
         entry.addContent(content);
         return content;
