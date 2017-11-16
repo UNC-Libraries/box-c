@@ -186,6 +186,7 @@
 	    <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
 	    <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
 	    <property name="transactionManager" ref="transactionManager" />
+	    <property name="operationsMessageSender" ref="operationsMessageSender" />
 	</bean>
 	
 	<bean id="markForDeletionService" class="edu.unc.lib.dl.persist.services.delete.MarkForDeletionService">
