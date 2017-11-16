@@ -62,7 +62,6 @@ import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
-import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ResourceType;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
@@ -167,9 +166,9 @@ public class FullRecordController extends AbstractSolrSearchController {
         // Get additional information depending on the type of object since the user has access
         if (!listAccess) {
             boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
-            boolean retrieveFacets = briefObject.getContentModel()
-                    .contains(ContentModelHelper.Model.CONTAINER.toString());
-
+        /*    boolean retrieveFacets = briefObject.getContentModel()
+                    .contains(ContentModelHelper.Model.CONTAINER.toString());*/
+            boolean retrieveFacets = false;
             if (retrieveChildrenCount) {
                 briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
             }
