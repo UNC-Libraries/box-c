@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -28,6 +31,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 
 /**
  * Service that manages the creation of containers
@@ -41,6 +45,7 @@ public class AddContainerService {
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
+    private OperationsMessageSender operationsMessageSender;
 
     /**
      * Creates a new container as a child of the given parent using the agent principals provided.
@@ -50,10 +55,9 @@ public class AddContainerService {
      * @param containerType the type of new container to be created
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
-
+        ContentContainerObject child = null;
         FedoraTransaction tx = txManager.startTransaction();
         try {
-            ContentContainerObject child = null;
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
@@ -91,6 +95,13 @@ public class AddContainerService {
             tx.close();
         }
 
+        // Send message that the action completed
+        Collection<PID> destinationPids = new ArrayList<>();
+        destinationPids.add(parentPid);
+        Collection<PID> addedContainers = new ArrayList<>();
+        addedContainers.add(child.getPid());
+        operationsMessageSender.sendAddOperation(agent.getUsername(), destinationPids,
+                addedContainers, null, null);
     }
 
     /**
@@ -119,6 +130,14 @@ public class AddContainerService {
      */
     public void setTransactionManager(TransactionManager txManager) {
         this.txManager = txManager;
+    }
+
+    /**
+     *
+     * @param operationsMessageSender
+     */
+    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+        this.operationsMessageSender = operationsMessageSender;
     }
 
 }
