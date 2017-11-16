@@ -62,7 +62,6 @@ import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.VERSION;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -327,12 +326,12 @@ public class IndexDocumentBean {
     }
 
     @Field
-    public void setStatusTags(HashSet<String> statusTags) {
+    public void setStatusTags(List<String> statusTags) {
         fields.put(STATUS_TAGS.getSolrField(), statusTags);
     }
 
-    public HashSet<String> getStatusTags() {
-        return (HashSet<String>) fields.get(STATUS_TAGS.getSolrField());
+    public List<String> getStatusTags() {
+        return (List<String>) fields.get(STATUS_TAGS.getSolrField());
     }
 
     @Field

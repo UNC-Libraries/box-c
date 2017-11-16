@@ -19,7 +19,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -52,17 +52,38 @@ public class Datastream {
         String[] dsParts = datastream.split("\\|", -1);
 
         this.name = dsParts[0];
-        this.mimetype = dsParts[1];
-        this.extension = dsParts[2];
+        try {
+            this.mimetype = dsParts[1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            this.mimetype = null;
+        }
+
+        try {
+            this.extension = dsParts[2];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            this.extension = null;
+        }
+
         try {
             this.filesize = new Long(dsParts[3]);
         } catch (NumberFormatException e) {
             this.filesize = null;
         }
-        this.checksum = dsParts[4];
-        this.owner = dsParts[5];
+
+        try {
+            this.checksum = dsParts[4];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            this.checksum = null;
+        }
+
+        try {
+            this.owner = dsParts[5];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            this.owner = null;
+        }
     }
 
+    @Override
     public String toString() {
         //DS name|mimetype|extension|filesize|checksum|owner
         StringBuilder sb = new StringBuilder();
