@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -27,11 +28,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.UUID;
 
 import org.apache.jena.rdf.model.impl.ModelCom;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -55,6 +60,7 @@ import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 
 /**
@@ -73,6 +79,8 @@ public class AddContainerServiceTest {
     @Mock
     private TransactionManager txManager;
     @Mock
+    private OperationsMessageSender messageSender;
+    @Mock
     private FedoraTransaction tx;
     @Mock
     private AgentPrincipals agent;
@@ -81,8 +89,14 @@ public class AddContainerServiceTest {
     @Mock
     private PremisLogger premisLogger;
 
+    @Captor
+    private ArgumentCaptor<Collection<PID>> destinationsCaptor;
+    @Captor
+    private ArgumentCaptor<Collection<PID>> addedContainersCaptor;
+
     private PremisEventBuilder eventBuilder;
     private PID parentPid;
+    private PID childPid;
     private AddContainerService service;
 
     @Before
@@ -105,12 +119,14 @@ public class AddContainerServiceTest {
         }).when(tx).cancel(any(Throwable.class));
 
         parentPid = PIDs.get(UUID.randomUUID().toString());
+        childPid = PIDs.get(UUID.randomUUID().toString());
 
         service = new AddContainerService();
         service.setAclService(aclService);
         service.setRepositoryObjectFactory(repoObjFactory);
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setTransactionManager(txManager);
+        service.setOperationsMessageSender(messageSender);
     }
 
     @Test(expected = TransactionCancelledException.class)
@@ -142,31 +158,65 @@ public class AddContainerServiceTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void addFolderToCollectionTest() {
         CollectionObject collection = mock(CollectionObject.class);
         FolderObject folder = mock(FolderObject.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
         when(repoObjFactory.createFolderObject(any(ModelCom.class))).thenReturn(folder);
+        when(folder.getPid()).thenReturn(childPid);
         when(folder.getPremisLog()).thenReturn(premisLogger);
+        when(agent.getUsername()).thenReturn("some_valid_user");
+
+        Collection<PID> destinations = new ArrayList<>();
+        destinations.add(parentPid);
+        Collection<PID> added = new ArrayList<>();
+        added.add(childPid);
 
         service.addContainer(agent, parentPid, Cdr.Folder);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
+
+        verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
+                addedContainersCaptor.capture(), any(Collection.class), anyString());
+        Collection<PID> collections = destinationsCaptor.getValue();
+        assertEquals(collections.size(), 1);
+        assertTrue(collections.contains(parentPid));
+        Collection<PID> folders = addedContainersCaptor.getValue();
+        assertEquals(folders.size(), 1);
+        assertTrue(folders.contains(childPid));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void addWorkToFolderTest() {
         WorkObject work = mock(WorkObject.class);
         FolderObject folder = mock(FolderObject.class);
+
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
         when(repoObjFactory.createWorkObject(any(ModelCom.class))).thenReturn(work);
+        when(work.getPid()).thenReturn(childPid);
         when(work.getPremisLog()).thenReturn(premisLogger);
+
+        Collection<PID> destinations = new ArrayList<>();
+        destinations.add(parentPid);
+        Collection<PID> added = new ArrayList<>();
+        added.add(childPid);
 
         service.addContainer(agent, parentPid, Cdr.Work);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
+
+        verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
+                addedContainersCaptor.capture(), any(Collection.class), anyString());
+        Collection<PID> folders = destinationsCaptor.getValue();
+        assertEquals(folders.size(), 1);
+        assertTrue(folders.contains(parentPid));
+        Collection<PID> works = addedContainersCaptor.getValue();
+        assertEquals(works.size(), 1);
+        assertTrue(works.contains(childPid));
     }
 }

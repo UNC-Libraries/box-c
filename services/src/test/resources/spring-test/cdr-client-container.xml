@@ -77,6 +77,9 @@
 	    <property name="client" ref="fcrepoClient" />
 	</bean>
 	
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+	</bean>
+	
 	<bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
