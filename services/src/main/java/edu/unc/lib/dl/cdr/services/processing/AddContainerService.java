@@ -15,8 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 
 import org.apache.jena.rdf.model.Resource;
 
@@ -96,12 +95,8 @@ public class AddContainerService {
         }
 
         // Send message that the action completed
-        Collection<PID> destinationPids = new ArrayList<>();
-        destinationPids.add(parentPid);
-        Collection<PID> addedContainers = new ArrayList<>();
-        addedContainers.add(child.getPid());
-        operationsMessageSender.sendAddOperation(agent.getUsername(), destinationPids,
-                addedContainers, null, null);
+        operationsMessageSender.sendAddOperation(agent.getUsername(), Arrays.asList(parentPid),
+                Arrays.asList(child.getPid()), null, null);
     }
 
     /**
