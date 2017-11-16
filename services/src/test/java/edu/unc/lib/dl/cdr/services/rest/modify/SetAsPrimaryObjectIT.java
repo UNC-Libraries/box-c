@@ -51,13 +51,11 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl;
 import edu.unc.lib.dl.test.TestHelper;
 
 /**
@@ -80,7 +78,6 @@ public class SetAsPrimaryObjectIT {
     private Model queryModel;
 
     private MockMvc mvc;
-    private JenaSparqlQueryServiceImpl queryService;
     private WorkObject parent;
     private PID parentPid;
     private FileObject fileObj;
@@ -92,8 +89,6 @@ public class SetAsPrimaryObjectIT {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .build();
-
-        queryService = new JenaSparqlQueryServiceImpl(queryModel);
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
@@ -153,7 +148,7 @@ public class SetAsPrimaryObjectIT {
     public void addFolderAsPrimaryObjectTest() throws UnsupportedOperationException, Exception {
         PID folderObjPid = makePid();
 
-        FolderObject folderObj = repositoryObjectFactory.createFolderObject(folderObjPid, null);
+        repositoryObjectFactory.createFolderObject(folderObjPid, null);
 
         MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + folderObjPid.getUUID()))
                 .andExpect(status().isBadRequest())
@@ -182,7 +177,7 @@ public class SetAsPrimaryObjectIT {
     }
 
     private void addFileObjAsMember() {
-        queryService.getModel().getResource(parentPid.getRepositoryPath())
+        queryModel.getResource(parentPid.getRepositoryPath())
                 .addProperty(PcdmModels.hasMember, fileObj.getResource());
         parent.addMember(fileObj);
 
