@@ -43,7 +43,8 @@ public class AccessUtil {
             return false;
         }
 
-        if (!metadata.getDatastreamObjects().contains(datastream.getName())) {
+        if (metadata.getDatastreamObjects() == null
+                || !containsDatastream(metadata, datastream)) {
             return false;
         }
 
@@ -59,6 +60,11 @@ public class AccessUtil {
 
         return metadata.getAccessControlBean().hasPermission(groups,
                 Permission.getPermissionByDatastreamCategory(datastream.getCategory()));
+    }
+
+    private static boolean containsDatastream(BriefObjectMetadata metadata, Datastream datastream) {
+        return metadata.getDatastreamObjects().stream()
+                .anyMatch(d -> d.getName().equals(datastream.getName()));
     }
 
     public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, String permissionName) {

@@ -52,35 +52,15 @@ public class Datastream {
         String[] dsParts = datastream.split("\\|", -1);
 
         this.name = dsParts[0];
-        try {
-            this.mimetype = dsParts[1];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            this.mimetype = null;
-        }
-
-        try {
-            this.extension = dsParts[2];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            this.extension = null;
-        }
-
+        this.mimetype = dsParts[1];
+        this.extension = dsParts[2];
         try {
             this.filesize = new Long(dsParts[3]);
         } catch (NumberFormatException e) {
             this.filesize = null;
         }
-
-        try {
-            this.checksum = dsParts[4];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            this.checksum = null;
-        }
-
-        try {
-            this.owner = dsParts[5];
-        } catch (ArrayIndexOutOfBoundsException e) {
-            this.owner = null;
-        }
+        this.checksum = dsParts[4];
+        this.owner = dsParts[5];
     }
 
     @Override
