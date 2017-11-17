@@ -80,7 +80,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
             // Target any children with timestamp older than start time.
             query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()))
-                    .append(":[* TO ").append(isoDate).append("]");
+                    .append(":{* TO ").append(isoDate).append("}");
 
             solrUpdateDriver.deleteByQuery(query.toString());
         } catch (Exception e) {
