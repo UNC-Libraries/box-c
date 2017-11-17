@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.indexing;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.ID;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,6 +52,7 @@ public class SolrUpdateDriver {
     private int autoPushCount;
     private int updateThreads;
 
+    private static String SET_OPERATION = "set";
     private static String UPDATE_TIMESTAMP = "timestamp";
 
     public void init() {
@@ -85,18 +87,12 @@ public class SolrUpdateDriver {
      * @param idb
      * @throws IndexingException
      */
-    public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
+    public void updateDocument(IndexDocumentBean idb) throws IndexingException {
         try {
             SolrInputDocument sid = new SolrInputDocument();
-            Map<String, Object> fields = idb.getDynamicFields();
+            Map<String, Object> fields = idb.getFields();
             for (Entry<String, Object> field : fields.entrySet()) {
                 String fieldName = field.getKey();
-
-             // Avoid specifying the timestamp so it will get updated as part of this partial update
-                if (UPDATE_TIMESTAMP.equals(fieldName)) {
-                    continue;
-                }
-
                 Object value = field.getValue();
 
                 // Id field needs to be set like a non-partial update
@@ -106,10 +102,11 @@ public class SolrUpdateDriver {
                 }
 
                 // Allowing values and explicitly nulled fields through
-                Map<String, Object> partialUpdate = new HashMap<>();
-                partialUpdate.put(operation, value);
-                sid.setField(fieldName, partialUpdate);
+                updateField(sid, fieldName, value);
             }
+
+            // Set timestamp to now, auto population not working with atomic update #SOLR-8966
+            updateField(sid, UPDATE_TIMESTAMP, new Date());
 
             if (log.isDebugEnabled()) {
                 log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
@@ -120,6 +117,12 @@ public class SolrUpdateDriver {
         } catch (SolrServerException e) {
             throw new IndexingException("Failed to add document to solr", e);
         }
+    }
+
+    private void updateField(SolrInputDocument sid, String fieldName, Object value) {
+        Map<String, Object> partialUpdate = new HashMap<>();
+        partialUpdate.put(SET_OPERATION, value);
+        sid.setField(fieldName, partialUpdate);
     }
 
     public void delete(PID pid) throws IndexingException {
