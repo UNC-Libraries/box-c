@@ -25,12 +25,15 @@ import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.ProcessingStatus;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
@@ -42,6 +45,8 @@ import edu.unc.lib.dl.test.TestHelpers;
  *
  */
 public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
+    private static final Logger LOG = LoggerFactory.getLogger(IndexTreeInplaceActionTest.class);
+
     @Mock
     private SearchSettings searchSettings;
     private SolrSettings solrSettings;
@@ -78,7 +83,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
     public void verifyOrphanCleanup() throws Exception {
         SolrDocumentList docListBefore = getDocumentList();
 
-        SolrUpdateRequest request = new SolrUpdateRequest(pid2.getPid(), RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(corpus.pid2.getPid(), RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);
@@ -91,11 +96,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
         assertEquals(5, docListAfter.getNumFound());
 
         // Verify that the orphan is not in the new result set
-        for (SolrDocument docAfter : docListAfter) {
-            String id = (String) docAfter.getFieldValue("id");
-            assertFalse(pid5.getPid().equals(id));
-        }
-
+        assertObjectsNotExist(corpus.pid5);
     }
 
     @Test
@@ -116,21 +117,29 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
         assertEquals(5, docListAfter.getNumFound());
 
         // Verify that the orphan is not in the new result set
-        for (SolrDocument docAfter : docListAfter) {
-            String id = (String) docAfter.getFieldValue("id");
-            assertFalse(pid5.getPid().equals(id));
-        }
+        assertObjectsNotExist(corpus.pid5);
     }
 
     @Test(expected = IndexingException.class)
     public void testNoAncestorBean() throws Exception {
 
-        server.deleteById(pid2.getPid());
+        server.deleteById(corpus.pid2.getPid());
         server.commit();
 
-        SolrUpdateRequest request = new SolrUpdateRequest(pid2.getPid(), RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(corpus.pid2.getPid(), RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);
+    }
+
+    private void assertObjectsNotExist(PID... pids) throws Exception {
+        SolrDocumentList docList = getDocumentList();
+
+        for (SolrDocument docAfter : docList) {
+            String id = (String) docAfter.getFieldValue("id");
+            for (PID pid : pids) {
+                assertFalse(pid.getPid().equals(id));
+            }
+        }
     }
 }
