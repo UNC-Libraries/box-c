@@ -15,43 +15,61 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.indexing;
 
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.util.Arrays;
+import java.util.List;
 
-import org.jdom2.Document;
-import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.data.ingest.solr.exception.UnsupportedContentModelException;
+import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
+import edu.unc.lib.dl.data.ingest.solr.filter.IndexDocumentFilter;
 
+/**
+ *
+ * @author bbpennel
+ *
+ */
 public class DocumentIndexingPipelineTest extends Assert {
-    private DocumentIndexingPackageFactory factory;
+
+    private DocumentIndexingPipeline pipeline;
+
     @Mock
-    private DocumentIndexingPackageDataLoader loader;
+    private DocumentIndexingPackage dip;
+
+    private List<IndexDocumentFilter> filters;
+    @Mock
+    private IndexDocumentFilter mockFilter1;
+    @Mock
+    private IndexDocumentFilter mockFilter2;
 
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
-        factory = new DocumentIndexingPackageFactory();
-        factory.setDataLoader(loader);
+        filters = Arrays.asList(mockFilter1, mockFilter2);
+
+        pipeline = new DocumentIndexingPipeline();
+        pipeline.setFilters(filters);
     }
 
-    @Test(expected=UnsupportedContentModelException.class)
-    public void depositReceipt() throws Exception {
-        DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:test");
+    @Test
+    public void testProcessFilters() throws Exception {
+        pipeline.process(dip);
 
-        SAXBuilder builder = new SAXBuilder();
-        Document foxml = builder.build(new FileInputStream(new File(
-                "src/test/resources/foxml/depositReceipt.xml")));
-        dip.setFoxml(foxml);
+        verify(mockFilter1).filter(dip);
+        verify(mockFilter2).filter(dip);
+    }
 
-        DocumentIndexingPipeline pipeline = new DocumentIndexingPipeline();
+    @Test(expected = IndexingException.class)
+    public void testProcessIndexingException() throws Exception {
+        doThrow(new IndexingException("")).when(mockFilter2).filter(dip);
+
         pipeline.process(dip);
     }
 }
