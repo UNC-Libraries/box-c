@@ -44,8 +44,7 @@ public class BaseEmbeddedSolrTest extends Assert {
 
     @Before
     public void setUp() throws Exception {
-
-        File dataDir = new File("target/solr_data/");
+        dataDir = new File("target/solr_data/");
         dataDir.mkdir();
 
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
@@ -68,7 +67,7 @@ public class BaseEmbeddedSolrTest extends Assert {
     }
 
     protected SolrDocumentList getDocumentList() throws Exception {
-        return getDocumentList("*:*", "id,resourceType,_version_");
+        return getDocumentList("*:*", "id,resourceType,timestamp,_version_");
     }
 
     @After

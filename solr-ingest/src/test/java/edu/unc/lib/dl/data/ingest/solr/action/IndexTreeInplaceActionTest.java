@@ -15,62 +15,56 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.when;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
 
-import java.util.Arrays;
+import java.util.Properties;
 
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.ProcessingStatus;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
-import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.test.TestHelpers;
-import edu.unc.lib.dl.util.IndexingActionType;
 
+/**
+ *
+ * @author bbpennel
+ *
+ */
 public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
-    private static final Logger log = LoggerFactory.getLogger(IndexTreeInplaceActionTest.class);
-
     @Mock
     private SearchSettings searchSettings;
-    @Mock
     private SolrSettings solrSettings;
     private SolrSearchService solrSearchService;
     @Mock
-    private BriefObjectMetadataBean metadata;
-    @Mock
-    CutoffFacet path;
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
 
-    @Override
     @Before
-    public void setup() throws Exception {
-        super.setup();
+    public void setupInplace() throws Exception {
+        Properties solrProps = new Properties();
+        solrProps.load(this.getClass().getResourceAsStream("/solr.properties"));
+        solrSettings = new SolrSettings();
+        solrSettings.setProperties(solrProps);
 
-        when(solrSettings.getFieldName(eq(SearchFieldKeys.ID.name()))).thenReturn("id");
-        when(solrSettings.getFieldName(eq(SearchFieldKeys.ANCESTOR_PATH.name()))).thenReturn("ancestorPath");
-        when(solrSettings.getFieldName(eq(SearchFieldKeys.TIMESTAMP.name()))).thenReturn("timestamp");
         ((IndexTreeInplaceAction) action).setSolrSettings(solrSettings);
 
-        when(path.getSearchValue()).thenReturn("");
-        when(metadata.getPath()).thenReturn(path);
-
         solrSearchService = new SolrSearchService();
+        solrSearchService.setDisablePermissionFiltering(true);
         solrSearchService.setSolrSettings(solrSettings);
         solrSearchService.setSearchSettings(searchSettings);
-        TestHelpers.setField(solrSearchService, "server", server);
+        solrSearchService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        TestHelpers.setField(solrSearchService, "solrClient", server);
+
         action.setSolrSearchService(solrSearchService);
         action.setAccessGroups(new AccessGroupSet("admin"));
     }
@@ -82,23 +76,15 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 
     @Test
     public void verifyOrphanCleanup() throws Exception {
-
-        when(metadata.getId()).thenReturn("uuid:2");
-        when(metadata.getAncestorPath()).thenReturn(Arrays.asList("1,uuid:1"));
-        when(path.getSearchValue()).thenReturn("2,uuid:2");
-
         SolrDocumentList docListBefore = getDocumentList();
 
-        SolrUpdateRequest request = new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(pid2.getPid(), RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
-
-        log.debug("Docs: " + docListBefore);
-        log.debug("Docs: " + docListAfter);
 
         // Verify that the number of results has decreased
         assertEquals(6, docListBefore.getNumFound());
@@ -107,27 +93,23 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
         // Verify that the orphan is not in the new result set
         for (SolrDocument docAfter : docListAfter) {
             String id = (String) docAfter.getFieldValue("id");
-            assertFalse("uuid:5".equals(id));
+            assertFalse(pid5.getPid().equals(id));
         }
 
     }
 
     @Test
     public void testIndexAll() throws Exception {
-
         SolrDocumentList docListBefore = getDocumentList();
 
-        SolrUpdateRequest request = new SolrUpdateRequest(UpdateTreeAction.TARGET_ALL,
-                IndexingActionType.RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(getContentRootPid().getRepositoryPath(),
+                RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);
         server.commit();
 
         SolrDocumentList docListAfter = getDocumentList();
-
-        log.debug("Docs: " + docListBefore);
-        log.debug("Docs: " + docListAfter);
 
         // Verify that the number of results has decreased
         assertEquals(6, docListBefore.getNumFound());
@@ -136,17 +118,17 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
         // Verify that the orphan is not in the new result set
         for (SolrDocument docAfter : docListAfter) {
             String id = (String) docAfter.getFieldValue("id");
-            assertFalse("uuid:5".equals(id));
+            assertFalse(pid5.getPid().equals(id));
         }
     }
 
     @Test(expected = IndexingException.class)
     public void testNoAncestorBean() throws Exception {
 
-        server.deleteById("uuid:2");
+        server.deleteById(pid2.getPid());
         server.commit();
 
-        SolrUpdateRequest request = new SolrUpdateRequest("uuid:2", IndexingActionType.RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(pid2.getPid(), RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);

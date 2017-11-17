@@ -40,7 +40,7 @@ public class UpdateObjectAction extends AbstractIndexingAction {
         if (this.addDocumentMode) {
             solrUpdateDriver.addDocument(dip.getDocument());
         } else {
-            solrUpdateDriver.updateDocument("set", dip.getDocument());
+            solrUpdateDriver.updateDocument(dip.getDocument());
         }
 
     }

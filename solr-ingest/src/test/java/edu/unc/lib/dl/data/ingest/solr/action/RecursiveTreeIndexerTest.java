@@ -137,7 +137,7 @@ public class RecursiveTreeIndexerTest extends Assert {
 
         verify(pipeline).process(eq(dip));
         verify(driver, never()).addDocument(any(IndexDocumentBean.class));
-        verify(driver).updateDocument(eq("set"), any(IndexDocumentBean.class));
+        verify(driver).updateDocument(any(IndexDocumentBean.class));
         verify(request).incrementChildrenProcessed();
 
     }
