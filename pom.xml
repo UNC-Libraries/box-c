@@ -346,17 +346,6 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven.surefire.version}</version>
-				<configuration>
-					<systemPropertyVariables>
-						<fcrepo.baseUri>http://example.com/rest</fcrepo.baseUri>
-						<buildDirectory>${project.build.directory}</buildDirectory>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
