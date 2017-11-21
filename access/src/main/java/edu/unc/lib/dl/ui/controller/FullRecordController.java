@@ -47,7 +47,6 @@ import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.FedoraDataService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
@@ -59,7 +58,6 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
@@ -82,15 +80,9 @@ public class FullRecordController extends AbstractSolrSearchController {
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
     @Autowired
-    private FedoraDataService fedoraDataService;
-    @Autowired
-    private ObjectPathFactory pathFactory;
-    @Autowired
     private SearchStateFactory stateFactory;
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
-
-    private static final int MAX_FOXML_TRIES = 2;
 
     @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
     public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
