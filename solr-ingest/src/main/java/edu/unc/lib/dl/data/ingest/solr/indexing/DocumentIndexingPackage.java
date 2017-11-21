@@ -32,7 +32,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.JDOMQueryUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */

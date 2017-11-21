@@ -40,13 +40,18 @@ public class BaseEmbeddedSolrTest extends Assert {
 
     protected SolrUpdateDriver driver;
 
+    private File dataDir;
+
     @Before
     public void setUp() throws Exception {
+        dataDir = new File("target/solr_data/");
+        dataDir.mkdir();
 
-        System.setProperty("solr.data.dir", "src/test/resources/config/data/");
+        System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
         container = new CoreContainer("src/test/resources/config");
+        container.load();
 
-        server = new EmbeddedSolrServer(container, "access-master");
+        server = new EmbeddedSolrServer(container, "access");
 
         driver = new SolrUpdateDriver();
         driver.setSolrClient(server);
@@ -62,14 +67,13 @@ public class BaseEmbeddedSolrTest extends Assert {
     }
 
     protected SolrDocumentList getDocumentList() throws Exception {
-        return getDocumentList("*:*", "id,resourceType,_version_");
+        return getDocumentList("*:*", "id,resourceType,timestamp,_version_");
     }
 
     @After
     public void tearDown() throws Exception {
         server.close();
         log.debug("Cleaning up data directory");
-        File dataDir = new File("src/test/resources/config/data");
         FileUtils.deleteDirectory(dataDir);
     }
 }

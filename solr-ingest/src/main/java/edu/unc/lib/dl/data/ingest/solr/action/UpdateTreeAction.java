@@ -25,7 +25,6 @@ import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -68,13 +67,7 @@ public class UpdateTreeAction extends AbstractIndexingAction {
     }
 
     protected void index(SolrUpdateRequest updateRequest) throws IndexingException {
-        // Translate the index all flag into the collections pid if neccessary
-        PID startingPid;
-        if (TARGET_ALL.equals(updateRequest.getTargetID())) {
-            startingPid = RepositoryPaths.getContentRootPid();
-        } else {
-            startingPid = updateRequest.getPid();
-        }
+        PID startingPid = updateRequest.getPid();
 
         // Get the number of objects in the tree being indexed
         int totalObjects = countDescendants(startingPid) + 1;

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+
 import java.util.Date;
 
 import org.slf4j.Logger;
@@ -39,13 +41,14 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        log.debug("Starting inplace indexing of {}", updateRequest.getPid().getRepositoryPath());
+        log.info("Starting inplace indexing of {}", updateRequest.getPid());
 
         super.performAction(updateRequest);
 
         // Force commit the updates currently staged
         solrUpdateDriver.commit();
         // Cleanup any objects in the tree that were no updated
+
         this.deleteStaleChildren(updateRequest);
 
         if (log.isDebugEnabled()) {
@@ -63,7 +66,8 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
             StringBuilder query = new StringBuilder();
 
-            if (TARGET_ALL.equals(updateRequest.getTargetID())) {
+            // If targeting the content root object, clean out all records
+            if (getContentRootPid().equals(updateRequest.getPid())) {
                 query.append("*:*");
             } else {
                 // Get the path facet value for the starting point, since we need the hierarchy tier.
@@ -76,7 +80,7 @@ public class IndexTreeInplaceAction extends UpdateTreeAction {
 
             // Target any children with timestamp older than start time.
             query.append(" AND ").append(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()))
-                    .append(":[* TO ").append(isoDate).append("]");
+                    .append(":{* TO ").append(isoDate).append("}");
 
             solrUpdateDriver.deleteByQuery(query.toString());
         } catch (Exception e) {
