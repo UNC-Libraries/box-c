@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -39,9 +39,9 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
         idb.setStatusTags(determineStatusTags(idb));
     }
 
-    private LinkedList<String> determineStatusTags(IndexDocumentBean idb) throws IndexingException {
+    private ArrayList<String> determineStatusTags(IndexDocumentBean idb) throws IndexingException {
 
-        List<String> statusTags = new LinkedList<String>();
+        List<String> statusTags = new ArrayList<String>();
         List<String> contentStatus = idb.getContentStatus();
         List<String> accessStatus = idb.getStatus();
 
@@ -63,7 +63,7 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
             statusTags.add(FacetConstants.EMBARGOED);
         }
 
-        return (LinkedList<String>) statusTags;
+        return (ArrayList<String>) statusTags;
     }
 
 }
