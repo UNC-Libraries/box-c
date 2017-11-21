@@ -28,38 +28,7 @@
 		</property>
 		<property name="ignoreResourceNotFound" value="false" />
 	</bean>
-
-	<bean id="managementClient" class="edu.unc.lib.dl.fedora.ManagementClient"
-		init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
-			</list>
-		</property>
-	</bean>
-	<bean id="accessClient" class="edu.unc.lib.dl.fedora.AccessClient"
-		init-method="init">
-		<property name="fedoraContextUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
-		<property name="username" value="${fedora.appUser.username}" />
-		<property name="password" value="${fedora.appUser.password}" />
-		<property name="interceptors">
-			<list>
-				<bean class="edu.unc.lib.dl.acl.filter.GroupsToHttpHeaderInterceptor" />
-			</list>
-		</property>
-	</bean>
-	<bean id="fedoraDataService" class="edu.unc.lib.dl.fedora.FedoraDataService"
-		init-method="init" destroy-method="destroy">
-		<property name="accessClient" ref="accessClient" />
-		<property name="managementClient" ref="managementClient" />
-		<property name="maxThreads" value="5" />
-		<property name="threadGroupPrefix" value="Access" />
-	</bean>
+	
 	<bean id="fullObjectMetadataFactory" class="edu.unc.lib.dl.ui.service.FullObjectMetadataFactory">
 		<property name="dataService" ref="fedoraDataService" />
 	</bean>

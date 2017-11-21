@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Before;
@@ -44,7 +43,7 @@ public class SetStatusTagsFilterTest {
     @Mock
     private IndexDocumentBean idb;
     @Captor
-    private ArgumentCaptor<HashSet<String>> setCaptor;
+    private ArgumentCaptor<List<String>> setCaptor;
 
     private List<String> contentStatus;
     private List<String> accessStatus;

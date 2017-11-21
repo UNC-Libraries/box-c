@@ -159,18 +159,7 @@ public class BriefObjectMetadataBean extends IndexDocumentBean implements BriefO
     public void setDatastream(List<String> datastream) {
         super.setDatastream(datastream);
 
-        datastreamObjects = new ArrayList<Datastream>() {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public boolean contains(Object o) {
-                if (o instanceof String) {
-                    return indexOf(new Datastream((String) o)) != -1;
-                }
-                return indexOf(o) != -1;
-            }
-        };
-
+        datastreamObjects = new ArrayList<>();
         for (String value : datastream) {
             datastreamObjects.add(new Datastream(value));
         }

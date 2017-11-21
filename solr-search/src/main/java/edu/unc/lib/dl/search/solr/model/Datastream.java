@@ -19,7 +19,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.DatastreamCategory;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -63,6 +63,7 @@ public class Datastream {
         this.owner = dsParts[5];
     }
 
+    @Override
     public String toString() {
         //DS name|mimetype|extension|filesize|checksum|owner
         StringBuilder sb = new StringBuilder();
