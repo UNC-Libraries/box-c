@@ -30,11 +30,9 @@
 	
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
 		<property name="fedoraPath"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+			value="${fcrepo.baseUrl}" />
 		<property name="solrPath"
 			value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
-		<property name="lorisPath" value="${loris.base.url}" />
-		<property name="externalContentPath" value="${external.base.url}" />
 		<property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
 	</bean>
 
