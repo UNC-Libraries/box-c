@@ -72,7 +72,7 @@ public class RecursiveTreeIndexer {
             if (addDocumentMode) {
                 this.action.getSolrUpdateDriver().addDocument(dip.getDocument());
             } else {
-                this.action.getSolrUpdateDriver().updateDocument("set", dip.getDocument());
+                this.action.getSolrUpdateDriver().updateDocument(dip.getDocument());
             }
 
             // Update the number of objects processed in this action

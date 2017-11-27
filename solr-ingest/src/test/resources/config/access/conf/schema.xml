@@ -61,7 +61,7 @@
     <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
         <tokenizer class="solr.StandardTokenizerFactory"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt" enablePositionIncrements="true"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt"/>
         <!-- <filter class="solr.LimitTokenCountFilterFactory" maxTokenCount="10000"/> -->
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.EnglishPossessiveFilterFactory"/>
@@ -70,7 +70,7 @@
       <analyzer type="query">
         <tokenizer class="solr.StandardTokenizerFactory"/>
         <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt" enablePositionIncrements="true"/>
+        <filter class="solr.StopFilterFactory" ignoreCase="true" words="lang/stopwords_en.txt"/>
         <filter class="solr.LowerCaseFilterFactory"/>
         <filter class="solr.EnglishPossessiveFilterFactory"/>
         <filter class="solr.EnglishMinimalStemFilterFactory"/>
@@ -100,15 +100,15 @@
     
     <fieldType name="string_lc" class="solr.TextField" sortMissingLast="true">
       <analyzer>
-      	<tokenizer class="solr.KeywordTokenizerFactory"/>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
         <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
     </fieldType>
   </types>
   <fields>
   
-  	<!-- Control Fields -->
-  	<!-- Primary key -->
+    <!-- Control Fields -->
+    <!-- Primary key -->
     <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
     <!-- 
     Hierarchical path facet up to, but not including, this object 
@@ -116,11 +116,11 @@
     Supports a single hierarchy per object with depth range filtering, and the option to only show
     the next tier of facets after the current one.
     Syntax, one entry per tier in the hierarchy:
-    <tier #>,<pid>,<display form>
+    <tier #>,<pid>
     
-    <str>1,uuid:76240153-300b-4e90-9c55-94c64f4a24de,test</str>
-    <str>2,uuid:702378ab-c65c-45bb-8bdf-49f1fc73f9b6,second</str>
-    <str>3,uuid:a6e05ec3-ab2a-496b-aad7-cdb6fb590659,third</str>
+    <str>1,uuid:76240153-300b-4e90-9c55-94c64f4a24de</str>
+    <str>2,uuid:702378ab-c65c-45bb-8bdf-49f1fc73f9b6</str>
+    <str>3,uuid:a6e05ec3-ab2a-496b-aad7-cdb6fb590659</str>
     
     Example query, retrieve items in the next 3 tiers under folder 'test'
       fq=ancestorPath:(1,test,* AND !ancestorPath:5,*)
@@ -129,10 +129,12 @@
     -->
     <field name="ancestorPath" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Sortable string representation of the path to this object.  This object is included if it is a container -->
-    <field name="ancestorIds" type="string" indexed="true" stored="true" required="true"/>
+    <field name="ancestorIds" type="string" indexed="true" stored="true"/>
+    <field name="ancestorNames" type="string" indexed="true" stored="true"/>
     <!-- PID of the closest collection in this objects ancestry -->
     <field name="parentCollection" type="string" indexed="true" stored="true"/>
-    <field name="label" type="string" indexed="true" stored="true" />
+    <field name="parentUnit" type="string" indexed="true" stored="true"/>
+    <field name="label" type="string" indexed="true" stored="true"/>
     
     <!-- Facet for scoping this object to a particular set of views -->
     <field name="scope" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -211,6 +213,7 @@
     <field name="status" type="string" indexed="true" stored="true" multiValued="true"/>
     <!-- Status information related to the content of an object, such as if it is described or not -->
     <field name="contentStatus" type="string" indexed="true" stored="true" multiValued="true"/>
+    <field name="statusTags" type="string" indexed="true" stored="true" multiValued="true"/>
     
     <!-- identifiers, prefixed with the identifier type, such as doi|10.1186/1471-2458-11-702 -->
     <field name="identifier" type="string" indexed="true" stored="true" multiValued="true"/>
