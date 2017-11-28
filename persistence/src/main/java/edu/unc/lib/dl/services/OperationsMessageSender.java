@@ -101,6 +101,30 @@ public class OperationsMessageSender {
     }
 
     /**
+     * Sends a MarkForDeletion operation message, indicating that an object is being marked for deletion
+     * from the repository
+     *
+     * @param userid id of user who triggered the operation
+     * @param marked object marked for deletion
+     * @return id of operation message
+     */
+    public String sendMarkForDeletionOperation(String userid, PID marked) {
+        Element contentEl = createAtomEntry(userid, marked, CDRActions.MARK_FOR_DELETION);
+
+        Element mark = new Element("markForDeletion", CDR_MESSAGE_NS);
+        contentEl.addContent(mark);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        mark.addContent(subjects);
+        subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(marked.getRepositoryPath()));
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+
+        return getMessageId(msg);
+    }
+
+    /**
      * Sends a Remove operation message, indicating that objects are being removed from the repository
      *
      * @param userid id of user who triggered the operation
