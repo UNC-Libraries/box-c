@@ -106,11 +106,9 @@ public class OperationsMessageSender {
      * @param userid id of user who triggered the operation
      * @param destinations containers objects were added to
      * @param removed objects removed
-     * @param reordered reordered
      * @return id of operation message
      */
-    public String sendRemoveOperation(String userid, PID destination, Collection<PID> removed,
-            Collection<PID> reordered) {
+    public String sendRemoveOperation(String userid, PID destination, Collection<PID> removed) {
         Element contentEl = createAtomEntry(userid, destination, CDRActions.REMOVE);
 
         Element remove = new Element("remove", CDR_MESSAGE_NS);
@@ -122,14 +120,6 @@ public class OperationsMessageSender {
         remove.addContent(subjects);
         for (PID sub : removed) {
             subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
-        }
-
-        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-        remove.addContent(reorderedEl);
-        if (reordered != null) {
-            for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
-            }
         }
 
         Document msg = contentEl.getDocument();
