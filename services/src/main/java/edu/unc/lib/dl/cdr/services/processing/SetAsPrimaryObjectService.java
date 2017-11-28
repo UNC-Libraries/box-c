@@ -18,7 +18,6 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
 
 import java.util.Arrays;
-
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -29,6 +28,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
+
 
 /**
  * Service that manages setting a primary object on a work
