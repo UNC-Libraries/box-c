@@ -145,7 +145,7 @@
 	<!-- Access related beans -->
 	<bean id="contextUrl" class="java.lang.String">
 		<constructor-arg
-			value="${repository.protocol}://${repository.host}${repository.port}/${services.context}" />
+			value="${fcrepo.baseUrl}" />
 	</bean>
 	
 	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
@@ -159,12 +159,12 @@
 	</bean>
 	
 	<bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
-		<property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
+		<property name="apiRecordPath" value="${fcrepo.baseUrl}/record/" />
 	</bean>
 	
 	<bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
 		<property name="fedoraUrl"
-			value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+			value="${fcrepo.baseUrl}" />
 	</bean>
 	
 	<bean id="gaTrackingID" class="java.lang.String">
