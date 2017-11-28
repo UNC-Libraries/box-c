@@ -15,11 +15,15 @@
  */
 package edu.unc.lib.dl.persist.services.delete;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
@@ -33,6 +37,7 @@ public class MarkForDeletionService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private SparqlUpdateService sparqlUpdateService;
+    private OperationsMessageSender operationsMessageSender;
 
     /**
      * Mark each pid for deletion using the agent principals provided.
@@ -41,11 +46,19 @@ public class MarkForDeletionService {
      * @param pids pids of objects to mark for deletion
      */
     public void markForDeletion(AgentPrincipals agent, String... ids) {
+        Collection<PID> removed = new ArrayList<>();
+        PID pid = null;
         for (String id : ids) {
-            PID pid = PIDs.get(id);
-            Runnable job = new MarkForDeletionJob(pid, agent,
-                    repositoryObjectLoader, sparqlUpdateService, aclService);
+            pid = PIDs.get(id);
+            Runnable job = new MarkForDeletionJob(pid, agent, repositoryObjectLoader,
+                    sparqlUpdateService, aclService);
             job.run();
+
+            removed.add(pid);
+        }
+        if (pid != null) {
+            PID destination = repositoryObjectLoader.getRepositoryObject(pid).getParent().getPid();
+            operationsMessageSender.sendRemoveOperation(agent.getUsername(), destination, removed);
         }
     }
 
@@ -85,4 +98,12 @@ public class MarkForDeletionService {
     public void setSparqlUpdateService(SparqlUpdateService sparqlUpdateService) {
         this.sparqlUpdateService = sparqlUpdateService;
     }
+
+    /**
+    *
+    * @param operationsMessageSender
+    */
+   public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+       this.operationsMessageSender = operationsMessageSender;
+   }
 }
