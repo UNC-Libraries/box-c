@@ -53,8 +53,12 @@ public enum IndexingActionType {
             "Partial update which refreshes the access control for an object and all its children"),
     ADD_SET_TO_PARENT("Add Set To Parent", "Indexes a set of newly added children contained by a shared parent"),
     UPDATE_TYPE("Update Resource Type", "Update the resource type of a set of objects"),
+<<<<<<< HEAD
     SET_AS_PRIMARY_OBJECT("Set As Primary Object", "Update a record to change a work's primary object"),
     SET_DEFAULT_WEB_OBJECT("Set Default Web Object", "Deprecated");
+=======
+    SET_DEFAULT_WEB_OBJECT("Set Default Web Object", "Update a record to change its default web object");
+>>>>>>> parent of 6076ad2... adds message-sending to SetAsPrimaryObjectService
 
     private final String label;
     private final String description;
