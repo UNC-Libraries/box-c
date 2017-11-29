@@ -94,8 +94,7 @@ public class MarkForDeletionJobTest {
 
         pid = PIDs.get(UUID.randomUUID().toString());
 
-        job = new MarkForDeletionJob(pid, agent, repositoryObjectLoader, sparqlUpdateService, aclService,
-                operationsMessageSender);
+        job = new MarkForDeletionJob(pid, agent, repositoryObjectLoader, sparqlUpdateService, aclService);
     }
 
     @Test(expected = AccessRestrictionException.class)

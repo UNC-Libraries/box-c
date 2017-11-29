@@ -27,7 +27,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Premis;
-import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 
 /**
@@ -44,17 +43,15 @@ public class MarkForDeletionJob implements Runnable {
 
     private AgentPrincipals agent;
     private PID pid;
-    private OperationsMessageSender operationsMessageSender;
 
     public MarkForDeletionJob(PID pid, AgentPrincipals agent,
             RepositoryObjectLoader repositoryObjectLoader, SparqlUpdateService sparqlUpdateService,
-            AccessControlService aclService, OperationsMessageSender operationsMessageSender) {
+            AccessControlService aclService) {
         this.pid = pid;
         this.repositoryObjectLoader = repositoryObjectLoader;
         this.sparqlUpdateService = sparqlUpdateService;
         this.aclService = aclService;
         this.agent = agent;
-        this.operationsMessageSender = operationsMessageSender;
     }
 
     @Override
@@ -77,8 +74,6 @@ public class MarkForDeletionJob implements Runnable {
                 .addImplementorAgent(agent.getUsernameUri())
                 .addEventDetail("Item marked for deletion and not available without permissions")
                 .write();
-
-        operationsMessageSender.sendMarkForDeletionOperation(agent.getUsername(), pid);
     }
 
 }
