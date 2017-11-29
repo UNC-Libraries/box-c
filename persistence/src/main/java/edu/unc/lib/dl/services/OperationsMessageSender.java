@@ -108,16 +108,41 @@ public class OperationsMessageSender {
      * @param marked object marked for deletion
      * @return id of operation message
      */
-    public String sendMarkForDeletionOperation(String userid, PID marked) {
-        Element contentEl = createAtomEntry(userid, marked, CDRActions.MARK_FOR_DELETION);
+    public String sendMarkForDeletionOperation(String userid, Collection<PID> marked) {
+        Element contentEl = createAtomEntry(userid, marked.iterator().next(), CDRActions.MARK_FOR_DELETION);
 
         Element mark = new Element("markForDeletion", CDR_MESSAGE_NS);
         contentEl.addContent(mark);
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         mark.addContent(subjects);
-        subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(marked.getRepositoryPath()));
+        for (PID sub : marked) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
 
+        return getMessageId(msg);
+    }
+
+    /**
+     * Sends a RestoreFromDeletion operation message, indicating that an object is being un-marked for deletion
+     *
+     * @param userid id of user who triggered the operation
+     * @param unmarked object being un-marked for deletion
+     * @return id of operation message
+     */
+    public String sendRestoreFromDeletionOperation(String userid, Collection<PID> unmarked) {
+        Element contentEl = createAtomEntry(userid, unmarked.iterator().next(), CDRActions.RESTORE_FROM_DELETION);
+
+        Element mark = new Element("markForDeletion", CDR_MESSAGE_NS);
+        contentEl.addContent(mark);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        mark.addContent(subjects);
+        for (PID sub : unmarked) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
         Document msg = contentEl.getDocument();
         sendMessage(msg);
 
