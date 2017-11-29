@@ -135,7 +135,7 @@ public class OperationsMessageSender {
     public String sendRestoreFromDeletionOperation(String userid, Collection<PID> unmarked) {
         Element contentEl = createAtomEntry(userid, unmarked.iterator().next(), CDRActions.RESTORE_FROM_DELETION);
 
-        Element mark = new Element("markForDeletion", CDR_MESSAGE_NS);
+        Element mark = new Element("restoreFromDeletion", CDR_MESSAGE_NS);
         contentEl.addContent(mark);
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
