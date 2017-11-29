@@ -28,7 +28,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 
@@ -167,20 +166,14 @@ public class AddContainerServiceTest {
         when(repoObjFactory.createFolderObject(any(ModelCom.class))).thenReturn(folder);
         when(folder.getPid()).thenReturn(childPid);
         when(folder.getPremisLog()).thenReturn(premisLogger);
-        when(agent.getUsername()).thenReturn("some_valid_user");
-
-        Collection<PID> destinations = new ArrayList<>();
-        destinations.add(parentPid);
-        Collection<PID> added = new ArrayList<>();
-        added.add(childPid);
 
         service.addContainer(agent, parentPid, Cdr.Folder);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
-
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
                 addedContainersCaptor.capture(), any(Collection.class), anyString());
+
         Collection<PID> collections = destinationsCaptor.getValue();
         assertEquals(collections.size(), 1);
         assertTrue(collections.contains(parentPid));
@@ -200,18 +193,13 @@ public class AddContainerServiceTest {
         when(work.getPid()).thenReturn(childPid);
         when(work.getPremisLog()).thenReturn(premisLogger);
 
-        Collection<PID> destinations = new ArrayList<>();
-        destinations.add(parentPid);
-        Collection<PID> added = new ArrayList<>();
-        added.add(childPid);
-
         service.addContainer(agent, parentPid, Cdr.Work);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
-
         verify(messageSender).sendAddOperation(anyString(), destinationsCaptor.capture(),
                 addedContainersCaptor.capture(), any(Collection.class), anyString());
+
         Collection<PID> folders = destinationsCaptor.getValue();
         assertEquals(folders.size(), 1);
         assertTrue(folders.contains(parentPid));

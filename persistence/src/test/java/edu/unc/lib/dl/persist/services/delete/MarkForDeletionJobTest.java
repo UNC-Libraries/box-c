@@ -45,6 +45,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Premis;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
 
@@ -61,6 +62,8 @@ public class MarkForDeletionJobTest {
     private RepositoryObjectLoader repositoryObjectLoader;
     @Mock
     private SparqlUpdateService sparqlUpdateService;
+    @Mock
+    private OperationsMessageSender operationsMessageSender;
     @Mock
     private ContentObject contentObj;
     @Mock

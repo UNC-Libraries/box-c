@@ -40,26 +40,21 @@ public class MarkForDeletionService {
     private OperationsMessageSender operationsMessageSender;
 
     /**
-     * Mark each pid for deletion using the agent principals provided.
+     * Mark a pid for deletion using the agent principals provided.
      *
      * @param agent security principals of the agent making request.
-     * @param pids pids of objects to mark for deletion
+     * @param pids pid of object to mark for deletion
      */
     public void markForDeletion(AgentPrincipals agent, String... ids) {
-        Collection<PID> removed = new ArrayList<>();
-        PID pid = null;
+        Collection<PID> pids = new ArrayList<>();
         for (String id : ids) {
-            pid = PIDs.get(id);
+            PID pid = PIDs.get(id);
             Runnable job = new MarkForDeletionJob(pid, agent, repositoryObjectLoader,
                     sparqlUpdateService, aclService);
             job.run();
-
-            removed.add(pid);
+            pids.add(pid);
         }
-        if (pid != null) {
-            PID destination = repositoryObjectLoader.getRepositoryObject(pid).getParent().getPid();
-            operationsMessageSender.sendRemoveOperation(agent.getUsername(), destination, removed);
-        }
+        operationsMessageSender.sendMarkForDeletionOperation(agent.getUsername(), pids);
     }
 
     /**
@@ -70,12 +65,15 @@ public class MarkForDeletionService {
      * @param pids pids of objects to restore
      */
     public void restoreMarked(AgentPrincipals agent, String... ids) {
+        Collection<PID> pids = new ArrayList<>();
         for (String id : ids) {
             PID pid = PIDs.get(id);
             Runnable job = new RestoreDeletedJob(pid, agent,
                     repositoryObjectLoader, sparqlUpdateService, aclService);
             job.run();
+            pids.add(pid);
         }
+        operationsMessageSender.sendRestoreFromDeletionOperation(agent.getUsername(), pids);
     }
 
     /**
