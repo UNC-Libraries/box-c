@@ -15,8 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,19 +54,19 @@ public class UpdateMODSController {
 
     @RequestMapping(value = "edit/description/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id) {
-        return updateMODS(id);
+    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, HttpServletRequest request) {
+        return updateMODS(id, request);
     }
 
-    private ResponseEntity<Object> updateMODS(String id) {
+    private ResponseEntity<Object> updateMODS(String id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "update description");
         result.put("pid", id);
 
         PID pid = PIDs.get(id);
 
-        try {
-            updateMODSService.updateMODS(AgentPrincipals.createFromThread(), pid);
+        try (InputStream modsStream = request.getInputStream()){
+            updateMODSService.updateMODS(AgentPrincipals.createFromThread(), pid, modsStream);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();
