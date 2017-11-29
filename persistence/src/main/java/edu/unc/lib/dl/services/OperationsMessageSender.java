@@ -314,6 +314,32 @@ public class OperationsMessageSender {
         return getMessageId(msg);
     }
 
+    /**
+     * Sends Update MODS operation message.
+     *
+     * @param userid id of user who triggered the operation
+     * @param pids objects whose MODS changed
+     * @return id of operation message
+     */
+    public String sendUpdateMODSOperation(String userid, Collection<PID> pids) {
+        Element contentEl = createAtomEntry(userid, pids.iterator().next(),
+                CDRActions.UPDATE_MODS);
+
+        Element updateEl = new Element("updateMods", CDR_MESSAGE_NS);
+        contentEl.addContent(updateEl);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        updateEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+
+        return getMessageId(msg);
+    }
+
 
     /**
      * Sends message indicating that objects are being requested to be reindexed.

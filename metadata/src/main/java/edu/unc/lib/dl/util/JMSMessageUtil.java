@@ -110,7 +110,7 @@ public class JMSMessageUtil {
         MOVE("move"), REMOVE("remove"), ADD("add"), REORDER("reorder"), PUBLISH(
                 "publish"), REINDEX("reindex"), INDEX("index"), EDIT_TYPE(
                 "editType"), MARK_FOR_DELETION("markForDeletion"),
-                RESTORE_FROM_DELETION("restoreFromDeletion");
+                RESTORE_FROM_DELETION("restoreFromDeletion"), UPDATE_MODS("updateMods");
 
         private String name;
         private final URI uri;
