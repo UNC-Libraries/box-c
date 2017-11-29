@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.cdr.services.processing.UpdateMODSService;
+import edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
@@ -46,19 +46,19 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 @Controller
-public class UpdateMODSController {
-    private static final Logger log = LoggerFactory.getLogger(UpdateMODSController.class);
+public class UpdateDescriptionController {
+    private static final Logger log = LoggerFactory.getLogger(UpdateDescriptionController.class);
 
     @Autowired
-    private UpdateMODSService updateMODSService;
+    private UpdateDescriptionService updateMODSService;
 
     @RequestMapping(value = "edit/description/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, HttpServletRequest request) {
-        return updateMODS(id, request);
+    public ResponseEntity<Object> updateDescription(@PathVariable("id") String id, HttpServletRequest request) {
+        return update(id, request);
     }
 
-    private ResponseEntity<Object> updateMODS(String id, HttpServletRequest request) {
+    private ResponseEntity<Object> update(String id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "update description");
         result.put("pid", id);
@@ -66,7 +66,7 @@ public class UpdateMODSController {
         PID pid = PIDs.get(id);
 
         try (InputStream modsStream = request.getInputStream()){
-            updateMODSService.updateMODS(AgentPrincipals.createFromThread(), pid, modsStream);
+            updateMODSService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();

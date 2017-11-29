@@ -19,11 +19,6 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import org.apache.abdera.Abdera;
-import org.apache.abdera.model.Document;
-import org.apache.abdera.model.Entry;
-import org.apache.abdera.parser.Parser;
-
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -31,25 +26,21 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.update.AtomPubMetadataUIP;
-import edu.unc.lib.dl.update.MODSValidationUIPFilter;
 import edu.unc.lib.dl.update.UIPException;
-import edu.unc.lib.dl.update.UpdateOperation;
 
 /**
- * Service that manages MODS description updates
+ * Service that manages description, e.g., MODS, updates
  *
  * @author harring
  *
  */
-public class UpdateMODSService {
+public class UpdateDescriptionService {
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
     private OperationsMessageSender operationsMessageSender;
-    private MODSValidationUIPFilter modsFilter;
 
-    public void updateMODS(AgentPrincipals agent, PID pid, InputStream modsStream)
+    public void updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
             throws FileNotFoundException, UIPException {
         aclService.assertHasAccess("User does not have permissions to update description",
                 pid, agent.getPrincipals(), Permission.editDescription);
@@ -60,18 +51,12 @@ public class UpdateMODSService {
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
         obj.addDescription(modsStream);
 
-        operationsMessageSender.sendUpdateMODSOperation(username, Arrays.asList(pid));
+        operationsMessageSender.sendUpdateDescriptionOperation(username, Arrays.asList(pid));
 
     }
 
-    private void validateMODS(InputStream modsStream, PID pid, String username) throws UIPException {
-        Abdera abdera = new Abdera();
-        Parser parser = abdera.getParser();
-        Document<Entry> entryDoc = parser.parse(modsStream);
-        Entry entry = entryDoc.getRoot();
-        AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, username,
-                UpdateOperation.UPDATE, entry);
-        modsFilter.doFilter(uip);
+    private void validateMODS(InputStream modsStream, PID pid, String username) {
+
     }
 
     /**
@@ -95,13 +80,5 @@ public class UpdateMODSService {
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
     }
-
-    /**
-    *
-    * @param MODSValidationUIPFilter modsFilter
-    */
-   public void setMODSValidationUIPFilter(MODSValidationUIPFilter modsFilter) {
-       this.modsFilter = modsFilter;
-   }
 
 }

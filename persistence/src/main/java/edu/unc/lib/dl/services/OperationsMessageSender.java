@@ -321,7 +321,7 @@ public class OperationsMessageSender {
      * @param pids objects whose MODS changed
      * @return id of operation message
      */
-    public String sendUpdateMODSOperation(String userid, Collection<PID> pids) {
+    public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids) {
         Element contentEl = createAtomEntry(userid, pids.iterator().next(),
                 CDRActions.UPDATE_MODS);
 
