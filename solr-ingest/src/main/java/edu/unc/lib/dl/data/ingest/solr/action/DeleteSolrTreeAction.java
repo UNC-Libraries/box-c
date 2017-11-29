@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.action;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +27,7 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -34,8 +36,8 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
 
     @Override
     public void performAction(SolrUpdateRequest updateRequest) throws IndexingException {
-        // If the all target is being deleted, then delete everything
-        if (TARGET_ALL.equals(updateRequest.getTargetID())) {
+        // If the collections root is being deleted, then delete everything
+        if (getContentRootPid().equals(updateRequest.getPid())) {
             LOG.debug("Delete Solr Tree, targeting all object.");
             solrUpdateDriver.deleteByQuery("*:*");
             return;

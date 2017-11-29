@@ -44,6 +44,7 @@ public class MarkForDeletionJob implements Runnable {
     private AgentPrincipals agent;
     private PID pid;
 
+
     public MarkForDeletionJob(PID pid, AgentPrincipals agent,
             RepositoryObjectLoader repositoryObjectLoader, SparqlUpdateService sparqlUpdateService,
             AccessControlService aclService) {

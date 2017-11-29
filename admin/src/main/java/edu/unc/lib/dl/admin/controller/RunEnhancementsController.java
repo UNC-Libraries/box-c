@@ -22,9 +22,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.greghaines.jesque.Job;
-import net.greghaines.jesque.client.Client;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,8 +33,8 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.cdr.services.processing.RunEnhancementsTreeJob;
 import edu.unc.lib.dl.fedora.PID;
+import net.greghaines.jesque.client.Client;
 
 /**
  * @author bbpennel
@@ -68,13 +65,13 @@ public class RunEnhancementsController {
             }
         }
 
-        Job job = new Job(RunEnhancementsTreeJob.class.getName(), data.getPids(), data.isForce());
-        jesqueClient.enqueue(runEnhancementQueueName, job);
-
-        result.put("message", "Enhancement of " + data.getPids().size()
-                + " object(s) and their children has begun");
-
-        result.put("success", true);
+//        Job job = new Job(RunEnhancementsTreeJob.class.getName(), data.getPids(), data.isForce());
+//        jesqueClient.enqueue(runEnhancementQueueName, job);
+//
+//        result.put("message", "Enhancement of " + data.getPids().size()
+//                + " object(s) and their children has begun");
+//
+//        result.put("success", true);
         return result;
     }
 

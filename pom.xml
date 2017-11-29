@@ -81,14 +81,14 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<jargon.version>3.3.1</jargon.version>
 		<xacml.version>2.0.9.Final</xacml.version>
-		<jetty.version>9.3.11.v20160721</jetty.version>
+		<jetty.version>9.4.7.v20170914</jetty.version>
 		<junit.version>4.12</junit.version>
 		<grizzly.version>2.3.28</grizzly.version>
 		<jersey.version>2.24</jersey.version>
 		<mockito.version>1.10.19</mockito.version>
 		<fcrepo.client.version>0.3.0</fcrepo.client.version>
 		<mock.server.version>3.10.2</mock.server.version>
-		<commons-io.version>2.4</commons-io.version>
+		<commons-io.version>2.5</commons-io.version>
 		<jena.version>3.1.1</jena.version>
 		<jena.fuseki.version>2.4.1</jena.fuseki.version>
 		<project.copyrightYear>2008</project.copyrightYear>
@@ -334,17 +334,6 @@
 				<inherited>false</inherited>
 			</plugin>
 			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven.surefire.version}</version>
-				<configuration>
-					<systemPropertyVariables>
-						<fcrepo.baseUri>http://example.com/rest</fcrepo.baseUri>
-						<buildDirectory>${project.build.directory}</buildDirectory>
-					</systemPropertyVariables>
-				</configuration>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>

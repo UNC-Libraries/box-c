@@ -136,6 +136,6 @@ public class IndexTreeCleanActionTest {
 
         // IndexTreeClean must be performed in addMode
         verify(driver).addDocument(any(IndexDocumentBean.class));
-        verify(driver, never()).updateDocument(anyString(), any(IndexDocumentBean.class));
+        verify(driver, never()).updateDocument(any(IndexDocumentBean.class));
     }
 }

@@ -59,13 +59,12 @@
         <property name="pidMinter" ref="repositoryPIDMinter" />
 	</bean>
 
-	<bean id="fusekiQueryURL" class="java.lang.String">
-	    <constructor-arg value="http://localhost:8080/fuseki/test" />
-	</bean>
-
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
-		<property name="fusekiQueryURL" ref="fusekiQueryURL" />
-	</bean>
+    <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
+    </bean>
+    
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl">
+        <constructor-arg ref="queryModel" />
+    </bean>
 	
 	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
 		<property name="client" ref="fcrepoClient" />
