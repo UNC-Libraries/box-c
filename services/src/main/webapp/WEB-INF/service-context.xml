@@ -201,6 +201,12 @@
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="operationsMessageSender" ref="operationsMessageSender" />
   </bean>
+  
+  <bean id="updateDescriptionService" class="edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService" >
+      <property name="aclService" ref="aclService" />
+      <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+      <property name="operationsMessageSender" ref="operationsMessageSender" />
+  </bean>
     
 	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
