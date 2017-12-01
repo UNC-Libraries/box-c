@@ -26,7 +26,6 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.update.UIPException;
 
 /**
  * Service that manages description, e.g., MODS, updates
@@ -41,7 +40,7 @@ public class UpdateDescriptionService {
     private OperationsMessageSender operationsMessageSender;
 
     public void updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
-            throws FileNotFoundException, UIPException {
+            throws FileNotFoundException {
         aclService.assertHasAccess("User does not have permissions to update description",
                 pid, agent.getPrincipals(), Permission.editDescription);
 
