@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.validation;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS;
@@ -70,7 +85,8 @@ public class MODSValidator {
             // Reset the inputstream for second read
             docStream.reset();
         } catch (SAXException e) {
-            throw new MetadataValidationException("MODS is not valid with respect to the schema (XSD)", e.getMessage(), e);
+            throw new MetadataValidationException("MODS is not valid with respect to the schema (XSD)",
+                    e.getMessage(), e);
         } catch (IOException e) {
             throw new RuntimeException("Failed to read document stream", e);
         }
@@ -86,8 +102,8 @@ public class MODSValidator {
                     .map(assertion -> assertion.getChildText("text", SCHEMATRON_VALIDATION_REPORT_NS))
                     .collect(Collectors.joining("\n"));
 
-            throw new MetadataValidationException("MODS is not valid with respect to local conventions (Schematron rules)",
-                    failedAssertionMessage);
+            throw new MetadataValidationException("MODS is not valid with respect to local conventions"
+                    + " (Schematron rules)", failedAssertionMessage);
         }
 
         log.debug("Document passed vocabulary schematron validation");

@@ -65,7 +65,7 @@ public class UpdateDescriptionController {
 
         PID pid = PIDs.get(id);
 
-        try (InputStream modsStream = request.getInputStream()){
+        try (InputStream modsStream = request.getInputStream()) {
             updateMODSService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
         } catch (Exception e) {
             result.put("error", e.getMessage());
