@@ -525,6 +525,11 @@
 								<xsl:when test="local-name() = 'cartographics'">
 									<xsl:call-template name="cartographics"/>
 								</xsl:when>
+								<xsl:when test="../@xlink:href">
+									<a href="{../@xlink:href}" target="_blank">
+									<xsl:value-of select="text()"/>
+									</a>
+								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of select="text()"/>
 								</xsl:otherwise>
