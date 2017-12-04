@@ -46,9 +46,12 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory;
+import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.impl.FileBagFile;
 
 /**
  * Loads and manages ingest sources, which are preconfigured locations to find packages for deposit.
@@ -151,6 +154,7 @@ public class IngestSourceManager {
 
 		List<IngestSourceConfiguration> applicableSources = listSources(destination);
 
+		long start = System.currentTimeMillis();
 		final List<Map<String, Object>> candidates = new ArrayList<>();
 		for (final IngestSourceConfiguration source : applicableSources) {
 			final String base = source.getBase();
@@ -184,6 +188,7 @@ public class IngestSourceManager {
 				}
 			}
 		}
+		log.info("Loaded ingest source candidates in {}", (System.currentTimeMillis() - start));
 
 		return candidates;
 	}
@@ -235,18 +240,25 @@ public class IngestSourceManager {
 	}
 
 	private void addBagInfo(Map<String, Object> fileInfo, Path filePath) {
+		long start = System.currentTimeMillis();
 		BagFactory bagFactory = new BagFactory();
-		Bag bagFile = bagFactory.createBag(filePath.toFile());
+		File infoFile = new File(filePath.toFile(), "bag-info.txt");
+		BagFile bagInfoFile = new FileBagFile(infoFile.getAbsolutePath(), infoFile);
+		BagPartFactory bagPartFactory = bagFactory.getBagPartFactory();
+		BagInfoTxt bagInfoTxt = bagPartFactory.createBagInfoTxt(bagInfoFile);
+		log.debug("Constructed bag {} in {}", filePath, (System.currentTimeMillis() - start));
 
-		long size = 0;
 		try {
-            size = bagFile.getBagInfoTxt().getOctetCount();
+            fileInfo.put("size", bagInfoTxt.getOctetCount());
         } catch(ParseException e) {
             log.warn("Could not parse bag size for {}", filePath.toFile());
         }
-
-	    fileInfo.put("files", bagFile.getPayload().size());
-		fileInfo.put("size", size);
+		
+		try {
+            fileInfo.put("files", bagInfoTxt.getStreamCount());
+        } catch(ParseException e) {
+            log.warn("Could not parse file count for bag for {}", filePath.toFile());
+        }
 
 		fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
 	}
