@@ -17,9 +17,12 @@ package edu.unc.lib.dl.validation;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.MODS_V3_NS;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
@@ -90,7 +93,7 @@ public class MODSValidatorTest {
 
         doc.addContent(new Element("root"));
 
-        validator.validate(doc);
+        validator.validate(convertDocumentToStream(doc));
     }
 
     @Test
@@ -99,7 +102,7 @@ public class MODSValidatorTest {
                 .addContent(new Element("titleInfo", MODS_V3_NS)
                         .addContent(new Element("title", MODS_V3_NS).setText("Value"))));
 
-        validator.validate(doc);
+        validator.validate(convertDocumentToStream(doc));
     }
 
     @Test
@@ -110,7 +113,7 @@ public class MODSValidatorTest {
         doc.addContent(new Element("mods", MODS_V3_NS)
                 .addContent(new Element("invalid", MODS_V3_NS)));
 
-        validator.validate(doc);
+        validator.validate(convertDocumentToStream(doc));
     }
 
     @Test
@@ -125,7 +128,7 @@ public class MODSValidatorTest {
                                 .setAttribute("authority", "iso639-2b")
                                 .setAttribute("type", "code"))));
 
-        validator.validate(doc);
+        validator.validate(convertDocumentToStream(doc));
     }
 
     @Test
@@ -140,7 +143,7 @@ public class MODSValidatorTest {
                                 .setAttribute("authority", "rfc3066")
                                 .setAttribute("type", "code"))));
 
-        validator.validate(doc);
+        validator.validate(convertDocumentToStream(doc));
     }
 
     @Test
@@ -152,7 +155,7 @@ public class MODSValidatorTest {
                                 .setAttribute("authority", "iso639-2b")
                                 .setAttribute("type", "code"))));
 
-        validator.validate(doc);
+        validator.validate(convertDocumentToStream(doc));
     }
 
     @Test
@@ -173,5 +176,12 @@ public class MODSValidatorTest {
         docFile.delete();
 
         validator.validate(docFile);
+    }
+
+    private InputStream convertDocumentToStream(Document doc) throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        new XMLOutputter().output(doc, outStream);
+        return new ByteArrayInputStream(outStream.toByteArray());
+
     }
 }

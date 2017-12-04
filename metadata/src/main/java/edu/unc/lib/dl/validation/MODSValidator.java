@@ -18,7 +18,6 @@ package edu.unc.lib.dl.validation;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.SCHEMATRON_VALIDATION_REPORT_NS;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +27,8 @@ import java.util.stream.Collectors;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
+import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
-import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -66,18 +65,28 @@ public class MODSValidator {
         this.modsSchema = modsSchema;
     }
 
-    public void validate(Document doc) throws MetadataValidationException, IOException {
-        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
-        new XMLOutputter().output(doc, outStream);
-        InputStream inStream = new ByteArrayInputStream(outStream.toByteArray());
-        validate(inStream);
+    /**
+     * Validates a MODS description from a File object
+     *
+     * @param file
+     * @throws IOException
+     */
+    public InputStream validate(File file) throws IOException {
+        return validate(new ByteArrayInputStream(Files.readAllBytes(file.toPath())));
     }
 
-    public void validate(File file) throws IOException {
-        validate(new ByteArrayInputStream(Files.readAllBytes(file.toPath())));
-    }
-
-    private void validate(InputStream docStream) throws MetadataValidationException, IOException {
+    /**
+     * Validates a MODS description. NB: this method only supports InputStream types that can be reset
+     * for multiple reads. Other types will be converted to a ByteArrayInputStream prior to validation.
+     *
+     * @param docStream
+     * @throws MetadataValidationException
+     * @throws IOException
+     */
+    public InputStream validate(InputStream docStream) throws MetadataValidationException, IOException {
+        if (!docStream.markSupported()) {
+            docStream = new ByteArrayInputStream(IOUtils.toByteArray(docStream));
+        }
         StreamSource streamSrc = new StreamSource(docStream);
         try {
             getModsSchema().newValidator().validate(streamSrc);
@@ -107,6 +116,7 @@ public class MODSValidator {
         }
 
         log.debug("Document passed vocabulary schematron validation");
+        return docStream;
     }
 }
 
