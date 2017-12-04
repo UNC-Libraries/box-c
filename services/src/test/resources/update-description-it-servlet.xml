@@ -36,6 +36,7 @@
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="modsValidator" ref="modsValidator" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
