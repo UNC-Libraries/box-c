@@ -104,7 +104,6 @@ public class UpdateDescriptionServiceTest {
         service.setMODSValidator(modsValidator);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void updateDescriptionTest() throws Exception {
         when(modsValidator.validate(modsStream)).thenReturn(modsStream);
