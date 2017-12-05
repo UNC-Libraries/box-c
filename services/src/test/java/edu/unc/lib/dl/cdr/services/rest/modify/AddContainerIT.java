@@ -125,7 +125,7 @@ public class AddContainerIT {
         assertChildContainerNotAdded(parent);
 
         MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID()))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isInternalServerError())
                 .andReturn();
 
         assertChildContainerNotAdded(parent);

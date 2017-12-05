@@ -38,6 +38,7 @@ import edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.validation.MetadataValidationException;
 
 /**
  * API controller for updating MODS records
@@ -50,7 +51,7 @@ public class UpdateDescriptionController {
     private static final Logger log = LoggerFactory.getLogger(UpdateDescriptionController.class);
 
     @Autowired
-    private UpdateDescriptionService updateMODSService;
+    private UpdateDescriptionService updateService;
 
     @RequestMapping(value = "edit/description/{id}", method = RequestMethod.POST)
     @ResponseBody
@@ -66,15 +67,17 @@ public class UpdateDescriptionController {
         PID pid = PIDs.get(id);
 
         try (InputStream modsStream = request.getInputStream()) {
-            updateMODSService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
+            updateService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();
             if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else if (t instanceof MetadataValidationException) {
+                return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
             } else {
                 log.error("Failed to update MODS: {}",  e);
-                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 

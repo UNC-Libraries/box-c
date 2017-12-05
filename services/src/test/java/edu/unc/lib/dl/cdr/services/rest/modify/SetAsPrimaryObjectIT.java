@@ -107,7 +107,7 @@ public class SetAsPrimaryObjectIT {
     }
 
     @Test
-    public void setPrimaryObjectTest() throws UnsupportedOperationException, Exception {
+    public void testSetPrimaryObject() throws UnsupportedOperationException, Exception {
         addFileObjAsMember();
 
         assertPrimaryObjectNotSet(parent);
@@ -145,13 +145,13 @@ public class SetAsPrimaryObjectIT {
     }
 
     @Test
-    public void addFolderAsPrimaryObjectTest() throws UnsupportedOperationException, Exception {
+    public void testAddFolderAsPrimaryObject() throws UnsupportedOperationException, Exception {
         PID folderObjPid = makePid();
 
         repositoryObjectFactory.createFolderObject(folderObjPid, null);
 
         MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + folderObjPid.getUUID()))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isInternalServerError())
                 .andReturn();
 
             assertPrimaryObjectNotSet(parent);
