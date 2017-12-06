@@ -249,26 +249,27 @@ public class IngestSourceManager {
 		log.debug("Constructed bag {} in {}", filePath, (System.currentTimeMillis() - start));
 
 		try {
-            fileInfo.put("size", bagInfoTxt.getOctetCount());
-        } catch(ParseException e) {
-            log.warn("Could not parse bag size for {}", filePath.toFile());
-        }
+			fileInfo.put("size", bagInfoTxt.getOctetCount());
+		} catch(ParseException e) {
+			log.warn("Could not parse bag size for {}", filePath.toFile());
+		}
 		
 		try {
-            fileInfo.put("files", bagInfoTxt.getStreamCount());
-        } catch(ParseException e) {
-            log.warn("Could not parse file count for bag for {}", filePath.toFile());
-        }
+			fileInfo.put("files", bagInfoTxt.getStreamCount());
+		} catch(ParseException e) {
+			log.warn("Could not parse file count for bag for {}", filePath.toFile());
+		}
 
 		fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
 	}
 
 	/**
-	 * Returns true if the given path is from valid for the given source and present.
+	 * Returns true if the given ingest package candidate path is both a valid path for the specified
+	 * ingest source and the path exists.
 	 *
-	 * @param pathString
-	 * @param sourceId
-	 * @return
+	 * @param pathString path for the ingest package to verify
+	 * @param sourceId id of ingest source to test for containment of the ingest package
+	 * @return true if the path is valid for the specified ingest source, false if not.
 	 */
 	public boolean isPathValid(String pathString, String sourceId) {
 		IngestSourceConfiguration source = getSourceConfiguration(sourceId);
