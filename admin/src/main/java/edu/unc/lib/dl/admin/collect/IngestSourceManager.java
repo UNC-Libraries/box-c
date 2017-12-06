@@ -29,9 +29,9 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipFile;
@@ -46,25 +46,27 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
-import gov.loc.repository.bagit.Bag;
+import gov.loc.repository.bagit.Bag.BagPartFactory;
 import gov.loc.repository.bagit.BagFactory;
 import gov.loc.repository.bagit.BagFile;
 import gov.loc.repository.bagit.BagHelper;
+import gov.loc.repository.bagit.BagInfoTxt;
+import gov.loc.repository.bagit.impl.FileBagFile;
 
 /**
  * Loads and manages ingest sources, which are preconfigured locations to find packages for deposit.
- * 
+ *
  * @author bbpennel
  * @date Oct 22, 2015
  */
 public class IngestSourceManager {
-	
+
 	private static final Logger log = LoggerFactory.getLogger(IngestSourceManager.class);
 
 	private List<IngestSourceConfiguration> configs;
-	
+
 	private TripleStoreQueryService tripleService;
-	
+
 	private String configPath;
 
 	public void init() throws JsonParseException, JsonMappingException, IOException {
@@ -74,7 +76,7 @@ public class IngestSourceManager {
 		final File configFile = new File(configPath);
 		final Path path = configFile.toPath();
 		configs = mapper.readValue(configFile, type);
-		
+
 		// Start separate thread for reloading configuration when it changes
 		Thread watchThread = new Thread(new Runnable() {
 			@Override
@@ -83,12 +85,12 @@ public class IngestSourceManager {
 				try (final WatchService watchService = FileSystems.getDefault().newWatchService()) {
 					// Register watcher on parent directory of config to detect file modifications
 					path.getParent().register(watchService, StandardWatchEventKinds.ENTRY_MODIFY);
-					
+
 					while (true) {
 						final WatchKey wk = watchService.take();
 						for (WatchEvent<?> event : wk.pollEvents()) {
 							final Path changed = (Path) event.context();
-							
+
 							if (changed.toString().equals(configFile.getName())) {
 								log.warn("Ingest source configuration has changed, reloading: {}", configFile.getAbsolutePath());
 								// Config file changed, reload the mappings
@@ -97,7 +99,7 @@ public class IngestSourceManager {
 								}
 							}
 						}
-						
+
 						// reset the key so that we can continue monitor for future events
 						boolean valid = wk.reset();
 						if (!valid) {
@@ -110,16 +112,16 @@ public class IngestSourceManager {
 					log.error("Failed to establish watcher for ingest source configuration");
 				}
 			}
-			
-			
+
+
 		});
 		watchThread.start();
-		
+
 	}
 
 	/**
 	 * Retrieves a list of ingest sources which contain or match the destination object provided.
-	 * 
+	 *
 	 * @param destination
 	 * @return
 	 */
@@ -144,7 +146,7 @@ public class IngestSourceManager {
 	/**
 	 * Retrieves a list of candidate file information for ingestable packages from sources which are
 	 * applicable to the destination provided.
-	 * 
+	 *
 	 * @param destination
 	 * @return
 	 */
@@ -152,10 +154,11 @@ public class IngestSourceManager {
 
 		List<IngestSourceConfiguration> applicableSources = listSources(destination);
 
+		long start = System.currentTimeMillis();
 		final List<Map<String, Object>> candidates = new ArrayList<>();
 		for (final IngestSourceConfiguration source : applicableSources) {
 			final String base = source.getBase();
-			
+
 			// Gathering candidates per pattern within a particular base directory
 			for (String pattern : source.getPatterns()) {
 				final PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + base + pattern);
@@ -170,7 +173,7 @@ public class IngestSourceManager {
 							}
 							return FileVisitResult.CONTINUE;
 						}
-						
+
 						@Override
 						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 							if (matcher.matches(file)) {
@@ -185,13 +188,14 @@ public class IngestSourceManager {
 				}
 			}
 		}
-		
+		log.info("Loaded ingest source candidates in {}", (System.currentTimeMillis() - start));
+
 		return candidates;
 	}
 
 	/**
 	 * Adds information about applicable packages to the list of candidates
-	 * 
+	 *
 	 * @param candidates
 	 * @param filePath
 	 * @param source
@@ -200,21 +204,21 @@ public class IngestSourceManager {
 	 */
 	private void addCandidate(List<Map<String, Object>> candidates, Path filePath,
 			IngestSourceConfiguration source, String base) throws IOException {
-		
+
 		File file = filePath.toFile();
 		if (!file.isDirectory()) {
 			return;
 		}
-		
+
 		// Only directory bags are candidates currently
 		String version = BagHelper.getVersion(file);
-		
+
 		Map<String, Object> candidate = new HashMap<>();
-		
+
 		candidate.put("sourceId", source.getId());
 		candidate.put("base", base);
 		candidate.put("patternMatched", Paths.get(base).relativize(filePath).toString());
-		
+
 		candidate.put("version", version);
 
 		if (version != null) {
@@ -231,50 +235,59 @@ public class IngestSourceManager {
 			}
 			candidate.put("size", file.length());
 		}
-		
+
 		candidates.add(candidate);
 	}
-	
+
 	private void addBagInfo(Map<String, Object> fileInfo, Path filePath) {
+		long start = System.currentTimeMillis();
 		BagFactory bagFactory = new BagFactory();
-		Bag bagFile = bagFactory.createBag(filePath.toFile());
-		
-		fileInfo.put("files", bagFile.getPayload().size());
-		long size = 0;
-		Iterator<BagFile> bagIt = bagFile.getPayload().iterator();
-		while (bagIt.hasNext()) {
-			size += bagIt.next().getSize();
+		File infoFile = new File(filePath.toFile(), "bag-info.txt");
+		BagFile bagInfoFile = new FileBagFile(infoFile.getAbsolutePath(), infoFile);
+		BagPartFactory bagPartFactory = bagFactory.getBagPartFactory();
+		BagInfoTxt bagInfoTxt = bagPartFactory.createBagInfoTxt(bagInfoFile);
+		log.debug("Constructed bag {} in {}", filePath, (System.currentTimeMillis() - start));
+
+		try {
+			fileInfo.put("size", bagInfoTxt.getOctetCount());
+		} catch(ParseException e) {
+			log.warn("Could not parse bag size for {}", filePath.toFile());
 		}
 		
-		fileInfo.put("size", size);
-		
+		try {
+			fileInfo.put("files", bagInfoTxt.getStreamCount());
+		} catch(ParseException e) {
+			log.warn("Could not parse file count for bag for {}", filePath.toFile());
+		}
+
 		fileInfo.put("packagingType", PackagingType.BAGIT.getUri());
 	}
-	
+
 	/**
-	 * Returns true if the given path is from valid for the given source and present.
-	 * 
-	 * @param pathString
-	 * @param sourceId
-	 * @return
+	 * Returns true if the given ingest package candidate path is both a valid path for the specified
+	 * ingest source and the path exists.
+	 *
+	 * @param pathString path for the ingest package to verify
+	 * @param sourceId id of ingest source to test for containment of the ingest package
+	 * @return true if the path is valid for the specified ingest source, false if not.
 	 */
 	public boolean isPathValid(String pathString, String sourceId) {
 		IngestSourceConfiguration source = getSourceConfiguration(sourceId);
 		if (source == null) {
 			return false;
 		}
-		
+
 		Path path = Paths.get(source.getBase(), pathString);
 		if (!isPathValidForSource(path, source)) {
 			return false;
 		}
-		
+
 		return path.toFile().exists();
 	}
-	
+
 	/**
 	 * Returns true if the given path matches any of the patterns specified for the given source
-	 * 
+	 *
 	 * @param path
 	 * @param source
 	 * @return
@@ -286,10 +299,10 @@ public class IngestSourceManager {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public IngestSourceConfiguration getSourceConfiguration(String id) {
 		for (IngestSourceConfiguration source : configs) {
 			if (source.getId().equals(id)) {

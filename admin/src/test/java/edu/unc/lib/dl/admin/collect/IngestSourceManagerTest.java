@@ -92,7 +92,7 @@ public class IngestSourceManagerTest {
 		assertEquals(PackagingType.BAGIT.toString(), candidateTwo.get("packagingType"));
 		assertEquals("0.96", candidateTwo.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidateTwo.get("size")) > 0);
-		assertEquals("File count should only include files in the data dir", 4, candidateTwo.get("files"));
+		assertEquals("File count should only include files in the data dir", 4l, candidateTwo.get("files"));
 	}
 	
 	@Test
@@ -108,7 +108,7 @@ public class IngestSourceManagerTest {
 		assertEquals(PackagingType.BAGIT.toString(), candidate.get("packagingType"));
 		assertEquals("0.96", candidate.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidate.get("size")) > 0);
-		assertEquals("File count should only include files in the data dir", 4, candidate.get("files"));
+		assertEquals("File count should only include files in the data dir", 4l, candidate.get("files"));
 		
 		candidate = candidates.get(2);
 		assertEquals("nestedsource", candidate.get("sourceId"));
@@ -116,6 +116,6 @@ public class IngestSourceManagerTest {
 		assertEquals(PackagingType.BAGIT.toString(), candidate.get("packagingType"));
 		assertEquals("0.96", candidate.get("version"));
 		assertTrue("Failed to generate size of candidate bag", ((Long)candidate.get("size")) > 0);
-		assertEquals("Count should only include payload", 3, candidate.get("files"));
+		assertEquals("Count should only include payload", 3l, candidate.get("files"));
 	}
 }
