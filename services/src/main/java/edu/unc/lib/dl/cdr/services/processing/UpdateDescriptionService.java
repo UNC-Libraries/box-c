@@ -82,7 +82,7 @@ public class UpdateDescriptionService {
      *
      * @param modsValidator
      */
-    public void setMODSValidator(MODSValidator modsValidator) {
+    public void setModsValidator(MODSValidator modsValidator) {
         this.modsValidator = modsValidator;
     }
 
