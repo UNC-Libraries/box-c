@@ -76,7 +76,12 @@
 	    <property name="client" ref="fcrepoClient" />
 	</bean>
 	
+	<bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
+    </bean>
+	
 	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+	    <property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
 	
 	<bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
