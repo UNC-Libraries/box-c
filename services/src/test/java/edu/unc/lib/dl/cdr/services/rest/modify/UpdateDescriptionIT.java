@@ -15,13 +15,21 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.junit.Assert.assertNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.tika.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -42,7 +50,9 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -62,12 +72,18 @@ public class UpdateDescriptionIT {
     private AccessControlService aclService;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private Model queryModel;
+    @Autowired
+    private RepositoryObjectFactory repoFactory;
 
     private MockMvc mvc;
     private PID objPid;
+    private WorkObject obj;
+    private InputStream stream;
 
     @Before
-    public void init() {
+    public void init() throws FileNotFoundException {
 
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
@@ -79,6 +95,9 @@ public class UpdateDescriptionIT {
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
 
         objPid = makePid();
+        obj = repoFactory.createWorkObject(objPid, queryModel);
+        File file = new File("src/test/resources/mods/valid-mods.xml");
+        stream = new FileInputStream(file);
 
     }
 
@@ -89,10 +108,18 @@ public class UpdateDescriptionIT {
 
     @Test
     public void testUpdateDescription() throws UnsupportedOperationException, Exception {
+        assertDescriptionNotUpdated(objPid);
 
-        MvcResult result = mvc.perform(put("/edit/description/" + objPid.getUUID()))
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID()).content(IOUtils.toByteArray(stream)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
+
+        assertDescriptionUpdated(objPid);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
     }
 
     private PID makePid() {
@@ -107,7 +134,12 @@ public class UpdateDescriptionIT {
 
     private void assertDescriptionUpdated(PID objPid) {
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(objPid);
-        assertNotNull(obj.getDescription().getMODS());
+        assertNotNull(obj.getDescription());
+    }
+
+    private void assertDescriptionNotUpdated(PID objPid) {
+        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(objPid);
+        assertNull(obj.getDescription());
     }
 
 }

@@ -61,7 +61,7 @@ public class UpdateDescriptionController {
 
     private ResponseEntity<Object> update(String id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "update description");
+        result.put("action", "updateDescription");
         result.put("pid", id);
 
         PID pid = PIDs.get(id);
