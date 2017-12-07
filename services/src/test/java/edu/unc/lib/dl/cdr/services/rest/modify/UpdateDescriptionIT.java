@@ -15,9 +15,15 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +51,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
@@ -52,7 +59,6 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -78,9 +84,6 @@ public class UpdateDescriptionIT {
     private RepositoryObjectFactory repoFactory;
 
     private MockMvc mvc;
-    private PID objPid;
-    private WorkObject obj;
-    private InputStream stream;
 
     @Before
     public void init() throws FileNotFoundException {
@@ -93,12 +96,6 @@ public class UpdateDescriptionIT {
 
         GroupsThreadStore.storeUsername("user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
-
-        objPid = makePid();
-        obj = repoFactory.createWorkObject(objPid, queryModel);
-        File file = new File("src/test/resources/mods/valid-mods.xml");
-        stream = new FileInputStream(file);
-
     }
 
     @After
@@ -107,10 +104,15 @@ public class UpdateDescriptionIT {
     }
 
     @Test
-    public void testUpdateDescription() throws UnsupportedOperationException, Exception {
+    public void testUpdateDescription() throws Exception {
+        File file = new File("src/test/resources/mods/valid-mods.xml");
+        InputStream stream = new FileInputStream(file);
+        PID objPid = makeWorkObject();
+
         assertDescriptionNotUpdated(objPid);
 
-        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID()).content(IOUtils.toByteArray(stream)))
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(IOUtils.toByteArray(stream)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -122,8 +124,54 @@ public class UpdateDescriptionIT {
         assertEquals("updateDescription", respMap.get("action"));
     }
 
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
+    @Test
+    public void testInvalidMods() throws Exception {
+        File file = new File("src/test/resources/mods/invalid-mods.xml");
+        InputStream stream = new FileInputStream(file);
+        PID objPid = makeWorkObject();
+
+        assertDescriptionNotUpdated(objPid);
+
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(IOUtils.toByteArray(stream)))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn();
+
+        assertDescriptionNotUpdated(objPid);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
+    }
+
+    @Test
+    public void testAuthorizationFailure() throws Exception {
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(editDescription));
+
+        File file = new File("src/test/resources/mods/valid-mods.xml");
+        InputStream stream = new FileInputStream(file);
+        PID objPid = makeWorkObject();
+
+        assertDescriptionNotUpdated(objPid);
+
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(IOUtils.toByteArray(stream)))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        assertDescriptionNotUpdated(objPid);
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
+        assertTrue(respMap.containsKey("error"));
+    }
+
+    private PID makeWorkObject() {
+        return repoFactory.createWorkObject(PIDs.get(UUID.randomUUID().toString()), queryModel).getPid();
     }
 
     private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
