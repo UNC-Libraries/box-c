@@ -43,6 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -67,7 +68,11 @@ import edu.unc.lib.dl.test.TestHelper;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml", "/update-description-it-servlet.xml"})
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/update-description-it-servlet.xml")
+})
 @WebAppConfiguration
 public class UpdateDescriptionIT {
 
