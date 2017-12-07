@@ -69,14 +69,13 @@ public class UpdateDescriptionController {
         try (InputStream modsStream = request.getInputStream()) {
             updateService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
         } catch (Exception e) {
+            log.error("Failed to update MODS: {}",  e);
             result.put("error", e.getMessage());
-            Throwable t = e.getCause();
-            if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-            } else if (t instanceof MetadataValidationException) {
+            } else if (e instanceof MetadataValidationException) {
                 return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
             } else {
-                log.error("Failed to update MODS: {}",  e);
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
