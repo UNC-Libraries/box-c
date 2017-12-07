@@ -323,9 +323,9 @@ public class OperationsMessageSender {
      */
     public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids) {
         Element contentEl = createAtomEntry(userid, pids.iterator().next(),
-                CDRActions.UPDATE_MODS);
+                CDRActions.UPDATE_DESCRIPTION);
 
-        Element updateEl = new Element("updateMods", CDR_MESSAGE_NS);
+        Element updateEl = new Element(CDRActions.UPDATE_DESCRIPTION.getName(), CDR_MESSAGE_NS);
         contentEl.addContent(updateEl);
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);

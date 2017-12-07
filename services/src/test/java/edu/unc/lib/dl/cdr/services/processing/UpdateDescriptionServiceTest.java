@@ -118,7 +118,7 @@ public class UpdateDescriptionServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() throws Exception {
         doThrow(new AccessRestrictionException()).when(aclService)
-        .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
+                .assertHasAccess(anyString(), eq(objPid), any(AccessGroupSet.class), any(Permission.class));
 
         service.updateDescription(agent, objPid, modsStream);
     }

@@ -46,8 +46,8 @@ import edu.unc.lib.dl.schematron.SchematronValidator;
 public class MODSValidator {
     private static final Logger log = LoggerFactory.getLogger(MODSValidator.class);
 
-    private SchematronValidator schematronValidator = null;
-    private Schema modsSchema = null;
+    private SchematronValidator schematronValidator;
+    private Schema modsSchema;
 
     public SchematronValidator getSchematronValidator() {
         return schematronValidator;
