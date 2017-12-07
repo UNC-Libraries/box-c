@@ -101,7 +101,7 @@ public class UpdateDescriptionServiceTest {
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repoObjLoader);
         service.setOperationsMessageSender(messageSender);
-        service.setMODSValidator(modsValidator);
+        service.setModsValidator(modsValidator);
     }
 
     @Test
