@@ -34,7 +34,6 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.jena.rdf.model.Model;
 import org.apache.tika.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -78,8 +77,6 @@ public class UpdateDescriptionIT {
     private AccessControlService aclService;
     @Autowired
     private RepositoryObjectLoader repoObjLoader;
-    @Autowired
-    private Model queryModel;
     @Autowired
     private RepositoryObjectFactory repoFactory;
 
@@ -171,7 +168,7 @@ public class UpdateDescriptionIT {
     }
 
     private PID makeWorkObject() {
-        return repoFactory.createWorkObject(PIDs.get(UUID.randomUUID().toString()), queryModel).getPid();
+        return repoFactory.createWorkObject(PIDs.get(UUID.randomUUID().toString()), null).getPid();
     }
 
     private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
