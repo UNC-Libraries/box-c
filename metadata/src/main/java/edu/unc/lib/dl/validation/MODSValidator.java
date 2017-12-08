@@ -69,21 +69,26 @@ public class MODSValidator {
      * Validates a MODS description from a File object
      *
      * @param file
-     * @throws MetadataValidationException
-     * @throws IllegalArgumentException
-     * @throws IOException
+     * @throws MetadataValidationException thrown if the document provided does
+     *             not meet validation requirements.
+     * @throws IOException if the File cannot be read.
      */
-    public void validate(File file) throws MetadataValidationException, IllegalArgumentException, IOException {
+    public void validate(File file) throws MetadataValidationException, IOException {
         validate(new ByteArrayInputStream(Files.readAllBytes(file.toPath())));
     }
 
     /**
-     * Validates a MODS description. NB: this method only supports InputStream types that can be reset
-     * for multiple reads. For other types, an IllegalArgumentException will be thrown.
+     * Validates a MODS description.
+     *
+     * NB: this method only supports InputStream types that can be reset for
+     * multiple reads. For other types, an IllegalArgumentException will be
+     * thrown.
      *
      * @param docStream
-     * @throws MetadataValidationException
-     * @throws IllegalArgumentException
+     * @throws MetadataValidationException thrown if the document being streamed
+     *             does not meet validation requirements.
+     * @throws IllegalArgumentException thrown if the provided InputStream does
+     *             not support mark and reset.
      */
     public void validate(InputStream docStream) throws MetadataValidationException, IllegalArgumentException {
         if (!docStream.markSupported()) {
