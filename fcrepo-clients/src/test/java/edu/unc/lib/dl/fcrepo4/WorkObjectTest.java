@@ -106,6 +106,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
                 return driver;
             }
         });
+        when(driver.getRepositoryObject(any(PID.class))).thenReturn(fileObj);
     }
 
     @Test
@@ -129,7 +130,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         work.setPrimaryObject(primaryPid);
 
-        verify(repoObjFactory).createRelationship(pid, Cdr.primaryObject, primaryResc);
+        verify(repoObjFactory).createExclusiveRelationship(pid, Cdr.primaryObject, primaryResc);
     }
 
     @Test(expected = InvalidRelationshipException.class)
@@ -140,7 +141,7 @@ public class WorkObjectTest extends AbstractFedoraTest {
             work.setPrimaryObject(primaryPid);
         } finally {
             verify(repoObjFactory, never())
-                    .createRelationship(any(PID.class), eq(Cdr.primaryObject), any(Resource.class));
+                    .createExclusiveRelationship(any(PID.class), eq(Cdr.primaryObject), any(Resource.class));
         }
     }
 

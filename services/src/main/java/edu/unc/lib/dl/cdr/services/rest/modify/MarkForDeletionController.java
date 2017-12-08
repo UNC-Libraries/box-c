@@ -95,6 +95,7 @@ public class MarkForDeletionController {
         } catch (FedoraException e) {
             log.error("Failed to update mark for deletion flag to {}", markAsDeleted, e);
             result.put("error", e.toString());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         result.put("timestamp", System.currentTimeMillis());

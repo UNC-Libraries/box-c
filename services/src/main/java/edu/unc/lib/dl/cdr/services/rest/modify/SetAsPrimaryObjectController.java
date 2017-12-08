@@ -71,7 +71,7 @@ public class SetAsPrimaryObjectController {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
                 log.error("Failed to set primary object with pid " + fileObjPid, e);
-                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
         result.put("timestamp", System.currentTimeMillis());

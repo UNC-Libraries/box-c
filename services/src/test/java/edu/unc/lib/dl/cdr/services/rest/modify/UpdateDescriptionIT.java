@@ -15,10 +15,11 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import static edu.unc.lib.dl.acl.util.Permission.ingest;
+import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -26,9 +27,14 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.tika.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.After;
@@ -49,10 +55,7 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.FolderObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -68,24 +71,25 @@ import edu.unc.lib.dl.test.TestHelper;
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
-    @ContextConfiguration("/add-container-it-servlet.xml")
+    @ContextConfiguration("/update-description-it-servlet.xml")
 })
 @WebAppConfiguration
-public class AddContainerIT {
+public class UpdateDescriptionIT {
 
     @Autowired
     private WebApplicationContext context;
     @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
     private AccessControlService aclService;
+    @Autowired
+    private RepositoryObjectLoader repoObjLoader;
+    @Autowired
+    private RepositoryObjectFactory repoFactory;
 
     private MockMvc mvc;
 
     @Before
-    public void init() {
+    public void init() throws FileNotFoundException {
+
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .build();
@@ -102,89 +106,90 @@ public class AddContainerIT {
     }
 
     @Test
-    public void testAddCollectionToAdminUnit() throws UnsupportedOperationException, Exception {
-        PID parentPid = makePid();
+    public void testUpdateDescription() throws Exception {
+        File file = new File("src/test/resources/mods/valid-mods.xml");
+        InputStream stream = new FileInputStream(file);
+        PID objPid = makeWorkObject();
 
-        AdminUnit parent = repositoryObjectFactory.createAdminUnit(parentPid, null);
+        assertDescriptionNotUpdated(objPid);
 
-        assertChildContainerNotAdded(parent);
-
-        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getUUID()))
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(IOUtils.toByteArray(stream)))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        assertChildContainerAdded(parent);
+        assertDescriptionUpdated(objPid);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals(parentPid.getUUID(), respMap.get("pid"));
-        assertEquals("create", respMap.get("action"));
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
     }
 
     @Test
-    public void testAddAdminUnitToCollection() throws UnsupportedOperationException, Exception {
-        PID parentPid = makePid();
+    public void testInvalidMods() throws Exception {
+        File file = new File("src/test/resources/mods/invalid-mods.xml");
+        InputStream stream = new FileInputStream(file);
+        PID objPid = makeWorkObject();
 
-        CollectionObject parent = repositoryObjectFactory.createCollectionObject(parentPid, null);
+        assertDescriptionNotUpdated(objPid);
 
-        assertChildContainerNotAdded(parent);
-
-        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID()))
-                .andExpect(status().isInternalServerError())
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(IOUtils.toByteArray(stream)))
+                .andExpect(status().isUnprocessableEntity())
                 .andReturn();
 
-        assertChildContainerNotAdded(parent);
+        assertDescriptionNotUpdated(objPid);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals(parentPid.getUUID(), respMap.get("pid"));
-        assertEquals("create", respMap.get("action"));
-        assertTrue(respMap.containsKey("error"));
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
     }
 
     @Test
     public void testAuthorizationFailure() throws Exception {
-        PID pid = makePid();
-        FolderObject folder = repositoryObjectFactory.createFolderObject(pid, null);
-
         doThrow(new AccessRestrictionException()).when(aclService)
-                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(ingest));
+                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(editDescription));
 
-        MvcResult result = mvc.perform(post("/edit/create/folder/" + pid.getUUID()))
-            .andExpect(status().isForbidden())
-            .andReturn();
+        File file = new File("src/test/resources/mods/valid-mods.xml");
+        InputStream stream = new FileInputStream(file);
+        PID objPid = makeWorkObject();
 
-        assertChildContainerNotAdded(folder);
+        assertDescriptionNotUpdated(objPid);
+
+        MvcResult result = mvc.perform(post("/edit/description/" + objPid.getUUID())
+                .content(IOUtils.toByteArray(stream)))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        assertDescriptionNotUpdated(objPid);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals(pid.getUUID(), respMap.get("pid"));
-        assertEquals("create", respMap.get("action"));
+        assertEquals(objPid.getUUID(), respMap.get("pid"));
+        assertEquals("updateDescription", respMap.get("action"));
         assertTrue(respMap.containsKey("error"));
     }
 
-    private void assertChildContainerAdded(ContentContainerObject parent) {
-        // Refresh the model
-        parent = repositoryObjectLoader.getAdminUnit(parent.getPid());
-        if (parent.getMembers().size() != 0) {
-            assertTrue(parent.getMembers().get(0) instanceof ContentContainerObject);
-        } else {
-            fail("No child container was added to parent");
-        }
-    }
-
-    private void assertChildContainerNotAdded(ContentContainerObject parent) {
-        assertTrue(parent.getMembers().size() == 0);
-    }
-
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
+    private PID makeWorkObject() {
+        return repoFactory.createWorkObject(PIDs.get(UUID.randomUUID().toString()), null).getPid();
     }
 
     private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(result.getResponse().getContentAsString(),
                 new TypeReference<Map<String, Object>>(){});
+    }
+
+    private void assertDescriptionUpdated(PID objPid) {
+        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(objPid);
+        assertNotNull(obj.getDescription());
+    }
+
+    private void assertDescriptionNotUpdated(PID objPid) {
+        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(objPid);
+        assertNull(obj.getDescription());
     }
 
 }

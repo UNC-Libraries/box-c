@@ -15,10 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Resource;
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,65 +34,50 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.cdr.services.processing.AddContainerService;
+import edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.validation.MetadataValidationException;
 
 /**
- * API controller for creating new containers
+ * API controller for updating MODS records
  *
  * @author harring
  *
  */
 @Controller
-public class AddContainerController {
-    private static final Logger log = LoggerFactory.getLogger(AddContainerController.class);
+public class UpdateDescriptionController {
+    private static final Logger log = LoggerFactory.getLogger(UpdateDescriptionController.class);
 
     @Autowired
-    private AddContainerService addContainerService;
+    private UpdateDescriptionService updateService;
 
-    @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/description/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.AdminUnit);
+    public ResponseEntity<Object> updateDescription(@PathVariable("id") String id, HttpServletRequest request) {
+        return update(id, request);
     }
 
-    @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<Object> createCollection(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.Collection);
-    }
-
-    @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<Object> createFolder(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.Folder);
-    }
-
-    @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
-    @ResponseBody
-    public ResponseEntity<Object> createWork(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.Work);
-    }
-
-    private ResponseEntity<Object> createContainer(String id, Resource containerType) {
+    private ResponseEntity<Object> update(String id, HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "create");
+        result.put("action", "updateDescription");
         result.put("pid", id);
 
-        PID parentPid = PIDs.get(id);
+        PID pid = PIDs.get(id);
 
-        try {
-            addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, containerType);
+        try (InputStream modsStream = request.getInputStream()) {
+            updateService.updateDescription(AgentPrincipals.createFromThread(), pid, modsStream);
         } catch (Exception e) {
+            log.error("Failed to update MODS: {}",  e);
             result.put("error", e.getMessage());
-            Throwable t = e.getCause();
-            if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else if (e instanceof MetadataValidationException) {
+                return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
+            } else if (e instanceof IllegalArgumentException) {
+                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
             } else {
-                log.error("Failed to create container for {}",  e);
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -98,5 +85,4 @@ public class AddContainerController {
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
 }

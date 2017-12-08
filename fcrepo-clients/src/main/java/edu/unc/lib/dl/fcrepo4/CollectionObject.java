@@ -50,7 +50,7 @@ public class CollectionObject extends ContentContainerObject {
     public ContentContainerObject addMember(ContentObject member) throws ObjectTypeMismatchException {
         if (!(member instanceof FolderObject || member instanceof WorkObject)) {
             throw new ObjectTypeMismatchException("Cannot add object of type " + member.getClass().getName()
-                    + " as a member of WorkObject " + pid.getQualifiedId());
+                    + " as a member of CollectionObject " + pid.getQualifiedId());
         }
 
         repoObjFactory.addMember(this, member);

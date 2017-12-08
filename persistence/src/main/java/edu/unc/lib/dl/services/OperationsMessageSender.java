@@ -52,7 +52,7 @@ import edu.unc.lib.dl.util.ResourceType;
 public class OperationsMessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
 
-    private JmsTemplate jmsTemplate = null;
+    private JmsTemplate jmsTemplate;
 
     /**
      * Sends a Add operation message, indicating that objects were added to destination containers.
@@ -314,6 +314,31 @@ public class OperationsMessageSender {
         return getMessageId(msg);
     }
 
+    /**
+     * Sends Update MODS operation message.
+     *
+     * @param userid id of user who triggered the operation
+     * @param pids objects whose MODS changed
+     * @return id of operation message
+     */
+    public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids) {
+        Element contentEl = createAtomEntry(userid, pids.iterator().next(),
+                CDRActions.UPDATE_DESCRIPTION);
+
+        Element updateEl = new Element(CDRActions.UPDATE_DESCRIPTION.getName(), CDR_MESSAGE_NS);
+        contentEl.addContent(updateEl);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        updateEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+
+        return getMessageId(msg);
+    }
 
     /**
      * Sends message indicating that objects are being requested to be reindexed.
@@ -346,7 +371,7 @@ public class OperationsMessageSender {
         XMLOutputter out = new XMLOutputter();
         final String msgStr = out.outputString(msg);
 
-        this.jmsTemplate.send(new MessageCreator() {
+        jmsTemplate.send(new MessageCreator() {
 
             @Override
             public Message createMessage(Session session) throws JMSException {
@@ -360,12 +385,6 @@ public class OperationsMessageSender {
         return createAtomEntry(userid, contextpid, operation.toString(), "urn:uuid:" + UUID.randomUUID().toString());
     }
 
-    /**
-     * @param msg
-     * @param userid
-     * @param pid
-     * @return
-     */
     private Element createAtomEntry(String userid, PID contextpid, String operation, String messageId) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);

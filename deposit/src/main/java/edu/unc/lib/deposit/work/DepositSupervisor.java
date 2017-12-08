@@ -58,7 +58,7 @@ import edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob;
 import edu.unc.lib.deposit.validate.PackageIntegrityCheckJob;
 import edu.unc.lib.deposit.validate.ValidateContentModelJob;
 import edu.unc.lib.deposit.validate.ValidateFileAvailabilityJob;
-import edu.unc.lib.deposit.validate.ValidateMODS;
+import edu.unc.lib.deposit.validate.ValidateDescriptionJob;
 import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
@@ -638,8 +638,8 @@ public class DepositSupervisor implements WorkerListener {
         File bagPath = new File(depositsDirectory, depositUUID);
         File descrFolder = new File(bagPath, DepositConstants.DESCRIPTION_DIR);
         if (descrFolder.exists()) {
-            if (!successfulJobs.contains(ValidateMODS.class.getName())) {
-                return makeJob(ValidateMODS.class, depositUUID);
+            if (!successfulJobs.contains(ValidateDescriptionJob.class.getName())) {
+                return makeJob(ValidateDescriptionJob.class, depositUUID);
             }
         }
 
