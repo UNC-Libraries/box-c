@@ -43,7 +43,8 @@ public enum Permission {
     createAdminUnit,
     changePatronAccess,
     assignStaffRoles,
-    editResourceType;
+    editResourceType,
+    reindex;
 
     private Permission() {
     }
