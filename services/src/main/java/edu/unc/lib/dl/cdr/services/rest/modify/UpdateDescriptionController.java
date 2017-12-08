@@ -75,6 +75,8 @@ public class UpdateDescriptionController {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else if (e instanceof MetadataValidationException) {
                 return new ResponseEntity<>(result, HttpStatus.UNPROCESSABLE_ENTITY);
+            } else if (e instanceof IllegalArgumentException) {
+                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
             } else {
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }

@@ -106,7 +106,6 @@ public class UpdateDescriptionServiceTest {
 
     @Test
     public void updateDescriptionTest() throws Exception {
-        when(modsValidator.validate(modsStream)).thenReturn(modsStream);
         service.updateDescription(agent, objPid, modsStream);
 
         verify(messageSender).sendUpdateDescriptionOperation(anyString(), pidsCaptor.capture());

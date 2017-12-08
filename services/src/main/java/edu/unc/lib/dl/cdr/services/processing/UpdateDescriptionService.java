@@ -48,7 +48,7 @@ public class UpdateDescriptionService {
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         String username = agent.getUsername();
-        modsStream = modsValidator.validate(modsStream);
+        modsValidator.validate(modsStream);
 
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
         obj.addDescription(modsStream);

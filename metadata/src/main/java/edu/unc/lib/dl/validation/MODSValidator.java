@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 
-import org.apache.commons.io.IOUtils;
 import org.jdom2.Document;
+import org.jdom2.IllegalAddException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
@@ -69,23 +69,25 @@ public class MODSValidator {
      * Validates a MODS description from a File object
      *
      * @param file
+     * @throws MetadataValidationException
+     * @throws IllegalArgumentException
      * @throws IOException
      */
-    public InputStream validate(File file) throws IOException {
-        return validate(new ByteArrayInputStream(Files.readAllBytes(file.toPath())));
+    public void validate(File file) throws MetadataValidationException, IllegalArgumentException, IOException {
+        validate(new ByteArrayInputStream(Files.readAllBytes(file.toPath())));
     }
 
     /**
      * Validates a MODS description. NB: this method only supports InputStream types that can be reset
-     * for multiple reads. Other types will be converted to a ByteArrayInputStream prior to validation.
+     * for multiple reads. For other types, an IllegalArgumentException will be thrown.
      *
      * @param docStream
      * @throws MetadataValidationException
-     * @throws IOException
+     * @throws IllegalArgumentException
      */
-    public InputStream validate(InputStream docStream) throws MetadataValidationException, IOException {
+    public void validate(InputStream docStream) throws MetadataValidationException, IllegalArgumentException {
         if (!docStream.markSupported()) {
-            docStream = new ByteArrayInputStream(IOUtils.toByteArray(docStream));
+            throw new IllegalAddException("Input stream must be mark supported for validation");
         }
         StreamSource streamSrc = new StreamSource(docStream);
         try {
@@ -101,7 +103,6 @@ public class MODSValidator {
         }
         log.debug("Document passed MODS schema validation");
 
-
         Document svrl = this.getSchematronValidator().validate(
                 streamSrc, "vocabularies-mods");
 
@@ -116,7 +117,6 @@ public class MODSValidator {
         }
 
         log.debug("Document passed vocabulary schematron validation");
-        return docStream;
     }
 }
 
