@@ -51,10 +51,10 @@ public class IndexingController {
     private IndexingService indexingService;
 
     /**
-     * Perform a deep reindexing operation on the specified id and all of its children.
+     * Perform a deep reindexing operation on the object with the specified id and all of its children.
      *
      * @param id
-     * @param inplace
+     * @param inplace whether the reindex should be an in-place recursive reindex or not
      * @return
      */
     @RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
@@ -67,7 +67,6 @@ public class IndexingController {
      * Perform a shallow reindexing of the object specified by id
      *
      * @param id
-     * @param response
      * @return
      */
     @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
@@ -112,7 +111,6 @@ public class IndexingController {
             } else {
                 log.info("Reindexing " + id + ", clean reindex mode");
             }
-
             try {
                 indexingService.reindexObjectAndChildren(AgentPrincipals.createFromThread(), objectPid, inplace);
             } catch (Exception e) {
