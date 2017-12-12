@@ -17,18 +17,13 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.Arrays;
 
-import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
-import edu.unc.lib.dl.data.ingest.solr.action.IndexTreeCleanAction;
-import edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction;
-import edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
@@ -38,11 +33,8 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 public class IndexingService {
-    private GlobalPermissionEvaluator globalPermissionEvaluator;
-    private OperationsMessageSender operationsMessageSender;
-    private UpdateObjectAction updateObjectAction;
-    private IndexTreeInplaceAction indexInplaceAction;
-    private IndexTreeCleanAction indexCleanAction;
+    private AccessControlService aclService;
+    private IndexingMessageSender indexingMessageSender;
 
     /**
      * Performs an in-place recursive reindexing of an object and its descendants
@@ -53,26 +45,17 @@ public class IndexingService {
      * @param inplace whether in-place reindexing has been requested
      * @throws IndexingException
      */
-    public void reindexObjectAndChildren(AgentPrincipals agent, PID objPid, Boolean inplace)
-            throws IndexingException {
-        if (globalPermissionEvaluator.hasGlobalPermission(agent.getGroups(), Permission.reindex)) {
-            if (inplace == null || inplace) {
-                SolrUpdateRequest updateRequest = new SolrUpdateRequest(objPid.getRepositoryPath(),
-                        IndexingActionType.RECURSIVE_REINDEX);
-                indexInplaceAction.performAction(updateRequest);
-                // Send message that the action completed
-                operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(objPid),
-                        IndexingActionType.RECURSIVE_REINDEX);
-            } else {
-                SolrUpdateRequest updateRequest = new SolrUpdateRequest(objPid.getRepositoryPath(),
-                        IndexingActionType.CLEAN_REINDEX);
-                indexCleanAction.performAction(updateRequest);
-                // Send message that the action completed
-                operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(objPid),
-                        IndexingActionType.CLEAN_REINDEX);
-            }
+    public void reindexObjectAndChildren(AgentPrincipals agent, PID objectPid, Boolean inplace) {
+        aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
+                Permission.reindex);
+        if (inplace == null || inplace) {
+            // Add message to cdr solr queue
+            indexingMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(objectPid),
+                    IndexingActionType.RECURSIVE_REINDEX);
         } else {
-            throw new AccessRestrictionException("User does not have permission to reindex");
+            // Add message to cdr solr queue
+            indexingMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(objectPid),
+                    IndexingActionType.CLEAN_REINDEX);
         }
     }
 
@@ -83,36 +66,19 @@ public class IndexingService {
      * @param objectPid the PID of the object to be reindexed
      * @throws IndexingException
      */
-    public void reindexObject(AgentPrincipals agent, PID objectPid) throws IndexingException {
-        if (globalPermissionEvaluator.hasGlobalPermission(agent.getGroups(), Permission.reindex)) {
-            SolrUpdateRequest updateRequest = new SolrUpdateRequest(objectPid.getRepositoryPath(), IndexingActionType.ADD);
-            updateObjectAction.performAction(updateRequest);
-            // Send message that the action completed
-            operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(),
-                    Arrays.asList(objectPid), IndexingActionType.ADD);
-        } else {
-            throw new AccessRestrictionException("User does not have permission to reindex");
-        }
+    public void reindexObject(AgentPrincipals agent, PID objectPid) {
+        aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
+                Permission.reindex);
+        // Add message to cdr solr queue
+        indexingMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(),
+                Arrays.asList(objectPid), IndexingActionType.ADD);
     }
 
-    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
-        this.operationsMessageSender = operationsMessageSender;
+    public void setAccessControlService(AccessControlService aclService) {
+        this.aclService = aclService;
     }
 
-    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
-        this.globalPermissionEvaluator = globalPermissionEvaluator;
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
-
-    public void setUpdateObjectAction(UpdateObjectAction updateObjectAction) {
-        this.updateObjectAction = updateObjectAction;
-    }
-
-    public void setIndexInplaceAction(IndexTreeInplaceAction indexInplaceAction) {
-        this.indexInplaceAction = indexInplaceAction;
-    }
-
-    public void setIndexCleanAction(IndexTreeCleanAction indexCleanAction) {
-        this.indexCleanAction = indexCleanAction;
-    }
-
 }
