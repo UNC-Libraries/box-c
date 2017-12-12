@@ -106,6 +106,7 @@
 		</property>
 		<property name="configLocation" value="classpath:quartz.properties"/>
 	</bean>
+	
 	<bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
 		<property name="connectionFactory" ref="jmsFactory" />
 		<property name="defaultDestinationName" value="repository.updates" />
@@ -235,6 +236,21 @@
 	    <property name="operationsMessageSender" ref="operationsMessageSender" />
 	</bean>
 	
+	<bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="activemq:queue:repository.solrupdate?asyncConsumer=true" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="indexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
+    </bean>
+	
+	<bean id="indexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService" >
+	    <property name="aclService" ref="aclService" />
+	    <property name="indexingMessageSender" ref="indexingMessageSender" />
+	</bean>
+	
 	<bean id="markForDeletionService" class="edu.unc.lib.dl.persist.services.delete.MarkForDeletionService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
@@ -245,7 +261,7 @@
   <bean id="setAsPrimaryObjectService" class="edu.unc.lib.dl.cdr.services.processing.SetAsPrimaryObjectService" >
       <property name="aclService" ref="aclService" />
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-      <property name="operationsMessageSender" ref="operationsMessageSender" />
+      <property name="indexingMessageSender" ref="indexingMessageSender" />
   </bean>
   
   <bean id="updateDescriptionService" class="edu.unc.lib.dl.cdr.services.processing.UpdateDescriptionService" >

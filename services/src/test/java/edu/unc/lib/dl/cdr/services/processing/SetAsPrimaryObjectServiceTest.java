@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-
 import java.util.Collection;
 import java.util.UUID;
 
@@ -50,7 +49,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 
 /**
  *
@@ -64,7 +63,7 @@ public class SetAsPrimaryObjectServiceTest {
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
-    private OperationsMessageSender messageSender;
+    private IndexingMessageSender messageSender;
     @Mock
     private AgentPrincipals agent;
     @Mock
@@ -99,7 +98,7 @@ public class SetAsPrimaryObjectServiceTest {
         service = new SetAsPrimaryObjectService();
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repoObjLoader);
-        service.setOperationsMessageSender(messageSender);
+        service.setIndexingMessageSender(messageSender);
     }
 
     @Test

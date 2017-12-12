@@ -18,6 +18,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
 
 import java.util.Arrays;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -26,7 +27,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.services.OperationsMessageSender;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 
 
@@ -40,7 +41,7 @@ public class SetAsPrimaryObjectService {
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
-    private OperationsMessageSender operationsMessageSender;
+    private IndexingMessageSender indexingMessageSender;
 
     /**
      * Sets file object with the given pid as the primary object for its work using the agent principals provided.
@@ -70,7 +71,7 @@ public class SetAsPrimaryObjectService {
         work.setPrimaryObject(fileObjPid);
 
         // Send message that the action completed
-        operationsMessageSender.sendIndexingOperation(agent.getUsername(), Arrays.asList(fileObjPid),
+        indexingMessageSender.sendIndexingOperation(agent.getUsername(), Arrays.asList(fileObjPid),
                 IndexingActionType.SET_AS_PRIMARY_OBJECT);
     }
 
@@ -89,10 +90,10 @@ public class SetAsPrimaryObjectService {
     }
 
     /**
-     * @param operatonsMessageSender the message sender to set
+     * @param indexingMessageSender the message sender to set
      */
-    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
-        this.operationsMessageSender = operationsMessageSender;
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.indexingMessageSender = indexingMessageSender;
     }
 
 }
