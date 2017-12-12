@@ -158,21 +158,17 @@
 
 	<!-- logging -->
 	<dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-api</artifactId>
-		<version>2.6.2</version>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-api</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-core</artifactId>
 		<scope>test</scope>
 	</dependency>
 	<dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-core</artifactId>
-		<version>2.6.2</version>
-		<scope>test</scope>
-	</dependency>
-	<dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-slf4j-impl</artifactId>
-		<version>2.6.2</version>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-classic</artifactId>
 		<scope>test</scope>
 	</dependency>
 	<!-- integration testing -->
