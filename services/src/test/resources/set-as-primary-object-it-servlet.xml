@@ -35,7 +35,7 @@
     <bean id="setAsPrimaryObjectService" class="edu.unc.lib.dl.cdr.services.processing.SetAsPrimaryObjectService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">

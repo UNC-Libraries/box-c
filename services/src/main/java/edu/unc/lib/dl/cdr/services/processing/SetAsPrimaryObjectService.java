@@ -27,8 +27,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.util.IndexingActionType;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 
 
 /**
@@ -41,7 +40,7 @@ public class SetAsPrimaryObjectService {
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
-    private IndexingMessageSender indexingMessageSender;
+    private OperationsMessageSender operationsMessageSender;
 
     /**
      * Sets file object with the given pid as the primary object for its work using the agent principals provided.
@@ -71,8 +70,7 @@ public class SetAsPrimaryObjectService {
         work.setPrimaryObject(fileObjPid);
 
         // Send message that the action completed
-        indexingMessageSender.sendIndexingOperation(agent.getUsername(), Arrays.asList(fileObjPid),
-                IndexingActionType.SET_AS_PRIMARY_OBJECT);
+        operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(), Arrays.asList(fileObjPid));
     }
 
     /**
@@ -92,8 +90,8 @@ public class SetAsPrimaryObjectService {
     /**
      * @param indexingMessageSender the message sender to set
      */
-    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
-        this.indexingMessageSender = indexingMessageSender;
+    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
+        this.operationsMessageSender = operationsMessageSender;
     }
 
 }

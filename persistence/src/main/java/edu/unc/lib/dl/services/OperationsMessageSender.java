@@ -332,4 +332,31 @@ public class OperationsMessageSender extends AbstractMessageSender {
         return getMessageId(msg);
     }
 
+    /**
+     * Sends set-as-primary-object operation message.
+     *
+     * @param userid id of user who triggered the operation
+     * @param pids objects whose primary object has changed
+     * @return id of operation message
+     */
+    public String sendSetAsPrimaryObjectOperation(String userid, Collection<PID> pids) {
+        Element contentEl = createAtomEntry(userid, pids.iterator().next(),
+                CDRActions.SET_AS_PRIMARY_OBJECT);
+
+        Element updateEl = new Element(CDRActions.SET_AS_PRIMARY_OBJECT.getName(), CDR_MESSAGE_NS);
+        contentEl.addContent(updateEl);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        updateEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+        LOG.debug("sent set-as-prinary-object operation JMS message using JMS template: {}", this.getJmsTemplate());
+
+        return getMessageId(msg);
+    }
+
 }
