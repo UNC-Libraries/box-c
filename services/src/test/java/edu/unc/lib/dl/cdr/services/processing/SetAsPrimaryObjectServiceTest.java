@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
-import static edu.unc.lib.dl.util.IndexingActionType.SET_AS_PRIMARY_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -49,7 +48,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
-import edu.unc.lib.dl.services.IndexingMessageSender;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 
 /**
  *
@@ -63,7 +62,7 @@ public class SetAsPrimaryObjectServiceTest {
     @Mock
     private RepositoryObjectLoader repoObjLoader;
     @Mock
-    private IndexingMessageSender messageSender;
+    private OperationsMessageSender messageSender;
     @Mock
     private AgentPrincipals agent;
     @Mock
@@ -98,7 +97,7 @@ public class SetAsPrimaryObjectServiceTest {
         service = new SetAsPrimaryObjectService();
         service.setAclService(aclService);
         service.setRepositoryObjectLoader(repoObjLoader);
-        service.setIndexingMessageSender(messageSender);
+        service.setOperationsMessageSender(messageSender);
     }
 
     @Test
@@ -108,7 +107,7 @@ public class SetAsPrimaryObjectServiceTest {
         service.setAsPrimaryObject(agent, fileObjPid);
 
         verify(workObj).setPrimaryObject(fileObjPid);
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(), eq(SET_AS_PRIMARY_OBJECT));
+        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 1);
