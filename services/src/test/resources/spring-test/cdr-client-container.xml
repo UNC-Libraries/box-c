@@ -83,6 +83,10 @@
 	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
 	    <property name="jmsTemplate" ref="jmsTemplate" />
 	</bean>
+    
+    <bean id="indexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+        <property name="jmsTemplate" ref="jmsTemplate" />
+    </bean>
 	
 	<bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
         factory-method="newInstance" scope="prototype">
