@@ -18,7 +18,6 @@ package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.INDEX;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.PUBLISH;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
@@ -89,19 +88,6 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
             offer(targetId, IndexingActionType.MOVE, subjects);
         } else if (ADD.equals(solrActionType)) {
             offer(targetId, IndexingActionType.ADD_SET_TO_PARENT, subjects);
-        } else if (INDEX.equals(solrActionType)) {
-            String operation = contentBody.getName();
-            IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace
-                    + operation);
-            if (indexingAction != null) {
-                if (IndexingActionType.SET_DEFAULT_WEB_OBJECT.equals(indexingAction)) {
-                    offer(targetId, IndexingActionType.SET_DEFAULT_WEB_OBJECT, subjects);
-                } else {
-                    for (String pidString : subjects) {
-                        offer(pidString, indexingAction);
-                    }
-                }
-            }
         } else if (PUBLISH.equals(solrActionType)) {
             for (String pidString : subjects) {
                 offer(pidString, IndexingActionType.UPDATE_STATUS);
