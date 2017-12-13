@@ -86,8 +86,7 @@ public class IndexingController {
                 indexingService.reindexObject(AgentPrincipals.createFromThread(), objectPid);
             } catch (Exception e) {
                 result.put("error", e.getMessage());
-                Throwable t = e.getCause();
-                if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
+                if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
                     return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
                 } else {
                     log.error("Failed to reindex repository due to {}",  e);
