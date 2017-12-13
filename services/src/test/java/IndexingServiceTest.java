@@ -75,8 +75,6 @@ public class IndexingServiceTest {
 
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("username");
-        //when(messageSender.sendIndexingOperation(anyString(), any(Collection.class), any(IndexingActionType.class)))
-                //.thenReturn("message_id");
 
         objPid = PIDs.get(UUID.randomUUID().toString());
 
