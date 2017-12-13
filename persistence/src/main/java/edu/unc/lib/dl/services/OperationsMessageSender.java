@@ -15,12 +15,18 @@
  */
 package edu.unc.lib.dl.services;
 
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
 
 import java.util.Collection;
+import java.util.UUID;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.joda.time.DateTimeUtils;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -354,9 +360,32 @@ public class OperationsMessageSender extends AbstractMessageSender {
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
-        LOG.debug("sent set-as-prinary-object operation JMS message using JMS template: {}", this.getJmsTemplate());
+        LOG.debug("sent set-as-primary-object operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
+    }
+
+    private Element createAtomEntry(String userid, PID contextpid, CDRActions operation) {
+        return createAtomEntry(userid, contextpid, operation.toString(), "urn:uuid:" + UUID.randomUUID().toString());
+    }
+
+    private Element createAtomEntry(String userid, PID contextpid, String operation, String messageId) {
+        Document msg = new Document();
+        Element entry = new Element("entry", ATOM_NS);
+        msg.addContent(entry);
+        entry.addContent(new Element("id", ATOM_NS).setText(messageId));
+        DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+        String timestamp = fmt.print(DateTimeUtils.currentTimeMillis());
+        entry.addContent(new Element("updated", ATOM_NS).setText(timestamp));
+        entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid))
+                .addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));
+        entry.addContent(new Element("title", ATOM_NS)
+                .setText(operation).setAttribute("type", "text"));
+        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getRepositoryPath())
+                .setAttribute("type", "text"));
+        Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
+        entry.addContent(content);
+        return content;
     }
 
 }
