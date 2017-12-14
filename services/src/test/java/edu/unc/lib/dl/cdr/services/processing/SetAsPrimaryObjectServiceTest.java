@@ -110,8 +110,9 @@ public class SetAsPrimaryObjectServiceTest {
         verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
-        assertEquals(collections.size(), 1);
+        assertEquals(collections.size(), 2);
         assertTrue(collections.contains(fileObjPid));
+        assertTrue(collections.contains(fileObj.getParent().getPid()));
     }
 
     @Test(expected = AccessRestrictionException.class)

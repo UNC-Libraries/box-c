@@ -70,7 +70,8 @@ public class SetAsPrimaryObjectService {
         work.setPrimaryObject(fileObjPid);
 
         // Send message that the action completed
-        operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(), Arrays.asList(fileObjPid));
+        operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(),
+                Arrays.asList(parent.getPid(), fileObjPid));
     }
 
     /**
