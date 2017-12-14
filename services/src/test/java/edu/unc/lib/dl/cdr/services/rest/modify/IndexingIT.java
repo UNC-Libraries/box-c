@@ -49,10 +49,7 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
 
@@ -63,7 +60,6 @@ import edu.unc.lib.dl.test.TestHelper;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
-    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/indexing-it-servlet.xml")
 })
@@ -74,8 +70,6 @@ public class IndexingIT {
     private WebApplicationContext context;
     @Autowired
     private AccessControlService aclService;
-    @Autowired
-    private RepositoryObjectFactory repoObjFactory;
 
     private MockMvc mvc;
     private PID objPid;
@@ -146,11 +140,7 @@ public class IndexingIT {
 
     @Test
     public void testCleanReindex() throws Exception {
-        PID fileObjPid = makePid();
-        FileObject fileObj = repoObjFactory.createFileObject(fileObjPid, null);
         PID parentPid = makePid();
-        WorkObject work = repoObjFactory.createWorkObject(parentPid, null);
-        work.addMember(fileObj);
 
         MvcResult result = mvc.perform(post("/edit/solr/reindex/" + parentPid.getUUID(), false))
                 .andExpect(status().is2xxSuccessful())

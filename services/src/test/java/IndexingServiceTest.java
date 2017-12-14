@@ -92,7 +92,7 @@ public class IndexingServiceTest {
     public void reindexObjectTest() {
         service.reindexObject(agent, objPid);
 
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(), eq(IndexingActionType.ADD));
+        verify(messageSender).sendIndexingOperation(any(PID.class), pidsCaptor.capture(), eq(IndexingActionType.ADD));
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 1);
@@ -103,7 +103,7 @@ public class IndexingServiceTest {
     public void inplaceReindexObjectAndChildrenTest() {
         service.reindexObjectAndChildren(agent, objPid, true);
 
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(),
+        verify(messageSender).sendIndexingOperation(any(PID.class), pidsCaptor.capture(),
                 eq(IndexingActionType.RECURSIVE_REINDEX));
 
         Collection<PID> collections = pidsCaptor.getValue();
@@ -115,7 +115,7 @@ public class IndexingServiceTest {
     public void cleanReindexObjectAndChildrenTest() {
         service.reindexObjectAndChildren(agent, objPid, false);
 
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(),
+        verify(messageSender).sendIndexingOperation(any(PID.class), pidsCaptor.capture(),
                 eq(IndexingActionType.CLEAN_REINDEX));
 
         Collection<PID> collections = pidsCaptor.getValue();

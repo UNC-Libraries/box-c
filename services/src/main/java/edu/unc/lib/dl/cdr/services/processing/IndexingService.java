@@ -18,7 +18,6 @@ package edu.unc.lib.dl.cdr.services.processing;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
@@ -40,7 +39,6 @@ public class IndexingService {
      * @param agent security principals of the agent making request
      * @param objPid the PID where reindexing should begin in the tree
      * @param inplace whether in-place reindexing has been requested
-     * @throws IndexingException
      */
     public void reindexObjectAndChildren(AgentPrincipals agent, PID objectPid, Boolean inplace) {
         aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
@@ -59,7 +57,6 @@ public class IndexingService {
      *
      * @param agent security principals of the agent making request
      * @param objectPid the PID of the object to be reindexed
-     * @throws IndexingException
      */
     public void reindexObject(AgentPrincipals agent, PID objectPid) {
         aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
