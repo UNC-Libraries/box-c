@@ -17,7 +17,7 @@ package edu.unc.lib.dl.services;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -43,7 +43,7 @@ public class IndexingMessageSender extends AbstractMessageSender {
      * @param children any children of object to be reindexed (optional)
      * @param solrActionType type of indexing action to perform
      */
-    public void sendIndexingOperation(PID objPid, List<String> children, IndexingActionType solrActionType) {
+    public void sendIndexingOperation(PID objPid, Collection<PID> childPids, IndexingActionType solrActionType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
@@ -51,9 +51,10 @@ public class IndexingMessageSender extends AbstractMessageSender {
         entry.addContent(new Element("solrActionType", ATOM_NS)
                 .setText(solrActionType.getURI().toString()));
 
-        if (children != null && children.size() > 0) {
-            String childrenStr = String.join(",", children);
-            entry.addContent(new Element("children", ATOM_NS).setText(childrenStr));
+        if (childPids != null && childPids.size() > 0) {
+            for (PID pid : childPids) {
+                entry.addContent(new Element("children", ATOM_NS).setText(pid.getRepositoryPath()));
+            }
         }
 
         LOG.debug("sending solr update message for {} of type {}", objPid, solrActionType.toString());
