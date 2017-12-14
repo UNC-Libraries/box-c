@@ -164,12 +164,10 @@
 	<dependency>
 		<groupId>ch.qos.logback</groupId>
 		<artifactId>logback-core</artifactId>
-		<scope>test</scope>
 	</dependency>
 	<dependency>
 		<groupId>ch.qos.logback</groupId>
 		<artifactId>logback-classic</artifactId>
-		<scope>test</scope>
 	</dependency>
 	<!-- integration testing -->
 		<dependency>
@@ -262,6 +260,7 @@
 </dependencies>
 
 	<build>
+	<finalName>${artifactId}</finalName>
 	<plugins>
 	<plugin>
 		<artifactId>maven-failsafe-plugin</artifactId>
