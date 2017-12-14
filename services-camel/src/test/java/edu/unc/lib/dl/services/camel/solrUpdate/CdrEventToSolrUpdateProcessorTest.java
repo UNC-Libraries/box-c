@@ -162,9 +162,7 @@ public class CdrEventToSolrUpdateProcessorTest {
     private void testIndexingAction(IndexingActionType indexingAction) throws Exception {
         List<PID> subjects = pidList(NUM_TEST_PIDS);
 
-        Document msgDoc = buildMessage(CDRActions.INDEX.toString(),
-                indexingAction.getName(),
-                targetPid, subjects);
+        Document msgDoc = buildMessage("action_placeholder", indexingAction.getName(), targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
 
         processor.process(exchange);
@@ -191,8 +189,7 @@ public class CdrEventToSolrUpdateProcessorTest {
     public void testIndexPrimaryObjectAction() throws Exception {
         List<PID> subjects = pidList(NUM_TEST_PIDS);
 
-        Document msgDoc = buildMessage(CDRActions.INDEX.toString(),
-                IndexingActionType.SET_DEFAULT_WEB_OBJECT.getName(),
+        Document msgDoc = buildMessage("action_placeholder", IndexingActionType.SET_DEFAULT_WEB_OBJECT.getName(),
                 targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
 

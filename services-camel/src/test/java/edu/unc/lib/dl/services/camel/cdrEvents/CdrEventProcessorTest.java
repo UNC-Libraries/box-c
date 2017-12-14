@@ -39,9 +39,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor;
-import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
-
 /**
  *
  * @author lfarrell
@@ -49,7 +46,7 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
  */
 public class CdrEventProcessorTest {
     private CdrEventProcessor processor;
-    private String actionType = CDRActions.INDEX.getName();
+    private String actionType = "action_placeholder";
 
     @Mock
     private Exchange exchange;
