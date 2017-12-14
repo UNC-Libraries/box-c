@@ -23,12 +23,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.xpath.XPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.util.ContentModelHelper;
 
@@ -84,7 +85,7 @@ public class FOXMLJDOMUtil {
     private static final String getDatastreamXpath = "/f:digitalObject/f:datastream[@ID='%DSID%']";
     private static final String labelXpath =
             "/f:digitalObject/f:objectProperties/f:property[@NAME='info:fedora/fedora-system:def/model#label']/@VALUE";
-    private static Logger log = Logger.getLogger(FOXMLJDOMUtil.class);
+    private static final Logger log = LoggerFactory.getLogger(FOXMLJDOMUtil.class);
 
     private static final String pidXpath = "/f:digitalObject/@PID";
 
@@ -138,7 +139,7 @@ public class FOXMLJDOMUtil {
     }
 
     public static List<Element> getFileLocators(final Document foxml) {
-        List<Element> result = new ArrayList<Element>();
+        List<Element> result = new ArrayList<>();
         try {
             result = extracted(_fileLocatorXpath.selectNodes(foxml));
         } catch (JDOMException e) {
@@ -375,7 +376,7 @@ public class FOXMLJDOMUtil {
      * Returns the content of an internal datastream from the given foxml. If
      * the datastream is versionable, then the most recent version of the
      * datastream is returned.
-     * 
+     *
      * @param datastream
      * @param foxml
      * @return
@@ -407,12 +408,12 @@ public class FOXMLJDOMUtil {
     /**
      * Returns a map of all of the most recent versions of datastreams listed in
      * the given FOXML document
-     * 
+     *
      * @param foxml
      * @return
      */
     public static Map<String, Element> getMostRecentDatastreamMap(final Document foxml) {
-        Map<String, Element> datastreams = new HashMap<String, Element>();
+        Map<String, Element> datastreams = new HashMap<>();
         List<?> datastreamList = foxml.getRootElement().getChildren(
                 "datastream", JDOMNamespaceUtil.FOXML_NS);
         for (Object datastreamObject : datastreamList) {
@@ -477,7 +478,7 @@ public class FOXMLJDOMUtil {
     /**
      * Returns the most recent version of a datastream from the given set of
      * datastream elements
-     * 
+     *
      * @param elements
      * @return
      */
@@ -511,7 +512,7 @@ public class FOXMLJDOMUtil {
      * Returns the object of the relationship specified from the provided
      * RELS-EXT datastream. Only returns the first value if the relation occurs
      * multiple times
-     * 
+     *
      * @param relationName
      * @param relationNS
      * @param relsExt
@@ -535,7 +536,7 @@ public class FOXMLJDOMUtil {
             final Namespace relationNS, final Element relsExt) {
         List<?> relationEls = relsExt.getChildren(relationName, relationNS);
         if (relationEls != null) {
-            List<String> values = new ArrayList<String>(relationEls.size());
+            List<String> values = new ArrayList<>(relationEls.size());
             for (Object relationObj : relationEls) {
                 values.add(((Element) relationObj).getAttributeValue(
                         "resource", JDOMNamespaceUtil.RDF_NS));
