@@ -79,7 +79,7 @@ public class IndexingServiceTest {
         objPid = PIDs.get(UUID.randomUUID().toString());
 
         service = new IndexingService();
-        service.setAccessControlService(aclService);
+        service.setAclService(aclService);
         service.setIndexingMessageSender(messageSender);
     }
 
@@ -126,7 +126,7 @@ public class IndexingServiceTest {
     @Test(expected = AccessRestrictionException.class)
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
-        .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(reindex));
+                .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(reindex));
 
         service.reindexObject(agent, objPid);
     }

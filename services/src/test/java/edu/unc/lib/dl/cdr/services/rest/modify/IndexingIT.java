@@ -147,7 +147,7 @@ public class IndexingIT {
     @Test
     public void testCleanReindex() throws Exception {
         PID fileObjPid = makePid();
-        FileObject fileObj =repoObjFactory.createFileObject(fileObjPid, null);
+        FileObject fileObj = repoObjFactory.createFileObject(fileObjPid, null);
         PID parentPid = makePid();
         WorkObject work = repoObjFactory.createWorkObject(parentPid, null);
         work.addMember(fileObj);

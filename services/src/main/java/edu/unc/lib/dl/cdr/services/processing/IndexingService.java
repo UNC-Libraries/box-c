@@ -42,10 +42,10 @@ public class IndexingService {
      * @param inplace whether in-place reindexing has been requested
      * @throws IndexingException
      */
-    public void reindexObjectAndChildren(AgentPrincipals agent, PID objectPid, Boolean inplace) {
+    public void reindexObjectAndChildren(AgentPrincipals agent, PID objectPid, boolean inplace) {
         aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
                 Permission.reindex);
-        if (inplace == null || inplace) {
+        if (inplace) {
             // Add message to cdr solr queue
             indexingMessageSender.sendIndexingOperation(objectPid, null, IndexingActionType.RECURSIVE_REINDEX);
         } else {

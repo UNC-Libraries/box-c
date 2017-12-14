@@ -88,7 +88,7 @@ public class SetAsPrimaryObjectService {
     }
 
     /**
-     * @param indexingMessageSender the message sender to set
+     * @param operationsMessageSender the message sender to set
      */
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;

@@ -53,8 +53,8 @@ public class IndexingController {
     /**
      * Perform a deep reindexing operation on the object with the specified id and all of its children.
      *
-     * @param id
-     * @param inplace whether the reindex should be an in-place recursive reindex or not
+     * @param id the identifier of the object to be reindexed
+     * @param inplace whether the reindex should be an in-place recursive reindex (optional)
      * @return
      */
     @RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
@@ -66,7 +66,7 @@ public class IndexingController {
     /**
      * Perform a shallow reindexing of the object specified by id
      *
-     * @param id
+     * @param id the identifier of the object to be reindexed
      * @return
      */
     @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
@@ -74,57 +74,56 @@ public class IndexingController {
         return indexObject(id);
     }
 
-        private ResponseEntity<Object> indexObject(String id) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("action", "reindex");
-            result.put("pid", id);
+    private ResponseEntity<Object> indexObject(String id) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "reindex");
+        result.put("pid", id);
 
-            PID objectPid = PIDs.get(id);
+        PID objectPid = PIDs.get(id);
 
-            log.info("Updating object " + id);
-            try {
-                indexingService.reindexObject(AgentPrincipals.createFromThread(), objectPid);
-            } catch (Exception e) {
-                result.put("error", e.getMessage());
-                if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
-                    return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-                } else {
-                    log.error("Failed to reindex repository due to {}",  e);
-                    return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            }
-
-            result.put("timestamp", System.currentTimeMillis());
-            return new ResponseEntity<>(result, HttpStatus.OK);
-        }
-
-        private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("action", "reindex");
-            result.put("pid", id);
-
-            PID objectPid = PIDs.get(id);
-
-            if (inplace == null || inplace) {
-                log.info("Reindexing " + id + ", inplace reindex mode");
+        log.info("Updating object " + id);
+        try {
+            indexingService.reindexObject(AgentPrincipals.createFromThread(), objectPid);
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
-                log.info("Reindexing " + id + ", clean reindex mode");
+                log.error("Failed to reindex object {}", id, e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
-            try {
-                indexingService.reindexObjectAndChildren(AgentPrincipals.createFromThread(), objectPid, inplace);
-            } catch (Exception e) {
-                result.put("error", e.getMessage());
-                Throwable t = e.getCause();
-                if (t instanceof AuthorizationException || t instanceof AccessRestrictionException) {
-                    return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
-                } else {
-                    log.error("Failed to reindex repository due to {}",  e);
-                    return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-                }
-            }
-
-            result.put("timestamp", System.currentTimeMillis());
-            return new ResponseEntity<>(result, HttpStatus.OK);
         }
+
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "reindex");
+        result.put("pid", id);
+
+        PID objectPid = PIDs.get(id);
+
+        if (inplace == null || inplace) {
+            log.info("Reindexing " + id + ", inplace reindex mode");
+        } else {
+            log.info("Reindexing " + id + ", clean reindex mode");
+        }
+        try {
+            indexingService.reindexObjectAndChildren(AgentPrincipals.createFromThread(), objectPid, inplace);
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to reindex object {} and its children", id, e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
 
 }
