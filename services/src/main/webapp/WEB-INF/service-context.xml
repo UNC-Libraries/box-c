@@ -109,7 +109,7 @@
     
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="repository.updates" />
+        <property name="defaultDestinationName" value="${cdr.stream}" />
         <property name="pubSubDomain" value="true" />
     </bean>
 
@@ -238,7 +238,7 @@
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="activemq:queue:repository.solrupdate?asyncConsumer=true" />
+        <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
         <property name="pubSubDomain" value="false" />
     </bean>
     
