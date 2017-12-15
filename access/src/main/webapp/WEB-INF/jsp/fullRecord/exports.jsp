@@ -25,8 +25,8 @@
 		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'RELS-EXT', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'RELS-EXT', fedoraUtil)}">Fedora Object-to-Object Relationships</a></li>
 		</c:if>
-		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'MD_TECHNICAL', briefObject)}">
-			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'MD_TECHNICAL', fedoraUtil)}">FITS Extract</a></li>
+		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'techmd_fits', briefObject)}">
+			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'techmd_fits', fedoraUtil)}">FITS Extract</a></li>
 		</c:if>
 		<c:if test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'MD_DESCRIPTIVE', briefObject)}">
 			<li><a href="${cdr:getDatastreamUrl(briefObject.id, 'MD_DESCRIPTIVE', fedoraUtil)}">MODS</a></li>

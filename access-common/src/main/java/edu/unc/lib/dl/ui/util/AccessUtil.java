@@ -20,8 +20,8 @@ package edu.unc.lib.dl.ui.util;
  */
 import java.util.Set;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -48,7 +48,7 @@ public class AccessUtil {
             return false;
         }
 
-        if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+        if (groups.contains(AccessPrincipalConstants.AUTHENTICATED_PRINC)) {
             return true;
         }
 
@@ -96,7 +96,7 @@ public class AccessUtil {
      * @return
      */
     public static boolean hasListAccessOnly(AccessGroupSet groups, BriefObjectMetadata metadata) {
-        if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+        if (groups.contains(AccessPrincipalConstants.AUTHENTICATED_PRINC)) {
             return false;
         }
 
@@ -110,7 +110,7 @@ public class AccessUtil {
     }
 
     public static boolean hasPatronRoleForPublicGroup(BriefObjectMetadata metadata) {
-        return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP))
+        return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessPrincipalConstants.PUBLIC_PRINC))
                 .contains(UserRole.patron);
     }
 }
