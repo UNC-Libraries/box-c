@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -303,7 +304,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
         try {
             if (!file.exists()) {
-                file.getParentFile().mkdirs();
+                Files.createDirectories(file.getParentFile().toPath());
             }
             return premisLoggerFactory.createPremisLogger(pid, file);
         } catch (Exception e) {

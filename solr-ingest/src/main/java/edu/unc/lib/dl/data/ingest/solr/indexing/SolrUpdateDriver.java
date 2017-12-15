@@ -71,6 +71,9 @@ public class SolrUpdateDriver {
 
     public void addDocument(IndexDocumentBean idb) throws IndexingException {
         try {
+            log.info("Queuing {} for full indexing", idb.getId());
+            // Providing a version value, indicating that it doesn't matter if record exists
+            idb.set_version_(0l);
             solrClient.addBean(idb);
         } catch (IOException e) {
             throw new IndexingException("Failed to add document to solr", e);
@@ -89,6 +92,7 @@ public class SolrUpdateDriver {
      */
     public void updateDocument(IndexDocumentBean idb) throws IndexingException {
         try {
+            log.info("Queuing {} for atomic updating", idb.getId());
             SolrInputDocument sid = new SolrInputDocument();
             Map<String, Object> fields = idb.getFields();
             for (Entry<String, Object> field : fields.entrySet()) {
@@ -107,6 +111,8 @@ public class SolrUpdateDriver {
 
             // Set timestamp to now, auto population not working with atomic update #SOLR-8966
             updateField(sid, UPDATE_TIMESTAMP, new Date());
+            // Requiring that the record already exist for performing update
+            updateField(sid, "_version_", 1l);
 
             if (log.isDebugEnabled()) {
                 log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));

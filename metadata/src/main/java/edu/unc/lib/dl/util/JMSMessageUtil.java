@@ -107,9 +107,9 @@ public class JMSMessageUtil {
     }
 
     public static enum CDRActions {
-        MOVE("move"), REMOVE("remove"), ADD("add"), REORDER("reorder"), PUBLISH(
-                "publish"), REINDEX("reindex"), INDEX("index"), EDIT_TYPE(
-                "editType");
+        MOVE("move"), REMOVE("remove"), ADD("add"), REORDER("reorder"), PUBLISH("publish"),
+        REINDEX("reindex"), INDEX("index"), EDIT_TYPE("editType"), MARK_FOR_DELETION("markForDeletion"),
+                RESTORE_FROM_DELETION("restoreFromDeletion"), UPDATE_DESCRIPTION("updateDescription");
 
         private String name;
         private final URI uri;

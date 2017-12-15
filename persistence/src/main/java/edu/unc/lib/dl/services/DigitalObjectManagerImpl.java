@@ -429,7 +429,7 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
             }
             // Send message to message queue informing it of the deletion(s)
             if (this.getOperationsMessageSender() != null) {
-                this.getOperationsMessageSender().sendRemoveOperation(user, container, removed, null);
+                this.getOperationsMessageSender().sendRemoveOperation(user, container, removed);
             }
         } catch (FedoraException fault) {
             log.error("Fedora threw an unexpected fault while deleting " + pid.getPid(), fault);

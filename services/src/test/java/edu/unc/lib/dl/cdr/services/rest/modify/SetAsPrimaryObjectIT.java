@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -64,7 +65,11 @@ import edu.unc.lib.dl.test.TestHelper;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test/test-fedora-container.xml", "/spring-test/cdr-client-container.xml", "/set-as-primary-object-it-servlet.xml"})
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/set-as-primary-object-it-servlet.xml")
+})
 @WebAppConfiguration
 public class SetAsPrimaryObjectIT {
 
@@ -107,7 +112,7 @@ public class SetAsPrimaryObjectIT {
     }
 
     @Test
-    public void setPrimaryObjectTest() throws UnsupportedOperationException, Exception {
+    public void testSetPrimaryObject() throws UnsupportedOperationException, Exception {
         addFileObjAsMember();
 
         assertPrimaryObjectNotSet(parent);
@@ -145,13 +150,13 @@ public class SetAsPrimaryObjectIT {
     }
 
     @Test
-    public void addFolderAsPrimaryObjectTest() throws UnsupportedOperationException, Exception {
+    public void testAddFolderAsPrimaryObject() throws UnsupportedOperationException, Exception {
         PID folderObjPid = makePid();
 
         repositoryObjectFactory.createFolderObject(folderObjPid, null);
 
         MvcResult result = mvc.perform(put("/edit/setAsPrimaryObject/" + folderObjPid.getUUID()))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isInternalServerError())
                 .andReturn();
 
             assertPrimaryObjectNotSet(parent);

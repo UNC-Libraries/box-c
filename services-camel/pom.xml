@@ -103,6 +103,12 @@
 		<groupId>org.apache.tika</groupId>
 		<artifactId>tika-parsers</artifactId>
 		<version>${tika.version}</version>
+		<exclusions>
+			<exclusion>
+				<groupId>edu.ucar</groupId>
+				<artifactId>grib</artifactId>
+			</exclusion>
+		</exclusions>
 	</dependency>
 	
 	<dependency>
@@ -158,22 +164,16 @@
 
 	<!-- logging -->
 	<dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-api</artifactId>
-		<version>2.6.2</version>
-		<scope>test</scope>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-api</artifactId>
 	</dependency>
 	<dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-core</artifactId>
-		<version>2.6.2</version>
-		<scope>test</scope>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-core</artifactId>
 	</dependency>
 	<dependency>
-		<groupId>org.apache.logging.log4j</groupId>
-		<artifactId>log4j-slf4j-impl</artifactId>
-		<version>2.6.2</version>
-		<scope>test</scope>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-classic</artifactId>
 	</dependency>
 	<!-- integration testing -->
 		<dependency>
@@ -266,6 +266,7 @@
 </dependencies>
 
 	<build>
+	<finalName>${artifactId}</finalName>
 	<plugins>
 	<plugin>
 		<artifactId>maven-failsafe-plugin</artifactId>

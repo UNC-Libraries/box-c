@@ -76,6 +76,60 @@
 	    <property name="client" ref="fcrepoClient" />
 	</bean>
 	
+	<bean id="jmsTemplate" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.springframework.jms.core.JmsTemplate" />
+    </bean>
+	
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+	    <property name="jmsTemplate" ref="jmsTemplate" />
+	</bean>
+	
+	<bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
+        factory-method="newInstance" scope="prototype">
+        <constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
+    </bean>
+	
+	<bean id="schematronValidator" class="edu.unc.lib.dl.schematron.SchematronValidator"
+       init-method="loadSchemas">
+        <property name="schemas">
+            <map>
+                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).CDR_SIMPLE.name}"
+                    value="classpath:edu/unc/lib/dl/schematron/simple_mets_profile.sch" />
+                <entry key="object-mods"
+                    value="classpath:edu/unc/lib/dl/schematron/object-mods.sch" />
+                <entry key="vocabularies-mods"
+                    value="classpath:edu/unc/lib/dl/schematron/vocabularies-mods.sch" />
+                <entry key="#{T(edu.unc.lib.dl.xml.METSProfile).DSPACE_SIP.name}"
+                    value="classpath:edu/unc/lib/dl/schematron/dspace_mets_profile.sch" />
+            </map>
+        </property>
+    </bean>
+	
+	<bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">
+        <property name="schematronValidator" ref="schematronValidator" />
+        <property name="modsSchema">
+            <bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
+                factory-method="newSchema">
+                <constructor-arg>
+                    <list value-type="javax.xml.transform.Source">
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/xml.xsd" />
+                        </bean>
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/xlink.xsd" />
+                        </bean>
+                        <bean class="javax.xml.transform.stream.StreamSource">
+                            <constructor-arg type="java.io.InputStream"
+                                value="classpath:/schemas/mods-3-6.xsd" />
+                        </bean>
+                    </list>
+                </constructor-arg>
+            </bean>
+        </property>
+    </bean>
+	
 	<bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>

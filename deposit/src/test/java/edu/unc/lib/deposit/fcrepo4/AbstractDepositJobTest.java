@@ -133,6 +133,10 @@ public class AbstractDepositJobTest {
         }).when(tx).cancel(any(Exception.class));
     }
 
+    protected PID makePid() {
+        return makePid(RepositoryPathConstants.CONTENT_BASE);
+    }
+
     protected PID makePid(String qualifier) {
         String uuid = UUID.randomUUID().toString();
         return PIDs.get(qualifier + "/" + uuid);

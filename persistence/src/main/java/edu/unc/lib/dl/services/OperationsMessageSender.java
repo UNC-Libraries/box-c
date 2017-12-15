@@ -52,7 +52,7 @@ import edu.unc.lib.dl.util.ResourceType;
 public class OperationsMessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
 
-    private JmsTemplate jmsTemplate = null;
+    private JmsTemplate jmsTemplate;
 
     /**
      * Sends a Add operation message, indicating that objects were added to destination containers.
@@ -60,8 +60,8 @@ public class OperationsMessageSender {
      * @param userid id of user who triggered the operation
      * @param destinations containers objects were added to
      * @param added objects added
-     * @param reordered reordered
-     * @param depositId id of deposit
+     * @param reordered reordered (optional)
+     * @param depositId id of deposit (optional)
      * @return id of operation message
      */
     public String sendAddOperation(String userid, Collection<PID> destinations, Collection<PID> added,
@@ -71,24 +71,25 @@ public class OperationsMessageSender {
         Element add = new Element("add", CDR_MESSAGE_NS);
         contentEl.addContent(add);
 
-        add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
+        if (depositId != null) {
+            add.addContent(new Element("depositId", CDR_MESSAGE_NS).setText(depositId));
+        }
 
         for (PID destination : destinations) {
-            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+            add.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
         }
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         add.addContent(subjects);
         for (PID sub : added) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
-
-        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-        add.addContent(reorderedEl);
         if (reordered != null) {
+            Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
+            add.addContent(reorderedEl);
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -100,35 +101,74 @@ public class OperationsMessageSender {
     }
 
     /**
+     * Sends a MarkForDeletion operation message, indicating that an object is being marked for deletion
+     * from the repository
+     *
+     * @param userid id of user who triggered the operation
+     * @param marked object marked for deletion
+     * @return id of operation message
+     */
+    public String sendMarkForDeletionOperation(String userid, Collection<PID> marked) {
+        Element contentEl = createAtomEntry(userid, marked.iterator().next(), CDRActions.MARK_FOR_DELETION);
+
+        Element mark = new Element("markForDeletion", CDR_MESSAGE_NS);
+        contentEl.addContent(mark);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        mark.addContent(subjects);
+        for (PID sub : marked) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+
+        return getMessageId(msg);
+    }
+
+    /**
+     * Sends a RestoreFromDeletion operation message, indicating that an object is being un-marked for deletion
+     *
+     * @param userid id of user who triggered the operation
+     * @param unmarked object being un-marked for deletion
+     * @return id of operation message
+     */
+    public String sendRestoreFromDeletionOperation(String userid, Collection<PID> unmarked) {
+        Element contentEl = createAtomEntry(userid, unmarked.iterator().next(), CDRActions.RESTORE_FROM_DELETION);
+
+        Element mark = new Element("restoreFromDeletion", CDR_MESSAGE_NS);
+        contentEl.addContent(mark);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        mark.addContent(subjects);
+        for (PID sub : unmarked) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+
+        return getMessageId(msg);
+    }
+
+    /**
      * Sends a Remove operation message, indicating that objects are being removed from the repository
      *
      * @param userid id of user who triggered the operation
      * @param destinations containers objects were added to
      * @param removed objects removed
-     * @param reordered reordered
      * @return id of operation message
      */
-    public String sendRemoveOperation(String userid, PID destination, Collection<PID> removed,
-            Collection<PID> reordered) {
+    public String sendRemoveOperation(String userid, PID destination, Collection<PID> removed) {
         Element contentEl = createAtomEntry(userid, destination, CDRActions.REMOVE);
 
         Element remove = new Element("remove", CDR_MESSAGE_NS);
         contentEl.addContent(remove);
 
-        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        remove.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         remove.addContent(subjects);
         for (PID sub : removed) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
-        }
-
-        Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
-        remove.addContent(reorderedEl);
-        if (reordered != null) {
-            for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
-            }
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -155,25 +195,25 @@ public class OperationsMessageSender {
         Element move = new Element("move", CDR_MESSAGE_NS);
         contentEl.addContent(move);
 
-        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        move.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
 
         Element oldParents = new Element("oldParents", CDR_MESSAGE_NS);
         move.addContent(oldParents);
         for (PID old : sources) {
-            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.getPid()));
+            oldParents.addContent(new Element("pid", CDR_MESSAGE_NS).setText(old.getRepositoryPath()));
         }
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         move.addContent(subjects);
         for (PID sub : moved) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         move.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -191,13 +231,13 @@ public class OperationsMessageSender {
         Element reorder = new Element("reorder", CDR_MESSAGE_NS);
         contentEl.addContent(reorder);
 
-        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getPid()));
+        reorder.addContent(new Element("parent", CDR_MESSAGE_NS).setText(destination.getRepositoryPath()));
 
         Element reorderedEl = new Element("reordered", CDR_MESSAGE_NS);
         reorder.addContent(reorderedEl);
         if (reordered != null) {
             for (PID re : reordered) {
-                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getPid()));
+                reorderedEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(re.getRepositoryPath()));
             }
         }
 
@@ -234,7 +274,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         publishEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -265,7 +305,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         newTypeEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -274,6 +314,31 @@ public class OperationsMessageSender {
         return getMessageId(msg);
     }
 
+    /**
+     * Sends Update MODS operation message.
+     *
+     * @param userid id of user who triggered the operation
+     * @param pids objects whose MODS changed
+     * @return id of operation message
+     */
+    public String sendUpdateDescriptionOperation(String userid, Collection<PID> pids) {
+        Element contentEl = createAtomEntry(userid, pids.iterator().next(),
+                CDRActions.UPDATE_DESCRIPTION);
+
+        Element updateEl = new Element(CDRActions.UPDATE_DESCRIPTION.getName(), CDR_MESSAGE_NS);
+        contentEl.addContent(updateEl);
+
+        Element subjects = new Element("subjects", CDR_MESSAGE_NS);
+        updateEl.addContent(subjects);
+        for (PID sub : pids) {
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
+        }
+
+        Document msg = contentEl.getDocument();
+        sendMessage(msg);
+
+        return getMessageId(msg);
+    }
 
     /**
      * Sends message indicating that objects are being requested to be reindexed.
@@ -293,7 +358,7 @@ public class OperationsMessageSender {
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
         indexEl.addContent(subjects);
         for (PID sub : pids) {
-            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getPid()));
+            subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
@@ -306,7 +371,7 @@ public class OperationsMessageSender {
         XMLOutputter out = new XMLOutputter();
         final String msgStr = out.outputString(msg);
 
-        this.jmsTemplate.send(new MessageCreator() {
+        jmsTemplate.send(new MessageCreator() {
 
             @Override
             public Message createMessage(Session session) throws JMSException {
@@ -320,12 +385,6 @@ public class OperationsMessageSender {
         return createAtomEntry(userid, contextpid, operation.toString(), "urn:uuid:" + UUID.randomUUID().toString());
     }
 
-    /**
-     * @param msg
-     * @param userid
-     * @param pid
-     * @return
-     */
     private Element createAtomEntry(String userid, PID contextpid, String operation, String messageId) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
@@ -338,7 +397,8 @@ public class OperationsMessageSender {
                 .addContent(new Element("uri", ATOM_NS).setText(CDR_MESSAGE_AUTHOR_URI)));
         entry.addContent(new Element("title", ATOM_NS)
                 .setText(operation).setAttribute("type", "text"));
-        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getPid()).setAttribute("type", "text"));
+        entry.addContent(new Element("summary", ATOM_NS).setText(contextpid.getRepositoryPath())
+                .setAttribute("type", "text"));
         Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
         entry.addContent(content);
         return content;

@@ -91,7 +91,7 @@ public class AddContainerController {
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
                 log.error("Failed to create container for {}",  e);
-                return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
 

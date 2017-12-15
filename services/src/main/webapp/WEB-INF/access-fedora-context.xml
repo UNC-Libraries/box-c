@@ -82,12 +82,12 @@
     
         <bean id="serverAddress" class="java.lang.String">
         <constructor-arg
-            value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}/" />
+            value="${fcrepo.baseUrl}" />
     </bean>
     
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
-            value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}/rest/" />
+            value="${fcrepo.baseUrl}rest/" />
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">

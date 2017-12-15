@@ -27,32 +27,32 @@
 	</bean>
 	
 	<bean id="jmsFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-        destroy-method="stop">
-        <property name="connectionFactory">
-            <bean class="org.apache.activemq.ActiveMQConnectionFactory">
-                <property name="brokerURL">
-                    <value>${jms.broker.uri}</value>
-                </property>
-            </bean>
-        </property>
-    </bean>
+		destroy-method="stop">
+		<property name="connectionFactory">
+			<bean class="org.apache.activemq.ActiveMQConnectionFactory">
+				<property name="brokerURL">
+					<value>${jms.broker.uri}</value>
+				</property>
+			</bean>
+		</property>
+	</bean>
 	
 	<bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-    
-    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
-        <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
-    </bean>
+		<property name="connectionFactory" ref="jmsFactory" />
+		<property name="defaultDestinationName" value="${cdr.stream}" />
+		<property name="pubSubDomain" value="false" />
+	</bean>
+	
+	<bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
+		<property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
+	</bean>
 	
 	<bean id="premisLoggerFactory" class="edu.unc.lib.dl.event.PremisLoggerFactory">
-        <property name="pidMinter" ref="pidMinter" />
-        <property name="repoObjLoader" ref="repositoryObjectLoader" />
-        <property name="repoObjDriver" ref="repositoryObjectDriver" />
-        <property name="repoObjFactory" ref="repositoryObjectFactory" />
-    </bean>
+		<property name="pidMinter" ref="pidMinter" />
+		<property name="repoObjLoader" ref="repositoryObjectLoader" />
+		<property name="repoObjDriver" ref="repositoryObjectDriver" />
+		<property name="repoObjFactory" ref="repositoryObjectFactory" />
+	</bean>
 	
 	<bean class="edu.unc.lib.dl.schematron.SchematronValidator" name="schematronValidator"
 		init-method="loadSchemas">
@@ -73,6 +73,31 @@
 	<bean id="schemaFactory" class="javax.xml.validation.SchemaFactory"
 		factory-method="newInstance" scope="prototype">
 		<constructor-arg value="#{T(javax.xml.XMLConstants).W3C_XML_SCHEMA_NS_URI}" />
+	</bean>
+	
+	<bean id="modsValidator" class="edu.unc.lib.dl.validation.MODSValidator">
+		<property name="schematronValidator" ref="schematronValidator" />
+		<property name="modsSchema">
+			<bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
+				factory-method="newSchema">
+				<constructor-arg>
+					<list value-type="javax.xml.transform.Source">
+						<bean class="javax.xml.transform.stream.StreamSource">
+							<constructor-arg type="java.io.InputStream"
+								value="classpath:/schemas/xml.xsd" />
+						</bean>
+						<bean class="javax.xml.transform.stream.StreamSource">
+							<constructor-arg type="java.io.InputStream"
+								value="classpath:/schemas/xlink.xsd" />
+						</bean>
+						<bean class="javax.xml.transform.stream.StreamSource">
+							<constructor-arg type="java.io.InputStream"
+								value="classpath:/schemas/mods-3-6.xsd" />
+						</bean>
+					</list>
+				</constructor-arg>
+			</bean>
+		</property>
 	</bean>
 
 	<bean id="metsSipSchema" class="javax.xml.validation.Schema"
@@ -173,8 +198,8 @@
 	</bean>
 	
 	<bean id="NormalizeFileObjectsJob" class="edu.unc.lib.deposit.normalize.NormalizeFileObjectsJob"
-        scope="prototype">
-    </bean>
+		scope="prototype">
+	</bean>
 	
 	<bean id="aclValidator" class="edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator">
 	</bean>
@@ -204,30 +229,9 @@
 		<property name="stagingPolicyManager" ref="stagingPolicyManager" />
 	</bean>
 
-	<bean id="ValidateMODS" class="edu.unc.lib.deposit.validate.ValidateMODS"
+	<bean id="ValidateDescriptionJob" class="edu.unc.lib.deposit.validate.ValidateDescriptionJob"
 		scope="prototype">
-		<property name="schematronValidator" ref="schematronValidator" />
-		<property name="modsSchema">
-			<bean class="javax.xml.validation.Schema" factory-bean="schemaFactory"
-				factory-method="newSchema">
-				<constructor-arg>
-					<list value-type="javax.xml.transform.Source">
-						<bean class="javax.xml.transform.stream.StreamSource">
-							<constructor-arg type="java.io.InputStream"
-								value="classpath:/schemas/xml.xsd" />
-						</bean>
-						<bean class="javax.xml.transform.stream.StreamSource">
-							<constructor-arg type="java.io.InputStream"
-								value="classpath:/schemas/xlink.xsd" />
-						</bean>
-						<bean class="javax.xml.transform.stream.StreamSource">
-							<constructor-arg type="java.io.InputStream"
-								value="classpath:/schemas/mods-3-6.xsd" />
-						</bean>
-					</list>
-				</constructor-arg>
-			</bean>
-		</property>
+		<property name="modsValidator" ref="modsValidator" />
 	</bean>
 	
 	<bean id="ExtractTechnicalMetadataJob" class="edu.unc.lib.deposit.validate.ExtractTechnicalMetadataJob"
