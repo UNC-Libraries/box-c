@@ -118,14 +118,14 @@
 		<constructor-arg ref="aclProperties" />
 	</bean>
 	
-<!--	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+	<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
 		<property name="staticMethod" value="edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.setPathFactory"/>
 		<property name="arguments">
 			<list>
 				<ref bean="pathFactory"/>
 			</list>
 		</property>
-	</bean>-->
+	</bean>
 	
 	<!-- Validators -->
 	<bean id="searchStateValidator"
