@@ -111,8 +111,6 @@ public class SolrUpdateDriver {
 
             // Set timestamp to now, auto population not working with atomic update #SOLR-8966
             updateField(sid, UPDATE_TIMESTAMP, new Date());
-            // Requiring that the record already exist for performing update
-            updateField(sid, "_version_", 1l);
 
             if (log.isDebugEnabled()) {
                 log.debug("Performing partial update:\n{}", ClientUtils.toXML(sid));
