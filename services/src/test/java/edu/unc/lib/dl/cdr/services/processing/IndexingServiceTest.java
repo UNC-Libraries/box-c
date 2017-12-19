@@ -1,3 +1,4 @@
+package edu.unc.lib.dl.cdr.services.processing;
 /**
  * Copyright 2008 The University of North Carolina at Chapel Hill
  *
@@ -39,7 +40,6 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.processing.IndexingService;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
@@ -63,6 +63,8 @@ public class IndexingServiceTest {
     @Mock
     private ContentObject obj;
 
+    @Captor
+    private ArgumentCaptor<PID> pidCaptor;
     @Captor
     private ArgumentCaptor<Collection<PID>> pidsCaptor;
 
@@ -92,7 +94,7 @@ public class IndexingServiceTest {
     public void reindexObjectTest() {
         service.reindexObject(agent, objPid);
 
-        verify(messageSender).sendIndexingOperation(any(PID.class), pidsCaptor.capture(), eq(IndexingActionType.ADD));
+        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(), eq(IndexingActionType.ADD));
 
         Collection<PID> collections = pidsCaptor.getValue();
         assertEquals(collections.size(), 1);
@@ -103,7 +105,7 @@ public class IndexingServiceTest {
     public void inplaceReindexObjectAndChildrenTest() {
         service.reindexObjectAndChildren(agent, objPid, true);
 
-        verify(messageSender).sendIndexingOperation(any(PID.class), pidsCaptor.capture(),
+        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(),
                 eq(IndexingActionType.RECURSIVE_REINDEX));
 
         Collection<PID> collections = pidsCaptor.getValue();
@@ -115,7 +117,7 @@ public class IndexingServiceTest {
     public void cleanReindexObjectAndChildrenTest() {
         service.reindexObjectAndChildren(agent, objPid, false);
 
-        verify(messageSender).sendIndexingOperation(any(PID.class), pidsCaptor.capture(),
+        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(),
                 eq(IndexingActionType.CLEAN_REINDEX));
 
         Collection<PID> collections = pidsCaptor.getValue();

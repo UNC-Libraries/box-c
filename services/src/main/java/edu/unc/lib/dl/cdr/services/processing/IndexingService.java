@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.util.Collections;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -45,10 +47,12 @@ public class IndexingService {
                 Permission.reindex);
         if (inplace == null || inplace) {
             // Add message to cdr solr queue
-            indexingMessageSender.sendIndexingOperation(objectPid, null, IndexingActionType.RECURSIVE_REINDEX);
+            indexingMessageSender.sendIndexingOperation(agent.getUsername(), Collections.singletonList(objectPid),
+                    IndexingActionType.RECURSIVE_REINDEX);
         } else {
             // Add message to cdr solr queue
-            indexingMessageSender.sendIndexingOperation(objectPid, null, IndexingActionType.CLEAN_REINDEX);
+            indexingMessageSender.sendIndexingOperation(agent.getUsername(), Collections.singletonList(objectPid),
+                    IndexingActionType.CLEAN_REINDEX);
         }
     }
 
@@ -62,7 +66,8 @@ public class IndexingService {
         aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
                 Permission.reindex);
         // Add message to cdr solr queue
-        indexingMessageSender.sendIndexingOperation(objectPid, null, IndexingActionType.ADD);
+        indexingMessageSender.sendIndexingOperation(agent.getUsername(), Collections.singletonList(objectPid),
+                IndexingActionType.ADD);
     }
 
     public void setAclService(AccessControlService aclService) {

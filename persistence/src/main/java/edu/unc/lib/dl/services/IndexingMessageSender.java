@@ -39,23 +39,18 @@ public class IndexingMessageSender extends AbstractMessageSender {
     /**
      * Adds message to JMS queue for object(s) to be reindexed.
      *
-     * @param objPid object to be reindexed
-     * @param children any children of object to be reindexed (optional)
+     * @param userid id of user who triggered the operation
+     * @param objPid PID of object to be indexed
      * @param solrActionType type of indexing action to perform
      */
-    public void sendIndexingOperation(PID objPid, Collection<PID> childPids, IndexingActionType solrActionType) {
+    public void sendIndexingOperation(String userid, Collection<PID> objPid, IndexingActionType solrActionType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
-        entry.addContent(new Element("pid", ATOM_NS).setText(objPid.getRepositoryPath()));
+        entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid)));
+        entry.addContent(new Element("pid", ATOM_NS).setText(objPid.iterator().next().getRepositoryPath()));
         entry.addContent(new Element("solrActionType", ATOM_NS)
                 .setText(solrActionType.getURI().toString()));
-
-        if (childPids != null && childPids.size() > 0) {
-            for (PID pid : childPids) {
-                entry.addContent(new Element("children", ATOM_NS).setText(pid.getRepositoryPath()));
-            }
-        }
 
         LOG.debug("sending solr update message for {} of type {}", objPid, solrActionType.toString());
         sendMessage(msg);
