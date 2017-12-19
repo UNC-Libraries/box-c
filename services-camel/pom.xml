@@ -103,6 +103,12 @@
 		<groupId>org.apache.tika</groupId>
 		<artifactId>tika-parsers</artifactId>
 		<version>${tika.version}</version>
+		<exclusions>
+			<exclusion>
+				<groupId>edu.ucar</groupId>
+				<artifactId>grib</artifactId>
+			</exclusion>
+		</exclusions>
 	</dependency>
 	
 	<dependency>
