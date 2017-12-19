@@ -50,6 +50,10 @@ public class Datastream {
         }
 
         String[] dsParts = datastream.split("\\|", -1);
+        if (dsParts.length < 6) {
+            throw new IllegalArgumentException("Invalid datastream string, requires 6 parameters, only included "
+                    + dsParts.length);
+        }
 
         this.name = dsParts[0];
         this.mimetype = dsParts[1];
@@ -103,18 +107,23 @@ public class Datastream {
             return false;
         }
         if (object instanceof Datastream) {
-            Datastream rightHand = (Datastream)object;
+            Datastream rightHand = (Datastream) object;
             // Equal if names match and either pids are null or both match
             return name.equals(rightHand.name)
                     && (rightHand.owner == null || owner == null || owner.equals(rightHand.owner));
         }
         if (object instanceof String) {
-            String rightHandString = (String)object;
+            String rightHandString = (String) object;
             if (rightHandString.equals(this.name)) {
                 return true;
             }
-            Datastream rightHand = new Datastream(rightHandString);
-            return this.equals(rightHand);
+            // Attempt comparison of string as a datastream
+            try {
+                Datastream rightHand = new Datastream(rightHandString);
+                return this.equals(rightHand);
+            } catch (IllegalArgumentException e) {
+                // String wasn't a datastream, so not equal
+            }
         }
         return false;
     }
