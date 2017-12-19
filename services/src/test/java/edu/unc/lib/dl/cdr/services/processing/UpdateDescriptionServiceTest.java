@@ -124,7 +124,7 @@ public class UpdateDescriptionServiceTest {
 
     @Test(expected = MetadataValidationException.class)
     public void invalidModsTest() throws Exception {
-        doThrow(new MetadataValidationException()).when(modsValidator).validate(eq(modsStream));
+        doThrow(new MetadataValidationException()).when(modsValidator).validate(any(InputStream.class));
 
         service.updateDescription(agent, objPid, modsStream);
     }
