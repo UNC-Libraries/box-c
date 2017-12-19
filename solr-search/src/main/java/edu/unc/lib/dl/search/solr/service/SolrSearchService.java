@@ -863,10 +863,6 @@ public class SolrSearchService {
         return sb.toString();
     }
 
-    private String prependId(String pid) {
-        return pid.equalsIgnoreCase("collections") ? "" : "uuid\\:";
-    }
-
     /**
      * Returns the value of a single field from the object identified by pid.
      *
@@ -878,8 +874,7 @@ public class SolrSearchService {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder();
-        String prepend = prependId(pid);
-        query.append("id:").append(prepend).append(SolrSettings.sanitize(pid));
+        query.append("id:").append(SolrSettings.sanitize(pid));
         solrQuery.setQuery(query.toString());
         solrQuery.addField(field);
 
@@ -894,8 +889,8 @@ public class SolrSearchService {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder();
-        String prepend = prependId(pid);
-        query.append("id:").append(prepend).append(SolrSettings.sanitize(pid));
+
+        query.append("id:").append(SolrSettings.sanitize(pid));
         solrQuery.setQuery(query.toString());
         for (String field : fields) {
             solrQuery.addField(field);

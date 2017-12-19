@@ -60,7 +60,7 @@ public class SolrUpdateRequest extends UpdateNodeRequest {
 
     @Override
     public String getTargetID() {
-        return pid.getPid();
+        return pid.getId();
     }
 
     @Override

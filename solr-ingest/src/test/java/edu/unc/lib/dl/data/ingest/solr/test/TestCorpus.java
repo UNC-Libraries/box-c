@@ -67,8 +67,8 @@ public class TestCorpus {
 
         SolrInputDocument newDoc = new SolrInputDocument();
         newDoc.addField("title", "Collections");
-        newDoc.addField("id", pid1.getPid());
-        newDoc.addField("rollup", pid1.getPid());
+        newDoc.addField("id", pid1.getId());
+        newDoc.addField("rollup", pid1.getId());
         newDoc.addField("roleGroup", "");
         newDoc.addField("readGroup", "");
         newDoc.addField("adminGroup", "");
@@ -78,8 +78,8 @@ public class TestCorpus {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "A collection");
-        newDoc.addField("id", pid2.getPid());
-        newDoc.addField("rollup", pid2.getPid());
+        newDoc.addField("id", pid2.getId());
+        newDoc.addField("rollup", pid2.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
@@ -90,8 +90,8 @@ public class TestCorpus {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "Subfolder 1");
-        newDoc.addField("id", pid4.getPid());
-        newDoc.addField("rollup", pid4.getPid());
+        newDoc.addField("id", pid4.getId());
+        newDoc.addField("rollup", pid4.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
@@ -102,8 +102,8 @@ public class TestCorpus {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "Orphaned");
-        newDoc.addField("id", pid5.getPid());
-        newDoc.addField("rollup", pid5.getPid());
+        newDoc.addField("id", pid5.getId());
+        newDoc.addField("rollup", pid5.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
@@ -114,8 +114,8 @@ public class TestCorpus {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "File");
-        newDoc.addField("id", pid6.getPid());
-        newDoc.addField("rollup", pid6.getPid());
+        newDoc.addField("id", pid6.getId());
+        newDoc.addField("rollup", pid6.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
@@ -126,8 +126,8 @@ public class TestCorpus {
 
         newDoc = new SolrInputDocument();
         newDoc.addField("title", "Second collection");
-        newDoc.addField("id", pid3.getPid());
-        newDoc.addField("rollup", pid3.getPid());
+        newDoc.addField("id", pid3.getId());
+        newDoc.addField("rollup", pid3.getId());
         newDoc.addField("roleGroup", "public admin");
         newDoc.addField("readGroup", "public");
         newDoc.addField("adminGroup", "admin");
@@ -148,7 +148,7 @@ public class TestCorpus {
         int i = 0;
         for (PID pid : pids) {
             i++;
-            result.add(i + "," + pid.getPid());
+            result.add(i + "," + pid.getId());
         }
         return result;
     }

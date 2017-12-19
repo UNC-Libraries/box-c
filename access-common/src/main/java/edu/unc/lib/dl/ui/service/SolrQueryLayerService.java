@@ -855,7 +855,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         StringBuilder query = new StringBuilder();
 
         PID pid = new PID(idRequest.getId());
-        String id = pid.getPid();
+        String id = pid.getId();
         String[] idParts = id.split("/");
         String datastream = null;
         if (idParts.length > 1) {
