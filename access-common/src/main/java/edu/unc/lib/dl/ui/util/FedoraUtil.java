@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.util.Arrays;
+import java.util.List;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
@@ -97,8 +98,13 @@ public class FedoraUtil {
      */
     public static Datastream getPreferredDatastream(BriefObjectMetadata metadata, String datastreamName) {
         Datastream preferredDS = null;
+        List<Datastream> dataStreams = metadata.getDatastreamObjects();
 
-        for (Datastream ds : metadata.getDatastreamObjects()) {
+        if (dataStreams == null) {
+            return null;
+        }
+
+        for (Datastream ds : dataStreams) {
             if (ds.getName().equals(datastreamName)) {
                 preferredDS = ds;
 
