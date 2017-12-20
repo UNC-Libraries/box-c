@@ -130,6 +130,10 @@
 		<property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
 		<property name="pubSubDomain" value="false" />
 	</bean>
+	
+	<bean id="indexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
+    </bean>
 
 	<!-- Processors -->
 	<bean id="cdrEventProcessor" class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">

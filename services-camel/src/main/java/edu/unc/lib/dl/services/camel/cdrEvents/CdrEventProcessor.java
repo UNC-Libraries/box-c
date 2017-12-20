@@ -47,6 +47,9 @@ public class CdrEventProcessor implements Processor {
         }
         in.setHeader(CdrSolrUpdateAction, actionType);
 
+        String author = document.getRootElement().getChildTextTrim("name", ATOM_NS);
+        in.setHeader("name", author);
+
         // Pass the body document along for future processors
         in.setBody(document);
     }

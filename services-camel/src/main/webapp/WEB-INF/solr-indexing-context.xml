@@ -375,7 +375,7 @@
     </bean>
     
     <bean id="cdrEventToSolrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor">
-        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
     </bean>
     
     <bean id="solrUpdateProcessor" class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
