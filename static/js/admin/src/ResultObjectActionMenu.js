@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
-		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'URLUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
+		function($, ui, StringUtilities, URLUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -97,7 +97,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		var self = this;
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
-		
+
+		var baseUrl = URLUtilities.getBaseUrl(document.location.origin, true);
+		var serverUrl = URLUtilities.getServerUrl(document.location.href);
+
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
 		
@@ -187,6 +190,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "record/" + metadata.id,
+							accessBaseUrl: baseUrl,
+							adminBaseUrl: serverUrl,
 							newWindow : true,
 							application : "access"
 						});
@@ -197,6 +202,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 							self.actionHandler.addEvent({
 								action : 'ChangeLocation',
 								url : "content/" + (dataFile['defaultWebObject']? dataFile['defaultWebObject'] : metadata.id),
+								accessBaseUrl: baseUrl,
+								adminBaseUrl: serverUrl,
 								newWindow : true,
 								application : "access"
 							});
@@ -250,8 +257,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						self.actionHandler.addEvent({
-							action : 'ChangeLocation',
-							url : "describe/" + metadata.id
+							action: 'ChangeLocation',
+							url: "describe/" + metadata.id
 						});
 						break;
 					case "editCollectionSettings" :

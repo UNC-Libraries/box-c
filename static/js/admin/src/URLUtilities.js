@@ -58,6 +58,18 @@ define('URLUtilities', ['jquery'], function($) {
 			if (newParameterString)
 				return baseURL + "?" + newParameterString;
 			return baseURL;
+		},
+
+		getBaseUrl: function(url, access) {
+			if (access === undefined || !access) {
+				return url.substring(0, url.indexOf("/admin/") + 7);
+			}
+
+			return url + "/";
+		},
+
+		getServerUrl: function(url) {
+			return url.substring(0, url.indexOf("/admin/")) + "/";
 		}
 	};
 });

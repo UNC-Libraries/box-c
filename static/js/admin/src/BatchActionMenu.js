@@ -1,5 +1,5 @@
-define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
-		function($, ui) {
+define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'contextMenu'],
+		function($, ui, URLUtilities) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -30,8 +30,8 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 				var metadata = resultObject.metadata;
 				var baseUrl = document.location.href;
-				var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
-				baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
+				var serverUrl = URLUtilities.getServerUrl(baseUrl);
+				baseUrl = URLUtilities.getBaseUrl(baseUrl, false);
 				
 				var items = {};
 				if (resultObject.isContainer)
@@ -68,7 +68,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
 					items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
 				}
-				
+
 				return {
 					callback: function(key, options) {
 						switch (key) {
