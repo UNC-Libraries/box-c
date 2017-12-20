@@ -81,7 +81,7 @@ public class IndexingController {
 
         PID objectPid = PIDs.get(id);
 
-        log.info("Updating object " + id);
+        log.info("Indexing object " + id);
         try {
             indexingService.reindexObject(AgentPrincipals.createFromThread(), objectPid);
         } catch (Exception e) {
