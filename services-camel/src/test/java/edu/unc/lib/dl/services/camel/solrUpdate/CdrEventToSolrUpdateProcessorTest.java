@@ -22,11 +22,9 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -72,6 +70,8 @@ public class CdrEventToSolrUpdateProcessorTest {
     private Message msg;
 
     @Captor
+    ArgumentCaptor<PID> pidCaptor;
+    @Captor
     ArgumentCaptor<Collection<PID>> pidsCaptor;
     @Captor
     ArgumentCaptor<String> stringCaptor;
@@ -98,7 +98,7 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender, never()).sendIndexingOperation(anyString(), anyCollectionOf(PID.class),
+        verify(messageSender, never()).sendIndexingOperation(anyString(), any(PID.class),
                 any(IndexingActionType.class));
     }
 
@@ -111,7 +111,7 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender, never()).sendIndexingOperation(anyString(), anyCollectionOf(PID.class),
+        verify(messageSender, never()).sendIndexingOperation(anyString(), any(PID.class),
                 any(IndexingActionType.class));
     }
 
@@ -125,12 +125,11 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidsCaptor.capture(),
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
                 actionTypeCaptor.capture());
 
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertEquals(targetPid, pids.iterator().next());
+        PID pid = pidCaptor.getValue();
+        assertEquals(targetPid, pid);
 
         String userid = stringCaptor.getValue();
         assertEquals("user_id", userid);
@@ -149,12 +148,11 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidsCaptor.capture(),
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
                 actionTypeCaptor.capture());
 
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
-        assertEquals(targetPid, pids.iterator().next());
+        PID pid = pidCaptor.getValue();
+        assertEquals(targetPid, pid);
 
         String userid = stringCaptor.getValue();
         assertEquals("user_id", userid);
@@ -175,13 +173,12 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender, times(NUM_TEST_PIDS)).sendIndexingOperation(stringCaptor.capture(), pidsCaptor.capture(),
-                actionTypeCaptor.capture());
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
+                pidsCaptor.capture(), actionTypeCaptor.capture());
 
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(1, pids.size());
+        PID pid = pidCaptor.getValue();
         // compare last of the three pids submitted for publishing
-        assertEquals(subjects.get(2), pids.iterator().next());
+        assertEquals(targetPid, pid);
 
         String userid = stringCaptor.getValue();
         assertEquals("user_id", userid);

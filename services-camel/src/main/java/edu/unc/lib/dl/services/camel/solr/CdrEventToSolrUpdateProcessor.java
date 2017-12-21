@@ -22,7 +22,6 @@ import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.PUBLISH;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.camel.Exchange;
@@ -34,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
@@ -81,18 +81,20 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
         }
 
         List<String> subjects = populateList("subjects", contentBody);
+        List<PID> childPids = new ArrayList<>();
+        for (String subject : subjects) {
+            childPids.add(PIDs.get(subject));
+        }
 
         if (MOVE.equals(solrActionType)) {
-            messageSender.sendIndexingOperation(userid, Collections.singletonList(PIDs.get(targetId)),
+            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
                     IndexingActionType.MOVE);
         } else if (ADD.equals(solrActionType)) {
-            messageSender.sendIndexingOperation(userid, Collections.singletonList(PIDs.get(targetId)),
+            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
                     IndexingActionType.ADD_SET_TO_PARENT);
         } else if (PUBLISH.equals(solrActionType)) {
-            for (String pidString : subjects) {
-                messageSender.sendIndexingOperation(userid, Collections.singletonList(PIDs.get(pidString)),
-                        IndexingActionType.UPDATE_STATUS);
-            }
+            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
+                    IndexingActionType.UPDATE_STATUS);
         } else {
             log.warn("Invalid solr update action {}, ignoring event for object {}", solrActionType, targetId);
             return;

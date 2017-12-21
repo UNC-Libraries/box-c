@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.services;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
 import java.util.Collection;
 
@@ -36,23 +37,43 @@ import edu.unc.lib.dl.util.IndexingActionType;
 public class IndexingMessageSender extends AbstractMessageSender {
 
     private static final Logger LOG = LoggerFactory.getLogger(IndexingMessageSender.class);
+
     /**
      * Adds message to JMS queue for object(s) to be reindexed.
      *
      * @param userid id of user who triggered the operation
-     * @param objPid PID of object to be indexed
+     * @param targetPid PID of object to be indexed
      * @param solrActionType type of indexing action to perform
      */
-    public void sendIndexingOperation(String userid, Collection<PID> objPid, IndexingActionType solrActionType) {
+    public void sendIndexingOperation(String userid, PID targetPid, IndexingActionType solrActionType) {
+        sendIndexingOperation(userid, targetPid, null, solrActionType);
+    }
+
+    /**
+     * Adds message to JMS queue for object(s) to be reindexed.
+     *
+     * @param userid id of user who triggered the operation
+     * @param targetPid PID of object to be indexed
+     * @param children pids of other objects to be indexed
+     * @param solrActionType type of indexing action to perform
+     */
+    public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children, IndexingActionType solrActionType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
         entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid)));
-        entry.addContent(new Element("pid", ATOM_NS).setText(objPid.iterator().next().getRepositoryPath()));
+        entry.addContent(new Element("pid", ATOM_NS).setText(targetPid.getRepositoryPath()));
+        if (children != null && children.size() > 0) {
+            Element childEl = new Element("children", CDR_MESSAGE_NS);
+            entry.addContent(childEl);
+            for (PID child : children) {
+                childEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(child.getRepositoryPath()));
+            }
+        }
         entry.addContent(new Element("solrActionType", ATOM_NS)
                 .setText(solrActionType.getURI().toString()));
 
-        LOG.debug("sending solr update message for {} of type {}", objPid, solrActionType.toString());
+        LOG.debug("sending solr update message for {} of type {}", targetPid, solrActionType.toString());
         sendMessage(msg);
         LOG.debug("sent indexing operation JMS message using JMS template: {}", this.getJmsTemplate());
     }
