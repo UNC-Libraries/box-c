@@ -22,6 +22,7 @@ import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -91,18 +92,16 @@ public class CdrEventToSolrUpdateProcessorTest {
         when(exchange.getIn()).thenReturn(msg);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testNoMessageBody() throws Exception {
         when(msg.getBody()).thenReturn(null);
 
         processor.process(exchange);
 
-        verify(messageSender, never()).sendIndexingOperation(anyString(), any(Collection.class),
+        verify(messageSender, never()).sendIndexingOperation(anyString(), anyCollectionOf(PID.class),
                 any(IndexingActionType.class));
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testUnknownAction() throws Exception {
         List<PID> subjects = pidList(1);
@@ -112,7 +111,7 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender, never()).sendIndexingOperation(anyString(), any(Collection.class),
+        verify(messageSender, never()).sendIndexingOperation(anyString(), anyCollectionOf(PID.class),
                 any(IndexingActionType.class));
     }
 
