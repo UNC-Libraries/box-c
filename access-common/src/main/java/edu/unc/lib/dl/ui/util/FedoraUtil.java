@@ -16,13 +16,14 @@
 package edu.unc.lib.dl.ui.util;
 
 import java.util.Arrays;
+import java.util.List;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
- * 
+ *
  * @author count0
  *
  */
@@ -42,7 +43,7 @@ public class FedoraUtil {
     /**
      * Returns a URL for a specific datastream of the object identified by pid, according to the RESTful Fedora API.
      * Example: <fedoraBaseURL>/objects/uuid:5fdc16d9-8272-41f7-a7da-a953192174df/datastreams/DC/content
-     * 
+     *
      * @param pid
      * @param datastream
      * @return
@@ -90,19 +91,24 @@ public class FedoraUtil {
      * Finds the preferred instance of the datastream identified by datastreamName. The preferred datastream is the
      * datastream owned by the object itself, rather then a reference to a datastream owed by another object.  This
      * arises in cases where an object has a defaultWebObject which is another object.
-     * 
+     *
      * @param metadata
      * @param datastreamName
      * @return
      */
     public static Datastream getPreferredDatastream(BriefObjectMetadata metadata, String datastreamName) {
         Datastream preferredDS = null;
-        Datastream incomingDS = new Datastream(datastreamName);
-        for (Datastream ds : metadata.getDatastreamObjects()) {
-            if (ds.equals(incomingDS)) {
+        List<Datastream> dataStreams = metadata.getDatastreamObjects();
+
+        if (dataStreams == null) {
+            return null;
+        }
+
+        for (Datastream ds : dataStreams) {
+            if (ds.getName().equals(datastreamName)) {
                 preferredDS = ds;
-                if ((incomingDS.getOwner() == null && preferredDS.getOwner() == null)
-                        || (incomingDS.getOwner() != null && preferredDS.getOwner() != null)) {
+
+                if (metadata.getId().equals(ds.getOwner())) {
                     break;
                 }
             }

@@ -31,7 +31,7 @@
 	</c:otherwise>
 </c:choose>
 
-<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'DATA_FILE', fedoraUtil)}</c:set>
+<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}</c:set>
 
 <div class="onecol full_record_top">
 	<div class="contentarea">
@@ -88,7 +88,7 @@
 		</div>
 		<div class="clear">
 			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
 					<div class="actionlink left download">
 						<a href="${dataFileUrl}?dl=true">Download</a>
 					</div>
@@ -115,7 +115,7 @@
 					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
 					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${cdr:getPreferredDatastream(briefObject, 'IMAGE_JP2000').owner}"></div>
 				</c:when>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', briefObject)}">
+				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">
@@ -140,7 +140,7 @@
 <c:if test="${childCount > 0}">
 	<c:set var="defaultWebObjectID">
 		<c:forEach items="${briefObject.datastreamObjects}" var="datastream">
-			<c:if test="${datastream.name == 'DATA_FILE'}">
+			<c:if test="${datastream.name == 'original_file'}">
 				<c:out value="${datastream.owner.pid}"/>
 			</c:if>
 		</c:forEach>

@@ -20,8 +20,8 @@ package edu.unc.lib.dl.ui.util;
  */
 import java.util.Set;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AccessPrincipalConstants;
 import edu.unc.lib.dl.acl.util.ObjectAccessControlsBean;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -43,11 +43,12 @@ public class AccessUtil {
             return false;
         }
 
-        if (!metadata.getDatastreamObjects().contains(datastream.getName())) {
+        if (metadata.getDatastreamObjects() == null
+                || !containsDatastream(metadata, datastream)) {
             return false;
         }
 
-        if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+        if (groups.contains(AccessPrincipalConstants.AUTHENTICATED_PRINC)) {
             return true;
         }
 
@@ -59,6 +60,11 @@ public class AccessUtil {
 
         return metadata.getAccessControlBean().hasPermission(groups,
                 Permission.getPermissionByDatastreamCategory(datastream.getCategory()));
+    }
+
+    private static boolean containsDatastream(BriefObjectMetadata metadata, Datastream datastream) {
+        return metadata.getDatastreamObjects().stream()
+                .anyMatch(d -> d.getName().equals(datastream.getName()));
     }
 
     public static boolean hasAccess(AccessGroupSet groups, BriefObjectMetadata metadata, String permissionName) {
@@ -90,7 +96,7 @@ public class AccessUtil {
      * @return
      */
     public static boolean hasListAccessOnly(AccessGroupSet groups, BriefObjectMetadata metadata) {
-        if (groups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+        if (groups.contains(AccessPrincipalConstants.AUTHENTICATED_PRINC)) {
             return false;
         }
 
@@ -104,7 +110,7 @@ public class AccessUtil {
     }
 
     public static boolean hasPatronRoleForPublicGroup(BriefObjectMetadata metadata) {
-        return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessGroupConstants.PUBLIC_GROUP))
+        return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessPrincipalConstants.PUBLIC_PRINC))
                 .contains(UserRole.patron);
     }
 }

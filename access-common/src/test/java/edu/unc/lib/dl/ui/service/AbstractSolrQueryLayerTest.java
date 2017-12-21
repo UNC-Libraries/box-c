@@ -66,7 +66,7 @@ public class AbstractSolrQueryLayerTest {
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
         container = new CoreContainer("src/test/resources/config");
 
-        server = new EmbeddedSolrServer(container, "access-master");
+        server = new EmbeddedSolrServer(container, "access");
 
         searchSettings = new SearchSettings();
         Properties properties = new Properties();

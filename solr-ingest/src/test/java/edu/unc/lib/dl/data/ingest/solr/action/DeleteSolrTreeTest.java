@@ -97,7 +97,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
     @Test
     public void deleteTree() throws Exception {
-        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.pid2.getPid(), DELETE_SOLR_TREE);
+        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.pid2.getId(), DELETE_SOLR_TREE);
 
         action.performAction(updateRequest);
         server.commit();
@@ -110,7 +110,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
     @Test
     public void deleteNonexistent() throws Exception {
-        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.nonExistentPid.getPid(), DELETE_SOLR_TREE);
+        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.nonExistentPid.getId(), DELETE_SOLR_TREE);
 
         action.performAction(updateRequest);
         server.commit();
@@ -122,7 +122,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
     @Test
     public void deleteSimple() throws Exception {
-        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.pid6.getPid(), DELETE_SOLR_TREE);
+        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.pid6.getId(), DELETE_SOLR_TREE);
 
         action.performAction(updateRequest);
         server.commit();
@@ -135,7 +135,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
 
     @Test
     public void deleteEverything() throws Exception {
-        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.pid1.getPid(), DELETE_SOLR_TREE);
+        SolrUpdateRequest updateRequest = new SolrUpdateRequest(corpus.pid1.getId(), DELETE_SOLR_TREE);
 
         action.performAction(updateRequest);
         server.commit();
@@ -151,7 +151,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         for (SolrDocument docAfter : docList) {
             String id = (String) docAfter.getFieldValue("id");
             for (PID pid : pids) {
-                assertFalse(pid.getPid().equals(id));
+                assertFalse(pid.getId().equals(id));
             }
         }
     }

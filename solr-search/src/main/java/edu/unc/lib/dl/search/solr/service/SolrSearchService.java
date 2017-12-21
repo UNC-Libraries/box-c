@@ -889,6 +889,7 @@ public class SolrSearchService {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
         StringBuilder query = new StringBuilder();
+
         query.append("id:").append(SolrSettings.sanitize(pid));
         solrQuery.setQuery(query.toString());
         for (String field : fields) {

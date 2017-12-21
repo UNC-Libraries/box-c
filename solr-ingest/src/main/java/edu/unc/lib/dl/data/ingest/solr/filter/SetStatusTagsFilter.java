@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
@@ -39,9 +39,9 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
         idb.setStatusTags(determineStatusTags(idb));
     }
 
-    private HashSet<String> determineStatusTags(IndexDocumentBean idb) throws IndexingException {
+    private ArrayList<String> determineStatusTags(IndexDocumentBean idb) throws IndexingException {
 
-        HashSet<String> statusTags = new HashSet<>();
+        List<String> statusTags = new ArrayList<String>();
         List<String> contentStatus = idb.getContentStatus();
         List<String> accessStatus = idb.getStatus();
 
@@ -63,7 +63,7 @@ public class SetStatusTagsFilter implements IndexDocumentFilter {
             statusTags.add(FacetConstants.EMBARGOED);
         }
 
-        return statusTags;
+        return (ArrayList<String>) statusTags;
     }
 
 }

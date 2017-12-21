@@ -15,18 +15,19 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.jdom2.Document;
-import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +43,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.fedora.AuthorizationException;
-import edu.unc.lib.dl.fedora.FedoraDataService;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.ContainerSettings;
 import edu.unc.lib.dl.model.ContainerSettings.ContainerView;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -55,18 +58,13 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
 import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
-import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ResourceType;
-import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
-import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  * Controller which retrieves data necessary for populating the full record page, retrieving supplemental information
@@ -82,13 +80,9 @@ public class FullRecordController extends AbstractSolrSearchController {
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
     @Autowired
-    private FedoraDataService fedoraDataService;
+    private SearchStateFactory stateFactory;
     @Autowired
-    private ObjectPathFactory pathFactory;
-    @Autowired
-    SearchStateFactory stateFactory;
-
-    private static final int MAX_FOXML_TRIES = 2;
+    private RepositoryObjectLoader repositoryObjectLoader;
 
     @RequestMapping(value = "/{pid}", method = RequestMethod.GET)
     public String handleRequest(@PathVariable("pid") String pid, Model model, HttpServletRequest request) {
@@ -100,12 +94,13 @@ public class FullRecordController extends AbstractSolrSearchController {
         return getFullRecord(id, model, request);
     }
 
-    public String getFullRecord(String pid, Model model, HttpServletRequest request) {
+    public String getFullRecord(String pidString, Model model, HttpServletRequest request) {
+        PID pid = PIDs.get(pidString);
 
         AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
 
         // Retrieve the objects record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid, accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(pidString, accessGroups);
         BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
@@ -120,55 +115,38 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("embargoDate", embargoUntil);
         }
 
+        // TODO check that user has metadata access
+
         // Retrieve the objects description from Fedora
         String fullObjectView = null;
-        boolean containsContent = false;
+        try {
+            ContentObject contentObj = (ContentObject) repositoryObjectLoader.getRepositoryObject(pid);
 
-        Document foxmlView = null;
-        if (!listAccess) {
-            try {
-                int retries = MAX_FOXML_TRIES;
-                do {
-                    foxmlView = fedoraDataService.getFoxmlViewXML(idRequest.getId());
-                    containsContent = foxmlView.getRootElement().getContent().size() > 0;
-                } while (--retries > 0 && !containsContent);
+            if (!listAccess) {
+                BinaryObject modsObj = contentObj.getMODS();
+                if (modsObj != null) {
+                    SAXBuilder builder = new SAXBuilder();
+                    Document modsDoc = builder.build(modsObj.getBinaryStream());
 
-                if (containsContent) {
-                    Element foxml = foxmlView.getRootElement().getChild("digitalObject", JDOMNamespaceUtil.FOXML_NS);
-                    Element mods = FOXMLJDOMUtil.getMostRecentDatastream(Datastream.MD_DESCRIPTIVE, foxml);
-
-                    if (mods != null) {
-                        mods = mods.getChild("xmlContent", JDOMNamespaceUtil.FOXML_NS)
-                                .getChild("mods", JDOMNamespaceUtil.MODS_V3_NS);
-                        fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", mods);
-                    }
-                } else {
-                    throw new InvalidRecordRequestException("Failed to retrieve FOXML for object " + idRequest.getId());
-                }
-            } catch (AuthorizationException e) {
-                LOG.debug("Access to the full record was denied, user has list only access");
-                listAccess = true;
-            } catch (NotFoundException e) {
-                throw new InvalidRecordRequestException(e);
-            } catch (FedoraException e) {
-                LOG.error("Failed to render full record view for " + idRequest.getId(), e);
-            } catch (RenderViewException e) {
-                LOG.error("Failed to render full record view for " + idRequest.getId(), e);
-            } catch (ServiceException e) {
-                if (e.getCause() instanceof TimeoutException) {
-                    LOG.warn("Maximum retrieval time exceeded while retrieving FOXML for full record of {}",
-                            idRequest.getId());
-                } else {
-                    LOG.error("Failed to retrieve FOXML for object {}" , idRequest.getId(), e);
+                    fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);
                 }
             }
+        } catch (NotFoundException e) {
+            throw new InvalidRecordRequestException(e);
+        } catch (FedoraException e) {
+            LOG.error("Failed to retrieve object {} from fedora", idRequest.getId(), e);
+        } catch (RenderViewException e) {
+            LOG.error("Failed to render full record view for {}", idRequest.getId(), e);
+        } catch (JDOMException | IOException e) {
+            LOG.error("Failed to parse MODS document for {}", idRequest.getId(), e);
         }
 
         // Get additional information depending on the type of object since the user has access
         if (!listAccess) {
-            boolean retrieveChildrenCount = briefObject.getResourceType().equals(searchSettings.resourceTypeFolder);
-            boolean retrieveFacets = briefObject.getContentModel()
-                    .contains(ContentModelHelper.Model.CONTAINER.toString());
+            String resourceType = briefObject.getResourceType();
+            boolean retrieveChildrenCount = resourceType.equals(searchSettings.resourceTypeFolder);
+            boolean retrieveFacets = resourceType.equals(searchSettings.resourceTypeFolder)
+                    || resourceType.equals(searchSettings.resourceTypeCollection);
 
             if (retrieveChildrenCount) {
                 briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
@@ -177,9 +155,9 @@ public class FullRecordController extends AbstractSolrSearchController {
             if (retrieveFacets) {
                 List<String> facetsToRetrieve = null;
                 if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
-                    facetsToRetrieve = new ArrayList<String>(searchSettings.collectionBrowseFacetNames);
+                    facetsToRetrieve = new ArrayList<>(searchSettings.collectionBrowseFacetNames);
                 } else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-                    facetsToRetrieve = new ArrayList<String>();
+                    facetsToRetrieve = new ArrayList<>();
                     facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
                 }
 
@@ -212,7 +190,7 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("neighborList", neighbors);
 
             // Get previous and next record in the same folder if there are any
-            Map<String, BriefObjectMetadataBean> previousNext = new HashMap<String, BriefObjectMetadataBean>();
+            Map<String, BriefObjectMetadataBean> previousNext = new HashMap<>();
 
             int selectedRecord = -1;
             for (BriefObjectMetadataBean neighbor : neighbors) {
@@ -235,10 +213,10 @@ public class FullRecordController extends AbstractSolrSearchController {
             model.addAttribute("previousNext", previousNext);
         }
 
-        if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
-                || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
-            applyContainerSettings(pid, foxmlView, model, fullObjectView != null);
-        }
+//        if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
+//                || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
+//            applyContainerSettings(pidString, foxmlView, model, fullObjectView != null);
+//        }
 
         model.addAttribute("listAccess", listAccess);
 

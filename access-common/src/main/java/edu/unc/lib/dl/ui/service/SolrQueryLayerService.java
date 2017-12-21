@@ -320,8 +320,10 @@ public class SolrQueryLayerService extends SolrSearchService {
         solrQuery.setQuery("*:*" + accessRestrictionClause);
 
         solrQuery.setFacet(true);
-        solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File "
-                + solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
+        solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name())
+                + ":" + searchSettings.resourceTypeFile + " "
+                + solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name())
+                + ":" + searchSettings.resourceTypeAggregate);
 
         CutoffFacet ancestorPath = null;
         if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)
@@ -855,7 +857,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         StringBuilder query = new StringBuilder();
 
         PID pid = new PID(idRequest.getId());
-        String id = pid.getPid();
+        String id = pid.getId();
         String[] idParts = id.split("/");
         String datastream = null;
         if (idParts.length > 1) {

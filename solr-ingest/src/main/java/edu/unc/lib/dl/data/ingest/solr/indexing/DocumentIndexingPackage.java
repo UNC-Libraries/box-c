@@ -61,7 +61,7 @@ public class DocumentIndexingPackage {
             DocumentIndexingPackageDataLoader loader) {
         document = new IndexDocumentBean();
         this.pid = pid;
-        document.setId(pid.getPid());
+        document.setId(pid.getId());
         this.attemptedToRetrieveDefaultWebObject = false;
         this.parentDocument = parentDip;
         if (parentDip != null) {

@@ -83,7 +83,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
     public void verifyOrphanCleanup() throws Exception {
         SolrDocumentList docListBefore = getDocumentList();
 
-        SolrUpdateRequest request = new SolrUpdateRequest(corpus.pid2.getPid(), RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(corpus.pid2.getId(), RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);
@@ -123,10 +123,10 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
     @Test(expected = IndexingException.class)
     public void testNoAncestorBean() throws Exception {
 
-        server.deleteById(corpus.pid2.getPid());
+        server.deleteById(corpus.pid2.getId());
         server.commit();
 
-        SolrUpdateRequest request = new SolrUpdateRequest(corpus.pid2.getPid(), RECURSIVE_ADD);
+        SolrUpdateRequest request = new SolrUpdateRequest(corpus.pid2.getId(), RECURSIVE_ADD);
         request.setStatus(ProcessingStatus.ACTIVE);
 
         action.performAction(request);
@@ -138,7 +138,7 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
         for (SolrDocument docAfter : docList) {
             String id = (String) docAfter.getFieldValue("id");
             for (PID pid : pids) {
-                assertFalse(pid.getPid().equals(id));
+                assertFalse(pid.getId().equals(id));
             }
         }
     }

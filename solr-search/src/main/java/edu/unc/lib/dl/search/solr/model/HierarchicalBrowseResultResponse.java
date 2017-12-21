@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -174,7 +174,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         }
         for (int i = 0; i < rootNode.getChildren().size(); i++) {
             ResultNode childNode = rootNode.getChildren().get(i);
-            if (childNode.getMetadata().getPid().getPid().equals(pid)) {
+            if (childNode.getMetadata().getPid().getId().equals(pid)) {
                 return i;
             }
         }
@@ -186,7 +186,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     private ResultNode findNode(String pid, ResultNode node) {
-        if (node.getMetadata().getPid().getPid().equals(pid)) {
+        if (node.getMetadata().getPid().getId().equals(pid)) {
             return node;
         }
         for (ResultNode childNode: node.getChildren()) {

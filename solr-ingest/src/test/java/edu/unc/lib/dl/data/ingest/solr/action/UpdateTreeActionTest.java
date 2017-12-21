@@ -193,7 +193,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
 
     private boolean isChildPid(String id, PID... pids) {
         for (PID pid : pids) {
-            if (pid.getPid().equals(id)) {
+            if (pid.getId().equals(id)) {
                 return true;
             }
         }
@@ -234,7 +234,7 @@ public class UpdateTreeActionTest extends BaseEmbeddedSolrTest {
                 DocumentIndexingPackage dip = mock(DocumentIndexingPackage.class);
 
                 IndexDocumentBean document = new IndexDocumentBean();
-                document.setId(pid.getPid());
+                document.setId(pid.getId());
 
                 when(dip.getDocument()).thenReturn(document);
 

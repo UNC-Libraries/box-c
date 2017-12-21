@@ -27,10 +27,11 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Tag;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
+@Deprecated
 public class AccessRestrictionsTagProvider implements TagProvider {
 
     private static final String[] PUBLIC = new String[] { "public" };
