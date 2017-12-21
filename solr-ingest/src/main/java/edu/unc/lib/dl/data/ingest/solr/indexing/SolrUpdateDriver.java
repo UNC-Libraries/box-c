@@ -86,7 +86,7 @@ public class SolrUpdateDriver {
 	 */
 	public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
     Map<String, Object> fields = idb.getFields();
-    String[] requiredIndexingFields = new String[] {
+    static String[] requiredIndexingFields = new String[] {
             "title",
             "title_lc",
             "adminGroup",
