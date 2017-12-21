@@ -96,14 +96,6 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
     }
 
     @Test
-    public void testReindexFilter() throws Exception {
-        getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
-        createContext("CdrServiceCdrEvents");
-        template.sendBodyAndHeaders("", createEvent("action_placeholder"));
-        assertMockEndpointsSatisfied();
-    }
-
-    @Test
     public void testIndexFilter() throws Exception {
         getMockEndpoint("mock:direct:solr-update").expectedMessageCount(1);
         createContext("CdrServiceCdrEvents");
