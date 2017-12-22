@@ -50,6 +50,8 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 public class IndexingServiceTest {
+    private static final String USERNAME = "username";
+
     @Mock
     private AccessControlService aclService;
     @Mock
@@ -76,7 +78,7 @@ public class IndexingServiceTest {
         initMocks(this);
 
         when(agent.getPrincipals()).thenReturn(groups);
-        when(agent.getUsername()).thenReturn("username");
+        when(agent.getUsername()).thenReturn(USERNAME);
 
         objPid = PIDs.get(UUID.randomUUID().toString());
 
@@ -97,9 +99,7 @@ public class IndexingServiceTest {
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
                 actionCaptor.capture());
 
-        assertEquals(objPid, pidCaptor.getValue());
-        assertEquals(agent.getUsername(), stringCaptor.getValue());
-        assertEquals(IndexingActionType.ADD, actionCaptor.getValue());
+        verifyParameters(IndexingActionType.ADD);
     }
 
     @Test
@@ -109,9 +109,7 @@ public class IndexingServiceTest {
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
                 actionCaptor.capture());
 
-        assertEquals(objPid, pidCaptor.getValue());
-        assertEquals(agent.getUsername(), stringCaptor.getValue());
-        assertEquals(IndexingActionType.RECURSIVE_REINDEX, actionCaptor.getValue());
+        verifyParameters(IndexingActionType.RECURSIVE_REINDEX);
     }
 
     @Test
@@ -121,9 +119,7 @@ public class IndexingServiceTest {
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
                 actionCaptor.capture());
 
-        assertEquals(objPid, pidCaptor.getValue());
-        assertEquals(agent.getUsername(), stringCaptor.getValue());
-        assertEquals(IndexingActionType.CLEAN_REINDEX, actionCaptor.getValue());
+        verifyParameters(IndexingActionType.CLEAN_REINDEX);
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -132,6 +128,12 @@ public class IndexingServiceTest {
                 .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(reindex));
 
         service.reindexObject(agent, objPid);
+    }
+
+    private void verifyParameters(IndexingActionType expectedActionType) {
+        assertEquals(objPid, pidCaptor.getValue());
+        assertEquals(agent.getUsername(), stringCaptor.getValue());
+        assertEquals(expectedActionType, actionCaptor.getValue());
     }
 
 }
