@@ -81,7 +81,6 @@ import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.ContentModelHelper.Model;
 import edu.unc.lib.dl.util.ContentModelHelper.Relationship;
 import edu.unc.lib.dl.util.IllegalRepositoryStateException;
-import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.PremisEventLogger;
 import edu.unc.lib.dl.util.PremisEventLogger.Type;
 import edu.unc.lib.dl.util.ResourceType;
@@ -349,10 +348,10 @@ public class DigitalObjectManagerImpl implements DigitalObjectManager {
         }
 
         // Send message that the action completed
-        if (this.getOperationsMessageSender() != null) {
-            this.getOperationsMessageSender().sendIndexingOperation(user, modified,
-                    IndexingActionType.SET_DEFAULT_WEB_OBJECT);
-        }
+//        if (this.getOperationsMessageSender() != null) {
+//            this.getOperationsMessageSender().sendIndexingOperation(user, modified,
+//                    IndexingActionType.SET_DEFAULT_WEB_OBJECT);
+//        }
     }
 
     /**

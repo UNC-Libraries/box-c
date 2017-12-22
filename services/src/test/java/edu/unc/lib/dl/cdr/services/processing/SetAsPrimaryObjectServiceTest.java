@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
-import static edu.unc.lib.dl.util.IndexingActionType.SET_AS_PRIMARY_OBJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -26,7 +25,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
-
 
 import java.util.Collection;
 import java.util.UUID;
@@ -109,11 +107,12 @@ public class SetAsPrimaryObjectServiceTest {
         service.setAsPrimaryObject(agent, fileObjPid);
 
         verify(workObj).setPrimaryObject(fileObjPid);
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(), eq(SET_AS_PRIMARY_OBJECT));
+        verify(messageSender).sendSetAsPrimaryObjectOperation(anyString(), pidsCaptor.capture());
 
         Collection<PID> collections = pidsCaptor.getValue();
-        assertEquals(collections.size(), 1);
+        assertEquals(collections.size(), 2);
         assertTrue(collections.contains(fileObjPid));
+        assertTrue(collections.contains(fileObj.getParent().getPid()));
     }
 
     @Test(expected = AccessRestrictionException.class)

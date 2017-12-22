@@ -119,7 +119,6 @@
 	<dependency>
 		<groupId>edu.unc.lib.cdr</groupId>
 		<artifactId>persistence</artifactId>
-		<scope>test</scope>
 		<version>${cdr.version}</version>
 	</dependency>
 	

@@ -30,5 +30,14 @@
         
     <mvc:annotation-driven/>
 
-    <context:component-scan base-package="edu.unc.lib.dl.cdr.services.rest"/>
+    <context:component-scan resource-pattern="**/IndexingController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
+    
+    <bean id="indexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService">
+        <property name="aclService" ref="aclService" />
+        <property name="indexingMessageSender" ref="indexingMessageSender" />
+    </bean>
+    
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+    </bean>
 </beans>

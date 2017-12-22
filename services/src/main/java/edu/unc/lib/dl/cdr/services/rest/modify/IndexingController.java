@@ -15,30 +15,32 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import java.util.Arrays;
-
-import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.cdr.services.processing.IndexingService;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
- * 
+ * API controller for reindexing the repository
+ *
  * @author bbpennel
+ * @author harring
  *
  */
 @Controller
@@ -46,73 +48,82 @@ public class IndexingController {
     private static final Logger log = LoggerFactory.getLogger(IndexingController.class);
 
     @Autowired
-    private OperationsMessageSender operationsMessageSender;
-    @Autowired
-    private AccessControlService accessControlService;
+    private IndexingService indexingService;
 
     /**
-     * Perform a deep reindexing operation on the specified id and all of its children.
-     * 
-     * @param id
-     * @param inplace
+     * Perform a deep reindexing operation on the object with the specified id and all of its children.
+     *
+     * @param id the identifier of the object to be reindexed
+     * @param inplace whether the reindex should be an in-place recursive reindex (optional)
      * @return
      */
     @RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
-    public void reindex(@PathVariable("id") String id,
-            @RequestParam(value = "inplace", required = false) Boolean inplace, HttpServletResponse response) {
-        PID pid = new PID(id);
-
-        if (!hasPermission(id)) {
-            response.setStatus(401);
-            return;
-        }
-
-        if (inplace == null || inplace) {
-            log.info("Reindexing " + id + ", inplace reindex mode");
-            operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid),
-                    IndexingActionType.RECURSIVE_REINDEX);
-        } else {
-            log.info("Reindexing " + id + ", clean reindex mode");
-            operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(), Arrays.asList(pid),
-                    IndexingActionType.CLEAN_REINDEX);
-        }
+    public ResponseEntity<Object> reindex(@PathVariable("id") String id,
+            @RequestParam(value = "inplace", required = false) Boolean inplace) {
+        return indexObjectAndChildren(id, inplace);
     }
 
     /**
      * Perform a shallow reindexing of the object specified by id
-     * 
-     * @param id
-     * @param response
+     *
+     * @param id the identifier of the object to be reindexed
      * @return
      */
     @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
-    public void reindex(@PathVariable("id") String id, HttpServletResponse response) {
-        PID pid = new PID(id);
+    public ResponseEntity<Object> reindex(@PathVariable("id") String id) {
+        return indexObject(id);
+    }
 
-        if (!hasPermission(id)) {
-            response.setStatus(401);
-            return;
+    private ResponseEntity<Object> indexObject(String id) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "reindex");
+        result.put("pid", id);
+
+        PID objectPid = PIDs.get(id);
+
+        log.info("Indexing object " + id);
+        try {
+            indexingService.reindexObject(AgentPrincipals.createFromThread(), objectPid);
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to reindex object {}", id, e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
         }
 
-        log.info("Updating " + id);
-        operationsMessageSender.sendIndexingOperation(GroupsThreadStore.getUsername(),
-                Arrays.asList(pid), IndexingActionType.ADD);
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private boolean hasPermission(String id) {
-        // Disallow requests by users that are not at least curators for pid
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
-        if (log.isDebugEnabled()) {
-            log.debug("hasPermission for groups " + groups.joinAccessGroups(";"));
+    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "reindex");
+        result.put("pid", id);
+
+        PID objectPid = PIDs.get(id);
+
+        if (inplace == null || inplace) {
+            log.info("Reindexing " + id + ", inplace reindex mode");
+        } else {
+            log.info("Reindexing " + id + ", clean reindex mode");
         }
-        return groups.contains(AccessGroupConstants.ADMIN_GROUP);
+        try {
+            indexingService.reindexObjectAndChildren(AgentPrincipals.createFromThread(), objectPid, inplace);
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to reindex object {} and its children", id, e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
-        this.operationsMessageSender = operationsMessageSender;
-    }
-
-    public void setAccessControlService(AccessControlService accessControlService) {
-        this.accessControlService = accessControlService;
-    }
 }

@@ -18,28 +18,23 @@ package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.INDEX;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.PUBLISH;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.jms.JMSException;
-import javax.jms.Session;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -51,12 +46,13 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  *
  * @author lfarrell
  * @author bbpennel
+ * @author harring
  *
  */
 public class CdrEventToSolrUpdateProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(CdrEventToSolrUpdateProcessor.class);
 
-    private JmsTemplate jmsTemplate;
+    private IndexingMessageSender messageSender;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -77,6 +73,7 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
 
         String targetId = JMSMessageUtil.getPid(body);
         String solrActionType = (String) in.getHeader(CdrSolrUpdateAction);
+        String userid = (String) in.getHeader("name");
 
         if (solrActionType == null || solrActionType.equals("none")) {
             log.warn("No solr update action specified, ignoring event for object {}", targetId);
@@ -84,28 +81,20 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
         }
 
         List<String> subjects = populateList("subjects", contentBody);
+        List<PID> childPids = new ArrayList<>();
+        for (String subject : subjects) {
+            childPids.add(PIDs.get(subject));
+        }
 
         if (MOVE.equals(solrActionType)) {
-            offer(targetId, IndexingActionType.MOVE, subjects);
+            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
+                    IndexingActionType.MOVE);
         } else if (ADD.equals(solrActionType)) {
-            offer(targetId, IndexingActionType.ADD_SET_TO_PARENT, subjects);
-        } else if (INDEX.equals(solrActionType)) {
-            String operation = contentBody.getName();
-            IndexingActionType indexingAction = IndexingActionType.getAction(IndexingActionType.namespace
-                    + operation);
-            if (indexingAction != null) {
-                if (IndexingActionType.SET_DEFAULT_WEB_OBJECT.equals(indexingAction)) {
-                    offer(targetId, IndexingActionType.SET_DEFAULT_WEB_OBJECT, subjects);
-                } else {
-                    for (String pidString : subjects) {
-                        offer(pidString, indexingAction);
-                    }
-                }
-            }
+            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
+                    IndexingActionType.ADD_SET_TO_PARENT);
         } else if (PUBLISH.equals(solrActionType)) {
-            for (String pidString : subjects) {
-                offer(pidString, IndexingActionType.UPDATE_STATUS);
-            }
+            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
+                    IndexingActionType.UPDATE_STATUS);
         } else {
             log.warn("Invalid solr update action {}, ignoring event for object {}", solrActionType, targetId);
             return;
@@ -131,42 +120,8 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
         return list;
     }
 
-    private void sendMessage(Document msg) {
-        XMLOutputter out = new XMLOutputter();
-        final String msgStr = out.outputString(msg);
-
-        this.jmsTemplate.send(new MessageCreator() {
-
-            @Override
-            public javax.jms.Message createMessage(Session session) throws JMSException {
-                return session.createTextMessage(msgStr);
-            }
-
-        });
+    public void setIndexingMessageSender(IndexingMessageSender indexingMessageSender) {
+        this.messageSender = indexingMessageSender;
     }
 
-    public void setJmsTemplate(JmsTemplate jmsTemplate) {
-        this.jmsTemplate = jmsTemplate;
-    }
-
-    private void offer(String pid, IndexingActionType solrActionType) {
-        offer(pid, solrActionType, null);
-    }
-
-    private void offer(String pid, IndexingActionType solrActionType, List<String> children) {
-        Document msg = new Document();
-        Element entry = new Element("entry", ATOM_NS);
-        msg.addContent(entry);
-        entry.addContent(new Element("pid", ATOM_NS).setText(pid));
-        entry.addContent(new Element("solrActionType", ATOM_NS)
-                .setText(solrActionType.getURI().toString()));
-
-        if (children != null && children.size() > 0) {
-            String childrenStr = String.join(",", children);
-            entry.addContent(new Element("children", ATOM_NS).setText(childrenStr));
-        }
-
-        log.debug("Sending solr update message for {} of type {}", pid, solrActionType.toString());
-        sendMessage(msg);
-    }
 }

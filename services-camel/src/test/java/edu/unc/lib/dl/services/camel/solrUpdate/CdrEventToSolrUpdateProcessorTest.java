@@ -16,46 +16,38 @@
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
-import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
-import static edu.unc.lib.dl.util.IndexingActionType.SET_DEFAULT_WEB_OBJECT;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
-import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import javax.jms.Session;
-
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
@@ -63,24 +55,30 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 /**
  *
  * @author bbpennel
+ * @author harring
  *
  */
 public class CdrEventToSolrUpdateProcessorTest {
     private static final int NUM_TEST_PIDS = 3;
+    private static final String USER_ID = "user_id";
 
     private CdrEventToSolrUpdateProcessor processor;
 
     @Mock
-    private JmsTemplate jmsTemplate;
+    private IndexingMessageSender messageSender;
     @Mock
     private Exchange exchange;
     @Mock
     private Message msg;
 
     @Captor
-    ArgumentCaptor<MessageCreator> messageCreatorCaptor;
+    ArgumentCaptor<PID> pidCaptor;
+    @Captor
+    ArgumentCaptor<Collection<PID>> pidsCaptor;
     @Captor
     ArgumentCaptor<String> stringCaptor;
+    @Captor
+    ArgumentCaptor<IndexingActionType> actionTypeCaptor;
 
     private PID targetPid;
 
@@ -89,11 +87,12 @@ public class CdrEventToSolrUpdateProcessorTest {
         initMocks(this);
 
         processor = new CdrEventToSolrUpdateProcessor();
-        processor.setJmsTemplate(jmsTemplate);
+        processor.setIndexingMessageSender(messageSender);
 
         targetPid = PIDs.get(UUID.randomUUID().toString());
 
         when(exchange.getIn()).thenReturn(msg);
+        when(msg.getHeader(eq("name"))).thenReturn(USER_ID);
     }
 
     @Test
@@ -102,7 +101,8 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(jmsTemplate, never()).send(any(MessageCreator.class));
+        verify(messageSender, never()).sendIndexingOperation(anyString(), any(PID.class),
+                any(IndexingActionType.class));
     }
 
     @Test
@@ -114,95 +114,50 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(jmsTemplate, never()).send(any(MessageCreator.class));
+        verify(messageSender, never()).sendIndexingOperation(anyString(), any(PID.class),
+                anyCollectionOf(PID.class), any(IndexingActionType.class));
     }
 
     @Test
     public void testMoveAction() throws Exception {
         List<PID> subjects = pidList(NUM_TEST_PIDS);
 
-        Document msgDoc = buildMessage(MOVE.toString(), MOVE.getName(), targetPid, subjects);
+        Document msgDoc = buildMessage(CDRActions.MOVE.toString(), CDRActions.MOVE.getName(), targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
 
         processor.process(exchange);
 
-        Element sentMsg = getSentMessage();
-        String solrAction = sentMsg.getChildText("solrActionType", ATOM_NS);
-        assertEquals(IndexingActionType.MOVE.getURI().toString(), solrAction);
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
+                actionTypeCaptor.capture());
 
-        assertAllPidsPresent(sentMsg, subjects);
+        verifyTargetPid(pidCaptor.getValue());
+
+        verifyUserid(stringCaptor.getValue());
+
+        verifyChildPids(subjects);
+
+        verifyActionType(IndexingActionType.MOVE, actionTypeCaptor.getValue());
     }
 
     @Test
     public void testAddAction() throws Exception {
         List<PID> subjects = pidList(NUM_TEST_PIDS);
 
-        Document msgDoc = buildMessage(ADD.toString(), ADD.getName(), targetPid, subjects);
+        Document msgDoc = buildMessage(CDRActions.ADD.toString(), CDRActions.ADD.getName(), targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
 
         processor.process(exchange);
 
-        Element sentMsg = getSentMessage();
-        String solrAction = sentMsg.getChildText("solrActionType", ATOM_NS);
-        assertEquals(ADD_SET_TO_PARENT.getURI().toString(), solrAction);
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
+                actionTypeCaptor.capture());
 
-        assertAllPidsPresent(sentMsg, subjects);
-    }
+        verifyTargetPid(pidCaptor.getValue());
 
-    @Test
-    public void testCleanIndexAction() throws Exception {
-        testIndexingAction(IndexingActionType.CLEAN_REINDEX);
-    }
+        verifyUserid(stringCaptor.getValue());
 
-    @Test
-    public void testInplaceIndexAction() throws Exception {
-        testIndexingAction(IndexingActionType.RECURSIVE_REINDEX);
-    }
+        verifyChildPids(subjects);
 
-    private void testIndexingAction(IndexingActionType indexingAction) throws Exception {
-        List<PID> subjects = pidList(NUM_TEST_PIDS);
-
-        Document msgDoc = buildMessage(CDRActions.INDEX.toString(),
-                indexingAction.getName(),
-                targetPid, subjects);
-        when(msg.getBody()).thenReturn(msgDoc);
-
-        processor.process(exchange);
-
-        verify(jmsTemplate, times(NUM_TEST_PIDS)).send(messageCreatorCaptor.capture());
-        List<MessageCreator> creators = messageCreatorCaptor.getAllValues();
-
-        List<String> responsePids = new ArrayList<>();
-        for (MessageCreator creator : creators) {
-            Element sentMsg = getCreatedMessage(creator);
-            String solrAction = sentMsg.getChildText("solrActionType", ATOM_NS);
-            assertEquals(indexingAction.getURI().toString(), solrAction);
-
-            String pid = sentMsg.getChildText("pid", ATOM_NS);
-            responsePids.add(pid);
-        }
-
-        for (PID subject : subjects) {
-            assertTrue(responsePids.stream().anyMatch(p -> p.equals(subject.getId())));
-        }
-    }
-
-    @Test
-    public void testIndexPrimaryObjectAction() throws Exception {
-        List<PID> subjects = pidList(NUM_TEST_PIDS);
-
-        Document msgDoc = buildMessage(CDRActions.INDEX.toString(),
-                IndexingActionType.SET_DEFAULT_WEB_OBJECT.getName(),
-                targetPid, subjects);
-        when(msg.getBody()).thenReturn(msgDoc);
-
-        processor.process(exchange);
-
-        Element sentMsg = getSentMessage();
-        String solrAction = sentMsg.getChildText("solrActionType", ATOM_NS);
-        assertEquals(SET_DEFAULT_WEB_OBJECT.getURI().toString(), solrAction);
-
-        assertAllPidsPresent(sentMsg, subjects);
+        verifyActionType(IndexingActionType.ADD_SET_TO_PARENT, actionTypeCaptor.getValue());
     }
 
     @Test
@@ -216,22 +171,16 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(jmsTemplate, times(NUM_TEST_PIDS)).send(messageCreatorCaptor.capture());
-        List<MessageCreator> creators = messageCreatorCaptor.getAllValues();
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
+                pidsCaptor.capture(), actionTypeCaptor.capture());
 
-        List<String> responsePids = new ArrayList<>();
-        for (MessageCreator creator : creators) {
-            Element sentMsg = getCreatedMessage(creator);
-            String solrAction = sentMsg.getChildText("solrActionType", ATOM_NS);
-            assertEquals(UPDATE_STATUS.getURI().toString(), solrAction);
+        verifyTargetPid(pidCaptor.getValue());
 
-            String pid = sentMsg.getChildText("pid", ATOM_NS);
-            responsePids.add(pid);
-        }
+        verifyUserid(stringCaptor.getValue());
 
-        for (PID subject : subjects) {
-            assertTrue(responsePids.stream().anyMatch(p -> p.equals(subject.getId())));
-        }
+        verifyChildPids(subjects);
+
+        verifyActionType(IndexingActionType.UPDATE_STATUS, actionTypeCaptor.getValue());
     }
 
     private Document buildMessage(String operation, String contentName, PID pid, List<PID> subjects) {
@@ -274,26 +223,23 @@ public class CdrEventToSolrUpdateProcessorTest {
         return pidList;
     }
 
-    private Element getSentMessage() throws Exception {
-        verify(jmsTemplate).send(messageCreatorCaptor.capture());
-
-        return getCreatedMessage(messageCreatorCaptor.getValue());
+    private void verifyTargetPid(PID pid) {
+        assertEquals(targetPid, pid);
     }
 
-    private Element getCreatedMessage(MessageCreator creator) throws Exception {
-        Session session = mock(Session.class);
-        creator.createMessage(session);
-        verify(session).createTextMessage(stringCaptor.capture());
-
-        SAXBuilder parser = new SAXBuilder();
-        return parser.build(new ByteArrayInputStream(stringCaptor.getValue().getBytes()))
-                .getRootElement();
+    private void verifyChildPids(List<PID> subjects) {
+        Collection<PID> pids = pidsCaptor.getValue();
+        assertEquals(NUM_TEST_PIDS, pids.size());
+        assertTrue(pids.contains(subjects.get(0)));
+        assertTrue(pids.contains(subjects.get(1)));
+        assertTrue(pids.contains(subjects.get(2)));
     }
 
-    private void assertAllPidsPresent(Element sentMsg, List<PID> pids) {
-        String childText = sentMsg.getChildText("children", ATOM_NS);
-        for (String child : childText.split(",")) {
-            assertTrue(pids.stream().anyMatch(p -> p.getId().equals(child)));
-        }
+    private void verifyUserid(String userid) {
+        assertEquals(USER_ID, userid);
+    }
+
+    private void verifyActionType(IndexingActionType expected, IndexingActionType actual) {
+        assertEquals(expected, actual);
     }
 }

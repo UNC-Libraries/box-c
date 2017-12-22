@@ -22,23 +22,15 @@ import static edu.unc.lib.dl.xml.NamespaceConstants.CDR_MESSAGE_AUTHOR_URI;
 import java.util.Collection;
 import java.util.UUID;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Session;
-
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.output.XMLOutputter;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.core.MessageCreator;
 
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 import edu.unc.lib.dl.util.ResourceType;
 
@@ -47,12 +39,11 @@ import edu.unc.lib.dl.util.ResourceType;
  *
  * @author Gregory Jansen
  * @author bbpennel
+ * @author harring
  *
  */
-public class OperationsMessageSender {
+public class OperationsMessageSender extends AbstractMessageSender {
     private static final Logger LOG = LoggerFactory.getLogger(OperationsMessageSender.class);
-
-    private JmsTemplate jmsTemplate;
 
     /**
      * Sends a Add operation message, indicating that objects were added to destination containers.
@@ -121,6 +112,7 @@ public class OperationsMessageSender {
         }
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent mark-for-deletion operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
@@ -145,6 +137,7 @@ public class OperationsMessageSender {
         }
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent restore-from-deletion operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
@@ -173,6 +166,7 @@ public class OperationsMessageSender {
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent remove operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
@@ -219,6 +213,7 @@ public class OperationsMessageSender {
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent move operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
@@ -279,6 +274,7 @@ public class OperationsMessageSender {
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent publish operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
@@ -310,6 +306,7 @@ public class OperationsMessageSender {
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent edit-type operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
@@ -336,49 +333,36 @@ public class OperationsMessageSender {
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent update-description operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
     }
 
     /**
-     * Sends message indicating that objects are being requested to be reindexed.
+     * Sends set-as-primary-object operation message.
      *
      * @param userid id of user who triggered the operation
-     * @param pids objects to be reindexed
-     * @param type type of indexing action to perform
+     * @param pids objects whose primary object has changed
      * @return id of operation message
      */
-    public String sendIndexingOperation(String userid, Collection<PID> pids, IndexingActionType type) {
+    public String sendSetAsPrimaryObjectOperation(String userid, Collection<PID> pids) {
         Element contentEl = createAtomEntry(userid, pids.iterator().next(),
-                CDRActions.INDEX);
+                CDRActions.SET_AS_PRIMARY_OBJECT);
 
-        Element indexEl = new Element(type.getName(), CDR_MESSAGE_NS);
-        contentEl.addContent(indexEl);
+        Element updateEl = new Element(CDRActions.SET_AS_PRIMARY_OBJECT.getName(), CDR_MESSAGE_NS);
+        contentEl.addContent(updateEl);
 
         Element subjects = new Element("subjects", CDR_MESSAGE_NS);
-        indexEl.addContent(subjects);
+        updateEl.addContent(subjects);
         for (PID sub : pids) {
             subjects.addContent(new Element("pid", CDR_MESSAGE_NS).setText(sub.getRepositoryPath()));
         }
 
         Document msg = contentEl.getDocument();
         sendMessage(msg);
+        LOG.debug("sent set-as-primary-object operation JMS message using JMS template: {}", this.getJmsTemplate());
 
         return getMessageId(msg);
-    }
-
-    private void sendMessage(Document msg) {
-        XMLOutputter out = new XMLOutputter();
-        final String msgStr = out.outputString(msg);
-
-        jmsTemplate.send(new MessageCreator() {
-
-            @Override
-            public Message createMessage(Session session) throws JMSException {
-                return session.createTextMessage(msgStr);
-            }
-
-        });
     }
 
     private Element createAtomEntry(String userid, PID contextpid, CDRActions operation) {
@@ -402,18 +386,6 @@ public class OperationsMessageSender {
         Element content = new Element("content", ATOM_NS).setAttribute("type", "text/xml");
         entry.addContent(content);
         return content;
-    }
-
-    private String getMessageId(Document msg) {
-        return msg.getRootElement().getChildText("id", ATOM_NS);
-    }
-
-    public JmsTemplate getJmsTemplate() {
-        return jmsTemplate;
-    }
-
-    public void setJmsTemplate(JmsTemplate jmsTemplate) {
-        this.jmsTemplate = jmsTemplate;
     }
 
 }

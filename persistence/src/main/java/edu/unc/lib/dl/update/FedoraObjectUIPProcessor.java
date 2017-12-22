@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.update;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -94,13 +93,13 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
             }
 
             // Issue indexing operations based on the data updated
-            Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
-            if (indexingActions != null) {
-                for (IndexingActionType actionType : indexingActions) {
-                    operationsMessageSender.sendIndexingOperation(uip.getUser(),
-                            Arrays.asList(uip.getPID()), actionType);
-                }
-            }
+//            Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
+//            if (indexingActions != null) {
+//                for (IndexingActionType actionType : indexingActions) {
+//                    operationsMessageSender.sendIndexingOperation(uip.getUser(),
+//                            Arrays.asList(uip.getPID()), actionType);
+//                }
+//            }
         }
     }
 

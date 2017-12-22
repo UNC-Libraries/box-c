@@ -55,8 +55,6 @@ public class CdrEventRouter extends RouteBuilder {
                     + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.ADD.getName() + "'"
                     + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REORDER.getName() + "'"
                     + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.PUBLISH.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REINDEX.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.INDEX.getName() + "'"
                     + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE.getName() + "'"))
             .to("direct:solr-update");
 

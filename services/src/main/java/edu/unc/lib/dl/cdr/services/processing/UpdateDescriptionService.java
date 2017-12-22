@@ -15,9 +15,12 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+
+import org.apache.commons.io.IOUtils;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -48,6 +51,9 @@ public class UpdateDescriptionService {
                 pid, agent.getPrincipals(), Permission.editDescription);
 
         String username = agent.getUsername();
+        if (!modsStream.markSupported()) {
+            modsStream = new ByteArrayInputStream(IOUtils.toByteArray(modsStream));
+        }
         modsValidator.validate(modsStream);
 
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
