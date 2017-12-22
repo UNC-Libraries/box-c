@@ -1,71 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
-	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-		http://www.springframework.org/schema/util 
-		http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/context
-		http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd">
 
-	<bean name="propertiesURI" class="java.lang.System"
-		factory-method="getProperty">
-		<constructor-arg index="0" value="deposit.properties.uri" />
-	</bean>
-
-	<bean id="serverAddress" class="java.lang.String">
-		<constructor-arg
-			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}/" />
-	</bean>
-	
-	<bean id="baseAddress" class="java.lang.String">
-		<constructor-arg
-			value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}/rest/" />
-	</bean>
-	
-	<bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
-		<constructor-arg ref="baseAddress" />
-	</bean>
-	
-	<bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
-			factory-bean="fcrepoClientFactory" factory-method="makeClient">
-	</bean>
-	
-	<bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
-		<property name="client" ref="fcrepoClient" />
-	</bean>
-	
-	<bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
-		<property name="fcrepoClient" ref="fcrepoClient" />
-	</bean>
-
-	<bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
-		<property name="client" ref="fcrepoClient" />
-		<property name="ldpFactory" ref="ldpContainerFactory" />
-		<property name="pidMinter" ref="pidMinter" />
-		<property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
-		<property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
-	</bean>
-	
-	<bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="deposit.properties.uri" />
     </bean>
-	
-	<bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
-		<property name="client" ref="fcrepoClient" />
-		<property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-		<property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-		<property name="pidMinter" ref="pidMinter" />
-	</bean>
-	
-	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
-		<property name="client" ref="fcrepoClient" />
-		<property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+
+    <bean id="serverAddress" class="java.lang.String">
+        <constructor-arg
+            value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}/" />
+    </bean>
+    
+    <bean id="baseAddress" class="java.lang.String">
+        <constructor-arg
+            value="${fedora.protocol:https}://${fedora.host:localhost}:${fedora.port:443}/${fedora.context:fcrepo}/rest/" />
+    </bean>
+    
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+        <constructor-arg ref="baseAddress" />
+    </bean>
+    
+    <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
+            factory-bean="fcrepoClientFactory" factory-method="makeClient">
+    </bean>
+    
+    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+        <property name="client" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+        <property name="client" ref="fcrepoClient" />
+        <property name="ldpFactory" ref="ldpContainerFactory" />
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
+    </bean>
+    
+    <bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
+    </bean>
+    
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-	</bean>
-	
-	<bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+        <property name="pidMinter" ref="pidMinter" />
+    </bean>
+    
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+    
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
@@ -74,10 +74,10 @@
     <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
         <property name="client" ref="fcrepoClient" />
     </bean>
-	
-	<bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer"
-			init-method="initializeRepository">
-		<property name="fcrepoClient" ref="fcrepoClient" />
-		<property name="objFactory" ref="repositoryObjectFactory" />
-	</bean>
+    
+    <bean id="repositoryInitializer" class="edu.unc.lib.dl.fcrepo4.RepositoryInitializer"
+            init-method="initializeRepository">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="objFactory" ref="repositoryObjectFactory" />
+    </bean>
 </beans>

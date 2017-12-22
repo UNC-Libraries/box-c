@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3">
-	<titleInfo>
-		<title>Affiliations Test</title>
-	</titleInfo>
-	
-	<name>
-		<namePart>Test</namePart>
-		<affiliation>dept1</affiliation>
-	</name>
+    <titleInfo>
+        <title>Affiliations Test</title>
+    </titleInfo>
+    
+    <name>
+        <namePart>Test</namePart>
+        <affiliation>dept1</affiliation>
+    </name>
 </mods>
