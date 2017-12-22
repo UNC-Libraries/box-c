@@ -22,13 +22,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.apache.solr.core.CoreContainer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
 
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
@@ -45,10 +48,14 @@ public class AbstractSolrQueryLayerTest {
 
     protected SolrQueryLayerService queryLayer;
 
+    @Mock
+    protected GlobalPermissionEvaluator globalPermissionEvaluator;
     protected SearchStateFactory stateFactory;
     protected SearchSettings searchSettings;
     protected SolrSettings solrSettings;
     protected FacetFieldUtil facetUtil;
+
+    private File dataDir;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -58,13 +65,12 @@ public class AbstractSolrQueryLayerTest {
     @Before
     public void setUp() throws Exception {
         initMocks(this);
+        dataDir = new File("target/solr_data/");
+        dataDir.mkdir();
 
-        File home = new File("src/test/resources/config");
-        File configFile = new File(home, "solr.xml");
-
-        File dataDir = tmpFolder.newFolder("solrdata");
         System.setProperty("solr.data.dir", dataDir.getAbsolutePath());
         container = new CoreContainer("src/test/resources/config");
+        container.load();
 
         server = new EmbeddedSolrServer(container, "access");
 
@@ -90,11 +96,13 @@ public class AbstractSolrQueryLayerTest {
         queryLayer.setSolrSettings(solrSettings);
         queryLayer.setSearchStateFactory(stateFactory);
         queryLayer.setFacetFieldUtil(facetUtil);
-        setField(queryLayer, "server", server);
+        queryLayer.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        setField(queryLayer, "solrClient", server);
     }
 
     @After
     public void tearDown() throws Exception {
         server.close();
+        FileUtils.forceDelete(dataDir);
     }
 }
