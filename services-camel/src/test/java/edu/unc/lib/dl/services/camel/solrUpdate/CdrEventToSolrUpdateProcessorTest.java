@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
-import static edu.unc.lib.dl.util.IndexingActionType.ADD_SET_TO_PARENT;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
@@ -61,6 +60,7 @@ import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
  */
 public class CdrEventToSolrUpdateProcessorTest {
     private static final int NUM_TEST_PIDS = 3;
+    private static final String USER_ID = "user_id";
 
     private CdrEventToSolrUpdateProcessor processor;
 
@@ -92,6 +92,7 @@ public class CdrEventToSolrUpdateProcessorTest {
         targetPid = PIDs.get(UUID.randomUUID().toString());
 
         when(exchange.getIn()).thenReturn(msg);
+        when(msg.getHeader(eq("name"))).thenReturn(USER_ID);
     }
 
     @Test
@@ -123,27 +124,19 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         Document msgDoc = buildMessage(CDRActions.MOVE.toString(), CDRActions.MOVE.getName(), targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
-        when(msg.getHeader(eq("name"))).thenReturn("user_id");
 
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
                 actionTypeCaptor.capture());
 
-        PID pid = pidCaptor.getValue();
-        assertEquals(targetPid, pid);
+        verifyTargetPid(pidCaptor.getValue());
 
-        String userid = stringCaptor.getValue();
-        assertEquals("user_id", userid);
+        verifyUserid(stringCaptor.getValue());
 
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(NUM_TEST_PIDS, pids.size());
-        assertTrue(pids.contains(subjects.get(0)));
-        assertTrue(pids.contains(subjects.get(1)));
-        assertTrue(pids.contains(subjects.get(2)));
+        verifyChildPids(subjects);
 
-        IndexingActionType actionType = actionTypeCaptor.getValue();
-        assertEquals(IndexingActionType.MOVE, actionType);
+        verifyActionType(IndexingActionType.MOVE, actionTypeCaptor.getValue());
     }
 
     @Test
@@ -152,27 +145,19 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         Document msgDoc = buildMessage(CDRActions.ADD.toString(), CDRActions.ADD.getName(), targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
-        when(msg.getHeader(eq("name"))).thenReturn("user_id");
 
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(), pidsCaptor.capture(),
                 actionTypeCaptor.capture());
 
-        PID pid = pidCaptor.getValue();
-        assertEquals(targetPid, pid);
+        verifyTargetPid(pidCaptor.getValue());
 
-        String userid = stringCaptor.getValue();
-        assertEquals("user_id", userid);
+        verifyUserid(stringCaptor.getValue());
 
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(NUM_TEST_PIDS, pids.size());
-        assertTrue(pids.contains(subjects.get(0)));
-        assertTrue(pids.contains(subjects.get(1)));
-        assertTrue(pids.contains(subjects.get(2)));
+        verifyChildPids(subjects);
 
-        IndexingActionType actionType = actionTypeCaptor.getValue();
-        assertEquals(ADD_SET_TO_PARENT, actionType);
+        verifyActionType(IndexingActionType.ADD_SET_TO_PARENT, actionTypeCaptor.getValue());
     }
 
     @Test
@@ -183,28 +168,19 @@ public class CdrEventToSolrUpdateProcessorTest {
                 UPDATE_STATUS.getName(),
                 targetPid, subjects);
         when(msg.getBody()).thenReturn(msgDoc);
-        when(msg.getHeader(eq("name"))).thenReturn("user_id");
 
         processor.process(exchange);
 
         verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
                 pidsCaptor.capture(), actionTypeCaptor.capture());
 
-        PID pid = pidCaptor.getValue();
-        // compare last of the three pids submitted for publishing
-        assertEquals(targetPid, pid);
+        verifyTargetPid(pidCaptor.getValue());
 
-        String userid = stringCaptor.getValue();
-        assertEquals("user_id", userid);
+        verifyUserid(stringCaptor.getValue());
 
-        Collection<PID> pids = pidsCaptor.getValue();
-        assertEquals(NUM_TEST_PIDS, pids.size());
-        assertTrue(pids.contains(subjects.get(0)));
-        assertTrue(pids.contains(subjects.get(1)));
-        assertTrue(pids.contains(subjects.get(2)));
+        verifyChildPids(subjects);
 
-        IndexingActionType actionType = actionTypeCaptor.getValue();
-        assertEquals(UPDATE_STATUS, actionType);
+        verifyActionType(IndexingActionType.UPDATE_STATUS, actionTypeCaptor.getValue());
     }
 
     private Document buildMessage(String operation, String contentName, PID pid, List<PID> subjects) {
@@ -245,5 +221,25 @@ public class CdrEventToSolrUpdateProcessorTest {
             pidList.add(PIDs.get(UUID.randomUUID().toString()));
         }
         return pidList;
+    }
+
+    private void verifyTargetPid(PID pid) {
+        assertEquals(targetPid, pid);
+    }
+
+    private void verifyChildPids(List<PID> subjects) {
+        Collection<PID> pids = pidsCaptor.getValue();
+        assertEquals(NUM_TEST_PIDS, pids.size());
+        assertTrue(pids.contains(subjects.get(0)));
+        assertTrue(pids.contains(subjects.get(1)));
+        assertTrue(pids.contains(subjects.get(2)));
+    }
+
+    private void verifyUserid(String userid) {
+        assertEquals(USER_ID, userid);
+    }
+
+    private void verifyActionType(IndexingActionType expected, IndexingActionType actual) {
+        assertEquals(expected, actual);
     }
 }
