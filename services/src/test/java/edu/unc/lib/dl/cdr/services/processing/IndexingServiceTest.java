@@ -16,7 +16,6 @@ package edu.unc.lib.dl.cdr.services.processing;
  */
 import static edu.unc.lib.dl.acl.util.Permission.reindex;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -25,7 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.Collection;
 import java.util.UUID;
 
 import org.junit.After;
@@ -66,7 +64,9 @@ public class IndexingServiceTest {
     @Captor
     private ArgumentCaptor<PID> pidCaptor;
     @Captor
-    private ArgumentCaptor<Collection<PID>> pidsCaptor;
+    private ArgumentCaptor<String> stringCaptor;
+    @Captor
+    private ArgumentCaptor<IndexingActionType> actionCaptor;
 
     private IndexingService service;
     private PID objPid;
@@ -94,35 +94,36 @@ public class IndexingServiceTest {
     public void reindexObjectTest() {
         service.reindexObject(agent, objPid);
 
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(), eq(IndexingActionType.ADD));
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
+                actionCaptor.capture());
 
-        Collection<PID> collections = pidsCaptor.getValue();
-        assertEquals(collections.size(), 1);
-        assertTrue(collections.contains(objPid));
+        assertEquals(objPid, pidCaptor.getValue());
+        assertEquals(agent.getUsername(), stringCaptor.getValue());
+        assertEquals(IndexingActionType.ADD, actionCaptor.getValue());
     }
 
     @Test
     public void inplaceReindexObjectAndChildrenTest() {
         service.reindexObjectAndChildren(agent, objPid, true);
 
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(),
-                eq(IndexingActionType.RECURSIVE_REINDEX));
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
+                actionCaptor.capture());
 
-        Collection<PID> collections = pidsCaptor.getValue();
-        assertEquals(collections.size(), 1);
-        assertTrue(collections.contains(objPid));
+        assertEquals(objPid, pidCaptor.getValue());
+        assertEquals(agent.getUsername(), stringCaptor.getValue());
+        assertEquals(IndexingActionType.RECURSIVE_REINDEX, actionCaptor.getValue());
     }
 
     @Test
     public void cleanReindexObjectAndChildrenTest() {
         service.reindexObjectAndChildren(agent, objPid, false);
 
-        verify(messageSender).sendIndexingOperation(anyString(), pidsCaptor.capture(),
-                eq(IndexingActionType.CLEAN_REINDEX));
+        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
+                actionCaptor.capture());
 
-        Collection<PID> collections = pidsCaptor.getValue();
-        assertEquals(collections.size(), 1);
-        assertTrue(collections.contains(objPid));
+        assertEquals(objPid, pidCaptor.getValue());
+        assertEquals(agent.getUsername(), stringCaptor.getValue());
+        assertEquals(IndexingActionType.CLEAN_REINDEX, actionCaptor.getValue());
     }
 
     @Test(expected = AccessRestrictionException.class)
