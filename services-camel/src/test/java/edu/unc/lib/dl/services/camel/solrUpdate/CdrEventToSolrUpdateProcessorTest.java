@@ -21,7 +21,9 @@ import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -112,7 +114,7 @@ public class CdrEventToSolrUpdateProcessorTest {
         processor.process(exchange);
 
         verify(messageSender, never()).sendIndexingOperation(anyString(), any(PID.class),
-                any(IndexingActionType.class));
+                anyCollectionOf(PID.class), any(IndexingActionType.class));
     }
 
     @Test
@@ -133,6 +135,12 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         String userid = stringCaptor.getValue();
         assertEquals("user_id", userid);
+
+        Collection<PID> pids = pidsCaptor.getValue();
+        assertEquals(NUM_TEST_PIDS, pids.size());
+        assertTrue(pids.contains(subjects.get(0)));
+        assertTrue(pids.contains(subjects.get(1)));
+        assertTrue(pids.contains(subjects.get(2)));
 
         IndexingActionType actionType = actionTypeCaptor.getValue();
         assertEquals(IndexingActionType.MOVE, actionType);
@@ -156,6 +164,12 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         String userid = stringCaptor.getValue();
         assertEquals("user_id", userid);
+
+        Collection<PID> pids = pidsCaptor.getValue();
+        assertEquals(NUM_TEST_PIDS, pids.size());
+        assertTrue(pids.contains(subjects.get(0)));
+        assertTrue(pids.contains(subjects.get(1)));
+        assertTrue(pids.contains(subjects.get(2)));
 
         IndexingActionType actionType = actionTypeCaptor.getValue();
         assertEquals(ADD_SET_TO_PARENT, actionType);
@@ -182,6 +196,12 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         String userid = stringCaptor.getValue();
         assertEquals("user_id", userid);
+
+        Collection<PID> pids = pidsCaptor.getValue();
+        assertEquals(NUM_TEST_PIDS, pids.size());
+        assertTrue(pids.contains(subjects.get(0)));
+        assertTrue(pids.contains(subjects.get(1)));
+        assertTrue(pids.contains(subjects.get(2)));
 
         IndexingActionType actionType = actionTypeCaptor.getValue();
         assertEquals(UPDATE_STATUS, actionType);

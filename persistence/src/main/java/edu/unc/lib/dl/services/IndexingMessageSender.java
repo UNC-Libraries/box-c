@@ -57,7 +57,8 @@ public class IndexingMessageSender extends AbstractMessageSender {
      * @param children pids of other objects to be indexed
      * @param solrActionType type of indexing action to perform
      */
-    public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children, IndexingActionType solrActionType) {
+    public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
+            IndexingActionType solrActionType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
