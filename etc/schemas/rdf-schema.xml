@@ -122,7 +122,7 @@
   <rdfs:comment>The class of RDF datatypes.</rdfs:comment>
   <rdfs:subClassOf rdf:resource="http://www.w3.org/2000/01/rdf-schema#Class"/>
 </rdfs:Class>
-	
+    
 <rdf:Description rdf:about="http://www.w3.org/2000/01/rdf-schema#">
   <rdfs:seeAlso rdf:resource="http://www.w3.org/2000/01/rdf-schema-more"/>
 </rdf:Description>
