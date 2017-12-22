@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:camel="http://camel.apache.org/schema/spring"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-		http://camel.apache.org/schema/spring
-		http://camel.apache.org/schema/spring/camel-spring.xsd">
-	
-	<bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
-		<constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
-	</bean>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    
+    <bean id="solrUpdateProcessor" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor" />
+    </bean>
 
-	<camel:camelContext id="CdrServiceSolrUpdate">
-		<camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
-	</camel:camelContext>
-	
+    <camel:camelContext id="CdrServiceSolrUpdate">
+        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
+    </camel:camelContext>
+    
 </beans>
