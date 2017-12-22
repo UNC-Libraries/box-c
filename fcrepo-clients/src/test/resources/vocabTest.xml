@@ -1,17 +1,17 @@
 <mods:mods xmlns:mets="http://www.loc.gov/METS/"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
-	<mods:name type="personal">
-		<mods:role>
-			<mods:roleTerm>Creator</mods:roleTerm>
-			<mods:roleTerm>Advisor</mods:roleTerm>
-			<mods:roleTerm>Reticulated Spline</mods:roleTerm>
-		</mods:role>
-		<mods:namePart>Wright, Will</mods:namePart>
-	</mods:name>
-	<mods:name type="personal">
-		<mods:role>
-			<mods:roleTerm>Designated Destroyer</mods:roleTerm>
-		</mods:role>
-		<mods:namePart>Bowsers</mods:namePart>
-	</mods:name>
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:name type="personal">
+        <mods:role>
+            <mods:roleTerm>Creator</mods:roleTerm>
+            <mods:roleTerm>Advisor</mods:roleTerm>
+            <mods:roleTerm>Reticulated Spline</mods:roleTerm>
+        </mods:role>
+        <mods:namePart>Wright, Will</mods:namePart>
+    </mods:name>
+    <mods:name type="personal">
+        <mods:role>
+            <mods:roleTerm>Designated Destroyer</mods:roleTerm>
+        </mods:role>
+        <mods:namePart>Bowsers</mods:namePart>
+    </mods:name>
 </mods:mods>
