@@ -61,14 +61,14 @@ public class SerializationUtil {
     }
 
     public static String structureToJSON(HierarchicalBrowseResultResponse response, AccessGroupSet groups) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         result.put("root", structureStep(response.getRootNode(), groups));
         return objectToJSON(result);
     }
 
     private static Map<String, Object> structureStep(HierarchicalBrowseResultResponse.ResultNode node,
             AccessGroupSet groups) {
-        Map<String, Object> entryMap = new HashMap<String, Object>();
+        Map<String, Object> entryMap = new HashMap<>();
         Map<String, Object> metadataMap = metadataToMap(node.getMetadata(), groups);
         entryMap.put("entry", metadataMap);
         if (node.getMetadata().getAncestorNames() != null
@@ -77,7 +77,7 @@ public class SerializationUtil {
         }
 
         if (node.getChildren().size() > 0) {
-            List<Object> childrenList = new ArrayList<Object>(node.getChildren().size());
+            List<Object> childrenList = new ArrayList<>(node.getChildren().size());
             entryMap.put("children", childrenList);
             for (int i = 0; i < node.getChildren().size(); i++) {
                 childrenList.add(structureStep(node.getChildren().get(i), groups));
@@ -103,7 +103,7 @@ public class SerializationUtil {
     }
 
     public static List<Map<String, Object>> resultsToList(SearchResultResponse resultResponse, AccessGroupSet groups) {
-        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>(resultResponse.getResultList().size());
+        List<Map<String, Object>> result = new ArrayList<>(resultResponse.getResultList().size());
 
         for (BriefObjectMetadata metadata : resultResponse.getResultList()) {
             result.add(metadataToMap(metadata, groups));
@@ -113,7 +113,7 @@ public class SerializationUtil {
     }
 
     public static Map<String, Object> metadataToMap(BriefObjectMetadata metadata, AccessGroupSet groups) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         if (metadata.getId() != null) {
             result.put("id", metadata.getId());
             result.put("uri", applicationPathSettings.getApiRecordPath() + metadata.getId());
@@ -230,9 +230,9 @@ public class SerializationUtil {
     }
 
     private static Object cutoffFacetToMap(CutoffFacet facet) {
-        List<Map<String, String>> result = new ArrayList<Map<String,String>>(facet.getFacetNodes().size());
+        List<Map<String, String>> result = new ArrayList<>(facet.getFacetNodes().size());
         for (HierarchicalFacetNode node : facet.getFacetNodes()) {
-            Map<String, String> nodeEntry = new HashMap<String, String>();
+            Map<String, String> nodeEntry = new HashMap<>();
             nodeEntry.put("id", node.getSearchKey());
             nodeEntry.put("title", node.getDisplayValue());
             result.add(nodeEntry);
