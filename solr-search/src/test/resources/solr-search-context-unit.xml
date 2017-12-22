@@ -17,30 +17,30 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util 
-		http://www.springframework.org/schema/util/spring-util.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd">
 
-	<bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
-		<property name="properties" ref="searchProperties" />
-	</bean>
-	<util:properties id="searchProperties" location="classpath:search.properties" />
-	<bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-	<bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-	<bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-	<bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">
-	</bean>
-	<bean id="searchStateUtil" class="edu.unc.lib.dl.search.solr.util.SearchStateUtil">
-		<property name="searchSettings" ref="searchSettings" />
-	</bean>
-		
+    <bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
+        <property name="properties" ref="searchProperties" />
+    </bean>
+    <util:properties id="searchProperties" location="classpath:search.properties" />
+    <bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    <bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    <bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    <bean id="searchActionService" class="edu.unc.lib.dl.search.solr.service.SearchActionService">
+    </bean>
+    <bean id="searchStateUtil" class="edu.unc.lib.dl.search.solr.util.SearchStateUtil">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+        
 </beans>
