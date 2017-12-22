@@ -258,13 +258,13 @@ xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/
     </mods:part>
   </mods:relatedItem>
   <mods:subject>
-  	<mods:topic>Machine Learning</mods:topic>
+      <mods:topic>Machine Learning</mods:topic>
   </mods:subject>
   <mods:subject>
-  	<mods:name type="personal" authority="naf">
-  	  	<mods:namePart>Woolf, Virginia</mods:namePart>
-  	  	<mods:namePart type="date">1882-1941</mods:namePart>
-  	</mods:name>
+      <mods:name type="personal" authority="naf">
+            <mods:namePart>Woolf, Virginia</mods:namePart>
+            <mods:namePart type="date">1882-1941</mods:namePart>
+      </mods:name>
   </mods:subject>
 </mods:mods>
 </foxml:xmlContent>
