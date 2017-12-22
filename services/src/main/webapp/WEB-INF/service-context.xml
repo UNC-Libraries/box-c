@@ -82,7 +82,7 @@
         <constructor-arg ref="jedisPool" />
     </bean>
 
-    <bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
+    <!-- <bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
     
     <bean id="rollbackMoveJobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject" ref="rollbackMoveJob" />
@@ -105,7 +105,7 @@
             <value>true</value>
         </property>
         <property name="configLocation" value="classpath:quartz.properties"/>
-    </bean>
+    </bean> -->
     
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate">
         <property name="connectionFactory" ref="jmsFactory" />
