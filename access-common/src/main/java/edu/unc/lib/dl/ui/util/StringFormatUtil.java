@@ -17,68 +17,105 @@ package edu.unc.lib.dl.ui.util;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.nio.charset.StandardCharsets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * String manipulation utility methods related to Solr data.
+ * String manipulation utility methods for formatting and rendering string data
+ * to web clients.
+ *
  * @author bbpennel
  *
  */
 public class StringFormatUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(StringFormatUtil.class);
 
     private static String[] filesizeSuffixes = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+
+    private static int DEFAULT_LAST_WORD_ALLOWANCE = 10;
+    private static double LAST_WORD_ALLOWANCE_MIN_LENGTH_FACTOR = 1.5;
 
     private StringFormatUtil() {
     }
 
     /**
-     * Formats a file size string if it is a numeric representation stored in bytes.  If there
-     * are non-numeric characters in the file size, then the filesize is returned.  Numeric file sizes
-     * are labeled with the highest applicable unit which returns a whole number, plus decimalPlaces
-     * number of digits after the decimal.  If the value after the decimal would be 0, then no decimal
-     * point is returned.
-     * @param filesize
-     * @param decimalPlaces
-     * @return
+     * Formats the filesize into a human readable format using the largest
+     * applicable unit, with decimalPlaces number of decimals return.
+     *
+     * @param filesize string containing the filesize in bytes
+     * @param decimalPlaces number of decimal places to return. If 0, then no
+     *            decimal places are returned.
+     * @return formatted filesize, or the provided filesize string if it was not
+     *         a number
      */
     public static String formatFilesize(String filesize, int decimalPlaces) {
         try {
-            int multipleCount = 0;
-            long filesizeValue = Long.parseLong(filesize);
-            long filesizeRemainder = 0;
-            while (filesizeValue > 1024 && multipleCount < filesizeSuffixes.length) {
-                filesizeRemainder = filesizeValue % 1024;
-                filesizeValue /= 1024;
-                multipleCount++;
-            }
-            StringBuilder filesizeBuilder = new StringBuilder();
-            filesizeBuilder.append(filesizeValue);
-            if (filesizeRemainder > 0 && decimalPlaces > 0) {
-                int decimalMultiplier = 1;
-                for (int i = 0; i < decimalPlaces; i++) {
-                    decimalMultiplier *= 10;
-                }
-                filesizeRemainder = (filesizeRemainder * decimalMultiplier) / 1024;
-                if (filesizeRemainder > 0) {
-                    filesizeBuilder.append(".").append(filesizeRemainder);
-                }
-            }
-
-            filesizeBuilder.append(" ");
-            if (multipleCount < filesizeSuffixes.length) {
-                filesizeBuilder.append(filesizeSuffixes[multipleCount]);
-            } else {
-                filesizeBuilder.append(filesizeSuffixes[filesizeSuffixes.length - 1]);
-            }
-            return filesizeBuilder.toString();
+            return formatFilesize(Long.parseLong(filesize), decimalPlaces);
         } catch (NumberFormatException e) {
+            LOG.error("Failed to format filesize {}, not a valid number.", filesize);
         }
         return filesize;
     }
 
+    /**
+     * Formats the filesize into a human readable format using the largest
+     * applicable unit, with decimalPlaces number of decimals return.
+     *
+     * @param filesize filesize in bytes to format.
+     * @param decimalPlaces number of decimal places to return. If 0, then no
+     *            decimal places are returned.
+     * @return Filesize formatted to largest unit that returns a whole number,
+     *         plus the requested number of decimal places.
+     */
+    public static String formatFilesize(long filesize, int decimalPlaces) {
+        int multipleCount = 0;
+        long filesizeRemainder = 0;
+        long filesizeValue = filesize;
+        while (filesizeValue > 1024 && multipleCount < filesizeSuffixes.length) {
+            filesizeRemainder = filesizeValue % 1024;
+            filesizeValue /= 1024;
+            multipleCount++;
+        }
+        StringBuilder filesizeBuilder = new StringBuilder();
+        filesizeBuilder.append(filesizeValue);
+        if (filesizeRemainder > 0 && decimalPlaces > 0) {
+            int decimalMultiplier = 1;
+            for (int i = 0; i < decimalPlaces; i++) {
+                decimalMultiplier *= 10;
+            }
+            filesizeRemainder = (filesizeRemainder * decimalMultiplier) / 1024;
+            if (filesizeRemainder > 0) {
+                filesizeBuilder.append(".").append(filesizeRemainder);
+            }
+        }
+
+        filesizeBuilder.append(" ");
+        if (multipleCount < filesizeSuffixes.length) {
+            filesizeBuilder.append(filesizeSuffixes[multipleCount]);
+        } else {
+            filesizeBuilder.append(filesizeSuffixes[filesizeSuffixes.length - 1]);
+        }
+        return filesizeBuilder.toString();
+    }
+
+    /**
+     * Truncates the given text to no more than the requested length, in a human
+     * readable manner if possible.
+     *
+     * If this would cut off in the middle of a word, will attempt to truncate
+     * to before this word within reason.
+     *
+     * @param text string to truncate
+     * @param length maximum length of the truncated text
+     * @return text truncated to be no more than the requested length.
+     */
     public static String truncateText(String text, int length) {
+        return truncateText(text, length, DEFAULT_LAST_WORD_ALLOWANCE);
+    }
+
+    private static String truncateText(String text, int length, int lastWordAllowance) {
         if (length < 0) {
             throw new IndexOutOfBoundsException();
         }
@@ -86,15 +123,49 @@ public class StringFormatUtil {
         if (text == null || text.length() <= length) {
             return text;
         }
-        Matcher m = Pattern.compile("(.|\n) {0," + length + "}\\b").matcher(text);
-        m.find();
-        return m.group(0);
+
+        String truncated;
+        if (length < text.length()) {
+            truncated = text.substring(0, length);
+        } else {
+            truncated = text;
+        }
+
+        // Truncate text down to last word boundry if it occurs within
+        // lastWordAllowance number of characters from the end of the truncated
+        // text. Effectively this will try to cut off to the last whole word in
+        // the text within the character limit
+        if (truncated.length() > lastWordAllowance * LAST_WORD_ALLOWANCE_MIN_LENGTH_FACTOR) {
+            String[] parts = truncated.split("\\b(?=\\w*$)");
+            if (parts.length > 1) {
+                int lastBoundryIndex = parts[0].length();
+                if (truncated.length() - lastBoundryIndex < lastWordAllowance) {
+                    truncated = parts[0].trim();
+                }
+            }
+        }
+
+        return truncated;
     }
 
+    /**
+     * Encodes the provided value into URL UTF-8 form.
+     *
+     * @param value
+     * @return
+     * @throws UnsupportedEncodingException
+     */
     public static String urlEncode(String value) throws UnsupportedEncodingException {
         return URLEncoder.encode(value, "UTF-8");
     }
 
+    /**
+     * Removes a query parameter from a URL
+     *
+     * @param query
+     * @param key
+     * @return
+     */
     public static String removeQueryParameter(String query, String key) {
         int index = query.indexOf("&" + key + "=");
         boolean isFirstParameter = false;
