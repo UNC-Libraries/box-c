@@ -65,7 +65,7 @@ define('URLUtilities', ['jquery'], function($) {
 				return url.substring(0, url.indexOf("/admin/") + 7);
 			}
 
-			return url + "/";
+			return url;
 		},
 
 		getServerUrl: function(url) {

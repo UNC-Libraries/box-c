@@ -98,8 +98,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
 
+		var fullUrl = document.location.href;
 		var baseUrl = URLUtilities.getBaseUrl(document.location.origin, true);
-		var serverUrl = URLUtilities.getServerUrl(document.location.href);
+		var csvBaseUrl = URLUtilities.getBaseUrl(fullUrl, false);
+		var serverUrl = URLUtilities.getServerUrl(fullUrl);
 
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
@@ -299,7 +301,9 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 					case "exportCSV" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "export/" + metadata.id
+							url : "export/" + metadata.id,
+							accessBaseUrl: csvBaseUrl,
+							application: "csv"
 						});
 						break;
 					

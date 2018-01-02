@@ -5,7 +5,7 @@ define('ChangeLocationAction', [ 'jquery'], function($) {
 	
 	ChangeLocationAction.prototype.execute = function() {
 		var url;
-		if (this.context.application == "access") {
+		if (this.context.application === "access" || this.context.application === "csv") {
 			url = this.context.accessBaseUrl;
 		} else {
 			url = this.context.adminBaseUrl;
