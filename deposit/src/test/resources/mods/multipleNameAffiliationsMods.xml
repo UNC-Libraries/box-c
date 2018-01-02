@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mods xmlns="http://www.loc.gov/mods/v3">
-	<titleInfo>
-		<title>Multiple Named Affiliations Test</title>
-	</titleInfo>
-	
-	<name>
-		<namePart>Test</namePart>
-		<affiliation>dept1</affiliation>
-	</name>
-	
-	<name>
-		<namePart>Test2</namePart>
-	</name>
-	
-	<name>
-		<namePart>Test3</namePart>
-		<affiliation>dept1</affiliation>
-		<affiliation>dept2</affiliation>
-	</name>
+    <titleInfo>
+        <title>Multiple Named Affiliations Test</title>
+    </titleInfo>
+    
+    <name>
+        <namePart>Test</namePart>
+        <affiliation>dept1</affiliation>
+    </name>
+    
+    <name>
+        <namePart>Test2</namePart>
+    </name>
+    
+    <name>
+        <namePart>Test3</namePart>
+        <affiliation>dept1</affiliation>
+        <affiliation>dept2</affiliation>
+    </name>
 </mods>

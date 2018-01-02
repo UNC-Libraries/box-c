@@ -1,43 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
-	xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:camel="http://camel.apache.org/schema/spring"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-		http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-		http://www.springframework.org/schema/util 
-		http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/context
-		http://www.springframework.org/schema/context/spring-context-4.3.xsd
-		http://camel.apache.org/schema/spring
-		http://camel.apache.org/schema/spring/camel-spring.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-	<!-- configuration of activemq component -->
-	<bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
-		<property name="brokerURL" value="${jms.brokerUrl}" />
-		<property name="userName" value="${jms.username}" />
-		<property name="password" value="${jms.password}" />
-	</bean>
+    <!-- configuration of activemq component -->
+    <bean id="connectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="${jms.brokerUrl}" />
+        <property name="userName" value="${jms.username}" />
+        <property name="password" value="${jms.password}" />
+    </bean>
 
-	<bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
-		init-method="start" destroy-method="stop">
-		<property name="maxConnections" value="${jms.connections}" />
-		<property name="connectionFactory" ref="connectionFactory" />
-	</bean>
+    <bean id="pooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory"
+        init-method="start" destroy-method="stop">
+        <property name="maxConnections" value="${jms.connections}" />
+        <property name="connectionFactory" ref="connectionFactory" />
+    </bean>
 
-	<bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
-		<property name="connectionFactory" ref="pooledConnectionFactory" />
-		<property name="concurrentConsumers" value="${jms.consumers}" />
-	</bean>
+    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="concurrentConsumers" value="${jms.consumers}" />
+    </bean>
 
-	<bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
-		<property name="configuration" ref="jmsConfig" />
-	</bean>
-	
-	<bean class="org.springframework.jms.core.JmsTemplate">
-		<property name="connectionFactory" ref="pooledConnectionFactory" />
-		<property name="defaultDestinationName" value="repository.updates" />
-		<property name="pubSubDomain" value="true" />
-	</bean>
+    <bean id="activemq" class="org.apache.activemq.camel.component.ActiveMQComponent">
+        <property name="configuration" ref="jmsConfig" />
+    </bean>
+    
+    <bean class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="pooledConnectionFactory" />
+        <property name="defaultDestinationName" value="repository.updates" />
+        <property name="pubSubDomain" value="true" />
+    </bean>
 </beans>

@@ -17,108 +17,108 @@
 
 -->
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	metadata-complete="true"
-	version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
-	
-	<display-name>CDR Access</display-name>
-	
-	<listener>
-		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-	</listener>
-	<context-param>
-		<param-name>contextConfigLocation</param-name>
-		<param-value>
-			/WEB-INF/service-context.xml
-			/WEB-INF/access-fedora-context.xml
-			/WEB-INF/solr-search-context.xml
-		</param-value>
-	</context-param>
-	
-	<welcome-file-list>
-		<welcome-file>/</welcome-file>
-	</welcome-file-list>
-	
-	<error-page>
-		<error-code>403</error-code>
-		<location>/403</location>
-	</error-page>
-	
-	<error-page>
-		<error-code>404</error-code>
-		<location>/404</location>
-	</error-page>
-	
-	<error-page>
-		<exception-type>java.lang.Exception</exception-type>
-		<location>/exception</location>
-	</error-page>
-	
-	<session-config>
-		<tracking-mode>COOKIE</tracking-mode>
-	</session-config>
-	
-	<servlet>
-		<servlet-name>uiapp</servlet-name>
-		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
-		<init-param>
-			<param-name>contextConfigLocation</param-name>
-			<param-value>/WEB-INF/uiapp-servlet.xml</param-value>
-		</init-param>
-	</servlet>
-	
-	<servlet-mapping>
-		<servlet-name>default</servlet-name>
-		<url-pattern>/static/*</url-pattern>
-		<url-pattern>/robots.txt</url-pattern>
-	</servlet-mapping>
-	
-	<servlet-mapping>
-		<servlet-name>uiapp</servlet-name>
-		<url-pattern>/</url-pattern>
-	</servlet-mapping>
-	
-	<filter>
-		<filter-name>encodingFilter</filter-name>
-		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
-		<init-param>  
-			<param-name>encoding</param-name>
-			<param-value>UTF-8</param-value>
-		</init-param>
-		<init-param>
-			<param-name>forceEncoding</param-name>
-			<param-value>true</param-value>
-		</init-param>
-	</filter>
-	<filter-mapping>
-		<filter-name>encodingFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<filter>
-		<filter-name>spoofShibbolethFilter</filter-name>
-		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	</filter>
-	<filter-mapping>
-		<filter-name>spoofShibbolethFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<filter>
-		<filter-name>StoreUserAccessControlFilter</filter-name>
-		<filter-class>edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter</filter-class>
-	</filter>
-	<filter-mapping>
-		<filter-name>StoreUserAccessControlFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	
-	<filter>
-		<filter-name>storeAccessLevelFilter</filter-name>
-		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-	</filter> 
-	<filter-mapping>
-		<filter-name>storeAccessLevelFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    metadata-complete="true"
+    version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
+    
+    <display-name>CDR Access</display-name>
+    
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            /WEB-INF/service-context.xml
+            /WEB-INF/access-fedora-context.xml
+            /WEB-INF/solr-search-context.xml
+        </param-value>
+    </context-param>
+    
+    <welcome-file-list>
+        <welcome-file>/</welcome-file>
+    </welcome-file-list>
+    
+    <error-page>
+        <error-code>403</error-code>
+        <location>/403</location>
+    </error-page>
+    
+    <error-page>
+        <error-code>404</error-code>
+        <location>/404</location>
+    </error-page>
+    
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/exception</location>
+    </error-page>
+    
+    <session-config>
+        <tracking-mode>COOKIE</tracking-mode>
+    </session-config>
+    
+    <servlet>
+        <servlet-name>uiapp</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value>/WEB-INF/uiapp-servlet.xml</param-value>
+        </init-param>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>/static/*</url-pattern>
+        <url-pattern>/robots.txt</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>uiapp</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    
+    <filter>
+        <filter-name>encodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>  
+        <init-param>  
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forceEncoding</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>encodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    <filter>
+        <filter-name>spoofShibbolethFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>spoofShibbolethFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    <filter>
+        <filter-name>StoreUserAccessControlFilter</filter-name>
+        <filter-class>edu.unc.lib.dl.acl.filter.StoreUserAccessControlFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>StoreUserAccessControlFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    <filter>
+        <filter-name>storeAccessLevelFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter> 
+    <filter-mapping>
+        <filter-name>storeAccessLevelFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

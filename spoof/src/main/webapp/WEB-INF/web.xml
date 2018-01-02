@@ -17,30 +17,30 @@
 
 -->
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-	metadata-complete="true"
-	version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
-	
-	<display-name>Spoof</display-name>
-	
-	<!-- Setup the spoof page as a servlet -->
-	<servlet>
-		<servlet-name>spoof</servlet-name>
-		<jsp-file>/WEB-INF/jsp/spoof.jsp</jsp-file>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>spoof</servlet-name>
-		<url-pattern>/</url-pattern>
-	</servlet-mapping>
-	
-	<!-- Setup authentication detail page as servlet -->
-	<servlet>
-		<servlet-name>dump</servlet-name>
-		<jsp-file>/WEB-INF/jsp/dump.jsp</jsp-file>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>dump</servlet-name>
-		<url-pattern>/dumpheaders</url-pattern>
-	</servlet-mapping>
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    metadata-complete="true"
+    version="3.0" xmlns="http://java.sun.com/xml/ns/javaee">
+    
+    <display-name>Spoof</display-name>
+    
+    <!-- Setup the spoof page as a servlet -->
+    <servlet>
+        <servlet-name>spoof</servlet-name>
+        <jsp-file>/WEB-INF/jsp/spoof.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>spoof</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+    
+    <!-- Setup authentication detail page as servlet -->
+    <servlet>
+        <servlet-name>dump</servlet-name>
+        <jsp-file>/WEB-INF/jsp/dump.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>dump</servlet-name>
+        <url-pattern>/dumpheaders</url-pattern>
+    </servlet-mapping>
 
 </web-app>

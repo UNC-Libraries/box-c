@@ -17,134 +17,134 @@
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
-	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:mvc="http://www.springframework.org/schema/mvc"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-		http://www.springframework.org/schema/util 
-		http://www.springframework.org/schema/util/spring-util.xsd
-		http://www.springframework.org/schema/context 
-		http://www.springframework.org/schema/context/spring-context-3.0.xsd
-		http://www.springframework.org/schema/mvc
-		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
-	<context:annotation-config />
+    <context:annotation-config />
 
-	<bean name="propertiesURI" class="java.lang.System"
-		factory-method="getProperty">
-		<constructor-arg index="0" value="server.properties.uri" />
-		<!-- property name for properties URI location -->
-		<constructor-arg index="1" value="classpath:server.properties" />
-		<!-- default location for testing -->
-	</bean>
-	<bean id="serverProperties"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property name="locations">
-			<list>
-				<ref bean="propertiesURI" />
-				<!-- non-runtime stuff <value>classpath:solr-ingest.properties</value> -->
-			</list>
-		</property>
-		<property name="ignoreResourceNotFound" value="false" />
-	</bean>
+    <bean name="propertiesURI" class="java.lang.System"
+        factory-method="getProperty">
+        <constructor-arg index="0" value="server.properties.uri" />
+        <!-- property name for properties URI location -->
+        <constructor-arg index="1" value="classpath:server.properties" />
+        <!-- default location for testing -->
+    </bean>
+    <bean id="serverProperties"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <ref bean="propertiesURI" />
+                <!-- non-runtime stuff <value>classpath:solr-ingest.properties</value> -->
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
 
-	<!-- Utils -->
+    <!-- Utils -->
 
-	<bean id="externalContentSettings" class="edu.unc.lib.dl.ui.util.ExternalContentSettings">
-		<property name="properties" ref="externalContentProperties" />
-	</bean>
+    <bean id="externalContentSettings" class="edu.unc.lib.dl.ui.util.ExternalContentSettings">
+        <property name="properties" ref="externalContentProperties" />
+    </bean>
 
-	<bean id="lookupMappingsSettings" class="edu.unc.lib.dl.ui.util.LookupMappingsSettings"
-		init-method="init">
-		<property name="sourcePaths" value="#{externalContentSettings.list('mapping')}" />
-	</bean>
+    <bean id="lookupMappingsSettings" class="edu.unc.lib.dl.ui.util.LookupMappingsSettings"
+        init-method="init">
+        <property name="sourcePaths" value="#{externalContentSettings.list('mapping')}" />
+    </bean>
 
-	<!-- Beans -->
-	
-	<bean id="gaTrackingID" class="java.lang.String">
-		<constructor-arg
-			value="${google.trackingId}" />
-	</bean>
-	
-	<bean id="adminBaseUrl" class="java.lang.String">
-		<constructor-arg
-			value="${admin.base.url}" />
-	</bean>
-	
-	<bean id="formsBaseUrl" class="java.lang.String">
-		<constructor-arg
-			value="${forms.base.url}" />
-	</bean>
+    <!-- Beans -->
+    
+    <bean id="gaTrackingID" class="java.lang.String">
+        <constructor-arg
+            value="${google.trackingId}" />
+    </bean>
+    
+    <bean id="adminBaseUrl" class="java.lang.String">
+        <constructor-arg
+            value="${admin.base.url}" />
+    </bean>
+    
+    <bean id="formsBaseUrl" class="java.lang.String">
+        <constructor-arg
+            value="${forms.base.url}" />
+    </bean>
 
-	<!-- Properties objects -->
-	<util:properties id="externalContentProperties"
-		location="classpath:externalContent.properties">
-		<prop key="external.base.url">${external.base.url}</prop>
-	</util:properties>
-	
-	<util:properties id="headerMenuProperties"
-		location="classpath:mappings/headerMenu.properties" />
-	
-	<bean name="headerMenuSettings" class="edu.unc.lib.dl.ui.util.HeaderMenuSettings" init-method="init">
-		<property name="properties" ref="headerMenuProperties" />
-	</bean>
+    <!-- Properties objects -->
+    <util:properties id="externalContentProperties"
+        location="classpath:externalContent.properties">
+        <prop key="external.base.url">${external.base.url}</prop>
+    </util:properties>
+    
+    <util:properties id="headerMenuProperties"
+        location="classpath:mappings/headerMenu.properties" />
+    
+    <bean name="headerMenuSettings" class="edu.unc.lib.dl.ui.util.HeaderMenuSettings" init-method="init">
+        <property name="properties" ref="headerMenuProperties" />
+    </bean>
 
-	<!-- Import controllers -->
-	<bean
-		class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
-	<bean
-		class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
-	</bean>
+    <!-- Import controllers -->
+    <bean
+        class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter"></bean>
+    <bean
+        class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+    </bean>
 
-	<!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
-		p:suffix=".jsp"/> -->
-	<bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
-		<property name="exposedContextBeanNames">
-			<list>
-				<value>headerMenuSettings</value>
-				<value>searchSettings</value>
-				<value>externalContentSettings</value>
-				<value>fedoraUtil</value>
-				<value>gaTrackingID</value>
-				<value>adminBaseUrl</value>
-				<value>formsBaseUrl</value>
-			</list>
-		</property>
-		<property name="viewClass"
-			value="org.springframework.web.servlet.view.JstlView" />
-		<property name="baseView" value="/WEB-INF/jsp/index" />
-		<property name="subViewPrefix" value="" />
-	</bean>
+    <!-- Map logical view names to physical views <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+        p:suffix=".jsp"/> -->
+    <bean class="edu.unc.lib.dl.ui.view.CDRViewResolver" p:suffix=".jsp">
+        <property name="exposedContextBeanNames">
+            <list>
+                <value>headerMenuSettings</value>
+                <value>searchSettings</value>
+                <value>externalContentSettings</value>
+                <value>fedoraUtil</value>
+                <value>gaTrackingID</value>
+                <value>adminBaseUrl</value>
+                <value>formsBaseUrl</value>
+            </list>
+        </property>
+        <property name="viewClass"
+            value="org.springframework.web.servlet.view.JstlView" />
+        <property name="baseView" value="/WEB-INF/jsp/index" />
+        <property name="subViewPrefix" value="" />
+    </bean>
 
-	<bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">
-		<!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
-		<property name="views">
-			<map>
-				<entry key="external.xslView.fullRecord.url" value="/recordTransformations/modsToFullRecord.xsl"/>
-			</map>
-		</property>
-	</bean>
-	
-	<bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
-		<property name="queryLayer" ref="queryLayer" />
-		<property name="requireViewAdmin" value="false" />
-	</bean>
-	
-	<bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
-		<property name="spoofEnabled" value="${spoofing.enabled:false}" />
-	</bean>
-	
-	
-	<!-- JMX -->
-	<bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
-		lazy-init="false">
-		<property name="beans">
-			<map>
-				<entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
-				<entry key="cdr-access:name=headerMenuSettings" value-ref="headerMenuSettings" />
-			</map>
-		</property>
-		<property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
-	</bean>
+    <bean class="edu.unc.lib.dl.ui.view.XSLViewResolver">
+        <!-- property name="views" value="#{externalContentSettings.map('xslView')}" /-->
+        <property name="views">
+            <map>
+                <entry key="external.xslView.fullRecord.url" value="/recordTransformations/modsToFullRecord.xsl"/>
+            </map>
+        </property>
+    </bean>
+    
+    <bean name="storeAccessLevelFilter" class="edu.unc.lib.dl.ui.access.StoreAccessLevelFilter">
+        <property name="queryLayer" ref="queryLayer" />
+        <property name="requireViewAdmin" value="false" />
+    </bean>
+    
+    <bean name="spoofShibbolethFilter" class="edu.unc.lib.dl.acl.filter.SpoofShibbolethFilter">
+        <property name="spoofEnabled" value="${spoofing.enabled:false}" />
+    </bean>
+    
+    
+    <!-- JMX -->
+    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter"
+        lazy-init="false">
+        <property name="beans">
+            <map>
+                <entry key="cdr-access:name=searchSettings" value-ref="searchSettings" />
+                <entry key="cdr-access:name=headerMenuSettings" value-ref="headerMenuSettings" />
+            </map>
+        </property>
+        <property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>
+    </bean>
 </beans>
