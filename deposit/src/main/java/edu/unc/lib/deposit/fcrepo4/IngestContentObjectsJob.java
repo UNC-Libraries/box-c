@@ -174,13 +174,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Retrieve the object where this deposit will be ingested to.
         Map<String, String> depositStatus = getDepositStatus();
         String destinationPath = depositStatus.get(DepositField.containerId.name());
-        PID destinationPid = PIDs.get(destinationPath);
-        if (destinationPid == null) {
+        PID destPid = PIDs.get(destinationPath);
+        if (destPid == null) {
             failJob("Invalid destination URI", "The provide destination uri " + destinationPath
                     + " was not a valid repository path");
         }
 
-        PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
@@ -189,7 +188,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         String groups = depositStatus.get(DepositField.permissionGroups.name());
         AccessGroupSet groupSet = new AccessGroupSet(groups);
 
-        // Verify that the depositor is allow to ingest to the given destination
+        // Verify that the depositor is allowed to ingest to the given destination
         aclService.assertHasAccess(
                 "Depositor does not have permissions to ingest to destination " + destPid,
                 destPid, groupSet, Permission.ingest);
@@ -212,7 +211,22 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
         }
 
-        // TODO verify objects present in fcrepo
+        // Verify objects from deposit are present in fcrepo
+        if(!areObjectsInFedora(depositBag)) {
+            failJob("Some objects from {0} did not make it to Fedora", getDepositPID().getQualifiedId());
+        }
+    }
+
+    private boolean areObjectsInFedora(Resource parentResc) {
+        NodeIterator iterator = getChildIterator(parentResc);
+        while (iterator.hasNext()) {
+            Resource childResc = (Resource) iterator.next();
+            PID childPid = PIDs.get(childResc.getURI());
+            if (!objectExists(childPid)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
