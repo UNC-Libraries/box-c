@@ -36,6 +36,7 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.jdom2.Element;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -50,6 +51,7 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
+@Ignore
 public class FedoraObjectUIPProcessorTest extends Assert {
 
     @Test

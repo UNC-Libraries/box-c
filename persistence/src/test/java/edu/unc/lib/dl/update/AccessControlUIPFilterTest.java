@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.update;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -26,6 +29,7 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.unc.lib.dl.acl.util.UserRole;
@@ -34,8 +38,7 @@ import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
-import static org.mockito.Mockito.*;
-
+@Ignore
 public class AccessControlUIPFilterTest extends Assert {
 
     private org.jdom2.Element getEmptyRDF() {
@@ -52,7 +55,7 @@ public class AccessControlUIPFilterTest extends Assert {
         Parser parser = abdera.getParser();
         Document<Entry> entryDoc = parser.parse(entryPart);
         Entry entry = entryDoc.getRoot();
-        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<>();
         originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
         Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
@@ -85,7 +88,7 @@ public class AccessControlUIPFilterTest extends Assert {
         Parser parser = abdera.getParser();
         Document<Entry> entryDoc = parser.parse(entryPart);
         Entry entry = entryDoc.getRoot();
-        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<>();
         originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
         Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
@@ -118,7 +121,7 @@ public class AccessControlUIPFilterTest extends Assert {
         Parser parser = abdera.getParser();
         Document<Entry> entryDoc = parser.parse(entryPart);
         Entry entry = entryDoc.getRoot();
-        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<>();
         originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
         Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
@@ -154,7 +157,7 @@ public class AccessControlUIPFilterTest extends Assert {
         Parser parser = abdera.getParser();
         Document<Entry> entryDoc = parser.parse(entryPart);
         Entry entry = entryDoc.getRoot();
-        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<>();
         originalMap.put(ContentModelHelper.Datastream.RELS_EXT.getName(), getEmptyRDF());
         Map<String, org.jdom2.Element> datastreamMap = AtomPubMetadataParserUtil.extractDatastreams(entry);
 
@@ -219,7 +222,7 @@ public class AccessControlUIPFilterTest extends Assert {
         Parser parser = abdera.getParser();
         Document<Entry> entryDoc = parser.parse(entryPart);
         Entry entry = entryDoc.getRoot();
-        Map<String, org.jdom2.Element> originalMap = new HashMap<String, org.jdom2.Element>();
+        Map<String, org.jdom2.Element> originalMap = new HashMap<>();
 
         org.jdom2.Element rdfElement = new org.jdom2.Element("RDF", JDOMNamespaceUtil.RDF_NS);
         org.jdom2.Element descElement = new org.jdom2.Element("Description", JDOMNamespaceUtil.RDF_NS);
