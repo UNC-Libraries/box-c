@@ -62,10 +62,10 @@ define('URLUtilities', ['jquery'], function($) {
 
 		getBaseUrl: function(url, access) {
 			if (access === undefined || !access) {
-				return url.substring(0, url.indexOf("/admin/") + 7);
+				return url.match("^.*?/admin/")[0];
 			}
 
-			return url;
+			return url + "/";
 		},
 
 		getServerUrl: function(url) {

@@ -100,7 +100,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 
 		var fullUrl = document.location.href;
 		var baseUrl = URLUtilities.getBaseUrl(document.location.origin, true);
-		var csvBaseUrl = URLUtilities.getBaseUrl(fullUrl, false);
+		var adminActionBaseUrl = URLUtilities.getBaseUrl(fullUrl, false);
 		var serverUrl = URLUtilities.getServerUrl(fullUrl);
 
 		// Record which menu has been activated
@@ -214,19 +214,25 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 					case "openContainer" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "list/" + metadata.id
+							url : "list/" + metadata.id,
+							accessBaseUrl: baseUrl,
+							adminBaseUrl: serverUrl
 						});
 						break;
 					case "viewTrash" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "trash/" + metadata.id
+							url : "trash/" + metadata.id,
+							accessBaseUrl: baseUrl,
+							adminBaseUrl: serverUrl
 						});
 						break;
 					case "review" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "review/" + metadata.id
+							url : "review/" + metadata.id,
+							accessBaseUrl: baseUrl,
+							adminBaseUrl: serverUrl
 						});
 						break;
 					case "publish" :
@@ -260,7 +266,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						self.actionHandler.addEvent({
 							action: 'ChangeLocation',
-							url: "describe/" + metadata.id
+							url: "describe/" + metadata.id,
+							accessBaseUrl: adminActionBaseUrl,
+							adminBaseUrl: serverUrl,
+							application: "describe"
 						});
 						break;
 					case "editCollectionSettings" :
@@ -302,7 +311,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "export/" + metadata.id,
-							accessBaseUrl: csvBaseUrl,
+							accessBaseUrl: adminActionBaseUrl,
 							application: "csv"
 						});
 						break;
