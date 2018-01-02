@@ -39,7 +39,6 @@
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>
     
@@ -101,7 +100,6 @@
     
     <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
         <property name="client" ref="fcrepoClient" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
     </bean>
@@ -110,7 +108,6 @@
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-        <property name="driver" ref="repositoryObjectDriver" />
     </bean>
     
     <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
