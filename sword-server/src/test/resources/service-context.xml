@@ -76,8 +76,7 @@
 
     <!-- SWORD config -->
 
-    <bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl"
-        init-method="init">
+    <bean id="config" class="edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl">
         <property name="authType" value="Basic" />
         <property name="swordPath" ref="swordPath" />
         <property name="basePath"
