@@ -1,5 +1,5 @@
-define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'URLUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
-		function($, ui, StringUtilities, URLUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
+define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'AddFileForm', 'EditLabelForm', 'EditFilenameForm', 'contextMenu'],
+		function($, ui, StringUtilities, AddFileForm, EditLabelForm, EditFilenameForm) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -97,7 +97,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 		var self = this;
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
-
+		
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
 		
@@ -250,8 +250,8 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 					case "editDescription" :
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						self.actionHandler.addEvent({
-							action: 'ChangeLocation',
-							url: "describe/" + metadata.id
+							action : 'ChangeLocation',
+							url : "describe/" + metadata.id
 						});
 						break;
 					case "editCollectionSettings" :
