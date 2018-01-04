@@ -60,16 +60,16 @@ define('URLUtilities', ['jquery'], function($) {
 			return baseURL;
 		},
 
-		getBaseUrl: function(url, access) {
-			if (access === undefined || !access) {
-				return url.match("^.*?/admin/")[0];
-			}
+		getAdminUrl: function() {
+			return this.getServerUrl() + 'admin/';
+		},
 
-			return url + "/";
+		getAccessUrl: function() {
+			return this.getServerUrl();
 		},
 
 		getServerUrl: function(url) {
-			return url.substring(0, url.indexOf("/admin/")) + "/";
+			return document.location.origin + "/";
 		}
 	};
 });

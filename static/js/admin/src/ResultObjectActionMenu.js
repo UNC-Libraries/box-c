@@ -98,11 +98,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 		var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 		var metadata = resultObject.metadata;
 
-		var fullUrl = document.location.href;
-		var baseUrl = URLUtilities.getBaseUrl(document.location.origin, true);
-		var adminActionBaseUrl = URLUtilities.getBaseUrl(fullUrl, false);
-		var serverUrl = URLUtilities.getServerUrl(fullUrl);
-
 		// Record which menu has been activated
 		this.showingSingleMenu = true;
 		
@@ -192,8 +187,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
 							url : "record/" + metadata.id,
-							accessBaseUrl: baseUrl,
-							adminBaseUrl: serverUrl,
 							newWindow : true,
 							application : "access"
 						});
@@ -204,8 +197,6 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 							self.actionHandler.addEvent({
 								action : 'ChangeLocation',
 								url : "content/" + (dataFile['defaultWebObject']? dataFile['defaultWebObject'] : metadata.id),
-								accessBaseUrl: baseUrl,
-								adminBaseUrl: serverUrl,
 								newWindow : true,
 								application : "access"
 							});
@@ -214,25 +205,19 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 					case "openContainer" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "list/" + metadata.id,
-							accessBaseUrl: baseUrl,
-							adminBaseUrl: serverUrl
+							url : "list/" + metadata.id
 						});
 						break;
 					case "viewTrash" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "trash/" + metadata.id,
-							accessBaseUrl: baseUrl,
-							adminBaseUrl: serverUrl
+							url : "trash/" + metadata.id
 						});
 						break;
 					case "review" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "review/" + metadata.id,
-							accessBaseUrl: baseUrl,
-							adminBaseUrl: serverUrl
+							url : "review/" + metadata.id
 						});
 						break;
 					case "publish" :
@@ -266,10 +251,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 						// Resolve url to be absolute for IE, which doesn't listen to base tags when dealing with javascript
 						self.actionHandler.addEvent({
 							action: 'ChangeLocation',
-							url: "describe/" + metadata.id,
-							accessBaseUrl: adminActionBaseUrl,
-							adminBaseUrl: serverUrl,
-							application: "describe"
+							url: "describe/" + metadata.id
 						});
 						break;
 					case "editCollectionSettings" :
@@ -310,9 +292,7 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities', 'UR
 					case "exportCSV" :
 						self.actionHandler.addEvent({
 							action : 'ChangeLocation',
-							url : "export/" + metadata.id,
-							accessBaseUrl: adminActionBaseUrl,
-							application: "csv"
+							url : "export/" + metadata.id
 						});
 						break;
 					
