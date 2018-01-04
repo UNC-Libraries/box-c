@@ -29,9 +29,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'contextMenu'
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 				var metadata = resultObject.metadata;
-				var baseUrl = document.location.href;
-				var serverUrl = URLUtilities.getServerUrl(baseUrl);
-				baseUrl = URLUtilities.getBaseUrl(baseUrl, false);
+				var baseUrl = URLUtilities.getAdminUrl();
 				
 				var items = {};
 				if (resultObject.isContainer)
@@ -73,7 +71,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'contextMenu'
 					callback: function(key, options) {
 						switch (key) {
 							case "viewInCDR" :
-								window.open(serverUrl + "record/" + metadata.id,'_blank');
+								window.open(URLUtilities.getAccessUrl() + "record/" + metadata.id,'_blank');
 								break;
 							case "openContainer" :
 								document.location.href = baseUrl + "list/" + metadata.id;
