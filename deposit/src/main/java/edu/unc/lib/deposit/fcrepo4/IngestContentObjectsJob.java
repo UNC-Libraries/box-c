@@ -211,7 +211,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // Verify objects from deposit are present in fcrepo
-        if(!areObjectsInFedora(depositBag)) {
+        if (!areObjectsInFedora(depositBag)) {
             failJob("Some objects did not make it to Fedora from this deposit: ", getDepositPID().getQualifiedId());
         }
     }
