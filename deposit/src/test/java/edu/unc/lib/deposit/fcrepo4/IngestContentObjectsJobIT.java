@@ -17,7 +17,6 @@ package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
-import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,14 +37,14 @@ import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DC;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -79,6 +78,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
+    private static final Logger LOG = LoggerFactory.getLogger(IngestContentObjectsJobIT.class);
 
     private static final String INGESTOR_PRINC = "ingestor";
 
@@ -281,48 +281,6 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertClickCount(3);
     }
 
-    /**
-     * Verify that when a file is ingested as the child of something other than
-     * a work (such as a folder in this case), that it is placed inside a
-     * generated work object along with the normal file object structure
-     */
-    @Test
-    public void ingestFileObjectAsWorkTest() throws Exception {
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
-
-        PID filePid = addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, null);
-
-        job.closeModel();
-
-        job.run();
-
-        RepositoryObject destObj = repoObjLoader.getRepositoryObject(destinationPid);
-        List<ContentObject> destMembers = ((ContentContainerObject) destObj).getMembers();
-        assertEquals("Incorrect number of children at destination", 1, destMembers.size());
-
-        ContentObject mWork = destMembers.get(0);
-        assertTrue("Wrapper object was not a work", mWork instanceof WorkObject);
-        String workTitle = mWork.getResource().getProperty(DC.title).getString();
-        assertEquals("Work title was not set to filename", FILE1_LOC, workTitle);
-
-        List<ContentObject> workMembers = ((ContentContainerObject) mWork).getMembers();
-        assertEquals("Incorrect number of children on work", 1, workMembers.size());
-
-        FileObject primaryFile = ((WorkObject) mWork).getPrimaryObject();
-        assertEquals("File object should have the originally provided pid",
-                filePid, primaryFile.getPid());
-        assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, null, FILE1_SIZE);
-
-        List<BinaryObject> fileBinaries = primaryFile.getBinaryObjects();
-        assertEquals("Incorrect number of binaries for file", 2, fileBinaries.size());
-        BinaryObject fitsBinary = fileBinaries.stream()
-                .filter(p -> p.getResource().hasProperty(DCTerms.conformsTo, createResource(FITS_URI)))
-                .findAny().get();
-        assertNotNull("FITS report not present on binary", fitsBinary);
-
-        assertClickCount(1);
-    }
 
     /**
      * Ensure that deposit fails on a sha1 checksum mismatch for a single file deposit
@@ -333,7 +291,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         String badSha1 = "111111111111111111111111111111111111";
-        addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null);
+        addWorkWithFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null);
 
         job.closeModel();
 
@@ -349,7 +307,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         String badMd5 = "111111111111111111111111111111111111";
-        addFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, null, badMd5);
+        addWorkWithFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, null, badMd5);
 
         job.closeModel();
 
@@ -396,16 +354,16 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         depBag.add(folderBag);
 
         // Add children, where the second child is invalid due to missing location
-        PID file1Pid = addFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
-        PID file2Pid = addFileObject(folderBag, null, FILE2_MIMETYPE, null, null);
+        PID file1Pid = addWorkWithFileObject(folderBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        PID file2Pid = addWorkWithFileObject(folderBag, null, FILE2_MIMETYPE, null, null);
 
         job.closeModel();
 
         // Execute the ingest job
         try {
             job.run();
-            fail();
-        } catch (JobFailedException e) {
+            fail("Test should not reach this line. Job should have thrown exception");
+        } catch (TransactionCancelledException e) {
             // expected, lets continue
         }
 
@@ -475,7 +433,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
             previousBag = folderBag;
         }
 
-        addFileObject(previousBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        addWorkWithFileObject(previousBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
 
         job.closeModel();
 
@@ -498,7 +456,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertClickCount(nestingDepth + 1);
     }
 
-    @Test (expected = TransactionCancelledException.class)
+    //@Test TODO: rethink this test case -- should it be in unit test instead?
     public void transactionCancelledTest() throws Exception {
         String label = "testwork";
 
@@ -515,7 +473,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         workBag.addProperty(RDF.type, Cdr.FileObject);
         workBag.addProperty(CdrDeposit.label, label);
 
-        PID mainPid = addFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
+        PID mainPid = addWorkWithFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
 
         depBag.add(workBag);
 
@@ -723,6 +681,20 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         new File(techmdDir, filePid.getUUID() + ".xml").createNewFile();
 
         return filePid;
+    }
+
+    private PID addWorkWithFileObject(Bag parent, String stagingLocation,
+            String mimetype, String sha1, String md5) throws Exception {
+        Model model = parent.getModel();
+        // Constructing the work in the deposit model with a label
+        PID workPid = pidMinter.mintContentPid();
+        Bag workBag = model.createBag(workPid.getRepositoryPath());
+        workBag.addProperty(RDF.type, Cdr.Work);
+        workBag.addProperty(CdrDeposit.label, "testwork");
+
+        parent.add(workBag);
+
+        return addFileObject(workBag, stagingLocation, mimetype, sha1, md5);
     }
 
     private PremisEventObject findPremisEventByType(List<PremisEventObject> objs, final Resource type) {

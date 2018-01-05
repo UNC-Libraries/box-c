@@ -34,12 +34,17 @@
         <property name="repoObjDriver" ref="repositoryObjectDriver" />
         <property name="repoObjFactory" ref="repositoryObjectFactory" />
     </bean>
+    
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
 
     <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
         <property name="client" ref="fcrepoClient" />
         <property name="ldpFactory" ref="ldpContainerFactory" />
         <property name="pidMinter" ref="pidMinter" />
         <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
     </bean>
     
     <bean id="pidMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter">
@@ -48,6 +53,9 @@
     <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
         <property name="client" ref="fcrepoClient" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="pidMinter" ref="pidMinter" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
