@@ -423,8 +423,8 @@ public class RepositoryObjectFactory {
      * @param property the new property value
      * @param object
      */
-    public void createExclusiveRelationship(PID subject, Property property, Resource object) {
-        NodeIterator valuesIt = property.getModel().listObjectsOfProperty(property);
+    public void createExclusiveRelationship(RepositoryObject repoObj, Property property, Resource object) {
+        NodeIterator valuesIt = repoObj.getModel().listObjectsOfProperty(property);
         List<Object> previousValues = null;
         if (valuesIt != null && valuesIt.hasNext()) {
             previousValues = new ArrayList<>();
@@ -432,6 +432,7 @@ public class RepositoryObjectFactory {
                 previousValues.add(valuesIt.next());
             }
         }
+        PID subject = repoObj.getPid();
         String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object,
                 previousValues);
         persistTripleToFedora(subject, sparqlUpdate);

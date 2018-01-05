@@ -235,37 +235,59 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
     }
 
     @Test
-    public void testCreateExclusiveRelationship() throws Exception {
+    public void createExclusiveRelationshipInsideTxTest() throws Exception {
         FedoraTransaction tx = txManager.startTransaction();
         try {
-            PID pid1 = createObject();
-            PID pid2 = createObject();
-            PID pid3 = createObject();
-
-            Resource resc2 = createResource(pid2.getRepositoryPath());
-            repoObjFactory.createExclusiveRelationship(pid1, DC.relation, resc2);
-
-            Model model1 = getModel(pid1);
-            Resource resc1 = model1.getResource(pid1.getRepositoryPath());
-            assertTrue(resc1.hasProperty(DC.relation, resc2));
-
-            Resource resc3 = createResource(pid3.getRepositoryPath());
-            repoObjFactory.createExclusiveRelationship(pid1, DC.relation, resc3);
-            Model replaceModel1 = getModel(pid1);
-            Resource updatedResc1 = replaceModel1.getResource(pid1.getRepositoryPath());
-            assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
-            assertFalse(updatedResc1.hasProperty(DC.relation, resc2));
+            createExclusiveRelationshipTest();
         } finally {
             tx.close();
         }
     }
 
-    private PID createObject() throws Exception {
-        PID pid = pidMinter.mintContentPid();
+    @Test
+    public void createExclusiveRelationshipTest() throws Exception {
+        RepositoryObject repoObj1 = createObject();
+        RepositoryObject repoObj2 = createObject();
+        RepositoryObject repoObj3 = createObject();
+        RepositoryObject repoObj4 = createObject();
 
-        try (FcrepoResponse resp = client.put(pid.getRepositoryUri()).perform()) {
-            return pid;
-        }
+        // test no existing relationship
+        Resource resc2 = createResource(repoObj2.getPid().getRepositoryPath());
+        repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc2);
+
+        Model model1 = getModel(repoObj1.getPid());
+        Resource resc1 = model1.getResource(repoObj1.getPid().getRepositoryPath());
+        assertTrue(resc1.hasProperty(DC.relation, resc2));
+
+        // test one existing relationship
+        Resource resc3 = createResource(repoObj3.getPid().getRepositoryPath());
+        repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc3);
+        Model replaceModel1 = repoObj1.getModel();
+        Resource updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
+        assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
+        assertFalse(updatedResc1.hasProperty(DC.relation, resc2));
+
+        // test multiple existing relationships
+        Resource resc4 = createResource(repoObj4.getPid().getRepositoryPath());
+        // add second relationship
+        repoObjFactory.createRelationship(repoObj1.getPid(), DC.relation, resc2);
+        replaceModel1 = repoObj1.getModel();
+        updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
+        // check to see that the subject has two relationships using the property DC.relation
+        assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
+        assertTrue(updatedResc1.hasProperty(DC.relation, resc2));
+        // create a new exclusive relationship to a new resource
+        repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc4);
+        Model replaceModel1Again = repoObj1.getModel();
+        Resource updatedResc1Again = replaceModel1Again.getResource(repoObj1.getPid().getRepositoryPath());
+        assertTrue(updatedResc1Again.hasProperty(DC.relation, resc4));
+        assertFalse(updatedResc1Again.hasProperty(DC.relation, resc2));
+        assertFalse(updatedResc1Again.hasProperty(DC.relation, resc3));
+    }
+
+    private RepositoryObject createObject() throws Exception {
+        RepositoryObject repoObj = repoObjFactory.createFolderObject(null);
+        return repoObj;
     }
 
     private Model getModel(PID pid) throws Exception {

@@ -130,7 +130,8 @@ public class WorkObjectTest extends AbstractFedoraTest {
 
         work.setPrimaryObject(primaryPid);
 
-        verify(repoObjFactory).createExclusiveRelationship(pid, Cdr.primaryObject, primaryResc);
+        verify(repoObjFactory).createExclusiveRelationship(any(RepositoryObject.class), eq(Cdr.primaryObject),
+                eq(primaryResc));
     }
 
     @Test(expected = InvalidRelationshipException.class)
@@ -140,8 +141,8 @@ public class WorkObjectTest extends AbstractFedoraTest {
         try {
             work.setPrimaryObject(primaryPid);
         } finally {
-            verify(repoObjFactory, never())
-                    .createExclusiveRelationship(any(PID.class), eq(Cdr.primaryObject), any(Resource.class));
+            verify(repoObjFactory, never()).createExclusiveRelationship(any(RepositoryObject.class),
+                    eq(Cdr.primaryObject), any(Resource.class));
         }
     }
 
