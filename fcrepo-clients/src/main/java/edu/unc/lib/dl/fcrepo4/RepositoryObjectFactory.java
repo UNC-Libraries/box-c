@@ -23,12 +23,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
@@ -422,7 +424,16 @@ public class RepositoryObjectFactory {
      * @param object
      */
     public void createExclusiveRelationship(PID subject, Property property, Resource object) {
-        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object);
+        NodeIterator valuesIt = property.getModel().listObjectsOfProperty(property);
+        List<Object> previousValues = null;
+        if (valuesIt != null && valuesIt.hasNext()) {
+            previousValues = new ArrayList<>();
+            while (valuesIt.hasNext()) {
+                previousValues.add(valuesIt.next());
+            }
+        }
+        String sparqlUpdate = SparqlUpdateHelper.createSparqlReplace(subject.getRepositoryPath(), property, object,
+                previousValues);
         persistTripleToFedora(subject, sparqlUpdate);
     }
 

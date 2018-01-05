@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -29,6 +30,7 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
@@ -229,6 +231,46 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+        }
+    }
+
+    @Test
+    public void testCreateExclusiveRelationship() throws Exception {
+        FedoraTransaction tx = txManager.startTransaction();
+        try {
+            PID pid1 = createObject();
+            PID pid2 = createObject();
+            PID pid3 = createObject();
+
+            Resource resc2 = createResource(pid2.getRepositoryPath());
+            repoObjFactory.createExclusiveRelationship(pid1, DC.relation, resc2);
+
+            Model model1 = getModel(pid1);
+            Resource resc1 = model1.getResource(pid1.getRepositoryPath());
+            assertTrue(resc1.hasProperty(DC.relation, resc2));
+
+            Resource resc3 = createResource(pid3.getRepositoryPath());
+            repoObjFactory.createExclusiveRelationship(pid1, DC.relation, resc3);
+            Model replaceModel1 = getModel(pid1);
+            Resource updatedResc1 = replaceModel1.getResource(pid1.getRepositoryPath());
+            assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
+            assertFalse(updatedResc1.hasProperty(DC.relation, resc2));
+        } finally {
+            tx.close();
+        }
+    }
+
+    private PID createObject() throws Exception {
+        PID pid = pidMinter.mintContentPid();
+
+        try (FcrepoResponse resp = client.put(pid.getRepositoryUri()).perform()) {
+            return pid;
+        }
+    }
+
+    private Model getModel(PID pid) throws Exception {
+        try (FcrepoResponse resp = client.get(pid.getRepositoryUri()).perform()) {
+            return RDFModelUtil.createModel(resp.getBody());
         }
     }
 }
