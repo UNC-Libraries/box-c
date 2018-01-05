@@ -135,20 +135,17 @@ public class SparqlUpdateHelper {
         String propertyString = " <" + property.getURI() + "> ";
 
         StringBuilder query = new StringBuilder();
+        query.append("DELETE { ");
         if (previousValues != null && previousValues.size() > 0) {
             for (Object obj : previousValues) {
-                query.append("DELETE { ");
-                query.append(subjString).append(propertyString).append(getObjectAsString(obj)).append(" . }\n");
+                query.append(subjString).append(propertyString).append(getObjectAsString(obj)).append(" . \n");
             }
-        } else {
-            query.append("DELETE { ");
-            query.append(subjString).append(propertyString).append(" ?obj . }\n");
         }
+        query.append("}\n");
 
         addInsert(query, subjUri, property, objectString);
 
-        query.append("\nWHERE {");
-        query.append(subjString).append(" ?pred ?obj . }");
+        query.append("\nWHERE { }");
 
         return query.toString();
     }
