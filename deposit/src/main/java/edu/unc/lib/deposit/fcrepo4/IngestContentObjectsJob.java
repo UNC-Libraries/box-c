@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -116,12 +117,16 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     @Autowired
     private TransactionManager txManager;
 
+    private VerifyObjectsAreInFedoraService verificationService;
+
     public IngestContentObjectsJob() {
         super();
+        verificationService = new VerifyObjectsAreInFedoraService();
     }
 
     public IngestContentObjectsJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
+        verificationService = new VerifyObjectsAreInFedoraService();
     }
 
     /**
@@ -193,7 +198,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 destPid, groupSet, Permission.ingest);
 
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
-        int numObjectsinDeposit = depositBag.size();
 
         calculateWorkRemaining(depositBag);
 
@@ -212,35 +216,11 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // Verify objects from deposit are present in fcrepo
-        List<PID> objectsNotInFedora = listObjectsNotInFedora(depositBag);
+        List<PID> objectsNotInFedora = verificationService.listObjectsNotInFedora(depositBag, fcrepoClient);
         if (objectsNotInFedora.size() > 0) {
-            failJob("Some objects from this deposit didn't make it to Fedora {0}", listObjectPIDs(objectsNotInFedora));
+            failJob("Some objects from this deposit didn't make it to Fedora:\n",
+                    verificationService.listObjectPIDs(getDepositPID().getQualifiedId(), objectsNotInFedora));
         }
-    }
-
-    //returns list of PIDs not in Fedora to assisr with debuggin failed deposits
-    private List<PID> listObjectsNotInFedora(Resource parentResc) {
-        List<PID> objectsNotInFedora = new ArrayList<>();
-        NodeIterator iterator = getChildIterator(parentResc);
-        while (iterator.hasNext()) {
-            Resource childResc = (Resource) iterator.next();
-            PID childPid = PIDs.get(childResc.getURI());
-            if (!objectExists(childPid)) {
-                objectsNotInFedora.add(childPid);
-            }
-        }
-        return objectsNotInFedora;
-    }
-
-    private String listObjectPIDs(List<PID> objectPIDs) {
-        StringBuilder buildListOfObjectPIDs = new StringBuilder();
-        buildListOfObjectPIDs.append("The following objects from deposit ")
-                .append(getDepositPID().getQualifiedId())
-                .append(" did not make it to Fedora:\n");
-        for (PID pid : objectPIDs) {
-            buildListOfObjectPIDs.append(pid.toString() + "\n");
-        }
-        return buildListOfObjectPIDs.toString();
     }
 
     /**
