@@ -456,7 +456,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertClickCount(nestingDepth + 1);
     }
 
-    //@Test TODO: rethink this test case -- should it be in unit test instead?
+    @Test
     public void transactionCancelledTest() throws Exception {
         String label = "testwork";
 

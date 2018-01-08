@@ -193,6 +193,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                 destPid, groupSet, Permission.ingest);
 
         Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
+        int numObjectsinDeposit = depositBag.size();
 
         calculateWorkRemaining(depositBag);
 
@@ -211,21 +212,35 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // Verify objects from deposit are present in fcrepo
-        if (!areObjectsInFedora(depositBag)) {
-            failJob("Some objects did not make it to Fedora from this deposit: ", getDepositPID().getQualifiedId());
+        List<PID> objectsNotInFedora = listObjectsNotInFedora(depositBag);
+        if (objectsNotInFedora.size() > 0) {
+            failJob("Some objects from this deposit didn't make it to Fedora {0}", listObjectPIDs(objectsNotInFedora));
         }
     }
 
-    private boolean areObjectsInFedora(Resource parentResc) {
+    //returns list of PIDs not in Fedora to assisr with debuggin failed deposits
+    private List<PID> listObjectsNotInFedora(Resource parentResc) {
+        List<PID> objectsNotInFedora = new ArrayList<>();
         NodeIterator iterator = getChildIterator(parentResc);
         while (iterator.hasNext()) {
             Resource childResc = (Resource) iterator.next();
             PID childPid = PIDs.get(childResc.getURI());
             if (!objectExists(childPid)) {
-                return false;
+                objectsNotInFedora.add(childPid);
             }
         }
-        return true;
+        return objectsNotInFedora;
+    }
+
+    private String listObjectPIDs(List<PID> objectPIDs) {
+        StringBuilder buildListOfObjectPIDs = new StringBuilder();
+        buildListOfObjectPIDs.append("The following objects from deposit ")
+                .append(getDepositPID().getQualifiedId())
+                .append(" did not make it to Fedora:\n");
+        for (PID pid : objectPIDs) {
+            buildListOfObjectPIDs.append(pid.toString() + "\n");
+        }
+        return buildListOfObjectPIDs.toString();
     }
 
     /**
