@@ -1,5 +1,5 @@
-define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
-		function($, ui) {
+define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'contextMenu'],
+		function($, ui, URLUtilities) {
 	
 	var defaultOptions = {
 		selector : undefined,
@@ -29,9 +29,7 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 			build: function($trigger, e) {
 				var resultObject = $trigger.parents(self.options.containerSelector).data('resultObject');
 				var metadata = resultObject.metadata;
-				var baseUrl = document.location.href;
-				var serverUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/")) + "/";
-				baseUrl = baseUrl.substring(0, baseUrl.indexOf("/admin/") + 7);
+				var baseUrl = URLUtilities.getAdminUrl();
 				
 				var items = {};
 				if (resultObject.isContainer)
@@ -68,12 +66,12 @@ define('BatchActionMenu', [ 'jquery', 'jquery-ui', 'contextMenu'],
 					items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
 					items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
 				}
-				
+
 				return {
 					callback: function(key, options) {
 						switch (key) {
 							case "viewInCDR" :
-								window.open(serverUrl + "record/" + metadata.id,'_blank');
+								window.open(URLUtilities.getAccessUrl() + "record/" + metadata.id,'_blank');
 								break;
 							case "openContainer" :
 								document.location.href = baseUrl + "list/" + metadata.id;
