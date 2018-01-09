@@ -58,13 +58,13 @@ public class MarkForDeletionJob implements Runnable {
 
     @Override
     public void run() {
-        aclService.assertHasAccess("Insufficient privileges to delete/restore object " + pid.getUUID(),
+        aclService.assertHasAccess("Insufficient privileges to delete object " + pid.getUUID(),
                 pid, agent.getPrincipals(), markForDeletion);
 
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
         if (repoObj instanceof AdminUnit) {
-            aclService.assertHasAccess("Insufficient privileges to delete/restore admin unit " + pid.getUUID(),
+            aclService.assertHasAccess("Insufficient privileges to delete admin unit " + pid.getUUID(),
                     pid, agent.getPrincipals(), markForDeletionUnit);
         }
 

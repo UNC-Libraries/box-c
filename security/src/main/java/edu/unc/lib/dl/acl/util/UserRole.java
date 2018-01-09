@@ -80,8 +80,9 @@ public enum UserRole {
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
     administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit, changePatronAccess,
-            editResourceType, destroy, destroyUnit, createCollection, createAdminUnit, assignStaffRoles, reindex);
+            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
+            changePatronAccess, editResourceType, destroy, destroyUnit, createCollection,
+            createAdminUnit, assignStaffRoles, reindex);
 
     private URI uri;
     private String predicate;

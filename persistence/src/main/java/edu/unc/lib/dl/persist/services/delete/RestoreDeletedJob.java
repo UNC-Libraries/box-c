@@ -63,7 +63,7 @@ public class RestoreDeletedJob implements Runnable {
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
         if (repoObj instanceof AdminUnit) {
-            aclService.assertHasAccess("Insufficient privileges to delete/restore admin unit " + pid.getUUID(),
+            aclService.assertHasAccess("Insufficient privileges to restore admin unit " + pid.getUUID(),
                     pid, agent.getPrincipals(), markForDeletionUnit);
         }
 
