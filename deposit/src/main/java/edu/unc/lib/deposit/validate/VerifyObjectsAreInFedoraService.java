@@ -32,12 +32,14 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * A service for verifying that objects in a deposit actually made it into Fedora
+ * A service for verifying that objects in a deposit actually make it into Fedora
  *
  * @author harring
  *
  */
 public class VerifyObjectsAreInFedoraService {
+
+    private FcrepoClient fcrepoClient;
 
 /**
  * Builds a report of missing PIDs for a given deposit
@@ -70,11 +72,15 @@ public class VerifyObjectsAreInFedoraService {
         while (iterator.hasNext()) {
             Resource childResc = (Resource) iterator.next();
             PID childPid = PIDs.get(childResc.getURI());
-            if (!objectExists(childPid, fcrepoClient)) {
+            if (!objectExists(childPid)) {
                 objectsNotInFedora.add(childPid);
             }
         }
         return objectsNotInFedora;
+    }
+
+    public void setFcrepoClient(FcrepoClient fcrepoClient) {
+        this.fcrepoClient = fcrepoClient;
     }
 
     /**
@@ -94,7 +100,7 @@ public class VerifyObjectsAreInFedoraService {
         }
     }
 
-    private boolean objectExists(PID pid, FcrepoClient fcrepoClient) {
+    private boolean objectExists(PID pid) {
         try (FcrepoResponse response = fcrepoClient.head(pid.getRepositoryUri())
                 .perform()) {
             return true;

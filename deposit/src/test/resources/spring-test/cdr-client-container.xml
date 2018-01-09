@@ -122,6 +122,10 @@
         <property name="client" ref="fcrepoClient" />
     </bean>
     
+    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService" >
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
     <bean id="dataSet" class="org.apache.jena.tdb.TDBFactory" factory-method="createDataset" destroy-method="close">
     </bean>
     
