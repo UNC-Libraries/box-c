@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.event.FilePremisLogger;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -107,9 +108,9 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
     private TransactionManager txManager;
     @Autowired
     private FcrepoClient fcrepoClient;
-
     @Autowired
     private Model queryServiceModel;
+    @Autowired VerifyObjectsAreInFedoraService verificationService;
 
     @Before
     public void init() throws Exception {
@@ -130,6 +131,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         setField(job, "repoObjLoader", repoObjLoader);
         setField(job, "repoObjFactory", repoObjFactory);
         setField(job, "fcrepoClient", fcrepoClient);
+        setField(job, "verificationService", verificationService);
         job.init();
 
         createBaseContainer(RepositoryPathConstants.CONTENT_BASE);
@@ -692,9 +694,12 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         workBag.addProperty(RDF.type, Cdr.Work);
         workBag.addProperty(CdrDeposit.label, "testwork");
 
+        PID fileObjPid = addFileObject(workBag, stagingLocation, mimetype, sha1, md5);
+        workBag.addProperty(Cdr.primaryObject, fileObjPid.getRepositoryPath());
         parent.add(workBag);
 
-        return addFileObject(workBag, stagingLocation, mimetype, sha1, md5);
+        return fileObjPid;
+
     }
 
     private PremisEventObject findPremisEventByType(List<PremisEventObject> objs, final Resource type) {

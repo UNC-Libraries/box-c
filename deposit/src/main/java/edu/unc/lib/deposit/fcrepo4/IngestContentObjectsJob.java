@@ -121,12 +121,10 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     public IngestContentObjectsJob() {
         super();
-        verificationService = new VerifyObjectsAreInFedoraService();
     }
 
     public IngestContentObjectsJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
-        verificationService = new VerifyObjectsAreInFedoraService();
     }
 
     /**
