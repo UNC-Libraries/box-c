@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -59,6 +60,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.service.PatronAccess;
@@ -145,6 +147,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     private File techmdDir;
 
+    @Mock
+    private VerifyObjectsAreInFedoraService verificationService;
+
     @Before
     public void init() throws Exception {
         Dataset dataset = TDBFactory.createDataset();
@@ -165,6 +170,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "repoObjFactory", repoObjFactory);
         setField(job, "fcrepoClient", fcrepoClient);
         setField(job, "txManager", txManager);
+        setField(job, "verificationService", verificationService);
+
         job.init();
 
         depositPid = job.getDepositPID();
@@ -615,6 +622,11 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         Resource fileAipResc = modelCaptor.getValue().getResource(mainPid.getRepositoryPath());
         assertTrue("File object did not contain assigned restriction",
                 fileAipResc.hasProperty(CdrAcl.patronAccess));
+    }
+
+    @Test
+    public void testObjectsNotInFedoraAfterIngest() throws Exception {
+        fail();
     }
 
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
