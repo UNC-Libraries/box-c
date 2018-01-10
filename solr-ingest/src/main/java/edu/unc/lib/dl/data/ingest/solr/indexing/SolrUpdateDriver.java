@@ -54,16 +54,6 @@ public class SolrUpdateDriver {
 
     private static String SET_OPERATION = "set";
     private static String UPDATE_TIMESTAMP = "timestamp";
-    private static String[] REQUIRED_INDEXING_FIELDS = new String[] {
-            "adminGroup",
-            "id",
-            "readGroup",
-            "resourceType",
-            "roleGroup",
-            "rollup",
-            "title",
-            "title_lc"
-    };
 
     public void init() {
         log.debug("Instantiating concurrent udpate solr server for " + solrSettings.getUrl());
@@ -103,7 +93,7 @@ public class SolrUpdateDriver {
     public void updateDocument(IndexDocumentBean idb) throws IndexingException {
         Map<String, Object> fields = idb.getFields();
 
-        for (String field : REQUIRED_INDEXING_FIELDS) {
+        for (String field : solrSettings.getRequiredFields()) {
             if (!fields.containsKey(field)) {
                 throw new IndexingException("Required indexing field {" + field + "} was not present");
             }
@@ -217,5 +207,4 @@ public class SolrUpdateDriver {
     public void setSolrSettings(SolrSettings solrSettings) {
         this.solrSettings = solrSettings;
     }
-
 }

@@ -31,6 +31,7 @@ import org.mockito.Mock;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
  *
@@ -44,33 +45,34 @@ public class SolrUpdateDriverTest {
     private IndexDocumentBean idb;
     @Mock
     private SolrInputDocument sid;
+    @Mock
+    private SolrSettings solrSettings;
 
     private SolrUpdateDriver driver;
 
-    private Map<String, Object> missingFields = new HashMap<String, Object>();
-    private Map<String, Object> allFields = new HashMap<String, Object>();
+    private Map<String, Object> missingFields = new HashMap<>();
+    private Map<String, Object> allFields = new HashMap<>();
 
     private static String[] REQUIRED_INDEXING_FIELDS = new String[] {
-            "adminGroup",
-            "id",
-            "readGroup",
-            "resourceType",
-            "roleGroup",
-            "rollup",
-            "title",
-            "title_lc"
+        "adminGroup",
+        "id",
+        "readGroup",
+        "resourceType",
+        "roleGroup",
+        "rollup",
+        "title",
+        "title_lc"
     };
 
     @Before
     public void setup() throws Exception {
         initMocks(this);
 
-        for (String field : REQUIRED_INDEXING_FIELDS) {
-            allFields.put(field, field);
-        }
-
         driver = new SolrUpdateDriver();
         driver.setUpdateSolrClient(updateSolrClient);
+        driver.setSolrSettings(solrSettings);
+
+        when(solrSettings.getRequiredFields()).thenReturn(REQUIRED_INDEXING_FIELDS);
     }
 
     @Test(expected = IndexingException.class)
@@ -82,6 +84,10 @@ public class SolrUpdateDriverTest {
 
     @Test
     public void testRequiredIndexingFieldsSet() throws Exception {
+        for (String field : REQUIRED_INDEXING_FIELDS) {
+            allFields.put(field, field);
+        }
+
         when(idb.getFields()).thenReturn(allFields);
 
         driver.updateDocument(idb);
