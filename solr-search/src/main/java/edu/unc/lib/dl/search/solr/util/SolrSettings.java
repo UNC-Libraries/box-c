@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility class which stores Solr index addressing and instantiation settings from a properties file.
- * 
+ *
  * @author bbpennel
  */
 public class SolrSettings extends AbstractSettings {
@@ -46,6 +46,7 @@ public class SolrSettings extends AbstractSettings {
 	private HashMap<String, String> fieldNames;
 	// Reverse of fieldName, for translating from the internal solr field name to the general field identification key
 	private HashMap<String, String> fieldNameToKey;
+	private String[] requiredFields;
 
 	public SolrSettings() {
 		fieldNames = new HashMap<String, String>();
@@ -53,7 +54,7 @@ public class SolrSettings extends AbstractSettings {
 
 	/**
 	 * Initialize SolrSettings attributes from a properties input object
-	 * 
+	 *
 	 * @param properties
 	 *           solr settings properties object.
 	 */
@@ -61,6 +62,7 @@ public class SolrSettings extends AbstractSettings {
 		LOG.debug("Setting properties.");
 		this.setPath(properties.getProperty("solr.path", ""));
 		this.setCore(properties.getProperty("solr.core", ""));
+		this.setRequiredFields(properties.getProperty("solr.requiredFields", ""));
 		this.setSocketTimeout(Integer.parseInt(properties.getProperty("solr.socketTimeout", "1000")));
 		this.setConnectionTimeout(Integer.parseInt(properties.getProperty("solr.connectionTimeout", "100")));
 		this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty("solr.defaultMaxConnectionsPerHost",
@@ -132,7 +134,7 @@ public class SolrSettings extends AbstractSettings {
 	/**
 	 * Retrieves all the search term fragments contained in the selected field. Fragments are either single words
 	 * separated by non-alphanumeric characters, or phrases encapsulated by quotes.
-	 * 
+	 *
 	 * @param value
 	 * @return
 	 */
@@ -169,6 +171,14 @@ public class SolrSettings extends AbstractSettings {
 	public void setCore(String core) {
 		this.core = core;
 	}
+
+	public String[] getRequiredFields() {
+        return requiredFields;
+    }
+
+    public void setRequiredFields(String requiredFields) {
+        this.requiredFields = requiredFields.split(",");
+    }
 
 	public int getSocketTimeout() {
 		return socketTimeout;
@@ -224,7 +234,7 @@ public class SolrSettings extends AbstractSettings {
 
 	/**
 	 * Returns the field identification key for the internal solr field name given
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
@@ -238,7 +248,7 @@ public class SolrSettings extends AbstractSettings {
 
 	/**
 	 * Returns the internal solr field name for the field identified by key
-	 * 
+	 *
 	 * @param key
 	 * @return
 	 */
