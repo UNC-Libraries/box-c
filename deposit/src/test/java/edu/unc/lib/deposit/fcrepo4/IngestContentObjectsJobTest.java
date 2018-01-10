@@ -20,7 +20,6 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +61,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
+import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.service.PatronAccess;
@@ -221,7 +222,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
      */
     @Test
     public void ingestEmptyFolderTest() {
-
         FolderObject folder = mock(FolderObject.class);
         when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
@@ -446,7 +446,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test
     public void ingestAdminUnitTest() {
-
         destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -503,7 +502,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test
     public void ingestCollectionTest() {
-
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -535,7 +533,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test(expected = AccessRestrictionException.class)
     public void ingestCollectionNoPermisionTest() {
-
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -624,9 +621,25 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 fileAipResc.hasProperty(CdrAcl.patronAccess));
     }
 
-    @Test
+    @Test(expected=JobFailedException.class)
     public void testObjectsNotInFedoraAfterIngest() throws Exception {
-        fail();
+        FolderObject folder = mock(FolderObject.class);
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
+
+        PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+        folderBag.addProperty(RDF.type, Cdr.Folder);
+        when(folder.getPid()).thenReturn(folderPid);
+
+        depBag.add(folderBag);
+
+        job.closeModel();
+
+        // have verification service return a non-empty list
+        when(verificationService.listObjectsNotInFedora(any(Resource.class), any(FcrepoClient.class)))
+                .thenReturn(Arrays.asList(folderPid));
+
+        job.run();
     }
 
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {
