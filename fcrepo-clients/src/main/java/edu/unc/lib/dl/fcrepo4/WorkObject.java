@@ -77,7 +77,7 @@ public class WorkObject extends ContentContainerObject {
             throw new InvalidRelationshipException("Primary object must be a member of the Work");
         }
         // Add the relation
-        repoObjFactory.createExclusiveRelationship(repoObj, Cdr.primaryObject, primaryResc);
+        repoObjFactory.createExclusiveRelationship(this, Cdr.primaryObject, primaryResc);
     }
 
     /**

@@ -41,8 +41,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
@@ -79,7 +77,6 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
-    private static final Logger LOG = LoggerFactory.getLogger(IngestContentObjectsJobIT.class);
 
     private static final String INGESTOR_PRINC = "ingestor";
 
@@ -293,11 +290,17 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         Bag depBag = model.createBag(depositPid.getRepositoryPath());
 
         String badSha1 = "111111111111111111111111111111111111";
-        addWorkWithFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null);
+        PID workPid = addWorkWithFileObject(depBag, FILE1_LOC, FILE1_MIMETYPE, badSha1, null);
 
         job.closeModel();
 
-        job.run();
+        try {
+            job.run();
+        } finally {
+            assertFalse(FedoraTransaction.hasTxId());
+            assertFalse(FedoraTransaction.isStillAlive());
+            assertFalse(objectExists(workPid));
+        }
     }
 
     /**
@@ -412,7 +415,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         assertBinaryProperties(file1Obj, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
         assertBinaryProperties(file2Obj, FILE2_LOC, FILE2_MIMETYPE, null, null, FILE2_SIZE);
 
-        assertClickCount(3);
+        // Count includes folder, two works each with a file
+        assertClickCount(5);
     }
 
     /**
@@ -455,42 +459,8 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         FileObject primaryFile = work.getPrimaryObject();
         assertBinaryProperties(primaryFile, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5, FILE1_SIZE);
 
-        assertClickCount(nestingDepth + 1);
-    }
-
-    @Test
-    public void transactionCancelledTest() throws Exception {
-        String label = "testwork";
-
-        // Construct the deposit model with work object
-        Model model = job.getWritableModel();
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
-
-        // Constructing the folder in the deposit model with a title
-        PID workPid = pidMinter.mintContentPid();
-        Bag workBag = model.createBag(workPid.getRepositoryPath());
-
-        // Add incorrect resource type to bag, which causes a DepositException to be thrown
-        // and the tx to be cancelled
-        workBag.addProperty(RDF.type, Cdr.FileObject);
-        workBag.addProperty(CdrDeposit.label, label);
-
-        PID mainPid = addWorkWithFileObject(workBag, FILE1_LOC, FILE1_MIMETYPE, FILE1_SHA1, FILE1_MD5);
-
-        depBag.add(workBag);
-
-        workBag.asResource().addProperty(Cdr.primaryObject,
-                model.getResource(mainPid.getRepositoryPath()));
-
-        job.closeModel();
-
-        try {
-            job.run();
-        } finally {
-            assertFalse(FedoraTransaction.hasTxId());
-            assertFalse(FedoraTransaction.isStillAlive());
-            assertFalse(objectExists(workPid));
-        }
+        // Nesting depth plus 2 for the final work and its file
+        assertClickCount(nestingDepth + 2);
     }
 
     @Test
@@ -695,7 +665,7 @@ public class IngestContentObjectsJobIT extends AbstractFedoraDepositJobIT {
         workBag.addProperty(CdrDeposit.label, "testwork");
 
         PID fileObjPid = addFileObject(workBag, stagingLocation, mimetype, sha1, md5);
-        workBag.addProperty(Cdr.primaryObject, fileObjPid.getRepositoryPath());
+        workBag.addProperty(Cdr.primaryObject, createResource(fileObjPid.getRepositoryPath()));
         parent.add(workBag);
 
         return fileObjPid;
