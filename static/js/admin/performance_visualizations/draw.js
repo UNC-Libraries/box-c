@@ -77,13 +77,18 @@ CdrGraphs.prototype.draw = function() {
         this.counts(deposits_by_uuid, "total_time")
     );
 
+	var regression_line_throughput = this.trendLine(throughput_all);
+	var regression_line_uuid = this.trendLine(uuid_all);
+
     // Recalculate average file sizes after everything is combined
     throughput_all.forEach(function(d) {
         d.avg_filesize = _that.fileAvg(d);
-    });
+        d.throughput_bytes_trend = regression_line_throughput(d.throughput_bytes);
+	});
 
     uuid_all.forEach(function(d) {
         d.avg_filesize = _that.fileAvg(d);
+		d.throughput_bytes_trend = regression_line_uuid(d.throughput_bytes);
     });
 
 
@@ -116,7 +121,9 @@ CdrGraphs.prototype.draw = function() {
     var throughput_date = this.showAxises("#throughput-date", xAxis, yAxis, width, "Throughput (MB)");
     
     var throughputLineScaleTotals = this.lineGenerator(xScale, yScale, throughput);
+	var throughputLineScaleTotalsTrend = this.lineGenerator(xScale, yScale, "throughput_bytes_trend");
     this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
+	this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotalsTrend, throughput_all);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
     // Add Brush to Throughput by Date

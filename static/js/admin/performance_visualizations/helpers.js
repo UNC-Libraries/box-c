@@ -186,6 +186,16 @@ CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
 };
 
 /**
+ * Create a regression/trendline
+ * @param data
+ * @returns {Function|*}
+ */
+CdrGraphs.prototype.trendLine = function(data) {
+    var regression = ss.linearRegression(data);
+    return ss.linearRegressionLine(regression);
+};
+
+/**
  * Coerce string values to numbers
  * @param field
  * @returns {number}
