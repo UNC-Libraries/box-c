@@ -179,7 +179,6 @@ CdrGraphs.prototype.appendPath = function(svg, id, scale, data) {
  * @returns {*}
  */
 CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
-	console.log(selector)
     return d3.select(selector).transition()
         .duration(1000)
         .ease("sin-in-out")
@@ -194,9 +193,9 @@ CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
  * @private
  */
 CdrGraphs.prototype._trendLine = function(data, field) {
-	var trend = data.map(function(d) {
-		return [+d.date, d[field]];
-	});
+    var trend = data.map(function(d) {
+        return [+d.date, d[field]];
+    });
     var regression = ss.linearRegression(trend);
     return ss.linearRegressionLine(regression);
 };
@@ -204,20 +203,20 @@ CdrGraphs.prototype._trendLine = function(data, field) {
 /**
  * Create data for a trend line
  * @param data
+ * @param domain
  * @param field
  */
 CdrGraphs.prototype.trendLineData = function(data, domain, field) {
-	var regression = this._trendLine(data, field);
+    var regression = this._trendLine(data, field);
 
-	return domain.map(function(d) {
-		var trendData = {
-			date: new Date(d)
-		};
+    return domain.map(function(d) {
+        var trendData = {
+            date: new Date(d)
+        };
+        trendData[field + "_trend"] = regression(d);
 
-		trendData[field + "_trend"] = regression(d);
-
-		return trendData;
-	});
+        return trendData;
+   });
 };
 
 /**
@@ -436,8 +435,6 @@ CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
         } else {
             _that.drawCircles(chart, values, params.xScale, params.yScale, type);
         }
-
-        if (selected_chart)
 
         // Redisplay stats
         _that.statsDisplay(selected_chart + "-stats", values, type);
@@ -682,12 +679,12 @@ CreateBrush.prototype.selectionBrushing = function(graph, params) {
         d3.select("#" + params.chart_id +" .x.axis").transition().duration(500).ease("sin-in-out").call(params.xAxis);
         d3.select("#" + params.chart_id +" .y.axis").transition().duration(500).ease("sin-in-out").call(params.yAxis);
 
-		// Rescale trend line on brushing
-		if (params.chart_id === "throughput-date") {
-			var trendline_data = _that.parent.trendLineData(updated, params.xScale.domain(), params.field);
-			var throughputLineScale = _that.parent.lineGenerator(params.xScale, params.yScale, params.field + "_trend");
-			_that.parent.redrawPath("#" + params.chart_id + "-trend-line", throughputLineScale, trendline_data);
-		}
+        // Rescale trend line on brushing
+        if (params.chart_id === "throughput-date") {
+            var trendline_data = _that.parent.trendLineData(updated, params.xScale.domain(), params.field);
+            var throughputLineScale = _that.parent.lineGenerator(params.xScale, params.yScale, params.field + "_trend");
+            _that.parent.redrawPath("#" + params.chart_id + "-trend-line", throughputLineScale, trendline_data);
+        }
     }
 
     return brushg;
