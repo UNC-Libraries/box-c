@@ -16,11 +16,12 @@
 package edu.unc.lib.dl.persist.services.delete;
 
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
+import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlDelete;
-
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -60,6 +61,11 @@ public class RestoreDeletedJob implements Runnable {
                 pid, agent.getGroups(), markForDeletion);
 
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
+
+        if (repoObj instanceof AdminUnit) {
+            aclService.assertHasAccess("Insufficient privileges to restore admin unit " + pid.getUUID(),
+                    pid, agent.getPrincipals(), markForDeletionUnit);
+        }
 
         if (!(repoObj instanceof ContentObject)) {
             throw new InvalidOperationForObjectType("Cannot perform restore on object " + pid.getUUID()

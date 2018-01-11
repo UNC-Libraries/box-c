@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.persist.services.delete;
 
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
+import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -38,6 +39,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.event.PremisEventBuilder;
 import edu.unc.lib.dl.event.PremisLogger;
+import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -72,6 +74,9 @@ public class MarkForDeletionJobTest {
     private AccessGroupSet groups;
     @Mock
     private PremisLogger premisLogger;
+    @Mock
+    private AdminUnit repoObj;
+
     private PremisEventBuilder eventBuilder;
 
     private PID pid;
@@ -101,6 +106,15 @@ public class MarkForDeletionJobTest {
     public void insufficientAccessTest() {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(markForDeletion));
+
+        job.run();
+    }
+
+    @Test(expected = AccessRestrictionException.class)
+    public void insufficientAccessAdminUnitTest() {
+        when(repositoryObjectLoader.getRepositoryObject(pid)).thenReturn(repoObj);
+        doThrow(new AccessRestrictionException()).when(aclService)
+                .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(markForDeletionUnit));
 
         job.run();
     }

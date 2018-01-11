@@ -21,10 +21,12 @@ import static edu.unc.lib.dl.acl.util.Permission.changePatronAccess;
 import static edu.unc.lib.dl.acl.util.Permission.createAdminUnit;
 import static edu.unc.lib.dl.acl.util.Permission.createCollection;
 import static edu.unc.lib.dl.acl.util.Permission.destroy;
+import static edu.unc.lib.dl.acl.util.Permission.destroyUnit;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.acl.util.Permission.editResourceType;
 import static edu.unc.lib.dl.acl.util.Permission.ingest;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
+import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.acl.util.Permission.move;
 import static edu.unc.lib.dl.acl.util.Permission.reindex;
 import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
@@ -75,11 +77,12 @@ public enum UserRole {
             ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
             changePatronAccess, editResourceType),
     unitOwner("unitOwner", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            ingest, editDescription, bulkUpdateDescription, move, markForDeletion,
+            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
             changePatronAccess, editResourceType, destroy, createCollection, assignStaffRoles),
     administrator("administrator", true, viewHidden, viewMetadata, viewAccessCopies, viewOriginal,
-            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, changePatronAccess,
-            editResourceType, destroy, createCollection, createAdminUnit, assignStaffRoles, reindex);
+            ingest, editDescription, bulkUpdateDescription, move, markForDeletion, markForDeletionUnit,
+            changePatronAccess, editResourceType, destroy, destroyUnit, createCollection,
+            createAdminUnit, assignStaffRoles, reindex);
 
     private URI uri;
     private String predicate;
