@@ -115,7 +115,7 @@ CdrGraphs.prototype.draw = function() {
     var throughput_date = this.showAxises("#throughput-date", xAxis, yAxis, width, "Throughput (MB)");
 
     // Calculate regression and data for trendline
-    var trendline_data = this.trendLineData(throughput_all, xScale.domain(), "throughput_bytes");
+    var trendline_data = this.trendLineData(throughput_all, xScale.domain(), throughput);
     var throughputLineScaleTotals = this.lineGenerator(xScale, yScale, throughput);
     var throughputLineScaleTotalsTrend = this.lineGenerator(xScale, yScale, "throughput_bytes_trend");
 
