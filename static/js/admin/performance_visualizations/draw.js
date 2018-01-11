@@ -123,7 +123,7 @@ CdrGraphs.prototype.draw = function() {
     var throughputLineScaleTotals = this.lineGenerator(xScale, yScale, throughput);
 	var throughputLineScaleTotalsTrend = this.lineGenerator(xScale, yScale, "throughput_bytes_trend");
     this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
-	this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotalsTrend, throughput_all);
+	this.appendPath(throughput_date, "throughput-date-trend-line", throughputLineScaleTotalsTrend, throughput_all);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
     // Add Brush to Throughput by Date
