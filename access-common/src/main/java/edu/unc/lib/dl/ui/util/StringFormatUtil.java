@@ -32,17 +32,18 @@ import org.slf4j.LoggerFactory;
 public class StringFormatUtil {
     private static final Logger LOG = LoggerFactory.getLogger(StringFormatUtil.class);
 
-    private static String[] filesizeSuffixes = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
+    private static final long UNIT_FACTOR = 1024L;
+    private static final String[] filesizeSuffixes = {"B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"};
 
-    private static int DEFAULT_LAST_WORD_ALLOWANCE = 10;
-    private static double LAST_WORD_ALLOWANCE_MIN_LENGTH_FACTOR = 1.5;
+    private static final int DEFAULT_LAST_WORD_ALLOWANCE = 10;
+    private static final double LAST_WORD_ALLOWANCE_MIN_LENGTH_FACTOR = 1.5;
 
     private StringFormatUtil() {
     }
 
     /**
      * Formats the filesize into a human readable format using the largest
-     * applicable unit, with decimalPlaces number of decimals return.
+     * applicable unit, with decimalPlaces number of decimals returned.
      *
      * @param filesize string containing the filesize in bytes
      * @param decimalPlaces number of decimal places to return. If 0, then no
@@ -61,7 +62,7 @@ public class StringFormatUtil {
 
     /**
      * Formats the filesize into a human readable format using the largest
-     * applicable unit, with decimalPlaces number of decimals return.
+     * applicable unit, with decimalPlaces number of decimals returned.
      *
      * @param filesize filesize in bytes to format.
      * @param decimalPlaces number of decimal places to return. If 0, then no
@@ -73,9 +74,9 @@ public class StringFormatUtil {
         int multipleCount = 0;
         long filesizeRemainder = 0;
         long filesizeValue = filesize;
-        while (filesizeValue > 1024 && multipleCount < filesizeSuffixes.length) {
-            filesizeRemainder = filesizeValue % 1024;
-            filesizeValue /= 1024;
+        while (filesizeValue > UNIT_FACTOR && multipleCount < filesizeSuffixes.length) {
+            filesizeRemainder = filesizeValue % UNIT_FACTOR;
+            filesizeValue /= UNIT_FACTOR;
             multipleCount++;
         }
         StringBuilder filesizeBuilder = new StringBuilder();
@@ -85,7 +86,7 @@ public class StringFormatUtil {
             for (int i = 0; i < decimalPlaces; i++) {
                 decimalMultiplier *= 10;
             }
-            filesizeRemainder = (filesizeRemainder * decimalMultiplier) / 1024;
+            filesizeRemainder = (filesizeRemainder * decimalMultiplier) / UNIT_FACTOR;
             if (filesizeRemainder > 0) {
                 filesizeBuilder.append(".").append(filesizeRemainder);
             }
@@ -131,15 +132,15 @@ public class StringFormatUtil {
             truncated = text;
         }
 
-        // Truncate text down to last word boundry if it occurs within
+        // Truncate text down to last word boundary if it occurs within
         // lastWordAllowance number of characters from the end of the truncated
         // text. Effectively this will try to cut off to the last whole word in
         // the text within the character limit
         if (truncated.length() > lastWordAllowance * LAST_WORD_ALLOWANCE_MIN_LENGTH_FACTOR) {
             String[] parts = truncated.split("\\b(?=\\w*$)");
             if (parts.length > 1) {
-                int lastBoundryIndex = parts[0].length();
-                if (truncated.length() - lastBoundryIndex < lastWordAllowance) {
+                int lastBoundaryIndex = parts[0].length();
+                if (truncated.length() - lastBoundaryIndex < lastWordAllowance) {
                     truncated = parts[0].trim();
                 }
             }

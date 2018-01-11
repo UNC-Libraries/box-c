@@ -109,6 +109,8 @@ public class SearchSettings extends AbstractSettings {
     public String resourceTypeAggregate;
     public String resourceTypeFolder;
     public String resourceTypeCollection;
+    public String resourceTypeUnit;
+    public String resourceTypeContentRoot;
     // Default set of resource types to retrieve in a search request
     public List<String> defaultResourceTypes;
     // Default set of resources types to retrieve in collection browse requests.
@@ -136,35 +138,35 @@ public class SearchSettings extends AbstractSettings {
     public void setProperties(Properties properties) {
         this.properties = properties;
 
-        facetNames = new LinkedHashSet<String>();
-        searchFacetNames = new LinkedHashSet<String>();
-        collectionBrowseFacetNames = new LinkedHashSet<String>();
-        facetNamesStructureBrowse = new LinkedHashSet<String>();
-        this.facetClasses = new HashMap<String, Class<?>>();
-        operators = new HashSet<String>();
+        facetNames = new LinkedHashSet<>();
+        searchFacetNames = new LinkedHashSet<>();
+        collectionBrowseFacetNames = new LinkedHashSet<>();
+        facetNamesStructureBrowse = new LinkedHashSet<>();
+        this.facetClasses = new HashMap<>();
+        operators = new HashSet<>();
 
-        searchableFields = new HashSet<String>();
-        rangeSearchableFields = new HashSet<String>();
-        searchFieldParams = new HashMap<String, String>();
-        searchFieldKeys = new HashMap<String,String>();
-        searchFieldLabels = new HashMap<String, String>();
-        dateSearchableFields = new HashSet<String>();
+        searchableFields = new HashSet<>();
+        rangeSearchableFields = new HashSet<>();
+        searchFieldParams = new HashMap<>();
+        searchFieldKeys = new HashMap<>();
+        searchFieldLabels = new HashMap<>();
+        dateSearchableFields = new HashSet<>();
 
-        actions = new HashMap<String, String>();
-        searchStateParams = new HashMap<String, String>();
+        actions = new HashMap<>();
+        searchStateParams = new HashMap<>();
 
-        resourceTypes = new HashSet<String>();
-        defaultResourceTypes = new ArrayList<String>();
-        defaultCollectionResourceTypes = new ArrayList<String>();
+        resourceTypes = new HashSet<>();
+        defaultResourceTypes = new ArrayList<>();
+        defaultCollectionResourceTypes = new ArrayList<>();
 
-        sortTypes = new HashMap<String, List<SortField>>();
-        sortDisplayNames = new HashMap<String, String>();
-        sortDisplayOrder = new ArrayList<String>();
+        sortTypes = new HashMap<>();
+        sortDisplayNames = new HashMap<>();
+        sortDisplayOrder = new ArrayList<>();
 
-        accessFields = new HashSet<String>();
-        accessFilterableFields = new HashSet<String>();
+        accessFields = new HashSet<>();
+        accessFilterableFields = new HashSet<>();
 
-        resultFields = new HashMap<String, List<String>>();
+        resultFields = new HashMap<>();
 
         // Query validation properties
         setQueryMaxLength(Integer.parseInt(properties.getProperty("search.query.maxLength", "255")));
@@ -232,6 +234,8 @@ public class SearchSettings extends AbstractSettings {
         setResourceTypeAggregate(properties.getProperty("search.resource.type.aggregate", ""));
         setResourceTypeFolder(properties.getProperty("search.resource.type.folder", ""));
         setResourceTypeCollection(properties.getProperty("search.resource.type.collection", ""));
+        setResourceTypeUnit(properties.getProperty("search.resource.type.unit", "Unit"));
+        setResourceTypeContentRoot(properties.getProperty("search.resource.type.contentRoot", "ContentRoot"));
         populateCollectionFromProperty("search.resource.types", resourceTypes, properties, ",");
         populateCollectionFromProperty("search.resource.searchDefault", defaultResourceTypes, properties, ",");
         populateCollectionFromProperty("search.resource.collectionDefault", defaultCollectionResourceTypes,
@@ -245,7 +249,7 @@ public class SearchSettings extends AbstractSettings {
             // Populate sort types
             if (propertyKey.indexOf("search.sort.type.") == 0) {
                 String sortTypes[] = ((String) propEntry.getValue()).split(",");
-                List<SortField> sortFields = new ArrayList<SortField>();
+                List<SortField> sortFields = new ArrayList<>();
                 for (String sortField : sortTypes) {
                     sortFields.add(new SortField(sortField));
                 }
@@ -606,6 +610,20 @@ public class SearchSettings extends AbstractSettings {
 
     public void setResourceTypeCollection(String resourceTypeCollection) {
         this.resourceTypeCollection = resourceTypeCollection;
+    }
+
+    /**
+     * @param resourceTypeUnit the resourceTypeUnit to set
+     */
+    public void setResourceTypeUnit(String resourceTypeUnit) {
+        this.resourceTypeUnit = resourceTypeUnit;
+    }
+
+    /**
+     * @param resourceTypeContentRoot the resourceTypeContentRoot to set
+     */
+    public void setResourceTypeContentRoot(String resourceTypeContentRoot) {
+        this.resourceTypeContentRoot = resourceTypeContentRoot;
     }
 
     public Set<String> getCollectionBrowseFacetNames() {
