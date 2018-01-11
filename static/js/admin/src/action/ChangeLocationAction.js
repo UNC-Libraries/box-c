@@ -1,4 +1,4 @@
-define('ChangeLocationAction', [ 'jquery'], function($) {
+define('ChangeLocationAction', [ 'jquery', 'URLUtilities'], function($, URLUtilities) {
 	function ChangeLocationAction(context) {
 		this.context = context;
 	};
@@ -6,14 +6,11 @@ define('ChangeLocationAction', [ 'jquery'], function($) {
 	ChangeLocationAction.prototype.execute = function() {
 		var url;
 		if (this.context.application == "access") {
-			url = this.context.accessBaseUrl;
+			url = URLUtilities.getAccessUrl();
 		} else {
-			url = this.context.adminBaseUrl;
+			url = URLUtilities.getAdminUrl();
 		}
-		
-		if (this.context.url.indexOf("/") != 0) {
-			url += "/";
-		}
+
 		url += this.context.url;
 		
 		if (this.context.newWindow) {
