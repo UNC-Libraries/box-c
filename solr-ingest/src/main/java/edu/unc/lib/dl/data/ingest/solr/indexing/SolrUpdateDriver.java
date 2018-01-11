@@ -85,9 +85,19 @@ public class SolrUpdateDriver {
 	 * @throws IndexingException
 	 */
 	public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
+        Map<String, Object> fields = idb.getFields();
+
+        for (String field : solrSettings.getRequiredFields()) {
+            if (!fields.containsKey(field)) {
+                throw new IndexingException("Required indexing field {" + field + "} was not present");
+            }
+        }
+
 		try {
 			SolrInputDocument sid = new SolrInputDocument();
-			Map<String, Object> fields = idb.getFields();
+
+
+
 			for (Entry<String, Object> field : fields.entrySet()) {
 				String fieldName = field.getKey();
 
