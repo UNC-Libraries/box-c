@@ -179,6 +179,7 @@ CdrGraphs.prototype.appendPath = function(svg, id, scale, data) {
  * @returns {*}
  */
 CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
+	console.log(selector)
     return d3.select(selector).transition()
         .duration(1000)
         .ease("sin-in-out")
@@ -186,13 +187,37 @@ CdrGraphs.prototype.redrawPath = function(selector, scale, data) {
 };
 
 /**
- * Create a regression/trendline
+ * Create a generator for a regression/trendline
  * @param data
+ * @param field
  * @returns {Function|*}
+ * @private
  */
-CdrGraphs.prototype.trendLine = function(data) {
-    var regression = ss.linearRegression(data);
+CdrGraphs.prototype._trendLine = function(data, field) {
+	var trend = data.map(function(d) {
+		return [+d.date, d[field]];
+	});
+    var regression = ss.linearRegression(trend);
     return ss.linearRegressionLine(regression);
+};
+
+/**
+ * Create data for a trend line
+ * @param data
+ * @param field
+ */
+CdrGraphs.prototype.trendLineData = function(data, domain, field) {
+	var regression = this._trendLine(data, field);
+
+	return domain.map(function(d) {
+		var trendData = {
+			date: new Date(d)
+		};
+
+		trendData[field + "_trend"] = regression(d);
+
+		return trendData;
+	});
 };
 
 /**
@@ -316,41 +341,6 @@ CdrGraphs.prototype.tipHide = function(tip) {
 };
 
 /**
- * Color list for different metric types
- * Color lists are from http://colorbrewer2.org/
- * @param type
- * @returns {Array}
- */
-CdrGraphs.prototype.colorList = function(type) {
-    switch(type) {
-        case "throughput_bytes":
-            return ['#fff7bc','#fee391','#fec44f','#fe9929','#ec7014','#cc4c02','#993404','#662506'];
-            break;
-        case "throughput_files":
-            return ["#A7A043", "#7C9546", "#56874E", "#377854", "#1F6657", "#175455", "#1C424C", "#21313E"];
-            break;
-        case "total_time":
-            return ['#e7e1ef','#d4b9da','#c994c7','#df65b0','#e7298a','#ce1256','#980043','#67001f'];
-            break;
-        case "finished": // Colors for total deposits
-            return ['#f0f0f0','#d9d9d9','#bdbdbd','#969696','#737373','#525252','#252525','#000000'];
-            break;
-        case "moves":
-            return ['#ece7f2','#d0d1e6','#a6bddb','#74a9cf','#3690c0','#0570b0','#045a8d','#023858'];
-            break;
-        case "finished_all_enh":
-            return ['#e5f5f9','#ccece6','#99d8c9','#66c2a4','#41ae76','#238b45','#006d2c','#00441b'];
-            break;
-        case "failed_all_enh":
-            return ['#fee0d2','#fcbba1','#fc9272','#fb6a4a','#ef3b2c','#cb181d','#a50f15','#67000d'];
-            break;
-        default:
-            return ['#fee0d2','#fcbba1','#fc9272','#fb6a4a','#ef3b2c','#cb181d','#a50f15','#67000d'];
-            break;
-    }
-};
-
-/**
  * Hide show loader/graphs
  */
 CdrGraphs.prototype.hideShow = function() {
@@ -423,7 +413,7 @@ CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
             lineScale = _that.lineGenerator(params.xScale, params.yScale, type);
             _that.redrawPath(selected_chart + "-line", lineScale, values);
 
-        } else if(d3.select(selected_chart + "-line")[0][0] !== null && brush) {
+        } else if (d3.select(selected_chart + "-line")[0][0] !== null && brush) {
             // Update main chart
             params.xScale.domain(d3.extent(values, d3.f('date')));
 
@@ -446,6 +436,8 @@ CdrGraphs.prototype.chartUpdate = function(selector, params, brush) {
         } else {
             _that.drawCircles(chart, values, params.xScale, params.yScale, type);
         }
+
+        if (selected_chart)
 
         // Redisplay stats
         _that.statsDisplay(selected_chart + "-stats", values, type);
@@ -689,6 +681,13 @@ CreateBrush.prototype.selectionBrushing = function(graph, params) {
         _that.parent.redrawPath("#" + params.chart_id + "-line", lineScale, updated);
         d3.select("#" + params.chart_id +" .x.axis").transition().duration(500).ease("sin-in-out").call(params.xAxis);
         d3.select("#" + params.chart_id +" .y.axis").transition().duration(500).ease("sin-in-out").call(params.yAxis);
+
+		// Rescale trend line on brushing
+		if (params.chart_id === "throughput-date") {
+			var trendline_data = _that.parent.trendLineData(updated, params.xScale.domain(), params.field);
+			var throughputLineScale = _that.parent.lineGenerator(params.xScale, params.yScale, params.field + "_trend");
+			_that.parent.redrawPath("#" + params.chart_id + "-trend-line", throughputLineScale, trendline_data);
+		}
     }
 
     return brushg;
