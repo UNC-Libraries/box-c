@@ -22,7 +22,6 @@ import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollectionOf;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -75,7 +74,6 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -419,30 +417,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(2));
         verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
-    }
-
-    @Test
-    public void resumeIngestFileObjectAsWorkTest() throws Exception {
-        // Mark the deposit as resumed
-        when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
-
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
-
-        String fileLoc = "text.txt";
-        String fileMime = "text/plain";
-        addFileObject(depBag, fileLoc, fileMime);
-
-        job.closeModel();
-
-        job.run();
-
-        // Check that the generated work was neither generated nor linked
-        verify(repoObjFactory, never()).createWorkObject(any(PID.class), any(Model.class));
-        verify(destinationObj, never()).addMember(any(ContentObject.class));
-
-        // Only tick should be from preprocessing
-        verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), anyInt());
-        verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(1));
     }
 
     @Test
