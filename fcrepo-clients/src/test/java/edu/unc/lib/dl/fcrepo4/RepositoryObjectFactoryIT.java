@@ -17,6 +17,7 @@ package edu.unc.lib.dl.fcrepo4;
 
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -29,6 +30,7 @@ import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Test;
@@ -229,6 +231,68 @@ public class RepositoryObjectFactoryIT extends AbstractFedoraIT {
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.EVENTS_CONTAINER))));
             assertTrue(respResc.hasProperty(Ldp.contains,
                     createResource(URIUtil.join(objPath, RepositoryPathConstants.MEMBER_CONTAINER))));
+        }
+    }
+
+    @Test
+    public void createExclusiveRelationshipInsideTxTest() throws Exception {
+        FedoraTransaction tx = txManager.startTransaction();
+        try {
+            createExclusiveRelationshipTest();
+        } finally {
+            tx.close();
+        }
+    }
+
+    @Test
+    public void createExclusiveRelationshipTest() throws Exception {
+        RepositoryObject repoObj1 = createObject();
+        RepositoryObject repoObj2 = createObject();
+        RepositoryObject repoObj3 = createObject();
+        RepositoryObject repoObj4 = createObject();
+
+        // test no existing relationship
+        Resource resc2 = createResource(repoObj2.getPid().getRepositoryPath());
+        repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc2);
+
+        Model model1 = getModel(repoObj1.getPid());
+        Resource resc1 = model1.getResource(repoObj1.getPid().getRepositoryPath());
+        assertTrue(resc1.hasProperty(DC.relation, resc2));
+
+        // test one existing relationship
+        Resource resc3 = createResource(repoObj3.getPid().getRepositoryPath());
+        repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc3);
+        Model replaceModel1 = repoObj1.getModel();
+        Resource updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
+        assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
+        assertFalse(updatedResc1.hasProperty(DC.relation, resc2));
+
+        // test multiple existing relationships
+        Resource resc4 = createResource(repoObj4.getPid().getRepositoryPath());
+        // add second relationship
+        repoObjFactory.createRelationship(repoObj1.getPid(), DC.relation, resc2);
+        replaceModel1 = repoObj1.getModel();
+        updatedResc1 = replaceModel1.getResource(repoObj1.getPid().getRepositoryPath());
+        // check to see that the subject has two relationships using the property DC.relation
+        assertTrue(updatedResc1.hasProperty(DC.relation, resc3));
+        assertTrue(updatedResc1.hasProperty(DC.relation, resc2));
+        // create a new exclusive relationship to a new resource
+        repoObjFactory.createExclusiveRelationship(repoObj1, DC.relation, resc4);
+        Model replaceModel1Again = repoObj1.getModel();
+        Resource updatedResc1Again = replaceModel1Again.getResource(repoObj1.getPid().getRepositoryPath());
+        assertTrue(updatedResc1Again.hasProperty(DC.relation, resc4));
+        assertFalse(updatedResc1Again.hasProperty(DC.relation, resc2));
+        assertFalse(updatedResc1Again.hasProperty(DC.relation, resc3));
+    }
+
+    private RepositoryObject createObject() throws Exception {
+        RepositoryObject repoObj = repoObjFactory.createFolderObject(null);
+        return repoObj;
+    }
+
+    private Model getModel(PID pid) throws Exception {
+        try (FcrepoResponse resp = client.get(pid.getRepositoryUri()).perform()) {
+            return RDFModelUtil.createModel(resp.getBody());
         }
     }
 }

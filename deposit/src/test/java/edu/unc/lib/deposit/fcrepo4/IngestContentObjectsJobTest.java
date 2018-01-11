@@ -19,10 +19,9 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRI
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,6 +60,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
+import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -73,7 +74,6 @@ import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
-import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.FileObject;
@@ -147,6 +147,9 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     private File techmdDir;
 
+    @Mock
+    private VerifyObjectsAreInFedoraService verificationService;
+
     @Before
     public void init() throws Exception {
         Dataset dataset = TDBFactory.createDataset();
@@ -167,6 +170,8 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         setField(job, "repoObjFactory", repoObjFactory);
         setField(job, "fcrepoClient", fcrepoClient);
         setField(job, "txManager", txManager);
+        setField(job, "verificationService", verificationService);
+
         job.init();
 
         depositPid = job.getDepositPID();
@@ -216,7 +221,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
      */
     @Test
     public void ingestEmptyFolderTest() {
-
         FolderObject folder = mock(FolderObject.class);
         when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
@@ -351,64 +355,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     }
 
     /**
-     * Test that a standalone file object ingested to a destination which is not
-     * a work successfully ingests as the child of a generated work object
-     */
-    @Test
-    public void ingestFileObjectAsWorkTest() throws Exception {
-        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        when(pidMinter.mintContentPid()).thenReturn(workPid);
-        WorkObject work = mock(WorkObject.class);
-        when(work.getPid()).thenReturn(workPid);
-        when(repoObjFactory.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
-
-        String fileLoc = "text.txt";
-        String fileMime = "text/plain";
-        PID filePid = addFileObject(depBag, fileLoc, fileMime);
-
-        job.closeModel();
-
-        when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(),
-                anyString(), anyString(), anyString(), any(Model.class)))
-                .thenReturn(mockFileObj);
-        when(mockFileObj.getPid()).thenReturn(filePid);
-        job.run();
-
-        // Verify that a work object was generated and added to the destination
-        verify(pidMinter).mintContentPid();
-        verify(repoObjFactory).createWorkObject(eq(workPid), any(Model.class));
-        verify(destinationObj).addMember(eq(work));
-
-        // Verify that a FileObject was added to the generated work as primary obj
-        verify(work).setPrimaryObject(filePid);
-        verify(work).addDataFile(eq(filePid), any(InputStream.class), eq(fileLoc),
-                eq(fileMime), anyString(), anyString(), any(Model.class));
-
-        // Only one ticket should register since the work object is generated
-        verify(jobStatusFactory).incrCompletion(eq(jobUUID), eq(1));
-    }
-
-    @Test(expected = JobFailedException.class)
-    public void ingestfileObjectAsWorkNoStaging() throws Exception {
-        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        when(pidMinter.mintContentPid()).thenReturn(workPid);
-        WorkObject work = mock(WorkObject.class);
-        when(work.getPid()).thenReturn(workPid);
-        when(repoObjFactory.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
-
-        PID filePid = makePid(RepositoryPathConstants.CONTENT_BASE);
-
-        Resource fileResc = model.createResource(filePid.getRepositoryPath());
-        fileResc.addProperty(RDF.type, Cdr.FileObject);
-        fileResc.addProperty(CdrDeposit.mimetype, "text/plain");
-        depBag.add(fileResc);
-
-        job.closeModel();
-
-        job.run();
-    }
-
-    /**
      * Test resuming a Work ingest where the work and the main file were already
      * ingested
      */
@@ -474,51 +420,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
     }
 
     @Test
-    public void resumeIngestFileObjectAsWorkTest() throws Exception {
-        // Mark the deposit as resumed
-        when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
-
-        Bag depBag = model.createBag(depositPid.getRepositoryPath());
-
-        String fileLoc = "text.txt";
-        String fileMime = "text/plain";
-        PID filePid = addFileObject(depBag, fileLoc, fileMime);
-
-        job.closeModel();
-
-        job.run();
-
-        // Check that the generated work was neither generated nor linked
-        verify(repoObjFactory, never()).createWorkObject(any(PID.class), any(Model.class));
-        verify(destinationObj, never()).addMember(any(ContentObject.class));
-
-        // Only tick should be from preprocessing
-        verify(jobStatusFactory, never()).incrCompletion(eq(jobUUID), anyInt());
-        verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(1));
-    }
-
-    /**
-     * Check that no significant deposit behaviors change with a file object as
-     * work deposit due to resume being turned on
-     */
-    @Test
-    public void resumeIngestNoCompleteTest() throws Exception {
-        when(headBuilder.perform()).thenThrow(
-                new FcrepoOperationFailedException(destinationPid.getRepositoryUri(),
-                        HttpStatus.SC_NOT_FOUND, ""));
-
-        // Mark the deposit as resumed
-        when(depositStatusFactory.isResumedDeposit(anyString())).thenReturn(true);
-
-        ingestFileObjectAsWorkTest();
-
-        // No preprocessing ticks
-        verify(jobStatusFactory).setCompletion(eq(jobUUID), eq(0));
-    }
-
-    @Test
     public void ingestAdminUnitTest() {
-
         destinationObj = mock(ContentRootObject.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -575,7 +477,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test
     public void ingestCollectionTest() {
-
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -607,7 +508,6 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
     @Test(expected = AccessRestrictionException.class)
     public void ingestCollectionNoPermisionTest() {
-
         destinationObj = mock(AdminUnit.class);
         when(destinationObj.getPid()).thenReturn(destinationPid);
         when(repoObjLoader.getRepositoryObject(eq(destinationPid))).thenReturn(destinationObj);
@@ -696,42 +596,25 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
                 fileAipResc.hasProperty(CdrAcl.patronAccess));
     }
 
-    @Test
-    public void ingestFileObjAsWorkWithAcls() throws Exception {
-        PID workPid = makePid(RepositoryPathConstants.CONTENT_BASE);
-        when(pidMinter.mintContentPid()).thenReturn(workPid);
-        WorkObject work = mock(WorkObject.class);
-        when(work.getPid()).thenReturn(workPid);
-        when(repoObjFactory.createWorkObject(eq(workPid), any(Model.class))).thenReturn(work);
+    @Test(expected=JobFailedException.class)
+    public void testObjectsNotInFedoraAfterIngest() throws Exception {
+        FolderObject folder = mock(FolderObject.class);
+        when(repoObjFactory.createFolderObject(any(PID.class), any(Model.class))).thenReturn(folder);
 
-        String fileLoc = "text.txt";
-        String fileMime = "text/plain";
-        PID filePid = addFileObject(depBag, fileLoc, fileMime);
-        Resource fileResc = model.getResource(filePid.getRepositoryPath());
-        fileResc.addProperty(CdrAcl.embargoUntil, model.createTypedLiteral(Calendar.getInstance()));
+        PID folderPid = makePid(RepositoryPathConstants.CONTENT_BASE);
+        Bag folderBag = model.createBag(folderPid.getRepositoryPath());
+        folderBag.addProperty(RDF.type, Cdr.Folder);
+        when(folder.getPid()).thenReturn(folderPid);
+
+        depBag.add(folderBag);
 
         job.closeModel();
 
-        when(work.addDataFile(any(PID.class), any(InputStream.class), anyString(),
-                anyString(), anyString(), anyString(), any(Model.class)))
-                .thenReturn(mockFileObj);
-        when(mockFileObj.getPid()).thenReturn(filePid);
+        // have verification service return a non-empty list
+        when(verificationService.listObjectsNotInFedora(anyCollectionOf(String.class)))
+                .thenReturn(Arrays.asList(folderPid));
+
         job.run();
-
-        // Verify that a work object was generated and added to the destination
-        verify(repoObjFactory).createWorkObject(eq(workPid), modelCaptor.capture());
-
-        Resource workAipResc = modelCaptor.getValue().getResource(workPid.getRepositoryPath());
-        assertTrue("Acl property from file should have been added to surrounding Work",
-                workAipResc.hasProperty(CdrAcl.embargoUntil));
-
-        // Verify that a FileObject was added to the generated work as primary obj
-        verify(work).addDataFile(eq(filePid), any(InputStream.class), eq(fileLoc),
-                eq(fileMime), anyString(), anyString(), modelCaptor.capture());
-
-        Resource fileAipResc = modelCaptor.getValue().getResource(filePid.getRepositoryPath());
-        assertFalse("Acl property should not also be present on the file object",
-                fileAipResc.hasProperty(CdrAcl.embargoUntil));
     }
 
     private PID addFileObject(Bag parent, String stagingLocation, String mimetype) throws Exception {

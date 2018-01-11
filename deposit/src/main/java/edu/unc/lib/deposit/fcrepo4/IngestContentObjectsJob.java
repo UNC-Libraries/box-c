@@ -25,13 +25,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Bag;
 import org.apache.jena.rdf.model.Model;
@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.deposit.work.DepositGraphUtils;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -117,6 +118,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     @Autowired
     private TransactionManager txManager;
 
+    private VerifyObjectsAreInFedoraService verificationService;
+
     public IngestContentObjectsJob() {
         super();
     }
@@ -174,13 +177,12 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         // Retrieve the object where this deposit will be ingested to.
         Map<String, String> depositStatus = getDepositStatus();
         String destinationPath = depositStatus.get(DepositField.containerId.name());
-        PID destinationPid = PIDs.get(destinationPath);
-        if (destinationPid == null) {
+        PID destPid = PIDs.get(destinationPath);
+        if (destPid == null) {
             failJob("Invalid destination URI", "The provide destination uri " + destinationPath
                     + " was not a valid repository path");
         }
 
-        PID destPid = PIDs.get(depositStatus.get(DepositField.containerId.name()));
         RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
         if (!(destObj instanceof ContentContainerObject)) {
             failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
@@ -189,7 +191,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         String groups = depositStatus.get(DepositField.permissionGroups.name());
         AccessGroupSet groupSet = new AccessGroupSet(groups);
 
-        // Verify that the depositor is allow to ingest to the given destination
+        // Verify that the depositor is allowed to ingest to the given destination
         aclService.assertHasAccess(
                 "Depositor does not have permissions to ingest to destination " + destPid,
                 destPid, groupSet, Permission.ingest);
@@ -212,7 +214,14 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
         }
 
-        // TODO verify objects present in fcrepo
+        // Verify objects from deposit are present in fcrepo
+        Collection<String> pids = new ArrayList<>();
+        DepositGraphUtils.walkChildrenDepthFirst(depositBag, pids, true);
+        List<PID> objectsNotInFedora = verificationService.listObjectsNotInFedora(pids);
+        if (objectsNotInFedora.size() > 0) {
+            failJob("Some objects from this deposit didn't make it to Fedora:\n",
+                    verificationService.listObjectPIDs(getDepositPID().getQualifiedId(), objectsNotInFedora));
+        }
     }
 
     /**
@@ -242,9 +251,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
                     if (destObj instanceof WorkObject) {
                         // File object is being added to a work, go ahead
                         ingestFileObject(destObj, parentResc, childResc);
-                    } else {
-                        // File object is a standalone, so construct a Work around it
-                        ingestFileObjectAsWork(destObj, parentResc, childResc);
                     }
                 } else if (childResc.hasProperty(RDF.type, Cdr.Folder)) {
                     ingestFolder(destObj, parentResc, childResc, groupSet);
@@ -292,77 +298,6 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         addClicks(1);
 
         log.info("Created file object {} for deposit {}", obj.getPid(), getDepositPID());
-    }
-
-    /**
-     * Ingests the file object represented by childResc as a FileObject wrapped
-     * in a newly constructed WorkObject. Descriptive information about the file
-     * is migrated to the WorkObject.
-     *
-     * @param parent
-     * @param parentResc
-     * @param childResc
-     * @return
-     * @throws DepositException
-     */
-    private void ingestFileObjectAsWork(ContentContainerObject parent, Resource parentResc, Resource childResc)
-            throws DepositException {
-
-        if (skipResumed(childResc)) {
-            return;
-        }
-
-        PID childPid = PIDs.get(childResc.getURI());
-
-        PID workPid = pidMinter.mintContentPid();
-
-        // Construct a model for the new work using some of the properties from the child
-        Model workModel = ModelFactory.createDefaultModel();
-        Resource workResc = workModel.getResource(workPid.getRepositoryPath());
-
-        String label = getPropertyValue(childResc, CdrDeposit.label);
-        if (label == null || StringUtils.isEmpty(label)) {
-            label = getPropertyValue(childResc, CdrDeposit.stagingLocation);
-            if (label == null) {
-                // throw exception before NPE happens as stagingLocation is required
-                throw new DepositException("No staging location provided for file object ("
-                        + childResc.getURI() + ")");
-            }
-            label = new File(label).getName();
-        }
-
-        workResc.addProperty(DC.title, label);
-
-        // add ACLs from the original file child
-        addAclProperties(childResc, workResc);
-
-        WorkObject newWork  = null;
-        FedoraTransaction tx = txManager.startTransaction();
-        try {
-            newWork = repoObjFactory.createWorkObject(workPid, workModel);
-
-            addDescription(newWork);
-            // Add the newly created work to its parent
-            parent.addMember(newWork);
-            FileObject fileObj = addFileToWork(newWork, childResc, false);
-            // add ingestion event for work object
-            addIngestionEventForContainer(newWork, parentResc);
-            // Set the file as the primary object for the generated work
-            newWork.setPrimaryObject(childPid);
-            // Increment the count of objects deposited
-            addClicks(1);
-            // write premis events for file object to fedora
-            addPremisEvents(fileObj);
-            // write premis events for work object to fedora
-            addPremisEvents(newWork);
-
-            log.info("Created work {} for file object {} for deposit {}",
-                    new Object[] {workPid, childPid, getDepositPID()});
-        } catch (Exception e) {
-            tx.cancel(e);
-        } finally {
-            tx.close();
-        }
     }
 
     /**

@@ -20,6 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
@@ -130,13 +133,15 @@ public class SparqlUpdateHelperTest {
     public void createSparqlReplaceTest() {
         String expectedTitle = "Title";
 
-        String sparql = SparqlUpdateHelper.createSparqlReplace(RESC_URI, DC.title, expectedTitle);
-
         Model model = ModelFactory.createDefaultModel();
         Resource resc = model.getResource(RESC_URI);
         resc.addProperty(DC.title, "1");
         resc.addProperty(DC.title, "2");
 
+        List<Object> previousTitles = new ArrayList<>();
+        previousTitles.add("1");
+        previousTitles.add("2");
+        String sparql = SparqlUpdateHelper.createSparqlReplace(RESC_URI, DC.title, expectedTitle, previousTitles);
         UpdateRequest request = UpdateFactory.create(sparql);
         UpdateAction.execute(request, model);
 

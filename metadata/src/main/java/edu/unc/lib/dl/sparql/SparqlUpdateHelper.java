@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.sparql;
 
+import java.util.List;
+
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.graph.Node;
@@ -110,21 +112,40 @@ public class SparqlUpdateHelper {
      * @param object
      * @return
      */
+    public static String createSparqlReplace(String subjUri, Property property, Object object) {
+        return createSparqlReplace(subjUri, property, object, null);
+    }
+
+    /**
+     * Constructs a sparql query which replaces all instances of a property on a resource with a new value
+     *
+     * @param subjUri
+     * @param property
+     * @param object
+     * @param previousValues
+     * @return
+     */
     public static String createSparqlReplace(String subjUri, Property property,
-            Object object) {
+            Object object, List<Object> previousValues) {
 
         String objectString = getObjectAsString(object);
 
         String subjString = getSubjectString(subjUri);
 
+        String propertyString = " <" + property.getURI() + "> ";
+
         StringBuilder query = new StringBuilder();
         query.append("DELETE { ");
-        query.append(subjString).append(" <").append(property.getURI()).append("> ?obj . }\n");
+        if (previousValues != null && previousValues.size() > 0) {
+            for (Object obj : previousValues) {
+                query.append(subjString).append(propertyString).append(getObjectAsString(obj)).append(" . \n");
+            }
+        }
+        query.append("}\n");
 
         addInsert(query, subjUri, property, objectString);
 
-        query.append("\nWHERE {");
-        query.append(subjString).append(" ?pred ?obj . }");
+        query.append("\nWHERE { }");
 
         return query.toString();
     }
