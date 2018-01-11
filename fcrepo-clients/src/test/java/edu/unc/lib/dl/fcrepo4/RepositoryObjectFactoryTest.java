@@ -199,5 +199,6 @@ public class RepositoryObjectFactoryTest {
         when(member.getPid()).thenReturn(memberPid);
 
         repoObjFactory.addMember(parent, member);
+        //TODO: verify the correct thing happened here; as it stands this case isn't testing anything
     }
 }

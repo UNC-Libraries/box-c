@@ -25,6 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -214,7 +215,9 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
         }
 
         // Verify objects from deposit are present in fcrepo
-        List<PID> objectsNotInFedora = verificationService.listObjectsNotInFedora(depositBag, fcrepoClient);
+        Collection<String> pids = new ArrayList<>();
+        DepositGraphUtils.walkChildrenDepthFirst(depositBag, pids, true);
+        List<PID> objectsNotInFedora = verificationService.listObjectsNotInFedora(pids);
         if (objectsNotInFedora.size() > 0) {
             failJob("Some objects from this deposit didn't make it to Fedora:\n",
                     verificationService.listObjectPIDs(getDepositPID().getQualifiedId(), objectsNotInFedora));

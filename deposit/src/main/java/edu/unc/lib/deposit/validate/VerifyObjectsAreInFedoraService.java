@@ -17,6 +17,7 @@ package edu.unc.lib.deposit.validate;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.http.HttpStatus;
@@ -66,12 +67,10 @@ public class VerifyObjectsAreInFedoraService {
      * @param fcrepoClient
      * @return a list of PIDs for deposited objects missing in Fedora
      */
-    public List<PID> listObjectsNotInFedora(Resource parentResc, FcrepoClient fcrepoClient) {
+    public List<PID> listObjectsNotInFedora(Collection<String> pids) {
         List<PID> objectsNotInFedora = new ArrayList<>();
-        NodeIterator iterator = getChildIterator(parentResc);
-        while (iterator.hasNext()) {
-            Resource childResc = (Resource) iterator.next();
-            PID childPid = PIDs.get(childResc.getURI());
+        for (String pid : pids) {
+            PID childPid = PIDs.get(pid);
             if (!objectExists(childPid)) {
                 objectsNotInFedora.add(childPid);
             }

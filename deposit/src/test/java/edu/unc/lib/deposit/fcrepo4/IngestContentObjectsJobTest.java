@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -636,7 +637,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
         job.closeModel();
 
         // have verification service return a non-empty list
-        when(verificationService.listObjectsNotInFedora(any(Resource.class), any(FcrepoClient.class)))
+        when(verificationService.listObjectsNotInFedora(anyCollectionOf(String.class)))
                 .thenReturn(Arrays.asList(folderPid));
 
         job.run();
