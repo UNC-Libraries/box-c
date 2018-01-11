@@ -45,6 +45,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.test.SelfReturningAnswer;
+import edu.unc.lib.dl.util.URIUtil;
 
 /**
  *
@@ -199,6 +200,9 @@ public class RepositoryObjectFactoryTest {
         when(member.getPid()).thenReturn(memberPid);
 
         repoObjFactory.addMember(parent, member);
-        //TODO: verify the correct thing happened here; as it stands this case isn't testing anything
+
+        URI parentUri = parentPid.getRepositoryUri();
+        URI containerUri = URI.create(URIUtil.join(parentUri, RepositoryPathConstants.MEMBER_CONTAINER));
+        verify(ldpFactory).createIndirectProxy(containerUri, parentUri, memberPid.getRepositoryUri());
     }
 }
