@@ -149,6 +149,7 @@
 <script src="/static/js/admin/performance_visualizations/assets/d3/d3.min.js" charset="utf-8"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-queue/d3-queue.min.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/d3-jetpack/d3-jetpack.min.js"></script>
+<script src="/static/js/admin/performance_visualizations/assets/simple-statistics/simple-statistics-regression-only.js"></script>
 <script src="/static/js/admin/performance_visualizations/assets/ramda/ramda-merge-with-key-only.js"></script>
 <script src="/static/js/admin/performance_visualizations/helpers.js"></script>
 <script src="/static/js/admin/performance_visualizations/draw.js"></script>
