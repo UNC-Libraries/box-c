@@ -17,6 +17,9 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.text.ParseException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
@@ -30,17 +33,30 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
  *
  */
 public class SetRecordDatesFilter extends AbstractIndexDocumentFilter {
+	private static final Logger log = LoggerFactory.getLogger(SetRecordDatesFilter.class);
 	
 	@Override
 	public void filter(DocumentIndexingPackage dip) throws IndexingException {
+		String dateAdded = dip.getFirstTriple(FedoraProperty.createdDate.toString());
+		String dateUpdated = dip.getFirstTriple(FedoraProperty.lastModifiedDate.toString());
+		
+		if (dateAdded == null || dateUpdated == null) {
+			// Force load of FOXML in the few cases where triple store has failed to index required date fields
+			log.warn("Failed to load date field for {}, falling back to FOXML as data source", dip.getPid());
+			dip.setTriples(null);
+			dip.getFoxml();
+			dateAdded = dip.getFirstTriple(FedoraProperty.createdDate.toString());
+			dateUpdated = dip.getFirstTriple(FedoraProperty.lastModifiedDate.toString());
+		}
+		
 		try {
-			dip.getDocument().setDateAdded(dip.getFirstTriple(FedoraProperty.createdDate.toString()));
+			dip.getDocument().setDateAdded(dateAdded);
 		} catch (ParseException e) {
 			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
 		}
 		
 		try {
-			dip.getDocument().setDateUpdated(dip.getFirstTriple(FedoraProperty.lastModifiedDate.toString()));
+			dip.getDocument().setDateUpdated(dateUpdated);
 		} catch (ParseException e) {
 			throw new IndexingException("Failed to parse record dates from " + dip.getPid().getPid(), e);
 		}
