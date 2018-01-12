@@ -16,8 +16,9 @@
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doCallRealMethod;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +33,9 @@ import org.jdom2.input.SAXBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader;
@@ -42,60 +46,89 @@ import edu.unc.lib.dl.util.ContentModelHelper.FedoraProperty;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.TripleStoreQueryService;
 
+@RunWith(MockitoJUnitRunner.class)
 public class SetRecordDatesFilterTest extends Assert {
 	
+	private static final String EXPECTED_ADDED = "2011-10-04T20:31:52.107Z";
+	private static final String EXPECTED_UPDATED = "2011-10-05T04:25:07.169Z";
+	private Date expectedDateAdded;
+	private Date expectedDateUpdated;
+	
+	@Mock
 	private DocumentIndexingPackageDataLoader loader;
+	@Mock
+	private TripleStoreQueryService tsqs;
+	
 	private DocumentIndexingPackageFactory factory;
 	
+	private SetRecordDatesFilter filter;
+	
 	@Before
-	public void setup() throws Exception {
-		loader = new DocumentIndexingPackageDataLoader();
-		
+	public void setup() throws Exception {		
 		factory = new DocumentIndexingPackageFactory();
 		factory.setDataLoader(loader);
+		
+		when(loader.loadTriples(any(DocumentIndexingPackage.class))).thenCallRealMethod();
+		doCallRealMethod().when(loader).setTsqs(any(TripleStoreQueryService.class));
+		loader.setTsqs(tsqs);
+		
+		expectedDateAdded = DateTimeUtil.parseUTCToDate(EXPECTED_ADDED);
+		expectedDateUpdated = DateTimeUtil.parseUTCToDate(EXPECTED_UPDATED);
+		
+		filter = new SetRecordDatesFilter();
 	}
 	
 	@Test
 	public void foxmlExtractionTest() throws Exception {
 		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
+		
 		SAXBuilder builder = new SAXBuilder();
 		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
 		dip.setFoxml(foxml);
 		
-		SetRecordDatesFilter filter = new SetRecordDatesFilter();
 		filter.filter(dip);
 		
 		IndexDocumentBean idb = dip.getDocument();
 		
-		Date dateAdded = DateTimeUtil.parseUTCToDate("2011-10-04T20:31:52.107Z");
-		Date dateUpdated = DateTimeUtil.parseUTCToDate("2011-10-05T04:25:07.169Z");
-		
-		assertEquals(dateAdded, idb.getDateAdded());
-		assertEquals(dateUpdated, idb.getDateUpdated());
+		assertEquals(expectedDateAdded, idb.getDateAdded());
+		assertEquals(expectedDateUpdated, idb.getDateUpdated());
 	}
 
 	@Test
 	public void queryExtractionTest() throws Exception {
-		
-		TripleStoreQueryService tsqs = mock(TripleStoreQueryService.class);
 		Map<String, List<String>> triples = new HashMap<>();
-		triples.put(FedoraProperty.createdDate.toString(), Arrays.asList("2011-10-04T20:31:52.107Z"));
-		triples.put(FedoraProperty.lastModifiedDate.toString(), Arrays.asList("2011-10-05T04:25:07.169Z"));
-		
+		triples.put(FedoraProperty.createdDate.toString(), Arrays.asList(EXPECTED_ADDED));
+		triples.put(FedoraProperty.lastModifiedDate.toString(), Arrays.asList(EXPECTED_UPDATED));
 		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples);
-		loader.setTsqs(tsqs);
 		
 		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
 		
-		SetRecordDatesFilter filter = new SetRecordDatesFilter();
 		filter.filter(dip);
 		
 		IndexDocumentBean idb = dip.getDocument();
 		
-		Date dateAdded = DateTimeUtil.parseUTCToDate("2011-10-04T20:31:52.107Z");
-		Date dateUpdated = DateTimeUtil.parseUTCToDate("2011-10-05T04:25:07.169Z");
+		assertEquals(expectedDateAdded, idb.getDateAdded());
+		assertEquals(expectedDateUpdated, idb.getDateUpdated());
+	}
+	
+	@Test
+	public void foxmlFallbackTest() throws Exception {
+		Map<String, List<String>> triples = new HashMap<>();
+		triples.put(FedoraProperty.createdDate.toString(), Arrays.asList(EXPECTED_ADDED));
+		when(tsqs.fetchAllTriples(any(PID.class))).thenReturn(triples);
 		
-		assertEquals(dateAdded, idb.getDateAdded());
-		assertEquals(dateUpdated, idb.getDateUpdated());
+		DocumentIndexingPackage dip = factory.createDip("info:fedora/uuid:item");
+		SAXBuilder builder = new SAXBuilder();
+		Document foxml = builder.build(new FileInputStream(new File("src/test/resources/foxml/imageNoMODS.xml")));
+		when(loader.loadFOXML(any(DocumentIndexingPackage.class))).thenReturn(foxml);
+		
+		filter.filter(dip);
+		
+		IndexDocumentBean idb = dip.getDocument();
+		
+		assertEquals(expectedDateAdded, idb.getDateAdded());
+		assertEquals(expectedDateUpdated, idb.getDateUpdated());
+		
+		verify(loader).loadFOXML(any(DocumentIndexingPackage.class));
 	}
 }
