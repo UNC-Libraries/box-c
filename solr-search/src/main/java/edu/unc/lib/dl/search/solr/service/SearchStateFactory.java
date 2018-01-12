@@ -67,7 +67,7 @@ public class SearchStateFactory {
         searchState.setResourceTypes(searchSettings.defaultResourceTypes);
         searchState.setSearchTermOperator(searchSettings.defaultOperator);
         searchState.setRowsPerPage(searchSettings.defaultPerPage);
-        searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.searchFacetNames));
+        searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.searchFacetNames));
         searchState.setStartRow(0);
         searchState.setSortType("default");
         searchState.setSortNormalOrder(true);
@@ -85,8 +85,8 @@ public class SearchStateFactory {
         SearchState searchState = createSearchState();
 
         searchState.setRowsPerPage(searchSettings.defaultCollectionsPerPage);
-        searchState.setResourceTypes(new ArrayList<String>(searchSettings.defaultCollectionResourceTypes));
-        searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.collectionBrowseFacetNames));
+        searchState.setResourceTypes(new ArrayList<>(searchSettings.defaultCollectionResourceTypes));
+        searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.collectionBrowseFacetNames));
 
         CutoffFacet depthFacet = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
         depthFacet.setCutoff(2);
@@ -129,7 +129,7 @@ public class SearchStateFactory {
     public SearchState createIDSearchState() {
         SearchState searchState = new SearchState();
 
-        List<String> resultFields = new ArrayList<String>();
+        List<String> resultFields = new ArrayList<>();
         resultFields.add(SearchFieldKeys.ID.name());
         searchState.setResultFields(resultFields);
 
@@ -156,11 +156,13 @@ public class SearchStateFactory {
      */
     public SearchState createHierarchyListSearchState() {
         SearchState searchState = createIDSearchState();
-        searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
 
-        List<String> containerTypes = new ArrayList<String>();
+        List<String> containerTypes = new ArrayList<>();
         containerTypes.add(searchSettings.resourceTypeCollection);
         containerTypes.add(searchSettings.resourceTypeFolder);
+        containerTypes.add(searchSettings.resourceTypeContentRoot);
+        containerTypes.add(searchSettings.resourceTypeUnit);
         searchState.setResourceTypes(containerTypes);
 
         searchState.setSortType("title");
@@ -171,7 +173,7 @@ public class SearchStateFactory {
 
     public SearchState createStructureBrowseSearchState() {
         SearchState searchState = new SearchState();
-        searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
         searchState.setResourceTypes(searchSettings.defaultResourceTypes);
         searchState.setSearchTermOperator(searchSettings.defaultOperator);
         searchState.setRowsPerPage(0);
@@ -196,7 +198,7 @@ public class SearchStateFactory {
      */
     public SearchState createHierarchicalBrowseSearchState() {
         SearchState searchState = new SearchState();
-        searchState.setResultFields(new ArrayList<String>(searchSettings.resultFields.get("structure")));
+        searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
         searchState.setBaseFacetLimit(searchSettings.facetsPerGroup);
         searchState.setResourceTypes(searchSettings.defaultResourceTypes);
         searchState.setSearchTermOperator(searchSettings.defaultOperator);
@@ -206,7 +208,7 @@ public class SearchStateFactory {
         searchState.setSortType("collection");
         searchState.setSortNormalOrder(true);
 
-        searchState.setFacetsToRetrieve(new ArrayList<String>(searchSettings.facetNamesStructureBrowse));
+        searchState.setFacetsToRetrieve(new ArrayList<>(searchSettings.facetNamesStructureBrowse));
 
         return searchState;
     }
@@ -240,12 +242,12 @@ public class SearchStateFactory {
         searchState.setRowsPerPage(0);
         searchState.setStartRow(0);
 
-        ArrayList<String> facetList = new ArrayList<String>();
+        ArrayList<String> facetList = new ArrayList<>();
         facetList.add(facetField);
         searchState.setFacetsToRetrieve(facetList);
 
         if (facetSort != null) {
-            HashMap<String,String> facetSorts = new HashMap<String,String>();
+            HashMap<String,String> facetSorts = new HashMap<>();
             facetSorts.put(facetField, facetSort);
             searchState.setFacetSorts(facetSorts);
         }
@@ -349,7 +351,7 @@ public class SearchStateFactory {
 
         //Determine resource types selected
         parameter = getParameter(request, searchSettings.searchStateParam("RESOURCE_TYPES"));
-        ArrayList<String> resourceTypes = new ArrayList<String>();
+        ArrayList<String> resourceTypes = new ArrayList<>();
         if (parameter == null) {
             //If resource types aren't specified, load the defaults.
             resourceTypes.addAll(searchSettings.defaultResourceTypes);
@@ -408,7 +410,7 @@ public class SearchStateFactory {
 
         //facetsToRetrieve
         parameter = getParameter(request, searchSettings.searchStateParam("FACET_FIELDS_TO_RETRIEVE"));
-        ArrayList<String> facetsToRetrieve = new ArrayList<String>();
+        ArrayList<String> facetsToRetrieve = new ArrayList<>();
         if (parameter != null) {
             String facetArray[] = parameter.split(",");
             for (String facet: facetArray) {

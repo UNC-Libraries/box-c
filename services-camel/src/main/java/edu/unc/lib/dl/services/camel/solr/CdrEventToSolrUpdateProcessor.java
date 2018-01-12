@@ -93,8 +93,10 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
             messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
                     IndexingActionType.ADD_SET_TO_PARENT);
         } else if (PUBLISH.equals(solrActionType)) {
-            messageSender.sendIndexingOperation(userid, PIDs.get(targetId), childPids,
-                    IndexingActionType.UPDATE_STATUS);
+            for (PID childPid : childPids) {
+                messageSender.sendIndexingOperation(userid, childPid,
+                        IndexingActionType.UPDATE_STATUS);
+            }
         } else {
             log.warn("Invalid solr update action {}, ignoring event for object {}", solrActionType, targetId);
             return;

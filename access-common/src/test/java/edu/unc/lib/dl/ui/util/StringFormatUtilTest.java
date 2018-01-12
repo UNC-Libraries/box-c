@@ -15,56 +15,83 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import java.io.IOException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
-import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import junit.framework.Assert;
+/**
+ *
+ * @author bbpennel
+ *
+ */
+public class StringFormatUtilTest {
+    private final static String BASE_URL = "http://example.com/path";
 
-public class StringFormatUtilTest extends Assert {
-    @SuppressWarnings("unused")
-    private static final Logger LOG = LoggerFactory.getLogger(StringFormatUtilTest.class);
-    
     @Test
-    public void truncateText() throws IOException{
-        String abstractText = IOUtils.toString(this.getClass().getResourceAsStream("multilineAbstract.txt"), "UTF-8");
-        
-        String truncated = StringFormatUtil.truncateText(abstractText, 100);
-        assertEquals(truncated.length(), 99);
-        
-        abstractText = "t" + abstractText;
-        truncated = StringFormatUtil.truncateText(abstractText, 100);
-        assertEquals(truncated.length(), 100);
-        
-        try {
-            truncated = StringFormatUtil.truncateText(abstractText, -1);
-            fail();
-        } catch (IndexOutOfBoundsException e){
-        }
-        
-        truncated = StringFormatUtil.truncateText(abstractText, abstractText.length() + 10);
-        assertEquals(truncated.length(), abstractText.length());
-        
-        truncated = StringFormatUtil.truncateText(null, 100);
-        assertNull(truncated);
+    public void testTruncateText() {
+        String text = StringUtils.repeat('1', 100);
+        assertEquals(50, StringFormatUtil.truncateText(text, 50).length());
     }
-    
+
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void testTruncateTextNegativeIndex() {
+        String text = StringUtils.repeat('1', 5);
+        StringFormatUtil.truncateText(text, -1);
+    }
+
     @Test
-    public void regexTest() {
-        Pattern oldFacetPath = Pattern.compile("(setFacet:)?path[,:]\"?\\d+,(uuid:[a-f0-9\\-]+)(!\\d+)?");
-        String facet = "setFacet:path,\"2,uuid:9ef8d1c5-14a1-4ed3-b0c0-6da67fa5f6d9!3\"|resetNav:search";
-        if (facet != null) {
-            Matcher matches = oldFacetPath.matcher(facet);
-            if (matches.find()) {
-                String pid = matches.group(2);
-                boolean isList = matches.group(3) != null;
-            }
-        }
+    public void testTruncateTextGreaterThanLength() {
+        String text = StringUtils.repeat('1', 5);
+        assertEquals(5, StringFormatUtil.truncateText(text, 10).length());
+    }
+
+    @Test
+    public void testTruncateTextNull() {
+        assertNull(StringFormatUtil.truncateText(null, 10));
+    }
+
+    @Test
+    public void testTruncateTextWordBoundry() {
+        String text = StringUtils.repeat("word ", 10);
+        assertEquals(39, StringFormatUtil.truncateText(text, 42).length());
+    }
+
+    @Test
+    public void testTruncateTextWordBoundryOutOfRange() {
+        String text = StringUtils.repeat("reallyreallylongword ", 5);
+        assertEquals(80, StringFormatUtil.truncateText(text, 80).length());
+    }
+
+    @Test
+    public void testTruncateTextCutOffBeforeWordLongerThanAllowance() {
+        String text = StringUtils.repeat("reallyreallylongword ", 5);
+        assertEquals(62, StringFormatUtil.truncateText(text, 68).length());
+    }
+
+    @Test
+    public void testRemoveOnlyQueryParameter() {
+        String query = BASE_URL + "?param=val";
+        assertEquals(BASE_URL, StringFormatUtil.removeQueryParameter(query, "param"));
+    }
+
+    @Test
+    public void testRemoveSecondQueryParameter() {
+        String query = BASE_URL + "?first=val&second=2";
+        assertEquals(BASE_URL + "?first=val", StringFormatUtil.removeQueryParameter(query, "second"));
+    }
+
+    @Test
+    public void testRemoveFirstQueryParameter() {
+        String query = BASE_URL + "?first=val&second=2";
+        assertEquals(BASE_URL + "?second=2", StringFormatUtil.removeQueryParameter(query, "first"));
+    }
+
+    @Test
+    public void testRemoveQueryParameterNotPresent() {
+        String query = BASE_URL + "?first=val&second=2";
+        assertEquals(query, StringFormatUtil.removeQueryParameter(query, "other"));
     }
 
     @Test
@@ -75,5 +102,21 @@ public class StringFormatUtilTest extends Assert {
         assertEquals("lorem__ipsum_", StringFormatUtil.makeToken("lorem? ipsum?", "_"));
         assertEquals("lorem___ipsum", StringFormatUtil.makeToken("lorem;  ipsum", "_"));
     }
-    
+
+    @Test
+    public void testFormatFilesizeBytes() {
+        assertEquals("6 B", StringFormatUtil.formatFilesize("6", 0));
+    }
+
+    @Test
+    public void testFormatFilesizeGB() {
+        long size = 562l * 1024l * 1024l * 1024l;
+        assertEquals("562 GB", StringFormatUtil.formatFilesize(size, 1));
+    }
+
+    @Test
+    public void testFormatFilesizeGBWithDecimal() {
+        long size = (562l * 1024l * 1024l * 1024l) / 100;
+        assertEquals("5.6 GB", StringFormatUtil.formatFilesize(size, 1));
+    }
 }

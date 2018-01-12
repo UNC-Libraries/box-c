@@ -25,12 +25,14 @@ import org.apache.abdera.model.Feed;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.swordapp.server.AuthCredentials;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 import edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl;
 
+@Ignore
 public class CollectionListManagerTest extends Assert {
     private static Logger log = Logger.getLogger(CollectionListManagerTest.class);
 

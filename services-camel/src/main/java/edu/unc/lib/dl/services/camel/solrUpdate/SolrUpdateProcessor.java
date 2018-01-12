@@ -16,10 +16,11 @@
 package edu.unc.lib.dl.services.camel.solrUpdate;
 
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -57,23 +58,25 @@ public class SolrUpdateProcessor implements Processor {
 
         String pid = body.getChild("pid", ATOM_NS).getTextTrim();
         String action = body.getChild("solrActionType", ATOM_NS).getTextTrim();
-
-        String getChildren = body.getChildTextTrim("children", ATOM_NS);
+        IndexingActionType actionType = IndexingActionType.getAction(action);
 
         List<String> children = null;
-        if (getChildren != null) {
-            children = Arrays.asList(getChildren.split(","));
+        Element childrenEl = body.getChild("children", CDR_MESSAGE_NS);
+        if (childrenEl != null) {
+            children = childrenEl.getChildren("pid", CDR_MESSAGE_NS).stream()
+                    .map(c -> c.getTextTrim())
+                    .collect(Collectors.toList());
         }
 
         try {
             SolrUpdateRequest updateRequest;
             if (children == null) {
-                updateRequest = new SolrUpdateRequest(pid, IndexingActionType.getAction(action));
+                updateRequest = new SolrUpdateRequest(pid, actionType);
             } else {
-                updateRequest = new ChildSetRequest(pid, children, IndexingActionType.getAction(action));
+                updateRequest = new ChildSetRequest(pid, children, actionType);
             }
 
-            IndexingAction indexingAction = this.solrIndexingActionMap.get(action);
+            IndexingAction indexingAction = this.solrIndexingActionMap.get(actionType);
             if (indexingAction != null) {
                 log.info("Performing action {} on object {}",
                         action, pid);

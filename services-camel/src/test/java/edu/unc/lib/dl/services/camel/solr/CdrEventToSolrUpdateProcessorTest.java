@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.solrUpdate;
+package edu.unc.lib.dl.services.camel.solr;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
@@ -26,6 +26,7 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -48,7 +49,6 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.IndexingMessageSender;
-import edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor;
 import edu.unc.lib.dl.util.IndexingActionType;
 import edu.unc.lib.dl.util.JMSMessageUtil.CDRActions;
 
@@ -171,14 +171,14 @@ public class CdrEventToSolrUpdateProcessorTest {
 
         processor.process(exchange);
 
-        verify(messageSender).sendIndexingOperation(stringCaptor.capture(), pidCaptor.capture(),
-                pidsCaptor.capture(), actionTypeCaptor.capture());
+        verify(messageSender, times(NUM_TEST_PIDS)).sendIndexingOperation(stringCaptor.capture(),
+                pidCaptor.capture(), actionTypeCaptor.capture());
 
-        verifyTargetPid(pidCaptor.getValue());
+        List<PID> targetPids = pidCaptor.getAllValues();
+        assertTrue("Publish message should be sent for each subject pid",
+                targetPids.containsAll(subjects));
 
         verifyUserid(stringCaptor.getValue());
-
-        verifyChildPids(subjects);
 
         verifyActionType(IndexingActionType.UPDATE_STATUS, actionTypeCaptor.getValue());
     }
@@ -230,9 +230,7 @@ public class CdrEventToSolrUpdateProcessorTest {
     private void verifyChildPids(List<PID> subjects) {
         Collection<PID> pids = pidsCaptor.getValue();
         assertEquals(NUM_TEST_PIDS, pids.size());
-        assertTrue(pids.contains(subjects.get(0)));
-        assertTrue(pids.contains(subjects.get(1)));
-        assertTrue(pids.contains(subjects.get(2)));
+        assertTrue(pids.containsAll(subjects));
     }
 
     private void verifyUserid(String userid) {
