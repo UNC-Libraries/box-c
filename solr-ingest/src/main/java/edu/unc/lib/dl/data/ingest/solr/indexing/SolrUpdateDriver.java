@@ -29,12 +29,10 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
@@ -50,13 +48,8 @@ public class SolrUpdateDriver {
 	private SolrServer updateSolrServer;
 	private SolrSettings solrSettings;
 
-	@Autowired
-	private SolrSearchService searchService;
-
 	private int autoPushCount;
 	private int updateThreads;
-
-	private static String ID_FIELD = "id";
 
 	private static String UPDATE_TIMESTAMP = "timestamp";
 
@@ -67,6 +60,14 @@ public class SolrUpdateDriver {
 	}
 
 	public void addDocument(IndexDocumentBean idb) throws IndexingException {
+		Map<String, Object> fields = idb.getFields();
+
+        for (String field : solrSettings.getRequiredFields()) {
+            if (!fields.containsKey(field)) {
+                throw new IndexingException("Required indexing field {" + field + "} was not present");
+            }
+        }
+		
 		try {
 			solrServer.addBean(idb);
 		} catch (IOException e) {
@@ -87,16 +88,8 @@ public class SolrUpdateDriver {
 	public void updateDocument(String operation, IndexDocumentBean idb) throws IndexingException {
         Map<String, Object> fields = idb.getFields();
 
-        for (String field : solrSettings.getRequiredFields()) {
-            if (!fields.containsKey(field)) {
-                throw new IndexingException("Required indexing field {" + field + "} was not present");
-            }
-        }
-
 		try {
 			SolrInputDocument sid = new SolrInputDocument();
-
-
 
 			for (Entry<String, Object> field : fields.entrySet()) {
 				String fieldName = field.getKey();
