@@ -62,12 +62,11 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 			}
 			
 			if (backoffAttempts == 5) {
-				LOG.error("Unable to start the services worker daemon. Could not connect to Fedora");
+				LOG.error("Services worker daemon not started. Could not connect to Fedora");
 			}
 			
 			backoffAttempts++;
 		}
-		
 	}
 
 	@Override
