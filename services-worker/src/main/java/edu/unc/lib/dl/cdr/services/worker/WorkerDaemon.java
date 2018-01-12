@@ -31,20 +31,43 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 
 	@Override
 	public void start() throws Exception {
+		long backoffDelay = 10000;
+		int backoffAttempts = 1;
+		int maxBackoffAttempts = 5;
+		
 		LOG.info("Starting the services worker daemon");
 
-		if (appContext == null) {
-			appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
-			appContext.registerShutdownHook();
-		} else {
-			appContext.refresh();
+		while (backoffAttempts <= maxBackoffAttempts) {
+			if (managementClient.isRepositoryAvailable()) {
+				if (appContext == null) {
+					appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
+					appContext.registerShutdownHook();
+				} else {
+					appContext.refresh();
+				}
+		
+				Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
+				for (WorkerPool workerPool : workerPools.values()) {
+					workerPool.getWorkerEventEmitter().addListener(this);
+					workerPool.run();
+				}
+				
+				break;
+			}
+			
+			try {
+				Thread.sleep(backoffDelay * backoffAttempts);
+			} catch (InterruptedException e) {
+				return;
+			}
+			
+			if (backoffAttempts == 5) {
+				LOG.error("Unable to start the services worker daemon. Could not connect to Fedora");
+			}
+			
+			backoffAttempts++;
 		}
 		
-		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
-		for (WorkerPool workerPool : workerPools.values()) {
-			workerPool.getWorkerEventEmitter().addListener(this);
-			workerPool.run();
-		}
 	}
 
 	@Override
