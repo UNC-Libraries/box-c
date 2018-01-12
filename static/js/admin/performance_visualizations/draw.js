@@ -86,7 +86,6 @@ CdrGraphs.prototype.draw = function() {
         d.avg_filesize = _that.fileAvg(d);
     });
 
-
     /**
      *  Scatter plot & Strip plot - megabytes by date
      *
@@ -114,9 +113,14 @@ CdrGraphs.prototype.draw = function() {
     
     this.statsDisplay("#throughput-stats", throughput_all, throughput);
     var throughput_date = this.showAxises("#throughput-date", xAxis, yAxis, width, "Throughput (MB)");
-    
+
+    // Calculate regression and data for trendline
+    var trendline_data = this.trendLineData(throughput_all, xScale.domain(), throughput);
     var throughputLineScaleTotals = this.lineGenerator(xScale, yScale, throughput);
+    var throughputLineScaleTotalsTrend = this.lineGenerator(xScale, yScale, "throughput_bytes_trend");
+
     this.appendPath(throughput_date, "throughput-date-line", throughputLineScaleTotals, throughput_all);
+    this.appendPath(throughput_date, "throughput-date-trend-line", throughputLineScaleTotalsTrend, trendline_data);
     focusHover(throughput_date, throughput_all, "#throughput-date");
 
     // Add Brush to Throughput by Date

@@ -73,6 +73,10 @@ circle,
     pointer-events: all;
 }
 
+#throughput-date-trend-line {
+    pointer-events: none;
+}
+
 #files-by-day circle,
 #files-by-ingest circle,
 #files-by-day-line {
