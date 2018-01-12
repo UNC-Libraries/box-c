@@ -16,10 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.dl.fedora.ManagementClient;
+
 public class WorkerDaemon implements Daemon, WorkerListener {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(WorkerDaemon.class);
 	private AbstractApplicationContext appContext;
+	private ManagementClient managementClient;
 	
 	public WorkerDaemon() {
 	}
