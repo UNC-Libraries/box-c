@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.data.ingest.solr.action;
 
 import java.io.File;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
@@ -30,9 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
+import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class BaseEmbeddedSolrTest extends Assert {
     private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
+
+    protected SolrSettings solrSettings;
 
     protected EmbeddedSolrServer server;
 
@@ -53,9 +57,15 @@ public class BaseEmbeddedSolrTest extends Assert {
 
         server = new EmbeddedSolrServer(container, "access");
 
+        Properties solrProps = new Properties();
+        solrProps.load(this.getClass().getResourceAsStream("/solr.properties"));
+        solrSettings = new SolrSettings();
+        solrSettings.setProperties(solrProps);
+
         driver = new SolrUpdateDriver();
         driver.setSolrClient(server);
         driver.setUpdateSolrClient(server);
+        driver.setSolrSettings(solrSettings);
     }
 
     protected SolrDocumentList getDocumentList(String query, String fieldList) throws Exception {

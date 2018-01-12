@@ -18,8 +18,6 @@ package edu.unc.lib.dl.data.ingest.solr.action;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 import static edu.unc.lib.dl.util.IndexingActionType.RECURSIVE_ADD;
 
-import java.util.Properties;
-
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.junit.Before;
@@ -36,7 +34,6 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.test.TestHelpers;
 
 /**
@@ -49,18 +46,13 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 
     @Mock
     private SearchSettings searchSettings;
-    private SolrSettings solrSettings;
+
     private SolrSearchService solrSearchService;
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
 
     @Before
     public void setupInplace() throws Exception {
-        Properties solrProps = new Properties();
-        solrProps.load(this.getClass().getResourceAsStream("/solr.properties"));
-        solrSettings = new SolrSettings();
-        solrSettings.setProperties(solrProps);
-
         ((IndexTreeInplaceAction) action).setSolrSettings(solrSettings);
 
         solrSearchService = new SolrSearchService();

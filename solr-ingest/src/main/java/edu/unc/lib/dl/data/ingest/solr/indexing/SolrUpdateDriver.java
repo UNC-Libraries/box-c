@@ -70,6 +70,14 @@ public class SolrUpdateDriver {
     }
 
     public void addDocument(IndexDocumentBean idb) throws IndexingException {
+        Map<String, Object> fields = idb.getFields();
+
+        for (String field : solrSettings.getRequiredFields()) {
+            if (!fields.containsKey(field)) {
+                throw new IndexingException("Required indexing field {" + field + "} was not present");
+            }
+        }
+
         try {
             log.info("Queuing {} for full indexing", idb.getId());
             // Providing a version value, indicating that it doesn't matter if record exists
@@ -92,12 +100,6 @@ public class SolrUpdateDriver {
      */
     public void updateDocument(IndexDocumentBean idb) throws IndexingException {
         Map<String, Object> fields = idb.getFields();
-
-        for (String field : solrSettings.getRequiredFields()) {
-            if (!fields.containsKey(field)) {
-                throw new IndexingException("Required indexing field {" + field + "} was not present");
-            }
-        }
 
         try {
             log.info("Queuing {} for atomic updating", idb.getId());
