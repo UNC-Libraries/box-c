@@ -46,6 +46,7 @@ public class SolrSettings extends AbstractSettings {
     private HashMap<String, String> fieldNames;
     // Reverse of fieldName, for translating from the internal solr field name to the general field identification key
     private HashMap<String, String> fieldNameToKey;
+    private String[] requiredFields;
 
     public SolrSettings() {
         fieldNames = new HashMap<>();
@@ -61,6 +62,7 @@ public class SolrSettings extends AbstractSettings {
         LOG.debug("Setting properties.");
         this.setPath(properties.getProperty("solr.path", ""));
         this.setCore(properties.getProperty("solr.core", ""));
+        this.setRequiredFields(properties.getProperty("solr.requiredFields", ""));
         this.setSocketTimeout(Integer.parseInt(properties.getProperty("solr.socketTimeout", "1000")));
         this.setConnectionTimeout(Integer.parseInt(properties.getProperty("solr.connectionTimeout", "100")));
         this.setDefaultMaxConnectionsPerHost(Integer.parseInt(properties.getProperty(
@@ -167,6 +169,14 @@ public class SolrSettings extends AbstractSettings {
 
     public void setCore(String core) {
         this.core = core;
+    }
+
+    public String[] getRequiredFields() {
+        return requiredFields;
+    }
+
+    public void setRequiredFields(String requiredFields) {
+        this.requiredFields = requiredFields.split(",");
     }
 
     public int getSocketTimeout() {

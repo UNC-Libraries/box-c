@@ -91,10 +91,17 @@ public class SolrUpdateDriver {
      * @throws IndexingException
      */
     public void updateDocument(IndexDocumentBean idb) throws IndexingException {
+        Map<String, Object> fields = idb.getFields();
+
+        for (String field : solrSettings.getRequiredFields()) {
+            if (!fields.containsKey(field)) {
+                throw new IndexingException("Required indexing field {" + field + "} was not present");
+            }
+        }
+
         try {
             log.info("Queuing {} for atomic updating", idb.getId());
             SolrInputDocument sid = new SolrInputDocument();
-            Map<String, Object> fields = idb.getFields();
             for (Entry<String, Object> field : fields.entrySet()) {
                 String fieldName = field.getKey();
                 Object value = field.getValue();
@@ -200,5 +207,4 @@ public class SolrUpdateDriver {
     public void setSolrSettings(SolrSettings solrSettings) {
         this.solrSettings = solrSettings;
     }
-
 }
