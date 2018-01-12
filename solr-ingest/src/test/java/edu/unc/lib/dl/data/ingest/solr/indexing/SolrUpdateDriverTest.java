@@ -40,6 +40,8 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  */
 public class SolrUpdateDriverTest {
     @Mock
+    private SolrClient solrClient;
+    @Mock
     private SolrClient updateSolrClient;
     @Mock
     private IndexDocumentBean idb;
@@ -70,6 +72,7 @@ public class SolrUpdateDriverTest {
 
         driver = new SolrUpdateDriver();
         driver.setUpdateSolrClient(updateSolrClient);
+        driver.setSolrClient(solrClient);
         driver.setSolrSettings(solrSettings);
 
         when(solrSettings.getRequiredFields()).thenReturn(REQUIRED_INDEXING_FIELDS);
@@ -79,7 +82,7 @@ public class SolrUpdateDriverTest {
     public void testRequiredIndexingFieldsMissing() throws Exception {
         when(idb.getFields()).thenReturn(missingFields);
 
-        driver.updateDocument(idb);
+        driver.addDocument(idb);
     }
 
     @Test
@@ -90,7 +93,7 @@ public class SolrUpdateDriverTest {
 
         when(idb.getFields()).thenReturn(allFields);
 
-        driver.updateDocument(idb);
-        verify(updateSolrClient).add(any(SolrInputDocument.class));
+        driver.addDocument(idb);
+        verify(solrClient).addBean(any(IndexDocumentBean.class));
     }
 }
