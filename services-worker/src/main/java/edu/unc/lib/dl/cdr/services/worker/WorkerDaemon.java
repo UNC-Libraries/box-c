@@ -58,7 +58,7 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 				break;
 			}
 			
-			LOG.warn("Unable to connect to fedora. Retyring starting Worker Daemon " + service.getClass().getName())
+			LOG.warn("Unable to connect to fedora. Retrying starting Worker Daemon " + service.getClass().getName())
 				+ ". Retry attempt" + backoffAttempt);
 			
 			try {
