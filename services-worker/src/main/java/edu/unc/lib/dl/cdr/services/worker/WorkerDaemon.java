@@ -59,7 +59,7 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 				break;
 			} else {
 				LOG.warn("Unable to connect to fedora. Retrying starting Worker Daemon. "
-					+ "Retry attempt" + backoffAttempts);
+					+ "Retry attempt " + backoffAttempts);
 
 				try {
 					Thread.sleep(backoffDelay * backoffAttempts);
