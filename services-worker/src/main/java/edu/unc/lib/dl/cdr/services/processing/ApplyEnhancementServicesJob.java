@@ -51,6 +51,10 @@ public class ApplyEnhancementServicesJob implements Runnable {
 		this.metricsClient = operationMetricsClient;
 	}
 
+	public void setManagementClient(ManagementClient managementClient) {
+		this.managementClient = managementClient;
+	}
+
 	@Override
 	public void run() {
 		long backoffDelay = 10000;
