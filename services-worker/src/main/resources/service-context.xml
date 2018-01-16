@@ -185,6 +185,7 @@
 		<property name="services" ref="servicesList"/>
 		<property name="recoverableDelay" value="${conductor.services.recoverableDelay}"/>
 		<property name="metricsClient" ref="activityMetricsClient" />
+		<property name="fedoraManagementClient" ref="managementClient" />
 	</bean>
 	
 	<bean id="runEnhancementTreeJob" class="edu.unc.lib.dl.cdr.services.processing.RunEnhancementsTreeJob"

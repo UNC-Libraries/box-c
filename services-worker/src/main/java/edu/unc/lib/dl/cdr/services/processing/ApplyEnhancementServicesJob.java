@@ -24,7 +24,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 	private long recoverableDelay = 0;
 	private final EnhancementMessage message;
 	private ActivityMetricsClient metricsClient;
-	private ManagementClient managementClient;
+	private ManagementClient fedoraManagementClient;
 
 	public ApplyEnhancementServicesJob(String pidString, boolean force) {
 		this.message = new EnhancementMessage(pidString, servicesMessageNamespace,
@@ -51,8 +51,8 @@ public class ApplyEnhancementServicesJob implements Runnable {
 		this.metricsClient = operationMetricsClient;
 	}
 
-	public void setManagementClient(ManagementClient managementClient) {
-		this.managementClient = managementClient;
+	public void setFedoraManagementClient(ManagementClient fedoraManagementClient) {
+		this.fedoraManagementClient = fedoraManagementClient;
 	}
 
 	@Override
@@ -77,7 +77,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 			while (backoffAttempts <= maxBackoffAttempts) {
 				try {
-					if (managementClient.isRepositoryAvailable()) {
+					if (fedoraManagementClient.isRepositoryAvailable()) {
 						processEnhancement(service);
 						break;
 					} else {
