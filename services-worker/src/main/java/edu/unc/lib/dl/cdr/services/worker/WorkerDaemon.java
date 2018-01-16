@@ -41,37 +41,37 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 		LOG.info("Starting the services worker daemon");
 
 		while (backoffAttempts <= maxBackoffAttempts) {
-			if (managementClient.isRepositoryAvailable()) {
-				if (appContext == null) {
-					appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
-					appContext.registerShutdownHook();
-				} else {
-					appContext.refresh();
-				}
+			if (appContext == null) {
+    				appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
+    				appContext.registerShutdownHook();
+			} else {
+				appContext.refresh();
+			}
 
+			if (managementClient.isRepositoryAvailable()) {
 				Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
 				for (WorkerPool workerPool : workerPools.values()) {
 					workerPool.getWorkerEventEmitter().addListener(this);
 					workerPool.run();
 				}
-
+				
 				break;
+			} else {
+				LOG.warn("Unable to connect to fedora. Retrying starting Worker Daemon. "
+					+ "Retry attempt" + backoffAttempts);
+
+				try {
+					Thread.sleep(backoffDelay * backoffAttempts);
+				} catch (InterruptedException e) {
+					return;
+				}
+
+				if (backoffAttempts == 5) {
+					LOG.error("Services worker daemon not started. Could not connect to Fedora after " + backoffAttempts + " attempts");
+				}
+
+				backoffAttempts++;
 			}
-
-			LOG.warn("Unable to connect to fedora. Retrying starting Worker Daemon. "
-				+ "Retry attempt" + backoffAttempts);
-
-			try {
-				Thread.sleep(backoffDelay * backoffAttempts);
-			} catch (InterruptedException e) {
-				return;
-			}
-
-			if (backoffAttempts == 5) {
-				LOG.error("Services worker daemon not started. Could not connect to Fedora");
-			}
-
-			backoffAttempts++;
 		}
 	}
 
