@@ -5,6 +5,7 @@ import static edu.unc.lib.dl.util.JMSMessageUtil.servicesMessageNamespace;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.activemq.broker.BrokerStoppedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ws.client.WebServiceTransportException;
@@ -83,7 +84,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 					} else {
 						throw new WebServiceTransportException("Unable to connect to Fedora");
 					}
-				} catch (WebServiceTransportException e) {
+				} catch (WebServiceTransportException | BrokerStoppedException e) {
 					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
 						+ ". Retry attempt" + backoffAttempts);
 
