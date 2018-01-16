@@ -21,8 +21,6 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 	ExportMetadataXMLBatchAction.prototype.execute = function() {
 		var self = this;
 		
-		var exportContainerMode = this.context.exportContainerMode;
-		
 		this.targets = this.getTargets();
 		var title;
 		var defaultType;
@@ -58,7 +56,6 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 		
 		this.$form.submit(function(e){
 			var email = $("#xml_recipient_email", self.$form).val();
-			var includeChildren = $("#export_xml_include_children", self.$form).prop("checked");
 			
 			if (!email || !$.trim(email)) {
 				return false;
@@ -71,7 +68,7 @@ define('ExportMetadataXMLBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!.
 			}
 			
 			$.ajax({
-				url : includeChildren? "exportContainerXML" : "exportXML",
+				url : "exportXML",
 				type : "POST",
 				contentType: "application/json; charset=utf-8",
 				dataType: "json",
