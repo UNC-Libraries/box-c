@@ -80,6 +80,9 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						throw new WebServiceTransportException("Unable to connect to Fedora");
 					}
 				} catch (WebServiceTransportException e) {
+					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName())
+						+ ". Retry attempt" + backoffAttempt);
+					
 					try {
 						Thread.sleep(backoffDelay * backoffAttempts);
 					} catch (InterruptedException e1) {
