@@ -22,7 +22,6 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 
 	private static final Logger LOG = LoggerFactory.getLogger(WorkerDaemon.class);
 	private AbstractApplicationContext appContext;
-	private ManagementClient managementClient;
 
 	public WorkerDaemon() {
 	}
@@ -42,11 +41,13 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 
 		while (backoffAttempts <= maxBackoffAttempts) {
 			if (appContext == null) {
-    				appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
-    				appContext.registerShutdownHook();
+				appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
+				appContext.registerShutdownHook();
 			} else {
 				appContext.refresh();
 			}
+
+			ManagementClient managementClient = (ManagementClient) appContext.getBean("managementClient");
 
 			if (managementClient.isRepositoryAvailable()) {
 				Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
@@ -54,7 +55,7 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 					workerPool.getWorkerEventEmitter().addListener(this);
 					workerPool.run();
 				}
-				
+
 				break;
 			} else {
 				LOG.warn("Unable to connect to fedora. Retrying starting Worker Daemon. "
