@@ -149,7 +149,7 @@ public class XMLExportJob implements Runnable {
         return mdExportZip;
     }
 
-    public void sendEmail(File mdExportFile, String toEmail) {
+    private void sendEmail(File mdExportFile, String toEmail) {
         MimeMessage mimeMessage = mailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
