@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:c="http://www.springframework.org/schema/c"
+    xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+        http://www.springframework.org/schema/util 
+        http://www.springframework.org/schema/util/spring-util.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-4.3.xsd
+        http://camel.apache.org/schema/spring
+        http://camel.apache.org/schema/spring/camel-spring.xsd">
+    
+    <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
+        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+    </bean>
+    
+    <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+    </bean>
+        
+    <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="100" />
+        <property name="queryService" ref="sparqlQueryService" />
+    </bean>
+    
+    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
+            init-method="init">
+        <property name="cacheMaxSize" value="100" />
+        <property name="cacheTimeToLive" value="100" />
+        <property name="queryService" ref="sparqlQueryService" />
+    </bean>
+    
+    <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
+        <property name="aclFactory" ref="objectAclFactory" />
+    </bean>
+    
+    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
+        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+        <property name="pathFactory" ref="contentPathFactory" />
+    </bean>
+    
+    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+        <property name="objectAclFactory" ref="objectAclFactory" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+    </bean>
+    
+    <util:set id="accessGroups" set-class="edu.unc.lib.dl.acl.util.AccessGroupSet">
+        <value>${access.group.admin}</value>
+    </util:set>
+
+    <bean id="solrFullUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setAccessControlFilter" />
+                <ref bean="setAccessStatusFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+                <ref bean="setContentStatusFilter" />
+                <ref bean="setContentTypeFilter" />
+                <ref bean="setDatastreamFilter" />
+                <ref bean="setDescriptiveMetadataFilter" />
+                <ref bean="setFullTextFilter" />
+                <ref bean="setObjectTypeFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setRelationsFilter" />
+                <ref bean="setStatusTagsFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrAccessControlUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setAccessControlFilter" />
+                <ref bean="setRelationsFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrMoveUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setAccessControlFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrDescriptionUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamFilter" />
+                <ref bean="setDescriptiveMetadataFilter" />
+                <ref bean="setContentStatusFilter" />
+                <ref bean="setRelationsFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrDatastreamUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrFullTextUpdatePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamFilter" />
+                <ref bean="setFullTextFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrUpdateTypePipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setPathFilter" />
+                <ref bean="setCollectionSupplementalInformationFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrSetDWOPipeline"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline">
+        <property name="filters">
+            <list>
+                <ref bean="setRecordDatesFilter" />
+                <ref bean="setDatastreamFilter" />
+                <ref bean="setContentStatusFilter" />
+                <ref bean="setRelationsFilter" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrDataDir" class="java.io.File" init-method="mkdir">
+        <constructor-arg value="target/solr_data/" />
+    </bean>
+    
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="targetObject" value="#{@systemProperties}" />
+        <property name="targetMethod" value="setProperty" />
+        <property name="arguments">
+            <util:list>
+                <value>solr.data.dir</value>
+                <value>#{solrDataDir.getAbsolutePath()}</value>
+            </util:list>
+        </property>
+    </bean>
+    
+    <bean id="coreContainer" class="org.apache.solr.core.CoreContainer" init-method="load">
+        <constructor-arg value="src/test/resources/config" />
+    </bean>
+    
+    <bean id="embeddedSolrServer" class="org.apache.solr.client.solrj.embedded.EmbeddedSolrServer">
+        <constructor-arg ref="coreContainer" />
+        <constructor-arg value="access" />
+    </bean>
+
+    <bean id="solrUpdateDriver"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="autoPushCount" value="1000" />
+        <property name="updateThreads" value="2" />
+        <property name="solrClient" ref="embeddedSolrServer" />
+    </bean>
+    
+    <util:properties id="searchProperties" location="classpath:search.properties" />
+    <util:properties id="solrProperties" location="classpath:solr.properties">
+        <prop key="solr.path">${solr.protocol}://${solr.host}${solr.port}/${solr.context}
+        </prop>
+    </util:properties>
+    
+    <bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
+        <property name="properties" ref="searchProperties" />
+    </bean>
+
+    <bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
+        <property name="properties" ref="solrProperties" />
+    </bean>
+    
+    <bean id="searchStateUtil" class="edu.unc.lib.dl.search.solr.util.SearchStateUtil">
+        <property name="searchSettings" ref="searchSettings" />
+    </bean>
+    
+    <bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
+    
+    <bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
+
+    <bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="facetFieldFactory" ref="facetFieldFactory" />
+    </bean>
+    
+    <bean id="solrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="disablePermissionFiltering" value="true" />
+    </bean>
+    
+    <bean id="vocabManager" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.util.VocabularyHelperManager" />
+    </bean>
+    
+    <!-- Solr ingest filters -->
+    <bean id="setAccessControlFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
+        <property name="aclFactory" ref="inheritedAclFactory" />
+    </bean>
+    
+    <bean id="setAccessStatusFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessStatusFilter">
+        <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+        <property name="objectAclFactory" ref="objectAclFactory" />
+    </bean>
+    
+    <bean id="setCollectionSupplementalInformationFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetCollectionSupplementalInformationFilter">
+        <property name="collectionFilters" value="${services.indexing.collectionFilters}" />
+    </bean>
+    
+    <bean id="setContentStatusFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentStatusFilter">
+    </bean>
+    
+    <bean id="setContentTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetContentTypeFilter">
+    </bean>
+    
+    <bean id="setDatastreamFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+    </bean>
+    
+    <bean id="setDescriptiveMetadataFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetDescriptiveMetadataFilter">
+        <property name="vocabManager" ref="vocabManager" />
+    </bean>
+    
+    <bean id="setFullTextFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetFullTextFilter">
+    </bean>
+    
+    <bean id="setObjectTypeFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetObjectTypeFilter">
+    </bean>
+    
+    <bean id="setPathFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetPathFilter">
+       <property name="pathFactory" ref="contentPathFactory" />
+    </bean>
+    
+    <bean id="setRecordDatesFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetRecordDatesFilter">
+    </bean>
+    
+    <bean id="setRelationsFilter"
+        class="edu.unc.lib.dl.data.ingest.solr.filter.SetRelationsFilter">
+    </bean>
+    
+    <bean id="setStatusTagsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusTagsFilter">
+    </bean>
+
+    <bean id="dipDataLoader"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+    
+    <bean id="dipFactory"
+        class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory">
+        <property name="dataLoader" ref="dipDataLoader" />
+    </bean>
+</beans>
