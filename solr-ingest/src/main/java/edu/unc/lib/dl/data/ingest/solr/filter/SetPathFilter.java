@@ -17,6 +17,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,7 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fedora.ContentPathFactory;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  * Indexing filter which extracts and stores hierarchical path information for
@@ -59,6 +61,7 @@ public class SetPathFilter implements IndexDocumentFilter {
 
         List<String> ancestorPath = new ArrayList<>();
 
+        // Construct ancestorPath with all objects leading up to this object
         int i = 1;
         for (PID ancestorPid : pids) {
             ancestorPath.add(i + "," + ancestorPid.getId());
@@ -67,8 +70,14 @@ public class SetPathFilter implements IndexDocumentFilter {
 
         idb.setAncestorPath(ancestorPath);
 
-        // TODO
-        // idb.setAncestorIds(ancestorIds);
+        // Construct ancestorIds with all ancestors plus itself if it is a container
+        String ancestorIds = "/" + pids.stream()
+                .map(pid -> pid.getId())
+                .collect(Collectors.joining("/"));
+        if (!ResourceType.File.equals(idb.getResourceType())) {
+            ancestorIds += "/" + dip.getPid().getId();
+        }
+        idb.setAncestorIds(ancestorIds);
 
         if (pids.size() > COLLECTION_DEPTH) {
             idb.setParentCollection(pids.get(COLLECTION_DEPTH).getId());
