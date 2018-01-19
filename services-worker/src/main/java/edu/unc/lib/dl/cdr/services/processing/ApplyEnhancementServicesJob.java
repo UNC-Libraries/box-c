@@ -87,7 +87,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 					}
 				} catch (ServiceException | WebServiceIOException e) {
 					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
-						+ ". Retry attempt" + backoffAttempts);
+						+ ". Retry attempt " + backoffAttempts);
 
 					try {
 						Thread.sleep(backoffDelay * backoffAttempts);
