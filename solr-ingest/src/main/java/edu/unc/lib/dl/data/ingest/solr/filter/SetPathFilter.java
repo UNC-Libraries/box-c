@@ -55,7 +55,7 @@ public class SetPathFilter implements IndexDocumentFilter {
         IndexDocumentBean idb = dip.getDocument();
         List<PID> pids = pathFactory.getAncestorPids(dip.getPid());
 
-        if (pids.size() == 0) {
+        if (pids.size() == 0 && !ResourceType.ContentRoot.equals(idb.getResourceType())) {
             throw new IndexingException("Object " + dip.getPid() + " has no known ancestors");
         }
 

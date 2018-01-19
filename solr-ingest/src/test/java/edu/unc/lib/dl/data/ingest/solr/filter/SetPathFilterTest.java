@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
@@ -147,6 +148,18 @@ public class SetPathFilterTest {
         assertAncestorIds(pids, true);
 
         verify(idb).setRollup(eq(contentObject.getPid().getId()));
+    }
+
+    @Test
+    public void testContentRootPath() throws Exception {
+        when(pathFactory.getAncestorPids(pid)).thenReturn(emptyList());
+        when(idb.getResourceType()).thenReturn(ResourceType.ContentRoot.name());
+
+        filter.filter(dip);
+
+        verify(idb).setAncestorPath(listCaptor.capture());
+        List<String> ancestorPath = listCaptor.getValue();
+        assertEquals(0, ancestorPath.size());
     }
 
     @Test
