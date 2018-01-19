@@ -15,60 +15,38 @@
  */
 package edu.unc.lib.dl.services.camel.solr;
 
-import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageFactory;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPipeline;
-import edu.unc.lib.dl.data.ingest.solr.indexing.SolrUpdateDriver;
-import edu.unc.lib.dl.fcrepo4.AdminUnit;
-import edu.unc.lib.dl.fcrepo4.CollectionObject;
-import edu.unc.lib.dl.fcrepo4.ContentRootObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.ResourceType;
 
@@ -77,47 +55,13 @@ import edu.unc.lib.dl.util.ResourceType;
  * @author bbpennel
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({ "/solr-update-it-context.xml",
-        "/spring-test/cdr-client-container.xml", "/spring-test/test-fedora-container.xml" })
-public class SolrIngestProcessorIT {
+public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
     private static final Logger log = LoggerFactory.getLogger(SolrIngestProcessorIT.class);
-
-    @Autowired
-    protected String baseAddress;
-
-    private static File solrDataDir;
-    private static EmbeddedSolrServer server;
-    @Autowired
-    private SolrUpdateDriver driver;
-    @Autowired
-    private SolrSearchService solrSearchService;
-    @javax.annotation.Resource(name = "accessGroups")
-    private AccessGroupSet accessGroups;
 
     private SolrIngestProcessor processor;
 
     @Autowired
-    private Model queryModel;
-    @Autowired
-    private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
-    private RepositoryObjectFactory repositoryObjectFactory;
-    @Autowired
-    private DocumentIndexingPackageFactory dipFactory;
-    @Autowired
     private DocumentIndexingPipeline solrFullUpdatePipeline;
-    @Autowired
-    private RepositoryPIDMinter pidMinter;
-
-    private ContentRootObject rootObj;
-    private AdminUnit unitObj;
-    private CollectionObject collObj;
-
-    @Mock
-    private Exchange exchange;
-    @Mock
-    private Message message;
 
     @Before
     public void setUp() throws Exception {
@@ -130,47 +74,6 @@ public class SolrIngestProcessorIT {
         when(exchange.getIn()).thenReturn(message);
 
         generateBaseStructure();
-    }
-
-    /*
-     * server field is static so that it can be shutdown after class, so has to
-     * be set via autowired method
-     */
-    @Autowired
-    public void setEmbeddedSolrServer(EmbeddedSolrServer server) {
-        SolrIngestProcessorIT.server = server;
-    }
-
-    @Autowired
-    public void setSolrDataDir(File dataDir) {
-        solrDataDir = dataDir;
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        server.close();
-        log.debug("Cleaning up data directory");
-        FileUtils.deleteDirectory(solrDataDir);
-    }
-
-    private void generateBaseStructure() throws Exception {
-        PID rootPid = pidMinter.mintContentPid();
-        repositoryObjectFactory.createContentRootObject(rootPid.getRepositoryUri(), null);
-        rootObj = repositoryObjectLoader.getContentRootObject(rootPid);
-
-        PID unitPid = pidMinter.mintContentPid();
-        Model unitModel = ModelFactory.createDefaultModel();
-        Resource unitResc = unitModel.getResource(unitPid.getRepositoryPath());
-        unitResc.addProperty(CdrAcl.unitOwner, "admin");
-        unitObj = repositoryObjectFactory.createAdminUnit(unitPid, unitModel);
-        rootObj.addMember(unitObj);
-
-        PID collPid = pidMinter.mintContentPid();
-        Model collModel = ModelFactory.createDefaultModel();
-        Resource collResc = collModel.getResource(collPid.getRepositoryPath());
-        collResc.addProperty(CdrAcl.canAccess, "everyone");
-        collObj = repositoryObjectFactory.createCollectionObject(collPid, collModel);
-        unitObj.addMember(collObj);
     }
 
     @Test
@@ -210,7 +113,7 @@ public class SolrIngestProcessorIT {
 
         assertTrue("Content type was not set to text", workMd.getContentType().get(0).contains("text"));
 
-        assertTrue("Read groups did not contain assigned group", workMd.getReadGroup().contains("everyone"));
+        assertTrue("Read groups did not contain assigned group", workMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", workMd.getAdminGroup().contains("admin"));
 
         assertEquals("Primary object not set", fileObj.getPid().getId(),
@@ -243,7 +146,7 @@ public class SolrIngestProcessorIT {
 
         assertNull(collMd.getContentType());
 
-        assertTrue("Read groups did not contain assigned group", collMd.getReadGroup().contains("everyone"));
+        assertTrue("Read groups did not contain assigned group", collMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", collMd.getAdminGroup().contains("admin"));
     }
 
@@ -285,19 +188,8 @@ public class SolrIngestProcessorIT {
 
         assertTrue("Content type was not set to text", fileMd.getContentType().get(0).contains("text"));
 
-        assertFalse("Read group should not be assigned", fileMd.getReadGroup().contains("everyone"));
+        assertFalse("Read group should not be assigned", fileMd.getReadGroup().contains(AUTHENTICATED_PRINC));
         assertTrue("Admin groups did not contain assigned group", fileMd.getAdminGroup().contains("admin"));
-    }
-
-    private void setMessageTarget(RepositoryObject obj) {
-        when(message.getHeader(eq(FCREPO_URI)))
-                .thenReturn(obj.getPid().getRepositoryPath());
-    }
-
-    private void indexObjectsInTripleStore(RepositoryObject... objs) {
-        for (RepositoryObject obj : objs) {
-            queryModel.add(obj.getModel());
-        }
     }
 
     private void assertAncestorIds(BriefObjectMetadata md, RepositoryObject... ancestorObjs) {
