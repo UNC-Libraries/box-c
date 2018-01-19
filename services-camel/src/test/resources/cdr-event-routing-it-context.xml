@@ -83,10 +83,6 @@
         class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
     </bean>
 
-    <bean id="vocabManager" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.util.VocabularyHelperManager" />
-    </bean>
-
     <camel:camelContext id="cdrServiceCdrEvents">
         <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
     </camel:camelContext>

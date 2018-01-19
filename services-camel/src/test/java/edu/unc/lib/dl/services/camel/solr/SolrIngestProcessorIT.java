@@ -33,8 +33,6 @@ import org.apache.jena.rdf.model.Resource;
 import org.fusesource.hawtbuf.ByteArrayInputStream;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
@@ -56,7 +54,6 @@ import edu.unc.lib.dl.util.ResourceType;
  *
  */
 public class SolrIngestProcessorIT extends AbstractSolrProcessorIT {
-    private static final Logger log = LoggerFactory.getLogger(SolrIngestProcessorIT.class);
 
     private SolrIngestProcessor processor;
 

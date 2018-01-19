@@ -156,8 +156,14 @@
         </property>
     </bean>
     
-    <bean id="solrDataDir" class="java.io.File" init-method="mkdir">
-        <constructor-arg value="target/solr_data/" />
+    <bean id="solrDataPath" class="java.nio.file.Files" factory-method="createTempDirectory">
+        <constructor-arg type="java.lang.String" value="solr_data" />
+        <constructor-arg>
+            <list value-type="java.nio.file.attribute.FileAttribute"></list>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="solrDataDir" class="java.io.File" factory-bean="solrDataPath" factory-method="toFile">
     </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
@@ -175,7 +181,8 @@
         <constructor-arg value="src/test/resources/config" />
     </bean>
     
-    <bean id="embeddedSolrServer" class="org.apache.solr.client.solrj.embedded.EmbeddedSolrServer">
+    <bean id="embeddedSolrServer" class="org.apache.solr.client.solrj.embedded.EmbeddedSolrServer"
+            destroy-method="close">
         <constructor-arg ref="coreContainer" />
         <constructor-arg value="access" />
     </bean>

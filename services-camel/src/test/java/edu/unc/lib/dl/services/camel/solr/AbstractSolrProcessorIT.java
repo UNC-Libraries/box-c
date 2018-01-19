@@ -24,18 +24,15 @@ import java.io.File;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
-import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.solr.client.solrj.embedded.EmbeddedSolrServer;
-import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -58,16 +55,20 @@ import edu.unc.lib.dl.search.solr.service.SolrSearchService;
  *
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({ "/solr-update-it-context.xml",
-        "/spring-test/cdr-client-container.xml", "/spring-test/test-fedora-container.xml" })
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+    @ContextConfiguration("/solr-update-it-context.xml")
+})
 public abstract class AbstractSolrProcessorIT {
-    private static final Logger log = LoggerFactory.getLogger(AbstractSolrProcessorIT.class);
 
     @Autowired
     protected String baseAddress;
 
-    protected static File solrDataDir;
-    protected static EmbeddedSolrServer server;
+    @Autowired
+    protected File solrDataDir;
+    @Autowired
+    protected EmbeddedSolrServer server;
     @Autowired
     protected SolrUpdateDriver driver;
     @Autowired
@@ -94,27 +95,6 @@ public abstract class AbstractSolrProcessorIT {
     protected Exchange exchange;
     @Mock
     protected Message message;
-
-    /*
-     * server field is static so that it can be shutdown after class, so has to
-     * be set via autowired method
-     */
-    @Autowired
-    public void setEmbeddedSolrServer(EmbeddedSolrServer server) {
-        SolrIngestProcessorIT.server = server;
-    }
-
-    @Autowired
-    public void setSolrDataDir(File dataDir) {
-        solrDataDir = dataDir;
-    }
-
-    @AfterClass
-    public static void tearDown() throws Exception {
-        server.close();
-        log.debug("Cleaning up data directory");
-        FileUtils.deleteDirectory(solrDataDir);
-    }
 
     protected void generateBaseStructure() throws Exception {
         PID rootPid = pidMinter.mintContentPid();
