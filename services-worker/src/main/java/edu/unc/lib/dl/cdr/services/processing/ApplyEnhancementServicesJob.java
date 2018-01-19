@@ -78,7 +78,8 @@ public class ApplyEnhancementServicesJob implements Runnable {
 			while (backoffAttempts <= maxBackoffAttempts) {
 				try {
 					if (fedoraManagementClient.isRepositoryAvailable()) {
-						processEnhancement(service);
+						applyService(service);
+						metricsClient.incrFinishedEnhancement(service.getClass().getName());
 						break;
 					} else {
 						throw new WebServiceIOException("Unable to connect to Fedora");
@@ -95,24 +96,18 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 					if (backoffAttempts == maxBackoffAttempts) {
 						LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName());
+						metricsClient.incrFailedEnhancement(service.getClass().getName());
 					}
 
 					backoffAttempts++;
+				} catch (EnhancementException e) {
+					LOG.error("Error applying service " + service.getClass().getName() + " to object " + message.getTargetID(), e);
+					metricsClient.incrFailedEnhancement(service.getClass().getName());
+				} catch (Throwable t) {
+					metricsClient.incrFailedEnhancement(service.getClass().getName());
+					throw t;
 				}
 			}
-		}
-	}
-
-	private void processEnhancement(ObjectEnhancementService service) {
-		try {
-			applyService(service);
-			metricsClient.incrFinishedEnhancement(service.getClass().getName());
-		} catch (EnhancementException e) {
-			LOG.error("Error applying service " + service.getClass().getName() + " to object " + message.getTargetID(), e);
-			metricsClient.incrFailedEnhancement(service.getClass().getName());
-		} catch (Throwable t) {
-			metricsClient.incrFailedEnhancement(service.getClass().getName());
-			throw t;
 		}
 	}
 
