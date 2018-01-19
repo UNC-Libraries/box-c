@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -30,6 +31,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
@@ -43,6 +45,10 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
+import edu.unc.lib.dl.fcrepo4.BinaryObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 
 
@@ -59,6 +65,8 @@ public class XMLExportJob implements Runnable {
     private JavaMailSender mailSender;
     @Autowired
     private AccessControlService aclService;
+    @Autowired
+    private RepositoryObjectLoader loader;
 
     private final int BUFFER_SIZE = 2048;
     private final Charset utf8 = Charset.forName("UTF-8");
@@ -92,7 +100,12 @@ public class XMLExportJob implements Runnable {
 
                 XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
                 for (String pidString : request.getPids()) {
-                    PID pid = new PID(pidString);
+                    PID pid = PIDs.get(pidString);
+                    ContentObject obj = (ContentObject) loader.getRepositoryObject(pid);
+                    BinaryObject mods = obj.getMODS();
+                    if (mods == null) {
+                        continue;
+                    }
 
                     if (!aclService.hasAccess(pid, groups, Permission.bulkUpdateDescription)) {
                         log.debug("User {} does not have permission to export metadata for {}", user, pid);
@@ -100,22 +113,34 @@ public class XMLExportJob implements Runnable {
                     }
 
                     try {
-                        Document objectDoc = new Document();
+                        InputStream modsStream = mods.getBinaryStream();
+                        Document dsDoc = new SAXBuilder().build(modsStream);
                         Element objectEl = new Element("object");
                         objectEl.setAttribute("pid", pid.toString());
-                        objectDoc.addContent(objectEl);
+                        dsDoc.addContent(objectEl);
 
                         xmlOutput.output(objectEl, xfop);
 
+                        objectEl.addContent(separator);
+
+                        Element modsUpdateEl = new Element("update");
+                        modsUpdateEl.setAttribute("type", "MODS");
+                        modsUpdateEl.setAttribute("lastModified", obj.getLastModified().toString());
+                        modsUpdateEl.addContent(separator);
+                        modsUpdateEl.addContent(dsDoc.detachRootElement());
+                        modsUpdateEl.addContent(separator);
+                        objectEl.addContent(modsUpdateEl);
+                        objectEl.addContent(separator);
+
                         xfop.write(separatorBytes);
                         xfop.flush();
-                    } catch (Exception e) {
-                        log.error("Failed to export XML for object {}", pid, e);
-                    }
+                } catch (Exception e) {
+                    log.error("Failed to export XML for object {}", pid, e);
                 }
+            }
 
                 xfop.write("</bulkMetadata>".getBytes(utf8));
-            }
+        }
 
             sendEmail(zipit(mdExportFile), request.getEmail());
         } catch (Exception e) {
