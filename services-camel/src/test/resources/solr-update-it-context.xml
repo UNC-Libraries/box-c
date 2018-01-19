@@ -107,7 +107,6 @@
                 <ref bean="setDescriptiveMetadataFilter" />
                 <ref bean="setContentStatusFilter" />
                 <ref bean="setRelationsFilter" />
-                <ref bean="setPathFilter" />
                 <ref bean="setCollectionSupplementalInformationFilter" />
             </list>
         </property>
@@ -187,6 +186,7 @@
         <property name="autoPushCount" value="1000" />
         <property name="updateThreads" value="2" />
         <property name="solrClient" ref="embeddedSolrServer" />
+        <property name="updateSolrClient" ref="embeddedSolrServer" />
     </bean>
     
     <util:properties id="searchProperties" location="classpath:search.properties" />
@@ -285,6 +285,89 @@
     
     <bean id="setStatusTagsFilter" class="edu.unc.lib.dl.data.ingest.solr.filter.SetStatusTagsFilter">
     </bean>
+    
+    <!-- Ingest Actions -->
+    <bean id="updateObjectAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrFullUpdatePipeline" />
+    </bean>
+    
+    <bean id="updateDescriptionAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrDescriptionUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+    
+    <bean id="updateDatastreamsAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrDatastreamUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+    
+    <bean id="updateFullTextAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateObjectAction">
+        <property name="pipeline" ref="solrFullTextUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+    </bean>
+    
+    <bean id="updateTreeAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        <property name="pipeline" ref="solrFullUpdatePipeline" />
+        <property name="solrSearchService" ref="solrSearchService" />
+        <property name="accessGroups" ref="accessGroups" />
+        <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+    </bean>
+    
+    <bean id="indexTreeInplaceAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
+        <property name="pipeline" ref="solrFullUpdatePipeline" />
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="solrSearchService" ref="solrSearchService" />
+        <property name="accessGroups" ref="accessGroups" />
+        <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+    </bean>
+
+    <bean id="deleteObjectAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteObjectAction">
+    </bean>
+
+    <bean id="deleteSolrTreeAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.DeleteSolrTreeAction">
+        <property name="solrSearchService" ref="solrSearchService" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="accessGroups" ref="accessGroups" />
+    </bean>
+    
+    <bean id="updateAccessControlAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeAction">
+        <property name="pipeline" ref="solrAccessControlUpdatePipeline" />
+        <property name="addDocumentMode" value="false" />
+        <property name="updateDelay" value="${conductor.solr.beforeUpdateDelay}"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+    </bean>
+    
+    <bean id="addSetToParentAction"
+        class="edu.unc.lib.dl.data.ingest.solr.action.UpdateTreeSetAction">
+        <property name="pipeline" ref="solrFullUpdatePipeline" />
+        <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+    </bean>
+    
+    <util:map id="solrIndexingActionMap"
+        key-type="edu.unc.lib.dl.util.IndexingActionType"
+        value-type="edu.unc.lib.dl.data.ingest.solr.action.IndexingAction">
+        <entry key="ADD" value-ref="updateObjectAction" />
+        <entry key="UPDATE_DESCRIPTION" value-ref="updateDescriptionAction" />
+        <entry key="RECURSIVE_ADD" value-ref="updateTreeAction" />
+        <entry key="DELETE" value-ref="deleteObjectAction" />
+        <entry key="DELETE_SOLR_TREE" value-ref="deleteSolrTreeAction" />
+        <entry key="UPDATE_ACCESS" value-ref="updateAccessControlAction" />
+        <entry key="ADD_SET_TO_PARENT" value-ref="addSetToParentAction" />
+    </util:map>
 
     <bean id="dipDataLoader"
         class="edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackageDataLoader">
