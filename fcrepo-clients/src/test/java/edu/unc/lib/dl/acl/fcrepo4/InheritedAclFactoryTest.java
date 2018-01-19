@@ -414,6 +414,17 @@ public class InheritedAclFactoryTest {
         assertEquals(PatronAccess.authenticated, aclFactory.getPatronAccess(pid));
     }
 
+    @Test
+    public void testRootObjectGetPrincipals() throws Exception {
+        PID rootPid = PIDs.get(CONTENT_ROOT_ID);
+        // Root has no ancestors
+        ancestorPids.clear();
+
+        Map<String, Set<String>> princRoles = aclFactory.getPrincipalRoles(rootPid);
+
+        assertEquals(0, princRoles.size());
+    }
+
     private static void assertPrincipalHasRoles(String message, Map<String, Set<String>> princRoles,
             String principal, UserRole... expectedRoles) {
         try {
