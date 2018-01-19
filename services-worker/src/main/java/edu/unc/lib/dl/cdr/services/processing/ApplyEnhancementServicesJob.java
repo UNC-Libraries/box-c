@@ -13,6 +13,7 @@ import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.ManagementClient;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions;
 
@@ -84,7 +85,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 					} else {
 						throw new WebServiceIOException("Unable to connect to Fedora");
 					}
-				} catch (WebServiceIOException e) {
+				} catch (ServiceException | WebServiceIOException e) {
 					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
 						+ ". Retry attempt" + backoffAttempts);
 
