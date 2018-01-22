@@ -21,7 +21,6 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ApplyEnhancementServicesJob.class);
 	private static long BACKOFF_DELAY = 10000;
-	private static int MAX_BACKOFF_ATTEMPTS = 5;
 
 	private List<ObjectEnhancementService> services;
 	private long recoverableDelay = 0;
