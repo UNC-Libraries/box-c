@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ws.client.WebServiceIOException;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
@@ -82,9 +81,9 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						metricsClient.incrFinishedEnhancement(service.getClass().getName());
 						return;
 					} else {
-						throw new WebServiceIOException("Unable to connect to Fedora");
+						throw new ServiceException("Unable to connect to Fedora");
 					}
-				} catch (ServiceException | WebServiceIOException e) {
+				} catch (ServiceException e) {
 					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
 						+ ". Retry attempt " + backoffAttempts);
 
@@ -92,6 +91,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						Thread.sleep(BACKOFF_DELAY * backoffAttempts);
 					} catch (InterruptedException e1) {
 						LOG.warn("Back off time was interrupted for job " + service.getClass().getName());
+						return;
 					}
 
 					backoffAttempts++;
