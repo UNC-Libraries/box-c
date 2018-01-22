@@ -82,7 +82,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						metricsClient.incrFinishedEnhancement(service.getClass().getName());
 						return;
 					} else {
-						throw new ServiceException("Unable to connect to Fedora");
+						throw new ServiceException(new WebServiceIOException("Unable to connect to Fedora"));
 					}
 				} catch (ServiceException e) {
 					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
