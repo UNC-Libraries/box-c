@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation=
+            "http://www.springframework.org/schema/beans 
+             http://www.springframework.org/schema/beans/spring-beans.xsd
+             http://www.springframework.org/schema/util 
+             http://www.springframework.org/schema/util/spring-util-3.0.xsd
+             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <context:property-placeholder />
     
@@ -137,4 +142,71 @@
     <bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
+    
+    <util:properties id="searchProperties" location="classpath:search.properties" />
+    <util:properties id="solrProperties" location="classpath:solr.properties">
+        <prop key="solr.path">"http://localhost:8983/solr"
+        </prop>
+    </util:properties>
+    
+    <bean id="searchSettings" class="edu.unc.lib.dl.search.solr.util.SearchSettings">
+        <property name="properties" ref="searchProperties" />
+    </bean>
+
+    <bean id="solrSettings" class="edu.unc.lib.dl.search.solr.util.SolrSettings">
+        <property name="properties" ref="solrProperties" />
+    </bean>
+    
+    <bean id="facetFieldFactory" class="edu.unc.lib.dl.search.solr.model.FacetFieldFactory">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
+    
+    <bean id="facetFieldUtil" class="edu.unc.lib.dl.search.solr.util.FacetFieldUtil">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
+    
+    <bean id="searchStateFactory" class="edu.unc.lib.dl.search.solr.service.SearchStateFactory">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="facetFieldFactory" ref="facetFieldFactory" />
+    </bean>
+    
+    <bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
+        <property name="search" ref="queryLayer" />
+        <property name="cacheSize" value="1000" />
+        <property name="timeToLiveMilli" value="10000" />
+        <property name="solrSettings" ref="solrSettings" />
+    </bean>
+    
+    <bean name="aclPropertiesURI" class="java.lang.System"
+            factory-method="getProperty">
+        <constructor-arg index="0" value="acl.properties.uri" />
+    </bean>
+
+    <bean id="aclProperties"
+        class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <ref bean="aclPropertiesURI" />
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="false" />
+    </bean>
+    
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+        <constructor-arg ref="aclProperties" />
+    </bean>
+    
+    <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
+        init-method="initializeSolrServer">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="searchStateFactory" ref="searchStateFactory" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="pathFactory" ref="pathFactory" />
+        <property name="disablePermissionFiltering" value="false" />
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+    </bean>
+    
 </beans>

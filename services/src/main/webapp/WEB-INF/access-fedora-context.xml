@@ -58,7 +58,7 @@
 
     <bean name="aclPropertiesURI" class="java.lang.System"
             factory-method="getProperty">
-        <constructor-arg index="0" value="acl.properties.uri" />
+        <constructor-arg index="0" value="file:../../etc/acl-config.properties" />
     </bean>
 
     <bean id="aclProperties"
