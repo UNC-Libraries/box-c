@@ -85,21 +85,19 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						throw new ServiceException(new WebServiceIOException("Unable to connect to Fedora"));
 					}
 				} catch (ServiceException e) {
-					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
-						+ ". Retry attempt " + backoffAttempts);
-
 					if (e.getCause() instanceof WebServiceIOException) {
+						LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
+							+ ". Retry attempt " + backoffAttempts);
 						try {
 							Thread.sleep(BACKOFF_DELAY * backoffAttempts);
 						} catch (InterruptedException e1) {
 							LOG.warn("Back off time was interrupted for job " + service.getClass().getName());
 							return;
 						}
+						backoffAttempts++;
 					} else {
 						return;
 					}
-
-					backoffAttempts++;
 				} catch (EnhancementException e) {
 					LOG.error("Error applying service " + service.getClass().getName() + " to object " + message.getTargetID(), e);
 					metricsClient.incrFailedEnhancement(service.getClass().getName());
