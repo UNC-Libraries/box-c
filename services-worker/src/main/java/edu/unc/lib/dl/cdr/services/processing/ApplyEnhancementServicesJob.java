@@ -20,6 +20,8 @@ import edu.unc.lib.dl.util.JMSMessageUtil.ServicesActions;
 public class ApplyEnhancementServicesJob implements Runnable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ApplyEnhancementServicesJob.class);
+	private static long BACKOFF_DELAY = 10000;
+	private static int MAX_BACKOFF_ATTEMPTS = 5;
 
 	private List<ObjectEnhancementService> services;
 	private long recoverableDelay = 0;
@@ -58,9 +60,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 	@Override
 	public void run() {
-		long backoffDelay = 10000;
 		int backoffAttempts = 1;
-		int maxBackoffAttempts = 5;
 
 		for (ObjectEnhancementService service : services) {
 			if (message.getFilteredServices() != null
@@ -76,12 +76,12 @@ public class ApplyEnhancementServicesJob implements Runnable {
 				LOG.error("Error determining applicability for service " + service.getClass().getName() + " and object " + message.getTargetID(), e);
 			}
 
-			while (backoffAttempts <= maxBackoffAttempts) {
+			while (true) {
 				try {
 					if (fedoraManagementClient.isRepositoryAvailable()) {
 						applyService(service);
 						metricsClient.incrFinishedEnhancement(service.getClass().getName());
-						break;
+						return;
 					} else {
 						throw new WebServiceIOException("Unable to connect to Fedora");
 					}
@@ -90,14 +90,9 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						+ ". Retry attempt " + backoffAttempts);
 
 					try {
-						Thread.sleep(backoffDelay * backoffAttempts);
+						Thread.sleep(BACKOFF_DELAY * backoffAttempts);
 					} catch (InterruptedException e1) {
 						LOG.warn("Back off time was interrupted for job " + service.getClass().getName());
-					}
-
-					if (backoffAttempts == maxBackoffAttempts) {
-						LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName());
-						metricsClient.incrFailedEnhancement(service.getClass().getName());
 					}
 
 					backoffAttempts++;
