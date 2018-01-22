@@ -16,11 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import edu.unc.lib.dl.fedora.ManagementClient;
+
 public class WorkerDaemon implements Daemon, WorkerListener {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(WorkerDaemon.class);
 	private AbstractApplicationContext appContext;
-	
+
 	public WorkerDaemon() {
 	}
 
@@ -31,26 +33,53 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 
 	@Override
 	public void start() throws Exception {
+		long backoffDelay = 10000;
+		int backoffAttempts = 1;
+		int maxBackoffAttempts = 5;
+
 		LOG.info("Starting the services worker daemon");
 
-		if (appContext == null) {
-			appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
-			appContext.registerShutdownHook();
-		} else {
-			appContext.refresh();
-		}
-		
-		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
-		for (WorkerPool workerPool : workerPools.values()) {
-			workerPool.getWorkerEventEmitter().addListener(this);
-			workerPool.run();
+		while (backoffAttempts <= maxBackoffAttempts) {
+			if (appContext == null) {
+				appContext = new ClassPathXmlApplicationContext(new String[] { "service-context.xml" });
+				appContext.registerShutdownHook();
+			} else {
+				appContext.refresh();
+			}
+
+			ManagementClient managementClient = (ManagementClient) appContext.getBean("managementClient");
+
+			if (managementClient.isRepositoryAvailable()) {
+				Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
+				for (WorkerPool workerPool : workerPools.values()) {
+					workerPool.getWorkerEventEmitter().addListener(this);
+					workerPool.run();
+				}
+
+				break;
+			} else {
+				LOG.warn("Unable to connect to fedora. Retrying starting Worker Daemon. "
+					+ "Retry attempt " + backoffAttempts);
+
+				try {
+					Thread.sleep(backoffDelay * backoffAttempts);
+				} catch (InterruptedException e) {
+					return;
+				}
+
+				if (backoffAttempts == 5) {
+					LOG.error("Services worker daemon not started. Could not connect to Fedora after " + backoffAttempts + " attempts");
+				}
+
+				backoffAttempts++;
+			}
 		}
 	}
 
 	@Override
 	public void stop() throws Exception {
 		LOG.info("Stopping the services worker daemon");
-		
+
 		Map<String, WorkerPool> workerPools = appContext.getBeansOfType(WorkerPool.class);
 		for (WorkerPool workerPool : workerPools.values()) {
 			workerPool.end(true);
@@ -62,21 +91,21 @@ public class WorkerDaemon implements Daemon, WorkerListener {
 	public void destroy() {
 		LOG.info("Destroying the services worker daemon");
 	}
-	
+
 	private static final String onEventLogMessage = "onEvent event={}, worker={}, queue={}, job={}, runner={}, result={}, t={}";
-	
+
 	@Override
 	public void onEvent(WorkerEvent event, Worker worker, String queue, Job job, Object runner, Object result, Throwable t) {
 		if (event == null || event == WorkerEvent.WORKER_POLL) {
 			return;
 		}
-		
+
 		if (t != null) {
 			LOG.error("Throwable caused worker event " + event, t);
 		}
-		
+
 		Object[] params = new Object[] { event, worker, queue, job, runner, result, t };
-		
+
 		if (event == WorkerEvent.WORKER_ERROR || event == WorkerEvent.JOB_FAILURE) {
 			LOG.error(onEventLogMessage, params);
 		} else if (event == WorkerEvent.WORKER_START || event == WorkerEvent.WORKER_STOP) {
