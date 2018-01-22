@@ -66,7 +66,7 @@ public class XMLExportJob implements Runnable {
     @Autowired
     private AccessControlService aclService;
     @Autowired
-    private RepositoryObjectLoader loader;
+    private RepositoryObjectLoader repoObjLoader;
 
     private final int BUFFER_SIZE = 2048;
     private final Charset utf8 = Charset.forName("UTF-8");
@@ -101,7 +101,7 @@ public class XMLExportJob implements Runnable {
                 XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
                 for (String pidString : request.getPids()) {
                     PID pid = PIDs.get(pidString);
-                    ContentObject obj = (ContentObject) loader.getRepositoryObject(pid);
+                    ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
                     BinaryObject mods = obj.getMODS();
                     if (mods == null) {
                         continue;

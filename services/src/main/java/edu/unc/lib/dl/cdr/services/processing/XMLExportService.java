@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
@@ -41,9 +39,7 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
  *
  */
 public class XMLExportService {
-    @Autowired
     private SearchStateFactory searchStateFactory;
-    @Autowired
     private SolrQueryLayerService queryLayer;
 
     private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
@@ -91,6 +87,22 @@ public class XMLExportService {
         }
         // update the list of pids in the request with all of the child pids found
         request.setPids(pids);
+    }
+
+    public SearchStateFactory getSearchStateFactory() {
+        return searchStateFactory;
+    }
+
+    public void setSearchStateFactory(SearchStateFactory searchStateFactory) {
+        this.searchStateFactory = searchStateFactory;
+    }
+
+    public SolrQueryLayerService getQueryLayer() {
+        return queryLayer;
+    }
+
+    public void setQueryLayer(SolrQueryLayerService queryLayer) {
+        this.queryLayer = queryLayer;
     }
 
 }

@@ -54,7 +54,7 @@ public class ExportXMLController {
      * @throws IOException
      * @throws FedoraException
      */
-    @RequestMapping(value = "exportXML", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/exportXML", method = RequestMethod.POST)
     public @ResponseBody
     Object exportFolder(@RequestBody XMLExportRequest exportRequest) throws IOException, FedoraException {
 
