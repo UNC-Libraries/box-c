@@ -54,7 +54,7 @@ public class ExportXMLController {
      * @throws IOException
      * @throws FedoraException
      */
-    @RequestMapping(value = "edit/exportXML", method = RequestMethod.POST)
+    @RequestMapping(value = "/edit/exportXML", method = RequestMethod.POST)
     public @ResponseBody
     Object exportFolder(@RequestBody XMLExportRequest exportRequest) throws IOException, FedoraException {
 
@@ -86,6 +86,7 @@ public class ExportXMLController {
 
         public String getEmail() {
             return email;
+
         }
 
         public void setEmail(String email) {

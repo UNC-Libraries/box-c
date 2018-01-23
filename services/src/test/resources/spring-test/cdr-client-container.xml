@@ -179,23 +179,17 @@
         <property name="solrSettings" ref="solrSettings" />
     </bean>
     
-    <bean name="aclPropertiesURI" class="java.lang.System"
-            factory-method="getProperty">
-        <constructor-arg index="0" value="acl.properties.uri" />
-    </bean>
-
-    <bean id="aclProperties"
+    <bean id="aclGlobalProperties"
         class="org.springframework.beans.factory.config.PropertiesFactoryBean">
         <property name="locations">
             <list>
-                <ref bean="aclPropertiesURI" />
+                <value>classpath:acl-global-config.properties</value>
             </list>
         </property>
-        <property name="ignoreResourceNotFound" value="false" />
     </bean>
     
     <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
-        <constructor-arg ref="aclProperties" />
+        <constructor-arg ref="aclGlobalProperties" />
     </bean>
     
     <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"

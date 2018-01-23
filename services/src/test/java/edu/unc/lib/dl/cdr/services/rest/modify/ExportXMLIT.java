@@ -21,13 +21,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import javax.ws.rs.core.MediaType;
+
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
-
-import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 
 /**
  *
@@ -50,10 +49,13 @@ public class ExportXMLIT extends AbstractAPIIT {
         pids.add(pid1);
         pids.add(pid2);
 
-        XMLExportRequest exportRequest = new XMLExportRequest(pids, false, "user@example.com");
-        ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(exportRequest);
-        MvcResult result = mvc.perform(post("/edit/exportXML").param("exportRequest", json))
+//        XMLExportRequest exportRequest = new XMLExportRequest(pids, false, "user@example.com");
+//        ObjectMapper mapper = new ObjectMapper();
+//        String json = mapper.writeValueAsString(exportRequest);
+        String json = "{\"pids:[" + pid1 + ", " + pid2 + "], \"exportChildren\":false, \"email\":\"user@example.com\"}";
+        MvcResult result = mvc.perform(post("/edit/exportXML")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
     }
