@@ -101,14 +101,17 @@ public class XMLExportJob implements Runnable {
                 XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
                 for (String pidString : request.getPids()) {
                     PID pid = PIDs.get(pidString);
+                    if (!aclService.hasAccess(pid, groups, Permission.bulkUpdateDescription)) {
+                        log.debug("User {} does not have permission to export metadata for {}", user, pid);
+                        continue;
+                    }
                     ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
                     BinaryObject mods = obj.getMODS();
                     if (mods == null) {
-                        continue;
-                    }
-
-                    if (!aclService.hasAccess(pid, groups, Permission.bulkUpdateDescription)) {
-                        log.debug("User {} does not have permission to export metadata for {}", user, pid);
+                        Element objectEl = new Element("object");
+                        objectEl.setAttribute("pid", pid.toString());
+                        xmlOutput.output(objectEl, xfop);
+                        xfop.flush();
                         continue;
                     }
 
