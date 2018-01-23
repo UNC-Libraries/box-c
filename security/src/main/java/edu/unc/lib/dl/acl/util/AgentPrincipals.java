@@ -26,7 +26,6 @@ import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
 public class AgentPrincipals {
 
     private String username;
-    private AccessGroupSet groups;
     private AccessGroupSet principals;
 
     /**
@@ -35,10 +34,9 @@ public class AgentPrincipals {
      * @param username
      * @param groups
      */
-    public AgentPrincipals(String username, AccessGroupSet groups) {
+    public AgentPrincipals(String username, AccessGroupSet principals) {
         this.username = username;
-        this.groups = groups;
-        this.principals = new AccessGroupSet(groups);
+        this.principals = new AccessGroupSet(principals);
         if (username != null) {
             this.principals.add(getUsernameUri());
         }
@@ -67,13 +65,6 @@ public class AgentPrincipals {
      */
     public String getUsernameUri() {
         return USER_NAMESPACE + username;
-    }
-
-    /**
-     * @return the groups
-     */
-    public AccessGroupSet getGroups() {
-        return groups;
     }
 
     /**
