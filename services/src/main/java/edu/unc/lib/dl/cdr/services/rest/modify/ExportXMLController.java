@@ -16,17 +16,22 @@
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.processing.XMLExportService;
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -58,8 +63,28 @@ public class ExportXMLController {
     public @ResponseBody
     Object exportFolder(@RequestBody XMLExportRequest exportRequest) throws IOException, FedoraException {
 
-        return service.exportXml(GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups(),
-                new XMLExportRequest(exportRequest.getPids(), exportRequest.exportChildren(), exportRequest.getEmail()));
+        return exportXML(exportRequest);
+    }
+
+    private ResponseEntity<Object> exportXML(XMLExportRequest exportRequest) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "export xml");
+
+        try {
+            service.exportXml(GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups(),
+                    new XMLExportRequest(exportRequest.getPids(), exportRequest.exportChildren(), exportRequest.getEmail()));
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AccessRestrictionException) {
+                result.put("error", "User must have a username to export xml");
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to begin export of xml due to {}",  e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     public static class XMLExportRequest {

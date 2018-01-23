@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
@@ -51,7 +52,10 @@ public class XMLExportService {
      * @param request
      * @return
      */
-    public Map<String,String> exportXml(String username, AccessGroupSet group, XMLExportRequest request) {
+    public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request) {
+        if (username == null) {
+            throw new AccessRestrictionException("User must have a username to export xml");
+        }
         if (request.exportChildren()) {
             addChildPIDsToRequest(request);
         }

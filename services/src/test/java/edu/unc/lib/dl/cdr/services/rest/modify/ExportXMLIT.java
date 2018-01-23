@@ -15,18 +15,28 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
+import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
+
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 
 /**
  *
@@ -42,22 +52,47 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @Test
     public void testExportMODS() throws Exception {
+        String json = makeJSON();
+        MvcResult result = mvc.perform(post("/edit/exportXML")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
 
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("export xml", respMap.get("action"));
+    }
+
+    @Test
+    public void testAuthorizationFailure() throws Exception {
+        String json = makeJSON();
+        // reset username to null to simulate situation where no username exists
+        GroupsThreadStore.clearStore();
+        GroupsThreadStore.storeUsername(null);
+        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+        MvcResult result = mvc.perform(post("/edit/exportXML")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().isForbidden())
+                .andReturn();
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("export xml", respMap.get("action"));
+        assertEquals("User must have a username to export xml", respMap.get("error"));
+    }
+
+    private String makeJSON() throws JsonGenerationException, JsonMappingException, IOException {
         String pid1 = makePid().getRepositoryPath();
         String pid2 = makePid().getRepositoryPath();
         List<String> pids = new ArrayList<>();
         pids.add(pid1);
         pids.add(pid2);
 
-//        XMLExportRequest exportRequest = new XMLExportRequest(pids, false, "user@example.com");
-//        ObjectMapper mapper = new ObjectMapper();
-//        String json = mapper.writeValueAsString(exportRequest);
-        String json = "{\"pids:[" + pid1 + ", " + pid2 + "], \"exportChildren\":false, \"email\":\"user@example.com\"}";
-        MvcResult result = mvc.perform(post("/edit/exportXML")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
+        XMLExportRequest exportRequest = new XMLExportRequest(pids, false, "user@example.com");
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(exportRequest);
     }
 
 }
