@@ -80,7 +80,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 					if (fedoraManagementClient.isRepositoryAvailable()) {
 						applyService(service);
 						metricsClient.incrFinishedEnhancement(service.getClass().getName());
-						return;
+						break;
 					} else {
 						throw new ServiceException(new WebServiceIOException("Unable to connect to Fedora"));
 					}
@@ -96,7 +96,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 						}
 						backoffAttempts++;
 					} else {
-						return;
+						throw e;
 					}
 				} catch (EnhancementException e) {
 					LOG.error("Error applying service " + service.getClass().getName() + " to object " + message.getTargetID(), e);
