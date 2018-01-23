@@ -17,10 +17,8 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,11 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
-import edu.unc.lib.dl.acl.service.AccessControlRetrievalService;
 import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 
@@ -52,7 +48,6 @@ public class AccessControlRetrievalController {
 
     private AgentPrincipals agent;
     private AccessControlService aclService;
-    private InheritedAclFactory aclFactory;
 
     @RequestMapping(value = "/getPermssions", method = RequestMethod.GET, consumes = "application/JSON", produces = "application/json")
     public @ResponseBody Map<String, Object> getAclPermssions(HttpServletRequest request, HttpServletResponse response) {
@@ -61,28 +56,13 @@ public class AccessControlRetrievalController {
         aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
                 pid, agent.getPrincipals(), assignStaffRoles);
 
-        Map<String, Set<String>> principals = aclFactory.getPrincipalRoles(pid);
-        boolean markedForDeletion = aclFactory.isMarkedForDeletion(pid);
-        Date embargoed = aclFactory.getEmbargoUntil(pid);
-        PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
+        Map<String, Object> objectPermissions = aclRetreivaService.getPermissions(pid);
+        Map<String, Object> childPermissions = aclRetreivaService.getChildPermissions(pid);
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> combinedPermissions = new HashMap<>();
+        combinedPermissions.putAll(objectPermissions);
+        combinedPermissions.putAll(childPermissions);
 
-        result.put("principals", principals);
-        result.put("markForDeletion", markedForDeletion);
-        result.put("embargoed", embargoed);
-        result.put("patronAccess", patronAccess);
-
-        return result;
-    }
-
-    @RequestMapping(value = "/setPermssion", method = RequestMethod.PUT, consumes = "application/JSON", produces = "application/json")
-    public @ResponseBody String setAclPermssions(HttpServletRequest request, HttpServletResponse response) {
-        PID pid = PIDs.get(request.getParameter("pid"));
-
-        aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
-                pid, agent.getPrincipals(), assignStaffRoles);
-        return null;
-
+        return combinedPermissions;
     }
 }
