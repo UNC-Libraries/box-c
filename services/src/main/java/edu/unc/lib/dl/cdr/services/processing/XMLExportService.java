@@ -21,10 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.mail.javamail.JavaMailSender;
+
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -42,6 +46,9 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 public class XMLExportService {
     private SearchStateFactory searchStateFactory;
     private SolrQueryLayerService queryLayer;
+    private JavaMailSender mailSender;
+    private AccessControlService aclService;
+    private RepositoryObjectLoader repoObjLoader;
 
     private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
 
@@ -60,6 +67,9 @@ public class XMLExportService {
             addChildPIDsToRequest(request);
         }
         XMLExportJob job = new XMLExportJob(username, group, request);
+        job.setAclService(aclService);
+        job.setMailSender(mailSender);
+        job.setRepoObjLoader(repoObjLoader);
         Thread thread = new Thread(job);
         thread.start();
 
@@ -107,6 +117,30 @@ public class XMLExportService {
 
     public void setQueryLayer(SolrQueryLayerService queryLayer) {
         this.queryLayer = queryLayer;
+    }
+
+    public JavaMailSender getMailSender() {
+        return mailSender;
+    }
+
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    public AccessControlService getAclService() {
+        return aclService;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public RepositoryObjectLoader getRepoObjLoader() {
+        return repoObjLoader;
+    }
+
+    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
 }

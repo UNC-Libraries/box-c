@@ -79,7 +79,7 @@ public class ExportXMLController {
                 result.put("error", "User must have a username to export xml");
                 return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
             } else {
-                log.error("Failed to begin export of xml due to {}",  e);
+                log.error("Failed to begin export of xml due to ",  e);
                 return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }

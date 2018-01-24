@@ -36,7 +36,6 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
@@ -61,11 +60,8 @@ import edu.unc.lib.dl.fedora.PID;
 public class XMLExportJob implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(XMLExportJob.class);
 
-    @Autowired
     private JavaMailSender mailSender;
-    @Autowired
     private AccessControlService aclService;
-    @Autowired
     private RepositoryObjectLoader repoObjLoader;
 
     private final int BUFFER_SIZE = 2048;
@@ -153,6 +149,30 @@ public class XMLExportJob implements Runnable {
                     new Object[] {request.getPids().size(), System.currentTimeMillis() - startTime, user});
             GroupsThreadStore.clearStore();
         }
+    }
+
+    public JavaMailSender getMailSender() {
+        return mailSender;
+    }
+
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    public AccessControlService getAclService() {
+        return aclService;
+    }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public RepositoryObjectLoader getRepoObjLoader() {
+        return repoObjLoader;
+    }
+
+    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
     }
 
     private File zipit(File mdExportFile) throws IOException {
