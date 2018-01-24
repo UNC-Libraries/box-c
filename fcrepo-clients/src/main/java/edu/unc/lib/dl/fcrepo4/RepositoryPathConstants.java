@@ -60,6 +60,7 @@ public abstract class RepositoryPathConstants {
     // Special Fedora paths
 
     public static final String FCR_METADATA = "fcr:metadata";
+    public static final String FCR_TOMBSTONE = "fcr:tombstone";
 
     // Base path generation and decomposition values
 
