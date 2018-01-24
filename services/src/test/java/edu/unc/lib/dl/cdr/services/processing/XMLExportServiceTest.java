@@ -87,7 +87,7 @@ public class XMLExportServiceTest {
 
     @Test
     public void exportXMLTest() {
-        when(request.exportChildren()).thenReturn(false);
+        when(request.getExportChildren()).thenReturn(false);
         when(request.getPids()).thenReturn(pids);
 
         Map<String,String> response = service.exportXml(username, group, request);
@@ -101,7 +101,7 @@ public class XMLExportServiceTest {
         @SuppressWarnings("unchecked")
         List<BriefObjectMetadata> objects = mock(List.class);
 
-        when(request.exportChildren()).thenReturn(false);
+        when(request.getExportChildren()).thenReturn(false);
         when(searchStateFactory.createSearchState()).thenReturn(searchState);
         when(queryLayer.addSelectedContainer(anyString(), eq(searchState), any(Boolean.class))).thenReturn(bom);
         when(queryLayer.getSearchResults(any(SearchRequest.class))).thenReturn(resultResponse);

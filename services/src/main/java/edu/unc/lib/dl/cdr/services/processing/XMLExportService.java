@@ -56,7 +56,7 @@ public class XMLExportService {
         if (username == null) {
             throw new AccessRestrictionException("User must have a username to export xml");
         }
-        if (request.exportChildren()) {
+        if (request.getExportChildren()) {
             addChildPIDsToRequest(request);
         }
         XMLExportJob job = new XMLExportJob(username, group, request);

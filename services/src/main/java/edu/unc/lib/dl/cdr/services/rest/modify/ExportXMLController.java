@@ -71,8 +71,8 @@ public class ExportXMLController {
         result.put("action", "export xml");
 
         try {
-            service.exportXml(GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups(),
-                    new XMLExportRequest(exportRequest.getPids(), exportRequest.exportChildren(), exportRequest.getEmail()));
+            service.exportXml(GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups(), new XMLExportRequest(
+                    exportRequest.getPids(), exportRequest.getExportChildren(), exportRequest.getEmail()));
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AccessRestrictionException) {
@@ -118,7 +118,7 @@ public class ExportXMLController {
             this.email = email;
         }
 
-        public boolean exportChildren() {
+        public boolean getExportChildren() {
             return exportChildren;
         }
 
