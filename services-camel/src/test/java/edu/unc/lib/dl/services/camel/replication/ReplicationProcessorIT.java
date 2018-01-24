@@ -45,14 +45,12 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
-import edu.unc.lib.dl.services.camel.replication.ReplicationDestinationUnavailableException;
-import edu.unc.lib.dl.services.camel.replication.ReplicationException;
-import edu.unc.lib.dl.services.camel.replication.ReplicationProcessor;
 import edu.unc.lib.dl.test.TestHelper;
 import edu.unc.lib.dl.util.URIUtil;
 
@@ -60,7 +58,10 @@ import edu.unc.lib.dl.util.URIUtil;
  * @author harring
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration({"/spring-test/test-fedora-container.xml","/spring-test/cdr-client-container.xml"})
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml")
+})
 public class ReplicationProcessorIT extends CamelTestSupport {
     private static final String MIMETYPE = "text/plain";
 

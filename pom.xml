@@ -548,6 +548,11 @@
                 <scope>compile</scope>
             </dependency>
             <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.apache.jena</groupId>
                 <artifactId>jena-fuseki-embedded</artifactId>
                 <version>${jena.fuseki.version}</version>

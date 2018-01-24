@@ -1003,4 +1003,10 @@ public class SolrSearchService {
         this.disablePermissionFiltering = disablePermissionFiltering;
     }
 
+    /**
+     * @param solrClient the solrClient to set
+     */
+    public void setSolrClient(SolrClient solrClient) {
+        this.solrClient = solrClient;
+    }
 }

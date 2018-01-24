@@ -25,6 +25,7 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -50,9 +51,8 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
         }
 
         // Determine if the starting node is a container.
-        if (ancestorPathBean.getResourceType().equals(searchSettings.getResourceTypeCollection())
-                || ancestorPathBean.getResourceType().equals(searchSettings.getResourceTypeFolder())) {
-            // Deleting a folder or collection, so perform a full path delete.
+        if (isContainer(ancestorPathBean)) {
+            // Deleting a container, so perform a full path delete.
 
             // Delete the container itself
             solrUpdateDriver.deleteByQuery(
@@ -67,6 +67,15 @@ public class DeleteSolrTreeAction extends AbstractIndexingAction {
             // Targeting an individual file, just delete it.
             solrUpdateDriver.delete(updateRequest.getTargetID());
         }
+    }
+
+    private boolean isContainer(BriefObjectMetadata mdObj) {
+        String resourceType = mdObj.getResourceType();
+        return ResourceType.Collection.equals(resourceType)
+                || ResourceType.AdminUnit.equals(resourceType)
+                || ResourceType.Folder.equals(resourceType)
+                || ResourceType.Work.equals(resourceType)
+                || ResourceType.ContentRoot.equals(resourceType);
     }
 
 }

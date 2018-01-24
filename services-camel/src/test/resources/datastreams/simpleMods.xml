@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3">
+  <titleInfo>
+    <title>Object title</title>
+  </titleInfo>
+  <name type="personal">
+    <namePart>Boxy</namePart>
+    <role>
+      <roleTerm authority="marcrelator">Creator</roleTerm>
+    </role>
+  </name>
+</mods>

@@ -57,6 +57,11 @@
     </dependency>
 
     <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+    </dependency>
+
+    <dependency>
         <groupId>org.fcrepo.camel</groupId>
         <artifactId>fcrepo-camel</artifactId>
         <version>${fcrepo-camel.version}</version>
@@ -260,6 +265,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-core</artifactId>
+            <version>${solr.version}</version>
             <scope>test</scope>
         </dependency>
 </dependencies>

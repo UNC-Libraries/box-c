@@ -15,13 +15,11 @@
  */
 package edu.unc.lib.dl.services;
 
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
-import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
+import static edu.unc.lib.dl.util.IndexingMessageHelper.makeIndexingOperationBody;
 
 import java.util.Collection;
 
 import org.jdom2.Document;
-import org.jdom2.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,20 +57,7 @@ public class IndexingMessageSender extends AbstractMessageSender {
      */
     public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
             IndexingActionType solrActionType) {
-        Document msg = new Document();
-        Element entry = new Element("entry", ATOM_NS);
-        msg.addContent(entry);
-        entry.addContent(new Element("author", ATOM_NS).addContent(new Element("name", ATOM_NS).setText(userid)));
-        entry.addContent(new Element("pid", ATOM_NS).setText(targetPid.getRepositoryPath()));
-        if (children != null && children.size() > 0) {
-            Element childEl = new Element("children", CDR_MESSAGE_NS);
-            entry.addContent(childEl);
-            for (PID child : children) {
-                childEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(child.getRepositoryPath()));
-            }
-        }
-        entry.addContent(new Element("solrActionType", ATOM_NS)
-                .setText(solrActionType.getURI().toString()));
+        Document msg = makeIndexingOperationBody(userid, targetPid, children, solrActionType);
 
         LOG.debug("sending solr update message for {} of type {}", targetPid, solrActionType.toString());
         sendMessage(msg);

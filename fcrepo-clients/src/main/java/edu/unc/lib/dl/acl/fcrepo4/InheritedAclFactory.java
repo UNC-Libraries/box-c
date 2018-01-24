@@ -18,6 +18,7 @@ package edu.unc.lib.dl.acl.fcrepo4;
 import static edu.unc.lib.dl.acl.util.PrincipalClassifier.getPatronPrincipals;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -182,6 +183,10 @@ public class InheritedAclFactory implements AclFactory {
 
     private List<PID> getPidPath(PID pid) {
         List<PID> path = pathFactory.getAncestorPids(pid);
+        // Looked up either the root or a unit, yielding no ancestors
+        if (path.size() < 1) {
+            return Collections.emptyList();
+        }
         // Trim off the root object from the beginning of the path
         path = new ArrayList<>(path.subList(1, path.size()));
         path.add(pid);
