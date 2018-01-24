@@ -15,19 +15,23 @@
  */
 package edu.unc.lib.dl.persist.services.move;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MEMBER_CONTAINER;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.isA;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.jena.query.QueryExecution;
@@ -58,6 +62,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
@@ -77,6 +82,8 @@ public class MoveObjectsServiceTest {
     private SparqlQueryService sparqlQueryService;
     @Mock
     private FcrepoClient fcrepoClient;
+    @Mock
+    private OperationsMessageSender operationsMessageSender;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -97,7 +104,9 @@ public class MoveObjectsServiceTest {
     @Mock
     private QuerySolution mockQuerySolution;
     @Mock
-    private Resource mockResource;
+    private Resource mockProxyResource;
+    @Mock
+    private Resource mockParentResource;
     @Mock
     private DeleteBuilder mockDeleteBuilder;
 
@@ -113,6 +122,7 @@ public class MoveObjectsServiceTest {
         service.setRepositoryObjectLoader(repositoryObjectLoader);
         service.setSparqlQueryService(sparqlQueryService);
         service.setTransactionManager(transactionManager);
+        service.setOperationsMessageSender(operationsMessageSender);
 
         destPid = makePid();
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockDestObj);
@@ -128,7 +138,8 @@ public class MoveObjectsServiceTest {
         when(sparqlQueryService.executeQuery(anyString())).thenReturn(mockQueryExec);
         when(mockQueryExec.execSelect()).thenReturn(mockResultSet);
         when(mockResultSet.nextSolution()).thenReturn(mockQuerySolution);
-        when(mockQuerySolution.getResource(anyString())).thenReturn(mockResource);
+        when(mockQuerySolution.getResource("proxyuri")).thenReturn(mockProxyResource);
+        when(mockQuerySolution.getResource("parent")).thenReturn(mockParentResource);
 
         when(fcrepoClient.delete(any(URI.class))).thenReturn(mockDeleteBuilder);
     }
@@ -138,7 +149,7 @@ public class MoveObjectsServiceTest {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(destPid), any(AccessGroupSet.class), eq(Permission.move));
 
-        service.moveObjects(mockAgent, destPid, asList(makePid()));
+        service.moveObjects(mockAgent, destPid, asList(makeMoveObject()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -153,7 +164,7 @@ public class MoveObjectsServiceTest {
     public void testNoPermissionToMoveObject() throws Exception {
         expectedException.expectCause(isA(AccessRestrictionException.class));
 
-        PID movePid = makePid();
+        PID movePid = makeMoveObject();
 
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(movePid), any(AccessGroupSet.class), eq(Permission.move));
@@ -163,19 +174,45 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testMoveObject() throws Exception {
-        PID proxyPid = makePid();
+        PID sourcePid = makePid();
+        String proxyUri = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy";
 
         when(mockResultSet.hasNext()).thenReturn(true, false);
-        when(mockResource.getURI()).thenReturn(proxyPid.getRepositoryPath());
+        when(mockProxyResource.getURI()).thenReturn(proxyUri);
+        when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
 
+        service.moveObjects(mockAgent, destPid, asList(makeMoveObject()));
+
+        verify(fcrepoClient).delete(eq(URI.create(proxyUri)));
+        verify(mockDestObj).addMember(any(ContentObject.class));
+        verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
+                eq(destPid), anyListOf(PID.class), eq(null));
+    }
+
+    @Test
+    public void testMoveMultipleObjects() throws Exception {
+        PID sourcePid = makePid();
+        String proxyUri1 = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy1";
+        String proxyUri2 = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy2";
+
+        when(mockResultSet.hasNext()).thenReturn(true, true, false);
+        when(mockProxyResource.getURI()).thenReturn(proxyUri1, proxyUri2);
+        when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
+
+        List<PID> movePids = asList(makeMoveObject(), makeMoveObject());
+        service.moveObjects(mockAgent, destPid, movePids);
+
+        verify(fcrepoClient, times(4)).delete(any(URI.class));
+        verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
+        verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
+                eq(destPid), anyListOf(PID.class), eq(null));
+    }
+
+    private PID makeMoveObject() {
         PID movePid = makePid();
         ContentObject moveObj = mock(ContentObject.class);
         when(repositoryObjectLoader.getRepositoryObject(movePid)).thenReturn(moveObj);
-
-        service.moveObjects(mockAgent, destPid, asList(movePid));
-
-        verify(fcrepoClient).delete(eq(proxyPid.getRepositoryUri()));
-        verify(mockDestObj).addMember(moveObj);
+        return movePid;
     }
 
     private PID makePid() {
