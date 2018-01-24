@@ -44,7 +44,7 @@ import edu.unc.lib.dl.fedora.PID;
 @RequestMapping("/aclRetrieval")
 public class AccessControlRetrievalController {
     @Autowired
-    private AccessControlRetrievalService aclRetreivaService;
+    private AccessControlRetrievalService aclRetreivalService;
 
     private AgentPrincipals agent;
     private AccessControlService aclService;
@@ -56,8 +56,8 @@ public class AccessControlRetrievalController {
         aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
                 pid, agent.getPrincipals(), assignStaffRoles);
 
-        Map<String, Object> objectPermissions = aclRetreivaService.getPermissions(pid);
-        Map<String, Object> childPermissions = aclRetreivaService.getChildPermissions(pid);
+        Map<String, Object> objectPermissions = aclRetreivalService.getPermissions(pid);
+        Map<String, Object> childPermissions = aclRetreivalService.getMembersPermissions(pid);
 
         Map<String, Object> combinedPermissions = new HashMap<>();
         combinedPermissions.putAll(objectPermissions);
