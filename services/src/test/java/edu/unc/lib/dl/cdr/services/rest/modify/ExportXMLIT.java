@@ -52,7 +52,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @Test
     public void testExportMODS() throws Exception {
-        String json = makeJSON();
+        String json = makeJSON(false);
         MvcResult result = mvc.perform(post("/edit/exportXML")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -65,8 +65,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testAuthorizationFailure() throws Exception {
-        String json = makeJSON();
+    public void testNoUsernameProvided() throws Exception {
+        String json = makeJSON(false);
         // reset username to null to simulate situation where no username exists
         GroupsThreadStore.clearStore();
         GroupsThreadStore.storeUsername(null);
@@ -83,14 +83,30 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals("User must have a username to export xml", respMap.get("error"));
     }
 
-    private String makeJSON() throws JsonGenerationException, JsonMappingException, IOException {
+    @Test
+    public void testSolrServerNotSetup() throws Exception {
+        // set up request to export mods with children,
+        // but solr server not set up to respond to query for child pids
+        String json = makeJSON(true);
+        MvcResult result = mvc.perform(post("/edit/exportXML")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json))
+                .andExpect(status().is5xxServerError())
+                .andReturn();
+
+        // Verify response from api
+        Map<String, Object> respMap = getMapFromResponse(result);
+        assertEquals("export xml", respMap.get("action"));
+    }
+
+    private String makeJSON(boolean exportChildren) throws JsonGenerationException, JsonMappingException, IOException {
         String pid1 = makePid().getRepositoryPath();
         String pid2 = makePid().getRepositoryPath();
         List<String> pids = new ArrayList<>();
         pids.add(pid1);
         pids.add(pid2);
 
-        XMLExportRequest exportRequest = new XMLExportRequest(pids, false, "user@example.com");
+        XMLExportRequest exportRequest = new XMLExportRequest(pids, exportChildren, "user@example.com");
         ObjectMapper mapper = new ObjectMapper();
         return mapper.writeValueAsString(exportRequest);
     }
