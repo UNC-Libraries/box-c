@@ -33,19 +33,17 @@
     <context:component-scan resource-pattern="**/ExportXMLController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
     <bean id="xMLExportService" class="edu.unc.lib.dl.cdr.services.processing.XMLExportService">
-        <property name="searchStateFactory" ref="searchStateFactory" />
-        <property name="queryLayer" ref="queryLayer" />
         <property name="mailSender" ref="mailSender" />
         <property name="aclService" ref="aclService" />
-        <property name='repoObjLoader' ref="repositoryObjectLoader" />
+        <property name="repoObjLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
     
-    <bean id="mailSender" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="org.springframework.mail.javamail.JavaMailSender" />
+    <bean id="emailHandler" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.persist.services.EmailHandler" />
     </bean>
     
 </beans>

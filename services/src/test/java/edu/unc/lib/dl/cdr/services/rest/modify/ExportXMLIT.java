@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.mail.Multipart;
 import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.MediaType;
 
@@ -41,8 +40,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -51,6 +48,7 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.persist.services.EmailHandler;
 
 /**
  *
@@ -64,15 +62,15 @@ import edu.unc.lib.dl.fedora.PID;
 })
 public class ExportXMLIT extends AbstractAPIIT {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Mock
+    private EmailHandler emailHandler;
     @Mock
     private MimeMessage mimeMessage = mock(MimeMessage.class);
 
     @Before
     public void init_() throws Exception {
-        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
-        doNothing().when(mimeMessage).setContent(any(Multipart.class));
+
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription))).thenReturn(true);
     }
 
     @Test
@@ -109,22 +107,6 @@ public class ExportXMLIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("export xml", respMap.get("action"));
         assertEquals("User must have a username to export xml", respMap.get("error"));
-    }
-
-    //@Test
-    public void testSolrServerNotSetup() throws Exception {
-        // set up request to export mods with children,
-        // but solr server not set up to respond to query for child pids
-        String json = makeJSON(true);
-        MvcResult result = mvc.perform(post("/edit/exportXML")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
-                .andExpect(status().is5xxServerError())
-                .andReturn();
-
-        // Verify response from api
-        Map<String, Object> respMap = getMapFromResponse(result);
-        assertEquals("export xml", respMap.get("action"));
     }
 
     private String makeJSON(boolean exportChildren) throws JsonGenerationException, JsonMappingException, IOException {

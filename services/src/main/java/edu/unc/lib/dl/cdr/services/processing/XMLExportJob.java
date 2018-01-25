@@ -27,7 +27,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -36,8 +35,6 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -49,6 +46,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.persist.services.EmailHandler;
 
 
     /**
@@ -60,9 +58,9 @@ import edu.unc.lib.dl.fedora.PID;
 public class XMLExportJob implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(XMLExportJob.class);
 
-    private JavaMailSender mailSender;
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
+    private EmailHandler emailHandler;
 
     private final int BUFFER_SIZE = 2048;
     private final Charset utf8 = Charset.forName("UTF-8");
@@ -151,12 +149,12 @@ public class XMLExportJob implements Runnable {
         }
     }
 
-    public JavaMailSender getMailSender() {
-        return mailSender;
+    public EmailHandler getEmailHandler() {
+        return emailHandler;
     }
 
-    public void setMailSender(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public void setEmailHandler(EmailHandler emailHandler) {
+        this.emailHandler = emailHandler;
     }
 
     public AccessControlService getAclService() {
@@ -197,21 +195,10 @@ public class XMLExportJob implements Runnable {
         return mdExportZip;
     }
 
-    private void sendEmail(File mdExportFile, String toEmail) {
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, MimeMessageHelper.MULTIPART_MODE_MIXED);
+    private void sendEmail(File mdExportFile, String toAddress) throws MessagingException {
+        String emailBody = "The XML metadata for " + request.getPids().size() +
+                " object(s) requested for export by " + this.user + " is attached.\n";
 
-            helper.setSubject("CDR Metadata Export");
-            helper.setFrom("cdr@listserv.unc.edu");
-            helper.setText("The XML metadata for " + request.getPids().size() +
-                    " object(s) requested for export by " + this.user + " is attached.\n");
-            helper.setTo(toEmail);
-            helper.addAttachment("xml_export.zip", mdExportFile);
-            mailSender.send(mimeMessage);
-            log.debug("Sending XML export email to {}", toEmail);
-        } catch (MessagingException e) {
-            log.error("Cannot send notification email", e);
-        }
+        emailHandler.sendEmail(toAddress, "CDR Metadata Export", emailBody, "xml_export.zip", mdExportFile);
     }
 }

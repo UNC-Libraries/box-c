@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.client.solrj.SolrServerException;
-import org.springframework.mail.javamail.JavaMailSender;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -37,6 +36,7 @@ import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
+import edu.unc.lib.persist.services.EmailHandler;
 
 /**
  * A service that starts a job for exporting the XML metadata of specified objects
@@ -47,7 +47,7 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 public class XMLExportService {
     private SearchStateFactory searchStateFactory;
     private SolrQueryLayerService queryLayer;
-    private JavaMailSender mailSender;
+    private EmailHandler emailHandler;
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
 
@@ -71,7 +71,7 @@ public class XMLExportService {
         }
         XMLExportJob job = new XMLExportJob(username, group, request);
         job.setAclService(aclService);
-        job.setMailSender(mailSender);
+        job.setEmailHandler(emailHandler);
         job.setRepoObjLoader(repoObjLoader);
         Thread thread = new Thread(job);
         thread.start();
@@ -125,12 +125,12 @@ public class XMLExportService {
         this.queryLayer = queryLayer;
     }
 
-    public JavaMailSender getMailSender() {
-        return mailSender;
+    public EmailHandler getEmailHandler() {
+        return emailHandler;
     }
 
-    public void setMailSender(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
+    public void setEmailHandler(EmailHandler emailHandler) {
+        this.emailHandler = emailHandler;
     }
 
     public AccessControlService getAclService() {
