@@ -50,6 +50,7 @@ public class XMLExportService {
     private EmailHandler emailHandler;
     private AccessControlService aclService;
     private RepositoryObjectLoader repoObjLoader;
+    private boolean asynchronous;
 
     private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
 
@@ -73,8 +74,13 @@ public class XMLExportService {
         job.setAclService(aclService);
         job.setEmailHandler(emailHandler);
         job.setRepoObjLoader(repoObjLoader);
-        Thread thread = new Thread(job);
-        thread.start();
+
+        if (asynchronous) {
+            Thread thread = new Thread(job);
+            thread.start();
+        } else {
+            job.run();
+        }
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "Metadata export for " + request.getPids().size()
@@ -149,4 +155,10 @@ public class XMLExportService {
         this.repoObjLoader = repoObjLoader;
     }
 
+    /**
+     * @param asynchronous the asynchronous to set
+     */
+    public void setAsynchronous(boolean asynchronous) {
+        this.asynchronous = asynchronous;
+    }
 }
