@@ -21,6 +21,8 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,12 +31,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.Multipart;
+import javax.mail.internet.MimeMessage;
 import javax.ws.rs.core.MediaType;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
@@ -56,10 +64,22 @@ import edu.unc.lib.dl.fedora.PID;
 })
 public class ExportXMLIT extends AbstractAPIIT {
 
+    @Autowired
+    private JavaMailSender mailSender;
+    @Mock
+    private MimeMessage mimeMessage = mock(MimeMessage.class);
+
+    @Before
+    public void init_() throws Exception {
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+        doNothing().when(mimeMessage).setContent(any(Multipart.class));
+    }
+
     @Test
     public void testExportMODS() throws Exception {
-        doNothing().when(aclService)
-        .assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription));
+        doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
+                eq(bulkUpdateDescription));
+
         String json = makeJSON(false);
         MvcResult result = mvc.perform(post("/edit/exportXML")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -72,7 +92,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals("export xml", respMap.get("action"));
     }
 
-    //@Test
+    @Test
     public void testNoUsernameProvided() throws Exception {
         String json = makeJSON(false);
         // reset username to null to simulate situation where no username exists

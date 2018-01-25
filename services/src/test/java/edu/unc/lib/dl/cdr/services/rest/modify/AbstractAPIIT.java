@@ -63,7 +63,7 @@ public abstract class AbstractAPIIT {
 
         TestHelper.setContentBase("http://localhost:48085/rest");
 
-        GroupsThreadStore.storeUsername("user");
+        GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
 
     }
