@@ -17,13 +17,17 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -36,6 +40,7 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
@@ -56,32 +61,47 @@ public class AccessControlRetrievalServiceTest {
     @Mock
     private RepositoryObject repoObj;
     @Mock
-    private ContentObject contentObj;
+    private ContentObject member;
+    @Mock
+    private ContentContainerObject contentObj;
+    @Mock
+    private ContentContainerObject parent;
     @Mock
     private InheritedAclFactory aclFactory;
     @Mock
     private PID pid;
+    @Mock
+    private PID memberPid;
+    @Mock
+    private ArrayList<Map<String, Object>> memberPermissions;
+    @Mock
+    private  Map<String, Object> permissions;
+    @Mock
+    private Map<String, Object> permResult;
 
     private Map<String, Object> result;
     private AccessControlRetrievalService aclRetrievalService;
     private String uuid;
+    private Map<String, Set<String>> objPrincRoles;
+    private Date testDate;
 
     @Before
     public void init() {
         initMocks(this);
         aclRetrievalService = new AccessControlRetrievalService(aclFactory, repoObjLoader);
-        uuid = UUID.randomUUID().toString();
-        when(pid.getUUID()).thenReturn(uuid);
+
+        testDate = new Date(System.currentTimeMillis() + ONE_DAY);
+
+        objPrincRoles = new HashMap<>();
+        addPrincipalRoles(objPrincRoles, MANAGE_PRINC, canManage);
+        addPrincipalRoles(objPrincRoles, PATRON_PRINC, canViewMetadata);
     }
 
     @Test
     public void getPermissionsTest() {
-        Map<String, Set<String>> objPrincRoles = new HashMap<>();
-        addPrincipalRoles(objPrincRoles, MANAGE_PRINC, canManage);
-        addPrincipalRoles(objPrincRoles, PATRON_PRINC, canViewMetadata);
+        uuid = UUID.randomUUID().toString();
 
-        Date testDate = new Date(System.currentTimeMillis() + ONE_DAY);
-
+        when(pid.getUUID()).thenReturn(uuid);
         when(aclFactory.getPrincipalRoles(pid)).thenReturn(objPrincRoles);
         when(aclFactory.isMarkedForDeletion(pid)).thenReturn(false);
         when(aclFactory.getEmbargoUntil(pid)).thenReturn(testDate);
@@ -89,28 +109,54 @@ public class AccessControlRetrievalServiceTest {
 
         result = aclRetrievalService.getPermissions(pid);
 
-        assertTrue(result.containsKey("uuid"));
-        assertTrue(result.containsKey("principals"));
-        assertTrue(result.containsKey("markForDeletion"));
-        assertTrue(result.containsKey("embargoed"));
-        assertTrue(result.containsKey("patronAccess"));
-
-        assertTrue(result.containsValue(uuid));
-        assertTrue(result.containsValue(objPrincRoles));
-        assertTrue(result.containsValue(false));
-        assertTrue(result.containsValue(testDate));
-        assertTrue(result.containsValue(PatronAccess.authenticated));
+        assertEquals(uuid, result.get("uuid"));
+        assertEquals(objPrincRoles, result.get("principals"));
+        assertEquals(false, result.get("markForDeletion"));
+        assertEquals(testDate, result.get("embargoed"));
+        assertEquals(PatronAccess.authenticated, result.get("patronAccess"));
     }
 
     @Test
     public void getMembersPermissionsTest() {
-        when(repoObjLoader.getRepositoryObject(pid)).thenReturn(contentObj);
+        List<ContentObject> children = new ArrayList<>();
+        children.add(member);
+
+        String memberUuid = UUID.randomUUID().toString();
+
+        when(repoObjLoader.getRepositoryObject(pid)).thenReturn(parent);
+        when(parent.getMembers()).thenReturn(children);
+        when(member.getPid()).thenReturn(memberPid);
+        when(memberPermissions.add(result)).thenReturn(true);
+
+        ArrayList<Map<String, Object>> memberPerms = new ArrayList<Map<String,Object>>();
+        when(permResult.put("memberPermissions", memberPermissions)).thenReturn(memberPerms);
+
+        when(memberPid.getUUID()).thenReturn(memberUuid);
+        when(aclFactory.getPrincipalRoles(memberPid)).thenReturn(objPrincRoles);
+        when(aclFactory.isMarkedForDeletion(memberPid)).thenReturn(false);
+        when(aclFactory.getEmbargoUntil(memberPid)).thenReturn(testDate);
+        when(aclFactory.getPatronAccess(memberPid)).thenReturn(PatronAccess.authenticated);
+
+        result = aclRetrievalService.getMembersPermissions(pid);
+        memberPerms.add(result);
+
+        @SuppressWarnings("unchecked")
+        Map<String,Object> returnedValues = ((ArrayList<Map<String, Object>>) result.get("memberPermissions")).get(0);
+
+        assertTrue(result.containsKey("memberPermissions"));
+        assertEquals(uuid, result.get("uuid"));
+        assertEquals(objPrincRoles, returnedValues.get("principals"));
+        assertEquals(false, returnedValues.get("markForDeletion"));
+        assertEquals(testDate, returnedValues.get("embargoed"));
+        assertEquals(PatronAccess.authenticated, returnedValues.get("patronAccess"));
     }
 
- /*   @Test
-    public void getMembersPermissionsNoMembersTest() {
+    @Test
+    public void getMembersPermissionsWrongObjectTypeTest() {
         when(repoObjLoader.getRepositoryObject(pid)).thenReturn(repoObj);
-    } */
+        result = aclRetrievalService.getMembersPermissions(pid);
+        assertNull(result);
+    }
 
     private void addPrincipalRoles(Map<String, Set<String>> objPrincRoles,
             String princ, UserRole... roles) {
