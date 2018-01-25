@@ -38,7 +38,6 @@ import edu.unc.lib.dl.fedora.PID;
 public class AccessControlRetrievalService {
     private final InheritedAclFactory aclFactory;
     private final RepositoryObjectLoader repoObjLoader;
-    private Map<String, Object> result;
 
     public AccessControlRetrievalService(InheritedAclFactory aclFactory, RepositoryObjectLoader repoObjLoader) {
         this.aclFactory = aclFactory;
@@ -51,10 +50,10 @@ public class AccessControlRetrievalService {
      * @return
      */
     public Map<String, Object> getMembersPermissions(PID pid) {
-        RepositoryObject child = repoObjLoader.getRepositoryObject(pid);
+        RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
 
-        if (child instanceof ContentContainerObject) {
-            List<ContentObject> members = ((ContentContainerObject) child).getMembers();
+        if (parent instanceof ContentContainerObject) {
+            List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
 
             ArrayList<Map<String, Object>> memberPermissions = new ArrayList<Map<String,Object>>();
 
@@ -63,7 +62,7 @@ public class AccessControlRetrievalService {
                 memberPermissions.add(permissions);
             }
 
-            result = createMap();
+            Map<String, Object> result = new HashMap<String, Object>();
             result.put("memberPermissions", memberPermissions);
 
             return result;
@@ -84,7 +83,7 @@ public class AccessControlRetrievalService {
         Date embargoed = aclFactory.getEmbargoUntil(pid);
         PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
 
-        result = createMap();
+        Map<String, Object> result = new HashMap<String, Object>();
 
         result.put("uuid", uuid);
         result.put("principals", principals);
@@ -93,9 +92,5 @@ public class AccessControlRetrievalService {
         result.put("patronAccess", patronAccess);
 
         return result;
-    }
-
-    private Map<String, Object> createMap() {
-        return new HashMap<String, Object>();
     }
 }
