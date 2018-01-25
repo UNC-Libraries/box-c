@@ -86,7 +86,7 @@ public class XMLExportServiceTest {
     }
 
     @Test
-    public void exportXMLTest() {
+    public void exportXMLTest() throws Exception {
         when(request.getExportChildren()).thenReturn(false);
         when(request.getPids()).thenReturn(pids);
 
@@ -97,7 +97,7 @@ public class XMLExportServiceTest {
     }
 
     @Test
-    public void exportXMLWithChildrenTest() {
+    public void exportXMLWithChildrenTest() throws Exception {
         @SuppressWarnings("unchecked")
         List<BriefObjectMetadata> objects = mock(List.class);
 

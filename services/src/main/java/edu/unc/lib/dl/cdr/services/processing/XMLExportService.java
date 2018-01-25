@@ -61,7 +61,8 @@ public class XMLExportService {
      * @return
      * @throws SolrServerException
      */
-    public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request) throws SolrServerException {
+    public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request)
+            throws SolrServerException {
         if (username == null) {
             throw new AccessRestrictionException("User must have a username to export xml");
         }
