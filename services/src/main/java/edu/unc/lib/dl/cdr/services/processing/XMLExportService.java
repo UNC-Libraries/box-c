@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.solr.client.solrj.SolrServerException;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -58,8 +59,9 @@ public class XMLExportService {
      * @param group
      * @param request
      * @return
+     * @throws SolrServerException
      */
-    public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request) {
+    public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request) throws SolrServerException {
         if (username == null) {
             throw new AccessRestrictionException("User must have a username to export xml");
         }
@@ -79,7 +81,7 @@ public class XMLExportService {
         return response;
     }
 
-    private void addChildPIDsToRequest(XMLExportRequest request) {
+    private void addChildPIDsToRequest(XMLExportRequest request) throws SolrServerException {
         List<String> pids = new ArrayList<>();
         for (String pid : request.getPids()) {
             SearchState searchState = searchStateFactory.createSearchState();
@@ -92,6 +94,9 @@ public class XMLExportService {
             BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
             SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
+            if (resultResponse == null) {
+                throw new SolrServerException("An error occurred while retrieving search results");
+            }
             List<BriefObjectMetadata> objects = resultResponse.getResultList();
             objects.add(0, container);
 
