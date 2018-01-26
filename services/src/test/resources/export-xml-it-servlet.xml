@@ -34,6 +34,7 @@
     
     <bean id="xmlExportService" class="edu.unc.lib.dl.cdr.services.processing.XMLExportService">
         <property name="aclService" ref="aclService" />
+        <property name="emailHandler" ref="emailHandler" />
         <property name="repoObjLoader" ref="repositoryObjectLoader" />
     </bean>
     

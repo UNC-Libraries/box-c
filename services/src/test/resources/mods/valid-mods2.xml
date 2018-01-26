@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <titleInfo />
+  <name type="corporate">
+    <namePart>Test</namePart>
+    <role>
+      <roleTerm type="text">creator</roleTerm>
+    </role>
+  </name>
+  <name type="personal">
+    <namePart>Test</namePart>
+    <role>
+      <roleTerm type="text">creator</roleTerm>
+    </role>
+  </name>
+  <originInfo>
+    <dateCreated encoding="iso8601" keyDate="yes">2015-11-18/2015-11-25</dateCreated>
+  </originInfo>
+  <language>
+    <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+  </language>
+  <abstract>This is a test collection created to test the admin functionality of the Carolina Digital Repository.</abstract>
+  <note type="short description">This is a test collection.</note>
+  <subject>
+    <topic>Subject 1</topic>
+    <topic>Subject 2</topic>
+  </subject>
+</mods>
