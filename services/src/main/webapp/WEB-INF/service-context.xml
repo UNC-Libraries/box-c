@@ -271,15 +271,9 @@
       <property name="modsValidator" ref="modsValidator" />
   </bean>
   
-  <bean id="xMLExportService" class="edu.unc.lib.dl.cdr.services.processing.XMLExportService" >
+  <bean id="xmlExportService" class="edu.unc.lib.dl.cdr.services.processing.XMLExportService" >
       <property name="searchStateFactory" ref="searchStateFactory" />
       <property name="queryLayer" ref="queryLayer" />
-  </bean>
-  
-  <bean id="xMLEportJob" class="edu.unc.lib.dl.cdr.services.processing.XMLExportJob" >
-      <property name="mailSender" ref="javaMailSender" />
-      <property name="aclService" ref="aclService" />
-      <property name="repoObjLoader" ref="repositoryObjectLoader" />
   </bean>
   
   <bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSender" />
