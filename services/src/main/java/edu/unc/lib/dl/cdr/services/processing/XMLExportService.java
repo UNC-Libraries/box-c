@@ -21,14 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.solr.client.solrj.SolrServerException;
-
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -60,16 +59,20 @@ public class XMLExportService {
      * @param group
      * @param request
      * @return
-     * @throws SolrServerException
+     * @throws ServiceException
      */
     public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request)
-            throws SolrServerException {
+            throws ServiceException {
         if (username == null) {
             throw new AccessRestrictionException("User must have a username to export xml");
+        }
+        if (request.getPids() == null || request.getPids().isEmpty()) {
+            throw new IllegalArgumentException("At least one PID is required for exporting");
         }
         if (request.getExportChildren()) {
             addChildPIDsToRequest(request);
         }
+
         XMLExportJob job = new XMLExportJob(username, group, request);
         job.setAclService(aclService);
         job.setEmailHandler(emailHandler);
@@ -88,7 +91,7 @@ public class XMLExportService {
         return response;
     }
 
-    private void addChildPIDsToRequest(XMLExportRequest request) throws SolrServerException {
+    private void addChildPIDsToRequest(XMLExportRequest request) throws ServiceException {
         List<String> pids = new ArrayList<>();
         for (String pid : request.getPids()) {
             SearchState searchState = searchStateFactory.createSearchState();
@@ -97,16 +100,15 @@ public class XMLExportService {
             searchState.setRowsPerPage(Integer.MAX_VALUE);
 
             SearchRequest searchRequest = new SearchRequest(searchState, GroupsThreadStore.getGroups());
-
-            BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
             SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
-
             if (resultResponse == null) {
-                throw new SolrServerException("An error occurred while retrieving search results");
+                throw new ServiceException("An error occurred while retrieving children of " + pid + " for export.");
             }
-            List<BriefObjectMetadata> objects = resultResponse.getResultList();
-            objects.add(0, container);
 
+            // Add back in the parent pid
+            pids.add(pid);
+
+            List<BriefObjectMetadata> objects = resultResponse.getResultList();
             for (BriefObjectMetadata object : objects) {
                 pids.add(object.getPid().toString());
             }

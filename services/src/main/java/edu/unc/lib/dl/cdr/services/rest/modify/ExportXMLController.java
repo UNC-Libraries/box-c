@@ -95,7 +95,7 @@ public class ExportXMLController {
         public XMLExportRequest() {
         }
 
-        public XMLExportRequest(List<String> pids, boolean exportChildren,String email) {
+        public XMLExportRequest(List<String> pids, boolean exportChildren, String email) {
             this.pids = pids;
             this.exportChildren = exportChildren;
             this.email = email;
