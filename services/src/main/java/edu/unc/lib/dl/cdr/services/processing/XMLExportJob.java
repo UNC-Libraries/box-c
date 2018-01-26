@@ -30,6 +30,7 @@ import javax.mail.MessagingException;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -38,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.cdr.services.rest.modify.ExportXMLController.XMLExportRequest;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
@@ -46,6 +46,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.persist.services.EmailHandler;
 
 
@@ -84,68 +85,71 @@ public class XMLExportJob implements Runnable {
         long startTime = System.currentTimeMillis();
 
         try {
-            GroupsThreadStore.storeGroups(groups);
-            GroupsThreadStore.storeUsername(user);
-
             File mdExportFile = File.createTempFile("xml_export", ".xml");
 
             try (FileOutputStream xfop = new FileOutputStream(mdExportFile)) {
                 xfop.write(exportHeaderBytes);
 
                 XMLOutputter xmlOutput = new XMLOutputter(Format.getRawFormat());
+
                 for (String pidString : request.getPids()) {
-                    PID pid = PIDs.get(pidString);
-                    if (!aclService.hasAccess(pid, groups, Permission.bulkUpdateDescription)) {
-                        log.debug("User {} does not have permission to export metadata for {}", user, pid);
-                        continue;
-                    }
-                    ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-                    BinaryObject mods = obj.getMODS();
-                    if (mods == null) {
-                        Element objectEl = new Element("object");
-                        objectEl.setAttribute("pid", pid.toString());
-                        xmlOutput.output(objectEl, xfop);
-                        xfop.flush();
-                        continue;
-                    }
-
-                    try {
-                        InputStream modsStream = mods.getBinaryStream();
-                        Document dsDoc = new SAXBuilder().build(modsStream);
-                        Element objectEl = new Element("object");
-                        objectEl.setAttribute("pid", pid.toString());
-                        dsDoc.addContent(objectEl);
-
-                        xmlOutput.output(objectEl, xfop);
-
-                        objectEl.addContent(separator);
-
-                        Element modsUpdateEl = new Element("update");
-                        modsUpdateEl.setAttribute("type", "MODS");
-                        modsUpdateEl.setAttribute("lastModified", obj.getLastModified().toString());
-                        modsUpdateEl.addContent(separator);
-                        modsUpdateEl.addContent(dsDoc.detachRootElement());
-                        modsUpdateEl.addContent(separator);
-                        objectEl.addContent(modsUpdateEl);
-                        objectEl.addContent(separator);
-
-                        xfop.write(separatorBytes);
-                        xfop.flush();
-                } catch (Exception e) {
-                    log.error("Failed to export XML for object {}", pid, e);
+                    addObjectToExport(pidString, xfop, xmlOutput);
                 }
-            }
 
                 xfop.write("</bulkMetadata>".getBytes(utf8));
-        }
+            }
 
             sendEmail(zipit(mdExportFile), request.getEmail());
-        } catch (Exception e) {
-            log.error("Failed to export metadata for user {}", user, e);
-        } finally {
             log.info("Finished metadata export for {} objects in {}ms for user {}",
                     new Object[] {request.getPids().size(), System.currentTimeMillis() - startTime, user});
-            GroupsThreadStore.clearStore();
+        } catch (MessagingException e) {
+            log.error("Failed to send export email to {}", request.getEmail(), e);
+        } catch (IOException e) {
+            throw new ServiceException("Unable to write export file", e);
+        }
+    }
+
+    private void addObjectToExport(String pidString, FileOutputStream xfop, XMLOutputter xmlOutput)
+            throws IOException {
+        PID pid = PIDs.get(pidString);
+
+        if (!aclService.hasAccess(pid, groups, Permission.bulkUpdateDescription)) {
+            log.warn("User {} does not have permission to export metadata for {}", user, pid);
+            return;
+        }
+        ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
+        BinaryObject mods = obj.getMODS();
+
+        try {
+            Document objectDoc = new Document();
+            Element objectEl = new Element("object");
+            objectEl.setAttribute("pid", pid.toString());
+            objectDoc.addContent(objectEl);
+
+            if (mods != null) {
+                Document dsDoc;
+                try (InputStream modsStream = mods.getBinaryStream()) {
+                    dsDoc = new SAXBuilder().build(modsStream);
+                }
+
+                objectEl.addContent(separator);
+
+                Element modsUpdateEl = new Element("update");
+                modsUpdateEl.setAttribute("type", "MODS");
+                modsUpdateEl.setAttribute("lastModified", obj.getLastModified().toString());
+                modsUpdateEl.addContent(separator);
+                modsUpdateEl.addContent(dsDoc.detachRootElement());
+                modsUpdateEl.addContent(separator);
+                objectEl.addContent(modsUpdateEl);
+                objectEl.addContent(separator);
+            }
+
+            xmlOutput.output(objectEl, xfop);
+
+            xfop.write(separatorBytes);
+            xfop.flush();
+        } catch (JDOMException e) {
+            log.error("Failed to parse MODS document for {}", pid, e);
         }
     }
 
