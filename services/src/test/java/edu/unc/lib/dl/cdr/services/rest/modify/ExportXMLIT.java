@@ -92,7 +92,8 @@ public class ExportXMLIT extends AbstractAPIIT {
     @Before
     public void init_() throws Exception {
         initMocks(this);
-        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription))).thenReturn(true);
+        when(aclService.hasAccess(any(PID.class), any(AccessGroupSet.class), eq(bulkUpdateDescription)))
+                .thenReturn(true);
     }
 
     @Test
@@ -100,7 +101,7 @@ public class ExportXMLIT extends AbstractAPIIT {
         doNothing().when(aclService).assertHasAccess(anyString(), any(PID.class), any(AccessGroupSet.class),
                 eq(bulkUpdateDescription));
 
-        String json = makeJSON(false);
+        String json = createObjectsAndMakeJSON(false);
         MvcResult result = mvc.perform(post("/edit/exportXML")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json))
@@ -118,7 +119,7 @@ public class ExportXMLIT extends AbstractAPIIT {
 
     @Test
     public void testNoUsernameProvided() throws Exception {
-        String json = makeJSON(false);
+        String json = createObjectsAndMakeJSON(false);
         // reset username to null to simulate situation where no username exists
         GroupsThreadStore.clearStore();
         GroupsThreadStore.storeUsername(null);
@@ -135,7 +136,8 @@ public class ExportXMLIT extends AbstractAPIIT {
         assertEquals("User must have a username to export xml", respMap.get("error"));
     }
 
-    private String makeJSON(boolean exportChildren) throws JsonGenerationException, JsonMappingException, IOException {
+    private String createObjectsAndMakeJSON(boolean exportChildren)
+            throws JsonGenerationException, JsonMappingException, IOException {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
         folder.addDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods.xml")));
