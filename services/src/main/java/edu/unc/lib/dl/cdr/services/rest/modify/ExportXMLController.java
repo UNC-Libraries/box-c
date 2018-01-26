@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.XMLExportService;
 import edu.unc.lib.dl.fedora.FedoraException;
 
@@ -70,8 +70,10 @@ public class ExportXMLController {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "export xml");
 
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+
         try {
-            service.exportXml(GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups(), new XMLExportRequest(
+            service.exportXml(agent.getUsername(), agent.getGroups(), new XMLExportRequest(
                     exportRequest.getPids(), exportRequest.getExportChildren(), exportRequest.getEmail()));
         } catch (Exception e) {
             result.put("error", e.getMessage());
