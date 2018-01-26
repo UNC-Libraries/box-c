@@ -19,12 +19,14 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.jena.datatypes.xsd.XSDDateTime;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
  * A generic repository object, with properties common to objects in the repository.
@@ -180,6 +182,10 @@ public abstract class RepositoryObject {
      * @return
      */
     public Date getLastModified() {
+        if (lastModified == null) {
+            lastModified = ((XSDDateTime) getResource().getProperty(Fcrepo4Repository.lastModified).getLiteral()
+                    .getValue()).asCalendar().getTime();
+        }
         return lastModified;
     }
 
