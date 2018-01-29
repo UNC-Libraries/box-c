@@ -29,6 +29,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 
 /**
  *
@@ -68,7 +69,8 @@ public class AccessControlRetrievalService {
             return result;
         }
 
-        return null;
+        throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
+                + " not a contentOjbect.");
     }
 
     /**
