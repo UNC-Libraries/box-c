@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
-import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,21 +24,25 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * API controller for retrieving access-control information about an object and its children, if it has any
  *
  * @author lfarrell
+ * @author harring
  *
  */
 @Controller
@@ -48,24 +50,35 @@ public class AccessControlRetrievalController {
     private static final Logger log = LoggerFactory.getLogger(AccessControlRetrievalController.class);
 
     @Autowired
-    private AccessControlRetrievalService aclRetreivalService;
-    @Autowired
-    private AccessControlService aclService;
+    private AccessControlRetrievalService aclRetrievalService;
 
     @RequestMapping(value = "/acl/getPermissions/{uuid}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody Map<String, Object> getAclPermssions(@PathVariable("uuid") String uuid, HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody ResponseEntity<Object> getAclPermssions(@PathVariable("uuid") String uuid,
+            HttpServletRequest request, HttpServletResponse response) {
+
+        return getPermissions(uuid);
+    }
+
+
+    private ResponseEntity<Object> getPermissions(String uuid) {
         PID pid = PIDs.get(uuid);
 
-        aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
-                pid, AgentPrincipals.createFromThread().getPrincipals(), assignStaffRoles);
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "retrieve acls");
+        result.put("pid", pid);
 
-        Map<String, Object> objectPermissions = aclRetreivalService.getPermissions(pid);
-        Map<String, Object> childPermissions = aclRetreivalService.getMembersPermissions(pid);
-
-        Map<String, Object> combinedPermissions = new HashMap<>();
-        combinedPermissions.putAll(objectPermissions);
-        combinedPermissions.putAll(childPermissions);
-
-        return combinedPermissions;
+        try {
+            result.put("access controls", aclRetrievalService.getPermissions(pid));
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
+                return new ResponseEntity<>(result, HttpStatus.FORBIDDEN);
+            } else {
+                log.error("Failed to retrieve access controls for object with pid " + pid, e);
+                return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }
