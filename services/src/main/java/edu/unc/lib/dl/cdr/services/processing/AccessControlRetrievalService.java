@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static edu.unc.lib.dl.acl.util.Permission.assignStaffRoles;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,69 +25,69 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.service.PatronAccess;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 
 /**
+ * Service that retrieves access-control information for an object and its children, if it has any
  *
  * @author lfarrell
+ * @author harring
  *
  */
 public class AccessControlRetrievalService {
-    private final InheritedAclFactory aclFactory;
-    private final RepositoryObjectLoader repoObjLoader;
+    private AccessControlService aclService;
+    private InheritedAclFactory aclFactory;
+    private RepositoryObjectLoader repoObjLoader;
+    private Map<String, Object> result;
 
-    public AccessControlRetrievalService(InheritedAclFactory aclFactory, RepositoryObjectLoader repoObjLoader) {
-        this.aclFactory = aclFactory;
-        this.repoObjLoader = repoObjLoader;
+    public AccessControlRetrievalService() {
+        this.result = new HashMap<String, Object>();
     }
 
     /**
-     * Get the set of permissions that apply to the children of a given object
+     * Get the set of permissions that applies to both a given object and its children
      * @param pid
      * @return
      */
-    public Map<String, Object> getMembersPermissions(PID pid) {
-        RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
+    public Map<String, Object> getPermissions(PID pid) {
+        result = getObjectPermissions(pid);
 
+        RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
         if (parent instanceof ContentContainerObject) {
             List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
 
             ArrayList<Map<String, Object>> memberPermissions = new ArrayList<Map<String,Object>>();
 
             for (ContentObject member : members) {
-                Map<String, Object> permissions = getPermissions(member.getPid());
+                Map<String, Object> permissions = getObjectPermissions(member.getPid());
                 memberPermissions.add(permissions);
             }
-
-            Map<String, Object> result = new HashMap<String, Object>();
             result.put("memberPermissions", memberPermissions);
-
-            return result;
         }
-
-        throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
-                + " not a contentOjbect.");
+        return result;
     }
 
     /**
-     * Get the set of permissions that apply to an object
+     * Get the set of permissions that applies to a single object
      * @param pid
      * @return
      */
-    public Map<String, Object> getPermissions(PID pid) {
+    private Map<String, Object> getObjectPermissions(PID pid) {
+        aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
+                pid, AgentPrincipals.createFromThread().getPrincipals(), assignStaffRoles);
+
         String uuid = pid.getUUID();
         Map<String, Set<String>> principals = aclFactory.getPrincipalRoles(pid);
         boolean markedForDeletion = aclFactory.isMarkedForDeletion(pid);
         Date embargoed = aclFactory.getEmbargoUntil(pid);
         PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
-
-        Map<String, Object> result = new HashMap<String, Object>();
 
         result.put("uuid", uuid);
         result.put("principals", principals);
@@ -95,4 +97,17 @@ public class AccessControlRetrievalService {
 
         return result;
     }
+
+    public void setAclService(AccessControlService aclService) {
+        this.aclService = aclService;
+    }
+
+    public void setAclFactory(InheritedAclFactory aclFactory) {
+        this.aclFactory = aclFactory;
+    }
+
+    public void getRepoObjLoader(RepositoryObjectLoader repoObjectLoader) {
+        this.repoObjLoader = repoObjectLoader;
+    }
+
 }
