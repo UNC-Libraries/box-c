@@ -23,8 +23,11 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -41,20 +44,20 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 @Controller
-@RequestMapping("/aclRetrieval")
 public class AccessControlRetrievalController {
+    private static final Logger log = LoggerFactory.getLogger(AccessControlRetrievalController.class);
+
     @Autowired
     private AccessControlRetrievalService aclRetreivalService;
-
-    private AgentPrincipals agent;
+    @Autowired
     private AccessControlService aclService;
 
-    @RequestMapping(value = "/getPermssions", method = RequestMethod.GET, consumes = "application/JSON", produces = "application/json")
-    public @ResponseBody Map<String, Object> getAclPermssions(HttpServletRequest request, HttpServletResponse response) {
-        PID pid = PIDs.get(request.getParameter("pid"));
+    @RequestMapping(value = "/acl/getPermissions/{uuid}", method = RequestMethod.GET, produces = "application/json")
+    public @ResponseBody Map<String, Object> getAclPermssions(@PathVariable("uuid") String uuid, HttpServletRequest request, HttpServletResponse response) {
+        PID pid = PIDs.get(uuid);
 
         aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
-                pid, agent.getPrincipals(), assignStaffRoles);
+                pid, AgentPrincipals.createFromThread().getPrincipals(), assignStaffRoles);
 
         Map<String, Object> objectPermissions = aclRetreivalService.getPermissions(pid);
         Map<String, Object> childPermissions = aclRetreivalService.getMembersPermissions(pid);
