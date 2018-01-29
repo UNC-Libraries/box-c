@@ -217,7 +217,7 @@ public class SolrSearchService {
      *
      * @param searchRequest
      * @param returnQuery
-     * @return
+     * @return the result set of BriefObjectMetadataBeans, or null if an error occurred
      */
     public SearchResultResponse getSearchResults(SearchRequest searchRequest, boolean returnQuery) {
         LOG.debug("In getSearchResults: " + searchRequest.getSearchState());

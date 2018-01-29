@@ -270,6 +270,13 @@
       <property name="operationsMessageSender" ref="operationsMessageSender" />
       <property name="modsValidator" ref="modsValidator" />
   </bean>
+  
+  <bean id="xmlExportService" class="edu.unc.lib.dl.cdr.services.processing.XMLExportService" >
+      <property name="searchStateFactory" ref="searchStateFactory" />
+      <property name="queryLayer" ref="queryLayer" />
+  </bean>
+  
+  <bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSender" />
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>

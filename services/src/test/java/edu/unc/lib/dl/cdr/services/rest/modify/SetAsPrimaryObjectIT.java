@@ -28,91 +28,48 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.jena.rdf.model.Model;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.PcdmModels;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
  * @author harring
  *
  */
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/set-as-primary-object-it-servlet.xml")
 })
-@WebAppConfiguration
-public class SetAsPrimaryObjectIT {
+public class SetAsPrimaryObjectIT extends AbstractAPIIT {
 
-    @Autowired
-    private WebApplicationContext context;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
-    private AccessControlService aclService;
-    @Autowired
     private Model queryModel;
 
-    private MockMvc mvc;
     private WorkObject parent;
     private PID parentPid;
     private FileObject fileObj;
     private PID fileObjPid;
 
-    @Before
-    public void init() {
-
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
-
-        TestHelper.setContentBase("http://localhost:48085/rest");
-
-        GroupsThreadStore.storeUsername("user");
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
-
-        fileObjPid = makePid();
-        fileObj = repositoryObjectFactory.createFileObject(fileObjPid, null);
-        parentPid = makePid();
-        parent = repositoryObjectFactory.createWorkObject(parentPid, null);
-    }
-
-    @After
-    public void tearDown() {
-        GroupsThreadStore.clearStore();
-    }
-
     @Test
     public void testSetPrimaryObject() throws UnsupportedOperationException, Exception {
+        makePidsAndObjects();
+
         addFileObjAsMember();
 
         assertPrimaryObjectNotSet(parent);
@@ -131,6 +88,8 @@ public class SetAsPrimaryObjectIT {
 
     @Test
     public void testAuthorizationFailure() throws Exception {
+        makePidsAndObjects();
+
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(fileObjPid), any(AccessGroupSet.class), eq(editResourceType));
 
@@ -151,6 +110,7 @@ public class SetAsPrimaryObjectIT {
 
     @Test
     public void testAddFolderAsPrimaryObject() throws UnsupportedOperationException, Exception {
+        makePidsAndObjects();
         PID folderObjPid = makePid();
 
         repositoryObjectFactory.createFolderObject(folderObjPid, null);
@@ -177,21 +137,17 @@ public class SetAsPrimaryObjectIT {
         assertNull(parent.getPrimaryObject());
     }
 
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
-    }
-
     private void addFileObjAsMember() {
         queryModel.getResource(parentPid.getRepositoryPath())
                 .addProperty(PcdmModels.hasMember, fileObj.getResource());
         parent.addMember(fileObj);
-
     }
 
-    private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>(){});
+    private void makePidsAndObjects() {
+        fileObjPid = makePid();
+        fileObj = repositoryObjectFactory.createFileObject(fileObjPid, null);
+        parentPid = makePid();
+        parent = repositoryObjectFactory.createWorkObject(parentPid, null);
     }
 
 }
