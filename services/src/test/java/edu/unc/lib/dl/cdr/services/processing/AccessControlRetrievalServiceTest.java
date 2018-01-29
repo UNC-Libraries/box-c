@@ -18,7 +18,6 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static edu.unc.lib.dl.acl.util.UserRole.canManage;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewMetadata;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -45,6 +44,7 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 
 /**
  *
@@ -116,6 +116,7 @@ public class AccessControlRetrievalServiceTest {
         assertEquals(PatronAccess.authenticated, result.get("patronAccess"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void getMembersPermissionsTest() {
         List<ContentObject> children = new ArrayList<>();
@@ -140,7 +141,6 @@ public class AccessControlRetrievalServiceTest {
         result = aclRetrievalService.getMembersPermissions(pid);
         memberPerms.add(result);
 
-        @SuppressWarnings("unchecked")
         Map<String,Object> returnedValues = ((ArrayList<Map<String, Object>>) result.get("memberPermissions")).get(0);
 
         assertTrue(result.containsKey("memberPermissions"));
@@ -151,11 +151,10 @@ public class AccessControlRetrievalServiceTest {
         assertEquals(PatronAccess.authenticated, returnedValues.get("patronAccess"));
     }
 
-    @Test
+    @Test(expected = InvalidOperationForObjectType.class)
     public void getMembersPermissionsWrongObjectTypeTest() {
         when(repoObjLoader.getRepositoryObject(pid)).thenReturn(repoObj);
         result = aclRetrievalService.getMembersPermissions(pid);
-        assertNull(result);
     }
 
     private void addPrincipalRoles(Map<String, Set<String>> objPrincRoles,
