@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
@@ -34,26 +34,16 @@ import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import edu.unc.lib.dl.acl.service.PatronAccess;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentRootObject;
@@ -66,28 +56,22 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.CdrAcl;
-import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
  * @author lfarrell
+ * @author harring
  *
  */
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @ContextHierarchy({
     @ContextConfiguration("/spring-test/test-fedora-container.xml"),
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/access-control-retrieval-it-servlet.xml")
 })
-@WebAppConfiguration
-public class AccessControlRetrievalServiceIT {
-    @Autowired
-    private WebApplicationContext context;
+public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
-    @Autowired
-    private AccessControlRetrievalService aclRetrievalService;
     @Autowired
     private RepositoryObjectFactory repositoryObjectFactory;
     @Autowired
@@ -95,7 +79,6 @@ public class AccessControlRetrievalServiceIT {
     @Autowired
     private RepositoryPIDMinter pidMinter;
 
-    private MockMvc mvc;
     private ContentRootObject rootObj;
     private AdminUnit unitObj;
     private CollectionObject collObj;
@@ -105,16 +88,7 @@ public class AccessControlRetrievalServiceIT {
     private Map<String, Set<String>> objPrincRoles;
 
     @Before
-    public void init() throws Exception {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
-
-        TestHelper.setContentBase("http://localhost:48085/rest");
-
-        GroupsThreadStore.storeUsername("user");
-        GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
-
+    public void init_() throws Exception {
         generateBaseStructure();
 
         workObj = repositoryObjectFactory.createWorkObject(null);
@@ -131,12 +105,6 @@ public class AccessControlRetrievalServiceIT {
         objPrincRoles = new HashMap<>();
         addPrincipalRoles(objPrincRoles, "admin", unitOwner);
         addPrincipalRoles(objPrincRoles, AUTHENTICATED_PRINC, canAccess);
-    }
-
-
-    @After
-    public void tearDown() {
-        GroupsThreadStore.clearStore();
     }
 
     @Test
@@ -192,12 +160,6 @@ public class AccessControlRetrievalServiceIT {
         assertEquals(false, returnedValues.get("markForDeletion"));
         assertEquals(null, returnedValues.get("embargoed"));
         assertEquals(PatronAccess.parent.toString(), returnedValues.get("patronAccess"));
-    }
-
-    private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>(){});
     }
 
     private void indexObjectsInTripleStore(RepositoryObject... objs) {
