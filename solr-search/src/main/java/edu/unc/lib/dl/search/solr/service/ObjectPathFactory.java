@@ -28,10 +28,13 @@ import org.slf4j.LoggerFactory;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
@@ -57,6 +60,7 @@ public class ObjectPathFactory {
     private Map<String, PathCacheData> pathCache;
 
     private List<String> pathFields;
+    private List<String> startObjectFields;
     private String titleFieldName;
     private String typeFieldName;
 
@@ -69,6 +73,9 @@ public class ObjectPathFactory {
         titleFieldName = solrSettings.getFieldName(SearchFieldKeys.TITLE.name());
         typeFieldName = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name());
         pathFields = Arrays.asList(titleFieldName, typeFieldName);
+        startObjectFields = Arrays.asList(SearchFieldKeys.ID.name(),
+                SearchFieldKeys.TITLE.name(), SearchFieldKeys.RESOURCE_TYPE.name(),
+                SearchFieldKeys.ANCESTOR_PATH.name());
     }
 
     /**
@@ -80,6 +87,19 @@ public class ObjectPathFactory {
     public String getName(String pid) {
         PathCacheData pathData = getPathData(pid);
         return pathData != null ? pathData.name : null;
+    }
+
+    /**
+     * Retrieve path of ancestors leading up to and including the object
+     * identified by pid.
+     *
+     * @param pid pid of object to retrieve path for
+     * @return path
+     */
+    public ObjectPath getPath(PID pid) {
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid.getId(), startObjectFields);
+        BriefObjectMetadata bom = search.getObjectById(idRequest);
+        return getPath(bom);
     }
 
     /**
@@ -96,19 +116,21 @@ public class ObjectPathFactory {
      * @return
      */
     public ObjectPath getPath(BriefObjectMetadata bom) {
-        if (bom.getAncestorPathFacet() == null) {
+        if (bom.getAncestorPathFacet() == null && !RepositoryPaths.getContentRootPid().getId().equals(bom.getId())) {
             return null;
         }
 
         List<ObjectPathEntry> entries = new ArrayList<>();
 
         // Retrieve path data for each node in the ancestor path
-        for (HierarchicalFacetNode node : bom.getAncestorPathFacet().getFacetNodes()) {
-            String pid = node.getSearchKey();
-            PathCacheData pathData = getPathData(pid);
+        if (bom.getAncestorPathFacet() != null) {
+            for (HierarchicalFacetNode node : bom.getAncestorPathFacet().getFacetNodes()) {
+                String pid = node.getSearchKey();
+                PathCacheData pathData = getPathData(pid);
 
-            if (pathData != null) {
-                entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
+                if (pathData != null) {
+                    entries.add(new ObjectPathEntry(pid, pathData.name, pathData.isContainer));
+                }
             }
         }
 
