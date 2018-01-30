@@ -56,8 +56,8 @@ public class AccessControlRetrievalService {
      * @param pid
      * @return
      */
-    public Map<String, Object> getPermissions(PID pid) {
-        result = getObjectPermissions(pid);
+    public Map<String, Object> getPermissions(AgentPrincipals agent, PID pid) {
+        result = getObjectPermissions(agent, pid);
 
         RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
         if (parent instanceof ContentContainerObject) {
@@ -66,7 +66,7 @@ public class AccessControlRetrievalService {
             ArrayList<Map<String, Object>> memberPermissions = new ArrayList<Map<String,Object>>();
 
             for (ContentObject member : members) {
-                Map<String, Object> permissions = getObjectPermissions(member.getPid());
+                Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
                 memberPermissions.add(permissions);
             }
             result.put("memberPermissions", memberPermissions);
@@ -79,9 +79,9 @@ public class AccessControlRetrievalService {
      * @param pid
      * @return
      */
-    private Map<String, Object> getObjectPermissions(PID pid) {
+    private Map<String, Object> getObjectPermissions(AgentPrincipals agent, PID pid) {
         aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
-                pid, AgentPrincipals.createFromThread().getPrincipals(), assignStaffRoles);
+                pid, agent.getPrincipals(), assignStaffRoles);
 
         String uuid = pid.getUUID();
         Map<String, Set<String>> principals = aclFactory.getPrincipalRoles(pid);
@@ -106,7 +106,7 @@ public class AccessControlRetrievalService {
         this.aclFactory = aclFactory;
     }
 
-    public void getRepoObjLoader(RepositoryObjectLoader repoObjectLoader) {
+    public void setRepoObjLoader(RepositoryObjectLoader repoObjectLoader) {
         this.repoObjLoader = repoObjectLoader;
     }
 

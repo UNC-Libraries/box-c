@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -59,7 +60,6 @@ public class AccessControlRetrievalController {
         return getPermissions(uuid);
     }
 
-
     private ResponseEntity<Object> getPermissions(String uuid) {
         PID pid = PIDs.get(uuid);
 
@@ -68,7 +68,7 @@ public class AccessControlRetrievalController {
         result.put("pid", pid);
 
         try {
-            result.put("access controls", aclRetrievalService.getPermissions(pid));
+            result.put("access controls", aclRetrievalService.getPermissions(AgentPrincipals.createFromThread(), pid));
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {
