@@ -18,6 +18,9 @@ package edu.unc.lib.dl.persist.services.move;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.MEMBER_CONTAINER;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.isA;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -31,6 +34,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +45,7 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Resource;
 import org.fcrepo.client.DeleteBuilder;
 import org.fcrepo.client.FcrepoClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +53,15 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -62,6 +76,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
@@ -84,6 +99,8 @@ public class MoveObjectsServiceTest {
     private FcrepoClient fcrepoClient;
     @Mock
     private OperationsMessageSender operationsMessageSender;
+    @Mock
+    private ObjectPathFactory objectPathFactory;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -112,6 +129,8 @@ public class MoveObjectsServiceTest {
 
     private MoveObjectsService service;
 
+    private ListAppender<ILoggingEvent> actionAppender;
+
     @Before
     public void init() throws Exception {
         initMocks(this);
@@ -123,6 +142,7 @@ public class MoveObjectsServiceTest {
         service.setSparqlQueryService(sparqlQueryService);
         service.setTransactionManager(transactionManager);
         service.setOperationsMessageSender(operationsMessageSender);
+        service.setObjectPathFactory(objectPathFactory);
 
         destPid = makePid();
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockDestObj);
@@ -142,6 +162,20 @@ public class MoveObjectsServiceTest {
         when(mockQuerySolution.getResource("parent")).thenReturn(mockParentResource);
 
         when(fcrepoClient.delete(any(URI.class))).thenReturn(mockDeleteBuilder);
+
+        when(mockAgent.getUsername()).thenReturn("user");
+        when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);
+
+        Logger actionLogger = (Logger) LoggerFactory.getLogger("action_logger");
+        actionAppender = new ListAppender<>();
+        actionLogger.setLevel(Level.INFO);
+        actionLogger.addAppender(actionAppender);
+        actionAppender.start();
+    }
+
+    @After
+    public void after() {
+        actionAppender.stop();
     }
 
     @Test(expected = AccessRestrictionException.class)
@@ -181,12 +215,15 @@ public class MoveObjectsServiceTest {
         when(mockProxyResource.getURI()).thenReturn(proxyUri);
         when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
 
-        service.moveObjects(mockAgent, destPid, asList(makeMoveObject()));
+        List<PID> movePids = asList(makeMoveObject());
+        service.moveObjects(mockAgent, destPid, movePids);
 
         verify(fcrepoClient).delete(eq(URI.create(proxyUri)));
         verify(mockDestObj).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
+
+        verifyLogMessage(sourcePid, movePids);
     }
 
     @Test
@@ -206,6 +243,52 @@ public class MoveObjectsServiceTest {
         verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
+
+        verifyLogMessage(sourcePid, movePids);
+    }
+
+    private void verifyLogMessage(PID sourcePid, List<PID> pids) throws Exception {
+        List<ILoggingEvent> logEntries = actionAppender.list;
+        ObjectMapper mapper = new ObjectMapper();
+        String logEntry = logEntries.get(0).getFormattedMessage();
+        JsonNode logRoot = mapper.readTree(logEntry.getBytes());
+        assertEquals("moved", logRoot.get("event").asText());
+        assertNotNull(logRoot.get("move_id"));
+        assertEquals("user", logRoot.get("user").asText());
+        assertEquals(destPid.getId(), logRoot.get("destination_id").asText());
+
+        List<PID> pidsFromSource = new ArrayList<>();
+        JsonNode sourceObjsNode = logRoot.get("sources").get(sourcePid.getId()).get("objects");
+        Iterator<JsonNode> objIt = sourceObjsNode.elements();
+        while (objIt.hasNext()) {
+            JsonNode objNode = objIt.next();
+            pidsFromSource.add(PIDs.get(objNode.asText()));
+        }
+
+        assertTrue("Source did not contain all expected pids", pidsFromSource.containsAll(pids));
+        assertEquals("Incorrect number of pids from source", pids.size(), pidsFromSource.size());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNoDestination() throws Exception {
+        service.moveObjects(mockAgent, null, asList(makePid()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNoPids() throws Exception {
+        service.moveObjects(mockAgent, destPid, asList());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNoUsername() throws Exception {
+        when(mockAgent.getUsername()).thenReturn(null);
+        service.moveObjects(mockAgent, destPid, asList(makePid()));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testNoPrincipals() throws Exception {
+        when(mockAgent.getPrincipals()).thenReturn(null);
+        service.moveObjects(mockAgent, destPid, asList(makePid()));
     }
 
     private PID makeMoveObject() {

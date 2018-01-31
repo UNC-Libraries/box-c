@@ -16,14 +16,18 @@
 package edu.unc.lib.dl.persist.services.move;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 import org.fcrepo.client.FcrepoClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
@@ -34,6 +38,7 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  *
  */
 public class MoveObjectsService {
+    private static final Logger log = LoggerFactory.getLogger(MoveObjectsService.class);
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -41,9 +46,9 @@ public class MoveObjectsService {
     private SparqlQueryService sparqlQueryService;
     private FcrepoClient fcrepoClient;
     private OperationsMessageSender operationsMessageSender;
-
-    public MoveObjectsService() {
-    }
+    private ObjectPathFactory objectPathFactory;
+    private boolean asynchronous;
+    private ExecutorService moveExecutor;
 
     /**
      * Move a list of objects to the destination container as the provided
@@ -53,7 +58,14 @@ public class MoveObjectsService {
      * @param destination
      * @param pids
      */
-    public void moveObjects(AgentPrincipals agent, PID destination, List<PID> pids) {
+    public String moveObjects(AgentPrincipals agent, PID destination, List<PID> pids) {
+        if (destination == null || pids == null || pids.isEmpty()) {
+            throw new IllegalArgumentException("Must provide a destination and at least one object to move.");
+        }
+        if (agent == null || agent.getUsername() == null || agent.getPrincipals() == null) {
+            throw new IllegalArgumentException("Must provide agent identification information");
+        }
+
         MoveObjectsJob job = new MoveObjectsJob(agent, destination, pids);
         job.setAclService(aclService);
         job.setFcrepoClient(fcrepoClient);
@@ -61,8 +73,17 @@ public class MoveObjectsService {
         job.setSparqlQueryService(sparqlQueryService);
         job.setTransactionManager(transactionManager);
         job.setOperationsMessageSender(operationsMessageSender);
+        job.setObjectPathFactory(objectPathFactory);
 
-        job.run();
+        if (asynchronous) {
+            log.info("User {} is queuing move operation {} of {} objects to destination {}",
+                    new Object[] { agent.getUsername(), job.getMoveId(), pids.size(), destination });
+            moveExecutor.submit(job);
+        } else {
+            job.run();
+        }
+
+        return job.getMoveId();
     }
 
     /**
@@ -101,9 +122,23 @@ public class MoveObjectsService {
     }
 
     /**
+     * @param asynchronous the asynchronous to set
+     */
+    public void setAsynchronous(boolean asynchronous) {
+        this.asynchronous = asynchronous;
+    }
+
+    /**
      * @param operationsMessageSender the operationsMessageSender to set
      */
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
         this.operationsMessageSender = operationsMessageSender;
+    }
+
+    /**
+     * @param objectPathFactory the objectPathFactory to set
+     */
+    public void setObjectPathFactory(ObjectPathFactory objectPathFactory) {
+        this.objectPathFactory = objectPathFactory;
     }
 }
