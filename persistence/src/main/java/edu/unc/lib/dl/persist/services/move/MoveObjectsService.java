@@ -27,6 +27,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -49,6 +50,7 @@ public class MoveObjectsService {
     private ObjectPathFactory objectPathFactory;
     private boolean asynchronous;
     private ExecutorService moveExecutor;
+    private ActivityMetricsClient operationMetrics;
 
     /**
      * Move a list of objects to the destination container as the provided
@@ -74,6 +76,7 @@ public class MoveObjectsService {
         job.setTransactionManager(transactionManager);
         job.setOperationsMessageSender(operationsMessageSender);
         job.setObjectPathFactory(objectPathFactory);
+        job.setOperationMetrics(operationMetrics);
 
         if (asynchronous) {
             log.info("User {} is queuing move operation {} of {} objects to destination {}",
@@ -140,5 +143,12 @@ public class MoveObjectsService {
      */
     public void setObjectPathFactory(ObjectPathFactory objectPathFactory) {
         this.objectPathFactory = objectPathFactory;
+    }
+
+    /**
+     * @param operationMetrics the operationMetrics to set
+     */
+    public void setOperationMetrics(ActivityMetricsClient operationMetrics) {
+        this.operationMetrics = operationMetrics;
     }
 }

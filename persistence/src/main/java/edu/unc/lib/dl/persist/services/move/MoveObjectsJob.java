@@ -38,6 +38,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -62,6 +63,7 @@ public class MoveObjectsJob implements Runnable {
     private FcrepoClient fcrepoClient;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
+    private ActivityMetricsClient operationMetrics;
 
     private AgentPrincipals agent;
     private PID destination;
@@ -103,6 +105,12 @@ public class MoveObjectsJob implements Runnable {
         } finally {
             tx.close();
         }
+
+        reportCompleted();
+    }
+
+    private void reportCompleted() {
+        operationMetrics.incrMoves();
 
         List<PID> sourcePids = sourceToPid.keySet().stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
         operationsMessageSender.sendMoveOperation(agent.getUsername(), sourcePids, destination, pids, null);
@@ -275,6 +283,13 @@ public class MoveObjectsJob implements Runnable {
      */
     public void setObjectPathFactory(ObjectPathFactory objectPathFactory) {
         this.objectPathFactory = objectPathFactory;
+    }
+
+    /**
+     * @param operationMetrics the operationMetrics to set
+     */
+    public void setOperationMetrics(ActivityMetricsClient operationMetrics) {
+        this.operationMetrics = operationMetrics;
     }
 
     /**

@@ -76,6 +76,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -101,6 +102,8 @@ public class MoveObjectsServiceTest {
     private OperationsMessageSender operationsMessageSender;
     @Mock
     private ObjectPathFactory objectPathFactory;
+    @Mock
+    private ActivityMetricsClient operationMetrics;
 
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
@@ -143,6 +146,7 @@ public class MoveObjectsServiceTest {
         service.setTransactionManager(transactionManager);
         service.setOperationsMessageSender(operationsMessageSender);
         service.setObjectPathFactory(objectPathFactory);
+        service.setOperationMetrics(operationMetrics);
 
         destPid = makePid();
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockDestObj);
