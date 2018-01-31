@@ -45,11 +45,6 @@ public class AccessControlRetrievalService {
     private AccessControlService aclService;
     private InheritedAclFactory aclFactory;
     private RepositoryObjectLoader repoObjLoader;
-    private Map<String, Object> result;
-
-    public AccessControlRetrievalService() {
-        this.result = new HashMap<String, Object>();
-    }
 
     /**
      * Get the set of permissions that applies to both a given object and its children
@@ -57,20 +52,19 @@ public class AccessControlRetrievalService {
      * @return
      */
     public Map<String, Object> getPermissions(AgentPrincipals agent, PID pid) {
-        result = getObjectPermissions(agent, pid);
-
+        Map<String, Object> result = getObjectPermissions(agent, pid);
         RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
         if (parent instanceof ContentContainerObject) {
             List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
 
             ArrayList<Map<String, Object>> memberPermissions = new ArrayList<Map<String,Object>>();
-
             for (ContentObject member : members) {
                 Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
                 memberPermissions.add(permissions);
             }
             result.put("memberPermissions", memberPermissions);
         }
+
         return result;
     }
 
@@ -80,16 +74,18 @@ public class AccessControlRetrievalService {
      * @return
      */
     private Map<String, Object> getObjectPermissions(AgentPrincipals agent, PID pid) {
-        aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getUUID(),
+        aclService.assertHasAccess("Insufficient privileges to retrieve permissions for object " + pid.getId(),
                 pid, agent.getPrincipals(), assignStaffRoles);
 
-        String uuid = pid.getUUID();
+        String uuid = pid.getId();
         Map<String, Set<String>> principals = aclFactory.getPrincipalRoles(pid);
         boolean markedForDeletion = aclFactory.isMarkedForDeletion(pid);
         Date embargoed = aclFactory.getEmbargoUntil(pid);
         PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
 
-        result.put("uuid", uuid);
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("pid", uuid);
         result.put("principals", principals);
         result.put("markForDeletion", markedForDeletion);
         result.put("embargoed", embargoed);

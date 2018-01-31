@@ -18,9 +18,6 @@ package edu.unc.lib.dl.cdr.services.rest;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,8 +51,7 @@ public class AccessControlRetrievalController {
     private AccessControlRetrievalService aclRetrievalService;
 
     @RequestMapping(value = "/acl/getPermissions/{uuid}", method = RequestMethod.GET, produces = "application/json")
-    public @ResponseBody ResponseEntity<Object> getAclPermssions(@PathVariable("uuid") String uuid,
-            HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody ResponseEntity<Object> getAclPermssions(@PathVariable("uuid") String uuid) {
 
         return getPermissions(uuid);
     }
@@ -65,7 +61,7 @@ public class AccessControlRetrievalController {
 
         Map<String, Object> result = new HashMap<>();
         result.put("action", "retrieve acls");
-        result.put("pid", pid);
+        result.put("pid", pid.getId());
 
         try {
             result.put("access controls", aclRetrievalService.getPermissions(AgentPrincipals.createFromThread(), pid));
