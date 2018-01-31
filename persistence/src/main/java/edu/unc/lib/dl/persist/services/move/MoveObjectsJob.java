@@ -213,8 +213,9 @@ public class MoveObjectsJob implements Runnable {
         // Log moved objects grouped by source
         Map<String, Map<String, Object>> sourcesLog = new HashMap<>();
         for (String sourceId : sourceToPid.keySet()) {
+            PID sourcePid = PIDs.get(sourceId);
             Map<String, Object> sourceLog = new HashMap<>();
-            ObjectPath sourcePath = objectPathFactory.getPath(destination);
+            ObjectPath sourcePath = objectPathFactory.getPath(sourcePid);
             if (sourcePath != null) {
                 sourceLog.put("path", sourcePath.toNamePath());
             }

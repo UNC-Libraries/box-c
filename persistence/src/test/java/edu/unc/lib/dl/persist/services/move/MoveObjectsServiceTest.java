@@ -77,6 +77,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionCancelledException;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
+import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
@@ -87,6 +88,8 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  *
  */
 public class MoveObjectsServiceTest {
+    private final static String DEST_OBJ_PATH = "/path/to/destination";
+    private final static String SOURCE_OBJ_PATH = "/path/to/source";
 
     @Mock
     private AccessControlService aclService;
@@ -109,6 +112,7 @@ public class MoveObjectsServiceTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     private PID destPid;
+    private PID sourcePid;
     @Mock
     private ContentContainerObject mockDestObj;
     @Mock
@@ -129,6 +133,11 @@ public class MoveObjectsServiceTest {
     private Resource mockParentResource;
     @Mock
     private DeleteBuilder mockDeleteBuilder;
+    @Mock
+    private ObjectPath destObjPath;
+    @Mock
+    private ObjectPath sourceObjPath;
+
 
     private MoveObjectsService service;
 
@@ -147,6 +156,8 @@ public class MoveObjectsServiceTest {
         service.setOperationsMessageSender(operationsMessageSender);
         service.setObjectPathFactory(objectPathFactory);
         service.setOperationMetrics(operationMetrics);
+
+        sourcePid = makePid();
 
         destPid = makePid();
         when(repositoryObjectLoader.getRepositoryObject(destPid)).thenReturn(mockDestObj);
@@ -170,6 +181,13 @@ public class MoveObjectsServiceTest {
         when(mockAgent.getUsername()).thenReturn("user");
         when(mockAgent.getPrincipals()).thenReturn(mockAccessSet);
 
+        when(destObjPath.toNamePath()).thenReturn(DEST_OBJ_PATH);
+        when(objectPathFactory.getPath(eq(destPid))).thenReturn(destObjPath);
+
+        when(sourceObjPath.toNamePath()).thenReturn(SOURCE_OBJ_PATH);
+        when(objectPathFactory.getPath(eq(sourcePid))).thenReturn(sourceObjPath);
+
+        // Adding retrievable logger for move log
         Logger actionLogger = (Logger) LoggerFactory.getLogger("action_logger");
         actionAppender = new ListAppender<>();
         actionLogger.setLevel(Level.INFO);
@@ -212,7 +230,6 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testMoveObject() throws Exception {
-        PID sourcePid = makePid();
         String proxyUri = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy";
 
         when(mockResultSet.hasNext()).thenReturn(true, false);
@@ -232,7 +249,6 @@ public class MoveObjectsServiceTest {
 
     @Test
     public void testMoveMultipleObjects() throws Exception {
-        PID sourcePid = makePid();
         String proxyUri1 = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy1";
         String proxyUri2 = sourcePid.getRepositoryPath() + "/" + MEMBER_CONTAINER + "/proxy2";
 
@@ -260,9 +276,16 @@ public class MoveObjectsServiceTest {
         assertNotNull(logRoot.get("move_id"));
         assertEquals("user", logRoot.get("user").asText());
         assertEquals(destPid.getId(), logRoot.get("destination_id").asText());
+        assertEquals("Incorrect path for destination",
+                DEST_OBJ_PATH, logRoot.get("destination_path").asText());
 
+        JsonNode sourceNode = logRoot.get("sources").get(sourcePid.getId());
+        assertEquals("Incorrect path for source",
+                SOURCE_OBJ_PATH, sourceNode.get("path").asText());
+        JsonNode sourceObjsNode = sourceNode.get("objects");
+
+        // Build a list of objects logged for the source
         List<PID> pidsFromSource = new ArrayList<>();
-        JsonNode sourceObjsNode = logRoot.get("sources").get(sourcePid.getId()).get("objects");
         Iterator<JsonNode> objIt = sourceObjsNode.elements();
         while (objIt.hasNext()) {
             JsonNode objNode = objIt.next();
