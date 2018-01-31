@@ -33,11 +33,35 @@
     <context:component-scan resource-pattern="**/AccessControlRetrievalController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
     
     <bean id="aclRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService">
-	    <constructor-arg ref="inheritedAclFactory" />
-	    <constructor-arg ref="repositoryObjectLoader" />
+        <property name="aclService" ref="aclService" />
+	    <property name="aclFactory" ref="inheritedAclFactory" />
+	    <property name="repoObjLoader" ref="repositoryObjectLoader" />
     </bean>
     
     <!-- Access Retrieval App beans -->
+    <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
+        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+        <property name="pathFactory" ref="contentPathFactory" />
+    </bean>
+
+    <bean id="aclGlobalProperties"
+        class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:acl-config.properties</value>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="globalPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator">
+        <constructor-arg ref="aclGlobalProperties" />
+    </bean>
+    
+    <bean id="aclService" class="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl">
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
+    </bean>
+    
     <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
             init-method="init">
         <property name="cacheMaxSize" value="500" />
@@ -60,11 +84,5 @@
         <property name="objectAclFactory" ref="objectAclFactory" />
         <property name="pathFactory" ref="contentPathFactory" />
         <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
-    </bean>
-    
-    <!-- **** -->
-    
-    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
-        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
 </beans>

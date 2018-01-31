@@ -18,13 +18,12 @@ package edu.unc.lib.dl.cdr.services.rest;
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
 import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
 import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +33,7 @@ import java.util.stream.Collectors;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -54,7 +53,6 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.CdrAcl;
 
 /**
@@ -108,58 +106,47 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
     }
 
     @Test
-    public void testGetPermissions() throws UnsupportedOperationException, Exception {
+    public void testGetPermissionsObjectWithChildren() throws Exception {
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
 
         MvcResult result = mvc.perform(get("/acl/getPermissions/" + uuid))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        Map<String, Object> respMap = getMapFromResponse(result);
+        String mapJson = generateJson(result);
 
-        assertTrue(respMap.containsKey("memberPermissions"));
-        assertEquals(uuid, respMap.get("uuid"));
-        assertEquals(false, respMap.get("markForDeletion"));
-        assertEquals(null, respMap.get("embargoed"));
-        assertEquals(PatronAccess.parent.toString(), respMap.get("patronAccess"));
+        assertTrue(mapJson.contains("access controls"));
+        assertTrue(mapJson.contains("memberPermissions"));
+        assertTrue(mapJson.contains("pid\":\"" + uuid));
+        assertTrue(mapJson.contains("markForDeletion\":false"));
+        assertTrue(mapJson.contains("embargoed\":null"));
+        assertTrue(mapJson.contains("patronAccess\":\"parent"));
     }
 
-    @Test(expected = InvalidOperationForObjectType.class)
-    public void testGetPermissionsWrongObjType() throws UnsupportedOperationException, Exception {
-        RepositoryObject wrongObjType = repositoryObjectLoader.getPremisEventObject(fileObj.getPid());
-
-        indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj, wrongObjType);
-
-        mvc.perform(get("/acl/getPermissions/" + wrongObjType.getPid().getUUID()))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
-    }
-
-    @SuppressWarnings("unchecked")
     @Test
-    public void testGetMemberPermissions() throws UnsupportedOperationException, Exception {
+    public void testGetPermissionsObjectWithoutChildren() throws Exception {
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
+        String fileUuid = fileObj.getPid().getId();
 
-        MvcResult result = mvc.perform(get("/acl/getPermissions/" + uuid))
+        MvcResult result = mvc.perform(get("/acl/getPermissions/" + fileUuid))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        String mapJson = generateJson(result);
+
+        assertTrue(mapJson.contains("access controls"));
+        assertFalse(mapJson.contains("memberPermissions"));
+        assertTrue(mapJson.contains("pid\":\"" + fileUuid));
+        assertTrue(mapJson.contains("markForDeletion\":false"));
+        assertTrue(mapJson.contains("embargoed\":null"));
+        assertTrue(mapJson.contains("patronAccess\":\"parent"));
+
+    }
+
+    private String generateJson(MvcResult result) throws Exception {
         Map<String, Object> respMap = getMapFromResponse(result);
-
-        Map<String,Object> returnedValues = ((ArrayList<Map<String, Object>>) respMap.get("memberPermissions")).get(0);
-        Object principals = returnedValues.get("principals");
-        assertTrue(respMap.containsKey("memberPermissions"));
-        assertEquals(fileObj.getPid().getUUID(), returnedValues.get("uuid"));
-    //    assertEquals(objPrincRoles, principals);
-
-        assertTrue(((Map<String, Object>)  principals).containsKey("admin"));
-    //    assertTrue(((Map<String, Object>)  principals).containsValue(unitOwner));
-        assertTrue(((Map<String, Object>)  principals).containsKey("authenticated"));
-   //     assertTrue(((Map<String, Object>)  principals).containsValue(canAccess));
-
-        assertEquals(false, returnedValues.get("markForDeletion"));
-        assertEquals(null, returnedValues.get("embargoed"));
-        assertEquals(PatronAccess.parent.toString(), returnedValues.get("patronAccess"));
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(respMap);
     }
 
     private void indexObjectsInTripleStore(RepositoryObject... objs) {
@@ -195,4 +182,5 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
             .collect(Collectors.toSet());
         objPrincRoles.put(princ, roleSet);
     }
+
 }
