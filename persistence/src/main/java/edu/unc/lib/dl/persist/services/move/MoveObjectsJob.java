@@ -157,7 +157,7 @@ public class MoveObjectsJob implements Runnable {
     private final static String PROXY_QUERY =
             "select ?proxyuri ?parent\n" +
             "where {\n" +
-            "  ?proxyuri <http://www.openarchives.org/ore/terms/proxyFor> <$1> .\n" +
+            "  ?proxyuri <http://www.openarchives.org/ore/terms/proxyFor> <%s> .\n" +
             "  ?proxyuri <http://www.openarchives.org/ore/terms/proxyIn> ?parent .\n" +
             "  FILTER regex(str(?proxyuri), \"/member\")\n" +
             "}";
