@@ -205,83 +205,6 @@
         <property name="spoofEnabled" value="${spoofing.enabled:false}" />
     </bean>
     
-    <!-- Access Retrieval App beans -->
-    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
-        <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
-    </bean>
-    
-    <bean id="objectAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory"
-            init-method="init">
-        <property name="cacheMaxSize" value="${cache.objectAcls.maxSize}" />
-        <property name="cacheTimeToLive" value="${cache.objectAcls.timeToLive}" />
-        <property name="queryService" ref="sparqlQueryService" />
-    </bean>
-    
-     <bean id="objectPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.ObjectPermissionEvaluator">
-        <property name="aclFactory" ref="objectAclFactory" />
-    </bean>
-    
-     <bean id="contentPathFactory" class="edu.unc.lib.dl.fedora.ContentPathFactory"
-            init-method="init">
-        <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
-        <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
-        <property name="queryService" ref="sparqlQueryService" />
-    </bean>
-    
-    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
-        <property name="objectAclFactory" ref="objectAclFactory" />
-        <property name="pathFactory" ref="contentPathFactory" />
-        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
-    </bean>
-    
-    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
-        <constructor-arg value="${fcrepo.baseUrl}" />
-    </bean>
-    
-    <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
-            factory-bean="fcrepoClientFactory" factory-method="makeClient">
-    </bean>
-
-    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
-        <property name="client" ref="fcrepoClient" />
-    </bean>
-
-    <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
-
-    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
-        <property name="fcrepoClient" ref="fcrepoClient" />
-    </bean>
-
-    <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
-        <property name="client" ref="fcrepoClient" />
-        <property name="ldpFactory" ref="ldpContainerFactory" />
-        <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
-        <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
-    </bean>
-
-    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
-        <property name="client" ref="fcrepoClient" />
-        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-        <property name="pidMinter" ref="repositoryPIDMinter" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-	</bean>
-    
-    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
-        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
-        <property name="cacheTimeToLive" value="${cache.contentPath.timeToLive}" />
-        <property name="cacheMaxSize" value="${cache.contentPath.maxSize}" />
-	</bean>
-	
-	<bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
-        <property name="client" ref="fcrepoClient" />
-        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
-        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
-	</bean>
-    
-    <!-- **** -->
-    
     <bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
         <property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
     </bean>
@@ -353,7 +276,11 @@
       <property name="queryLayer" ref="queryLayer" />
   </bean>
   
-  <bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSender" />
+  <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${smtp.host:localhost}" />
+        <property name="port" value="${smtp.port:25}" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
