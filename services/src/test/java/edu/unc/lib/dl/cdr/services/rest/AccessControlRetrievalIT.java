@@ -16,24 +16,20 @@
 package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.acl.util.UserRole.canAccess;
-import static edu.unc.lib.dl.acl.util.UserRole.unitOwner;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +37,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.web.servlet.MvcResult;
 
-import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.cdr.services.rest.modify.AbstractAPIIT;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
@@ -67,7 +62,7 @@ import edu.unc.lib.dl.rdf.CdrAcl;
     @ContextConfiguration("/spring-test/cdr-client-container.xml"),
     @ContextConfiguration("/access-control-retrieval-it-servlet.xml")
 })
-public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
+public class AccessControlRetrievalIT extends AbstractAPIIT {
     @Autowired
     private RepositoryObjectLoader repositoryObjectLoader;
     @Autowired
@@ -83,7 +78,6 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
     private WorkObject workObj;
     private FileObject fileObj;
     private String uuid;
-    private Map<String, Set<String>> objPrincRoles;
 
     @Before
     public void init_() throws Exception {
@@ -97,14 +91,10 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
                 "text.txt", "text/plain", null, null);
 
         workObj.setPrimaryObject(fileObj.getPid());
-        workObj.addDescription(getClass().getResourceAsStream("/datastreams/simpleMods.xml"));
-        uuid = workObj.getPid().getUUID();
-
-        objPrincRoles = new HashMap<>();
-        addPrincipalRoles(objPrincRoles, "admin", unitOwner);
-        addPrincipalRoles(objPrincRoles, AUTHENTICATED_PRINC, canAccess);
+        uuid = workObj.getPid().getId();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testGetPermissionsObjectWithChildren() throws Exception {
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
@@ -113,16 +103,15 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        String mapJson = generateJson(result);
+        Map<String,Object> respMap = getMapFromResponse(result);
+        assertRespMapHasRequiredFields(respMap, uuid);
 
-        assertTrue(mapJson.contains("access controls"));
-        assertTrue(mapJson.contains("memberPermissions"));
-        assertTrue(mapJson.contains("pid\":\"" + uuid));
-        assertTrue(mapJson.contains("markForDeletion\":false"));
-        assertTrue(mapJson.contains("embargoed\":null"));
-        assertTrue(mapJson.contains("patronAccess\":\"parent"));
+        Map<String,Object> aclMap = (Map<String, Object>) respMap.get("accessControls");
+        assertHasCorrectAccessControls(aclMap, uuid);
+        assertTrue(aclMap.containsKey("memberPermissions"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testGetPermissionsObjectWithoutChildren() throws Exception {
         indexObjectsInTripleStore(rootObj, workObj, fileObj, unitObj, collObj);
@@ -132,21 +121,35 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
-        String mapJson = generateJson(result);
+        Map<String,Object> respMap = getMapFromResponse(result);
+        assertRespMapHasRequiredFields(respMap, fileUuid);
 
-        assertTrue(mapJson.contains("access controls"));
-        assertFalse(mapJson.contains("memberPermissions"));
-        assertTrue(mapJson.contains("pid\":\"" + fileUuid));
-        assertTrue(mapJson.contains("markForDeletion\":false"));
-        assertTrue(mapJson.contains("embargoed\":null"));
-        assertTrue(mapJson.contains("patronAccess\":\"parent"));
-
+        Map<String,Object> aclMap = (Map<String, Object>) respMap.get("accessControls");
+        assertHasCorrectAccessControls(aclMap, fileUuid);
+        assertFalse(aclMap.containsKey("memberPermissions"));
     }
 
-    private String generateJson(MvcResult result) throws Exception {
-        Map<String, Object> respMap = getMapFromResponse(result);
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.writeValueAsString(respMap);
+    private void assertRespMapHasRequiredFields(Map<String, Object> respMap, String uuid) {
+        assertEquals("retrieve acls", respMap.get("action"));
+        assertEquals(uuid, respMap.get("pid"));
+        assertTrue(respMap.containsKey("accessControls"));
+        assertTrue(respMap.containsKey("timestamp"));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void assertHasCorrectAccessControls(Map<String, Object> aclMap, String uuid) {
+        assertEquals(uuid, aclMap.get("pid"));
+        assertEquals(false, aclMap.get("markForDeletion"));
+        assertNull(aclMap.get("inheritedEmbargo"));
+        assertNull(aclMap.get("embargo"));
+        assertEquals("parent", aclMap.get("patronAccess"));
+        assertEquals("parent", aclMap.get("inheritedPatronAccess"));
+        Map<String, Set<String>> principals = (Map<String, Set<String>>) aclMap.get("principals");
+        assertEquals(0, principals.size());
+        Map<String, Set<String>> inheritedPrincipals = (Map<String, Set<String>>) aclMap.get("inheritedPrincipals");
+        assertEquals(2, inheritedPrincipals.size());
+        assertTrue(inheritedPrincipals.containsKey("admin"));
+        assertTrue(inheritedPrincipals.containsKey("authenticated"));
     }
 
     private void indexObjectsInTripleStore(RepositoryObject... objs) {
@@ -173,14 +176,6 @@ public class AccessControlRetrievalServiceIT extends AbstractAPIIT {
         collResc.addProperty(CdrAcl.canAccess, AUTHENTICATED_PRINC);
         collObj = repositoryObjectFactory.createCollectionObject(collPid, collModel);
         unitObj.addMember(collObj);
-    }
-
-    private void addPrincipalRoles(Map<String, Set<String>> objPrincRoles,
-            String princ, UserRole... roles) {
-        Set<String> roleSet = Arrays.stream(roles)
-            .map(r -> r.getPropertyString())
-            .collect(Collectors.toSet());
-        objPrincRoles.put(princ, roleSet);
     }
 
 }
