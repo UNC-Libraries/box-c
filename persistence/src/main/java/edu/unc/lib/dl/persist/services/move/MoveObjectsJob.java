@@ -54,7 +54,7 @@ import edu.unc.lib.dl.util.DateTimeUtil;
  */
 public class MoveObjectsJob implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(MoveObjectsJob.class);
-    private static final Logger actionLog = LoggerFactory.getLogger("action_logger");
+    private static final Logger moveLog = LoggerFactory.getLogger("move_logger");
 
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
@@ -231,7 +231,7 @@ public class MoveObjectsJob implements Runnable {
 
         ObjectMapper mapper = new ObjectMapper();
         try {
-            actionLog.info(mapper.writeValueAsString(logEntry));
+            moveLog.info(mapper.writeValueAsString(logEntry));
         } catch (IOException e) {
             log.error("Failed to serialize log entry for move operation {}", moveId, e);
         }
