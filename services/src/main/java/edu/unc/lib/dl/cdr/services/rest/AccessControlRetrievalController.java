@@ -64,7 +64,7 @@ public class AccessControlRetrievalController {
         result.put("pid", pid.getId());
 
         try {
-            result.put("access controls", aclRetrievalService.getPermissions(AgentPrincipals.createFromThread(), pid));
+            result.put("accessControls", aclRetrievalService.getPermissions(AgentPrincipals.createFromThread(), pid));
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AuthorizationException || e instanceof AccessRestrictionException) {

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory;
+import edu.unc.lib.dl.acl.fcrepo4.ObjectAclFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.service.PatronAccess;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
@@ -43,7 +44,8 @@ import edu.unc.lib.dl.fedora.PID;
  */
 public class AccessControlRetrievalService {
     private AccessControlService aclService;
-    private InheritedAclFactory aclFactory;
+    private ObjectAclFactory objAclFactory;
+    private InheritedAclFactory inheritedAclFactory;
     private RepositoryObjectLoader repoObjLoader;
 
     /**
@@ -57,7 +59,7 @@ public class AccessControlRetrievalService {
         if (parent instanceof ContentContainerObject) {
             List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
 
-            ArrayList<Map<String, Object>> memberPermissions = new ArrayList<Map<String,Object>>();
+            List<Map<String, Object>> memberPermissions = new ArrayList<>();
             for (ContentObject member : members) {
                 Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
                 memberPermissions.add(permissions);
@@ -78,18 +80,28 @@ public class AccessControlRetrievalService {
                 pid, agent.getPrincipals(), assignStaffRoles);
 
         String uuid = pid.getId();
-        Map<String, Set<String>> principals = aclFactory.getPrincipalRoles(pid);
-        boolean markedForDeletion = aclFactory.isMarkedForDeletion(pid);
-        Date embargoed = aclFactory.getEmbargoUntil(pid);
-        PatronAccess patronAccess = aclFactory.getPatronAccess(pid);
+        Map<String, Set<String>> principals = objAclFactory.getPrincipalRoles(pid);
+        boolean markedForDeletion = objAclFactory.isMarkedForDeletion(pid);
+        Date embargo = objAclFactory.getEmbargoUntil(pid);
+        PatronAccess patronAccess = objAclFactory.getPatronAccess(pid);
+
+        Map<String, Set<String>> inheritedPrincipals = inheritedAclFactory.getPrincipalRoles(pid);
+        boolean inheritedMarkedForDeletion = inheritedAclFactory.isMarkedForDeletion(pid);
+        Date inheritedEmbargo = inheritedAclFactory.getEmbargoUntil(pid);
+        PatronAccess inheritedPatronAccess = inheritedAclFactory.getPatronAccess(pid);
 
         Map<String, Object> result = new HashMap<>();
 
         result.put("pid", uuid);
         result.put("principals", principals);
         result.put("markForDeletion", markedForDeletion);
-        result.put("embargoed", embargoed);
+        result.put("embargo", embargo);
         result.put("patronAccess", patronAccess);
+
+        result.put("inheritedPrincipals", inheritedPrincipals);
+        result.put("inheritedMarkForDeletion", inheritedMarkedForDeletion);
+        result.put("inheritedEmbargo", inheritedEmbargo);
+        result.put("inheritedPatronAccess", inheritedPatronAccess);
 
         return result;
     }
@@ -98,8 +110,12 @@ public class AccessControlRetrievalService {
         this.aclService = aclService;
     }
 
-    public void setAclFactory(InheritedAclFactory aclFactory) {
-        this.aclFactory = aclFactory;
+    public void setObjectAclFactory(ObjectAclFactory objAclFactory) {
+        this.objAclFactory = objAclFactory;
+    }
+
+    public void setInheritedAclFactory(InheritedAclFactory inheritedAclFactory) {
+        this.inheritedAclFactory = inheritedAclFactory;
     }
 
     public void setRepoObjLoader(RepositoryObjectLoader repoObjectLoader) {
