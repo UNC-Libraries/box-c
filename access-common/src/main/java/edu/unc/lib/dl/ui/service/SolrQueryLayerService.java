@@ -32,8 +32,11 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
+import org.apache.solr.client.solrj.response.GroupCommand;
+import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.params.GroupParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1014,26 +1017,24 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @return the count, or -1 if there was an error retrieving the count
 	 */
 
-	public int getDepartmentsCount() {
-
-		SolrQuery query;
-		QueryResponse response;
-
-		query = new SolrQuery();
-		query.setQuery("*:*");
-		query.setRows(0);
-		query.addFacetField("department");
-		query.setFacetLimit(-1);
-
+	public int getDepartmentsCount(AccessGroupSet accessGroups) {
 		try {
-			response = this.executeQuery(query);
+			StringBuilder queryBuilder = new StringBuilder("*:*");
+			addAccessRestrictions(queryBuilder, accessGroups);
+
+			SolrQuery query = new SolrQuery();
+			query.setQuery(queryBuilder.toString());
+			query.setRows(0);
+			query.addFacetField("department");
+			query.setFacetLimit(-1);
+			
+			QueryResponse response = this.executeQuery(query);
 			return response.getFacetField("department").getValueCount();
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Solr object request: " + e);
+		} catch (SolrServerException | AccessRestrictionException e) {
+			LOG.error("Error retrieving department list", e);
 		}
 
 		return -1;
-
 	}
 
 	public long getInvalidVocabularyCount(SearchRequest searchRequest) {
@@ -1083,25 +1084,22 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @return the count, or -1 if there was an error retrieving the count
 	 */
 
-	public long getCollectionsCount() {
-
-		SolrQuery query;
-		QueryResponse response;
-
-		query = new SolrQuery();
-		query.setQuery("resourceType:Collection");
-		query.setRows(0);
-		query.setFacetLimit(-1);
-
+	public long getCollectionsCount(AccessGroupSet accessGroups) {
 		try {
-			response = this.executeQuery(query);
+			StringBuilder queryBuilder = new StringBuilder("resourceType:Collection");
+			addAccessRestrictions(queryBuilder, accessGroups);
+
+			SolrQuery query = new SolrQuery();
+			query.setQuery(queryBuilder.toString());
+			query.setRows(0);
+			
+			QueryResponse response = this.executeQuery(query);
 			return response.getResults().getNumFound();
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Solr object request: " + e);
+		} catch (SolrServerException | AccessRestrictionException e) {
+			LOG.error("Error retrieving collections counts", e);
 		}
 
 		return -1;
-
 	}
 
 	/**
@@ -1110,21 +1108,20 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 * @return a map from format name to count
 	 */
 
-	public Map<String, Long> getFormatCounts() {
-
-		SolrQuery query;
-		QueryResponse response;
-
-		query = new SolrQuery();
-		query.setQuery("*:*");
-		query.setRows(0);
-		query.addFacetField("contentType");
-		query.setFacetLimit(-1);
-
+	public Map<String, Long> getFormatCounts(AccessGroupSet accessGroups) {
 		HashMap<String, Long> counts = new HashMap<String, Long>();
-
+		
 		try {
-			response = this.executeQuery(query);
+			StringBuilder queryBuilder = new StringBuilder("*:*");
+			addAccessRestrictions(queryBuilder, accessGroups);
+
+			SolrQuery query = new SolrQuery();
+			query.setQuery(queryBuilder.toString());
+			query.setRows(0);
+			query.addFacetField("contentType");
+			query.setFacetLimit(-1);
+			
+			QueryResponse response = this.executeQuery(query);
 			FacetField facetField = response.getFacetField("contentType");
 
 			for (Count count : facetField.getValues()) {
@@ -1141,13 +1138,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 					counts.put("video", count.getCount());
 
 			}
-
-		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Solr object request: " + e);
+		} catch (SolrServerException | AccessRestrictionException e) {
+			LOG.error("Error retrieving format counts", e);
 		}
-
+		
 		return counts;
-
 	}
 
 	public static String getWriteRoleFilter(AccessGroupSet groups) {
