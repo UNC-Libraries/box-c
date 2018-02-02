@@ -59,12 +59,14 @@ public class AccessControlRetrievalService {
         if (parent instanceof ContentContainerObject) {
             List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
 
-            List<Map<String, Object>> memberPermissions = new ArrayList<>();
-            for (ContentObject member : members) {
-                Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
-                memberPermissions.add(permissions);
+            if (!members.isEmpty()) {
+                List<Map<String, Object>> memberPermissions = new ArrayList<>();
+                for (ContentObject member : members) {
+                    Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
+                    memberPermissions.add(permissions);
+                }
+                result.put("memberPermissions", memberPermissions);
             }
-            result.put("memberPermissions", memberPermissions);
         }
 
         return result;
