@@ -81,7 +81,7 @@ public class MoveObjectsJob implements Runnable {
     private ActivityMetricsClient operationMetrics;
 
     private AgentPrincipals agent;
-    private PID destination;
+    private PID destinationPid;
     private List<PID> pids;
 
     private String moveId;
@@ -92,7 +92,7 @@ public class MoveObjectsJob implements Runnable {
 
     public MoveObjectsJob(AgentPrincipals agent, PID destination, List<PID> pids) {
         this.agent = agent;
-        this.destination = destination;
+        this.destinationPid = destination;
         this.pids = pids;
         sourceToPid = new HashMap<>();
         moveId = Long.toString(new SecureRandom().nextLong());
@@ -101,12 +101,12 @@ public class MoveObjectsJob implements Runnable {
     @Override
     public void run() {
         log.debug("Performing move for agent {} of {} objects to destination {}",
-                agent.getUsername(), pids.size(), destination);
+                agent.getUsername(), pids.size(), destinationPid);
 
         // Check that agent has permission to add items to destination
         aclService.assertHasAccess("Agent " + agent.getUsername() + " does not have permission"
-                + " to move objects into destination " + destination,
-                destination, agent.getPrincipals(), Permission.move);
+                + " to move objects into destination " + destinationPid,
+                destinationPid, agent.getPrincipals(), Permission.move);
 
         retrieveDestinationContainer();
 
@@ -128,16 +128,16 @@ public class MoveObjectsJob implements Runnable {
         operationMetrics.incrMoves();
 
         List<PID> sourcePids = sourceToPid.keySet().stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
-        operationsMessageSender.sendMoveOperation(agent.getUsername(), sourcePids, destination, pids, null);
+        operationsMessageSender.sendMoveOperation(agent.getUsername(), sourcePids, destinationPid, pids, null);
 
         logMoveAction();
     }
 
     private void retrieveDestinationContainer() {
         // Verify that the destination is a content container
-        RepositoryObject destObj = repositoryObjectLoader.getRepositoryObject(destination);
+        RepositoryObject destObj = repositoryObjectLoader.getRepositoryObject(destinationPid);
         if (!(destObj instanceof ContentContainerObject)) {
-            throw new IllegalArgumentException("Destination " + destination + " was not a content container");
+            throw new IllegalArgumentException("Destination " + destinationPid + " was not a content container");
         }
         destContainer = (ContentContainerObject) destObj;
     }
@@ -146,8 +146,7 @@ public class MoveObjectsJob implements Runnable {
         aclService.assertHasAccess("Agent " + agent.getUsername() + " does not have permission to move object "
                 + objPid, objPid, agent.getPrincipals(), Permission.move);
 
-        RepositoryObject moveObj = repositoryObjectLoader.getRepositoryObject(objPid);
-        ContentObject moveContent = (ContentObject) moveObj;
+        ContentObject moveContent = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
 
         destroyProxy(objPid);
 
@@ -219,8 +218,8 @@ public class MoveObjectsJob implements Runnable {
         logEntry.put("move_id", moveId);
         logEntry.put("user", agent.getUsername());
 
-        logEntry.put("destination_id", destination.getId());
-        ObjectPath destPath = objectPathFactory.getPath(destination);
+        logEntry.put("destination_id", destinationPid.getId());
+        ObjectPath destPath = objectPathFactory.getPath(destinationPid);
         if (destPath != null) {
             logEntry.put("destination_path", destPath.toNamePath());
         }
