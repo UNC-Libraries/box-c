@@ -83,6 +83,4 @@ public abstract class AbstractAPIIT {
                 new TypeReference<Map<String, Object>>(){});
     }
 
-
-
 }

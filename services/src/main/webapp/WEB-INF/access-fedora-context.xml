@@ -51,6 +51,12 @@
         <property name="aclFactory" ref="objectAclFactory" />
     </bean>
     
+    <bean id="inheritedAclFactory" class="edu.unc.lib.dl.acl.fcrepo4.InheritedAclFactory">
+        <property name="objectAclFactory" ref="objectAclFactory" />
+        <property name="pathFactory" ref="contentPathFactory" />
+        <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
+    </bean>
+    
     <bean id="inheritedPermissionEvaluator" class="edu.unc.lib.dl.acl.fcrepo4.InheritedPermissionEvaluator">
         <property name="objectPermissionEvaluator" ref="objectPermissionEvaluator" />
         <property name="pathFactory" ref="contentPathFactory" />

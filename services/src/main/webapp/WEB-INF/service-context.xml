@@ -276,7 +276,11 @@
       <property name="queryLayer" ref="queryLayer" />
   </bean>
   
-  <bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSender" />
+  <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+        <property name="host" value="${smtp.host:localhost}" />
+        <property name="port" value="${smtp.port:25}" />
+        <property name="defaultEncoding" value="UTF-8" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>
