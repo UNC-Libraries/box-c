@@ -24,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -103,12 +104,19 @@ public class AccessControlRetrievalIT extends AbstractAPIIT {
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
+        // check first-level response fields
         Map<String,Object> respMap = getMapFromResponse(result);
         assertRespMapHasRequiredFields(respMap, uuid);
 
+        // check access controls of parent
         Map<String,Object> aclMap = (Map<String, Object>) respMap.get("accessControls");
         assertHasCorrectAccessControls(aclMap, uuid);
         assertTrue(aclMap.containsKey("memberPermissions"));
+
+        // check access controls of child
+        List<Map<String, Object>> memberPermissions = (List<Map<String, Object>>) aclMap.get("memberPermissions");
+        Map<String, Object> memPermsMap = memberPermissions.get(0);
+        assertHasCorrectAccessControls(memPermsMap, fileObj.getPid().getId());
     }
 
     @SuppressWarnings("unchecked")
