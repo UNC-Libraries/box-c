@@ -95,7 +95,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		searchRequest.setAccessGroups(accessGroups);
 
 		SearchState searchState = searchStateFactory.createTitleListSearchState();
-		List<String> resourceTypes = new ArrayList<String>();
+		List<String> resourceTypes = new ArrayList<>();
 		resourceTypes.add(searchSettings.resourceTypeCollection);
 		searchState.setResourceTypes(resourceTypes);
 		searchState.setRowsPerPage(searchSettings.defaultListResultsPerPage);
@@ -119,7 +119,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		searchState.setResourceTypes(searchSettings.defaultCollectionResourceTypes);
 		searchState.setRowsPerPage(250);
 		searchState.setFacetsToRetrieve(null);
-		ArrayList<String> resultFields = new ArrayList<String>();
+		List<String> resultFields = new ArrayList<>();
 		resultFields.add(SearchFieldKeys.ANCESTOR_PATH.name());
 		resultFields.add(SearchFieldKeys.TITLE.name());
 		resultFields.add(SearchFieldKeys.ID.name());
@@ -736,7 +736,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		if (browseRequest.isIncludeFiles() && browseState.getRowsPerPage() > 0) {
 			browseState.getResourceTypes().add(searchSettings.resourceTypeFile);
 			SearchState fileSearchState = new SearchState(browseState);
-			List<String> resourceTypes = new ArrayList<String>();
+			List<String> resourceTypes = new ArrayList<>();
 			resourceTypes.add(searchSettings.resourceTypeFile);
 			fileSearchState.setResourceTypes(resourceTypes);
 			CutoffFacet ancestorPath = (CutoffFacet) fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
@@ -772,7 +772,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery directMatchQuery = this.generateSearch(directMatchRequest);
 		QueryResponse directMatchResponse = this.executeQuery(directMatchQuery);
 		String idField = solrSettings.getFieldName(SearchFieldKeys.ID.name());
-		Set<String> directMatchIds = new HashSet<String>(directMatchResponse.getResults().size());
+		Set<String> directMatchIds = new HashSet<>(directMatchResponse.getResults().size());
 		for (SolrDocument document : directMatchResponse.getResults()) {
 			directMatchIds.add((String) document.getFirstValue(idField));
 		}
@@ -1032,9 +1032,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return response.getFacetField("department").getValueCount();
 		} catch (SolrServerException | AccessRestrictionException e) {
 			LOG.error("Error retrieving department list", e);
+			return -1;
 		}
-
-		return -1;
 	}
 
 	public long getInvalidVocabularyCount(SearchRequest searchRequest) {
@@ -1109,7 +1108,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 */
 
 	public Map<String, Long> getFormatCounts(AccessGroupSet accessGroups) {
-		HashMap<String, Long> counts = new HashMap<String, Long>();
+		Map<String, Long> counts = new HashMap<>();
 		
 		try {
 			StringBuilder queryBuilder = new StringBuilder("*:*");
