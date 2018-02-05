@@ -119,8 +119,7 @@ public class ServiceDocumentManagerImpl extends AbstractFedoraManager implements
 	protected List<SwordCollection> getImmediateContainerChildren(PID pid, AuthCredentials auth,
 			SwordConfigurationImpl config) throws IOException {
 		String query = this.readFileAsString("immediateContainerChildren.sparql");
-		query = String.format(query, tripleStoreQueryService.getResourceIndexModelUri(),
-				pid.getURI(), CONTAINER.getURI());
+		query = String.format(query, pid.getURI());
 		List<SwordCollection> result = new ArrayList<>();
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
