@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.search.solr.model;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author bbpennel
@@ -46,5 +47,27 @@ public class ObjectPath {
         }
 
         return null;
+    }
+
+    /**
+     * Return a string representation of the path constructed from the names of
+     * entries in this path
+     *
+     * @return name path
+     */
+    public String toNamePath() {
+        return "/" + entries.stream().map(e -> e.getName().replaceAll("/", "\\/"))
+                .collect(Collectors.joining("/"));
+    }
+
+    /**
+     * Return a string representation of the path constructed from the ids of
+     * entries in this path.
+     *
+     * @return id path
+     */
+    public String toIdPath() {
+        return "/" + entries.stream().map(e -> e.getPid())
+                .collect(Collectors.joining("/"));
     }
 }

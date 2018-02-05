@@ -73,7 +73,7 @@ public class ExportXMLController {
         AgentPrincipals agent = AgentPrincipals.createFromThread();
 
         try {
-            service.exportXml(agent.getUsername(), agent.getGroups(), new XMLExportRequest(
+            service.exportXml(agent.getUsername(), agent.getPrincipals(), new XMLExportRequest(
                     exportRequest.getPids(), exportRequest.getExportChildren(), exportRequest.getEmail()));
         } catch (Exception e) {
             result.put("error", e.getMessage());

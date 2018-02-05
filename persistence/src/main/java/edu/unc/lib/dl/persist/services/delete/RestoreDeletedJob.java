@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlDelete;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -58,7 +59,7 @@ public class RestoreDeletedJob implements Runnable {
     @Override
     public void run() {
         aclService.assertHasAccess("Insufficient privileges to restore object " + pid.getUUID(),
-                pid, agent.getGroups(), markForDeletion);
+                pid, agent.getPrincipals(), markForDeletion);
 
         RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
