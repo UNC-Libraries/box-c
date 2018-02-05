@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +53,7 @@ public class MoveObjectsController {
 
     @RequestMapping(value = "edit/move", method = RequestMethod.POST)
     public @ResponseBody
-    ResponseEntity<Object> moveObjects(@RequestBody MoveRequest moveRequest, HttpServletResponse response) {
+    ResponseEntity<Object> moveObjects(@RequestBody MoveRequest moveRequest) {
         Map<String, Object> results = new HashMap<>();
         // Validate that the request contains the newPath and ids fields.
         if (moveRequest == null || moveRequest.moved == null || moveRequest.moved.size() == 0
@@ -70,7 +68,6 @@ public class MoveObjectsController {
             List<PID> movePids = moveRequest.getMoved().stream().map(p -> PIDs.get(p)).collect(Collectors.toList());
             String moveId = moveObjectsService.moveObjects(agent, destPid, movePids);
 
-            response.setStatus(200);
             results.put("id", moveId);
             results.put("message", "Operation to move " + moveRequest.moved.size() + " objects into container "
                     + moveRequest.getDestination() + " has begun");
