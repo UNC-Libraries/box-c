@@ -96,11 +96,13 @@ public class SolrUpdateEnhancementService extends AbstractSolrObjectEnhancementS
 				// timestamp
 				String fedoraDateModified = null;
 				// replace model URI and PID tokens
-				String query = String.format(this.isApplicableQuery, this.getTripleStoreQueryService().getResourceIndexModelUri(), message
-						.getPid().getURI());
+				String query = String.format(this.isApplicableQuery, message.getPid().getURI());
 
+				long start = System.currentTimeMillis();
 				List<Map> bindings = (List<Map>) ((Map) this.getTripleStoreQueryService().sendSPARQL(query)
 						.get("results")).get("bindings");
+				LOG.debug("SolrUpdateEnhancement isApplicable query completed in {}ms",
+						(System.currentTimeMillis() - start));
 				// Couldn't find the date modified, item likely no longer exists.
 				if (bindings.size() == 0)
 					return true;
