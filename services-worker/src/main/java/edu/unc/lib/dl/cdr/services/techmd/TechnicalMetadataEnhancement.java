@@ -79,11 +79,15 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			LOG.debug("{} call method exited, service is not active.", this.getClass().getName());
 			return null;
 		}
+		
+		long startJob = System.currentTimeMillis();
 
 		String md5checksum = null;
 		Map<String, Document> ds2FitsDoc = new HashMap<String, Document>();
 		try {
+			long start = System.currentTimeMillis();
 			Document foxml = this.retrieveFoxml();
+			LOG.debug("Retrieved foxml in {}ms", (System.currentTimeMillis() - start));
 			// get sourceData data stream IDs
 			List<String> srcDSURIs = this.getSourceData(foxml);
 			Map<String, String> sourceMimetype = new HashMap<String, String>(srcDSURIs.size());
@@ -120,7 +124,9 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				// call fits via irods rule for the locations
 				Document fits = null;
 				try {
+					start = System.currentTimeMillis();
 					fits = runFITS(dsIrodsPath, dsAltIds);
+					LOG.debug("FITS prodouced in {}ms", (System.currentTimeMillis() - start));
 				} catch (JDOMException e) {
 					// Rethrow JDOM exception as an unrecoverable enhancement exception
 					throw new EnhancementException(e, Severity.UNRECOVERABLE);
@@ -184,7 +190,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				}
 
 				if ("DATA_FILE".equals(dsid)) {
-					
+					start = System.currentTimeMillis();
 					if (fitsMimetype != null) {
 						// Throw away the encoding in the mimetype for now
 						int index = fitsMimetype.indexOf(';');
@@ -198,7 +204,9 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						client.setExclusiveLiteral(pid, CDRProperty.hasSourceMimeType.getPredicate(),
 								CDRProperty.hasSourceMimeType.getNamespace(), "application/octet-stream", null);
 					}
+					LOG.debug("Set hasSourceMimeType in {}ms", (System.currentTimeMillis() - start));
 
+					start = System.currentTimeMillis();
 					try {
 						Long.parseLong(size);
 						client.setExclusiveLiteral(pid, CDRProperty.hasSourceFileSize.getPredicate(),
@@ -206,6 +214,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					} catch (NumberFormatException e) {
 						LOG.error("FITS produced a non-integer value for size: " + size);
 					}
+					LOG.debug("set hasSourceFileSize in {}ms", (System.currentTimeMillis() - start));
 				}
 
 				Element objCharsEl = new Element("objectCharacteristics", PREMIS_V2_NS);
@@ -238,9 +247,12 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						.setAttribute("type", PREMIS_V2_NS.getPrefix() + ":file", JDOMNamespaceUtil.XSI_NS));
 			}
 
+			start = System.currentTimeMillis();
 			// upload tech MD PREMIS XML
 			String premisTechURL = service.getManagementClient().upload(premisTech);
+			LOG.debug("Uploaded report datastream to object {}ms", (System.currentTimeMillis() - start));
 
+			start = System.currentTimeMillis();
 			// Add or replace the MD_TECHNICAL datastream for the object
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
 				LOG.debug("Adding FITS output to MD_TECHNICAL");
@@ -255,18 +267,10 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", "text/xml", null, null, premisTechURL);
 			}
+			LOG.debug("Added report datastream to object {}ms", (System.currentTimeMillis() - start));
 
-			LOG.debug("Adding techData relationship");
-			PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.MD_TECHNICAL.getName());
-			Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
-
-			List<String> techrel = rels.get(ContentModelHelper.CDRProperty.techData.toString());
-			if (techrel == null || !techrel.contains(newDSPID.getURI())) {
-				client.addObjectRelationship(pid, CDRProperty.techData.getPredicate(),
-						CDRProperty.techData.getNamespace(), newDSPID);
-			}
-
-			LOG.debug("Finished MD_TECHNICAL updating for {}", pid.getPid());
+			LOG.debug("Finished MD_TECHNICAL updating for {} in {}ms", pid.getPid(),
+					(System.currentTimeMillis() - startJob));
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (NotFoundException e) {

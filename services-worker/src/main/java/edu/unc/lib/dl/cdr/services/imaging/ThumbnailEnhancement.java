@@ -38,7 +38,6 @@ import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.JMSMessageUtil;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -56,6 +55,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
+		long start = System.currentTimeMillis();
 		LOG.debug("Called thumbnail enhancement service for {}", pid);
 
 		String surrogateDsUri = null;
@@ -127,6 +127,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 					createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
 				}
 			}
+			LOG.debug("Finished THUMB updating for {} in {}ms", pid.getPid(), (System.currentTimeMillis() - start));
 		} catch (EnhancementException e) {
 			throw e;
 		} catch (FileSystemException e) {
@@ -146,8 +147,12 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
 	private void createStoreThumb(String dsIrodsPath, int width, int height, String dsname, boolean exists,
 			List<String> thumbRels) throws Exception {
+		long start = System.currentTimeMillis();
 		String resultPath = runConvertScaleStage(dsIrodsPath, "PNG", width, height);
+		LOG.debug("Generated {} image in {}ms", dsname, (System.currentTimeMillis() - start));
+		
 		String resultURI = ((AbstractIrodsObjectEnhancementService) service).makeIrodsURIFromPath(resultPath);
+		start = System.currentTimeMillis();
 		if (!exists) {
 			String message = "adding thumbnail";
 			client.addManagedDatastream(pid, dsname, false, message,
@@ -157,12 +162,11 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			client.modifyDatastreamByReference(pid, dsname, false, message,
 					new ArrayList<String>(), "Thumbnail Image", "image/png", null, null, resultURI);
 		}
-		PID newDSPID = new PID(pid.getPid() + "/" + dsname);
-		if (thumbRels == null || !thumbRels.contains(newDSPID.getURI())) {
-			client.setExclusiveTripleRelation(pid, CDRProperty.thumb.getPredicate(),
-					CDRProperty.thumb.getNamespace(), newDSPID);
-		}
+		LOG.debug("Added {} datastream in {}ms", dsname, (System.currentTimeMillis() - start));
+
+		start = System.currentTimeMillis();
 		((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(resultPath);
+		LOG.debug("Cleaned up irods file in {}ms", dsname, (System.currentTimeMillis() - start));
 	}
 
 	private String runConvertScaleStage(String dsIrodsPath, String format, int width, int height) throws Exception {

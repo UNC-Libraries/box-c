@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -35,9 +34,7 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
@@ -54,6 +51,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
+		long start = System.currentTimeMillis();
 		LOG.debug("Called image enhancement service for {}", pid);
 
 		String dsid = null;
@@ -106,23 +104,13 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 								new ArrayList<String>(), "Derived JP2000 image", false, "image/jp2", convertResultURI);
 					}
 
-					// Add DATA_JP2, cdr-base:derivedJP2 relation triple
-					LOG.debug("Adding JP2 relationship");
-					PID newDSPID = new PID(pid.getPid() + "/" + ContentModelHelper.Datastream.IMAGE_JP2000.getName());
-					Map<String, List<String>> rels = service.getTripleStoreQueryService().fetchAllTriples(pid);
-
-					List<String> jp2rel = rels.get(ContentModelHelper.CDRProperty.derivedJP2.toString());
-					if (jp2rel == null || !jp2rel.contains(newDSPID.getURI())) {
-						client.setExclusiveTripleRelation(pid, CDRProperty.derivedJP2.getPredicate(),
-								CDRProperty.derivedJP2.getNamespace(), newDSPID);
-					}
-
 					// Clean up the temporary irods file
 					LOG.debug("Deleting temporary jp2 Irods file");
 					((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(convertResultPath);
 					LOG.debug("Finished JP2 processing");
 				}
 			}
+			LOG.debug("Finished JP@ updating for {} in {}ms", pid.getPid(), (System.currentTimeMillis() - start));
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (NotFoundException e) {
