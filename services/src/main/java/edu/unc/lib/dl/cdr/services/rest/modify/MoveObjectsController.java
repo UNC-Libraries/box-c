@@ -91,9 +91,6 @@ public class MoveObjectsController {
         private List<String> moved;
         private String user;
 
-        public MoveRequest() {
-        }
-
         public String getDestination() {
             return destination;
         }

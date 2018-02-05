@@ -57,18 +57,18 @@ public class MoveObjectsService {
      * agent.
      *
      * @param agent
-     * @param destination
+     * @param destinationPid
      * @param pids
      */
-    public String moveObjects(AgentPrincipals agent, PID destination, List<PID> pids) {
-        if (destination == null || pids == null || pids.isEmpty()) {
+    public String moveObjects(AgentPrincipals agent, PID destinationPid, List<PID> pids) {
+        if (destinationPid == null || pids == null || pids.isEmpty()) {
             throw new IllegalArgumentException("Must provide a destination and at least one object to move.");
         }
         if (agent == null || agent.getUsername() == null || agent.getPrincipals() == null) {
             throw new IllegalArgumentException("Must provide agent identification information");
         }
 
-        MoveObjectsJob job = new MoveObjectsJob(agent, destination, pids);
+        MoveObjectsJob job = new MoveObjectsJob(agent, destinationPid, pids);
         job.setAclService(aclService);
         job.setFcrepoClient(fcrepoClient);
         job.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -80,7 +80,7 @@ public class MoveObjectsService {
 
         if (asynchronous) {
             log.info("User {} is queuing move operation {} of {} objects to destination {}",
-                    new Object[] { agent.getUsername(), job.getMoveId(), pids.size(), destination });
+                    new Object[] { agent.getUsername(), job.getMoveId(), pids.size(), destinationPid });
             moveExecutor.submit(job);
         } else {
             job.run();

@@ -32,7 +32,7 @@ public class AgentPrincipals {
      * Constructs an AgentPrincipals object
      *
      * @param username
-     * @param groups
+     * @param principals
      */
     public AgentPrincipals(String username, AccessGroupSet principals) {
         this.username = username;
