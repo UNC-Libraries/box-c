@@ -25,6 +25,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,14 +55,13 @@ public class MoveObjectsController {
 
     @RequestMapping(value = "edit/move", method = RequestMethod.POST)
     public @ResponseBody
-    Map<String, Object> moveObjects(@RequestBody MoveRequest moveRequest, HttpServletResponse response) {
+    ResponseEntity<Object> moveObjects(@RequestBody MoveRequest moveRequest, HttpServletResponse response) {
         Map<String, Object> results = new HashMap<>();
         // Validate that the request contains the newPath and ids fields.
         if (moveRequest == null || moveRequest.moved == null || moveRequest.moved.size() == 0
                 || moveRequest.getDestination() == null || moveRequest.getDestination().length() == 0) {
-            response.setStatus(400);
             results.put("error", "Request must provide a destination destination and a list of ids");
-            return results;
+            return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
         }
 
         AgentPrincipals agent = AgentPrincipals.createFromThread();
@@ -73,16 +74,14 @@ public class MoveObjectsController {
             results.put("id", moveId);
             results.put("message", "Operation to move " + moveRequest.moved.size() + " objects into container "
                     + moveRequest.getDestination() + " has begun");
-            return results;
+            return new ResponseEntity<>(results, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
-            response.setStatus(400);
             results.put("error", e.getMessage());
-            return results;
+            return new ResponseEntity<>(results, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            response.setStatus(500);
             results.put("error", "Failed to perform move operation");
             log.error("Failed to perform move for user {}", agent.getUsername(), e);
-            return results;
+            return new ResponseEntity<>(results, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
