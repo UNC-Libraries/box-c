@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.cdr.services.techmd;
 
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceFileSize;
+import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.hasSourceMimeType;
+import static edu.unc.lib.dl.util.ContentModelHelper.Datastream.RELS_EXT;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.FITS_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.PREMIS_V2_NS;
 
@@ -42,14 +45,15 @@ import edu.unc.lib.dl.cdr.services.AbstractIrodsObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
+import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
-import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
+import edu.unc.lib.dl.xml.RDFXMLUtil;
 
 /**
  * Executes irods script which uses FITS to extract technical metadata features of objects with data file datastreams.
@@ -65,6 +69,10 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 	private static final int MAX_EXTENSION_LENGTH = 8;
 
 	private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
+	
+	private static final String XML_LONG = "http://www.w3.org/2001/XMLSchema#long";
+	private static final long RETRY_DELAY = 5000l;
+	private static final long MAX_RETRIES = 5;
 
 	/*
 	 * (non-Javadoc)
@@ -190,31 +198,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				}
 
 				if ("DATA_FILE".equals(dsid)) {
-					start = System.currentTimeMillis();
-					if (fitsMimetype != null) {
-						// Throw away the encoding in the mimetype for now
-						int index = fitsMimetype.indexOf(';');
-						if (index != -1) {
-							fitsMimetype = fitsMimetype.substring(0, index);
-						}
-						
-						client.setExclusiveLiteral(pid, CDRProperty.hasSourceMimeType.getPredicate(),
-								CDRProperty.hasSourceMimeType.getNamespace(), fitsMimetype, null);
-					} else { // application/octet-stream
-						client.setExclusiveLiteral(pid, CDRProperty.hasSourceMimeType.getPredicate(),
-								CDRProperty.hasSourceMimeType.getNamespace(), "application/octet-stream", null);
-					}
-					LOG.debug("Set hasSourceMimeType in {}ms", (System.currentTimeMillis() - start));
-
-					start = System.currentTimeMillis();
-					try {
-						Long.parseLong(size);
-						client.setExclusiveLiteral(pid, CDRProperty.hasSourceFileSize.getPredicate(),
-								CDRProperty.hasSourceFileSize.getNamespace(), size, "http://www.w3.org/2001/XMLSchema#long");
-					} catch (NumberFormatException e) {
-						LOG.error("FITS produced a non-integer value for size: " + size);
-					}
-					LOG.debug("set hasSourceFileSize in {}ms", (System.currentTimeMillis() - start));
+					setSourceProperties(fitsMimetype, size);
 				}
 
 				Element objCharsEl = new Element("objectCharacteristics", PREMIS_V2_NS);
@@ -280,7 +264,60 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 		}
 		return result;
 	}
-
+	
+	private void setSourceProperties(String mimetype, String size) throws FedoraException {
+		long start = System.currentTimeMillis();
+		int retryCnt = 1;
+		while (true) {
+			DatastreamDocument dsDoc = client.getRELSEXTWithRetries(pid);
+			Element rootEl = dsDoc.getDocument().getRootElement();
+			
+			String sourceMimetype;
+			if (mimetype != null) {
+				sourceMimetype = mimetype;
+				// Throw away mimetype parameters
+				int index = sourceMimetype.indexOf(';');
+				if (index != -1) {
+					sourceMimetype = sourceMimetype.substring(0, index);
+				}
+			} else {
+				sourceMimetype = "application/octet-stream";
+			}
+			
+			RDFXMLUtil.setExclusiveTriple(rootEl, hasSourceMimeType.getPredicate(),
+					hasSourceMimeType.getNamespace(), true, sourceMimetype, null);
+	
+			try {
+				// Parsing size value to make sure it is numerical
+				Long.parseLong(size);
+				RDFXMLUtil.setExclusiveTriple(rootEl, hasSourceFileSize.getPredicate(),
+						hasSourceFileSize.getNamespace(), true, size, XML_LONG);
+			} catch (NumberFormatException e) {
+				LOG.error("FITS produced a non-integer value for size: {}", size);
+			}
+			
+			// Commit the updates 
+			try {
+				client.modifyDatastream(pid, RELS_EXT.getName(),
+						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
+				LOG.debug("set hasSourceFileSize in {}ms", (System.currentTimeMillis() - start));
+				return;
+			} catch (OptimisticLockException e) {
+				if (retryCnt > MAX_RETRIES) {
+					throw e;
+				}
+				
+				LOG.debug("Unable to update RELS-EXT for {}, retrying", pid, e);
+				try {
+					Thread.sleep(RETRY_DELAY * retryCnt);
+				} catch (InterruptedException e1) {
+					throw new FedoraException("Interrupted while waiting to retry updating properties");
+				}
+			}
+			retryCnt++;
+		}
+	}
+	
 	/**
 	 * Executes fits extract irods script
 	 * 
