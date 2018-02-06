@@ -51,7 +51,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		long start = System.currentTimeMillis();
+		long jobStart = System.currentTimeMillis();
 		LOG.debug("Called image enhancement service for {}", pid);
 
 		String dsid = null;
@@ -110,7 +110,7 @@ public class ImageEnhancement extends AbstractFedoraEnhancement {
 					LOG.debug("Finished JP2 processing");
 				}
 			}
-			LOG.debug("Finished JP@ updating for {} in {}ms", pid.getPid(), (System.currentTimeMillis() - start));
+			LOG.debug("Finished JP@ updating for {} in {}ms", pid.getPid(), (System.currentTimeMillis() - jobStart));
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (NotFoundException e) {

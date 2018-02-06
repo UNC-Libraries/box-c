@@ -93,9 +93,9 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 		String md5checksum = null;
 		Map<String, Document> ds2FitsDoc = new HashMap<String, Document>();
 		try {
-			long start = System.currentTimeMillis();
+			long getFoxmlStart = System.currentTimeMillis();
 			Document foxml = this.retrieveFoxml();
-			LOG.debug("Retrieved foxml in {}ms", (System.currentTimeMillis() - start));
+			LOG.debug("Retrieved foxml in {}ms", (System.currentTimeMillis() - getFoxmlStart));
 			// get sourceData data stream IDs
 			List<String> srcDSURIs = this.getSourceData(foxml);
 			Map<String, String> sourceMimetype = new HashMap<String, String>(srcDSURIs.size());
@@ -132,9 +132,9 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 				// call fits via irods rule for the locations
 				Document fits = null;
 				try {
-					start = System.currentTimeMillis();
+					long fitsStart = System.currentTimeMillis();
 					fits = runFITS(dsIrodsPath, dsAltIds);
-					LOG.debug("FITS prodouced in {}ms", (System.currentTimeMillis() - start));
+					LOG.debug("FITS prodouced in {}ms", (System.currentTimeMillis() - fitsStart));
 				} catch (JDOMException e) {
 					// Rethrow JDOM exception as an unrecoverable enhancement exception
 					throw new EnhancementException(e, Severity.UNRECOVERABLE);
@@ -231,12 +231,12 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						.setAttribute("type", PREMIS_V2_NS.getPrefix() + ":file", JDOMNamespaceUtil.XSI_NS));
 			}
 
-			start = System.currentTimeMillis();
+			long uploadStart = System.currentTimeMillis();
 			// upload tech MD PREMIS XML
 			String premisTechURL = service.getManagementClient().upload(premisTech);
-			LOG.debug("Uploaded report datastream to object {}ms", (System.currentTimeMillis() - start));
+			LOG.debug("Uploaded report datastream to object {}ms", (System.currentTimeMillis() - uploadStart));
 
-			start = System.currentTimeMillis();
+			long addDsStart = System.currentTimeMillis();
 			// Add or replace the MD_TECHNICAL datastream for the object
 			if (FOXMLJDOMUtil.getDatastream(foxml, ContentModelHelper.Datastream.MD_TECHNICAL.getName()) == null) {
 				LOG.debug("Adding FITS output to MD_TECHNICAL");
@@ -251,7 +251,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 						ContentModelHelper.Datastream.MD_TECHNICAL.getName(), false, message, new ArrayList<String>(),
 						"PREMIS Technical Metadata", "text/xml", null, null, premisTechURL);
 			}
-			LOG.debug("Added report datastream to object {}ms", (System.currentTimeMillis() - start));
+			LOG.debug("Added report datastream to object {}ms", (System.currentTimeMillis() - addDsStart));
 
 			LOG.debug("Finished MD_TECHNICAL updating for {} in {}ms", pid.getPid(),
 					(System.currentTimeMillis() - startJob));
@@ -266,7 +266,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 	}
 	
 	private void setSourceProperties(String mimetype, String size) throws FedoraException {
-		long start = System.currentTimeMillis();
+		long setPropsStart = System.currentTimeMillis();
 		int retryCnt = 1;
 		while (true) {
 			DatastreamDocument dsDoc = client.getRELSEXTWithRetries(pid);
@@ -300,7 +300,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			try {
 				client.modifyDatastream(pid, RELS_EXT.getName(),
 						"Setting exclusive relation", dsDoc.getLastModified(), dsDoc.getDocument());
-				LOG.debug("set hasSourceFileSize in {}ms", (System.currentTimeMillis() - start));
+				LOG.debug("set hasSourceFileSize in {}ms", (System.currentTimeMillis() - setPropsStart));
 				return;
 			} catch (OptimisticLockException e) {
 				if (retryCnt > MAX_RETRIES) {

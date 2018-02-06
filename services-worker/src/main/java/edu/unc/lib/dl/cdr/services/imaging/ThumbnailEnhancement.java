@@ -55,7 +55,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 	@Override
 	public Element call() throws EnhancementException {
 		Element result = null;
-		long start = System.currentTimeMillis();
+		long startJob = System.currentTimeMillis();
 		LOG.debug("Called thumbnail enhancement service for {}", pid);
 
 		String surrogateDsUri = null;
@@ -127,7 +127,7 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 					createStoreThumb(dsIrodsPath, 128, 128, dsname, exists, thumbRels);
 				}
 			}
-			LOG.debug("Finished THUMB updating for {} in {}ms", pid.getPid(), (System.currentTimeMillis() - start));
+			LOG.debug("Finished THUMB updating for {} in {}ms", pid.getPid(), (System.currentTimeMillis() - startJob));
 		} catch (EnhancementException e) {
 			throw e;
 		} catch (FileSystemException e) {
@@ -147,12 +147,12 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 
 	private void createStoreThumb(String dsIrodsPath, int width, int height, String dsname, boolean exists,
 			List<String> thumbRels) throws Exception {
-		long start = System.currentTimeMillis();
+		long convertStart = System.currentTimeMillis();
 		String resultPath = runConvertScaleStage(dsIrodsPath, "PNG", width, height);
-		LOG.debug("Generated {} image in {}ms", dsname, (System.currentTimeMillis() - start));
+		LOG.debug("Generated {} image in {}ms", dsname, (System.currentTimeMillis() - convertStart));
 		
 		String resultURI = ((AbstractIrodsObjectEnhancementService) service).makeIrodsURIFromPath(resultPath);
-		start = System.currentTimeMillis();
+		long addDsStart = System.currentTimeMillis();
 		if (!exists) {
 			String message = "adding thumbnail";
 			client.addManagedDatastream(pid, dsname, false, message,
@@ -162,11 +162,11 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			client.modifyDatastreamByReference(pid, dsname, false, message,
 					new ArrayList<String>(), "Thumbnail Image", "image/png", null, null, resultURI);
 		}
-		LOG.debug("Added {} datastream in {}ms", dsname, (System.currentTimeMillis() - start));
+		LOG.debug("Added {} datastream in {}ms", dsname, (System.currentTimeMillis() - addDsStart));
 
-		start = System.currentTimeMillis();
+		long deleteStart = System.currentTimeMillis();
 		((AbstractIrodsObjectEnhancementService) service).deleteIRODSFile(resultPath);
-		LOG.debug("Cleaned up irods file in {}ms", dsname, (System.currentTimeMillis() - start));
+		LOG.debug("Cleaned up irods file in {}ms", dsname, (System.currentTimeMillis() - deleteStart));
 	}
 
 	private String runConvertScaleStage(String dsIrodsPath, String format, int width, int height) throws Exception {
