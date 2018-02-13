@@ -49,6 +49,7 @@ import edu.unc.lib.dl.fedora.DatastreamDocument;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ObjectExistsException;
 import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.xml.FOXMLJDOMUtil;
@@ -257,10 +258,10 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 					(System.currentTimeMillis() - startJob));
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
-		} catch (NotFoundException e) {
-			throw new EnhancementException(e, Severity.UNRECOVERABLE);
-		} catch (FedoraException e) {
+		} catch (ObjectExistsException | OptimisticLockException e) {
 			throw new EnhancementException(e, Severity.RECOVERABLE);
+		} catch (FedoraException e) {
+			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		}
 		return result;
 	}

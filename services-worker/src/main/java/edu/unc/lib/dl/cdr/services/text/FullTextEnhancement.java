@@ -36,6 +36,8 @@ import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ObjectExistsException;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ContentModelHelper.CDRProperty;
@@ -120,10 +122,9 @@ public class FullTextEnhancement extends AbstractFedoraEnhancement {
 			}
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
-		} catch (NotFoundException e) {
-			throw new EnhancementException(e, Severity.UNRECOVERABLE);
-		} catch (FedoraException e) {
-			throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.RECOVERABLE);
+		} catch (ObjectExistsException | OptimisticLockException e) {
+			throw new EnhancementException("Failed to update object " + pid + " with " + dsid,
+					e, Severity.RECOVERABLE);
 		} catch (Exception e) {
 			throw new EnhancementException("Full Text Enhancement failed to process " + dsid, e, Severity.UNRECOVERABLE);
 		}

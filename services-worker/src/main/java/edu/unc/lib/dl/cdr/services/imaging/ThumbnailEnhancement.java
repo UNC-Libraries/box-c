@@ -36,6 +36,8 @@ import edu.unc.lib.dl.cdr.services.solr.SolrUpdateEnhancementService;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.FileSystemException;
 import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ObjectExistsException;
+import edu.unc.lib.dl.fedora.OptimisticLockException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.JMSMessageUtil;
@@ -132,11 +134,9 @@ public class ThumbnailEnhancement extends AbstractFedoraEnhancement {
 			throw e;
 		} catch (FileSystemException e) {
 			throw new EnhancementException(e, Severity.FATAL);
-		} catch (NotFoundException e) {
-			throw new EnhancementException(e, Severity.UNRECOVERABLE);
-		} catch (FedoraException e) {
-			throw new EnhancementException("Thumbnail Enhancement failed to process, pid: " + pid.getPid()
-					+ " surrogateDS: " + surrogateDsId, e, Severity.RECOVERABLE);
+		} catch (ObjectExistsException | OptimisticLockException e) {
+			throw new EnhancementException("Failed to update object " + pid + " with " + surrogateDsId,
+					e, Severity.RECOVERABLE);
 		} catch (Exception e) {
 			throw new EnhancementException("Thumbnail Enhancement failed to process, pid " + pid.getPid()
 					+ " surrogateDS: " + surrogateDsId, e, Severity.UNRECOVERABLE);
