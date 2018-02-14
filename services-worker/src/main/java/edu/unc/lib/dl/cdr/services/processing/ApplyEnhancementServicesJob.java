@@ -105,7 +105,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 				break;
 			} catch (EnhancementException e) {
 				if (backoffAttempts < MAX_RETRIES && e.getSeverity() == Severity.RECOVERABLE) {
-					LOG.warn("Retrying service for recoverable exception {}, attempt {}: {}: ",
+					LOG.warn("Retrying service for recoverable exception {}, attempt {}.",
 							new Object[] { service.getClass().getName(), backoffAttempts }, e);
 					retryDelay = recoverableDelay;
 				} else {

@@ -260,7 +260,7 @@ public class TechnicalMetadataEnhancement extends AbstractFedoraEnhancement {
 			throw new EnhancementException(e, Severity.FATAL);
 		} catch (ObjectExistsException | OptimisticLockException e) {
 			throw new EnhancementException(e, Severity.RECOVERABLE);
-		} catch (FedoraException e) {
+		} catch (Exception e) {
 			throw new EnhancementException(e, Severity.UNRECOVERABLE);
 		}
 		return result;
