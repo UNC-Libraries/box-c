@@ -12,6 +12,7 @@ import org.springframework.ws.client.WebServiceIOException;
 
 import edu.unc.lib.dl.cdr.services.ObjectEnhancementService;
 import edu.unc.lib.dl.cdr.services.exception.EnhancementException;
+import edu.unc.lib.dl.cdr.services.exception.EnhancementException.Severity;
 import edu.unc.lib.dl.cdr.services.model.EnhancementMessage;
 import edu.unc.lib.dl.fedora.ManagementClient;
 import edu.unc.lib.dl.fedora.ServiceException;
@@ -22,6 +23,7 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ApplyEnhancementServicesJob.class);
 	private static long BACKOFF_DELAY = 10000;
+	private static int MAX_RETRIES = 5;
 
 	private List<ObjectEnhancementService> services;
 	private long recoverableDelay = 0;
@@ -95,32 +97,34 @@ public class ApplyEnhancementServicesJob implements Runnable {
 
 			long retryDelay;
 			try {
-				if (!fedoraManagementClient.isRepositoryAvailable()) {
-					throw new ServiceException(new WebServiceIOException("Unable to connect to Fedora"));
-				}
+				// If the repository is not available, wait until it recovers
+				fedoraManagementClient.waitForRepositoryAvailable();
 				
 				service.getEnhancement(message).call();
 				message.getCompletedServices().add(service.getClass().getName());
-
 				break;
 			} catch (EnhancementException e) {
-				if (e.getSeverity() == EnhancementException.Severity.RECOVERABLE) {
-					LOG.error("Retrying service for recoverable exception: " + service.getClass().getName(), e);
+				if (backoffAttempts < MAX_RETRIES && e.getSeverity() == Severity.RECOVERABLE) {
+					LOG.warn("Retrying service for recoverable exception {}, attempt {}.",
+							new Object[] { service.getClass().getName(), backoffAttempts }, e);
 					retryDelay = recoverableDelay;
 				} else {
 					throw e;
 				}
 			} catch (ServiceException e) {
-				if (e.getCause() instanceof WebServiceIOException) {
-					LOG.warn("Unable to connect to fedora. Unable to run job for " + service.getClass().getName()
-						+ ". Retry attempt " + backoffAttempts);
+				if (backoffAttempts < MAX_RETRIES && e.getCause() instanceof WebServiceIOException) {
+					LOG.warn("Failed to persist changes for service {}, attempt {}",
+							new Object[] { service.getClass().getName(), backoffAttempts }, e);
 					retryDelay = BACKOFF_DELAY * backoffAttempts;
-					backoffAttempts++;
 				} else {
 					throw e;
 				}
 			}
 
+			backoffAttempts++;
+			// Clear cached foxml prior to attempting to recover
+			message.setFoxml(null);
+			
 			try {
 				Thread.sleep(retryDelay);
 			} catch (InterruptedException e1) {
