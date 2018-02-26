@@ -8,6 +8,15 @@
     <skos:narrower rdf:resource="Department of Military Science"/>
     <skos:narrower rdf:resource="Department of Music"/>
     <skos:narrower rdf:resource="Department of American Studies"/>
+    <skos:narrower rdf:resource="Department of Nested Studies"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Nested Studies">
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
+    <skos:narrower rdf:resource="Department of Deeply Nested Studies"/>
+  </skos:Concept>
+  <skos:Concept rdf:about="Department of Deeply Nested Studies">
+    <skos:broader rdf:resource="Department of Nested Studies"/>
+    <skos:broader rdf:resource="College of Arts and Sciences"/>
   </skos:Concept>
   <skos:Concept rdf:about="Department of American Studies">
     <skos:hiddenLabel>American Studies</skos:hiddenLabel>
