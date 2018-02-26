@@ -16,50 +16,9 @@
 	</xsl:text></xsl:variable>
 
 	<!-- mods:name -->
-	<xsl:template name="formatName">
-		<xsl:param name="displayForm"/>
-		<xsl:param name="givenName"/>
-		<xsl:param name="familyName"/>
-		<xsl:param name="dateName"/>
-		<xsl:param name="termsOfAddress"/>
-		
-		<xsl:choose>
-			<xsl:when test="boolean($displayForm)">
-				<xsl:for-each select="$displayForm">
-					<xsl:if test="position() != 1">
-						<xsl:text>; </xsl:text>
-					</xsl:if>
-					<xsl:value-of select="text()"/>
-				</xsl:for-each>
-			</xsl:when>
-			<xsl:when test="boolean($givenName) and boolean($familyName)">
-				<xsl:value-of select="$familyName"/><xsl:text>, </xsl:text><xsl:value-of select="$givenName"/>
-				<xsl:if test="boolean($termsOfAddress)">
-					<xsl:text>, </xsl:text><xsl:value-of select="$termsOfAddress"/>
-				</xsl:if>
-
-				<xsl:if test="boolean($dateName)">
-					<xsl:text>, </xsl:text><xsl:value-of select="$dateName"/>
-				</xsl:if>
-			</xsl:when>
-			<xsl:otherwise>
-				<xsl:for-each select="*[local-name() = 'namePart']">
-					<xsl:if test="position() != 1">
-						<xsl:text>; </xsl:text>
-					</xsl:if>
-					<xsl:value-of select="text()"/>
-				</xsl:for-each>
-			</xsl:otherwise>
-		</xsl:choose>
-	</xsl:template>
-
 	<xsl:template match="*[local-name() = 'name']">
 		<xsl:call-template name="formatName">
-			<xsl:with-param name="displayForm" select="*[local-name() = 'displayForm']"/>
-			<xsl:with-param name="givenName" select="*[local-name() = 'namePart' and @type='given']"/>
-			<xsl:with-param name="familyName" select="*[local-name() = 'namePart' and @type='family']"/>
-			<xsl:with-param name="dateName" select="*[local-name() = 'namePart' and @type='date']"/>
-			<xsl:with-param name="termsOfAddress" select="*[local-name() = 'namePart' and @type='termsOfAddress']"/>
+			<xsl:with-param name="nameField" select="." />
 		</xsl:call-template>
 
 		<br/><xsl:value-of select="$newline"/>
@@ -70,11 +29,7 @@
 				<span>
 					<xsl:text>Alternative Name:  </xsl:text>
 					<xsl:call-template name="formatName">
-						<xsl:with-param name="displayForm" select="*[local-name() = 'displayForm']"/>
-						<xsl:with-param name="givenName" select="*[local-name() = 'namePart' and @type='given']"/>
-						<xsl:with-param name="familyName" select="*[local-name() = 'namePart' and @type='family']"/>
-						<xsl:with-param name="dateName" select="*[local-name() = 'namePart' and @type='date']"/>
-						<xsl:with-param name="termsOfAddress" select="*[local-name() = 'namePart' and @type='termsOfAddress']"/>
+						<xsl:with-param name="nameField" select="." />
 					</xsl:call-template>
 				</span>
 			</xsl:for-each>
@@ -117,6 +72,45 @@
 		<xsl:if test="boolean($description)">
 			<xsl:text>Description:  </xsl:text><xsl:value-of select="$description"/><br/><xsl:value-of select="$newline"/>
 		</xsl:if>
+	</xsl:template>
+	
+	<xsl:template name="formatName">
+		<xsl:param name="nameField"/>
+		
+		<xsl:variable name="displayForm" select="$nameField/*[local-name() = 'displayForm']"/>
+		<xsl:variable name="givenName" select="$nameField/*[local-name() = 'namePart' and @type='given']"/>
+		<xsl:variable name="familyName" select="$nameField/*[local-name() = 'namePart' and @type='family']"/>
+		<xsl:variable name="dateName" select="$nameField/*[local-name() = 'namePart' and @type='date']"/>
+		<xsl:variable name="termsOfAddress" select="$nameField/*[local-name() = 'namePart' and @type='termsOfAddress']"/>
+		
+		<xsl:choose>
+			<xsl:when test="boolean($displayForm)">
+				<xsl:for-each select="$displayForm">
+					<xsl:if test="position() != 1">
+						<xsl:text>; </xsl:text>
+					</xsl:if>
+					<xsl:value-of select="text()"/>
+				</xsl:for-each>
+			</xsl:when>
+			<xsl:when test="boolean($givenName) and boolean($familyName)">
+				<xsl:value-of select="$familyName"/><xsl:text>, </xsl:text><xsl:value-of select="$givenName"/>
+				<xsl:if test="boolean($termsOfAddress)">
+					<xsl:text>, </xsl:text><xsl:value-of select="$termsOfAddress"/>
+				</xsl:if>
+
+				<xsl:if test="boolean($dateName)">
+					<xsl:text>, </xsl:text><xsl:value-of select="$dateName"/>
+				</xsl:if>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:for-each select="*[local-name() = 'namePart']">
+					<xsl:if test="position() != 1">
+						<xsl:text>; </xsl:text>
+					</xsl:if>
+					<xsl:value-of select="text()"/>
+				</xsl:for-each>
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 
 	<xsl:template name="modsNames">
