@@ -56,8 +56,6 @@ public class ExportXMLController {
      *
      * @param exportRequest
      * @return
-     * @throws IOException
-     * @throws FedoraException
      */
     @RequestMapping(value = "/edit/exportXML", method = RequestMethod.POST)
     public @ResponseBody
@@ -93,9 +91,6 @@ public class ExportXMLController {
         private List<String> pids;
         private boolean exportChildren;
         private String email;
-
-        public XMLExportRequest() {
-        }
 
         public XMLExportRequest(List<String> pids, boolean exportChildren, String email) {
             this.pids = pids;
