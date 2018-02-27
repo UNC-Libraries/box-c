@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.update;
 
-import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -46,7 +45,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -56,7 +54,6 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.schematron.SchematronValidator;
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
-import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -66,9 +63,6 @@ public class AtomDCToMODSFilterTest extends Assert {
     private SchematronValidator schematronValidator;
     private AtomDCToMODSFilter filter;
 
-    @Mock
-    private VocabularyHelperManager vocabManager;
-
     private static Logger log = Logger.getLogger(AtomDCToMODSFilter.class);
 
     @Before
@@ -77,7 +71,6 @@ public class AtomDCToMODSFilterTest extends Assert {
 
         filter = new AtomDCToMODSFilter();
         filter.setSchematronValidator(schematronValidator);
-        setField(filter, "vocabManager", vocabManager);
     }
 
     @Test

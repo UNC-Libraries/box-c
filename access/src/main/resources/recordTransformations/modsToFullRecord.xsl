@@ -10,7 +10,6 @@
 	Transforms a mods record into a table formatted according to the needs of the
 	full record page in the CDR public UI.
 	Author: Ben Pennell
-	Last edited: May 2015: Sonoe Nakasone
 	 -->
 	<xsl:variable name="newline"><xsl:text>
 	</xsl:text></xsl:variable>
