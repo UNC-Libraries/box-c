@@ -24,14 +24,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-
-import net.greghaines.jesque.Job;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,14 +38,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.update.BulkMetadataUpdateJob;
+import edu.unc.lib.dl.cdr.services.processing.XMLImportJob;
+import net.greghaines.jesque.Job;
 
 /**
- * Controller which accepts CDR bulk metadata update packages and begins update operations
- * 
+ * API endpoint that accepts an XML document containing objects' metadata, kicks off update operations for
+ * individual objects, and sends an email with a report of objects that were able to be updated.
+ *
  * @author bbpennel
- * @date Jul 30, 2015
+ * @author harring
  */
 @Controller
 public class ImportXMLController {
@@ -67,24 +69,47 @@ public class ImportXMLController {
         Files.createDirectories(storagePath);
     }
 
-    @RequestMapping(value = "importXML", method = RequestMethod.POST)
-    public @ResponseBody Object importXML(@RequestParam("file") MultipartFile xmlFile,
-            HttpServletRequest request) throws Exception {
-        log.info("User {} has submitted a bulk metadata update package", GroupsThreadStore.getUsername());
-        Map<String, String> result = new HashMap<>();
+    /**
+     * Imports an XML document containing metadata for all objects specified by the request
+     *
+     * @param xmlFile
+     * @return response entity with result and response code
+     */
+    @RequestMapping(value = "/edit/importXML", method = RequestMethod.POST)
+    public @ResponseBody ResponseEntity<Object> importXML(@RequestParam("file") MultipartFile xmlFile) {
 
-        File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
-        FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
+        String username = GroupsThreadStore.getUsername();
+        log.info("User {} has submitted a bulk metadata update package", username);
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "importXml");
+        result.put("username", username);
 
-        String emailAddress = GroupsThreadStore.getEmail();
+        File importFile = null;
+        try {
+            importFile = File.createTempFile("import", ".xml", storagePath.toFile());
+            FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
+        } catch (IOException e) {
+            log.error("Error creating or writing to import file: {}",  e);
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-        Job job = new Job(BulkMetadataUpdateJob.class.getName(), null, emailAddress, GroupsThreadStore.getUsername(),
-                GroupsThreadStore.getGroups(), importFile.getAbsolutePath(), xmlFile.getOriginalFilename());
-        jesqueClient.enqueue(bulkMetadataQueueName, job);
+        String userEmail = GroupsThreadStore.getEmail();
 
-        result.put("message", "Import of metadata has begun, " + emailAddress
+        Job job = new Job(XMLImportJob.class.getName(), username, userEmail, AgentPrincipals.createFromThread(),
+                importFile.getAbsolutePath());
+        try {
+            jesqueClient.enqueue(bulkMetadataQueueName, job);
+        } catch (IllegalArgumentException e) {
+            log.error("Error queueing the job: {}",  e);
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        result.put("message", "Import of metadata has begun. " + userEmail
                 + " will be emailed when the update completes");
-
-        return result;
+        result.put("timestamp", System.currentTimeMillis());
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
 }
