@@ -57,7 +57,7 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
 	public MODSValidationUIPFilter() {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-6.xsd"));
+		StreamSource modsSource = new StreamSource(getClass().getResourceAsStream("/schemas/mods-3-7.xsd"));
 		StreamSource xmlSource = new StreamSource(getClass().getResourceAsStream("/schemas/xml.xsd"));
 		StreamSource xlinkSource = new StreamSource(getClass().getResourceAsStream("/schemas/xlink.xsd"));
 
