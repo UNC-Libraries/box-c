@@ -66,9 +66,6 @@ public class AtomDCToMODSFilterTest extends Assert {
 	private SchematronValidator schematronValidator;
 	private AtomDCToMODSFilter filter;
 
-	@Mock
-	private VocabularyHelperManager vocabManager;
-
 	private static Logger log = Logger.getLogger(AtomDCToMODSFilter.class);
 
 	@Before
@@ -77,7 +74,6 @@ public class AtomDCToMODSFilterTest extends Assert {
 
 		filter = new AtomDCToMODSFilter();
 		filter.setSchematronValidator(schematronValidator);
-		setField(filter, "vocabManager", vocabManager);
 	}
 
 	@Test
