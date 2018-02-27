@@ -100,18 +100,14 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals("Bag folder label was not set", "Test File", bagFolder.getProperty(CdrDeposit.label).getString());
         assertEquals("Content model was not set", RDF.Bag, bagFolder.getPropertyResourceValue(RDF.type));
 
-        NodeIterator iterator = bagFolder.iterator();
-        Resource emptyFolder = (Resource) iterator.next();
-        assertEquals("Folder label was not set", "empty_test", emptyFolder.getProperty(CdrDeposit.label).getString());
+        Resource emptyFolder = getChildByLabel(bagFolder, "empty_test");
         assertTrue("Content model was not set", emptyFolder.hasProperty(RDF.type, Cdr.Folder));
 
         Bag emptyBag = model.getBag(emptyFolder.getURI());
 
         assertEquals(emptyBag.size(), 0);
 
-        Resource folder = (Resource) iterator.next();
-
-        assertEquals("Folder label was not set", "test", folder.getProperty(CdrDeposit.label).getString());
+        Resource folder = getChildByLabel(bagFolder, "test");
         assertTrue("Content model was not set", folder.hasProperty(RDF.type, Cdr.Folder));
 
         Bag childrenBag = model.getBag(folder.getURI());
@@ -119,12 +115,23 @@ public class DirectoryToBagJobTest extends AbstractNormalizationJobTest {
         assertEquals(childrenBag.size(), 1);
 
         // Verify that file and its properties were added to work
-        Resource file = (Resource) childrenBag.iterator().next();
-        assertEquals("File label was not set", "lorem.txt",
-                file.getProperty(CdrDeposit.label).getString());
+        Resource file = getChildByLabel(childrenBag, "lorem.txt");
         assertTrue("Type was not set", file.hasProperty(RDF.type, Cdr.FileObject));
 
         String tagPath = file.getProperty(CdrDeposit.stagingLocation).getString();
         assertTrue(tagPath.endsWith("directory-deposit/test/lorem.txt"));
+    }
+
+    private Resource getChildByLabel(Bag bagResc, String seekLabel) {
+        NodeIterator iterator = bagResc.iterator();
+        while (iterator.hasNext()) {
+            Resource childResc = (Resource) iterator.next();
+            String label = childResc.getProperty(CdrDeposit.label).getString();
+            if (label.equals(seekLabel)) {
+                iterator.close();
+                return childResc;
+            }
+        }
+        throw new AssertionError("Failed to find child with label " + seekLabel + " in bag " + bagResc);
     }
 }
