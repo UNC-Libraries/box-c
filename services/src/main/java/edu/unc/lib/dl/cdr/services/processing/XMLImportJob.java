@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +38,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.jdom2.JDOMException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -58,6 +56,12 @@ import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.validation.MetadataValidationException;
 
+/**
+ * A job for stepping through the bulk metadata update doc and making updates to individual objects
+ *
+ * @author harring
+ *
+ */
 public class XMLImportJob implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(XMLImportJob.class);
@@ -80,11 +84,9 @@ public class XMLImportJob implements Runnable {
     private final static String UPDATE_TAG = "update";
     private final static String MODS_TYPE = "MODS";
     private final static QName pidAttribute = new QName("pid");
-    private final static QName lastModifiedAttribute = new QName("lastModified");
     private final static QName typeAttribute = new QName("type");
 
     private PID currentPid;
-    private int updateCount = 0;
     private int objectCount = 0;
     private final File importFile;
     private List<String> updated;
@@ -93,13 +95,6 @@ public class XMLImportJob implements Runnable {
     private XMLEventReader xmlReader;
     private final XMLOutputFactory xmlOutput = XMLOutputFactory.newInstance();
     private DocumentState state = DocumentState.ROOT;
-
-    private final int BUFFER_SIZE = 2048;
-    private final Charset utf8 = Charset.forName("UTF-8");
-    private final String separator = System.getProperty("line.separator");
-    private final byte[] separatorBytes = System.getProperty("line.separator").getBytes();
-    private final byte[] importHeaderBytes = ("<?xml version=\"1.0\" encoding=\"utf-8\"?>" + separator
-            + "<bulkMetadata>" + separator).getBytes(utf8);
 
     private final String username;
     private final String userEmail;
@@ -121,22 +116,25 @@ public class XMLImportJob implements Runnable {
 
         try {
             initializeXMLReader();
+
+            try {
+                getNextUpdate();
+                log.info("Finished metadata import for {} objects in {}ms for user {}",
+                        new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
+                sendCompletedEmail(userEmail, updated, failed);
+            } catch (XMLStreamException e) {
+                log.info("Errors reading XML during update " + username, e);
+                failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
+                sendValidationFailureEmail(userEmail, failed);
+            }
         } catch (UpdateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            getNextUpdate();
-            log.info("Finished metadata import for {} objects in {}ms for user {}",
-                    new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
-        } catch (JDOMException | XMLStreamException | UpdateException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            failed.put(importFile.getAbsolutePath(), "Failed to read metadata update package for " + username);
+            sendValidationFailureEmail(userEmail, failed);
         } finally {
-            cleanup(importFile);
+               close();
+               cleanup();
         }
 
-        sendCompletedEmail(userEmail, updated, failed);
     }
 
     public AccessControlService getAclService() {
@@ -164,20 +162,17 @@ public class XMLImportJob implements Runnable {
         }
     }
 
-    private void getNextUpdate()
-            throws UpdateException, JDOMException, XMLStreamException {
+    private void getNextUpdate() throws XMLStreamException {
         seekNextUpdate(null, null);
     }
 
-    private void seekNextUpdate(PID resumePid, String resumeDs)
-            throws UpdateException, JDOMException, XMLStreamException {
+    private void seekNextUpdate(PID resumePid, String resumeDs) throws XMLStreamException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
         StringWriter contentWriter = null;
 
         String currentDs = null;
-        String lastModified = null;
 
         boolean resumeMode = (resumePid != null);
         boolean foundResumptionPoint = false;
@@ -193,6 +188,11 @@ public class XMLImportJob implements Runnable {
                             // Make sure that this document begins with bulk md tag
                             if (element.getName().getLocalPart().equals(BULK_MD_TAG)) {
                                 state = DocumentState.IN_BULK;
+                            } else {
+                                log.error("Submitted document is not a bulk-metadata-update doc");
+                                failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
+                                sendValidationFailureEmail(userEmail, failed);
+                                return;
                             }
                         }
                         break;
@@ -216,20 +216,17 @@ public class XMLImportJob implements Runnable {
                             StartElement element = e.asStartElement();
                             // Found start of update, extract the datastream
                             if (element.getName().getLocalPart().equals(UPDATE_TAG)) {
-                                // Get last modified date if available
-                                Attribute lastModifiedAttr = element.getAttributeByName(lastModifiedAttribute);
-                                lastModified = lastModifiedAttr == null ? null : lastModifiedAttr.getValue();
 
                                 Attribute typeAttr = element.getAttributeByName(typeAttribute);
                                 if (typeAttr == null) {
-                                    throw new UpdateException("Invalid import data, missing type attribute"
-                                            + " on update of " + currentPid);
+                                    failed.put(currentPid.getRepositoryPath(),
+                                            "Invalid import data, missing type attribute on update");
                                 }
                                 if (MODS_TYPE.equals(typeAttr.getValue())) {
                                     currentDs = Datastream.MD_DESCRIPTIVE.toString();
                                 } else {
-                                    throw new UpdateException("Invalid import data, unsupport type in update tag "
-                                            + currentPid);
+                                    failed.put(currentPid.getRepositoryPath(),
+                                            "Invalid import data, unsupported type in update tag");
                                 }
 
                                 foundResumptionPoint = resumeMode
@@ -266,8 +263,7 @@ public class XMLImportJob implements Runnable {
                         if (countOpenings == 0 && e.isEndElement() && UPDATE_TAG.equals(
                                 e.asEndElement().getName().getLocalPart())) {
                             state = DocumentState.IN_OBJECT;
-                            // Increment the number of updates retrieved
-                            updateCount++;
+
                             if (!resumeMode) {
                                 xmlWriter.close();
                                 xmlWriter = null;
@@ -296,17 +292,13 @@ public class XMLImportJob implements Runnable {
                                 xmlWriter.add(e);
                             }
                         }
-
                         break;
                 }
             }
-        } catch (Exception e) {
-            throw new UpdateException("Could not parse content for " + currentPid, e);
         } finally {
             if (xmlWriter != null) {
                 xmlWriter.close();
             }
-            reset();
         }
 
     }
@@ -319,16 +311,8 @@ public class XMLImportJob implements Runnable {
         }
     }
 
-    private void reset() throws UpdateException {
-        close();
-        initializeXMLReader();
-
-        updateCount = 0;
-        objectCount = 0;
-    }
-
-    private void cleanup(File mdImportFile) {
-        mdImportFile.delete();
+    private void cleanup() {
+        importFile.delete();
     }
 
     private void sendCompletedEmail(String toAddress, List<String> updated, Map<String, String> failed) {
