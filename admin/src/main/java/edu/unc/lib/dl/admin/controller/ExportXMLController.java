@@ -34,7 +34,9 @@ import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpStatus;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
@@ -95,6 +97,9 @@ public class ExportXMLController {
 	private ManagementClient managementClient;
 	@Autowired
 	private AccessControlService aclService;
+	
+	@Autowired
+	private PID collectionsPid;
 
 	private final List<String> resultFields = Arrays.asList(SearchFieldKeys.ID.name());
 
@@ -110,6 +115,7 @@ public class ExportXMLController {
 	 * 
 	 * @param exportRequest
 	 * @param request
+	 * @param httpResp
 	 * @return
 	 * @throws IOException
 	 * @throws FedoraException
@@ -117,10 +123,17 @@ public class ExportXMLController {
 	@RequestMapping(value = "exportContainerXML", method = RequestMethod.POST)
 	public @ResponseBody
 	Object exportFolder(@RequestBody XMLExportRequest exportRequest,
-			HttpServletRequest request) throws IOException, FedoraException {
+			HttpServletRequest request, HttpServletResponse httpResp) throws IOException, FedoraException {
 		
 		List<String> pids = new ArrayList<>();
 		for (String pid : exportRequest.getPids()) {
+			if (collectionsPid.getPid().equals(pid)) {
+				Map <String, String> response = new HashMap<>();
+				response.put("error", "Cannot export root of repository");
+				httpResp.setStatus(HttpStatus.SC_BAD_REQUEST);
+				return response;
+			}
+			
 			SearchState searchState = searchStateFactory.createSearchState();
 			searchState.setResultFields(resultFields);
 			searchState.setSortType("export");
