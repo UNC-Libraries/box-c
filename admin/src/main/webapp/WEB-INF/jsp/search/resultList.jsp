@@ -37,7 +37,8 @@
 				'resultUrl' : '${currentRelativeUrl}',
 				'accessBaseUrl' : '${accessBaseUrl}',
 				'adminBaseUrl' : '${adminBaseUrl}',
-				'formsBaseUrl' : '${formsBaseUrl}'
+				'formsBaseUrl' : '${formsBaseUrl}',
+				'rootPid' : '${collectionsPid.getPid()}'
 			}
 		}
 	};

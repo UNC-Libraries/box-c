@@ -89,6 +89,7 @@
 				<value>accessBaseUrl</value>
 				<value>adminBaseUrl</value>
 				<value>formsBaseUrl</value>
+				<value>collectionsPid</value>
 			</list>
 		</property>
 		<property name="viewClass"
