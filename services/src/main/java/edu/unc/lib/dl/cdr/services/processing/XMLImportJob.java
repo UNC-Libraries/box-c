@@ -67,7 +67,6 @@ public class XMLImportJob implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(XMLImportJob.class);
 
     private AccessControlService aclService;
-    private AgentPrincipals agent;
     private UpdateDescriptionService updateService;
     private RepositoryObjectLoader repoObjLoader;
     private JavaMailSender mailSender;
@@ -88,9 +87,6 @@ public class XMLImportJob implements Runnable {
 
     private PID currentPid;
     private int objectCount = 0;
-    private final File importFile;
-    private List<String> updated;
-    private Map<String, String> failed;
 
     private XMLEventReader xmlReader;
     private final XMLOutputFactory xmlOutput = XMLOutputFactory.newInstance();
@@ -98,6 +94,11 @@ public class XMLImportJob implements Runnable {
 
     private final String username;
     private final String userEmail;
+    private AgentPrincipals agent;
+    private final File importFile;
+
+    private List<String> updated;
+    private Map<String, String> failed;
 
     public XMLImportJob(String username, String userEmail, AgentPrincipals agent,
             File importFile) {
@@ -130,9 +131,10 @@ public class XMLImportJob implements Runnable {
         } catch (UpdateException e) {
             failed.put(importFile.getAbsolutePath(), "Failed to read metadata update package for " + username);
             sendValidationFailureEmail(userEmail, failed);
+
         } finally {
-               close();
-               cleanup();
+            close();
+            //cleanup();
         }
 
     }
@@ -151,6 +153,46 @@ public class XMLImportJob implements Runnable {
 
     public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
         this.repoObjLoader = repoObjLoader;
+    }
+
+    public UpdateDescriptionService getUpdateService() {
+        return updateService;
+    }
+
+    public void setUpdateService(UpdateDescriptionService updateService) {
+        this.updateService = updateService;
+    }
+
+    public JavaMailSender getMailSender() {
+        return mailSender;
+    }
+
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    public Template getCompleteTemplate() {
+        return completeTemplate;
+    }
+
+    public void setCompleteTemplate(Template completeTemplate) {
+        this.completeTemplate = completeTemplate;
+    }
+
+    public Template getFailedTemplate() {
+        return failedTemplate;
+    }
+
+    public void setFailedTemplate(Template failedTemplate) {
+        this.failedTemplate = failedTemplate;
+    }
+
+    public String getFromAddress() {
+        return fromAddress;
+    }
+
+    public void setFromAddress(String fromAddress) {
+        this.fromAddress = fromAddress;
     }
 
     private void initializeXMLReader() throws UpdateException {
@@ -304,10 +346,12 @@ public class XMLImportJob implements Runnable {
     }
 
     private void close() {
-        try {
-            xmlReader.close();
-        } catch (XMLStreamException e) {
-            log.error("Failed to close XML Reader during CDR metadata update", e);
+        if (xmlReader != null) {
+            try {
+                xmlReader.close();
+            } catch (XMLStreamException e) {
+                log.error("Failed to close XML Reader during CDR metadata update", e);
+            }
         }
     }
 
@@ -330,7 +374,7 @@ public class XMLImportJob implements Runnable {
             }
 
             Map<String, Object> data = new HashMap<>();
-            data.put("fileName", importFile.getAbsolutePath());
+            data.put("fileName", importFile.getPath());
 
             data.put("updated", updated);
 
@@ -376,12 +420,17 @@ public class XMLImportJob implements Runnable {
             msg.setSubject("CDR Metadata update failed");
 
             Map<String, Object> data = new HashMap<>();
-            data.put("fileName", importFile.getAbsolutePath());
+            data.put("fileName", importFile.getPath());
             data.put("problems", problems.entrySet());
             data.put("problemCount", problems.size());
 
             String html = failedTemplate.execute(data);
-            msg.setText(html, true);
+            try {
+                msg.setText(html, true);
+            } catch (IllegalArgumentException e) {
+                log.error("Text of failure email was null, probably due to bad filepath of submission");
+                msg.setText("Please check the filepath of your submission and try again", true);
+            }
 
             mailSender.send(mimeMsg);
         } catch (MessagingException e) {
