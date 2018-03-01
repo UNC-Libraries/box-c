@@ -15,18 +15,24 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.util.Map;
 
 import javax.mail.internet.MimeMessage;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.xml.sax.XMLReader;
 
 import com.samskivert.mustache.Template;
@@ -43,18 +49,15 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 public class XMLImportJobTest {
 
     private XMLImportJob job;
-    private String username = "username";
-    private String userEmail = "user@email.com";
+
     @Mock
     private AgentPrincipals agent;
-    private File importFile = new File("src/test/resources/mods/bulk-md.xml");
     @Mock
     private AccessControlService aclService;
     @Mock
     private Template completeTemplate;
     @Mock
     private Template failedTemplate;
-    private String fromAddress = "admin@example.com";
     @Mock
     private JavaMailSender mailSender;
     @Mock
@@ -62,14 +65,57 @@ public class XMLImportJobTest {
     @Mock
     private UpdateDescriptionService updateService;
 
+    private String fromAddress = "admin@example.com";
+
     @Mock
     private MimeMessage msg;
     @Mock
+    private MimeMessageHelper msgHelper;
+    @Mock
     private XMLReader xmlReader;
+
+    @Captor
+    private ArgumentCaptor<String> subjectCaptor;
+    @Captor
+    private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
     @Before
     public void init() {
         initMocks(this);
+
+        when(mailSender.createMimeMessage()).thenReturn(msg);
+        when(completeTemplate.execute(anyMap())).thenReturn("some text");
+    }
+
+    @Test
+    public void fileNotFoundTest() throws Exception {
+        String username = "username";
+        String userEmail = "user@email.com";
+        File importFile = new File("path/to/nowhere");
+        setupJob(username, userEmail, importFile);
+        job.run();
+
+        verify(mailSender).send(msg);
+        verify(failedTemplate).execute(mapCaptor.capture());
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals("path/to/nowhere", dataMap.get("fileName"));
+        assertEquals(1, dataMap.get("problemCount"));
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
+    }
+
+    @Test
+    public void successfulJobTest() {
+        String username = "username";
+        String userEmail = "user@email.com";
+        File importFile = new File("src/test/resources/mods/bulk-md.xml");
+        setupJob(username, userEmail, importFile);
+        job.run();
+
+        verify(mailSender).send(msg);
+    }
+
+    private void setupJob(String username, String userEmail, File importFile) {
         job = new XMLImportJob(username, userEmail, agent, importFile);
         job.setAclService(aclService);
         job.setCompleteTemplate(completeTemplate);
@@ -78,14 +124,6 @@ public class XMLImportJobTest {
         job.setMailSender(mailSender);
         job.setRepoObjLoader(repoObjLoader);
         job.setUpdateService(updateService);
-
-        when(mailSender.createMimeMessage()).thenReturn(msg);
-        when(completeTemplate.execute(anyMap())).thenReturn("some text");
-    }
-
-    @Test
-    public void fileNotFoundTest() {
-        job.run();
     }
 
 }
