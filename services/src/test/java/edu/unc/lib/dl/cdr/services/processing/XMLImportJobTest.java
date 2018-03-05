@@ -105,7 +105,7 @@ public class XMLImportJobTest {
     }
 
     @Test
-    public void successfulJobTest() {
+    public void successfulJobTest() throws Exception {
         String username = "username";
         String userEmail = "user@email.com";
         File importFile = new File("src/test/resources/mods/bulk-md.xml");
@@ -113,6 +113,8 @@ public class XMLImportJobTest {
         job.run();
 
         verify(mailSender).send(msg);
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertEquals("CDR Metadata update completed: src/test/resources/mods/bulk-md.xml", subjectCaptor.getValue());
     }
 
     private void setupJob(String username, String userEmail, File importFile) {

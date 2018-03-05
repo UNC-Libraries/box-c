@@ -391,7 +391,7 @@ public class XMLImportJob implements Runnable {
                 msg.setSubject("CDR Metadata update completed with issues:" + importFile.getAbsolutePath());
                 msg.addTo(fromAddress);
             } else {
-                msg.setSubject("CDR Metadata update completed:" + importFile.getAbsolutePath());
+                msg.setSubject("CDR Metadata update completed: " + importFile.getPath());
             }
 
             String html = completeTemplate.execute(data);
