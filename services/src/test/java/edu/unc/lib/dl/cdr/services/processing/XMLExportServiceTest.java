@@ -89,7 +89,7 @@ public class XMLExportServiceTest {
     @Mock
     private SolrQueryLayerService queryLayer;
     @Mock
-    SearchResultResponse resultResponse;
+    private SearchResultResponse resultResponse;
     private XMLExportRequest request;
     @Mock
     private AccessGroupSet group;

@@ -45,7 +45,7 @@ import net.greghaines.jesque.Job;
 
 /**
  * API endpoint that accepts an XML document containing objects' metadata, kicks off update operations for
- * individual objects, and sends an email with a report of objects that were able to be updated.
+ * individual objects, and sends an email with a report of objects that were/were not able to be updated.
  *
  * @author bbpennel
  * @author harring
@@ -89,7 +89,7 @@ public class ImportXMLController {
             importFile = File.createTempFile("import", ".xml", storagePath.toFile());
             FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
         } catch (IOException e) {
-            log.error("Error creating or writing to import file: {}",  e);
+            log.error("Error creating or writing to import file: {}", e);
             result.put("error", e.getMessage());
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -101,7 +101,7 @@ public class ImportXMLController {
         try {
             jesqueClient.enqueue(bulkMetadataQueueName, job);
         } catch (IllegalArgumentException e) {
-            log.error("Error queueing the job: {}",  e);
+            log.error("Error queueing the job: {}", e);
             result.put("error", e.getMessage());
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
         }
