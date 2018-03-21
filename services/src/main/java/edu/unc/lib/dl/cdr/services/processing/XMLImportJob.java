@@ -134,7 +134,7 @@ public class XMLImportJob implements Runnable {
 
         } finally {
             close();
-            //cleanup();
+            cleanup();
         }
 
     }

@@ -27,7 +27,9 @@ import java.util.Map;
 import javax.mail.internet.MimeMessage;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -79,6 +81,9 @@ public class XMLImportJobTest {
     @Captor
     private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
+    @Rule
+    public final TemporaryFolder tmpFolder = new TemporaryFolder();
+
     @Before
     public void init() {
         initMocks(this);
@@ -91,7 +96,7 @@ public class XMLImportJobTest {
     public void fileNotFoundTest() throws Exception {
         String username = "username";
         String userEmail = "user@email.com";
-        File importFile = new File("path/to/nowhere");
+        File importFile = tmpFolder.newFile();
         setupJob(username, userEmail, importFile);
         job.run();
 
@@ -108,7 +113,7 @@ public class XMLImportJobTest {
     public void successfulJobTest() throws Exception {
         String username = "username";
         String userEmail = "user@email.com";
-        File importFile = new File("src/test/resources/mods/bulk-md.xml");
+        File importFile = tmpFolder.newFile("src/test/resources/mods/bulk-md.xml");
         setupJob(username, userEmail, importFile);
         job.run();
 
