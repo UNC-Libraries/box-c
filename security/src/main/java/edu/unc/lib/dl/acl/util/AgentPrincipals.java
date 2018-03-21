@@ -16,6 +16,7 @@
 package edu.unc.lib.dl.acl.util;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.USER_NAMESPACE;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Stores the authentication principals for an agent.
@@ -36,8 +37,12 @@ public class AgentPrincipals {
      */
     public AgentPrincipals(String username, AccessGroupSet principals) {
         this.username = username;
-        this.principals = new AccessGroupSet(principals);
-        if (username != null) {
+        if (principals == null) {
+            this.principals = new AccessGroupSet();
+        } else {
+            this.principals = new AccessGroupSet(principals);
+        }
+        if (!isBlank(username)) {
             this.principals.add(getUsernameUri());
         }
     }
@@ -49,8 +54,7 @@ public class AgentPrincipals {
      * @return new AgentPrincipals object
      */
     public static AgentPrincipals createFromThread() {
-        return new AgentPrincipals(GroupsThreadStore.getUsername(),
-                GroupsThreadStore.getGroups());
+        return GroupsThreadStore.getAgentPrincipals();
     }
 
     /**

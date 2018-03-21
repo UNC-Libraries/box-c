@@ -31,6 +31,7 @@ import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
 
@@ -85,8 +86,11 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             }
 
             AccessGroupSet accessGroups = getUserGroups(request);
-            request.setAttribute("accessGroupSet", accessGroups);
             GroupsThreadStore.storeGroups(accessGroups);
+
+            AgentPrincipals principals = GroupsThreadStore.getAgentPrincipals();
+            request.setAttribute("accessGroupSet", principals.getPrincipals());
+
             if (log.isDebugEnabled()) {
                 log.debug("Setting cdr groups for request processing thread: {}",
                         GroupsThreadStore.getGroupString());
