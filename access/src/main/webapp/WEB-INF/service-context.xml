@@ -63,23 +63,19 @@
     <!-- Beans -->
     
     <bean id="gaTrackingID" class="java.lang.String">
-        <constructor-arg
-            value="${google.trackingId}" />
+        <constructor-arg value="${google.trackingId}" />
     </bean>
     
     <bean id="accessBaseUrl" class="java.lang.String">
-        <constructor-arg
-            value="${access.base.url}" />
+        <constructor-arg value="${access.base.url}" />
     </bean>
     
     <bean id="adminBaseUrl" class="java.lang.String">
-        <constructor-arg
-            value="${admin.base.url}" />
+        <constructor-arg value="${admin.base.url}" />
     </bean>
     
     <bean id="formsBaseUrl" class="java.lang.String">
-        <constructor-arg
-            value="${forms.base.url}" />
+        <constructor-arg value="${forms.base.url}" />
     </bean>
 
     <!-- Properties objects -->
