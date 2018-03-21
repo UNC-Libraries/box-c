@@ -45,23 +45,19 @@
     </bean>
     
     <bean id="servicesUrl" class="java.lang.String">
-        <constructor-arg
-            value="${admin.services.url}${services.context}/rest/" />
+        <constructor-arg value="${services.base.url}rest/" />
     </bean>
     
     <bean id="accessBaseUrl" class="java.lang.String">
-        <constructor-arg
-            value="${access.base.url}" />
+        <constructor-arg value="${access.base.url}" />
     </bean>
     
     <bean id="adminBaseUrl" class="java.lang.String">
-        <constructor-arg
-            value="${admin.base.url}" />
+        <constructor-arg value="${admin.base.url}" />
     </bean>
     
     <bean id="formsBaseUrl" class="java.lang.String">
-        <constructor-arg
-            value="${forms.base.url}" />
+        <constructor-arg value="${forms.base.url}" />
     </bean>
     
     <bean id="swordUrl" class="java.lang.String">

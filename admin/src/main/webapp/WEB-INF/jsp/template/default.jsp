@@ -22,8 +22,8 @@
 <!doctype html>
 <html>
 <head>
-	<c:set var="url">${pageContext.request.requestURL}</c:set>
-    <base href="${fn:substring(url, 0, fn:length(url) - fn:length(pageContext.request.requestURI))}${pageContext.request.contextPath}/" />
+	<c:set var="url">${adminBaseUrl}</c:set>
+    <base href="${url}" />
 	<c:import url="common/headElements.jsp" />
 	<title>
 		CDR Administration <c:if test="${not empty pageSubtitle}"> - <c:out value="${pageSubtitle}"/></c:if>
