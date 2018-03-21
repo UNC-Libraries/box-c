@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.acl.filter;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
@@ -27,7 +30,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.httpclient.HttpClientUtil;
@@ -35,14 +37,16 @@ import edu.unc.lib.dl.httpclient.HttpClientUtil;
 /**
  * Filter which retrieves the users shibboleth and grouper session information in order to construct their profile as
  * needed.
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class StoreUserAccessControlFilter extends OncePerRequestFilter implements ServletContextAware {
     private static final Logger log = LoggerFactory.getLogger(StoreUserAccessControlFilter.class);
 
     protected static String FORWARDING_ROLE = "group-forwarding";
+
+    private boolean retainGroupsThreadStore;
 
     @Override
     public void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws IOException,
@@ -56,7 +60,9 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             chain.doFilter(req, res);
         } finally {
             // Clear out group store no matter what happens
-            GroupsThreadStore.clearStore();
+            if (!retainGroupsThreadStore) {
+                GroupsThreadStore.clearStore();
+            }
         }
     }
 
@@ -128,11 +134,18 @@ public class StoreUserAccessControlFilter extends OncePerRequestFilter implement
             accessGroups = new AccessGroupSet(shibGroups);
         }
 
-        accessGroups.addAccessGroup(AccessGroupConstants.PUBLIC_GROUP);
+        accessGroups.addAccessGroup(PUBLIC_PRINC);
         if (userName != null && userName.length() > 0) {
-            accessGroups.addAccessGroup(AccessGroupConstants.AUTHENTICATED_GROUP);
+            accessGroups.addAccessGroup(AUTHENTICATED_PRINC);
         }
 
         return accessGroups;
+    }
+
+    /**
+     * @param retainGroupsThreadStore the retainGroupsThreadStore to set
+     */
+    public void setRetainGroupsThreadStore(boolean retainGroupsThreadStore) {
+        this.retainGroupsThreadStore = retainGroupsThreadStore;
     }
 }
