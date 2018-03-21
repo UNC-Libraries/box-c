@@ -15,19 +15,55 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import java.util.Arrays;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Assert;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Before;
 import org.junit.Test;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
-import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
-import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
-public class AccessUtilTest extends Assert {
+public class AccessUtilTest {
+
+    private BriefObjectMetadataBean mdObject;
+
+    private List<String> roleGroups;
+
+    @Before
+    public void init() {
+        roleGroups = new ArrayList<>();
+
+        mdObject = new BriefObjectMetadataBean();
+        mdObject.setId("uuid:test");
+        mdObject.setRoleGroup(roleGroups);
+    }
+
+    @Test
+    public void testHasPatronRoleForPublicGroup() {
+        roleGroups.add("canViewOriginals|everyone");
+
+        assertTrue("Failed to determine object has full patron access",
+                AccessUtil.hasPatronRoleForPublicGroup(mdObject));
+    }
+
+    @Test
+    public void testDoesNotHaveFullPatronRoleForPublicGroup() {
+        roleGroups.add("canViewMetadata|everyone");
+
+        assertFalse("Object must not have full patron access",
+                AccessUtil.hasPatronRoleForPublicGroup(mdObject));
+    }
+
+    @Test
+    public void testHasPatronRoleForPublicGroupNoRoleGroups() {
+        mdObject.setRoleGroup(null);
+
+        assertFalse("Object must not have full patron access",
+                AccessUtil.hasPatronRoleForPublicGroup(mdObject));
+    }
 //
 //	private BriefObjectMetadata createMetadataObject() {
 //		BriefObjectMetadataBean md = new BriefObjectMetadataBean();

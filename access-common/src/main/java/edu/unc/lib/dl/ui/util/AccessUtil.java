@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.ui.util;
 
+import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
+import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
+
 /**
  * @author bbpennel
  */
@@ -28,10 +31,19 @@ import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
+/**
+ * Utility methods for determining access state of objects, for use in UIs.
+ *
+ * @author bbpennel
+ *
+ */
 public class AccessUtil {
-    private AccessUtil() {
+    // RoleGroup value used to identify patron full public access
+    private static final String PUBLIC_ROLE_VALUE = canViewOriginals.getPredicate() + "|" + PUBLIC_PRINC;
 
+    private AccessUtil() {
     }
+
     public static boolean permitDatastreamAccess(AccessGroupSet groups, String datastream,
             BriefObjectMetadata metadata) {
         return AccessUtil.permitDatastreamAccess(groups, Datastream.getDatastream(datastream), metadata);
@@ -109,8 +121,16 @@ public class AccessUtil {
         return !ObjectAccessControlsBean.hasPermission(groups, Permission.viewDescription, userRoles);
     }
 
+    /**
+     * Determines if full public access is allowed for the provided object.
+     *
+     * @param metadata object
+     * @return true if full public access is allow for the object
+     */
     public static boolean hasPatronRoleForPublicGroup(BriefObjectMetadata metadata) {
-        return metadata.getAccessControlBean().getRoles(new AccessGroupSet(AccessPrincipalConstants.PUBLIC_PRINC))
-                .contains(UserRole.patron);
+        if (metadata.getRoleGroup() == null) {
+            return false;
+        }
+        return metadata.getRoleGroup().contains(PUBLIC_ROLE_VALUE);
     }
 }
