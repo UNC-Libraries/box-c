@@ -67,6 +67,11 @@
             value="${google.trackingId}" />
     </bean>
     
+    <bean id="accessBaseUrl" class="java.lang.String">
+        <constructor-arg
+            value="${access.base.url}" />
+    </bean>
+    
     <bean id="adminBaseUrl" class="java.lang.String">
         <constructor-arg
             value="${admin.base.url}" />
@@ -107,6 +112,7 @@
                 <value>externalContentSettings</value>
                 <value>fedoraUtil</value>
                 <value>gaTrackingID</value>
+                <value>accessBaseUrl</value>
                 <value>adminBaseUrl</value>
                 <value>formsBaseUrl</value>
             </list>
