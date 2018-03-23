@@ -126,34 +126,6 @@
 		</function-signature>
 	</function>
 	<function>
-		<name>permitDatastreamAccess</name>
-		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
-		<function-signature>
-			boolean permitDatastreamAccess(edu.unc.lib.dl.acl.util.AccessGroupSet, java.lang.String, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
-		</function-signature>
-	</function>
-	<function>
-		<name>hasListAccessOnly</name>
-		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
-		<function-signature>
-			boolean hasListAccessOnly(edu.unc.lib.dl.acl.util.AccessGroupSet, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
-		</function-signature>
-	</function>
-	<function>
-		<name>hasAccess</name>
-		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
-		<function-signature>
-			boolean hasAccess(edu.unc.lib.dl.acl.util.AccessGroupSet, edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
-		</function-signature>
-	</function>
-	<function>
-		<name>hasPatronRoleForPublicGroup</name>
-		<function-class>edu.unc.lib.dl.ui.util.AccessUtil</function-class>
-		<function-signature>
-			boolean hasPatronRoleForPublicGroup(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
-		</function-signature>
-	</function>
-	<function>
 		<name>getSearchQueryParameters</name>
 		<function-class>edu.unc.lib.dl.search.solr.util.SearchStateUtil</function-class>
 		<function-signature>
