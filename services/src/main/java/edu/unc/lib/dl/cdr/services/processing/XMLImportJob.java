@@ -73,6 +73,8 @@ public class XMLImportJob implements Runnable {
     private Template completeTemplate;
     private Template failedTemplate;
     private String fromAddress;
+    private MimeMessage mimeMsg;
+    private MimeMessageHelper msg;
 
     private enum DocumentState {
         ROOT, IN_BULK, IN_OBJECT, IN_CONTENT;
@@ -116,21 +118,29 @@ public class XMLImportJob implements Runnable {
         long startTime = System.currentTimeMillis();
 
         try {
+            mimeMsg = mailSender.createMimeMessage();
+            msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
+        } catch (MessagingException e) {
+            log.error("Failed to send email to " + userEmail
+                    + " for update " + importFile.getAbsolutePath(), e);
+        }
+
+        try {
             initializeXMLReader();
 
             try {
                 getNextUpdate();
                 log.info("Finished metadata import for {} objects in {}ms for user {}",
                         new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
-                sendCompletedEmail(userEmail, updated, failed);
+                sendCompletedEmail(updated, failed);
             } catch (XMLStreamException e) {
                 log.info("Errors reading XML during update " + username, e);
                 failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
-                sendValidationFailureEmail(userEmail, failed);
+                sendValidationFailureEmail(failed);
             }
         } catch (UpdateException e) {
             failed.put(importFile.getAbsolutePath(), "Failed to read metadata update package for " + username);
-            sendValidationFailureEmail(userEmail, failed);
+            sendValidationFailureEmail(failed);
 
         } finally {
             close();
@@ -195,6 +205,22 @@ public class XMLImportJob implements Runnable {
         this.fromAddress = fromAddress;
     }
 
+    public MimeMessage getMimeMessage() {
+        return mimeMsg;
+    }
+
+    public void setMimeMessage(MimeMessage mimeMsg) {
+        this.mimeMsg = mimeMsg;
+    }
+
+    public MimeMessageHelper getMessageHelper() {
+        return msg;
+    }
+
+    public void setMessageHelper(MimeMessageHelper msg) {
+        this.msg = msg;
+    }
+
     private void initializeXMLReader() throws UpdateException {
         XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
         try {
@@ -233,7 +259,7 @@ public class XMLImportJob implements Runnable {
                             } else {
                                 log.error("Submitted document is not a bulk-metadata-update doc");
                                 failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
-                                sendValidationFailureEmail(userEmail, failed);
+                                sendValidationFailureEmail(failed);
                                 return;
                             }
                         }
@@ -356,21 +382,20 @@ public class XMLImportJob implements Runnable {
     }
 
     private void cleanup() {
-        importFile.delete();
+        if (importFile != null) {
+            importFile.delete();
+        }
     }
 
-    private void sendCompletedEmail(String toAddress, List<String> updated, Map<String, String> failed) {
-        MimeMessage mimeMsg = mailSender.createMimeMessage();
+    private void sendCompletedEmail(List<String> updated, Map<String, String> failed) {
         try {
-            MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
-
             msg.setFrom(fromAddress);
-            log.error("Sending email to '{}'", toAddress);
-            if (toAddress == null || toAddress.trim().length() == 0) {
+            log.error("Sending email to '{}'", userEmail);
+            if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
                 msg.addTo(fromAddress);
             } else {
-                msg.addTo(toAddress);
+                msg.addTo(userEmail);
             }
 
             Map<String, Object> data = new HashMap<>();
@@ -399,22 +424,19 @@ public class XMLImportJob implements Runnable {
 
             mailSender.send(mimeMsg);
         } catch (MessagingException e) {
-            log.error("Failed to send email to " + toAddress
+            log.error("Failed to send email to " + userEmail
                     + " for update " + importFile.getAbsolutePath(), e);
         }
     }
 
-    private void sendValidationFailureEmail(String toAddress, Map<String, String> problems) {
-        MimeMessage mimeMsg = mailSender.createMimeMessage();
+    private void sendValidationFailureEmail(Map<String, String> problems) {
         try {
-            MimeMessageHelper msg = new MimeMessageHelper(mimeMsg, MimeMessageHelper.MULTIPART_MODE_MIXED);
-
             msg.setFrom(fromAddress);
-            if (toAddress == null || toAddress.trim().length() == 0) {
+            if (userEmail == null || userEmail.trim().length() == 0) {
                 // No email provided, send to admins instead
                 msg.addTo(fromAddress);
             } else {
-                msg.addTo(toAddress);
+                msg.addTo(userEmail);
             }
 
             msg.setSubject("CDR Metadata update failed");
@@ -434,7 +456,7 @@ public class XMLImportJob implements Runnable {
 
             mailSender.send(mimeMsg);
         } catch (MessagingException e) {
-            log.error("Failed to send email to " + toAddress
+            log.error("Failed to send email to " + userEmail
                     + " for update " + importFile.getAbsolutePath(), e);
         }
     }

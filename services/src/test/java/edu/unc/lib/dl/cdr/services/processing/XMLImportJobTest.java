@@ -16,13 +16,22 @@
 package edu.unc.lib.dl.cdr.services.processing;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.anyMap;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.mail.internet.MimeMessage;
 
@@ -79,21 +88,23 @@ public class XMLImportJobTest {
     @Captor
     private ArgumentCaptor<String> subjectCaptor;
     @Captor
+    private ArgumentCaptor<String> emailCaptor;
+    @Captor
     private ArgumentCaptor<Map<String, Object>> mapCaptor;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
     @Before
-    public void init() {
+    public void init() throws Exception {
         initMocks(this);
 
         when(mailSender.createMimeMessage()).thenReturn(msg);
-        when(completeTemplate.execute(anyMap())).thenReturn("some text");
     }
 
+    @SuppressWarnings("unchecked")
     @Test
-    public void fileNotFoundTest() throws Exception {
+    public void emptyFileTest() throws Exception {
         String username = "username";
         String userEmail = "user@email.com";
         File importFile = tmpFolder.newFile();
@@ -102,9 +113,36 @@ public class XMLImportJobTest {
 
         verify(mailSender).send(msg);
         verify(failedTemplate).execute(mapCaptor.capture());
+
         Map<String, Object> dataMap = mapCaptor.getValue();
-        assertEquals("path/to/nowhere", dataMap.get("fileName"));
+        assertEquals(importFile.getAbsolutePath(), dataMap.get("fileName"));
         assertEquals(1, dataMap.get("problemCount"));
+        Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
+        Entry<String, String> problem = problems.iterator().next();
+        assertEquals(problem.getValue(), "The import file contains XML errors");
+
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void fileNotFoundTest() throws Exception {
+        String username = "username";
+        String userEmail = "user@email.com";
+        File importFile = new File("");
+        setupJob(username, userEmail, importFile);
+        job.run();
+
+        verify(mailSender).send(msg);
+        verify(failedTemplate).execute(mapCaptor.capture());
+
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals(1, dataMap.get("problemCount"));
+        Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
+        Entry<String, String> problem = problems.iterator().next();
+        assertEquals(problem.getValue(), "Failed to read metadata update package for " + username);
+
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
     }
@@ -113,13 +151,31 @@ public class XMLImportJobTest {
     public void successfulJobTest() throws Exception {
         String username = "username";
         String userEmail = "user@email.com";
-        File importFile = tmpFolder.newFile("src/test/resources/mods/bulk-md.xml");
-        setupJob(username, userEmail, importFile);
+        File tempImportFile = createTempImportFile();
+        setupJob(username, userEmail, tempImportFile);
+        when(completeTemplate.execute(anyObject())).thenReturn("success email text");
         job.run();
 
         verify(mailSender).send(msg);
+        verify(completeTemplate).execute(mapCaptor.capture());
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals(tempImportFile.getPath(), dataMap.get("fileName"));
+        assertNull(dataMap.get("failed"));
+        assertNull(dataMap.get("failedCount"));
+        assertNull(dataMap.get("issues"));
+        assertNotNull(dataMap.get("updated"));
+        assertNotNull(dataMap.get("updatedCount"));
         verify(msg).setSubject(subjectCaptor.capture());
-        assertEquals("CDR Metadata update completed: src/test/resources/mods/bulk-md.xml", subjectCaptor.getValue());
+        assertTrue(subjectCaptor.getValue().startsWith("CDR Metadata update completed"));
+    }
+
+    // creates copy of import file to avoid test file being deleted from project
+    private File createTempImportFile() throws IOException {
+        File tempDir = tmpFolder.newFolder();
+        File tempImportFile = new File(tempDir, "temp-mods-import");
+        Files.copy(Paths.get("src/test/resources/mods/bulk-md.xml"), tempImportFile.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
+        return tempImportFile;
     }
 
     private void setupJob(String username, String userEmail, File importFile) {
@@ -131,6 +187,9 @@ public class XMLImportJobTest {
         job.setMailSender(mailSender);
         job.setRepoObjLoader(repoObjLoader);
         job.setUpdateService(updateService);
+        job.setMimeMessage(msg);
+        job.setMessageHelper(msgHelper);
+        job.setFromAddress("cdrAdmin@example.org");
     }
 
 }
