@@ -34,7 +34,7 @@
 			<c:if test="${not empty previousNext}">
 				<ul id="prevNext">
 					<c:choose>
-						<c:when test="${not empty previousNext.previous and not cdr:hasListAccessOnly(requestScope.accessGroupSet, previousNext.previous)}">
+						<c:when test="${not empty previousNext.previous}">
 							<li><a href="<c:out value='record/${previousNext.previous.id}' />"><i class="fa fa-arrow-left" aria-hidden="true"></i> Previous</a></li>
 						</c:when>
 						<c:otherwise>
@@ -42,7 +42,7 @@
 						</c:otherwise>
 					</c:choose>
 					<c:choose>
-						<c:when test="${not empty previousNext.next and not cdr:hasListAccessOnly(requestScope.accessGroupSet, previousNext.next)}">
+						<c:when test="${not empty previousNext.next}">
 							<li><a href="<c:out value='record/${previousNext.next.id}' />">Next <i class="fa fa-arrow-right" aria-hidden="true"></i></a></li>
 						</c:when>
 						<c:otherwise>

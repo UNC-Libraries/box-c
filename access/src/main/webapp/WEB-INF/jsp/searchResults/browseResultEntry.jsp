@@ -37,8 +37,6 @@
 	</c:otherwise>
 </c:choose>
 
-<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
-
 <div id="entry${metadata.id}" class="browseitem ${isDeleted}${' '}${isProtected}">
 	<div class="contentarea">
 		<%-- Link to full record of the current item --%>
@@ -56,14 +54,7 @@
 
 		<h2>
 			<a href="<c:out value='${primaryActionUrl}' />" class="has_tooltip" title="View details for ${metadata.title}."><c:out value="${metadata.title}"/></a>
-			<c:choose>
-				<c:when test="${hasListAccessOnly}">
-					<span class="searchitem_container_count">(<c:if test="${not empty loginUrl}"><a href="${loginUrl}">log in</a> or </c:if><a href="${contactUrl}&requestpid=${metadata.pid.pid}">request access</a>)</span>
-				</c:when>
-				<c:otherwise> 
-					<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
-				</c:otherwise>
-			</c:choose>
+			<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
 		</h2>
 		<c:if test="${not empty metadata.creator}">
 			<p>${searchSettings.searchFieldLabels['CREATOR']}: 

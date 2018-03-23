@@ -29,7 +29,6 @@
 			<c:set var="currentItemClass" scope="page">
 				<c:if test="${briefObject.id == neighbor.id}"> current_item</c:if>
 			</c:set>
-			<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, neighbor)}"/>
 			<div class="relateditem ${currentItemClass}">
 				<div class="relatedthumb">
 					<c:set var="thumbnailObject" value="${neighbor}" scope="request" />
