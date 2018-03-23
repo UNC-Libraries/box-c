@@ -124,7 +124,7 @@
         <dependency>
             <groupId>taglibs</groupId>
             <artifactId>standard</artifactId>
-            <version>${javax.servlet.jstl.version}</version>
+            <version>${taglibs.standard.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

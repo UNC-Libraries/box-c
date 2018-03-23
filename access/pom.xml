@@ -41,7 +41,7 @@
                     <stopKey>STOP</stopKey>
                 <webApp>
                     <webInfIncludeJarPattern>.*access-common-.*</webInfIncludeJarPattern>
-                    <contextPath>/access</contextPath>
+                    <contextPath>/</contextPath>
                     <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
                     <extraClasspath>${basedir}/target/test-classes/</extraClasspath>
                 </webApp>
@@ -120,7 +120,7 @@
         <dependency>
             <groupId>taglibs</groupId>
             <artifactId>standard</artifactId>
-            <version>${javax.servlet.jstl.version}</version>
+            <version>${taglibs.standard.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
