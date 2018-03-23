@@ -35,8 +35,10 @@ import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 /**
- * Utility for determining if a particular user has access to an object or datastream.
- * 
+ * Utility for determining if a particular user has access to an object or
+ * datastream. Makes use of per user result caching mechanism for dealing with
+ * closely clustered ACL checks of the same object.
+ *
  * @author bbpennel
  */
 public class UserAccessUtil {
@@ -48,7 +50,7 @@ public class UserAccessUtil {
     private SolrQueryLayerService solrQueryLayer;
     // Cache of answers as to whether or not a user has access to a particular object or object's datastream
     // <PID, <group, Answer>>
-    private WeakHashMap<String, Map<String, Boolean>> pids2User2Access = new WeakHashMap<String, Map<String, Boolean>>(
+    private WeakHashMap<String, Map<String, Boolean>> pids2User2Access = new WeakHashMap<>(
             256);
 
     private AtomicLong lastCleared = new AtomicLong(0);
@@ -102,7 +104,7 @@ public class UserAccessUtil {
         }
 
         if (user2Access == null) {
-            user2Access = new HashMap<String, Boolean>();
+            user2Access = new HashMap<>();
             this.pids2User2Access.put(pid.getPid(), user2Access);
         }
 

@@ -26,7 +26,7 @@
 <c:if test="${cdr:contains(metadata.status, 'Deleted') || cdr:contains(metadata.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
 </c:if>
-<c:if test="${not empty metadata && (not cdr:hasPatronRoleForPublicGroup(metadata) || not empty metadata.activeEmbargo)}">
+<c:if test="${not empty metadata && (not permsHelper.allowsPublicAccess(metadata) || not empty metadata.activeEmbargo)}">
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
@@ -209,12 +209,12 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 				<div class="fileinfo">
 					<c:choose>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
+						<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
 							<div class="actionlink right download">
 								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
 							</div>
 						</c:when>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
+						<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
 							<div class="actionlink right download">
 								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
 							</div>

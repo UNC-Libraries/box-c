@@ -41,7 +41,7 @@
 			<c:param name="size" value="large" />
 		</c:import>
 		
-		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
+		<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject, 'editDescription')}">
 			<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">Edit</a></div>
 		</c:if>
 
@@ -88,7 +88,7 @@
 		</div>
 		<div class="clear">
 			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
+				<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
 					<div class="actionlink left download">
 						<a href="${dataFileUrl}?dl=true">Download</a>
 					</div>
@@ -106,7 +106,7 @@
 			</c:choose>
 			
 			<c:choose>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
+				<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
 					<div class="actionlink left">
 						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
 					</div>
@@ -115,7 +115,7 @@
 					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
 					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url="${cdr:getPreferredDatastream(briefObject, 'IMAGE_JP2000').owner}"></div>
 				</c:when>
-				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
+				<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">

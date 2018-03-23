@@ -23,7 +23,7 @@
 <c:if test="${not empty briefObject && cdr:contains(briefObject.status, 'Deleted') || cdr:contains(briefObject.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
 </c:if>
-<c:if test="${not empty briefObject && (not cdr:hasPatronRoleForPublicGroup(briefObject) || not empty briefObject.activeEmbargo)}">
+<c:if test="${not empty briefObject && (not permsHelper.allowsPublicAccess(briefObject) || not empty briefObject.activeEmbargo)}">
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
