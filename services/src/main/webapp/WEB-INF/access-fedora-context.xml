@@ -11,22 +11,6 @@
     xsi:schemaLocation="
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd"
     xmlns="http://www.springframework.org/schema/beans">
-    <bean name="propertiesURI" class="java.lang.System"
-        factory-method="getProperty">
-        <constructor-arg index="0" value="server.properties.uri" />
-        <!-- property name for properties URI location -->
-        <constructor-arg index="1" value="classpath:server.properties" />
-        <!-- default location for testing -->
-    </bean>
-    <bean id="serverProperties"
-        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <ref bean="propertiesURI" />
-            </list>
-        </property>
-        <property name="ignoreResourceNotFound" value="false" />
-    </bean>
     
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />

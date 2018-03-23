@@ -26,24 +26,6 @@
         http://www.springframework.org/schema/context 
         http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-    <bean name="propertiesURI" class="java.lang.System"
-        factory-method="getProperty">
-        <constructor-arg index="0" value="server.properties.uri" />
-        <!-- property name for properties URI location -->
-        <constructor-arg index="1" value="classpath:server.properties" />
-        <!-- default location for testing -->
-    </bean>
-    <bean id="serverProperties"
-        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <ref bean="propertiesURI" />
-                <value>classpath:cdr-services.properties</value>
-            </list>
-        </property>
-        <property name="ignoreResourceNotFound" value="false" />
-    </bean>
-
     <bean id="swordPath" class="java.lang.String">
         <constructor-arg
             value="${repository.protocol}://${repository.host}${repository.port}/${services.context}/${sword.context}" />
@@ -102,7 +84,7 @@
         <property name="basePath" value="${repository.protocol}://${repository.host}${repository.port}/${repository.context}"/>
         <property name="tempDirectory" value="${initial.batch.ingest.dir}"/>
         <property name="swordVersion" value="${sword.version}"/>
-        <property name="generatorVersion" value="${cdr.version}"/>
+        <property name="generatorVersion" value="${project.version}"/>
         <property name="generator" value="${repository.protocol}://${repository.host}"/>
         <property name="depositorNamespace" value="${sword.depositorNamespace}"/>
         <property name="adminDepositor" value="${sword.username}"/>
@@ -162,7 +144,7 @@
     
     <bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl">
         <property name="fedoraHost" value="${fedora.host:localhost}" />
-        <property name="fedoraPath" value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}"/>
+        <property name="fedoraPath" value="${fcrepo.baseUrl}"/>
         <property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
     </bean>
     
