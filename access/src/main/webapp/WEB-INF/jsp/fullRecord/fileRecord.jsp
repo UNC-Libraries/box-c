@@ -28,7 +28,7 @@
 			<c:param name="target" value="file" />
 			<c:param name="size" value="large" />
 		</c:import>
-		<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject, 'editDescription')}">
+		<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
 			<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">Edit</a></div>
 		</c:if>
 		
@@ -64,7 +64,7 @@
 		</div>
 		<div class="clear">
 			<c:choose>
-				<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
+				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 					<div class="actionlink left download">
 						<a href="${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}?dl=true">Download</a>
 					</div>
@@ -81,13 +81,13 @@
 				</c:when>
 			</c:choose>
 			<c:choose>
-				<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
+				<c:when test="${permsHelper.hasImagePreviewAccess(requestScope.accessGroupSet, briefObject)}">
 					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
 					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
 					<div class="clear_space"></div>
 					<div id="jp2_viewer" class="jp2_imageviewer_window" data-url='${briefObject.id}'></div>
 				</c:when>
-				<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'original_file', briefObject)}">
+				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">

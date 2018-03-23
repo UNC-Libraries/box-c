@@ -21,7 +21,6 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<jsp:useBean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants" scope="request"/>
 
 <c:if test="${cdr:contains(metadata.status, 'Deleted') || cdr:contains(metadata.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
@@ -180,14 +179,9 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 				<div class="fileinfo">
 					<c:choose>
-						<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
+						<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, metadata)}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
-							</div>
-						</c:when>
-						<c:when test="${permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
-							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'original_file', fedoraUtil)}?dl=true">Download</a>
 							</div>
 						</c:when>
 						<c:when test="${not empty embargoDate}">
@@ -215,7 +209,7 @@
 						</p>
 					</c:if>
 					
-					<c:if test="${!cdr:contains(metadata.readGroup, accessGroupConstants.PUBLIC_GROUP)}">
+					<c:if test="${not permsHelper.allowsPublicAccess(metadata)}">
 						<p class="right">
 							Restricted Access
 						</p>

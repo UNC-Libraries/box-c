@@ -64,11 +64,6 @@
         <property name="applicationPathSettings" ref="applicationPathSettings" />
     </bean>
     
-    <!-- <bean id="lorisUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
-        <property name="accessControlService" ref="accessControlService" />
-        <property name="solrQueryLayer" ref="queryLayer" />
-    </bean> -->
-
     <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl">
         <property name="fusekiQueryURL" value="${fuseki.baseUri}" />
     </bean>

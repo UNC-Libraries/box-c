@@ -52,11 +52,6 @@
         <property name="applicationPathSettings" ref="applicationPathSettings" />
     </bean>
     
-    <bean id="lorisUserAccessUtil" class="edu.unc.lib.dl.ui.util.UserAccessUtil">
-        <!-- <property name="accessControlService" ref="accessControlService" /> -->
-        <property name="solrQueryLayer" ref="queryLayer" />
-    </bean>
-    
     <bean id="ingestSourceManager" class="edu.unc.lib.dl.admin.collect.IngestSourceManager"
             init-method="init">
         <property name="configPath" value="${repo.dir}/ingestSources.json" />

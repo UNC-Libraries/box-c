@@ -19,13 +19,20 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil;
+import edu.unc.lib.dl.acl.service.AccessControlService;
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Controller for requests related to accessing jp2's through loris. Applies cdr access control as a prerequisite to
@@ -39,10 +46,9 @@ public class LorisContentController extends AbstractSolrSearchController {
 
 //    @Autowired
 //    private LorisContentService lorisContentService;
-//
-//    @Autowired
-//    @Qualifier("lorisUserAccessUtil")
-//    private UserAccessUtil userAccessUtil;
+
+    @Autowired
+    private AccessControlService accessControlService;
 
     /**
      * Determines if the user is allowed to access a specific datastream on the selected object. If so, then the result
@@ -53,18 +59,18 @@ public class LorisContentController extends AbstractSolrSearchController {
      * @param request
      * @return
      */
-    private boolean hasAccess(String id, String datastream) {
+    private boolean hasAccess(PID pid, String datastream) {
         // Defaults to jp2 surrogate if no datastream specified
         if (datastream == null) {
-            datastream = ContentModelHelper.Datastream.IMAGE_JP2000.toString();
+            datastream = RepositoryPathConstants.JPEG_2000;
         }
 
-        id = id + "/" + datastream;
+        Permission permission = DatastreamPermissionUtil.getPermissionForDatastream(datastream);
 
-        LOG.debug("Checking if user " + GroupsThreadStore.getUsername() +
-                " with groups " + GroupsThreadStore.getGroups() + " has access to " + id);
-//        return userAccessUtil.hasAccess(id, GroupsThreadStore.getUsername(), GroupsThreadStore.getGroups());
-        return false;
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        LOG.debug("Checking if user {} has access to {} belonging to object {}.",
+                agent.getUsername(), datastream, pid);
+        return accessControlService.hasAccess(pid, agent.getPrincipals(), permission);
     }
 
     /**
@@ -108,8 +114,10 @@ public class LorisContentController extends AbstractSolrSearchController {
     @RequestMapping("/jp2Proxy/{id}/{datastream}")
     public void getMetadata(@PathVariable("id") String id,
             @PathVariable("datastream") String datastream, HttpServletResponse response) {
+
+        PID pid = PIDs.get(id);
         // Check if the user is allowed to view this object
-        if (this.hasAccess(id, datastream)) {
+        if (this.hasAccess(pid, datastream)) {
 //            try {
 //                lorisContentService.getMetadata(id, datastream, response.getOutputStream(), response);
 //            } catch (IOException e) {

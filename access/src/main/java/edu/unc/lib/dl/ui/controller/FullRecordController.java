@@ -62,7 +62,6 @@ import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
 import edu.unc.lib.dl.ui.exception.RenderViewException;
-import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.ui.view.XSLViewResolver;
 import edu.unc.lib.dl.util.ResourceType;
 
@@ -108,8 +107,6 @@ public class FullRecordController extends AbstractSolrSearchController {
         // Get path information.
         model.addAttribute("briefObject", briefObject);
 
-        boolean listAccess = AccessUtil.hasListAccessOnly(accessGroups, briefObject);
-
         Date embargoUntil = briefObject.getActiveEmbargo();
         if (embargoUntil != null) {
             model.addAttribute("embargoDate", embargoUntil);
@@ -122,14 +119,12 @@ public class FullRecordController extends AbstractSolrSearchController {
         try {
             ContentObject contentObj = (ContentObject) repositoryObjectLoader.getRepositoryObject(pid);
 
-            if (!listAccess) {
-                BinaryObject modsObj = contentObj.getMODS();
-                if (modsObj != null) {
-                    SAXBuilder builder = new SAXBuilder();
-                    Document modsDoc = builder.build(modsObj.getBinaryStream());
+            BinaryObject modsObj = contentObj.getMODS();
+            if (modsObj != null) {
+                SAXBuilder builder = new SAXBuilder();
+                Document modsDoc = builder.build(modsObj.getBinaryStream());
 
-                    fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);
-                }
+                fullObjectView = xslViewResolver.renderView("external.xslView.fullRecord.url", modsDoc);
             }
         } catch (NotFoundException e) {
             throw new InvalidRecordRequestException(e);
@@ -142,46 +137,44 @@ public class FullRecordController extends AbstractSolrSearchController {
         }
 
         // Get additional information depending on the type of object since the user has access
-        if (!listAccess) {
-            String resourceType = briefObject.getResourceType();
-            boolean retrieveChildrenCount = resourceType.equals(searchSettings.resourceTypeFolder);
-            boolean retrieveFacets = resourceType.equals(searchSettings.resourceTypeFolder)
-                    || resourceType.equals(searchSettings.resourceTypeCollection);
+        String resourceType = briefObject.getResourceType();
+        boolean retrieveChildrenCount = resourceType.equals(searchSettings.resourceTypeFolder);
+        boolean retrieveFacets = resourceType.equals(searchSettings.resourceTypeFolder)
+                || resourceType.equals(searchSettings.resourceTypeCollection);
 
-            if (retrieveChildrenCount) {
-                briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
-            }
-
-            if (retrieveFacets) {
-                List<String> facetsToRetrieve = null;
-                if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
-                    facetsToRetrieve = new ArrayList<>(searchSettings.collectionBrowseFacetNames);
-                } else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-                    facetsToRetrieve = new ArrayList<>();
-                    facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
-                }
-
-                LOG.debug("Retrieving supplemental information for container at path "
-                + briefObject.getPath().toString());
-                SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
-                        accessGroups, facetsToRetrieve);
-
-                briefObject.getCountMap().put("child", resultResponse.getResultCount());
-
-                boolean hasFacets = false;
-                for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
-                    if (facetField.getValues().size() > 0) {
-                        hasFacets = true;
-                        break;
-                    }
-                }
-
-                model.addAttribute("hasFacetFields", hasFacets);
-                model.addAttribute("facetFields", resultResponse.getFacetFields());
-            }
-
-            model.addAttribute("fullObjectView", fullObjectView);
+        if (retrieveChildrenCount) {
+            briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
         }
+
+        if (retrieveFacets) {
+            List<String> facetsToRetrieve = null;
+            if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)) {
+                facetsToRetrieve = new ArrayList<>(searchSettings.collectionBrowseFacetNames);
+            } else if (briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
+                facetsToRetrieve = new ArrayList<>();
+                facetsToRetrieve.add(SearchFieldKeys.CONTENT_TYPE.name());
+            }
+
+            LOG.debug("Retrieving supplemental information for container at path "
+            + briefObject.getPath().toString());
+            SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
+                    accessGroups, facetsToRetrieve);
+
+            briefObject.getCountMap().put("child", resultResponse.getResultCount());
+
+            boolean hasFacets = false;
+            for (FacetFieldObject facetField : resultResponse.getFacetFields()) {
+                if (facetField.getValues().size() > 0) {
+                    hasFacets = true;
+                    break;
+                }
+            }
+
+            model.addAttribute("hasFacetFields", hasFacets);
+            model.addAttribute("facetFields", resultResponse.getFacetFields());
+        }
+
+        model.addAttribute("fullObjectView", fullObjectView);
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
                 briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
@@ -217,8 +210,6 @@ public class FullRecordController extends AbstractSolrSearchController {
 //                || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
 //            applyContainerSettings(pidString, foxmlView, model, fullObjectView != null);
 //        }
-
-        model.addAttribute("listAccess", listAccess);
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
         return "fullRecord";

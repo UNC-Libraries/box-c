@@ -19,6 +19,9 @@ import static edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil.getPermissionF
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.JPEG_2000;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.SMALL_THUMBNAIL;
 import static org.springframework.util.Assert.hasText;
 import static org.springframework.util.Assert.notNull;
 
@@ -44,7 +47,44 @@ public class PermissionsHelper {
     }
 
     /**
-     * Returns true if the provided principals have rights to access the requested datastream.
+     * Returns true if the principals can access the original file belonging to
+     * the requested object, if present.
+     *
+     * @param principals
+     * @param metadata
+     * @return
+     */
+    public boolean hasOriginalAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+        return hasDatastreamAccess(principals, ORIGINAL_FILE, metadata);
+    }
+
+    /**
+     * Returns true if the principals can access thumbnails belonging to
+     * the requested object, if present.
+     *
+     * @param principals
+     * @param metadata
+     * @return
+     */
+    public boolean hasThumbnailAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+        return hasDatastreamAccess(principals, SMALL_THUMBNAIL, metadata);
+    }
+
+    /**
+     * Returns true if the principals can access the image preview belonging to
+     * the requested object, if present.
+     *
+     * @param principals
+     * @param metadata
+     * @return
+     */
+    public boolean hasImagePreviewAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
+        return hasDatastreamAccess(principals, JPEG_2000, metadata);
+    }
+
+    /**
+     * Returns true if the provided principals have rights to access the
+     * requested datastream, and the datastream is present.
      *
      * @param principals agent principals
      * @param datastream name of datastream being requested

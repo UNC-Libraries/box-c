@@ -36,7 +36,7 @@
 
 <c:set var="href">
 	<c:choose>
-		<c:when test="${param.target == 'file' && permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', thumbnailObject)}">
+		<c:when test="${param.target == 'file' && permsHelper.hasOriginalAccess(requestScope.accessGroupSet, thumbnailObject)}">
 			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'DATA_FILE', fedoraUtil)}" />
 		</c:when>
 		<c:when test="${param.target == 'record'}">
@@ -53,7 +53,7 @@
 
 <c:set var="tooltip">
   <c:choose>
-    <c:when test="${param.target == 'file' && permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', thumbnailObject)}">
+    <c:when test="${param.target == 'file' && permsHelper.hasOriginalAccess(requestScope.accessGroupSet, thumbnailObject)}">
       View ${thumbnailObject.title}.
     </c:when>
     <c:when test="${param.target == 'record'}">
@@ -67,10 +67,10 @@
 
 <c:set var="src">
 	<c:choose>
-		<c:when test="${param.size == 'large' && permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'THUMB_LARGE', thumbnailObject)}">
+		<c:when test="${param.size == 'large' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
 			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_LARGE', fedoraUtil)}" />
 		</c:when>
-		<c:when test="${param.size == 'small' && permsHelper.hasDatastreamAccess(requestScope.accessGroupSet, 'THUMB_SMALL', thumbnailObject)}">
+		<c:when test="${param.size == 'small' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
 			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_SMALL', fedoraUtil)}" />
 		</c:when>
 	</c:choose>
