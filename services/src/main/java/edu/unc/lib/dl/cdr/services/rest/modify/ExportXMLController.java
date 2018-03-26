@@ -95,7 +95,6 @@ public class ExportXMLController {
         private String email;
 
         public XMLExportRequest() {
-            email = null;
         }
 
         public XMLExportRequest(List<String> pids, boolean exportChildren, String email) {
