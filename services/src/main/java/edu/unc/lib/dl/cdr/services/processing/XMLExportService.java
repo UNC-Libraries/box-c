@@ -17,9 +17,7 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
@@ -61,7 +59,7 @@ public class XMLExportService {
      * @return
      * @throws ServiceException
      */
-    public Map<String, String> exportXml(String username, AccessGroupSet group, XMLExportRequest request)
+    public void exportXml(String username, AccessGroupSet group, XMLExportRequest request)
             throws ServiceException {
         if (username == null) {
             throw new AccessRestrictionException("User must have a username to export xml");
@@ -85,10 +83,6 @@ public class XMLExportService {
             job.run();
         }
 
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Metadata export for " + request.getPids().size()
-                + " objects has begun, you will receive the data via email soon");
-        return response;
     }
 
     private void addChildPIDsToRequest(XMLExportRequest request) throws ServiceException {

@@ -73,6 +73,8 @@ public class ExportXMLController {
         try {
             service.exportXml(agent.getUsername(), agent.getPrincipals(), new XMLExportRequest(
                     exportRequest.getPids(), exportRequest.getExportChildren(), exportRequest.getEmail()));
+            result.put("message", "Metadata export for " + exportRequest.getPids().size()
+                    + " objects has begun, you will receive the data via email soon");
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AccessRestrictionException) {
@@ -92,6 +94,10 @@ public class ExportXMLController {
         private boolean exportChildren;
         private String email;
 
+        public XMLExportRequest() {
+            email = null;
+        }
+
         public XMLExportRequest(List<String> pids, boolean exportChildren, String email) {
             this.pids = pids;
             this.exportChildren = exportChildren;
@@ -108,7 +114,6 @@ public class ExportXMLController {
 
         public String getEmail() {
             return email;
-
         }
 
         public void setEmail(String email) {
