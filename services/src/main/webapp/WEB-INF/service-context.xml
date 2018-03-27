@@ -237,7 +237,6 @@
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
-        <property name="fedoraHost" value="${fedora.host:localhost}" />
     </bean>
     
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">

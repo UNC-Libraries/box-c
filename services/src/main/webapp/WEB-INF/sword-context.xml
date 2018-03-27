@@ -143,7 +143,6 @@
     </bean>
     
     <bean id="mediaResourceManager" class="edu.unc.lib.dl.cdr.sword.server.managers.MediaResourceManagerImpl">
-        <property name="fedoraHost" value="${fedora.host:localhost}" />
         <property name="fedoraPath" value="${fcrepo.baseUrl}"/>
         <property name="virtualDatastreamMap" ref="virtualDatastreamMap" />
     </bean>

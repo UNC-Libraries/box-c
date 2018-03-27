@@ -34,7 +34,7 @@
     </bean>
     <bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
         <property name="fedoraUrl"
-            value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+            value="${baseAddress}" />
     </bean>
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
         <property name="accessClient" ref="accessClient" />
@@ -42,7 +42,7 @@
 
     <bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
         <property name="fedoraPath"
-            value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+            value="${baseAddress}" />
         <property name="solrPath"
             value="${solr.protocol}://${solr.host}${solr.port}/${solr.context}" />
         <property name="lorisPath" value="${loris.base.url}" />
