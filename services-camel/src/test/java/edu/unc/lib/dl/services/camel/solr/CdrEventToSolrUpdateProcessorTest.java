@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.solr;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 import static edu.unc.lib.dl.util.IndexingActionType.UPDATE_STATUS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.CDR_MESSAGE_NS;
@@ -184,7 +184,7 @@ public class CdrEventToSolrUpdateProcessorTest {
     }
 
     private Document buildMessage(String operation, String contentName, PID pid, List<PID> subjects) {
-        when(msg.getHeader(eq(CdrSolrUpdateAction))).thenReturn(operation);
+        when(msg.getHeader(eq(CdrUpdateAction))).thenReturn(operation);
 
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);

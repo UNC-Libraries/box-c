@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -77,7 +77,7 @@ public class CdrEventProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrSolrUpdateAction, actionType);
+        verify(message).setHeader(CdrUpdateAction, actionType);
         verify(message).setBody(eq(msg));
     }
 
@@ -92,7 +92,7 @@ public class CdrEventProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrSolrUpdateAction, actionType);
+        verify(message).setHeader(CdrUpdateAction, actionType);
 
         verify(message).setBody(bodyCaptor.capture());
         Object bodyObject = bodyCaptor.getValue();
@@ -110,7 +110,7 @@ public class CdrEventProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrSolrUpdateAction, actionType);
+        verify(message).setHeader(CdrUpdateAction, actionType);
 
         verify(message).setBody(bodyCaptor.capture());
         Object bodyObject = bodyCaptor.getValue();
@@ -127,7 +127,7 @@ public class CdrEventProcessorTest {
 
         processor.process(exchange);
 
-        verify(message).setHeader(CdrSolrUpdateAction, null);
+        verify(message).setHeader(CdrUpdateAction, null);
     }
 
     private Element createAtomEntry(Document msg, String operation) {

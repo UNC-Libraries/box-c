@@ -129,7 +129,7 @@ public class SolrUpdateProcessorTest {
 
         entry.addContent(new Element("pid", ATOM_NS).setText(targetPid.getRepositoryPath()));
 
-        entry.addContent(new Element("solrActionType", ATOM_NS)
+        entry.addContent(new Element("actionType", ATOM_NS)
                 .setText(type.getURI().toString()));
 
         return entry;

@@ -38,7 +38,7 @@ public class IndexingMessageHelper {
     }
 
     public static Document makeIndexingOperationBody(String userid, PID targetPid, Collection<PID> children,
-            IndexingActionType solrActionType) {
+            IndexingActionType actionType) {
         Document msg = new Document();
         Element entry = new Element("entry", ATOM_NS);
         msg.addContent(entry);
@@ -51,8 +51,8 @@ public class IndexingMessageHelper {
                 childEl.addContent(new Element("pid", CDR_MESSAGE_NS).setText(child.getRepositoryPath()));
             }
         }
-        entry.addContent(new Element("solrActionType", ATOM_NS)
-                .setText(solrActionType.getURI().toString()));
+        entry.addContent(new Element("actionType", ATOM_NS)
+                .setText(actionType.getURI().toString()));
 
         return msg;
     }

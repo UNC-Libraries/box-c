@@ -253,13 +253,28 @@
         <property name="pubSubDomain" value="false" />
     </bean>
     
-    <bean id="indexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+    <bean id="solrIndexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
-    <bean id="indexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService" >
+    <bean id="solrIndexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService" >
         <property name="aclService" ref="aclService" />
-        <property name="indexingMessageSender" ref="indexingMessageSender" />
+        <property name="indexingMessageSender" ref="solrIndexingMessageSender" />
+    </bean>
+    
+    <bean id="triplesUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.triplesupdate.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+        <property name="jmsTemplate" ref="triplesUpdateJmsTemplate" />
+    </bean>
+    
+    <bean id="triplesIndexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService" >
+        <property name="aclService" ref="aclService" />
+        <property name="indexingMessageSender" ref="triplesIndexingMessageSender" />
     </bean>
     
     <bean id="markForDeletionService" class="edu.unc.lib.dl.persist.services.delete.MarkForDeletionService">

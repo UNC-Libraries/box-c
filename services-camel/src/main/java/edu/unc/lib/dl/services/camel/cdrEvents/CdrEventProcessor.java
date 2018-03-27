@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
 
 import org.apache.camel.Exchange;
@@ -42,10 +42,10 @@ public class CdrEventProcessor implements Processor {
 
         String actionType = document.getRootElement().getChildTextTrim("title", ATOM_NS);
         if (actionType == null) {
-            in.setHeader(CdrSolrUpdateAction, null);
+            in.setHeader(CdrUpdateAction, null);
             return;
         }
-        in.setHeader(CdrSolrUpdateAction, actionType);
+        in.setHeader(CdrUpdateAction, actionType);
 
         String author = document.getRootElement().getChildTextTrim("name", ATOM_NS);
         in.setHeader("name", author);

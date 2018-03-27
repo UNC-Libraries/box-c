@@ -41,10 +41,10 @@ public class IndexingMessageSender extends AbstractMessageSender {
      *
      * @param userid id of user who triggered the operation
      * @param targetPid PID of object to be indexed
-     * @param solrActionType type of indexing action to perform
+     * @param actionType type of indexing action to perform
      */
-    public void sendIndexingOperation(String userid, PID targetPid, IndexingActionType solrActionType) {
-        sendIndexingOperation(userid, targetPid, null, solrActionType);
+    public void sendIndexingOperation(String userid, PID targetPid, IndexingActionType actionType) {
+        sendIndexingOperation(userid, targetPid, null, actionType);
     }
 
     /**
@@ -53,13 +53,13 @@ public class IndexingMessageSender extends AbstractMessageSender {
      * @param userid id of user who triggered the operation
      * @param targetPid PID of object to be indexed
      * @param children pids of other objects to be indexed
-     * @param solrActionType type of indexing action to perform
+     * @param actionType type of indexing action to perform
      */
     public void sendIndexingOperation(String userid, PID targetPid, Collection<PID> children,
-            IndexingActionType solrActionType) {
-        Document msg = makeIndexingOperationBody(userid, targetPid, children, solrActionType);
+            IndexingActionType actionType) {
+        Document msg = makeIndexingOperationBody(userid, targetPid, children, actionType);
 
-        LOG.debug("sending solr update message for {} of type {}", targetPid, solrActionType.toString());
+        LOG.debug("sending solr update message for {} of type {}", targetPid, actionType.toString());
         sendMessage(msg);
         LOG.debug("sent indexing operation JMS message using JMS template: {}", this.getJmsTemplate());
     }

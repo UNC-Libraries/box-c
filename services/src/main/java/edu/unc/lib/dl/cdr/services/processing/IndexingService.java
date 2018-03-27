@@ -44,11 +44,11 @@ public class IndexingService {
         aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
                 Permission.reindex);
         if (inplace == null || inplace) {
-            // Add message to cdr solr queue
+            // Add message to indexing queue
             indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
                     IndexingActionType.RECURSIVE_REINDEX);
         } else {
-            // Add message to cdr solr queue
+            // Add message to indexing queue
             indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
                     IndexingActionType.CLEAN_REINDEX);
         }
@@ -63,7 +63,7 @@ public class IndexingService {
     public void reindexObject(AgentPrincipals agent, PID objectPid) {
         aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
                 Permission.reindex);
-        // Add message to cdr solr queue
+        // Add message to indexing queue
         indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
                 IndexingActionType.ADD);
     }
