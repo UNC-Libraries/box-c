@@ -151,4 +151,11 @@ public class MoveObjectsService {
     public void setOperationMetrics(ActivityMetricsClient operationMetrics) {
         this.operationMetrics = operationMetrics;
     }
+
+    /**
+     * @param moveExecutor the moveExecutor to set
+     */
+    public void setMoveExecutor(ExecutorService moveExecutor) {
+        this.moveExecutor = moveExecutor;
+    }
 }

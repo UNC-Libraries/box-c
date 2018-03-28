@@ -25,26 +25,8 @@
             http://www.springframework.org/schema/util/spring-util-3.0.xsd
             http://www.springframework.org/schema/context 
             http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-            
-    <bean name="propertiesURI" class="java.lang.System"
-        factory-method="getProperty">
-        <constructor-arg index="0" value="server.properties.uri" />
-        <!-- property name for properties URI location -->
-        <constructor-arg index="1" value="classpath:server.properties" />
-        <!-- default location for testing -->
-    </bean>
-    <bean id="serverProperties"
-        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="locations">
-            <list>
-                <ref bean="propertiesURI" />
-            </list>
-        </property>
-        <property name="ignoreResourceNotFound" value="false" />
-    </bean>    
     
     <bean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants">
-        <property name="ADMIN_GROUP" value="${access.group.admin}"/>
     </bean>
     
     <util:properties id="searchProperties" location="classpath:search.properties" />
@@ -91,12 +73,12 @@
         <property name="searchSettings" ref="searchSettings" />
         <property name="searchStateFactory" ref="searchStateFactory" />
         <property name="facetFieldUtil" ref="facetFieldUtil" />
-        <property name="pathFactory" ref="pathFactory" />
+        <property name="pathFactory" ref="objectPathFactory" />
         <property name="disablePermissionFiltering" value="false" />
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
     </bean>
     
-    <bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
+    <bean id="objectPathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
         <property name="search" ref="queryLayer" />
         <property name="cacheSize" value="1000" />
         <property name="timeToLiveMilli" value="10000" />
@@ -107,7 +89,7 @@
         <property name="staticMethod" value="edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean.setPathFactory"/>
         <property name="arguments">
             <list>
-                <ref bean="pathFactory"/>
+                <ref bean="objectPathFactory"/>
             </list>
         </property>
     </bean>

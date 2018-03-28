@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static org.apache.http.HttpHeaders.HOST;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +58,8 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     private Pattern txBasePattern;
     private Pattern txRemovePattern;
 
+    private String hostHeader;
+
     protected TransactionalFcrepoClient(String username, String password, String host,
                 Boolean throwExceptionOnFailure, String baseUri) {
         super(username, password, host, throwExceptionOnFailure);
@@ -63,12 +67,18 @@ public class TransactionalFcrepoClient extends FcrepoClient {
         txRemovePattern = Pattern.compile(TX_RESPONSE_REGEX);
     }
 
+    protected TransactionalFcrepoClient(String username, String password, String host,
+            Boolean throwExceptionOnFailure, String baseUri, String hostHeader) {
+        this(username, password, host, throwExceptionOnFailure, baseUri);
+        this.hostHeader = hostHeader;
+}
+
     /**
      * Build a TransactionalFcrepoClient
      *
      * @return a client builder
      */
-    public static FcrepoClientBuilder client(String baseUri) {
+    public static TransactionalFcrepoClientBuilder client(String baseUri) {
         return new TransactionalFcrepoClientBuilder(baseUri);
     }
 
@@ -83,6 +93,10 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     @Override
     public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
             throws FcrepoOperationFailedException {
+        if (hostHeader != null) {
+            request.addHeader(HOST, hostHeader);
+        }
+
         if (hasTxId()) {
             if (needsRequestBodyRewrite(request)) {
                 rewriteRequestBodyUris(request);
@@ -133,8 +147,17 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     private URI rewriteUri(URI rescUri) {
         URI txUri = FedoraTransaction.txUriThread.get();
         String rescId = rescUri.toString();
+        // locate the rest component of the path, everything after is the
+        // relative path to the resource
         int txIdIndex = rescId.indexOf(REST);
-        rescId = rescId.substring(txIdIndex + REST.length());
+        // Get index where the relative path would begin
+        int rescPathIndex = txIdIndex + REST.length();
+        if (rescPathIndex == rescId.length()) {
+            // If there is no relative path (is root of the repository), return the transaction uri
+            return txUri;
+        }
+        // Insert transaction id before the relative path, construct rewritten uri
+        rescId = rescId.substring(rescPathIndex);
         return URI.create(URIUtil.join(txUri, rescId));
     }
 
@@ -194,6 +217,8 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 
         private String baseUri;
 
+        private String hostHeader;
+
         public TransactionalFcrepoClientBuilder(String baseUri) {
             this.baseUri = baseUri;
         }
@@ -206,7 +231,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
          * @return the client builder
          */
         @Override
-        public FcrepoClientBuilder credentials(final String username, final String password) {
+        public TransactionalFcrepoClientBuilder credentials(final String username, final String password) {
             this.authUser = username;
             this.authPassword = password;
             return this;
@@ -219,7 +244,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
          * @return this builder
          */
         @Override
-        public FcrepoClientBuilder authScope(final String authHost) {
+        public TransactionalFcrepoClientBuilder authScope(final String authHost) {
             this.authHost = authHost;
             return this;
         }
@@ -230,7 +255,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
          * @return this builder
          */
         @Override
-        public FcrepoClientBuilder throwExceptionOnFailure() {
+        public TransactionalFcrepoClientBuilder throwExceptionOnFailure() {
             this.throwExceptionOnFailure = true;
             return this;
         }
@@ -241,8 +266,20 @@ public class TransactionalFcrepoClient extends FcrepoClient {
          * @param baseUri the base uri including "/rest/"
          * @return this builder
          */
-        public FcrepoClientBuilder baseUri(final String baseUri) {
+        public TransactionalFcrepoClientBuilder baseUri(final String baseUri) {
             this.baseUri = baseUri;
+            return this;
+        }
+
+        /**
+         * Add Host header to this client
+         *
+         * @param hostHeader value to use as Host header on requests made by
+         *            this client.
+         * @return this builder
+         */
+        public TransactionalFcrepoClientBuilder hostHeader(final String hostHeader) {
+            this.hostHeader = hostHeader;
             return this;
         }
 
@@ -251,8 +288,10 @@ public class TransactionalFcrepoClient extends FcrepoClient {
          *
          * @return the client constructed by this builder
          */
-        public FcrepoClient build() {
-            return new TransactionalFcrepoClient(authUser, authPassword, authHost, throwExceptionOnFailure, baseUri);
+        @Override
+        public TransactionalFcrepoClient build() {
+            return new TransactionalFcrepoClient(authUser, authPassword, authHost,
+                    throwExceptionOnFailure, baseUri, hostHeader);
         }
     }
 }

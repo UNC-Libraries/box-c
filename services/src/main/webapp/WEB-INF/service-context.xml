@@ -35,7 +35,6 @@
         <property name="locations">
             <list>
                 <ref bean="propertiesURI"/>
-                <value>classpath:cdr-services.properties</value>
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="false"/>
@@ -80,6 +79,20 @@
         scope="prototype">
         <constructor-arg ref="jesqueConfig" />
         <constructor-arg ref="jedisPool" />
+    </bean>
+    
+    <bean id="moveObjectsService"
+        class="edu.unc.lib.dl.persist.services.move.MoveObjectsService">
+        <property name="aclService" ref="aclService" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+        <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="objectPathFactory" ref="objectPathFactory" />
+        <property name="asynchronous" value="true" />
+        <property name="moveExecutor" ref="moveExecutor" />
+        <property name="operationMetrics" ref="activityMetricsClient" />
     </bean>
 
     <!-- <bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
@@ -211,7 +224,7 @@
     
     <bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
         <property name="fedoraUrl"
-            value="${fedora.protocol}://${fedora.host}${fedora.port}/${fedora.context}" />
+            value="${fcrepo.baseUrl}" />
     </bean>
     
     <bean id="gaTrackingID" class="java.lang.String">
@@ -224,8 +237,6 @@
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
-        <property name="fedoraUtil" ref="fedoraUtil" />
-        <property name="fedoraHost" value="${fedora.host:localhost}" />
     </bean>
     
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">
@@ -269,6 +280,13 @@
       <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
       <property name="operationsMessageSender" ref="operationsMessageSender" />
       <property name="modsValidator" ref="modsValidator" />
+  </bean>
+  
+  <bean id="accessControlRetrievalService" class="edu.unc.lib.dl.cdr.services.processing.AccessControlRetrievalService" >
+      <property name="aclService" ref="aclService" />
+      <property name="objectAclFactory" ref="objectAclFactory" />
+      <property name="inheritedAclFactory" ref="inheritedAclFactory" />
+      <property name="repoObjLoader" ref="repositoryObjectLoader" />
   </bean>
   
   <bean id="xmlExportService" class="edu.unc.lib.dl.cdr.services.processing.XMLExportService" >
