@@ -25,7 +25,6 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +37,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.cdr.services.processing.XMLImportJob;
-import net.greghaines.jesque.Job;
+import edu.unc.lib.dl.cdr.services.processing.XMLImportService;
 
 /**
  * API endpoint that accepts an XML document containing objects' metadata, kicks off update operations for
@@ -55,9 +52,8 @@ public class ImportXMLController {
     private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
 
     @Autowired
-    private net.greghaines.jesque.client.Client jesqueClient;
-    @Autowired
-    private String bulkMetadataQueueName;
+    private XMLImportService service;
+
     @Autowired
     private String dataDir;
     private Path storagePath;
@@ -80,14 +76,14 @@ public class ImportXMLController {
 
         String username = GroupsThreadStore.getUsername();
         log.info("User {} has submitted a bulk metadata update package", username);
+
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "importXml");
+        result.put("action", "import xml");
         result.put("username", username);
 
         File importFile = null;
         try {
-            importFile = File.createTempFile("import", ".xml", storagePath.toFile());
-            FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
+            importFile = service.createTempFile(storagePath, xmlFile);
         } catch (IOException e) {
             log.error("Error creating or writing to import file: {}", e);
             result.put("error", e.getMessage());
@@ -95,11 +91,8 @@ public class ImportXMLController {
         }
 
         String userEmail = GroupsThreadStore.getEmail();
-
-        Job job = new Job(XMLImportJob.class.getName(), username, userEmail, AgentPrincipals.createFromThread(),
-                importFile.getAbsolutePath());
         try {
-            jesqueClient.enqueue(bulkMetadataQueueName, job);
+            service.pushJobToQueue(result, importFile, username, userEmail);
         } catch (IllegalArgumentException e) {
             log.error("Error queueing the job: {}", e);
             result.put("error", e.getMessage());
@@ -109,6 +102,7 @@ public class ImportXMLController {
         result.put("message", "Import of metadata has begun. " + userEmail
                 + " will be emailed when the update completes");
         result.put("timestamp", System.currentTimeMillis());
+
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
