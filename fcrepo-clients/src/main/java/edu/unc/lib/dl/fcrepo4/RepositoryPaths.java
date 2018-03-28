@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
+
 import java.net.URI;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -37,6 +41,8 @@ public class RepositoryPaths {
     private static String baseUri;
     private static String baseHost;
     private static PID contentRootPid;
+    private static PID contentBasePid;
+    private static PID rootPid;
 
     static {
         setContentBase(System.getProperty("fcrepo.baseUri"));
@@ -60,6 +66,11 @@ public class RepositoryPaths {
         return serverUri;
     }
 
+    /**
+     * Get a string of the uri identifying the base of the repository.
+     *
+     * @return
+     */
     public static String getBaseUri() {
         return baseUri;
     }
@@ -68,14 +79,37 @@ public class RepositoryPaths {
         return baseHost;
     }
 
+    /**
+     * @return the rootPid
+     */
+    public static PID getRootPid() {
+        return rootPid;
+    }
+
+    /**
+     * @return pid for the resource where content objects are stored.
+     */
+    public static PID getContentBasePid() {
+        return contentBasePid;
+    }
+
+    /**
+     * @return base uri for content objects
+     */
     public static String getContentBase() {
         return contentBase;
     }
 
+    /**
+     * @return PID of the root object of the content tree.
+     */
     public static PID getContentRootPid() {
         return contentRootPid;
     }
 
+    /**
+     * @return base uri for deposit record objects
+     */
     public static String getDepositRecordBase() {
         return depositRecordBase;
     }
@@ -92,12 +126,19 @@ public class RepositoryPaths {
         return vocabulariesBase;
     }
 
+    /**
+     * Initializes paths from repository base uri
+     *
+     * @param uri base uri for repository
+     */
     private static void setContentBase(String uri) {
         baseUri = uri;
         if (!baseUri.endsWith("/")) {
             baseUri += "/";
         }
-        contentBase = URIUtil.join(baseUri, RepositoryPathConstants.CONTENT_BASE);
-        contentRootPid = PIDs.get(URIUtil.join(contentBase, RepositoryPathConstants.CONTENT_ROOT_ID));
+        rootPid = new FedoraPID(REPOSITORY_ROOT_ID, REPOSITORY_ROOT_ID, null, URI.create(baseUri));
+        contentBase = URIUtil.join(baseUri, CONTENT_BASE);
+        contentBasePid = new FedoraPID(CONTENT_BASE, REPOSITORY_ROOT_ID, null, URI.create(contentBase));
+        contentRootPid = PIDs.get(URIUtil.join(contentBase, CONTENT_ROOT_ID));
     }
 }

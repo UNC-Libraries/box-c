@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
  */
 public abstract class RepositoryPathConstants {
 
+    public static final String REPOSITORY_ROOT_ID = "bxc:root";
+
     // Repository base paths
 
     public static final String CONTENT_BASE = "content";
@@ -71,6 +73,14 @@ public abstract class RepositoryPathConstants {
     public static final int HASHED_PATH_SIZE = 2;
 
     // Regex pattern for decomposing a repository URI for an object or component of an object
+    // Group 1 = transaction id
+    // Group 2 = base container
+    // Group 3 = expanded object id
+    // Group 4 = hashed path to object
+    // Group 5 = object uuid
+    // Group 6 = reserved object id
+    // Group 7 = component path (nested resources in object)
+    // Group 8 = relative component path
     public static final Pattern repositoryPathPattern = Pattern
             .compile("/?(tx:[a-f0-9\\-]+/)?([a-zA-Z]+)/(([a-f0-9]{"
                     + HASHED_PATH_SIZE + "}/){" + HASHED_PATH_DEPTH + "}"

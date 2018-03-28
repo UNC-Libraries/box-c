@@ -18,6 +18,7 @@ package edu.unc.lib.dl.fcrepo4;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_ROOT_ID;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.DEPOSIT_RECORD_BASE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -226,5 +227,27 @@ public class PIDsTest {
 
         assertNotNull(pid);
         assertEquals(FEDORA_BASE + CONTENT_BASE + TEST_PATH + TEST_UUID, pid.getRepositoryPath());
+    }
+
+    @Test
+    public void getContentBaseTest() {
+        String path = FEDORA_BASE + CONTENT_BASE;
+
+        PID pid = PIDs.get(path);
+
+        assertEquals(path, pid.getRepositoryPath());
+        assertEquals(CONTENT_BASE, pid.getId());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+    }
+
+    @Test
+    public void getRootTest() {
+        String path = FEDORA_BASE;
+
+        PID pid = PIDs.get(path);
+
+        assertEquals(path, pid.getRepositoryPath());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getId());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
     }
 }
