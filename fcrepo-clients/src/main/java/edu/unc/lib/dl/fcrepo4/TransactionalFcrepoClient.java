@@ -69,8 +69,8 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 
     protected TransactionalFcrepoClient(String username, String password, String host,
             Boolean throwExceptionOnFailure, String baseUri, String hostHeader) {
-    this(username, password, host, throwExceptionOnFailure, baseUri);
-    this.hostHeader = hostHeader;
+        this(username, password, host, throwExceptionOnFailure, baseUri);
+        this.hostHeader = hostHeader;
 }
 
     /**
@@ -147,11 +147,16 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     private URI rewriteUri(URI rescUri) {
         URI txUri = FedoraTransaction.txUriThread.get();
         String rescId = rescUri.toString();
+        // locate the rest component of the path, everything after is the
+        // relative path to the resource
         int txIdIndex = rescId.indexOf(REST);
+        // Get index where the relative path would begin
         int rescPathIndex = txIdIndex + REST.length();
         if (rescPathIndex == rescId.length()) {
+            // If there is no relative path (is root of the repository), return the transaction uri
             return txUri;
         }
+        // Insert transaction id before the relative path, construct rewritten uri
         rescId = rescId.substring(rescPathIndex);
         return URI.create(URIUtil.join(txUri, rescId));
     }
