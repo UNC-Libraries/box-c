@@ -257,7 +257,7 @@
         <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
     </bean>
     
-    <bean id="solrIndexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService" >
+    <bean id="solrIndexingService" class="edu.unc.lib.dl.persist.services.indexing.IndexingService" >
         <property name="aclService" ref="aclService" />
         <property name="indexingMessageSender" ref="solrIndexingMessageSender" />
     </bean>
@@ -272,7 +272,7 @@
         <property name="jmsTemplate" ref="triplesUpdateJmsTemplate" />
     </bean>
     
-    <bean id="triplesIndexingService" class="edu.unc.lib.dl.cdr.services.processing.IndexingService" >
+    <bean id="triplesIndexingService" class="edu.unc.lib.dl.persist.services.indexing.IndexingService" >
         <property name="aclService" ref="aclService" />
         <property name="indexingMessageSender" ref="triplesIndexingMessageSender" />
     </bean>
