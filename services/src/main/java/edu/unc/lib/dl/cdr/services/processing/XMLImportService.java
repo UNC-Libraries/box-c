@@ -33,7 +33,7 @@ import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
 
 /**
- * A service for pushing a bulk-metadata-import job to a queue
+ * A service for performing import of bulk metadata updates
  *
  * @author harring
  *
@@ -51,7 +51,7 @@ public class XMLImportService {
     private Path storagePath;
 
     public void init() throws IOException {
-        storagePath = Paths.get(dataDir + "/metadataImport/");
+        storagePath = Paths.get(dataDir, "metadataImport");
         // Create the directory if it doesn't already exist
         Files.createDirectories(storagePath);
     }
