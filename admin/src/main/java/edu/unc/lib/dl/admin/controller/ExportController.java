@@ -30,12 +30,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.http.HttpStatus;
 import org.apache.commons.csv.CSVFormat;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
@@ -50,11 +53,18 @@ import edu.unc.lib.dl.util.ResourceType;
 @Controller
 @RequestMapping("export")
 public class ExportController extends AbstractSolrSearchController {
+	@Autowired
+	private PID collectionsPid;
 	
 	protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
 	@RequestMapping(value = "{pid}", method = RequestMethod.GET)
 	public void export(@PathVariable("pid") String pid, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		if (collectionsPid.getPid().equals(pid)) {
+			response.setStatus(HttpStatus.SC_BAD_REQUEST);
+			return;
+		}
+		
 		String filename = pid.replace(":", "_") + ".csv";
 		response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 		response.addHeader("Content-Type", "text/csv");

@@ -33,7 +33,8 @@
 				'trashList' : {
 					'resultUrl' : '${currentRelativeUrl}',
 					'accessBaseUrl' : '${accessBaseUrl}',
-					'adminBaseUrl' : '${adminBaseUrl}'
+					'adminBaseUrl' : '${adminBaseUrl}',
+					'rootPid' : '${collectionsPid.getPid()}'
 				}
 			}
 	};

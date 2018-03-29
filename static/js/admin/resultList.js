@@ -64,6 +64,7 @@ define("resultList", ["module", "jquery", "ResultView"], function(module, $) {
 		resultUrl : module.config().resultUrl,
 		accessBaseUrl : module.config().accessBaseUrl,
 		adminBaseUrl : module.config().adminBaseUrl,
-		formsBaseUrl : module.config().formsBaseUrl
+		formsBaseUrl : module.config().formsBaseUrl,
+		rootPid : module.config().rootPid
 	});
 });

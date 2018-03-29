@@ -6,6 +6,7 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 			url : null,
 			container : null,
 			containerPath : null,
+			rootPid : null,
 			filterParams : '',
 			resultUrl : null, 
 			selectedId : false,
@@ -103,7 +104,8 @@ define('ResultView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtilities'
 				resultTableHeaderTemplate : this.options.resultTableHeaderTemplate,
 				navBarTemplate : this.options.navBarTemplate,
 				pathTrailTemplate : this.options.pathTrailTemplate,
-				accessBaseUrl : this.options.accessBaseUrl
+				accessBaseUrl : this.options.accessBaseUrl,
+				rootPid : this.options.rootPid
 			});
 			
 			self.$resultPage.on("click", ".res_link", function(e){
