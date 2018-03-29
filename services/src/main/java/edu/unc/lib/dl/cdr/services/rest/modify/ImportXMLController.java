@@ -15,15 +15,10 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,17 +49,6 @@ public class ImportXMLController {
     @Autowired
     private XMLImportService service;
 
-    @Autowired
-    private String dataDir;
-    private Path storagePath;
-
-    @PostConstruct
-    public void init() throws IOException {
-        storagePath = Paths.get(dataDir + "/metadataImport/");
-        // Create the directory if it doesn't already exist
-        Files.createDirectories(storagePath);
-    }
-
     /**
      * Imports an XML document containing metadata for all objects specified by the request
      *
@@ -81,18 +65,13 @@ public class ImportXMLController {
         result.put("action", "import xml");
         result.put("username", username);
 
-        File importFile = null;
-        try {
-            importFile = service.createTempFile(storagePath, xmlFile);
+        String userEmail = GroupsThreadStore.getEmail();
+        try (InputStream importStream = xmlFile.getInputStream()) {
+            service.pushJobToQueue(result, importStream, username, userEmail);
         } catch (IOException e) {
             log.error("Error creating or writing to import file: {}", e);
             result.put("error", e.getMessage());
             return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        String userEmail = GroupsThreadStore.getEmail();
-        try {
-            service.pushJobToQueue(result, importFile, username, userEmail);
         } catch (IllegalArgumentException e) {
             log.error("Error queueing the job: {}", e);
             result.put("error", e.getMessage());

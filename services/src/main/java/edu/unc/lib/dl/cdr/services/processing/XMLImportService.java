@@ -17,19 +17,23 @@ package edu.unc.lib.dl.cdr.services.processing;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.multipart.MultipartFile;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import net.greghaines.jesque.Job;
+import net.greghaines.jesque.client.Client;
 
 /**
+ * A service for pushing a bulk-metadata-import job to a queue
  *
  * @author harring
  *
@@ -38,12 +42,25 @@ public class XMLImportService {
     private static final Logger log = LoggerFactory.getLogger(XMLImportService.class);
 
     @Autowired
-    private net.greghaines.jesque.client.Client jesqueClient;
+    private Client jesqueClient;
     @Autowired
     private String bulkMetadataQueueName;
+    @Autowired
+    private String dataDir;
 
-    public void pushJobToQueue(Map<String, Object> result, File importFile, String username, String userEmail)
-            throws IllegalArgumentException {
+    private Path storagePath;
+
+    public void init() throws IOException {
+        storagePath = Paths.get(dataDir + "/metadataImport/");
+        // Create the directory if it doesn't already exist
+        Files.createDirectories(storagePath);
+    }
+
+    public void pushJobToQueue(Map<String, Object> result, InputStream importStream, String username, String userEmail)
+            throws IllegalArgumentException, IOException {
+
+        File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
+        FileUtils.copyInputStreamToFile(importStream, importFile);
 
         Job job = new Job(XMLImportJob.class.getName(), username, userEmail, AgentPrincipals.createFromThread(),
                 importFile.getAbsolutePath());
@@ -52,18 +69,12 @@ public class XMLImportService {
         log.info("Job to import " + importFile.getName() + "has been queued for " + username);
     }
 
-    public File createTempFile(Path storagePath, MultipartFile xmlFile) throws IOException {
-        File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
-        FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
-        return importFile;
-    }
-
-    public void setClient(net.greghaines.jesque.client.Client jesqueClient) {
+    public void setClient(Client jesqueClient) {
         this.jesqueClient = jesqueClient;
     }
 
-    public net.greghaines.jesque.client.Client getClient() {
-        return this.jesqueClient;
+    public Client getClient() {
+        return jesqueClient;
     }
 
     public void setQueueName(String queueName) {
@@ -71,7 +82,15 @@ public class XMLImportService {
     }
 
     public String getQueueName() {
-        return this.bulkMetadataQueueName;
+        return bulkMetadataQueueName;
+    }
+
+    public void setDataDir(String dataDir) {
+        this.dataDir = dataDir;
+    }
+
+    public String getDataDir() {
+        return dataDir;
     }
 
 }
