@@ -41,4 +41,7 @@
         <constructor-arg value="src/test/resources/temp"/>
     </bean>
     
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+    </bean>
 </beans>
