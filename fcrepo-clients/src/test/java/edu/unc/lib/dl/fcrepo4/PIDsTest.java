@@ -250,4 +250,22 @@ public class PIDsTest {
         assertEquals(REPOSITORY_ROOT_ID, pid.getId());
         assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
     }
+
+    @Test
+    public void getContentBaseFromIdTest() {
+        PID pid = PIDs.get(CONTENT_BASE);
+
+        assertEquals(FEDORA_BASE + CONTENT_BASE, pid.getRepositoryPath());
+        assertEquals(CONTENT_BASE, pid.getId());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+    }
+
+    @Test
+    public void getRootFromIdTest() {
+        PID pid = PIDs.get(REPOSITORY_ROOT_ID);
+
+        assertEquals(FEDORA_BASE, pid.getRepositoryPath());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getId());
+        assertEquals(REPOSITORY_ROOT_ID, pid.getQualifier());
+    }
 }
