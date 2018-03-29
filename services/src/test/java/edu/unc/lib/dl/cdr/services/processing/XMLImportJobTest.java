@@ -48,9 +48,7 @@ import org.xml.sax.XMLReader;
 
 import com.samskivert.mustache.Template;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 
 /**
  *
@@ -64,15 +62,11 @@ public class XMLImportJobTest {
     @Mock
     private AgentPrincipals agent;
     @Mock
-    private AccessControlService aclService;
-    @Mock
     private Template completeTemplate;
     @Mock
     private Template failedTemplate;
     @Mock
     private JavaMailSender mailSender;
-    @Mock
-    private RepositoryObjectLoader repoObjLoader;
     @Mock
     private UpdateDescriptionService updateService;
 
@@ -141,7 +135,7 @@ public class XMLImportJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals(problem.getValue(), "Failed to read metadata update package for " + username);
+        assertEquals("Failed to read metadata update package for " + username, problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
@@ -180,12 +174,10 @@ public class XMLImportJobTest {
 
     private void setupJob(String username, String userEmail, File importFile) {
         job = new XMLImportJob(username, userEmail, agent, importFile);
-        job.setAclService(aclService);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
         job.setFromAddress(fromAddress);
         job.setMailSender(mailSender);
-        job.setRepoObjLoader(repoObjLoader);
         job.setUpdateService(updateService);
         job.setMimeMessage(msg);
         job.setMessageHelper(msgHelper);

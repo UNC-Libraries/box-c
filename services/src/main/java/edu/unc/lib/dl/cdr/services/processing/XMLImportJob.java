@@ -47,10 +47,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.update.UpdateException;
@@ -67,9 +65,7 @@ public class XMLImportJob implements Runnable {
 
     private static final Logger log = LoggerFactory.getLogger(XMLImportJob.class);
 
-    private AccessControlService aclService;
     private UpdateDescriptionService updateService;
-    private RepositoryObjectLoader repoObjLoader;
     private JavaMailSender mailSender;
     private Template completeTemplate;
     private Template failedTemplate;
@@ -128,18 +124,12 @@ public class XMLImportJob implements Runnable {
 
         try {
             initializeXMLReader();
-
-            try {
-                getNextUpdate();
-                log.info("Finished metadata import for {} objects in {}ms for user {}",
-                        new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
-                sendCompletedEmail(updated, failed);
-            } catch (XMLStreamException e) {
-                log.info("Errors reading XML during update " + username, e);
-                failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
-                sendValidationFailureEmail(failed);
-            }
-        } catch (UpdateException e) {
+            processUpdates();
+            log.info("Finished metadata import for {} objects in {}ms for user {}",
+                    new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
+            sendCompletedEmail(updated, failed);
+        } catch (UpdateException | XMLStreamException e) {
+            log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "Failed to read metadata update package for " + username);
             sendValidationFailureEmail(failed);
 
@@ -147,23 +137,6 @@ public class XMLImportJob implements Runnable {
             close();
             cleanup();
         }
-
-    }
-
-    public AccessControlService getAclService() {
-        return aclService;
-    }
-
-    public void setAclService(AccessControlService aclService) {
-        this.aclService = aclService;
-    }
-
-    public RepositoryObjectLoader getRepoObjLoader() {
-        return repoObjLoader;
-    }
-
-    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
-        this.repoObjLoader = repoObjLoader;
     }
 
     public UpdateDescriptionService getUpdateService() {
@@ -231,11 +204,11 @@ public class XMLImportJob implements Runnable {
         }
     }
 
-    private void getNextUpdate() throws XMLStreamException {
-        seekNextUpdate(null, null);
+    private void processUpdates() throws XMLStreamException {
+        processUpdates(null, null);
     }
 
-    private void seekNextUpdate(PID resumePid, String resumeDs) throws XMLStreamException {
+    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
