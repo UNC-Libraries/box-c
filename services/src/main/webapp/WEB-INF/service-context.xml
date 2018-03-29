@@ -276,6 +276,12 @@
       <property name="queryLayer" ref="queryLayer" />
   </bean>
   
+  <bean id="xmlImportService" class="edu.unc.lib.dl.cdr.services.processing.XMLImportService" >
+      <property name="client" ref="jesqueClient" />
+      <property name="queueName" ref="bulkMetadataQueueName" />
+      <property name="dataDir" ref="dataDir" />
+  </bean>
+  
   <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${smtp.host:localhost}" />
         <property name="port" value="${smtp.port:25}" />
