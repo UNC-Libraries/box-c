@@ -65,7 +65,7 @@ public class IndexingController {
     @RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> reindex(@PathVariable("id") String id,
             @RequestParam(value = "inplace", required = false) Boolean inplace) {
-        return indexObjectAndChildren(id, inplace, solrIndexingService);
+        return indexObjectAndChildren(id, inplace, solrIndexingService, "reindexSolr");
     }
 
     /**
@@ -76,7 +76,7 @@ public class IndexingController {
      */
     @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> reindex(@PathVariable("id") String id) {
-        return indexObject(id, solrIndexingService);
+        return indexObject(id, solrIndexingService, "updateSolr");
     }
 
     /**
@@ -88,12 +88,12 @@ public class IndexingController {
      */
     @RequestMapping(value = "edit/triples/reindex/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> reindexTriples(@PathVariable("id") String id) {
-        return indexObjectAndChildren(id, false, triplesIndexingService);
+        return indexObjectAndChildren(id, false, triplesIndexingService, "reindexTriples");
     }
 
-    private ResponseEntity<Object> indexObject(String id, IndexingService indexingService) {
+    private ResponseEntity<Object> indexObject(String id, IndexingService indexingService, String action) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "reindex");
+        result.put("action", action);
         result.put("pid", id);
 
         PID objectPid = PIDs.get(id);
@@ -115,9 +115,9 @@ public class IndexingController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace, IndexingService indexingService) {
+    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace, IndexingService indexingService, String action) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "reindex");
+        result.put("action", action);
         result.put("pid", id);
 
         PID objectPid = PIDs.get(id);
