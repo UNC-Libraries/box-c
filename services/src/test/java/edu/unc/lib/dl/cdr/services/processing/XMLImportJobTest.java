@@ -34,6 +34,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.mail.internet.MimeMessage;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +48,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.xml.sax.XMLReader;
 
 import com.samskivert.mustache.Template;
 
@@ -77,7 +80,13 @@ public class XMLImportJobTest {
     @Mock
     private MimeMessageHelper msgHelper;
     @Mock
-    private XMLReader xmlReader;
+    private XMLEventReader xmlReader;
+    @Mock
+    private XMLEvent xmlEvent;
+    @Mock
+    private StartElement startEl;
+    @Mock
+    private QName qName;
 
     @Captor
     private ArgumentCaptor<String> subjectCaptor;
@@ -99,10 +108,8 @@ public class XMLImportJobTest {
     @SuppressWarnings("unchecked")
     @Test
     public void emptyFileTest() throws Exception {
-        String username = "username";
-        String userEmail = "user@email.com";
         File importFile = tmpFolder.newFile();
-        setupJob(username, userEmail, importFile);
+        setupJob(importFile);
         job.run();
 
         verify(mailSender).send(msg);
@@ -113,7 +120,7 @@ public class XMLImportJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals(problem.getValue(), "The import file contains XML errors");
+        assertEquals("The import file contains XML errors", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
@@ -122,10 +129,8 @@ public class XMLImportJobTest {
     @SuppressWarnings("unchecked")
     @Test
     public void fileNotFoundTest() throws Exception {
-        String username = "username";
-        String userEmail = "user@email.com";
         File importFile = new File("");
-        setupJob(username, userEmail, importFile);
+        setupJob(importFile);
         job.run();
 
         verify(mailSender).send(msg);
@@ -135,7 +140,34 @@ public class XMLImportJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals("Failed to read metadata update package for " + username, problem.getValue());
+        assertEquals("The import file contains XML errors", problem.getValue());
+
+        verify(msg).setSubject(subjectCaptor.capture());
+        assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void incorrectOpeningTagTest() throws Exception {
+        File importFile = new File("");
+        setupJob(importFile);
+
+        when(xmlReader.nextEvent()).thenReturn(xmlEvent);
+        when(xmlEvent.isStartElement()).thenReturn(true);
+        when(xmlEvent.asStartElement()).thenReturn(startEl);
+        when(startEl.getName()).thenReturn(qName);
+        when(qName.getLocalPart()).thenReturn("not bulk md");
+
+        job.run();
+
+        verify(mailSender).send(msg);
+        verify(failedTemplate).execute(mapCaptor.capture());
+
+        Map<String, Object> dataMap = mapCaptor.getValue();
+        assertEquals(1, dataMap.get("problemCount"));
+        Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
+        Entry<String, String> problem = problems.iterator().next();
+        assertEquals("The import file contains XML errors", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
@@ -143,10 +175,8 @@ public class XMLImportJobTest {
 
     @Test
     public void successfulJobTest() throws Exception {
-        String username = "username";
-        String userEmail = "user@email.com";
         File tempImportFile = createTempImportFile();
-        setupJob(username, userEmail, tempImportFile);
+        setupJob(tempImportFile);
         when(completeTemplate.execute(anyObject())).thenReturn("success email text");
         job.run();
 
@@ -172,7 +202,9 @@ public class XMLImportJobTest {
         return tempImportFile;
     }
 
-    private void setupJob(String username, String userEmail, File importFile) {
+    private void setupJob(File importFile) {
+        String username = "username";
+        String userEmail = "user@email.com";
         job = new XMLImportJob(username, userEmail, agent, importFile);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);

@@ -130,7 +130,7 @@ public class XMLImportJob implements Runnable {
             sendCompletedEmail(updated, failed);
         } catch (UpdateException | XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
-            failed.put(importFile.getAbsolutePath(), "Failed to read metadata update package for " + username);
+            failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
             sendValidationFailureEmail(failed);
 
         } finally {
@@ -248,8 +248,10 @@ public class XMLImportJob implements Runnable {
                                 if (pid != null) {
                                     currentPid = PIDs.get(pid.getValue());
                                     objectCount++;
+                                    state = DocumentState.IN_OBJECT;
+                                } else {
+                                    failed.put(importFile.getAbsolutePath(), "PID attribute was missing");
                                 }
-                                state = DocumentState.IN_OBJECT;
                             }
                         }
                         break;
