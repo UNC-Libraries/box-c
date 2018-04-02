@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,8 +43,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
@@ -76,6 +80,9 @@ import edu.unc.lib.dl.util.ResourceType;
 public class FullRecordController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(FullRecordController.class);
 
+    @Autowired
+    private AccessControlService aclService;
+
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
     @Autowired
@@ -96,10 +103,13 @@ public class FullRecordController extends AbstractSolrSearchController {
     public String getFullRecord(String pidString, Model model, HttpServletRequest request) {
         PID pid = PIDs.get(pidString);
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+
+        aclService.assertHasAccess("Insufficient permissions to access full record",
+                pid, principals, Permission.viewMetadata);
 
         // Retrieve the objects record from Solr
-        SimpleIdRequest idRequest = new SimpleIdRequest(pidString, accessGroups);
+        SimpleIdRequest idRequest = new SimpleIdRequest(pidString, principals);
         BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
         if (briefObject == null) {
             throw new InvalidRecordRequestException();
@@ -111,8 +121,6 @@ public class FullRecordController extends AbstractSolrSearchController {
         if (embargoUntil != null) {
             model.addAttribute("embargoDate", embargoUntil);
         }
-
-        // TODO check that user has metadata access
 
         // Retrieve the objects description from Fedora
         String fullObjectView = null;
@@ -143,7 +151,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 || resourceType.equals(searchSettings.resourceTypeCollection);
 
         if (retrieveChildrenCount) {
-            briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, accessGroups));
+            briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, principals));
         }
 
         if (retrieveFacets) {
@@ -158,7 +166,7 @@ public class FullRecordController extends AbstractSolrSearchController {
             LOG.debug("Retrieving supplemental information for container at path "
             + briefObject.getPath().toString());
             SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
-                    accessGroups, facetsToRetrieve);
+                    principals, facetsToRetrieve);
 
             briefObject.getCountMap().put("child", resultResponse.getResultCount());
 
@@ -179,7 +187,7 @@ public class FullRecordController extends AbstractSolrSearchController {
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
                 briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
             List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
-                    searchSettings.maxNeighborResults, accessGroups);
+                    searchSettings.maxNeighborResults, principals);
             model.addAttribute("neighborList", neighbors);
 
             // Get previous and next record in the same folder if there are any
