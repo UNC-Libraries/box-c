@@ -203,9 +203,8 @@ public class XMLImportJobTest {
     }
 
     private void setupJob(File importFile) {
-        String username = "username";
         String userEmail = "user@email.com";
-        job = new XMLImportJob(username, userEmail, agent, importFile);
+        job = new XMLImportJob(userEmail, agent, importFile);
         job.setCompleteTemplate(completeTemplate);
         job.setFailedTemplate(failedTemplate);
         job.setFromAddress(fromAddress);

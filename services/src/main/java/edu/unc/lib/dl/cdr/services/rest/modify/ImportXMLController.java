@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.cdr.services.processing.XMLImportService;
 
@@ -58,16 +59,17 @@ public class ImportXMLController {
     @RequestMapping(value = "/edit/importXML", method = RequestMethod.POST)
     public @ResponseBody ResponseEntity<Object> importXML(@RequestParam("file") MultipartFile xmlFile) {
 
-        String username = GroupsThreadStore.getUsername();
-        log.info("User {} has submitted a bulk metadata update package", username);
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        String userEmail = GroupsThreadStore.getEmail();
+        log.info("User with email {} has submitted a bulk metadata update package", userEmail);
 
         Map<String, Object> result = new HashMap<>();
         result.put("action", "import xml");
-        result.put("username", username);
+        result.put("username", agent.getUsername());
+        result.put("user email", userEmail);
 
-        String userEmail = GroupsThreadStore.getEmail();
         try (InputStream importStream = xmlFile.getInputStream()) {
-            service.pushJobToQueue(result, importStream, username, userEmail);
+            service.pushJobToQueue(result, importStream, agent, userEmail);
         } catch (IOException e) {
             log.error("Error creating or writing to import file: {}", e);
             result.put("error", e.getMessage());

@@ -91,20 +91,21 @@ public class XMLImportJob implements Runnable {
     private final XMLOutputFactory xmlOutput = XMLOutputFactory.newInstance();
     private DocumentState state = DocumentState.ROOT;
 
-    private final String username;
     private final String userEmail;
     private AgentPrincipals agent;
     private final File importFile;
 
+    private String username;
+
     private List<String> updated;
     private Map<String, String> failed;
 
-    public XMLImportJob(String username, String userEmail, AgentPrincipals agent,
-            File importFile) {
-        this.username = username;
+    public XMLImportJob(String userEmail, AgentPrincipals agent, File importFile) {
         this.userEmail = userEmail;
         this.agent = agent;
         this.importFile = importFile;
+
+        this.username = agent.getUsername();
 
         this.updated = new ArrayList<>();
         this.failed = new HashMap<>();

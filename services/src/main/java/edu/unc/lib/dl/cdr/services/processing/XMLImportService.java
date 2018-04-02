@@ -56,17 +56,16 @@ public class XMLImportService {
         Files.createDirectories(storagePath);
     }
 
-    public void pushJobToQueue(Map<String, Object> result, InputStream importStream, String username, String userEmail)
-            throws IllegalArgumentException, IOException {
+    public void pushJobToQueue(Map<String, Object> result, InputStream importStream, AgentPrincipals agent,
+            String userEmail) throws IllegalArgumentException, IOException {
 
         File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
         FileUtils.copyInputStreamToFile(importStream, importFile);
 
-        Job job = new Job(XMLImportJob.class.getName(), username, userEmail, AgentPrincipals.createFromThread(),
-                importFile.getAbsolutePath());
+        Job job = new Job(XMLImportJob.class.getName(), agent, userEmail, importFile.getAbsolutePath());
 
         jesqueClient.enqueue(bulkMetadataQueueName, job);
-        log.info("Job to import " + importFile.getName() + "has been queued for " + username);
+        log.info("Job to import " + importFile.getName() + "has been queued for " + agent.getUsername());
     }
 
     public void setClient(Client jesqueClient) {
