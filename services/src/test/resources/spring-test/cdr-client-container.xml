@@ -138,36 +138,6 @@
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
     
-    <bean id="jedisPool" class="redis.clients.jedis.JedisPool"
-        destroy-method="destroy">
-        <constructor-arg ref="poolConfig"/>
-        <constructor-arg type="String" value="${redis.host:localhost}" />
-        <constructor-arg type="int" value="${redis.port:46380}" />
-    </bean>
-
-    <bean id="poolConfig" class="redis.clients.jedis.JedisPoolConfig">
-        <property name="maxIdle" value="15"/>
-        <property name="minIdle" value="2"/>
-        <property name="maxTotal" value="25"/>
-    </bean>
-    
-    <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-        <constructor-arg value="${redis.host:localhost}" />
-        <constructor-arg value="${redis.port:6379}" />
-        <constructor-arg value="2000" />
-        <constructor-arg>
-            <null />
-        </constructor-arg>
-        <constructor-arg value="resque" />
-        <constructor-arg value="0" />
-    </bean>
-    
-    <bean id="jesqueClient" class="net.greghaines.jesque.client.ClientPoolImpl"
-        scope="prototype">
-        <constructor-arg ref="jesqueConfig" />
-        <constructor-arg ref="jedisPool" />
-    </bean>
-    
     <bean id="multipartResolver"
         class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="maxUploadSize" value="2000000000"/>

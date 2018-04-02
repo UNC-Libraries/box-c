@@ -110,7 +110,6 @@ public class ImportXMLIT extends AbstractAPIIT {
         Map<String, Object> respMap = getMapFromResponse(result);
         assertEquals("import xml", respMap.get("action"));
         assertEquals(GroupsThreadStore.getUsername(), respMap.get("username"));
-        //assertEquals("queue must not be null or empty: null", respMap.get("error"));
     }
 
     private MockMultipartFile createTempImportFile() throws IOException {
