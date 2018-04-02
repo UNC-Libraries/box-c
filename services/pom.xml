@@ -310,5 +310,11 @@
             <version>${fcrepo4.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.6</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
