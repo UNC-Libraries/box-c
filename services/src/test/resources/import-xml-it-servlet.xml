@@ -44,4 +44,8 @@
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>
+    
+    <bean id="jesqueClient" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="net.greghaines.jesque.client.ClientPoolImpl"/>
+    </bean>
 </beans>
