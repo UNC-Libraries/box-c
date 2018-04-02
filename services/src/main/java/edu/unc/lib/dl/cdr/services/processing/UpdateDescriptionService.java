@@ -45,6 +45,15 @@ public class UpdateDescriptionService {
     private OperationsMessageSender operationsMessageSender;
     private MODSValidator modsValidator;
 
+    /**
+     * Updates the MODS description of a single object
+     *
+     * @param agent
+     * @param pid
+     * @param modsStream
+     * @throws MetadataValidationException
+     * @throws IOException
+     */
     public void updateDescription(AgentPrincipals agent, PID pid, InputStream modsStream)
             throws MetadataValidationException, IOException {
         aclService.assertHasAccess("User does not have permissions to update description",

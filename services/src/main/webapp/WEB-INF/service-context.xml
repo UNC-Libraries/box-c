@@ -294,11 +294,33 @@
       <property name="queryLayer" ref="queryLayer" />
   </bean>
   
+  <bean id="xmlImportService" class="edu.unc.lib.dl.cdr.services.processing.XMLImportService" init-method="init">
+      <property name="client" ref="jesqueClient" />
+      <property name="queueName" ref="bulkMetadataQueueName" />
+      <property name="dataDir" ref="dataDir" />
+  </bean>
+  
+  <bean id="completeTemplate" class="com.samskivert.mustache.Template" />
+  
+  <bean id="failedTemplate" class="com.samskivert.mustache.Template" />
+  
+  <bean id="fromAddress" class="java.lang.String">
+        <constructor-arg value="${repository.from.email}" />
+   </bean>
+  
   <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
         <property name="host" value="${smtp.host:localhost}" />
         <property name="port" value="${smtp.port:25}" />
         <property name="defaultEncoding" value="UTF-8" />
     </bean>
+    
+    <bean id="xmlImportJob" class="edu.unc.lib.dl.cdr.services.processing.XMLImportJob" scope="prototype" >
+      <property name="updateService" ref="updateDescriptionService" />
+      <property name="mailSender" ref="mailSender" />
+      <property name="completeTemplate" ref="completeTemplate" />
+      <property name="failedTemplate" ref="failedTemplate" />
+      <property name="fromAddress" ref="fromAddress" />
+   </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>

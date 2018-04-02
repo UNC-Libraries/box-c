@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.jdom2.Document;
@@ -89,7 +88,7 @@ public class XMLExportServiceTest {
     @Mock
     private SolrQueryLayerService queryLayer;
     @Mock
-    SearchResultResponse resultResponse;
+    private SearchResultResponse resultResponse;
     private XMLExportRequest request;
     @Mock
     private AccessGroupSet group;
@@ -148,7 +147,7 @@ public class XMLExportServiceTest {
         PID pid1 = registerObject();
         PID pid2 = registerObject();
 
-        assertSuccess(request);
+        service.exportXml(username, group, request);
 
         Document doc = getExportedDocument();
 
@@ -173,7 +172,7 @@ public class XMLExportServiceTest {
         when(resultResponse.getResultList()).thenReturn(childrenMd);
         when(queryLayer.getSearchResults(any(SearchRequest.class))).thenReturn(resultResponse);
 
-        assertSuccess(request);
+        service.exportXml(username, group, request);
 
         Document doc = getExportedDocument();
 
@@ -196,7 +195,7 @@ public class XMLExportServiceTest {
         when(modsObj.getBinaryStream()).thenReturn(modsIs);
         when(contentObj.getMODS()).thenReturn(modsObj);
 
-        assertSuccess(request);
+        service.exportXml(username, group, request);
 
         Document doc = getExportedDocument();
         Element rootEl = doc.getRootElement();
@@ -224,7 +223,8 @@ public class XMLExportServiceTest {
                 .thenReturn(true);
         when(aclService.hasAccess(eq(pid2), any(AccessGroupSet.class), eq(Permission.bulkUpdateDescription)))
                 .thenReturn(false);
-        assertSuccess(request);
+
+        service.exportXml(username, group, request);
 
         Document doc = getExportedDocument();
 
@@ -249,7 +249,7 @@ public class XMLExportServiceTest {
         when(resultResponse.getResultList()).thenReturn(Collections.emptyList());
         when(queryLayer.getSearchResults(any(SearchRequest.class))).thenReturn(resultResponse);
 
-        assertSuccess(request);
+        service.exportXml(username, group, request);
 
         Document doc = getExportedDocument();
 
@@ -278,7 +278,7 @@ public class XMLExportServiceTest {
 
         PID pid1 = registerObject();
 
-        assertSuccess(request);
+        service.exportXml(username, group, request);
 
         verify(emailHandler, timeout(10000)).sendEmail(eq(TO_EMAIL), anyString(), anyString(),
                 eq("xml_export.zip"), fileCaptor.capture());
@@ -305,12 +305,6 @@ public class XMLExportServiceTest {
             }
         }
         return null;
-    }
-
-    private void assertSuccess(XMLExportRequest request) throws Exception {
-        Map<String,String> response = service.exportXml(username, group, request);
-        assertEquals("Metadata export for " + request.getPids().size()
-                + " objects has begun, you will receive the data via email soon", response.get("message"));
     }
 
     private Document getExportedDocument() throws Exception {

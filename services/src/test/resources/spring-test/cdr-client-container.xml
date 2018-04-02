@@ -137,4 +137,13 @@
     <bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
         <property name="fcrepoClient" ref="fcrepoClient" />
     </bean>
+    
+    <bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="2000000000"/>
+    </bean>
+    
+    <bean id="bulkMetadataQueueName" class="java.lang.String">
+        <constructor-arg value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
+    </bean>
 </beans>

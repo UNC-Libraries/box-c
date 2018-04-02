@@ -15,23 +15,16 @@
  */
 package edu.unc.lib.dl.cdr.services.rest.modify;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-
-import net.greghaines.jesque.Job;
-
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -39,52 +32,59 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.update.BulkMetadataUpdateJob;
+import edu.unc.lib.dl.cdr.services.processing.XMLImportService;
 
 /**
- * Controller which accepts CDR bulk metadata update packages and begins update operations
- * 
+ * API endpoint that accepts an XML document containing objects' metadata, kicks off update operations for
+ * individual objects, and sends an email with a report of objects that were/were not able to be updated.
+ *
  * @author bbpennel
- * @date Jul 30, 2015
+ * @author harring
  */
 @Controller
 public class ImportXMLController {
     private static final Logger log = LoggerFactory.getLogger(ImportXMLController.class);
 
     @Autowired
-    private net.greghaines.jesque.client.Client jesqueClient;
-    @Autowired
-    private String bulkMetadataQueueName;
-    @Autowired
-    private String dataDir;
-    private Path storagePath;
+    private XMLImportService service;
 
-    @PostConstruct
-    public void init() throws IOException {
-        storagePath = Paths.get(dataDir + "/metadataImport/");
-        // Create the directory if it doesn't already exist
-        Files.createDirectories(storagePath);
-    }
+    /**
+     * Imports an XML document containing metadata for all objects specified by the request
+     *
+     * @param xmlFile
+     * @return response entity with result and response code
+     */
+    @RequestMapping(value = "/edit/importXML", method = RequestMethod.POST)
+    public @ResponseBody ResponseEntity<Object> importXML(@RequestParam("file") MultipartFile xmlFile) {
 
-    @RequestMapping(value = "importXML", method = RequestMethod.POST)
-    public @ResponseBody Object importXML(@RequestParam("file") MultipartFile xmlFile,
-            HttpServletRequest request) throws Exception {
-        log.info("User {} has submitted a bulk metadata update package", GroupsThreadStore.getUsername());
-        Map<String, String> result = new HashMap<>();
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        String userEmail = GroupsThreadStore.getEmail();
+        log.info("User with email {} has submitted a bulk metadata update package", userEmail);
 
-        File importFile = File.createTempFile("import", ".xml", storagePath.toFile());
-        FileUtils.writeByteArrayToFile(importFile, xmlFile.getBytes());
+        Map<String, Object> result = new HashMap<>();
+        result.put("action", "import xml");
+        result.put("username", agent.getUsername());
+        result.put("user email", userEmail);
 
-        String emailAddress = GroupsThreadStore.getEmail();
+        try (InputStream importStream = xmlFile.getInputStream()) {
+            service.pushJobToQueue(result, importStream, agent, userEmail);
+        } catch (IOException e) {
+            log.error("Error creating or writing to import file: {}", e);
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IllegalArgumentException e) {
+            log.error("Error queueing the job: {}", e);
+            result.put("error", e.getMessage());
+            return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
-        Job job = new Job(BulkMetadataUpdateJob.class.getName(), null, emailAddress, GroupsThreadStore.getUsername(),
-                GroupsThreadStore.getGroups(), importFile.getAbsolutePath(), xmlFile.getOriginalFilename());
-        jesqueClient.enqueue(bulkMetadataQueueName, job);
-
-        result.put("message", "Import of metadata has begun, " + emailAddress
+        result.put("message", "Import of metadata has begun. " + userEmail
                 + " will be emailed when the update completes");
+        result.put("timestamp", System.currentTimeMillis());
 
-        return result;
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
 }

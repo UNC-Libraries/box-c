@@ -56,8 +56,6 @@ public class ExportXMLController {
      *
      * @param exportRequest
      * @return
-     * @throws IOException
-     * @throws FedoraException
      */
     @RequestMapping(value = "/edit/exportXML", method = RequestMethod.POST)
     public @ResponseBody
@@ -75,6 +73,8 @@ public class ExportXMLController {
         try {
             service.exportXml(agent.getUsername(), agent.getPrincipals(), new XMLExportRequest(
                     exportRequest.getPids(), exportRequest.getExportChildren(), exportRequest.getEmail()));
+            result.put("message", "Metadata export for " + exportRequest.getPids().size()
+                    + " objects has begun, you will receive the data via email soon");
         } catch (Exception e) {
             result.put("error", e.getMessage());
             if (e instanceof AccessRestrictionException) {
@@ -113,7 +113,6 @@ public class ExportXMLController {
 
         public String getEmail() {
             return email;
-
         }
 
         public void setEmail(String email) {

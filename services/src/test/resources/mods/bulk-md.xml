@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bulkMetadata>
+<object pid="uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad" />
+<object pid="uuid:a34fe3e6-a847-4bbb-87a3-3d11cbb11160">
+<update type="MODS" lastModified="2017-10-18T12:29:53.396Z">
+<mods xmlns="http://www.loc.gov/mods/v3">
+          <name>
+            <namePart>Mary Testing</namePart>
+            <affiliation>University of North Carolina at Chapel Hill. Library</affiliation>
+          </name>
+          <abstract>description goes here</abstract>
+          <note displayLabel="Department">University of North Carolina at Chapel Hill. Library</note>
+        </mods>
+</update>
+</object>
+<object pid="uuid:b75e416f-0ca8-4138-94ca-0a99bbd8e710">
+<update type="MODS" lastModified="2017-10-18T12:30:38.779Z">
+<mods xmlns="http://www.loc.gov/mods/v3">
+          <abstract>supplemental description</abstract>
+        </mods>
+</update>
+</object>
+<object pid="uuid:fe682b4e-5222-464c-a778-80f56beebba1" />
+<object pid="uuid:43dcb37a-27fc-425b-9c00-76cee952507c" />
+<object pid="uuid:b81816ee-7346-4f0b-970a-b287d1f67503">
+<update type="MODS" lastModified="2017-10-18T12:35:27.160Z">
+<mods xmlns="http://www.loc.gov/mods/v3">
+          <name>
+            <namePart>Mary Testing</namePart>
+            <affiliation>University</affiliation>
+          </name>
+          <abstract>description here</abstract>
+        </mods>
+</update>
+</object>
+<object pid="uuid:4ac9edc5-4121-4228-aecf-656130aac218" />
+<object pid="uuid:98e0c5b7-bc6a-4733-9809-4a70b276fc22" />
+<object pid="uuid:a131287b-4a4f-4fc3-9bd5-f16f43c04854">
+<update type="MODS" lastModified="2017-10-09T18:44:03.219Z">
+<mods xmlns="http://www.loc.gov/mods/v3" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <titleInfo />
+  <name type="corporate">
+    <namePart>Test</namePart>
+    <role>
+      <roleTerm type="text">creator</roleTerm>
+    </role>
+  </name>
+  <name type="personal">
+    <namePart>Test</namePart>
+    <role>
+      <roleTerm type="text">creator</roleTerm>
+    </role>
+  </name>
+  <originInfo>
+    <dateCreated encoding="iso8601" keyDate="yes">2015-11-18/2015-11-25</dateCreated>
+  </originInfo>
+  <language>
+    <languageTerm authority="iso639-2b" type="code">eng</languageTerm>
+  </language>
+  <abstract>This is a test collection created to test the admin functionality of the Carolina Digital Repository.</abstract>
+  <note type="short description">This is a test collection.</note>
+  <subject>
+    <topic>Subject 1</topic>
+    <topic>Subject 2</topic>
+  </subject>
+</mods>
+</update>
+</object>
+<object pid="uuid:06bb8b37-58d2-4062-a7f7-91a1a4c7309c">
+<update type="MODS" lastModified="2017-10-11T15:02:47.892Z">
+<mods xmlns="http://www.loc.gov/mods/v3">
+  <titleInfo>
+    <title>711 iRODS testing update</title>
+  </titleInfo>
+  <abstract>Here is a unique keyword: zebrafeet</abstract>
+  <name>
+    <namePart>Interestinglylonglastname, Judy</namePart>
+  </name>
+</mods>
+</update>
+</object>
+<object pid="uuid:d7cfda21-d1e8-4df4-9525-af3349a1cd4e" />
+<object pid="uuid:4bfcc482-5aca-46d7-b9a3-65106efa6fea" />
+<object pid="uuid:9102aeb2-91a9-4fdf-a2e9-87e207e1787f" />
+<object pid="uuid:d8c91e7f-0ea8-4c92-8e55-9fed30fa5c90" />
+<object pid="uuid:e4e345e5-ed11-4d3b-ab6a-76a84bd5a204" />
+<object pid="uuid:f795e657-c57e-4377-9ed4-9645a7d6aaa5">
+<update type="MODS" lastModified="2017-11-01T15:17:41.205Z">
+<mods:mods xmlns:mods="http://www.loc.gov/mods/v3">
+  <mods:titleInfo>
+    <mods:title>Changing the title yet again</mods:title>
+  </mods:titleInfo>
+  <mods:typeOfResource>text</mods:typeOfResource>
+  <mods:genre authority="marcgt">newspaper</mods:genre>
+  <mods:originInfo>
+    <mods:publisher>Publisher here</mods:publisher>
+  </mods:originInfo>
+  <mods:abstract>abstract goes here</mods:abstract>
+  <mods:relatedItem type="preceding">
+    <mods:titleInfo>
+      <mods:title>preceding title</mods:title>
+    </mods:titleInfo>
+  </mods:relatedItem>
+  <mods:relatedItem type="succeeding">
+    <mods:titleInfo>
+      <mods:title>succeeding title</mods:title>
+    </mods:titleInfo>
+  </mods:relatedItem>
+  <mods:originInfo>
+    <mods:dateIssued point="start">12/1/2017</mods:dateIssued>
+    <mods:dateIssued point="end">12/2/2017</mods:dateIssued>
+  </mods:originInfo>
+  <mods:originInfo>
+    <mods:frequency>infrequent</mods:frequency>
+  </mods:originInfo>
+</mods:mods>
+</update>
+</object>
+</bulkMetadata>
