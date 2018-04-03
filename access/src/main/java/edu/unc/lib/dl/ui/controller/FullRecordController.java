@@ -164,7 +164,7 @@ public class FullRecordController extends AbstractSolrSearchController {
             }
 
             LOG.debug("Retrieving supplemental information for container at path "
-            + briefObject.getPath().toString());
+                    + briefObject.getPath().toString());
             SearchResultResponse resultResponse = queryLayer.getFullRecordSupplementalData(briefObject.getPath(),
                     principals, facetsToRetrieve);
 

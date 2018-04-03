@@ -56,7 +56,7 @@ public class RefreshMappingsController {
     @RequestMapping(method = RequestMethod.GET)
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
-        if (globalPermissionEvaluator.hasGlobalPermission(principals, Permission.reindex)) {
+        if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.reindex)) {
             throw new ResourceNotFoundException();
         }
 
