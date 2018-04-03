@@ -50,10 +50,9 @@ public class IndexingMessageProcessor implements Processor {
         Element body = msgBody.getRootElement();
 
         String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
+        PID pid = PIDs.get(pidValue);
         String action = body.getChild("actionType", ATOM_NS).getTextTrim();
         IndexingActionType actionType = IndexingActionType.getAction(action);
-
-        PID pid = PIDs.get(pidValue);
 
         in.setHeader(FCREPO_URI, pid.getRepositoryPath());
         in.setHeader(CdrUpdateAction, actionType.getName());

@@ -35,7 +35,7 @@ public class SolrRouter extends RouteBuilder {
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier(2)
+            .backOffMultiplier("{{error.backOffMultiplier}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("direct-vm:solrIndexing")

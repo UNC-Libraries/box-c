@@ -40,7 +40,7 @@ public class TriplesReindexingRouter extends RouteBuilder {
         onException(Exception.class)
             .redeliveryDelay("{{error.retryDelay}}")
             .maximumRedeliveries("{{error.maxRedeliveries}}")
-            .backOffMultiplier(2)
+            .backOffMultiplier("{{error.backOffMultiplier}}")
             .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         // Route for receiving reindexing request messages
