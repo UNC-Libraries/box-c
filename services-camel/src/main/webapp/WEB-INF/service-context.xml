@@ -197,6 +197,9 @@
     <bean id="cleanupBinaryProcessor" class="edu.unc.lib.dl.services.camel.CleanupBinaryProcessor">
     </bean>
     
+    <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
+    </bean>
+    
     <bean id="fcrepo" class="org.fcrepo.camel.FcrepoComponent">
         <property name="authUsername" value="${fcrepo.authUsername}"/>
         <property name="authPassword" value="${fcrepo.authPassword}"/>
@@ -206,6 +209,10 @@
 
     <camel:camelContext id="FcrepoTriplestoreIndexer">
         <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
+    </camel:camelContext>
+    
+    <camel:camelContext id="CdrServiceTriplesReindexing">
+        <camel:package>edu.unc.lib.dl.services.camel.triplesReindexing</camel:package>
     </camel:camelContext>
 
     <camel:camelContext id="CdrServiceImageEnhancements">
