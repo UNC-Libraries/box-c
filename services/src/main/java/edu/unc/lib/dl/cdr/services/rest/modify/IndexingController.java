@@ -115,7 +115,8 @@ public class IndexingController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace, IndexingService indexingService, String action) {
+    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace, IndexingService indexingService,
+            String action) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", action);
         result.put("pid", id);
