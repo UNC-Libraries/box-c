@@ -16,7 +16,7 @@
 
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 
 import org.apache.camel.BeanInject;
 import org.apache.camel.LoggingLevel;
@@ -43,19 +43,19 @@ public class CdrEventRouter extends RouteBuilder {
         onException(Exception.class)
         .redeliveryDelay("{{error.retryDelay}}")
         .maximumRedeliveries("{{error.maxRedeliveries}}")
-        .backOffMultiplier(2)
+        .backOffMultiplier("{{error.backOffMultiplier}}")
         .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.stream.camel}}")
             .routeId("CdrServiceCdrEvents")
             .log(LoggingLevel.DEBUG, "CDR Event Message received")
             .bean(cdrEventProcessor)
-            .filter(simple("${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.MOVE.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REMOVE.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.ADD.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.REORDER.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.PUBLISH.getName() + "'"
-                    + " || ${headers[" + CdrSolrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE.getName() + "'"))
+            .filter(simple("${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.MOVE.getName() + "'"
+                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.REMOVE.getName() + "'"
+                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.ADD.getName() + "'"
+                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.REORDER.getName() + "'"
+                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.PUBLISH.getName() + "'"
+                    + " || ${headers[" + CdrUpdateAction + "]} contains '" + CDRActions.EDIT_TYPE.getName() + "'"))
             .to("direct:solr-update");
 
         from("direct:solr-update")

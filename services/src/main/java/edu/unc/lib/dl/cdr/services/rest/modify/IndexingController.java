@@ -31,10 +31,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.cdr.services.processing.IndexingService;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.AuthorizationException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.indexing.IndexingService;
 
 /**
  * API controller for reindexing the repository
@@ -48,35 +48,52 @@ public class IndexingController {
     private static final Logger log = LoggerFactory.getLogger(IndexingController.class);
 
     @Autowired
-    private IndexingService indexingService;
+    private IndexingService solrIndexingService;
+
+    @Autowired
+    private IndexingService triplesIndexingService;
 
     /**
-     * Perform a deep reindexing operation on the object with the specified id and all of its children.
+     * Perform a deep reindexing operation in solr on the object with the
+     * specified id and all of its children.
      *
      * @param id the identifier of the object to be reindexed
-     * @param inplace whether the reindex should be an in-place recursive reindex (optional)
+     * @param inplace whether the reindex should be an in-place recursive
+     *            reindex (optional)
      * @return
      */
     @RequestMapping(value = "edit/solr/reindex/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> reindex(@PathVariable("id") String id,
             @RequestParam(value = "inplace", required = false) Boolean inplace) {
-        return indexObjectAndChildren(id, inplace);
+        return indexObjectAndChildren(id, inplace, solrIndexingService, "reindexSolr");
     }
 
     /**
-     * Perform a shallow reindexing of the object specified by id
+     * Perform a shallow reindexing in solr of the object specified by id
      *
      * @param id the identifier of the object to be reindexed
      * @return
      */
     @RequestMapping(value = "edit/solr/update/{id}", method = RequestMethod.POST)
     public ResponseEntity<Object> reindex(@PathVariable("id") String id) {
-        return indexObject(id);
+        return indexObject(id, solrIndexingService, "updateSolr");
     }
 
-    private ResponseEntity<Object> indexObject(String id) {
+    /**
+     * Perform a deep reindexing operation in the triple store on the object
+     * with the specified id.
+     *
+     * @param id the identifier of the object to be reindexed
+     * @return
+     */
+    @RequestMapping(value = "edit/triples/reindex/{id}", method = RequestMethod.POST)
+    public ResponseEntity<Object> reindexTriples(@PathVariable("id") String id) {
+        return indexObjectAndChildren(id, false, triplesIndexingService, "reindexTriples");
+    }
+
+    private ResponseEntity<Object> indexObject(String id, IndexingService indexingService, String action) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "reindex");
+        result.put("action", action);
         result.put("pid", id);
 
         PID objectPid = PIDs.get(id);
@@ -98,9 +115,10 @@ public class IndexingController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace) {
+    private ResponseEntity<Object> indexObjectAndChildren(String id, Boolean inplace, IndexingService indexingService,
+            String action) {
         Map<String, Object> result = new HashMap<>();
-        result.put("action", "reindex");
+        result.put("action", action);
         result.put("pid", id);
 
         PID objectPid = PIDs.get(id);

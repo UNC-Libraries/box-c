@@ -15,9 +15,12 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.CONTENT_BASE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getBaseUri;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentBase;
 
 import java.net.URI;
 import java.util.regex.Matcher;
@@ -86,9 +89,13 @@ public class PIDs {
                 // Reconstruct the repository path from wanted components (excluding things like tx ids)
                 repositoryPath = getRepositoryPath(matcher.group(3), qualifier, componentPath, false);
             } else {
-                log.warn("Invalid path {}, cannot construct PID", value);
-                // Value was an invalid path within the repository
-                return null;
+                // Handle base object paths
+                PID basePid = getBaseResourcePidFromUri(value);
+                if (basePid == null) {
+                    log.warn("Invalid path {}, cannot construct PID", value);
+                }
+                // Return either a pid to a base resource or null if invalid path
+                return basePid;
             }
         } else {
             // Determine if the value matches the pattern for an identifier
@@ -114,14 +121,38 @@ public class PIDs {
                     repositoryPath = getRepositoryPath(id, qualifier, componentPath, false);
                 }
             } else {
-                log.warn("Invalid qualified path {}, cannot construct PID", value);
-                // Not a recognized format for constructing a pid
-                return null;
+                // Handle base object ids
+                PID basePid = getBaseResourcePidFromId(value);
+                if (basePid == null) {
+                    log.warn("Invalid qualified path {}, cannot construct PID", value);
+                }
+                // Return either a pid to a base resource or null if invalid path
+                return basePid;
             }
         }
 
         // Build and return the new pid object
         return new FedoraPID(id, qualifier, componentPath, URI.create(repositoryPath));
+    }
+
+    private static PID getBaseResourcePidFromUri(String uri) {
+        if (getBaseUri().equals(uri)) {
+            return RepositoryPaths.getRootPid();
+        } else if (getContentBase().equals(uri)) {
+            return RepositoryPaths.getContentBasePid();
+        }
+
+        return null;
+    }
+
+    private static PID getBaseResourcePidFromId(String id) {
+        if (REPOSITORY_ROOT_ID.equals(id)) {
+            return RepositoryPaths.getRootPid();
+        } else if (CONTENT_BASE.equals(id)) {
+            return RepositoryPaths.getContentBasePid();
+        }
+
+        return null;
     }
 
     /**

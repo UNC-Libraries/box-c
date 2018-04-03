@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel.cdrEvents;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 
@@ -139,7 +139,7 @@ public class CdrEventRouterTest extends CamelSpringTestSupport {
 
     private static Map<String, Object> createEvent(String action) {
         final Map<String, Object> headers = new HashMap<>();
-        headers.put(CdrSolrUpdateAction, action);
+        headers.put(CdrUpdateAction, action);
 
         return headers;
     }

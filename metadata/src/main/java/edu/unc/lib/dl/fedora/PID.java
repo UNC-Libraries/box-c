@@ -75,6 +75,7 @@ public class PID implements Serializable {
     return uriPrefix + this.pid;
     }
 
+    @Deprecated
     public String getPath() {
         return pid.replace(":", "/");
     }
@@ -97,6 +98,7 @@ public class PID implements Serializable {
         return this.pid;
     }
 
+    @Deprecated
     public static List<PID> toPIDList(List<String> pidStrings) {
         List<PID> pids = new ArrayList<>(pidStrings.size());
         for (String pidString : pidStrings) {

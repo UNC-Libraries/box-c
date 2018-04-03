@@ -36,7 +36,7 @@ public class SolrUpdateRouter extends RouteBuilder {
         onException(Exception.class)
         .redeliveryDelay("{{error.retryDelay}}")
         .maximumRedeliveries("{{error.maxRedeliveries}}")
-        .backOffMultiplier(2)
+        .backOffMultiplier("{{error.backOffMultiplier}}")
         .retryAttemptedLogLevel(LoggingLevel.WARN);
 
         from("{{cdr.solrupdate.stream.camel}}")

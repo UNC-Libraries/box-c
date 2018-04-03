@@ -13,45 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.services.camel.cdrEvents;
+package edu.unc.lib.dl.services.camel.triplesReindexing;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 import static edu.unc.lib.dl.xml.JDOMNamespaceUtil.ATOM_NS;
+import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.jdom2.Document;
+import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.services.camel.util.MessageUtil;
+import edu.unc.lib.dl.util.IndexingActionType;
 
 /**
- * Processes CDR Events, extracting the body and headers
+ * Processes an indexing message into actionable headers.
  *
- * @author lfarrell
+ * @author bbpennel
  *
  */
-public class CdrEventProcessor implements Processor {
+public class IndexingMessageProcessor implements Processor {
+    final Logger log = LoggerFactory.getLogger(IndexingMessageProcessor.class);
+
     @Override
     public void process(Exchange exchange) throws Exception {
+        log.debug("Processing solr update");
         final Message in = exchange.getIn();
-        Document document = MessageUtil.getDocumentBody(in);
-        if (document == null) {
-            return;
-        }
 
-        String actionType = document.getRootElement().getChildTextTrim("title", ATOM_NS);
-        if (actionType == null) {
-            in.setHeader(CdrUpdateAction, null);
-            return;
-        }
-        in.setHeader(CdrUpdateAction, actionType);
+        Document msgBody = MessageUtil.getDocumentBody(in);
+        Element body = msgBody.getRootElement();
 
-        String author = document.getRootElement().getChildTextTrim("name", ATOM_NS);
-        in.setHeader("name", author);
+        String pidValue = body.getChild("pid", ATOM_NS).getTextTrim();
+        PID pid = PIDs.get(pidValue);
+        String action = body.getChild("actionType", ATOM_NS).getTextTrim();
+        IndexingActionType actionType = IndexingActionType.getAction(action);
 
-        // Pass the body document along for future processors
-        in.setBody(document);
+        in.setHeader(FCREPO_URI, pid.getRepositoryPath());
+        in.setHeader(CdrUpdateAction, actionType.getName());
     }
-
 }

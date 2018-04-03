@@ -1,4 +1,4 @@
-package edu.unc.lib.dl.cdr.services.processing;
+package edu.unc.lib.dl.persist.services.indexing;
 /**
  * Copyright 2008 The University of North Carolina at Chapel Hill
  *
@@ -41,6 +41,7 @@ import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.indexing.IndexingService;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
 

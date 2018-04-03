@@ -16,7 +16,7 @@
 
 package edu.unc.lib.dl.services.camel.solr;
 
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrSolrUpdateAction;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrUpdateAction;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.ADD;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.MOVE;
 import static edu.unc.lib.dl.util.JMSMessageUtil.CDRActions.PUBLISH;
@@ -72,7 +72,7 @@ public class CdrEventToSolrUpdateProcessor implements Processor {
         }
 
         String targetId = JMSMessageUtil.getPid(body);
-        String solrActionType = (String) in.getHeader(CdrSolrUpdateAction);
+        String solrActionType = (String) in.getHeader(CdrUpdateAction);
         String userid = (String) in.getHeader("name");
 
         if (solrActionType == null || solrActionType.equals("none")) {

@@ -57,7 +57,7 @@ public class SolrUpdateProcessor implements Processor {
         Element body = msgBody.getRootElement();
 
         String pid = body.getChild("pid", ATOM_NS).getTextTrim();
-        String action = body.getChild("solrActionType", ATOM_NS).getTextTrim();
+        String action = body.getChild("actionType", ATOM_NS).getTextTrim();
         IndexingActionType actionType = IndexingActionType.getAction(action);
 
         List<String> children = null;

@@ -15,13 +15,47 @@
         http://activemq.apache.org/schema/core/activemq-core.xsd
         http://camel.apache.org/schema/spring
         http://camel.apache.org/schema/spring/camel-spring.xsd">
-        
+    
     <bean id="properties" class="org.apache.camel.component.properties.PropertiesComponent">
-        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+        <property name="location" value="classpath:triples-reindexing-it-config.properties"/>
     </bean>
     
     <bean id="bridgePropertyPlaceholder" class="org.apache.camel.spring.spi.BridgePropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:cdr-event-routing-it-config.properties"/>
+        <property name="location" value="classpath:triples-reindexing-it-config.properties"/>
+    </bean>
+    
+    <bean id="fusekiPort" class="java.lang.String">
+        <constructor-arg value="${triplestore.port}" />
+    </bean>
+    
+    <bean id="indexingEndpoint" class="java.lang.String">
+        <constructor-arg value="${triplestore.reindex.stream}" />
+    </bean>
+    
+    <bean id="indexingMessageProcessor" class="edu.unc.lib.dl.services.camel.triplesReindexing.IndexingMessageProcessor">
+    </bean>
+
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.FusekiSparqlQueryServiceImpl" >
+        <property name="fusekiQueryURL" value="${triplestore.datasetUri}" />
+    </bean>
+    
+    <bean id="triplesUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
+        <property name="connectionFactory" ref="jmsFactory" />
+        <property name="defaultDestinationName" value="${cdr.triplesupdate.stream}" />
+        <property name="pubSubDomain" value="false" />
+    </bean>
+    
+    <bean id="triplesIndexingMessageSender" class="edu.unc.lib.dl.services.IndexingMessageSender" >
+        <property name="jmsTemplate" ref="triplesUpdateJmsTemplate" />
+    </bean>
+    
+    <bean id="triplesIndexingService" class="edu.unc.lib.dl.persist.services.indexing.IndexingService" >
+        <property name="aclService" ref="aclService" />
+        <property name="indexingMessageSender" ref="triplesIndexingMessageSender" />
+    </bean>
+    
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.service.AccessControlService" />
     </bean>
     
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
@@ -44,51 +78,12 @@
             <amq:transportConnector uri="vm://localhost:61616" />
         </amq:transportConnectors>
     </amq:broker>
-
-    <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.solrupdate.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-
-    <bean id="cdrEventsJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
-        <property name="connectionFactory" ref="jmsFactory" />
-        <property name="defaultDestinationName" value="${cdr.stream}" />
-        <property name="pubSubDomain" value="false" />
-    </bean>
-
-    <bean id="operationsMessageSender" class="edu.unc.lib.dl.services.OperationsMessageSender">
-        <property name="jmsTemplate" ref="cdrEventsJmsTemplate" />
-    </bean>
-
-    <bean id="abstractMessageSender" class="edu.unc.lib.dl.services.AbstractMessageSender"
-        abstract="true">
-        <property name="jmsTemplate" ref="solrUpdateJmsTemplate" />
-    </bean>
-
-    <bean id="indexingMessageSender" parent="abstractMessageSender"
-        class="edu.unc.lib.dl.services.IndexingMessageSender">
-    </bean>
-
-    <bean id="cdrEventProcessor"
-        class="edu.unc.lib.dl.services.camel.cdrEvents.CdrEventProcessor">
-    </bean>
-
-    <bean id="cdrEventToSolrUpdateProcessor"
-        class="edu.unc.lib.dl.services.camel.solr.CdrEventToSolrUpdateProcessor">
-        <property name="indexingMessageSender" ref="indexingMessageSender" />
-    </bean>
-
-    <bean id="solrUpdateProcessor"
-        class="edu.unc.lib.dl.services.camel.solrUpdate.SolrUpdateProcessor">
-    </bean>
-
-    <camel:camelContext id="cdrServiceCdrEvents">
-        <camel:package>edu.unc.lib.dl.services.camel.cdrEvents</camel:package>
+    
+    <camel:camelContext id="fcrepoTriplestoreIndexer">
+        <camel:package>org.fcrepo.camel.indexing.triplestore</camel:package>
     </camel:camelContext>
 
-    <camel:camelContext id="cdrServiceSolrUpdate">
-        <camel:package>edu.unc.lib.dl.services.camel.solrUpdate</camel:package>
+    <camel:camelContext id="cdrServiceTriplesReindexing">
+        <camel:package>edu.unc.lib.dl.services.camel.triplesReindexing</camel:package>
     </camel:camelContext>
-  
 </beans>
