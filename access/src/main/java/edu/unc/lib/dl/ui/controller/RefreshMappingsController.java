@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -25,8 +27,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import edu.unc.lib.dl.acl.util.AccessGroupConstants;
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.HeaderMenuSettings;
 import edu.unc.lib.dl.ui.util.LookupMappingsSettings;
@@ -38,7 +41,7 @@ import edu.unc.lib.dl.ui.view.XSLViewResolver;
  */
 @Controller
 @RequestMapping("/refreshMappings")
-public class RefreshMappingsController extends CDRBaseController {
+public class RefreshMappingsController {
     private static final Logger LOG = LoggerFactory.getLogger(RefreshMappingsController.class);
 
     @Autowired(required = true)
@@ -47,10 +50,13 @@ public class RefreshMappingsController extends CDRBaseController {
     @Autowired
     private HeaderMenuSettings headerMenuSettings;
 
+    @Autowired
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
+
     @RequestMapping(method = RequestMethod.GET)
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        AccessGroupSet accessGroups = getUserAccessGroups(request);
-        if (!accessGroups.contains(AccessGroupConstants.ADMIN_GROUP)) {
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        if (!globalPermissionEvaluator.hasGlobalPermission(principals, Permission.reindex)) {
             throw new ResourceNotFoundException();
         }
 

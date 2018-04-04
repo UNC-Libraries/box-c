@@ -43,7 +43,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -64,7 +63,6 @@ import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
-import edu.unc.lib.dl.ui.util.AccessUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
@@ -842,70 +840,6 @@ public class SolrQueryLayerService extends SolrSearchService {
                 }
             }
         }
-    }
-
-    /**
-     * Checks if an item is accessible given the specified access restrictions
-     *
-     * @param idRequest
-     * @param accessType
-     * @return
-     */
-    public boolean isAccessible(SimpleIdRequest idRequest) {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-
-        PID pid = new PID(idRequest.getId());
-        String id = pid.getId();
-        String[] idParts = id.split("/");
-        String datastream = null;
-        if (idParts.length > 1) {
-            id = idParts[0];
-            datastream = idParts[1];
-            solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.ROLE_GROUP.name()));
-        }
-
-        query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name()))
-                .append(':').append(SolrSettings.sanitize(id));
-
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query, idRequest.getAccessGroups());
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error(e.getMessage());
-            return false;
-        }
-
-        solrQuery.setQuery(query.toString());
-        if (datastream == null) {
-            solrQuery.setRows(0);
-        } else {
-            solrQuery.setRows(1);
-        }
-
-        solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.ID.name()));
-
-        LOG.debug("getObjectById query: " + solrQuery.toString());
-        try {
-            queryResponse = this.executeQuery(solrQuery);
-            if (queryResponse.getResults().getNumFound() == 0) {
-                return false;
-            }
-            if (datastream == null) {
-                return true;
-            }
-
-            List<BriefObjectMetadataBean> results = queryResponse.getBeans(BriefObjectMetadataBean.class);
-            BriefObjectMetadataBean metadata = results.get(0);
-
-            return AccessUtil.permitDatastreamAccess(idRequest.getAccessGroups(), datastream, metadata);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request: " + e);
-        }
-
-        return false;
     }
 
     /**

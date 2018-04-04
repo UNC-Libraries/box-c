@@ -23,16 +23,14 @@
 <c:if test="${not empty briefObject && cdr:contains(briefObject.status, 'Deleted') || cdr:contains(briefObject.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
 </c:if>
-<c:if test="${not empty briefObject && (not cdr:hasPatronRoleForPublicGroup(briefObject) || not empty briefObject.activeEmbargo)}">
+<c:set var="allowsPublicAccess" value="${permsHelper.allowsPublicAccess(briefObject)}" />
+<c:if test="${not empty briefObject && (not allowsPublicAccess || not empty briefObject.activeEmbargo)}">
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
 <div class="content-wrap full_record ${isDeleted}${' '}${isProtected}">
 <c:import url="fullRecord/navigationBar.jsp" />
 <c:choose>
-	<c:when test="${requestScope.listAccess == true}">
-		<c:import url="fullRecord/listAccessRecord.jsp" />
-	</c:when>
 	<c:when test="${briefObject.resourceType == searchSettings.resourceTypeCollection || briefObject.resourceType == searchSettings.resourceTypeFolder}">
 		<script>
 			var require = {

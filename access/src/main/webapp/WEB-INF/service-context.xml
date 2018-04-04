@@ -59,6 +59,10 @@
         init-method="init">
         <property name="sourcePaths" value="#{externalContentSettings.list('mapping')}" />
     </bean>
+    
+    <bean id="permsHelper" class="edu.unc.lib.dl.ui.service.PermissionsHelper">
+        <property name="accessControlService" ref="aclService" />
+    </bean>
 
     <!-- Beans -->
     
@@ -106,6 +110,7 @@
                 <value>headerMenuSettings</value>
                 <value>searchSettings</value>
                 <value>externalContentSettings</value>
+                <value>permsHelper</value>
                 <value>fedoraUtil</value>
                 <value>gaTrackingID</value>
                 <value>accessBaseUrl</value>

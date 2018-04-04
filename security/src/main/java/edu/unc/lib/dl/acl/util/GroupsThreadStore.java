@@ -27,6 +27,7 @@ public abstract class GroupsThreadStore {
     private static ThreadLocal<String> username = new ThreadLocal<>();
     private static ThreadLocal<String> groupString = new ThreadLocal<>();
     private static ThreadLocal<String> email = new ThreadLocal<>();
+    private static ThreadLocal<AgentPrincipals> agentPrincipals = new ThreadLocal<>();
 
     /**
      * Adds groups for forwarding with subsequent invocation of fedora clients
@@ -34,20 +35,31 @@ public abstract class GroupsThreadStore {
      * thread until <code>clearGroups</code> is called by the same thread.
      * Please use set/clear within a try/finally or take similar measures to
      * make sure that groups are cleared.
-     * 
+     *
      * @param groups
      */
     public static void storeGroups(AccessGroupSet groups) {
         GroupsThreadStore.groups.set(groups);
         if (groups != null) {
             GroupsThreadStore.groupString.set(groups.joinAccessGroups(";"));
+            GroupsThreadStore.agentPrincipals.remove();
         }
     }
 
+    /**
+     * Get group principals for the agent on the current thread.
+     *
+     * @return groups
+     */
     public static AccessGroupSet getGroups() {
         return GroupsThreadStore.groups.get();
     }
 
+    /**
+     * Get a string representation of the group principals for the agent on the current thread
+     *
+     * @return string representation of groups
+     */
     public static String getGroupString() {
         return GroupsThreadStore.groupString.get();
     }
@@ -58,22 +70,57 @@ public abstract class GroupsThreadStore {
     public static void clearGroups() {
         GroupsThreadStore.groups.remove();
         GroupsThreadStore.groupString.remove();
+        GroupsThreadStore.agentPrincipals.remove();
     }
 
+    /**
+     * Store a username for the agent on the current thread.
+     *
+     * @param username
+     */
     public static void storeUsername(String username) {
         GroupsThreadStore.username.set(username);
+        GroupsThreadStore.agentPrincipals.remove();
     }
 
+    /**
+     * Get the username of the agent on the current thread.
+     *
+     * @return
+     */
     public static String getUsername() {
         return GroupsThreadStore.username.get();
     }
 
+    /**
+     * Store the email address of the agent on the current thread.
+     *
+     * @param email
+     */
     public static void storeEmail(String email) {
         GroupsThreadStore.email.set(email);
     }
 
+    /**
+     * Get the email address of the agent on the current thread.
+     *
+     * @return
+     */
     public static String getEmail() {
         return GroupsThreadStore.email.get();
+    }
+
+    /**
+     * Get all principals for the agent on the current thread.
+     *
+     * @return
+     */
+    public static AgentPrincipals getAgentPrincipals() {
+        AgentPrincipals principals = GroupsThreadStore.agentPrincipals.get();
+        if (principals == null) {
+            principals = new AgentPrincipals(username.get(), groups.get());
+        }
+        return principals;
     }
 
     /**
@@ -83,10 +130,14 @@ public abstract class GroupsThreadStore {
         GroupsThreadStore.username.remove();
     }
 
+    /**
+     * Clear all fields stored for the agent on the current thread.
+     */
     public static void clearStore() {
         GroupsThreadStore.groups.remove();
         GroupsThreadStore.username.remove();
         GroupsThreadStore.groupString.remove();
         GroupsThreadStore.email.remove();
+        GroupsThreadStore.agentPrincipals.remove();
     }
 }

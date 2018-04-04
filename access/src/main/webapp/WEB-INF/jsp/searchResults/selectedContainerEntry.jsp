@@ -85,14 +85,9 @@
 				</c:when>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeAggregate}">
 					<c:choose>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
+						<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, metadata)}">
 							<div class="actionlink right download">
 								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
-							</div>
-						</c:when>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
-							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
 							</div>
 						</c:when>
 						<c:otherwise>

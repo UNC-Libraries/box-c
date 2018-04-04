@@ -41,7 +41,7 @@
 			<c:param name="target" value="record" />
 			<c:param name="size" value="large" />
 		</c:import>
-		<c:if test="${cdr:hasAccess(accessGroupSet, briefObject, 'editDescription')}">
+		<c:if test="${permsHelper.hasEditAccess(accessGroupSet, briefObject)}">
 			<div class="actionlink right"><a href="${adminBaseUrl}/describe/${briefObject.id}">Edit</a></div>
 		</c:if>
 		

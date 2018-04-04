@@ -21,12 +21,11 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="cdr" uri="http://cdr.lib.unc.edu/cdrUI" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<jsp:useBean id="accessGroupConstants" class="edu.unc.lib.dl.acl.util.AccessGroupConstants" scope="request"/>
 
 <c:if test="${cdr:contains(metadata.status, 'Deleted') || cdr:contains(metadata.status, 'Parent Deleted')}">
 	<c:set var="isDeleted" value="deleted" scope="page"/>
 </c:if>
-<c:if test="${not empty metadata && (not cdr:hasPatronRoleForPublicGroup(metadata) || not empty metadata.activeEmbargo)}">
+<c:if test="${not empty metadata && (not permsHelper.allowsPublicAccess(metadata) || not empty metadata.activeEmbargo)}">
 	<c:set var="isProtected" value="protected" scope="page"/>
 </c:if>
 
@@ -38,7 +37,6 @@
 		<c:set var="childCount" value="0"/>
 	</c:otherwise>
 </c:choose>
-<c:set var="hasListAccessOnly" value="${cdr:hasListAccessOnly(requestScope.accessGroupSet, metadata)}"/>
 <c:set var="embargoDate" value="${metadata.activeEmbargo}"/>
 <div id="entry${metadata.id}" class="searchitem ${isDeleted}${' '}${isProtected}">
 	<div class="contentarea">
@@ -74,17 +72,10 @@
 				<%-- Metadata body for containers --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeCollection || metadata.resourceType == searchSettings.resourceTypeFolder}">
 					<h2>
-						<c:choose>
-							<c:when test="${hasListAccessOnly}">
-								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>&nbsp;<span class="searchitem_container_count">(access by request)</span>
-							</c:when>
-							<c:otherwise>
-								<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
-								<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
-									<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
-								</c:if>
-							</c:otherwise>
-						</c:choose>
+						<a href="<c:out value='${primaryActionUrl}' />" title="${primaryActionTooltip}" class="has_tooltip"><c:out value="${metadata.title}"/></a>
+						<c:if test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
+							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+						</c:if>
 					</h2>
 					
 					<div class="halfwidth">
@@ -117,17 +108,10 @@
 				<%-- Metadata body for items --%>
 				<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 					<h2>
-						<c:choose>
-							<c:when test="${hasListAccessOnly}">
-								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
-							</c:when>
-							<c:otherwise>
-								<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
-								<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
-									<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
-								</c:if>
-							</c:otherwise>
-						</c:choose>
+						<a href="<c:out value='${primaryActionUrl}' />"><c:out value="${metadata.title}"/></a>
+						<c:if test="${metadata.resourceType == searchSettings.resourceTypeAggregate && childCount > 1}">
+							<span class="searchitem_container_count">(${childCount} item<c:if test="${childCount != 1}">s</c:if>)</span>
+						</c:if>
 					</h2>
 					<div class="halfwidth">
 						<c:if test="${not empty metadata.creator}">
@@ -173,20 +157,6 @@
 		</div>
 		<%-- Action buttons --%>
 		<c:choose>
-			<c:when test="${hasListAccessOnly}">
-				<div class="containerinfo">
-					<ul>
-						<c:if test="${not empty loginUrl}">
-							<li><a href="<c:out value='${loginUrl}' />">Log in</a> or</li>
-						</c:if>
-						<li>
-							<a href="${contactUrl}&requestpid=${metadata.pid.pid}" 
-								title="Contact us to request access to this item">Request Access</a>
-						</li>
-						<li>${metadata.resourceType}</li>
-					</ul>
-				</div>
-			</c:when>
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFolder}">
 				<div class="containerinfo">
 					<c:url var="structureUrl" scope="page" value='structure/${metadata.id}'/>
@@ -209,14 +179,9 @@
 			<c:when test="${metadata.resourceType == searchSettings.resourceTypeFile || metadata.resourceType == searchSettings.resourceTypeAggregate}">
 				<div class="fileinfo">
 					<c:choose>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'DATA_FILE', metadata)}">
+						<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, metadata)}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
-							</div>
-						</c:when>
-						<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'SURROGATE', metadata)}">
-							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'SURROGATE', fedoraUtil)}">Preview</a>
+								<a href="${cdr:getDatastreamUrl(metadata, 'original_file', fedoraUtil)}?dl=true">Download</a>
 							</div>
 						</c:when>
 						<c:when test="${not empty embargoDate}">
@@ -244,7 +209,7 @@
 						</p>
 					</c:if>
 					
-					<c:if test="${!cdr:contains(metadata.readGroup, accessGroupConstants.PUBLIC_GROUP)}">
+					<c:if test="${not permsHelper.allowsPublicAccess(metadata)}">
 						<p class="right">
 							Restricted Access
 						</p>
