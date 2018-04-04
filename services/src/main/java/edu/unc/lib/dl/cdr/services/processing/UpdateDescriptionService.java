@@ -45,6 +45,9 @@ public class UpdateDescriptionService {
     private OperationsMessageSender operationsMessageSender;
     private MODSValidator modsValidator;
 
+    public UpdateDescriptionService() {
+    }
+
     /**
      * Updates the MODS description of a single object
      *
