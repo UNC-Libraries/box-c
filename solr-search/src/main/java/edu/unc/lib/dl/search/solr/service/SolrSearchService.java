@@ -15,7 +15,8 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import java.io.IOException;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -24,7 +25,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -52,7 +52,6 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -64,28 +63,14 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  *
  * @author bbpennel
  */
-public class SolrSearchService {
+public class SolrSearchService extends AbstractQueryService {
     private static final Logger LOG = LoggerFactory.getLogger(SolrSearchService.class);
 
-    private SolrClient solrClient;
-    @Autowired
-    protected SolrSettings solrSettings;
-    @Autowired
-    protected SearchSettings searchSettings;
     @Autowired
     protected FacetFieldFactory facetFieldFactory;
     protected FacetFieldUtil facetFieldUtil;
 
-    private AccessRestrictionUtil restrictionUtil;
-
     public SolrSearchService() {
-    }
-
-    /**
-     * Establish the SolrServer object according to the configuration specified in settings.
-     */
-    protected void initializeSolrServer() {
-        solrClient = solrSettings.getSolrClient();
     }
 
     /**
@@ -306,22 +291,6 @@ public class SolrSearchService {
     }
 
     /**
-     * Wrapper method for executing a solr query.
-     *
-     * @param query
-     * @return
-     * @throws SolrServerException
-     */
-    protected QueryResponse executeQuery(SolrQuery query) throws SolrServerException {
-        try {
-            return solrClient.query(query);
-        } catch (IOException e) {
-            throw new SolrServerException(e);
-        }
-
-    }
-
-    /**
      * Constructs a SolrQuery object from the search state specified within a
      * SearchRequest object. The request may optionally request to retrieve
      * facet results in addition to search results.
@@ -396,7 +365,7 @@ public class SolrSearchService {
         addSort(solrQuery, searchState.getSortType(), searchState.getSortNormalOrder());
 
         // Set requested resource types
-        String resourceTypeFilter = this.getResourceTypeFilter(searchState.getResourceTypes());
+        String resourceTypeFilter = makeFilter(RESOURCE_TYPE, searchState.getResourceTypes());
         if (resourceTypeFilter != null) {
             solrQuery.addFilterQuery(resourceTypeFilter);
         }
@@ -702,32 +671,6 @@ public class SolrSearchService {
         return response;
     }
 
-    /**
-     * Generates a solr query style string to add a resource type filter for the given list of resources types.
-     *
-     * @param resourceTypes
-     * @return
-     */
-    protected String getResourceTypeFilter(List<String> resourceTypes) {
-        if (resourceTypes == null || resourceTypes.size() == 0) {
-            return null;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        boolean firstType = true;
-        String resourceTypeLabel = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name());
-        Iterator<String> resourceTypeIt = resourceTypes.iterator();
-        while (resourceTypeIt.hasNext()) {
-            if (firstType) {
-                firstType = false;
-            } else {
-                sb.append(" OR ");
-            }
-            sb.append(resourceTypeLabel).append(':').append(resourceTypeIt.next()).append(' ');
-        }
-        return sb.toString();
-    }
-
     public Map<String, Object> getFields(String pid, List<String> fields) throws SolrServerException {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
@@ -789,50 +732,11 @@ public class SolrSearchService {
         return fieldValues;
     }
 
-    protected void addFilter(StringBuilder query, SearchFieldKeys fieldKey, String value) {
-        query.append(solrField(fieldKey)).append(':')
-                .append(SolrSettings.sanitize(value));
-    }
-
-    protected String solrField(SearchFieldKeys fieldKey) {
-        return solrSettings.getFieldName(fieldKey.name());
-    }
-
-    public SolrSettings getSolrSettings() {
-        return solrSettings;
-    }
-
-    public void setSolrSettings(SolrSettings solrSettings) {
-        this.solrSettings = solrSettings;
-    }
-
-    public SearchSettings getSearchSettings() {
-        return searchSettings;
-    }
-
-    public void setSearchSettings(SearchSettings searchSettings) {
-        this.searchSettings = searchSettings;
-    }
-
     public void setFacetFieldFactory(FacetFieldFactory facetFieldFactory) {
         this.facetFieldFactory = facetFieldFactory;
     }
 
     public void setFacetFieldUtil(FacetFieldUtil facetFieldUtil) {
         this.facetFieldUtil = facetFieldUtil;
-    }
-
-    /**
-     * @param solrClient the solrClient to set
-     */
-    public void setSolrClient(SolrClient solrClient) {
-        this.solrClient = solrClient;
-    }
-
-    /**
-     * @param restrictionUtil the restrictionUtil to set
-     */
-    public void setAccessRestrictionUtil(AccessRestrictionUtil restrictionUtil) {
-        this.restrictionUtil = restrictionUtil;
     }
 }
