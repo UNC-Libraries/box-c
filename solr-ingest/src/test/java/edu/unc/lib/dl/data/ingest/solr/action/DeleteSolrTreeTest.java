@@ -28,13 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.test.TestCorpus;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 import edu.unc.lib.dl.test.TestHelpers;
@@ -49,7 +49,7 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
     protected TestCorpus corpus;
 
     @Mock
-    private GlobalPermissionEvaluator globalPermissionEvaluator;
+    private AccessRestrictionUtil restrictionUtil;
 
     private SearchSettings searchSettings;
     private SolrSettings solrSettings;
@@ -77,10 +77,9 @@ public class DeleteSolrTreeTest extends BaseEmbeddedSolrTest {
         searchSettings.setProperties(searchProps);
 
         solrSearchService = new SolrSearchService();
-        solrSearchService.setDisablePermissionFiltering(true);
         solrSearchService.setSolrSettings(solrSettings);
         solrSearchService.setSearchSettings(searchSettings);
-        solrSearchService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        solrSearchService.setAccessRestrictionUtil(restrictionUtil);
         TestHelpers.setField(solrSearchService, "solrClient", server);
 
         action = new DeleteSolrTreeAction();

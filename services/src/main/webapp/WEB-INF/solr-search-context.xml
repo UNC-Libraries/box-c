@@ -67,6 +67,12 @@
         <property name="facetFieldFactory" ref="facetFieldFactory" />
     </bean>
     
+    <bean id="solrAccessRestrictionUtil" class="edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="disablePermissionFiltering" value="false" />
+        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+    </bean>
+    
     <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
         init-method="initializeSolrServer">
         <property name="solrSettings" ref="solrSettings" />
@@ -74,8 +80,7 @@
         <property name="searchStateFactory" ref="searchStateFactory" />
         <property name="facetFieldUtil" ref="facetFieldUtil" />
         <property name="pathFactory" ref="objectPathFactory" />
-        <property name="disablePermissionFiltering" value="false" />
-        <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
     </bean>
     
     <bean id="objectPathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">

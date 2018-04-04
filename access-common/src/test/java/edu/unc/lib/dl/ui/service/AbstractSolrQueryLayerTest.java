@@ -35,11 +35,11 @@ import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
+import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
@@ -56,7 +56,7 @@ public class AbstractSolrQueryLayerTest {
     protected SolrQueryLayerService queryLayer;
 
     @Mock
-    protected GlobalPermissionEvaluator globalPermissionEvaluator;
+    private AccessRestrictionUtil restrictionUtil;
     protected SearchStateFactory stateFactory;
     protected SearchSettings searchSettings;
     protected SolrSettings solrSettings;
@@ -107,7 +107,7 @@ public class AbstractSolrQueryLayerTest {
         queryLayer.setSolrSettings(solrSettings);
         queryLayer.setSearchStateFactory(stateFactory);
         queryLayer.setFacetFieldUtil(facetUtil);
-        queryLayer.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        queryLayer.setAccessRestrictionUtil(restrictionUtil);
         setField(queryLayer, "solrClient", server);
     }
 

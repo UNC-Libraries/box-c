@@ -26,13 +26,13 @@ import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.data.ingest.solr.ProcessingStatus;
 import edu.unc.lib.dl.data.ingest.solr.SolrUpdateRequest;
 import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.test.TestHelpers;
 
@@ -49,17 +49,16 @@ public class IndexTreeInplaceActionTest extends UpdateTreeActionTest {
 
     private SolrSearchService solrSearchService;
     @Mock
-    private GlobalPermissionEvaluator globalPermissionEvaluator;
+    private AccessRestrictionUtil restrictionUtil;
 
     @Before
     public void setupInplace() throws Exception {
         ((IndexTreeInplaceAction) action).setSolrSettings(solrSettings);
 
         solrSearchService = new SolrSearchService();
-        solrSearchService.setDisablePermissionFiltering(true);
         solrSearchService.setSolrSettings(solrSettings);
         solrSearchService.setSearchSettings(searchSettings);
-        solrSearchService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        solrSearchService.setAccessRestrictionUtil(restrictionUtil);
         TestHelpers.setField(solrSearchService, "solrClient", server);
 
         action.setSolrSearchService(solrSearchService);

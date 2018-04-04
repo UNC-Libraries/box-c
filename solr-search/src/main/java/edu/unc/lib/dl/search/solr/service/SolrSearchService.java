@@ -18,7 +18,6 @@ package edu.unc.lib.dl.search.solr.service;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,23 +39,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
@@ -80,9 +76,7 @@ public class SolrSearchService {
     protected FacetFieldFactory facetFieldFactory;
     protected FacetFieldUtil facetFieldUtil;
 
-    private boolean disablePermissionFiltering;
-
-    protected GlobalPermissionEvaluator globalPermissionEvaluator;
+    private AccessRestrictionUtil restrictionUtil;
 
     public SolrSearchService() {
     }
@@ -254,22 +248,6 @@ public class SolrSearchService {
     /**
      * Adds access restrictions to the provided query string buffer. If there
      * are no access groups in the provided group set, then an
-     * AccessRestrictionException is thrown.
-     *
-     * @param query
-     *            string buffer containing the query to append access groups to.
-     * @return The original query restricted to results available to the
-     *         provided access groups
-     * @throws AccessRestrictionException
-     *             thrown if no groups are provided.
-     */
-    public StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
-        return this.addAccessRestrictions(query, null);
-    }
-
-    /**
-     * Adds access restrictions to the provided query string buffer. If there
-     * are no access groups in the provided group set, then an
      * AccessRestrictionException is thrown as it is invalid for a user to have
      * no permissions. If the user is an admin, then do not restrict access
      *
@@ -284,32 +262,7 @@ public class SolrSearchService {
      */
     public StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
             throws AccessRestrictionException {
-        // Skip adding permission filters if disabled for this search service
-        if (disablePermissionFiltering) {
-            return query;
-        }
-
-        // Agent must provide access groups
-        if (accessGroups == null || accessGroups.size() == 0) {
-            accessGroups = GroupsThreadStore.getGroups();
-            if (accessGroups == null || accessGroups.size() == 0) {
-                throw new AccessRestrictionException("No access groups were provided.");
-            }
-        }
-
-        // If the agent has any global permissions then no filtering is necessary.
-        if (globalPermissionEvaluator.hasGlobalPrincipal(accessGroups)) {
-            return query;
-        }
-
-        boolean allowPatronAccess = searchSettings.getAllowPatronAccess();
-        String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
-        if (allowPatronAccess) {
-            query.append(" AND (").append("readGroup:(").append(joinedGroups).append(')')
-                    .append(" OR adminGroup:(").append(joinedGroups).append("))");
-        } else {
-            query.append(" AND adminGroup:(").append(joinedGroups).append(')');
-        }
+        restrictionUtil.add(query, accessGroups);
         return query;
     }
 
@@ -836,6 +789,15 @@ public class SolrSearchService {
         return fieldValues;
     }
 
+    protected void addFilter(StringBuilder query, SearchFieldKeys fieldKey, String value) {
+        query.append(solrField(fieldKey)).append(':')
+                .append(SolrSettings.sanitize(value));
+    }
+
+    protected String solrField(SearchFieldKeys fieldKey) {
+        return solrSettings.getFieldName(fieldKey.name());
+    }
+
     public SolrSettings getSolrSettings() {
         return solrSettings;
     }
@@ -861,23 +823,16 @@ public class SolrSearchService {
     }
 
     /**
-     * @param globalPermissionEvaluator the globalPermissionEvaluator to set
-     */
-    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
-        this.globalPermissionEvaluator = globalPermissionEvaluator;
-    }
-
-    /**
-     * @param disablePermissionFiltering the disablePermissionFiltering to set
-     */
-    public void setDisablePermissionFiltering(boolean disablePermissionFiltering) {
-        this.disablePermissionFiltering = disablePermissionFiltering;
-    }
-
-    /**
      * @param solrClient the solrClient to set
      */
     public void setSolrClient(SolrClient solrClient) {
         this.solrClient = solrClient;
+    }
+
+    /**
+     * @param restrictionUtil the restrictionUtil to set
+     */
+    public void setAccessRestrictionUtil(AccessRestrictionUtil restrictionUtil) {
+        this.restrictionUtil = restrictionUtil;
     }
 }

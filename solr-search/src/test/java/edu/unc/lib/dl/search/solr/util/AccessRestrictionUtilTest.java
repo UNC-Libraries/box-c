@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.search.solr.service;
+package edu.unc.lib.dl.search.solr.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anySetOf;
@@ -27,20 +27,17 @@ import org.mockito.Mock;
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
 
 /**
  *
  * @author bbpennel
  *
  */
-public class SolrSearchServiceTest {
+public class AccessRestrictionUtilTest {
 
     private final static String BASE_QUERY = "*:*";
-
     private final static String ACCESS_GROUP = "group";
 
-    private SolrSearchService searchService;
     @Mock
     private GlobalPermissionEvaluator globalPermissionEvaluator;
     @Mock
@@ -48,23 +45,25 @@ public class SolrSearchServiceTest {
 
     private AccessGroupSet accessGroups;
 
+    private AccessRestrictionUtil restrictionUtil;
+
     @Before
     public void init() throws Exception {
         initMocks(this);
 
-        searchService = new SolrSearchService();
-        searchService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
-        searchService.setSearchSettings(searchSettings);
+        restrictionUtil = new AccessRestrictionUtil();
+        restrictionUtil.setGlobalPermissionEvaluator(globalPermissionEvaluator);
+        restrictionUtil.setSearchSettings(searchSettings);
 
         accessGroups = new AccessGroupSet(ACCESS_GROUP);
     }
 
     @Test
     public void addAccessDisabledTest() {
-        searchService.setDisablePermissionFiltering(true);
+        restrictionUtil.setDisablePermissionFiltering(true);
 
-        StringBuilder query = searchService.addAccessRestrictions(
-                new StringBuilder(BASE_QUERY), accessGroups);
+        StringBuilder query = new StringBuilder(BASE_QUERY);
+        restrictionUtil.add(query, accessGroups);
 
         assertEquals(BASE_QUERY, query.toString());
     }
@@ -73,16 +72,16 @@ public class SolrSearchServiceTest {
     public void addAccessNoGroupsTest() {
         accessGroups = new AccessGroupSet();
 
-        searchService.addAccessRestrictions(
-                new StringBuilder(BASE_QUERY), accessGroups);
+        StringBuilder query = new StringBuilder(BASE_QUERY);
+        restrictionUtil.add(query, accessGroups);
     }
 
     @Test
     public void addAccessGlobalPermissionsTest() {
         when(globalPermissionEvaluator.hasGlobalPrincipal(anySetOf(String.class))).thenReturn(true);
 
-        StringBuilder query = searchService.addAccessRestrictions(
-                new StringBuilder(BASE_QUERY), accessGroups);
+        StringBuilder query = new StringBuilder(BASE_QUERY);
+        restrictionUtil.add(query, accessGroups);
 
         assertEquals(BASE_QUERY, query.toString());
     }
@@ -91,8 +90,8 @@ public class SolrSearchServiceTest {
     public void addAccessAllowPatronAccessTest() {
         when(searchSettings.getAllowPatronAccess()).thenReturn(true);
 
-        StringBuilder query = searchService.addAccessRestrictions(
-                new StringBuilder(BASE_QUERY), accessGroups);
+        StringBuilder query = new StringBuilder(BASE_QUERY);
+        restrictionUtil.add(query, accessGroups);
 
         assertEquals(BASE_QUERY + " AND (readGroup:(" + ACCESS_GROUP
                 + ") OR adminGroup:(" + ACCESS_GROUP + "))", query.toString());
@@ -102,8 +101,8 @@ public class SolrSearchServiceTest {
     public void addAccessAdminOnlyTest() {
         when(searchSettings.getAllowPatronAccess()).thenReturn(false);
 
-        StringBuilder query = searchService.addAccessRestrictions(
-                new StringBuilder(BASE_QUERY), accessGroups);
+        StringBuilder query = new StringBuilder(BASE_QUERY);
+        restrictionUtil.add(query, accessGroups);
 
         assertEquals(BASE_QUERY + " AND adminGroup:(" + ACCESS_GROUP + ")", query.toString());
     }
