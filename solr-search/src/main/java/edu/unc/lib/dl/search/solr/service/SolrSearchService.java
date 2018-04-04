@@ -314,60 +314,6 @@ public class SolrSearchService {
     }
 
     /**
-     * Attempts to retrieve the hierarchical facet from the facet field
-     * corresponding to fieldKey that matches the value of searchValue.
-     * Retrieves and populates all tiers leading up to the tier number given in
-     * searchValue.
-     *
-     * @param fieldKey
-     *            Key of the facet field to search for the facet within.
-     * @param searchValue
-     *            Value to find a matching facet for, should be formatted
-     *            <tier>,<value>
-     * @param accessGroups
-     * @return
-     */
-    public FacetFieldObject getHierarchicalFacet(AbstractHierarchicalFacet facet, AccessGroupSet accessGroups) {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        query.append("[* TO *]");
-
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query, accessGroups);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error(e.getMessage());
-            return null;
-        }
-        solrQuery.setQuery(query.toString());
-        solrQuery.setRows(0);
-
-        solrQuery.setFacet(true);
-        solrQuery.setFacetMinCount(1);
-
-        String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
-
-        solrQuery.addFacetField(solrFieldName);
-        solrQuery.setFacetPrefix(solrFieldName, facet.getSearchValue());
-
-        LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
-        try {
-            queryResponse = executeQuery(solrQuery);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request", e);
-            return null;
-        }
-        FacetField facetField = queryResponse.getFacetField(solrFieldName);
-        if (facetField.getValueCount() == 0) {
-            return null;
-        }
-        return facetFieldFactory.createFacetFieldObject(
-                facet.getFieldName(), queryResponse.getFacetField(solrFieldName));
-    }
-
-    /**
      * Gets the ancestor path facet for the provided pid, given the access groups provided.
      *
      * @param pid
@@ -390,40 +336,6 @@ public class SolrSearchService {
             return null;
         }
         return rootNode.getAncestorPathFacet();
-    }
-
-    public Date getTimestamp(String pid, AccessGroupSet accessGroups) {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name()))
-                .append(':').append(SolrSettings.sanitize(pid));
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query, accessGroups);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error("Error while attempting to add access restrictions to object " + pid, e);
-            return null;
-        }
-
-        solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()));
-
-        solrQuery.setQuery(query.toString());
-        solrQuery.setRows(1);
-
-        LOG.debug("query: " + solrQuery.toString());
-        try {
-            queryResponse = executeQuery(solrQuery);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request", e);
-            return null;
-        }
-
-        if (queryResponse.getResults().getNumFound() == 0) {
-            return null;
-        }
-        return (Date) queryResponse.getResults().get(0).getFieldValue("timestamp");
     }
 
     public BriefObjectMetadata addSelectedContainer(String containerPid, SearchState searchState,
@@ -863,28 +775,6 @@ public class SolrSearchService {
         return sb.toString();
     }
 
-    /**
-     * Returns the value of a single field from the object identified by pid.
-     *
-     * @param pid
-     * @param field
-     * @return The value of the specified field or null if it wasn't found.
-     */
-    public Object getField(String pid, String field) throws SolrServerException {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        query.append("id:").append(SolrSettings.sanitize(pid));
-        solrQuery.setQuery(query.toString());
-        solrQuery.addField(field);
-
-        queryResponse = executeQuery(solrQuery);
-        if (queryResponse.getResults().getNumFound() > 0) {
-            return queryResponse.getResults().get(0).getFieldValue(field);
-        }
-        return null;
-    }
-
     public Map<String, Object> getFields(String pid, List<String> fields) throws SolrServerException {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
@@ -944,25 +834,6 @@ public class SolrSearchService {
         }
 
         return fieldValues;
-    }
-
-    /**
-     * Verifies that a record exists for the given pid
-     *
-     * @param pid
-     * @return
-     * @throws SolrServerException
-     */
-    public boolean exists(String pid) throws SolrServerException {
-        QueryResponse queryResponse = null;
-
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("id:" + SolrSettings.sanitize(pid));
-        solrQuery.setRows(0);
-
-        queryResponse = executeQuery(solrQuery);
-
-        return queryResponse.getResults().getNumFound() > 0;
     }
 
     public SolrSettings getSolrSettings() {

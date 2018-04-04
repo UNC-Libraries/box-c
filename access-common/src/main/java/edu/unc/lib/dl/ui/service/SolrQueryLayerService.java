@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +42,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
-import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
@@ -77,27 +75,6 @@ public class SolrQueryLayerService extends SolrSearchService {
     protected ObjectPathFactory pathFactory;
 
     private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
-
-    /**
-     * Returns a list of the most recently added items in the collection
-     *
-     * @param accessGroups
-     * @return Result response, where items only contain title and id.
-     */
-    public SearchResultResponse getNewlyAdded(AccessGroupSet accessGroups) {
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setAccessGroups(accessGroups);
-
-        SearchState searchState = searchStateFactory.createTitleListSearchState();
-        List<String> resourceTypes = new ArrayList<>();
-        resourceTypes.add(searchSettings.resourceTypeCollection);
-        searchState.setResourceTypes(resourceTypes);
-        searchState.setRowsPerPage(searchSettings.defaultListResultsPerPage);
-        searchState.setSortType("dateAdded");
-
-        searchRequest.setSearchState(searchState);
-        return getSearchResults(searchRequest);
-    }
 
     /**
      * Returns a list of collections
@@ -219,71 +196,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         }
 
         return resultResponse;
-    }
-
-    /**
-     * Retrieves metadata fields for the parent collection pids contained by the supplied facet object.
-     *
-     * @param parentCollectionFacet
-     *           Facet object containing parent collection ids to lookup
-     * @param accessGroups
-     * @return
-     */
-    public List<BriefObjectMetadataBean> getParentCollectionValues(FacetFieldObject parentCollectionFacet) {
-        if (parentCollectionFacet == null || parentCollectionFacet.getValues() == null
-                || parentCollectionFacet.getValues().size() == 0) {
-            return null;
-        }
-
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        boolean first = true;
-
-        query.append('(');
-        for (GenericFacet pidFacet : parentCollectionFacet.getValues()) {
-            if (pidFacet.getSearchValue() != null && pidFacet.getSearchValue().length() > 0) {
-                if (first) {
-                    first = false;
-                } else {
-                    query.append(" OR ");
-                }
-                query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name())).append(':')
-                        .append(SolrSettings.sanitize(pidFacet.getSearchValue()));
-            }
-        }
-        query.append(')');
-
-        // If no pids were added to the query, then there's nothing to look up
-        if (first) {
-            return null;
-        }
-
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error("No access groups", e);
-            return null;
-        }
-
-        solrQuery.setQuery(query.toString());
-
-        solrQuery.setFacet(true);
-        solrQuery.setFields(solrSettings.getFieldName(SearchFieldKeys.ID.name()),
-                solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name()),
-                solrSettings.getFieldName(SearchFieldKeys.TITLE.name()));
-
-        solrQuery.setRows(parentCollectionFacet.getValues().size());
-
-        try {
-            queryResponse = this.executeQuery(solrQuery);
-            return queryResponse.getBeans(BriefObjectMetadataBean.class);
-        } catch (SolrServerException e) {
-            LOG.error("Failed to execute query " + solrQuery.toString(), e);
-        }
-        return null;
     }
 
     /**
@@ -810,36 +722,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         response.generateResultTree();
         return response;
-    }
-
-    /**
-     * Matches hierarchical facets in the search state with those in the facet list. If a match is found,
-     * then the search state hierarchical facet is overwritten with the result facet
-     * in order to give it a display value.
-     *
-     * @param searchState
-     * @param resultResponse
-     */
-    public void lookupHierarchicalDisplayValues(SearchState searchState, AccessGroupSet accessGroups) {
-        if (searchState.getFacets() == null) {
-            return;
-        }
-        Iterator<String> facetIt = searchState.getFacets().keySet().iterator();
-        while (facetIt.hasNext()) {
-            String facetKey = facetIt.next();
-            Object facetValue = searchState.getFacets().get(facetKey);
-            if (facetValue instanceof AbstractHierarchicalFacet) {
-                FacetFieldObject resultFacet =
-                        getHierarchicalFacet((AbstractHierarchicalFacet) facetValue, accessGroups);
-                if (resultFacet != null) {
-                    GenericFacet facet = resultFacet.getValues().get(resultFacet.getValues().size() - 1);
-                    searchState.getFacets().put(facetKey, facet);
-                    if (facetValue instanceof CutoffFacet) {
-                        ((CutoffFacet) facet).setCutoff(((CutoffFacet) facetValue).getCutoff());
-                    }
-                }
-            }
-        }
     }
 
     /**
