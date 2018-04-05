@@ -19,8 +19,6 @@ import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -361,129 +359,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         return -1;
     }
 
-    /**
-     * Populates the child count attributes of all metadata objects in the given search result response by querying for
-     * all non-folder objects which have the metadata object's highest ancestor path tier
-     * somewhere in its ancestor path.
-     *
-     * Items in resultList must have their ancestorPaths populated.
-     *
-     * @param resultList
-     * @param accessGroups
-     */
-    public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups) {
-        this.getChildrenCounts(resultList, accessGroups, "child", null, null);
-    }
-
-    public void getChildrenCounts(List<BriefObjectMetadata> resultList, SearchRequest searchRequest) {
-        this.getChildrenCounts(
-                resultList, searchRequest.getAccessGroups(), "child", null, this.generateSearch(searchRequest));
-    }
-
-    public void getChildrenCounts(List<BriefObjectMetadata> resultList, AccessGroupSet accessGroups, String countName,
-            String queryAddendum, SolrQuery baseQuery) {
-        long startTime = System.currentTimeMillis();
-        if (resultList == null || resultList.size() == 0) {
-            return;
-        }
-
-        String ancestorPathField = solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name());
-        SolrQuery solrQuery;
-        if (baseQuery == null) {
-            // Create a base query since we didn't receive one
-            solrQuery = new SolrQuery();
-            StringBuilder query = new StringBuilder("*:*");
-            try {
-                // Add access restrictions to query
-                addAccessRestrictions(query, accessGroups);
-            } catch (AccessRestrictionException e) {
-                // If the user doesn't have any access groups, they don't have access to anything, return null.
-                LOG.error(e.getMessage());
-                return;
-            }
-
-            solrQuery.setStart(0);
-            solrQuery.setRows(0);
-
-            solrQuery.setQuery(query.toString());
-        } else {
-            // Starting from a base query
-            solrQuery = baseQuery.getCopy();
-            // Make sure we aren't returning any normal results
-            solrQuery.setRows(0);
-            // Remove all facet fields so we are only getting ancestor path
-            if (solrQuery.getFacetFields() != null) {
-                for (String facetField : solrQuery.getFacetFields()) {
-                    solrQuery.removeFacetField(facetField);
-                }
-            }
-        }
-
-        if (queryAddendum != null) {
-            solrQuery.setQuery(solrQuery.getQuery() + " AND " + queryAddendum);
-        }
-
-        solrQuery.setFacet(true);
-        solrQuery.setFacetMinCount(1);
-        solrQuery.addFacetField(ancestorPathField);
-
-        solrQuery.add("f." + ancestorPathField + ".facet.limit", Integer.toString(Integer.MAX_VALUE));
-        // Sort by value rather than count so that earlier tiers will come first in case the result gets cut off
-        solrQuery.setFacetSort("index");
-
-        try {
-            startTime = System.currentTimeMillis();
-            QueryResponse queryResponse = this.executeQuery(solrQuery);
-            LOG.info("Query executed in " + (System.currentTimeMillis() - startTime));
-            assignChildrenCounts(queryResponse.getFacetField(ancestorPathField), resultList, countName);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr search result request", e);
-        }
-    }
-
-    /**
-     * Assigns children counts to container objects from ancestor path facet results based on matching search values
-     *
-     * @param facetField
-     * @param containerObjects
-     * @param countName
-     */
-    protected void assignChildrenCounts(FacetField facetField, List<BriefObjectMetadata> containerObjects,
-            String countName) {
-        if (facetField.getValues() != null) {
-            boolean binarySearch = facetField.getValues().size() > 64;
-            for (BriefObjectMetadata container : containerObjects) {
-                // Find the facet count for this container, either using a binary or linear search
-                String searchValue = container.getPath().getSearchValue();
-                int matchIndex = -1;
-                if (binarySearch) {
-                    matchIndex = Collections.binarySearch(facetField.getValues(),searchValue,new Comparator<Object>() {
-                        @Override
-                        public int compare(Object currentFacetValueObject, Object searchValueObject) {
-                            if (searchValueObject == null) {
-                                throw new NullPointerException();
-                            }
-                            String searchValue = (String) searchValueObject;
-                            Count facetValue = (Count) currentFacetValueObject;
-                            return facetValue.getName().indexOf(searchValue) == 0 ? 0 : facetValue.getName().compareTo(
-                                    searchValue);
-                        }
-                    });
-                } else {
-                    for (int i = 0; i < facetField.getValues().size(); i++) {
-                        Count facetValue = facetField.getValues().get(i);
-                        if (facetValue.getName().indexOf(searchValue) == 0) {
-                            matchIndex = i;
-                            break;
-                        }
-                    }
-                }
-                if (matchIndex > -1) {
-                    container.getCountMap().put(countName, facetField.getValues().get(matchIndex).getCount());
-                }
-            }
-        }
-    }
 
     /**
      * Retrieves the tree of partially expanded containers from the Collections object up to the rootPID in the request.
@@ -626,12 +501,12 @@ public class SolrQueryLayerService extends SolrSearchService {
             // Get the children counts per container
             SearchRequest filteredChildrenRequest =
                     new SearchRequest(browseState, browseRequest.getAccessGroups(), true);
-            this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
-                    this.generateSearch(filteredChildrenRequest));
-
-            this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
-                    "contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
-                    this.generateSearch(filteredChildrenRequest));
+//            this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
+//                    this.generateSearch(filteredChildrenRequest));
+//
+//            this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
+//                    "contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
+//                    this.generateSearch(filteredChildrenRequest));
 
             try {
                 // If anything that constituted a search is in the request then trim out possible empty folders
@@ -805,9 +680,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         resultResponse.setSelectedContainer(selectedContainer);
 
-        // Get the children counts for container entries.
-        getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
-
         searchRequest.setSearchState(originalState);
         return resultResponse;
     }
@@ -978,10 +850,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         for (String group : groups) {
             String saneGroup = SolrSettings.sanitize(group);
-            // TODO rewrite to use edu.unc.lib.dl.acl.util.UserRole.getUserRoles(Collection<Permission>)
-//            roleString.append(UserRole.processor.getPredicate()).append('|').append(saneGroup).append(' ');
-//            roleString.append(UserRole.curator.getPredicate()).append('|').append(saneGroup).append(' ');
-//            roleString.append(UserRole.administrator.getPredicate()).append('|').append(saneGroup).append(' ');
+            roleString.append(UserRole.canManage.getPredicate()).append('|').append(saneGroup).append(' ');
+            roleString.append(UserRole.unitOwner.getPredicate()).append('|').append(saneGroup).append(' ');
         }
 
         roleString.append(')');

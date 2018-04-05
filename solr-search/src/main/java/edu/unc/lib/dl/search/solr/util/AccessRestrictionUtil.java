@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.search.solr.util;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -54,7 +52,7 @@ public class AccessRestrictionUtil {
         }
 
         // Agent must provide principals
-        if (isEmpty(principals)) {
+        if (principals == null || principals.size() == 0) {
             throw new AccessRestrictionException("No access groups were provided.");
         }
 

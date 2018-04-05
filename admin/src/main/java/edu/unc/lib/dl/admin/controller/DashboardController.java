@@ -17,6 +17,8 @@ package edu.unc.lib.dl.admin.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.solr.client.solrj.SolrQuery;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +30,7 @@ import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
@@ -43,6 +46,9 @@ public class DashboardController extends AbstractSolrSearchController {
     private static final int ROWS_PER_PAGE = 5000;
     private static final int FACET_CUTOFF = 2;
     private static final String FACET_STRING = "1,*";
+
+    @Autowired
+    private ChildrenCountService childrenCountService;
 
     @RequestMapping(method = RequestMethod.GET)
     public String handleRequest(Model model, HttpServletRequest request) {
@@ -60,14 +66,16 @@ public class DashboardController extends AbstractSolrSearchController {
 
         SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
         // Get children counts
-        queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
+        childrenCountService.addChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups());
 
         // Get unpublished counts
         StringBuilder reviewFilter = new StringBuilder("isPart:false AND status:Unpublished AND roleGroup:");
         reviewFilter.append(SolrQueryLayerService.getWriteRoleFilter(GroupsThreadStore.getGroups()));
+        SolrQuery unpublishedQuery = new SolrQuery();
+        unpublishedQuery.setQuery(reviewFilter.toString());
 
-        queryLayer.getChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(), "unpublished",
-                reviewFilter.toString(), null);
+        childrenCountService.addChildrenCounts(resultResponse.getResultList(), searchRequest.getAccessGroups(),
+                "unpublished", unpublishedQuery);
 
         model.addAttribute("resultResponse", resultResponse);
 

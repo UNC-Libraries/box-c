@@ -18,7 +18,6 @@ package edu.unc.lib.dl.search.solr.service;
 import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -84,7 +83,7 @@ public abstract class AbstractQueryService {
      * @return filter
      */
     protected String makeFilter(SearchFieldKeys fieldKey, Collection<String> values) {
-        if (CollectionUtils.isEmpty(values)) {
+        if (values == null || values.size() == 0) {
             return "";
         }
         return solrField(fieldKey) + ":(" + String.join(" OR ", values) + ")";
