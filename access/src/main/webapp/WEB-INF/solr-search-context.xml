@@ -87,6 +87,13 @@
         <property name="globalPermissionEvaluator" ref="globalPermissionEvaluator" />
     </bean>
     
+    <bean id="childrenCountService" class="edu.unc.lib.dl.search.solr.service.ChildrenCountService"
+        init-method="initializeSolrServer">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" value="solrSettings" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+    </bean>
+    
     <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
         init-method="initializeSolrServer">
         <property name="solrSettings" ref="solrSettings" />
