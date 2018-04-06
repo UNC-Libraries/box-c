@@ -363,6 +363,69 @@ public class RepositoryObjectFactory {
     }
 
     /**
+     * Updates a binary resource at the given path.
+     *
+     * @param path
+     *        Repository path for the binary that will be updated
+     * @param slug
+     *        Name in the path for the binary resource. Optional.
+     * @param content
+     *        Input stream containing the binary content for this resource.
+     * @param filename
+     *        Filename of the binary content. Optional.
+     * @param mimetype
+     *        Mimetype of the content. Optional.
+     * @param checksum
+     *        SHA-1 digest of the content. Optional.
+     * @param model
+     *        Model containing additional triples to add to the binary's metadata. Optional
+     * @return URI of the updated binary
+     * @throws FedoraException
+     */
+     public BinaryObject updateBinary(URI path, String slug, InputStream content, String filename, String mimetype,
+             String sha1Checksum, String md5Checksum, Model model) throws FedoraException {
+         if (content == null) {
+             throw new IllegalArgumentException("Cannot update a binary object from a null content stream");
+         }
+         // Upload the binary and provided technical metadata
+         URI resultUri;
+         // Track the URI where metadata updates would be made for this binary
+         URI describedBy;
+         URI updatePath = URI.create(URIUtil.join(path, slug));
+         try (FcrepoResponse response = getClient().put(updatePath).body(content, mimetype).filename(filename)
+                 .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
+             resultUri = response.getLocation();
+             describedBy = response.getLinkHeaders("describedby").get(0);
+         } catch (IOException e) {
+             throw new FedoraException("Unable to update binary at " + updatePath, e);
+         } catch (FcrepoOperationFailedException e) {
+             // if one or more checksums don't match
+             if (e.getStatusCode() == HttpStatus.SC_CONFLICT) {
+                 throw new ChecksumMismatchException("Failed to update binary for " + updatePath + ", since checksum(s)"
+                         + " did not match the submitted content according to the repository.", e);
+             }
+             throw ClientFaultResolver.resolve(e);
+         }
+         if (model != null) {
+             // Add in pcdm:File type to model
+             model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
+
+             // If a model was provided, then add the triples to the binary's metadata
+             // Turn model into sparql update query
+             String sparqlUpdate = SparqlUpdateHelper.createSparqlInsert(model);
+             InputStream sparqlStream = new ByteArrayInputStream(sparqlUpdate.getBytes(StandardCharsets.UTF_8));
+
+             try (FcrepoResponse response = getClient().patch(describedBy).body(sparqlStream).perform()) {
+             } catch (IOException e) {
+                 throw new FedoraException("Unable to add triples to binary at " + updatePath, e);
+             } catch (FcrepoOperationFailedException e) {
+                 throw ClientFaultResolver.resolve(e);
+             }
+         }
+         return new BinaryObject(PIDs.get(resultUri), repoObjDriver, this);
+     }
+
+    /**
      * Creates an event for the specified object.
      *
      * @param eventPid

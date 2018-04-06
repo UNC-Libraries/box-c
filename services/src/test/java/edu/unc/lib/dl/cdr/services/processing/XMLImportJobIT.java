@@ -15,19 +15,26 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import javax.mail.internet.MimeMessage;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.tika.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +50,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.samskivert.mustache.Template;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
+import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.test.TestHelper;
 
 /**
  *
@@ -66,18 +79,27 @@ public class XMLImportJobIT {
 
     @Autowired
     private UpdateDescriptionService updateService;
+
     @Mock
     private JavaMailSender mailSender;
     @Mock
     private Template completeTemplate;
     @Mock
     private Template failedTemplate;
+    @Mock
+    private MimeMessage mimeMsg;
+
     private String fromAddress = "admin@example.com";
-    @Mock MimeMessage mimeMsg;
 
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
     private File tempDir;
+
+    @Autowired
+    private RepositoryObjectFactory factory;
+    @Autowired
+    private RepositoryObjectLoader objLoader;
+    private WorkObject workObj;
 
     @Before
     public void init_() throws IOException {
@@ -86,15 +108,24 @@ public class XMLImportJobIT {
         tempDir = tmpFolder.newFolder();
 
         when(mailSender.createMimeMessage()).thenReturn(mimeMsg);
+        when(completeTemplate.execute(any(Object.class))).thenReturn("update was successful");
+
+        TestHelper.setContentBase("http://localhost:48085/rest/");
     }
 
     @Test
     public void test() throws IOException {
+        populateFedora();
+        InputStream originalMods = workObj.getMODS().getBinaryStream();
         importFile = createTempImportFile();
         createJob();
+
         job.run();
 
         verify(mailSender).send(any(MimeMessage.class));
+
+        InputStream updatedMods = objLoader.getWorkObject(workObj.getPid()).getMODS().getBinaryStream();
+        assertFalse(IOUtils.contentEquals(originalMods, updatedMods));
     }
 
     private void createJob() {
@@ -109,10 +140,17 @@ public class XMLImportJobIT {
 
     private File createTempImportFile() throws IOException {
         File tempImportFile = new File(tempDir, "temp-import");
-        Files.copy(Paths.get("src/test/resources/mods/bulk-md.xml"), tempImportFile.toPath(),
+        Files.copy(Paths.get("src/test/resources/mods/update-work-mods.xml"), tempImportFile.toPath(),
                 StandardCopyOption.REPLACE_EXISTING);
         File importFile = new File(tempImportFile.getPath());
         return importFile;
+    }
+
+    private void populateFedora() throws FileNotFoundException {
+        Model model = ModelFactory.createDefaultModel();
+        PID workPid = PIDs.get("uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad");
+        workObj = factory.createWorkObject(workPid, model);
+        workObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
     }
 
 }

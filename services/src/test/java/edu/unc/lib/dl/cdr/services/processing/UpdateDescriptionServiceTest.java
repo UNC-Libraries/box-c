@@ -90,7 +90,7 @@ public class UpdateDescriptionServiceTest {
         when(agent.getPrincipals()).thenReturn(groups);
         when(agent.getUsername()).thenReturn("username");
         when(repoObjLoader.getRepositoryObject(any(PID.class))).thenReturn(obj);
-        when(obj.addDescription(eq(modsStream))).thenReturn(mock(FileObject.class));
+        when(obj.setDescription(eq(modsStream))).thenReturn(mock(FileObject.class));
         when(messageSender.sendUpdateDescriptionOperation(anyString(), any(Collection.class)))
                 .thenReturn("message_id");
 

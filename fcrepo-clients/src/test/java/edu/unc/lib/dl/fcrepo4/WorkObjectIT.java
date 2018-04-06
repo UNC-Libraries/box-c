@@ -142,7 +142,7 @@ public class WorkObjectIT extends AbstractFedoraIT {
         WorkObject obj = repoObjFactory.createWorkObject(null);
         String bodyString = "some MODS content";
         InputStream modsStream = new ByteArrayInputStream(bodyString.getBytes());
-        FileObject fileObj = obj.addDescription(modsStream);
+        FileObject fileObj = obj.setDescription(modsStream);
 
         assertObjectExists(obj.getMODS().getPid());
         List<BinaryObject> binObjs = fileObj.getBinaryObjects();
