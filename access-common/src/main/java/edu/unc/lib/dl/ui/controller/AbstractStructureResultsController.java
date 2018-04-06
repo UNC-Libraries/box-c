@@ -22,11 +22,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.StructureQueryService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
@@ -38,6 +40,9 @@ import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
  */
 public class AbstractStructureResultsController extends AbstractSolrSearchController {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractStructureResultsController.class);
+
+    @Autowired
+    protected StructureQueryService structureService;
 
     protected List<String> tierResultFieldsList;
 
@@ -88,9 +93,9 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 
         HierarchicalBrowseResultResponse resultResponse = null;
         if (collectionMode) {
-            resultResponse = queryLayer.getExpandedStructurePath(browseRequest);
+            resultResponse = structureService.getExpandedStructurePath(browseRequest);
         } else {
-            resultResponse = queryLayer.getHierarchicalBrowseResults(browseRequest);
+            resultResponse = structureService.getHierarchicalBrowseResults(browseRequest);
         }
 
         resultResponse.setSearchState(searchState);

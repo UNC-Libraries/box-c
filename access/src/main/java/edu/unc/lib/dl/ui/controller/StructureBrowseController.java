@@ -29,12 +29,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
 import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
@@ -43,7 +43,7 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
  * view, or if the ajax option is true then a portion of the tree starting from the room node. The request can specify
  * the max depth in terms of nodes in the tree it will return, where the max depth is limited by the application wide
  * structured depth property.
- * 
+ *
  * @author bbpennel
  */
 @Controller
@@ -100,7 +100,7 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
             searchState.setResourceTypes(Arrays.asList("!" + searchSettings.resourceTypeFile));
         }
 
-        HierarchicalBrowseResultResponse resultResponse = queryLayer.getStructureTier(browseRequest);
+        HierarchicalBrowseResultResponse resultResponse = structureService.getStructureTier(browseRequest);
         model.addAttribute("structureResults", resultResponse);
 
         String searchStateUrl = SearchStateUtil.generateStateParameterString(browseRequest.getSearchState());

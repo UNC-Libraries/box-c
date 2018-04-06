@@ -76,7 +76,7 @@
     <bean id="childrenCountService" class="edu.unc.lib.dl.search.solr.service.ChildrenCountService"
         init-method="initializeSolrServer">
         <property name="searchSettings" ref="searchSettings" />
-        <property name="solrSettings" value="solrSettings" />
+        <property name="solrSettings" ref="solrSettings" />
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
     </bean>
     

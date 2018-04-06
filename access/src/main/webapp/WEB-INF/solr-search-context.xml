@@ -90,8 +90,18 @@
     <bean id="childrenCountService" class="edu.unc.lib.dl.search.solr.service.ChildrenCountService"
         init-method="initializeSolrServer">
         <property name="searchSettings" ref="searchSettings" />
-        <property name="solrSettings" value="solrSettings" />
+        <property name="solrSettings" ref="solrSettings" />
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+    </bean>
+    
+    <bean id="structureQueryService" class="edu.unc.lib.dl.search.solr.service.StructureQueryService"
+        init-method="initializeSolrServer">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="childrenCountService" ref="childrenCountService" />
+        <property name="searchStateFactory" ref="searchStateFactory" />
+        <property name="searchService" ref="queryLayer" />
     </bean>
     
     <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"

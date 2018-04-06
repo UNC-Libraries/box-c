@@ -20,10 +20,8 @@ import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -39,27 +37,20 @@ import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GenericFacet;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse.ResultNode;
-import edu.unc.lib.dl.search.solr.model.HierarchicalFacetNode;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.service.SolrSearchService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
  * Solr query construction layer. Constructs search states specific to common tasks before passing them on to lower
@@ -322,281 +313,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         searchState.setRowsPerPage(0);
         searchState.setFacetsToRetrieve(facetsToRetrieve);
         return getFacetList(new SearchRequest(searchState, true));
-    }
-
-    public long getChildrenCount(BriefObjectMetadataBean metadataObject, AccessGroupSet accessGroups) {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder("*:* ");
-
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query, accessGroups);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error(e.getMessage());
-            return -1;
-        }
-
-        solrQuery.setStart(0);
-        solrQuery.setRows(0);
-
-        solrQuery.setQuery(query.toString());
-
-        query = new StringBuilder();
-        query.append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(':')
-                .append(SolrSettings.sanitize(metadataObject.getPath().getSearchValue()));
-
-        solrQuery.setFacet(true);
-        solrQuery.addFilterQuery(query.toString());
-
-        try {
-            queryResponse = this.executeQuery(solrQuery);
-            return queryResponse.getResults().getNumFound();
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr search result request", e);
-        }
-        return -1;
-    }
-
-
-    /**
-     * Retrieves the tree of partially expanded containers from the Collections object up to the rootPID in the request.
-     * Only the containers directly in the ancestor path of the starting pid will be expanded
-     *
-     * @param browseRequest
-     * @return
-     */
-    public HierarchicalBrowseResultResponse getExpandedStructurePath(HierarchicalBrowseRequest browseRequest) {
-        HierarchicalBrowseResultResponse browseResponse = null;
-        HierarchicalBrowseResultResponse previousResponse = null;
-
-        CutoffFacet path = this.getAncestorPath(browseRequest.getRootPid(), browseRequest.getAccessGroups());
-        String currentPID = browseRequest.getRootPid();
-
-        // Retrieve structure results for each tier in the path, in reverse order
-        List<HierarchicalFacetNode> nodes = path != null ? path.getFacetNodes() : null;
-        int cnt = nodes != null ? nodes.size() : 0;
-        while (cnt >= 0) {
-            // Get the list of objects for the current tier
-            HierarchicalBrowseRequest stepRequest = new HierarchicalBrowseRequest(browseRequest.getSearchState(), 1,
-                    browseRequest.getAccessGroups());
-            stepRequest.setRootPid(currentPID);
-            browseResponse = getHierarchicalBrowseResults(stepRequest);
-
-            if (previousResponse != null) {
-                // Store the previous root node as a child in the current tier
-                ResultNode previousRoot = previousResponse.getRootNode();
-                int childNodeIndex = browseResponse.getChildNodeIndex(previousRoot.getMetadata().getId());
-                if (childNodeIndex != -1) {
-                    browseResponse.getRootNode().getChildren().set(childNodeIndex, previousRoot);
-                } else {
-                    LOG.warn("Could not locate child entry {} inside of results for {}",
-                            previousRoot.getMetadata().getId(),
-                            browseResponse.getRootNode().getMetadata().getId());
-                }
-
-            }
-
-            cnt--;
-            if (cnt > -1) {
-                HierarchicalFacetNode node = nodes.get(cnt);
-                currentPID = node.getSearchKey();
-                previousResponse = browseResponse;
-            }
-        }
-
-        return browseResponse;
-    }
-
-    /**
-     * Retrieves results for populating a hierarchical browse view. Supports all the regular navigation available to
-     * searches. Results contain child counts for each item (all items returned are containers),
-     * and a map containing the number of nested subcontainers per container.
-     * Children counts are retrieved based on facet counts.
-     *
-     * @param browseRequest
-     * @return
-     */
-    public HierarchicalBrowseResultResponse getHierarchicalBrowseResults(HierarchicalBrowseRequest browseRequest) {
-        AccessGroupSet accessGroups = browseRequest.getAccessGroups();
-        SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
-        HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
-
-        CutoffFacet rootPath = null;
-        BriefObjectMetadataBean rootNode = null;
-        if (browseRequest.getRootPid() != null) {
-            rootNode = getObjectById(new SimpleIdRequest(browseRequest.getRootPid(), browseRequest.getAccessGroups()));
-            if (rootNode != null) {
-                rootPath = rootNode.getPath();
-                browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
-                browseResults.setSelectedContainer(rootNode);
-            }
-        }
-        // Default the ancestor path to the collections object so we always have a root
-        if (rootNode == null) {
-            rootPath = (CutoffFacet) browseState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-            if (rootPath == null) {
-                rootPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(),
-                        "1," + RepositoryPaths.getContentRootPid().getUUID());
-                browseState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
-            }
-
-            rootNode = getObjectById(new SimpleIdRequest(rootPath.getSearchKey(), browseRequest.getAccessGroups()));
-        }
-        boolean rootIsAStub = rootNode == null;
-        if (rootIsAStub) {
-            // Parent is not found, but children are, so make a stub for the parent.
-            rootNode = new BriefObjectMetadataBean();
-            rootNode.setId(rootPath.getSearchKey());
-            rootNode.setAncestorPathFacet(rootPath);
-        }
-
-        SearchState hierarchyState = searchStateFactory.createHierarchyListSearchState();
-        // Use the ancestor path facet from the state where we will have set a default value
-        hierarchyState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), rootPath);
-        hierarchyState.setRowsPerPage(0);
-
-        SearchRequest hierarchyRequest = new SearchRequest(hierarchyState, accessGroups, false);
-
-        SolrQuery baseQuery = this.generateSearch(hierarchyRequest);
-        // Get the set of all applicable containers
-        SolrQuery hierarchyQuery = baseQuery.getCopy();
-        hierarchyQuery.setRows(new Integer(searchSettings.getProperty("search.results.maxBrowsePerPage")));
-
-        // Reusable query segment for limiting the results to just the depth asked for
-        StringBuilder cutoffQuery = new StringBuilder();
-        cutoffQuery.append('!').append(solrSettings.getFieldName(SearchFieldKeys.ANCESTOR_PATH.name())).append(":");
-        cutoffQuery.append(rootPath.getHighestTier() + browseRequest.getRetrievalDepth());
-        cutoffQuery.append(searchSettings.facetSubfieldDelimiter).append('*');
-        hierarchyQuery.addFilterQuery(cutoffQuery.toString());
-
-        SearchResultResponse results;
-        try {
-            results = this.executeSearch(hierarchyQuery, hierarchyState, false, false);
-            browseResults.setSearchResultResponse(results);
-        } catch (SolrServerException e) {
-            LOG.error("Error while getting container results for hierarchical browse results", e);
-            return null;
-        }
-        // Add the root node into the result set
-        browseResults.getResultList().add(0, rootNode);
-
-        if (browseRequest.isRetrieveFacets() && browseRequest.getSearchState().getFacetsToRetrieve() != null) {
-            SearchState facetState = (SearchState) browseState.clone();
-            facetState.setRowsPerPage(0);
-            SearchRequest facetRequest = new SearchRequest(facetState, browseRequest.getAccessGroups(), true);
-            SolrQuery facetQuery = this.generateSearch(facetRequest);
-            try {
-                SearchResultResponse facetResponse = this.executeSearch(facetQuery, facetState, true, false);
-                browseResults.setFacetFields(facetResponse.getFacetFields());
-            } catch (SolrServerException e) {
-                LOG.warn("Failed to retrieve facet results for " + facetQuery.toString(), e);
-            }
-        }
-
-        // Don't need to manipulate the container list any further unless either the root is a real record or there are
-        // subcontainers
-        if (!rootIsAStub || results.getResultCount() > 0) {
-            // Get the children counts per container
-            SearchRequest filteredChildrenRequest =
-                    new SearchRequest(browseState, browseRequest.getAccessGroups(), true);
-//            this.getChildrenCounts(results.getResultList(), accessGroups, "child", null,
-//                    this.generateSearch(filteredChildrenRequest));
-//
-//            this.getChildrenCounts(results.getResultList(), accessGroups, "containers",
-//                    "contentModel:" + SolrSettings.sanitize(ContentModelHelper.Model.CONTAINER.toString()),
-//                    this.generateSearch(filteredChildrenRequest));
-
-            try {
-                // If anything that constituted a search is in the request then trim out possible empty folders
-                if (browseState.isPopulatedSearch()) {
-                    // Get the list of any direct matches for the current query
-                    browseResults.setMatchingContainerPids(this.getDirectContainerMatches(browseState, accessGroups));
-                    browseResults.getMatchingContainerPids().add(browseRequest.getRootPid());
-                    // Remove all containers that are not direct matches for the user's query and have 0 children
-                    browseResults.removeContainersWithoutContents();
-                }
-            } catch (SolrServerException e) {
-                LOG.error("Error while getting children counts for hierarchical browse", e);
-                return null;
-            }
-        }
-
-        // Retrieve normal item search results, which are restricted to a max number per page
-        if (browseRequest.isIncludeFiles() && browseState.getRowsPerPage() > 0) {
-            browseState.getResourceTypes().add(searchSettings.resourceTypeFile);
-            SearchState fileSearchState = new SearchState(browseState);
-            List<String> resourceTypes = new ArrayList<>();
-            resourceTypes.add(searchSettings.resourceTypeFile);
-            fileSearchState.setResourceTypes(resourceTypes);
-            CutoffFacet ancestorPath =
-                    (CutoffFacet) fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-            ancestorPath.setCutoff(rootPath.getHighestTier() + 1);
-            fileSearchState.setFacetsToRetrieve(null);
-            SearchRequest fileSearchRequest = new SearchRequest(fileSearchState, browseRequest.getAccessGroups());
-            SearchResultResponse fileResults = this.getSearchResults(fileSearchRequest);
-            browseResults.populateItemResults(fileResults.getResultList());
-        }
-
-        browseResults.generateResultTree();
-
-        return browseResults;
-    }
-
-    /**
-     * Returns a set of object IDs for containers that directly matched the restrictions from the base query.
-     *
-     * @param baseState
-     * @param accessGroups
-     * @return
-     * @throws SolrServerException
-     */
-    private Set<String> getDirectContainerMatches(SearchState baseState, AccessGroupSet accessGroups)
-            throws SolrServerException {
-        SearchState directMatchState = (SearchState) baseState.clone();
-        directMatchState.setResourceTypes(null);
-        directMatchState.setResultFields(Arrays.asList(SearchFieldKeys.ID.name()));
-        directMatchState.getFacets().put(SearchFieldKeys.CONTENT_MODEL.name(),
-                ContentModelHelper.Model.CONTAINER.toString());
-        directMatchState.setRowsPerPage(new Integer(searchSettings.getProperty("search.results.maxBrowsePerPage")));
-        SearchRequest directMatchRequest = new SearchRequest(directMatchState, accessGroups, false);
-        SolrQuery directMatchQuery = this.generateSearch(directMatchRequest);
-        QueryResponse directMatchResponse = this.executeQuery(directMatchQuery);
-        String idField = solrSettings.getFieldName(SearchFieldKeys.ID.name());
-        Set<String> directMatchIds = new HashSet<>(directMatchResponse.getResults().size());
-        for (SolrDocument document : directMatchResponse.getResults()) {
-            directMatchIds.add((String) document.getFirstValue(idField));
-        }
-        return directMatchIds;
-    }
-
-    public HierarchicalBrowseResultResponse getStructureTier(SearchRequest browseRequest) {
-        SearchState fileSearchState = new SearchState(browseRequest.getSearchState());
-
-        CutoffFacet ancestorPath = (CutoffFacet) fileSearchState.getFacets().get(SearchFieldKeys.ANCESTOR_PATH.name());
-        if (ancestorPath != null) {
-            ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
-        } else {
-            ancestorPath = new CutoffFacet(SearchFieldKeys.ANCESTOR_PATH.name(), "1,*");
-            fileSearchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
-        }
-
-        fileSearchState.setFacetsToRetrieve(null);
-        SearchRequest fileSearchRequest = new SearchRequest(fileSearchState, browseRequest.getAccessGroups());
-        SearchResultResponse fileResults = this.getSearchResults(fileSearchRequest);
-
-        HierarchicalBrowseResultResponse response = new HierarchicalBrowseResultResponse();
-        response.setResultList(fileResults.getResultList());
-
-        // Add in a stub root node to top the tree
-        BriefObjectMetadataBean rootNode = new BriefObjectMetadataBean();
-        rootNode.setId(ancestorPath.getSearchKey());
-        rootNode.setAncestorPathFacet(ancestorPath);
-        response.getResultList().add(0, rootNode);
-
-        response.generateResultTree();
-        return response;
     }
 
     /**

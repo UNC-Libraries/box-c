@@ -154,7 +154,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 || resourceType.equals(searchSettings.resourceTypeCollection);
 
         if (retrieveChildrenCount) {
-            briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, principals));
+            briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
         if (retrieveFacets) {
