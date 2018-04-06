@@ -129,15 +129,19 @@ public class XMLImportJob implements Runnable {
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
             sendCompletedEmail(updated, failed);
-        } catch (UpdateException | XMLStreamException e) {
+        } catch (XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
             sendValidationFailureEmail(failed);
-
+        } catch (UpdateException e) {
+            log.error("Submitted document is not a bulk-metadata-update doc");
+            failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
+            sendValidationFailureEmail(failed);
         } finally {
             close();
             cleanup();
         }
+
     }
 
     public UpdateDescriptionService getUpdateService() {
@@ -205,11 +209,11 @@ public class XMLImportJob implements Runnable {
         }
     }
 
-    private void processUpdates() throws XMLStreamException {
+    private void processUpdates() throws XMLStreamException, UpdateException {
         processUpdates(null, null);
     }
 
-    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException {
+    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException, UpdateException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
@@ -232,10 +236,7 @@ public class XMLImportJob implements Runnable {
                             if (element.getName().getLocalPart().equals(BULK_MD_TAG)) {
                                 state = DocumentState.IN_BULK;
                             } else {
-                                log.error("Submitted document is not a bulk-metadata-update doc");
-                                failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
-                                sendValidationFailureEmail(failed);
-                                return;
+                                throw new UpdateException("Submitted document is not a bulk-metadata-update doc");
                             }
                         }
                         break;
