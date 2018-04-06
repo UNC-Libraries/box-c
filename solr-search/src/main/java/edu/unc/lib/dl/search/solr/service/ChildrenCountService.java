@@ -210,6 +210,8 @@ public class ChildrenCountService extends AbstractQueryService {
             // Store the matching count on the container
             if (match != null) {
                 container.getCountMap().put(countName, match.getCount());
+            } else {
+                container.getCountMap().put(countName, Long.valueOf(0));
             }
         }
     }

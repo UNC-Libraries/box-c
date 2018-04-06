@@ -15,6 +15,10 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
+import static edu.unc.lib.dl.util.ResourceType.AdminUnit;
+import static edu.unc.lib.dl.util.ResourceType.Collection;
+import static edu.unc.lib.dl.util.ResourceType.Folder;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -159,10 +163,9 @@ public class SearchStateFactory {
         searchState.setResultFields(new ArrayList<>(searchSettings.resultFields.get("structure")));
 
         List<String> containerTypes = new ArrayList<>();
-        containerTypes.add(searchSettings.resourceTypeCollection);
-        containerTypes.add(searchSettings.resourceTypeFolder);
-        containerTypes.add(searchSettings.resourceTypeContentRoot);
-        containerTypes.add(searchSettings.resourceTypeUnit);
+        containerTypes.add(Collection.name());
+        containerTypes.add(Folder.name());
+        containerTypes.add(AdminUnit.name());
         searchState.setResourceTypes(containerTypes);
 
         searchState.setSortType("title");
