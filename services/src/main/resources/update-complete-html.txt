@@ -1,0 +1,48 @@
+<html>
+<head>
+  <style>
+    dd { margin: 0; }
+    dd + dt { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  {{^issues}}
+    <h3>CDR metadata update completed successfully</h3>
+  {{/issues}}
+  {{#issues}}
+    <h3>CDR metadata update completed with issues: {{fileName}}</h3>
+  {{/issues}}
+
+  {{#outdatedCount}}
+    <h4>Outdated ({{outdatedCount}})</h4>
+    <p>Metadata for these objects was not updated because the repository has a more recent version.</p>
+    <ul>
+      {{#outdated}}
+      <li>{{this}}</li>
+      {{/outdated}}
+    </ul>
+  {{/outdatedCount}}
+
+  {{#failedCount}}
+    <h4>Failed ({{failedCount}})</h4>
+    <dl>
+      {{#failed}}
+        <dt>{{key}}</dt>
+        <dd>{{value}}</dd>
+      {{/failed}}
+    </dl>
+  {{/failedCount}}
+
+  {{#updatedCount}}
+    <h4>Successful ({{updatedCount}})</h4>
+    <ul>
+      {{#updated}}
+      <li>{{this}}</li>
+      {{/updated}}
+      {{#skipped}}
+      <li>{{this}}</li>
+      {{/skipped}}
+    </ul>
+  {{/updatedCount}}
+</body>
+</html>

@@ -1,0 +1,18 @@
+<html>
+<head>
+  <style>
+    dd { margin: 0; }
+    dd + dt { margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h3>CDR metadata update failed validation: {{fileName}}</h3>
+  
+  <dl>
+    {{#problems}}
+      <dt>{{key}}</dt>
+      <dd>{{value}}</dd>
+    {{/problems}}
+  </dl>
+</body>
+</html>
