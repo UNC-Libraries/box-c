@@ -157,7 +157,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         // Turning off rollup because it is really slow
         searchState.setRollup(false);
 
-        SearchRequest facetRequest = new SearchRequest(searchState, true);
+        SearchRequest facetRequest = new SearchRequest(searchState, searchRequest.getAccessGroups(), true);
 
         searchState.setRowsPerPage(0);
         searchState.setResourceTypes(null);
@@ -312,7 +312,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), ancestorPath);
         searchState.setRowsPerPage(0);
         searchState.setFacetsToRetrieve(facetsToRetrieve);
-        return getFacetList(new SearchRequest(searchState, true));
+        return getFacetList(new SearchRequest(searchState, accessGroups, true));
     }
 
     /**

@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,8 +46,8 @@ public class StructureResultsController extends AbstractStructureResultsControll
     String getStructureJSON(@RequestParam(value = "files", required = false) String includeFiles, Model model,
             HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("application/json");
-        HierarchicalBrowseResultResponse result = getStructureResult(null, "true".equals(includeFiles), false, false,
-                request);
+        HierarchicalBrowseResultResponse result = getStructureResult(getContentRootPid().getId(),
+                "true".equals(includeFiles), false, false, request);
         return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
     }
 
@@ -65,8 +67,8 @@ public class StructureResultsController extends AbstractStructureResultsControll
             @RequestParam(value = "files", required = false) String includeFiles,
             Model model, HttpServletRequest request, HttpServletResponse response) {
         response.setContentType("application/json");
-        HierarchicalBrowseResultResponse result = getStructureResult(null, "true".equals(includeFiles), true, false,
-                request);
+        HierarchicalBrowseResultResponse result = getStructureResult(getContentRootPid().getId(),
+                "true".equals(includeFiles), true, false, request);
         return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
     }
 

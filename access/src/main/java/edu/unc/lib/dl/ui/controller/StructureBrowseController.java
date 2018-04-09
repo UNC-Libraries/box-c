@@ -28,14 +28,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
-import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
-import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
@@ -82,28 +78,12 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
     public String getSingleTier(@PathVariable("pid") String pid,
             @RequestParam(value = "files", required = false) String includeFiles,
             Model model, HttpServletRequest request, HttpServletResponse response) {
-        BriefObjectMetadataBean selectedContainer =
-                queryLayer.getObjectById(new SimpleIdRequest(pid, tierResultFieldsList));
-        if (selectedContainer == null) {
-            throw new ResourceNotFoundException("Object " + pid + " was not found.");
-        }
 
-        SearchRequest browseRequest = new SearchRequest();
-        generateSearchRequest(request, null, browseRequest);
-        SearchState searchState = browseRequest.getSearchState();
-        searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedContainer.getPath());
-        if ("only".equals(includeFiles)) {
-            searchState.setResourceTypes(Arrays.asList(searchSettings.resourceTypeFile));
-        } else if ("true".equals(includeFiles)) {
-            searchState.setResourceTypes(null);
-        } else {
-            searchState.setResourceTypes(Arrays.asList("!" + searchSettings.resourceTypeFile));
-        }
+        HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, Boolean.parseBoolean(includeFiles), false, false, request);
 
-        HierarchicalBrowseResultResponse resultResponse = structureService.getStructureTier(browseRequest);
         model.addAttribute("structureResults", resultResponse);
 
-        String searchStateUrl = SearchStateUtil.generateStateParameterString(browseRequest.getSearchState());
+        String searchStateUrl = SearchStateUtil.generateStateParameterString(resultResponse.getSearchState());
         model.addAttribute("searchStateUrl", searchStateUrl);
 
         model.addAttribute("template", "ajax");

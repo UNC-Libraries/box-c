@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -65,6 +67,7 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
 
         // Request object for the search
         HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
+        browseRequest.setAccessGroups(getAgentPrincipals().getPrincipals());
         browseRequest.setRetrieveFacets(retrieveFacets);
         if (retrieveFacets) {
             browseRequest.setSearchState(this.searchStateFactory.createHierarchicalBrowseSearchState(request

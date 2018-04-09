@@ -16,8 +16,7 @@ define('StructureEntry', [ 'jquery', 'jquery-ui', 'tpl!../templates/structureEnt
 		this.node = this.options.node;
 		this.metadata = this.node.entry;
 		this.entryId = "str_" + this.metadata.id.substring(this.metadata.id.indexOf(':') + 1)
-		this.isAContainer = this.metadata.type == "Collection" || this.metadata.type == "Folder" 
-				|| this.metadata.type == "Aggregate";
+		this.isAContainer = this.metadata.type != "File";
 		
 		if (this.node.children) {
 			this.childEntries = [];
