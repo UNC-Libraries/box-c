@@ -387,14 +387,12 @@ public class RepositoryObjectFactory {
          if (content == null) {
              throw new IllegalArgumentException("Cannot update a binary object from a null content stream");
          }
-         // Upload the binary and provided technical metadata
-         URI resultUri;
          // Track the URI where metadata updates would be made for this binary
          URI describedBy;
          URI updatePath = URI.create(URIUtil.join(path, slug));
+
          try (FcrepoResponse response = getClient().put(updatePath).body(content, mimetype).filename(filename)
                  .digestSha1(sha1Checksum).digestMd5(md5Checksum).perform()) {
-             resultUri = response.getLocation();
              describedBy = response.getLinkHeaders("describedby").get(0);
          } catch (IOException e) {
              throw new FedoraException("Unable to update binary at " + updatePath, e);
@@ -408,7 +406,7 @@ public class RepositoryObjectFactory {
          }
          if (model != null) {
              // Add in pcdm:File type to model
-             model = populateModelTypes(resultUri, model, Arrays.asList(PcdmModels.File));
+             model = populateModelTypes(updatePath, model, Arrays.asList(PcdmModels.File));
 
              // If a model was provided, then add the triples to the binary's metadata
              // Turn model into sparql update query
@@ -422,7 +420,7 @@ public class RepositoryObjectFactory {
                  throw ClientFaultResolver.resolve(e);
              }
          }
-         return new BinaryObject(PIDs.get(resultUri), repoObjDriver, this);
+         return new BinaryObject(PIDs.get(updatePath), repoObjDriver, this);
      }
 
     /**
