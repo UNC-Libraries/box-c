@@ -79,7 +79,8 @@ public class StructureBrowseController extends AbstractStructureResultsControlle
             @RequestParam(value = "files", required = false) String includeFiles,
             Model model, HttpServletRequest request, HttpServletResponse response) {
 
-        HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, Boolean.parseBoolean(includeFiles), false, false, request);
+        HierarchicalBrowseResultResponse resultResponse = getStructureResult(pid, Boolean.parseBoolean(includeFiles),
+                false, false, request);
 
         model.addAttribute("structureResults", resultResponse);
 

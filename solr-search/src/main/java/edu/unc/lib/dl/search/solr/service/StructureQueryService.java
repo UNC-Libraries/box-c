@@ -176,7 +176,8 @@ public class StructureQueryService extends AbstractQueryService {
      * @param tierPath path facet identifying the container whose children will be retrieved.
      * @return
      */
-    private HierarchicalBrowseResultResponse retrieveTier(HierarchicalBrowseRequest browseRequest, CutoffFacet tierPath) {
+    private HierarchicalBrowseResultResponse retrieveTier(HierarchicalBrowseRequest browseRequest,
+            CutoffFacet tierPath) {
         SearchState browseState = (SearchState) browseRequest.getSearchState().clone();
         AccessGroupSet principals = browseRequest.getAccessGroups();
         HierarchicalBrowseResultResponse browseResults = new HierarchicalBrowseResultResponse();
