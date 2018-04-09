@@ -29,7 +29,7 @@ import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.util.ContentModelHelper;
+import edu.unc.lib.dl.util.ResourceType;
 
 /**
  *
@@ -46,8 +46,9 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
 
     public HierarchicalBrowseResultResponse() {
         super();
-        subcontainerCounts = new HashMap<String, Long>();
-        matchingContainerPids = new HashSet<String>();
+        subcontainerCounts = new HashMap<>();
+        matchingContainerPids = new HashSet<>();
+        setResultList(new ArrayList<>());
     }
 
     public void setSearchResultResponse(SearchResultResponse response) {
@@ -67,7 +68,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     public void populateSubcontainerCounts(List<FacetField> facetFields) {
-        subcontainerCounts = new HashMap<String, Long>();
+        subcontainerCounts = new HashMap<>();
         for (FacetField facetField : facetFields) {
             if (facetField.getValues() != null) {
                 for (FacetField.Count facetValue : facetField.getValues()) {
@@ -86,11 +87,12 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         ListIterator<BriefObjectMetadata> resultIt = this.getResultList().listIterator(this.getResultList().size());
         while (resultIt.hasPrevious()) {
             BriefObjectMetadata briefObject = resultIt.previous();
-            if (briefObject == null || briefObject.getContentModel() == null) {
+            if (briefObject == null || briefObject.getResourceType() == null) {
                 continue;
             }
+            String resourceType = briefObject.getResourceType();
             if ((!briefObject.getCountMap().containsKey("child") || briefObject.getCountMap().get("child") == 0)
-                    && briefObject.getContentModel().contains(ContentModelHelper.Model.CONTAINER.toString())) {
+                    && !ResourceType.File.equals(resourceType)) {
                 if (this.matchingContainerPids != null && this.matchingContainerPids.contains(briefObject.getId())) {
                     // The container was directly found by the users query, so leave it as is.
                 } else {
@@ -115,7 +117,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     public void populateMatchingContainerPids(SolrDocumentList containerList, String fieldName) {
-        this.matchingContainerPids = new HashSet<String>();
+        this.matchingContainerPids = new HashSet<>();
         for (SolrDocument container : containerList) {
             this.matchingContainerPids.add((String) container.getFirstValue(fieldName));
 
@@ -123,12 +125,12 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     /**
-     * Appends item results to the end of the list and adds them as children of the root.
+     * Appends item results to the end of the list
      *
      * @param itemResults
      */
     public void populateItemResults(List<BriefObjectMetadata> itemResults) {
-        this.getResultList().addAll(itemResults);
+        getResultList().addAll(itemResults);
     }
 
     /**
@@ -142,10 +144,12 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
             return;
         }
 
-        Map<String, ResultNode> nodeMap = new HashMap<String, ResultNode>();
-        ResultNode parentNode = new ResultNode(this.getResultList().get(0));
+        Map<String, ResultNode> nodeMap = new HashMap<>();
+        if (rootNode == null) {
+            rootNode = new ResultNode(this.getResultList().get(0));
+        }
+        ResultNode parentNode = rootNode;
         nodeMap.put(parentNode.getMetadata().getId(), parentNode);
-        this.rootNode = parentNode;
 
         for (int i = 1; i < this.getResultList().size(); i++) {
             BriefObjectMetadata metadata = this.getResultList().get(i);
@@ -219,7 +223,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     }
 
     public void setMatchingContainerPids(List<String> matchingContainerPids) {
-        this.matchingContainerPids = new HashSet<String>(matchingContainerPids);
+        this.matchingContainerPids = new HashSet<>(matchingContainerPids);
     }
 
     public ResultNode getRootNode() {
@@ -236,7 +240,7 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         boolean isTopLevel;
 
         public ResultNode() {
-            this.children = new ArrayList<ResultNode>();
+            this.children = new ArrayList<>();
         }
 
         public ResultNode(BriefObjectMetadata metadata) {

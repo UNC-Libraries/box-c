@@ -54,6 +54,7 @@ import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
 import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
+import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 
 /**
  *
@@ -268,6 +269,37 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
 
         assertEquals("Both immediate children should return", 2, rootNode.getChildren().size());
         assertNotNull("Folder with subject must be returned", getChildByPid(rootNode, filterPid));
+    }
+
+    @Test
+    public void testGetStructureWithSearch() throws Exception {
+        // Add a child to coll1 with a subject for filter matching
+        PID filterPid = PIDs.get(UUID.randomUUID().toString());
+        SolrInputDocument doc = testCorpus.makeContainerDocument(filterPid, "with subj", Folder,
+                testCorpus.rootPid, testCorpus.unitPid, testCorpus.coll1Pid);
+        doc.setField("title", "target item");
+        index(doc);
+
+        // Add title search to state
+        SearchState searchState = new SearchState();
+        searchState.getSearchFields().put(SearchFieldKeys.TITLE.name(), "\"target item\"");
+
+        HierarchicalBrowseRequest browseRequest = makeRequest(testCorpus.coll1Pid);
+        browseRequest.setSearchState(searchState);
+
+        HierarchicalBrowseResultResponse resp =
+                structureService.getHierarchicalBrowseResults(browseRequest);
+
+        ResultNode rootNode = resp.getRootNode();
+        BriefObjectMetadata coll1Md = rootNode.getMetadata();
+        assertEquals("Root object must be coll1", testCorpus.coll1Pid.getId(), coll1Md.getId());
+
+        // Counts should only reflect what matches filters
+        assertCountEquals("Incorrect number of child objects", 1, coll1Md, CHILD_COUNT);
+        assertCountEquals("Incorrect number of child containers", 1, coll1Md, CONTAINERS_COUNT);
+
+        assertEquals("Only matching child should return", 1, rootNode.getChildren().size());
+        assertNotNull("Folder with title must be returned", getChildByPid(rootNode, filterPid));
     }
 
     @Test
