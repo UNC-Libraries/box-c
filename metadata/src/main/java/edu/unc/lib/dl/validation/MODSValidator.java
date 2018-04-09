@@ -111,6 +111,11 @@ public class MODSValidator {
         Document svrl = this.getSchematronValidator().validate(
                 streamSrc, "vocabularies-mods");
 
+        try {
+            docStream.reset();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to reset document stream", e);
+        }
         if (this.getSchematronValidator().hasFailedAssertions(svrl)) {
             String failedAssertionMessage = svrl.getRootElement()
                     .getChildren("failed-assert", SCHEMATRON_VALIDATION_REPORT_NS).stream()
