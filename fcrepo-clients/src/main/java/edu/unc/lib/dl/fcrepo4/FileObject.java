@@ -107,16 +107,8 @@ public class FileObject extends ContentObject {
     public BinaryObject replaceOriginalFile(InputStream contentStream, String filename,
             String mimetype, String sha1Checksum, String md5Checksum) {
 
-        // Construct the path to where the original file will be created
-        String objectPath = constructOriginalFilePath();
-
-        // Add the OriginalFile use type
-        Model fileModel = ModelFactory.createDefaultModel();
-        Resource resc = fileModel.createResource(objectPath);
-        resc.addProperty(RDF.type, PcdmUse.OriginalFile);
-
         return repoObjFactory.updateBinary(fileSetUri, ORIGINAL_FILE, contentStream,
-                filename, mimetype, sha1Checksum, md5Checksum, fileModel);
+                filename, mimetype, sha1Checksum, md5Checksum, null);
     }
 
 
