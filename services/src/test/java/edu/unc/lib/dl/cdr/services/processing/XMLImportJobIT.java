@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,7 +34,10 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.tika.io.IOUtils;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +59,7 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
  *
@@ -114,10 +118,11 @@ public class XMLImportJobIT {
     }
 
     @Test
-    public void test() throws IOException {
-        populateFedora();
+    public void testMODSGetsUpdated() throws Exception {
+        populateFedora("uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad");
         InputStream originalMods = workObj.getMODS().getBinaryStream();
-        importFile = createTempImportFile();
+        assertModsNotUpdated(originalMods);
+        importFile = createTempImportFile("src/test/resources/mods/update-work-mods.xml");
         createJob();
 
         job.run();
@@ -125,7 +130,60 @@ public class XMLImportJobIT {
         verify(mailSender).send(any(MimeMessage.class));
 
         InputStream updatedMods = objLoader.getWorkObject(workObj.getPid()).getMODS().getBinaryStream();
-        assertFalse(IOUtils.contentEquals(originalMods, updatedMods));
+
+        assertModsUpdated(updatedMods);
+    }
+
+    @Test
+    public void testUpdateFileMissingBulkMetadataTag() throws Exception {
+        populateFedora("uuid:bf0091e0-192d-46f9-a8ad-8b0dc82f33be");
+        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        importFile = createTempImportFile("src/test/resources/mods/bad-update-work-mods.xml");
+        createJob();
+
+        job.run();
+
+        assertModsNotUpdated(originalMods);
+        verify(mailSender).send(any(MimeMessage.class));
+        assertEquals("File is not a bulk-metadata-update doc", job.getFailed().get(importFile.getAbsolutePath()));
+    }
+
+    @Test
+    public void testUpdateFileHasXMLErrors() throws Exception {
+        populateFedora("uuid:ca0091e0-192d-46f9-a8ad-8b0dc82f33cf");
+        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        importFile = createTempImportFile("src/test/resources/mods/bad-xml.xml");
+        createJob();
+
+        job.run();
+
+        assertModsNotUpdated(originalMods);
+        verify(mailSender).send(any(MimeMessage.class));
+        assertEquals("The import file contains XML errors", job.getFailed().get(importFile.getAbsolutePath()));
+    }
+
+    private void assertModsUpdated(InputStream updatedMods) throws JDOMException, IOException {
+        SAXBuilder builder = new SAXBuilder();
+        Document doc = builder.build(updatedMods);
+        Element rootEl = doc.getRootElement();
+        Element title = rootEl.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("title",
+                JDOMNamespaceUtil.MODS_V3_NS);
+        Element dateCreated = rootEl.getChild("originInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("dateCreated",
+                JDOMNamespaceUtil.MODS_V3_NS);
+        assertEquals("Updated Work Test", title.getValue());
+        assertEquals("2018-04-06", dateCreated.getValue());
+    }
+
+    private void assertModsNotUpdated(InputStream originalMods) throws JDOMException, IOException {
+        SAXBuilder builder = new SAXBuilder();
+        Document doc = builder.build(originalMods);
+        Element rootEl = doc.getRootElement();
+        Element title = rootEl.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("title",
+                JDOMNamespaceUtil.MODS_V3_NS);
+        Element dateCreated = rootEl.getChild("originInfo", JDOMNamespaceUtil.MODS_V3_NS).getChild("dateCreated",
+                JDOMNamespaceUtil.MODS_V3_NS);
+        assertEquals("Work Test", title.getValue());
+        assertEquals("2017-10-09", dateCreated.getValue());
     }
 
     private void createJob() {
@@ -138,17 +196,17 @@ public class XMLImportJobIT {
         job.setMimeMessage(mimeMsg);
     }
 
-    private File createTempImportFile() throws IOException {
+    private File createTempImportFile(String filename) throws IOException {
         File tempImportFile = new File(tempDir, "temp-import");
-        Files.copy(Paths.get("src/test/resources/mods/update-work-mods.xml"), tempImportFile.toPath(),
+        Files.copy(Paths.get(filename), tempImportFile.toPath(),
                 StandardCopyOption.REPLACE_EXISTING);
         File importFile = new File(tempImportFile.getPath());
         return importFile;
     }
 
-    private void populateFedora() throws FileNotFoundException {
+    private void populateFedora(String pid) throws FileNotFoundException {
         Model model = ModelFactory.createDefaultModel();
-        PID workPid = PIDs.get("uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad");
+        PID workPid = PIDs.get(pid);
         workObj = factory.createWorkObject(workPid, model);
         workObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
     }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bulkMetadata>
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Work Test</title>
+    </titleInfo>
+  <originInfo>
+    <dateCreated encoding="iso8601" keyDate="yes">2017-10-09</dateCreated>
+  </originInfo>
+  

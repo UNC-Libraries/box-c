@@ -200,6 +200,22 @@ public class XMLImportJob implements Runnable {
         this.msg = msg;
     }
 
+    public List<String> getUpdated() {
+        return updated;
+    }
+
+    public void setUpdated(List<String> updated) {
+        this.updated = updated;
+    }
+
+    public Map<String, String> getFailed() {
+        return failed;
+    }
+
+    public void setFailed(Map<String, String> failed) {
+        this.failed = failed;
+    }
+
     private void initializeXMLReader() throws UpdateException {
         XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
         try {
