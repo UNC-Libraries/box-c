@@ -268,10 +268,11 @@
     <bean id="indexTreeInplaceAction"
         class="edu.unc.lib.dl.data.ingest.solr.action.IndexTreeInplaceAction">
         <property name="pipeline" ref="solrFullUpdatePipeline" />
-        <property name="solrSettings" ref="solrSettings" />
         <property name="solrSearchService" ref="queryLayer" />
         <property name="accessGroups" ref="accessGroups" />
         <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
     
     <bean id="indexTreeCleanAction"
@@ -281,6 +282,8 @@
         <property name="solrSearchService" ref="queryLayer" />
         <property name="accessGroups" ref="accessGroups" />
         <property name="updateDelay" value="${conductor.solr.beforeExecuteDelay}"/>
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
     </bean>
 
     <bean id="clearIndexAction" class="edu.unc.lib.dl.data.ingest.solr.action.ClearIndexAction">

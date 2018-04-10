@@ -40,10 +40,12 @@ import edu.unc.lib.dl.test.TestHelper;
 @ContextConfiguration({"/spring-test/test-fedora-container.xml"})
 public class TransactionalFcrepoClientIT {
 
+    private static final int BASE_PORT = 48085;
     private static final String BASE_PATH = "http://localhost:48085/rest/";
     private static final URI BASE_URI = URI.create(BASE_PATH);
 
     private static final String HOST_HEADER = "boxy.example.com";
+    private static final String ALT_PATH = "http://boxy.example.com:123/rest/";
 
     private TransactionalFcrepoClient fcrepoClient;
 
@@ -82,6 +84,8 @@ public class TransactionalFcrepoClientIT {
 
             Resource resc = model.getResource(nonTxObjUri);
             assertTrue("Subject must be non-tx uri", resc.hasProperty(RDF.type));
+        } finally {
+            tx.close();
         }
     }
 
@@ -98,5 +102,48 @@ public class TransactionalFcrepoClientIT {
 
         assertEquals("Response must use provided Host.",
                 HOST_HEADER, objUri.getHost());
+        assertEquals("Response must not specify port", -1, objUri.getPort());
+    }
+
+    @Test
+    public void testRequestWithRebasedUri() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .build();
+
+        URI offBaseUri = URI.create(ALT_PATH);
+
+        URI objUri;
+        try (FcrepoResponse response = fcrepoClient.post(offBaseUri).perform()) {
+            objUri = response.getLocation();
+        }
+
+        assertEquals("Response must use real host", "localhost", objUri.getHost());
+        assertEquals("Response must use real port", BASE_PORT, objUri.getPort());
+    }
+
+    @Test
+    public void testRequestWithRebasedHostAndTx() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .hostHeader(HOST_HEADER)
+                .build();
+
+        txManager.setClient(fcrepoClient);
+
+        FedoraTransaction tx = txManager.startTransaction();
+        String txPath = tx.getTxUri().toString();
+
+        String requestPath = txPath.replace(BASE_PATH, ALT_PATH);
+        URI offBaseUri = URI.create(requestPath);
+
+        URI objUri;
+        try (FcrepoResponse response = fcrepoClient.post(offBaseUri).perform()) {
+            objUri = response.getLocation();
+        } finally {
+            tx.close();
+        }
+
+        assertEquals("Response must use provided Host.",
+                HOST_HEADER, objUri.getHost());
+        assertEquals("Response must not specify port", -1, objUri.getPort());
     }
 }
