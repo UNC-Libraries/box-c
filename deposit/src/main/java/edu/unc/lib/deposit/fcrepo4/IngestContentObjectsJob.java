@@ -657,7 +657,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
             return;
         }
         try (InputStream modsStream = FileUtils.openInputStream(modsFile)) {
-            obj.addDescription(modsStream);
+            obj.setDescription(modsStream);
         }
     }
 
