@@ -20,6 +20,7 @@ import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
@@ -91,6 +92,7 @@ public class BinaryMetadataProcessor implements Processor {
                 in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
                 in.setHeader(CdrBinaryMimeType, binaryMimeType);
                 in.setHeader(CdrBinaryUri, fcrepoBinaryUri);
+                in.setHeader(CdrBinarySubPath, binaryPath);
             }
         } finally {
             resources.close();
