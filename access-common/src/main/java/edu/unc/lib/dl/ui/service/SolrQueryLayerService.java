@@ -304,7 +304,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 	 *           Access groups of the user making this request.
 	 * @return
 	 */
-	public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadataBean metadata, int windowSize,
+	public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadata metadata, int windowSize,
 			AccessGroupSet accessGroups) {
 
 		// Get the common access restriction clause (starts with "AND ...")
@@ -382,7 +382,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		}
 
 		if (right >= total) {
-			left -= (right - total) + 1;
+			left -= (right - total);
 			if (left < 0) {
 				left = 0;
 			}
