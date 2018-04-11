@@ -368,7 +368,7 @@ public class RepositoryObjectFactory {
      * @param path
      *        Repository path for the binary that will be updated
      * @param slug
-     *        Name in the path for the binary resource. Optional.
+     *        Name in the path for the binary resource.
      * @param content
      *        Input stream containing the binary content for this resource.
      * @param filename
@@ -389,6 +389,9 @@ public class RepositoryObjectFactory {
          }
          // Track the URI where metadata updates would be made for this binary
          URI describedBy;
+         if (path == null || slug == null) {
+             throw new IllegalArgumentException("Path and slug for binary must both not be null");
+         }
          URI updatePath = URI.create(URIUtil.join(path, slug));
 
          try (FcrepoResponse response = getClient().put(updatePath).body(content, mimetype).filename(filename)
