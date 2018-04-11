@@ -32,8 +32,6 @@ import java.nio.file.StandardCopyOption;
 
 import javax.mail.internet.MimeMessage;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -55,7 +53,6 @@ import com.samskivert.mustache.Template;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
@@ -101,8 +98,6 @@ public class XMLImportJobIT {
 
     @Autowired
     private RepositoryObjectFactory factory;
-    @Autowired
-    private RepositoryObjectLoader objLoader;
     private WorkObject workObj;
 
     @Before
@@ -129,9 +124,59 @@ public class XMLImportJobIT {
 
         verify(mailSender).send(any(MimeMessage.class));
 
-        InputStream updatedMods = objLoader.getWorkObject(workObj.getPid()).getMODS().getBinaryStream();
+        InputStream updatedMods = workObj.getMODS().getBinaryStream();
 
         assertModsUpdated(updatedMods);
+    }
+
+    @Test
+    public void testTwoWorksOneGetsUpdated() throws Exception {
+        populateFedora("uuid:ae0091e0-192d-57a0-a8ad-8b0dc82f33ad");
+        // create a second work obj in Fedora and add mods to it
+        PID anotherWorkPid = PIDs.get("uuid:bf0091e0-192d-57a0-a8ad-8b0dc82f33be");
+        WorkObject anotherWorkObj = factory.createWorkObject(anotherWorkPid, null);
+        anotherWorkObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
+
+        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        InputStream anotherOriginalMods = anotherWorkObj.getMODS().getBinaryStream();
+        assertModsNotUpdated(originalMods);
+        assertModsNotUpdated(anotherOriginalMods);
+
+        importFile = createTempImportFile("src/test/resources/mods/two-works-missing-pid-mods.xml");
+        createJob();
+
+        job.run();
+
+        verify(mailSender).send(any(MimeMessage.class));
+        InputStream updatedMods = workObj.getMODS().getBinaryStream();
+        InputStream anotherUpdatedMods = anotherWorkObj.getMODS().getBinaryStream();
+        assertModsUpdated(updatedMods);
+        assertModsNotUpdated(anotherUpdatedMods);
+    }
+
+    @Test
+    public void testTwoObjectsUpdatedSingleRequest() throws Exception {
+        populateFedora("uuid:ae0091e0-192d-57a0-a8ad-9c1dc82f33ad");
+        // create a second work obj in Fedora and add mods to it
+        PID anotherWorkPid = PIDs.get("uuid:bf0091e0-192d-57a0-b9be-8b0dc82f33be");
+        WorkObject anotherWorkObj = factory.createWorkObject(anotherWorkPid, null);
+        anotherWorkObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
+
+        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        InputStream anotherOriginalMods = anotherWorkObj.getMODS().getBinaryStream();
+        assertModsNotUpdated(originalMods);
+        assertModsNotUpdated(anotherOriginalMods);
+
+        importFile = createTempImportFile("src/test/resources/mods/two-works-mods.xml");
+        createJob();
+
+        job.run();
+
+        verify(mailSender).send(any(MimeMessage.class));
+        InputStream updatedMods = workObj.getMODS().getBinaryStream();
+        InputStream anotherUpdatedMods = anotherWorkObj.getMODS().getBinaryStream();
+        assertModsUpdated(updatedMods);
+        assertModsUpdated(anotherUpdatedMods);
     }
 
     @Test
@@ -146,6 +191,19 @@ public class XMLImportJobIT {
         assertModsNotUpdated(originalMods);
         verify(mailSender).send(any(MimeMessage.class));
         assertEquals("File is not a bulk-metadata-update doc", job.getFailed().get(importFile.getAbsolutePath()));
+    }
+
+    @Test
+    public void testUpdateFileMissingUpdateTag() throws Exception {
+        populateFedora("uuid:bf0091e0-203e-46f9-a8ad-8b0dc82f33be");
+        InputStream originalMods = workObj.getMODS().getBinaryStream();
+        importFile = createTempImportFile("src/test/resources/mods/no-update-mods.xml");
+        createJob();
+
+        job.run();
+
+        assertModsNotUpdated(originalMods);
+        verify(mailSender).send(any(MimeMessage.class));
     }
 
     @Test
@@ -205,9 +263,8 @@ public class XMLImportJobIT {
     }
 
     private void populateFedora(String pid) throws FileNotFoundException {
-        Model model = ModelFactory.createDefaultModel();
         PID workPid = PIDs.get(pid);
-        workObj = factory.createWorkObject(workPid, model);
+        workObj = factory.createWorkObject(workPid, null);
         workObj.setDescription(new FileInputStream(new File("src/test/resources/mods/work-mods.xml")));
     }
 
