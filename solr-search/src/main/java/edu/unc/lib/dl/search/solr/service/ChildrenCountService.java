@@ -60,15 +60,6 @@ public class ChildrenCountService extends AbstractQueryService {
     public long getChildrenCount(BriefObjectMetadata container, AccessGroupSet principals) {
         SolrQuery solrQuery = createBaseQuery(principals);
 
-        // Add access restrictions to query
-        StringBuilder query = new StringBuilder("*:*");
-        restrictionUtil.add(query, principals);
-        solrQuery.setQuery(query.toString());
-
-        solrQuery.setStart(0);
-        solrQuery.setRows(0);
-        solrQuery.setFacet(true);
-
         StringBuilder filterQuery = new StringBuilder();
         addFilter(filterQuery, ANCESTOR_PATH, container.getPath().getSearchValue());
         solrQuery.addFilterQuery(filterQuery.toString());
@@ -85,7 +76,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * Adds a count of the number of children contained by each object in result
      * list.
      *
-     * This count is stored in the containers count map under the "child" key.
+     * This count is stored in the container's count map under the "child" key.
      *
      * @param containers containers to add child counts to.
      * @param principals agent principals
@@ -99,7 +90,7 @@ public class ChildrenCountService extends AbstractQueryService {
      * list.
      *
      * The count will be calculated based on any restrictions from baseQuery if
-     * it is provided. The count will be stored in each containers count map
+     * it is provided. The count will be stored in each container's count map
      * under the provided countKey.
      *
      * @param containers containers to add child counts to.
@@ -128,8 +119,9 @@ public class ChildrenCountService extends AbstractQueryService {
             // Make sure we aren't returning any normal results
             solrQuery.setRows(0);
             // Remove all facet fields so we are only getting ancestor path
-            if (solrQuery.getFacetFields() != null) {
-                for (String facetField : solrQuery.getFacetFields()) {
+            String[] facetFields = solrQuery.getFacetFields();
+            if (facetFields != null) {
+                for (String facetField : facetFields) {
                     solrQuery.removeFacetField(facetField);
                 }
             }

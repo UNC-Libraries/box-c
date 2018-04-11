@@ -87,14 +87,15 @@ public class StructureQueryService extends AbstractQueryService {
 
         // Get the path of the root object being requested for iteration
         CutoffFacet path = getObjectPath(browseRequest.getRootPid(), principals);
-        if (path.getFacetNodes() == null) {
+        List<HierarchicalFacetNode> pathFacetNodes = path.getFacetNodes();
+        if (pathFacetNodes == null) {
             return browseResponse;
         }
 
         // Path facet used to find immediate children of ancestor containers, built up one tier at a time
         CutoffFacet stepPath = new CutoffFacet(ANCESTOR_PATH.name(), asList(), 0);
         // Retrieve immediate children of all objects in the hierarchy leading up to the target container
-        for (HierarchicalFacetNode stepFacetNode : path.getFacetNodes()) {
+        for (HierarchicalFacetNode stepFacetNode : pathFacetNodes) {
             // Add the next tier's identifier to the search facet
             stepPath.addNode(stepFacetNode);
 

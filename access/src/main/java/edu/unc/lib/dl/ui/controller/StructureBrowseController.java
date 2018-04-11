@@ -35,10 +35,9 @@ import edu.unc.lib.dl.search.solr.util.SearchStateUtil;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
- * Handles requests for the heirarchical structure browse view. The request may either be for an entire stand alone
- * view, or if the ajax option is true then a portion of the tree starting from the room node. The request can specify
- * the max depth in terms of nodes in the tree it will return, where the max depth is limited by the application wide
- * structured depth property.
+ * Handles requests for the hierarchical structure-browse view. The request may
+ * either be for an entire stand-alone view or, if the ajax option is true, for
+ * a portion of the tree starting from the root node.
  *
  * @author bbpennel
  */

@@ -23,7 +23,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.slf4j.Logger;
@@ -39,14 +38,12 @@ import edu.unc.lib.dl.util.ResourceType;
 public class HierarchicalBrowseResultResponse extends SearchResultResponse {
     protected static final Logger log = LoggerFactory.getLogger(HierarchicalBrowseResultResponse.class);
 
-    private Map<String, Long> subcontainerCounts;
     private Set<String> matchingContainerPids = null;
     private Long rootCount;
     private ResultNode rootNode;
 
     public HierarchicalBrowseResultResponse() {
         super();
-        subcontainerCounts = new HashMap<>();
         matchingContainerPids = new HashSet<>();
         setResultList(new ArrayList<>());
     }
@@ -57,30 +54,6 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
         this.setGeneratedQuery(response.getGeneratedQuery());
         this.setResultList(response.getResultList());
         this.setSearchState(response.getSearchState());
-    }
-
-    public Map<String, Long> getSubcontainerCounts() {
-        return subcontainerCounts;
-    }
-
-    public void setSubcontainerCounts(Map<String, Long> subcontainerCounts) {
-        this.subcontainerCounts = subcontainerCounts;
-    }
-
-    public void populateSubcontainerCounts(List<FacetField> facetFields) {
-        subcontainerCounts = new HashMap<>();
-        for (FacetField facetField : facetFields) {
-            if (facetField.getValues() != null) {
-                for (FacetField.Count facetValue : facetField.getValues()) {
-                    log.debug("Popsub|" + facetValue.getName() + ":" + facetValue.getCount());
-                    int index = facetValue.getName().indexOf(",");
-                    index = facetValue.getName().indexOf(",", index + 1);
-                    if (index != -1) {
-                        subcontainerCounts.put(facetValue.getName().substring(0, index), facetValue.getCount());
-                    }
-                }
-            }
-        }
     }
 
     public void removeContainersWithoutContents() {
@@ -99,18 +72,6 @@ public class HierarchicalBrowseResultResponse extends SearchResultResponse {
                     log.debug("Removing container " + briefObject.getId()
                             + "from hierarchical result because it has no children");
                     resultIt.remove();
-                    // If an item is being filtered out, then decrement the counts for it and all its ancestors in
-                    // subcontainer counts
-                    if (briefObject.getAncestorPathFacet() != null
-                            && briefObject.getAncestorPathFacet().getFacetNodes() != null) {
-                        for (HierarchicalFacetNode facetTier : briefObject.getAncestorPathFacet().getFacetNodes()) {
-                            String tierIdentifier = facetTier.getSearchValue();
-                            Long count = this.subcontainerCounts.get(tierIdentifier);
-                            if (count != null) {
-                                this.subcontainerCounts.put(tierIdentifier, count - 1);
-                            }
-                        }
-                    }
                 }
             }
         }
