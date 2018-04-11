@@ -129,7 +129,7 @@ public class XMLImportJob implements Runnable {
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
             sendCompletedEmail(updated, failed);
-        } catch (XMLStreamException e) {
+        } catch (FileNotFoundException | XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
             sendValidationFailureEmail(failed);
@@ -204,25 +204,14 @@ public class XMLImportJob implements Runnable {
         return updated;
     }
 
-    public void setUpdated(List<String> updated) {
-        this.updated = updated;
-    }
-
     public Map<String, String> getFailed() {
         return failed;
     }
 
-    public void setFailed(Map<String, String> failed) {
-        this.failed = failed;
-    }
-
-    private void initializeXMLReader() throws UpdateException {
+    private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
         XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
-        try {
-            xmlReader = xmlFactory.createXMLEventReader(new FileInputStream(importFile));
-        } catch (FileNotFoundException | XMLStreamException e) {
-            throw new UpdateException("Failed to read metadata update package for " + username, e);
-        }
+        xmlReader = xmlFactory.createXMLEventReader(new FileInputStream(importFile));
+
     }
 
     private void processUpdates() throws XMLStreamException, UpdateException {
