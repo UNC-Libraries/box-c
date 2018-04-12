@@ -15,7 +15,11 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TITLE_LC;
+import static edu.unc.lib.dl.search.solr.util.SolrSettings.sanitize;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
+import static java.lang.Math.ceil;
+import static java.lang.Math.floor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,11 +36,8 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
-import org.apache.solr.client.solrj.response.GroupCommand;
-import org.apache.solr.client.solrj.response.GroupResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.params.GroupParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,8 +82,6 @@ public class SolrQueryLayerService extends SolrSearchService {
 	protected SearchStateFactory searchStateFactory;
 	protected PID collectionsPid;
 	protected ObjectPathFactory pathFactory;
-
-	private static int NEIGHBOR_SEEK_PAGE_SIZE = 500;
 
 	/**
 	 * Returns a list of the most recently added items in the collection
@@ -320,19 +319,12 @@ public class SolrQueryLayerService extends SolrSearchService {
 
 		// Restrict query to files/aggregates and objects within the same parent
 		SolrQuery solrQuery = new SolrQuery();
-		solrQuery.setQuery("*:*" + accessRestrictionClause);
 
 		solrQuery.setFacet(true);
-		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":File "
-				+ solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) + ":Aggregate");
+		solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name()) 
+				+ ":(" + ResourceType.File.name() + " OR " + ResourceType.Aggregate.name() + ")");
 
-		CutoffFacet ancestorPath = null;
-		if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)
-				|| metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-			ancestorPath = metadata.getAncestorPathFacet();
-		} else {
-			ancestorPath = metadata.getPath();
-		}
+		CutoffFacet ancestorPath = metadata.getAncestorPathFacet();
 		if (ancestorPath != null) {
 			// We want only objects at the same level of the hierarchy
 			ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
@@ -340,66 +332,92 @@ public class SolrQueryLayerService extends SolrSearchService {
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
 
-		// Sort neighbors using the default sort
-		addSort(solrQuery, "default", true);
+		// Sort neighbors using the title sort
+		addSort(solrQuery, "title", true);
 
-
-		// Query for ids in this container in groups of NEIGHBOR_SEEK_PAGE_SIZE until we find the offset of the object
-		solrQuery.setRows(NEIGHBOR_SEEK_PAGE_SIZE);
-		solrQuery.setFields("id");
-
-		long total = -1;
-		int start = 0;
-		pageLoop: do {
-			try {
-				solrQuery.setStart(start);
-				QueryResponse queryResponse = this.executeQuery(solrQuery);
-				total = queryResponse.getResults().getNumFound();
-				for (SolrDocument doc : queryResponse.getResults()) {
-					if (metadata.getId().equals(doc.getFieldValue("id"))) {
-						break pageLoop;
-					}
-					start++;
-				}
-			} catch (SolrServerException e) {
-				LOG.error("Error retrieving Neighboring items: " + e);
-				return null;
-			}
-		} while (start < total);
-
-		// Wasn't found, no neighbors shall be forthcoming
-		if (start >= total) {
-			return null;
-		}
-
-		// Calculate the starting index for the window, so that object is as close to the middle as possible
-		long left = start - (windowSize / 2);
-		long right = start + (windowSize / 2);
-
-		if (left < 0) {
-			right -= left;
-			left = 0;
-		}
-
-		if (right >= total) {
-			left -= (right - total) + 1;
-			if (left < 0) {
-				left = 0;
-			}
-		}
-
-		// Query for the windowSize of objects
+		// Query for a window of results to either side of the target
+		solrQuery.setRows(windowSize - 1);
 		solrQuery.setFields(new String[0]);
-		solrQuery.setRows(windowSize);
-		solrQuery.setStart((int) left);
-
+		
+		// Clone base query for reuse in getting succeeding neighbors
+		SolrQuery precedingQuery = solrQuery;
+		SolrQuery succeedingQuery = solrQuery.getCopy();
+		
+		// Get set of preceding neighbors
+		precedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{* TO \""
+				+ sanitize(metadata.getTitle().toLowerCase()) + "\"} "
+				+ accessRestrictionClause);
+		
+		List<BriefObjectMetadataBean> precedingNeighbors;
 		try {
-			QueryResponse queryResponse = this.executeQuery(solrQuery);
-			return queryResponse.getBeans(BriefObjectMetadataBean.class);
+			QueryResponse queryResponse = this.executeQuery(precedingQuery);
+			precedingNeighbors = queryResponse.getBeans(BriefObjectMetadataBean.class);
 		} catch (SolrServerException e) {
-			LOG.error("Error retrieving Neighboring items: " + e);
+			LOG.error("Error retrieving Neighboring items: {}" + solrQuery, e);
 			return null;
 		}
+		
+		// Get set of succeeding neighbors
+		succeedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{\""  
+				+ sanitize(metadata.getTitle().toLowerCase()) + "\" TO *} "
+				+ accessRestrictionClause);
+		
+		List<BriefObjectMetadataBean> succeedingNeighbors;
+		try {
+			QueryResponse queryResponse = this.executeQuery(succeedingQuery);
+			succeedingNeighbors = queryResponse.getBeans(BriefObjectMetadataBean.class);
+		} catch (SolrServerException e) {
+			LOG.error("Error retrieving Neighboring items: {}" + solrQuery, e);
+			return null;
+		}
+		
+		// Construct a result from appropriate numbers of preceding records, the target,
+		// and succeeding reports
+		List<BriefObjectMetadataBean> results = new ArrayList<>();
+		
+		// Expected number of objects to either side of target if sufficient available
+		int precedingHalfWindow = (int) ceil((windowSize - 1) / 2.0);
+		// succeeding window size rounds down if uneven number of neighbors needed
+		int succeedingHalfWindow = (int) floor((windowSize - 1) / 2.0);
+		
+		int lenP = precedingNeighbors.size();
+		int lenS = succeedingNeighbors.size();
+		// Number of objects more or less than ideal window size
+		int extraP = lenP - precedingHalfWindow;
+		int extraS = lenS - succeedingHalfWindow;
+		
+		// Add preceding neighbors
+		if (extraP <= 0) {
+			// Number of preceding neighbors does not exceed half the window, use all
+			results.addAll(precedingNeighbors);
+		} else {
+			// More preceding neighbors than needed, calculate start of subset to include
+			// If there are fewer succeeding neighbors than needed, expand preceding subset
+			int pStart = lenP - precedingHalfWindow + (extraS < 0 ? extraS : 0);
+			if (pStart < 0) {
+				pStart = 0;
+			}
+			results.addAll(precedingNeighbors.subList(pStart, lenP));
+		}
+		
+		// Add the target item into the results
+		results.add(metadata);
+		
+		// Add succeeding neighbors
+		if (extraS <= 0) {
+			// Number of succeeding neighbors does not exceed half the window, use all
+			results.addAll(succeedingNeighbors);
+		} else {
+			// Possibly more succeeding neighbors than needed, determine subset to include
+			// If there was fewer preceding neighbors than needed, expand succeeding subset.
+			int sEnd = succeedingHalfWindow - (extraP < 0 ? extraP : 0);
+			if (sEnd > lenS) {
+				sEnd = lenS;
+			}
+			results.addAll(succeedingNeighbors.subList(0, sEnd));
+		}
+		
+		return results;
 	}
 
 	/**
