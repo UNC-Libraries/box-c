@@ -1,3 +1,18 @@
+/**
+ * Copyright 2008 The University of North Carolina at Chapel Hill
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package edu.unc.lib.dl.ui.service;
 
 import static java.util.Arrays.asList;
@@ -21,6 +36,10 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.util.ResourceType;
 
+/**
+ *
+ * @author bbpennel
+ */
 public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 	private static final Logger log = LoggerFactory.getLogger(NeighborQueryTest.class);
 
@@ -215,7 +234,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		return docs;
 	}
 	
-	public SolrInputDocument makeContainerDocument(PID pid, String title, ResourceType type, PID... ancestors) {
+	private SolrInputDocument makeContainerDocument(PID pid, String title, ResourceType type, PID... ancestors) {
 		SolrInputDocument newDoc = new SolrInputDocument();
 		newDoc.addField("title", title);
 		newDoc.addField("id", pid.getPid());
@@ -226,7 +245,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		return newDoc;
 	}
 
-	public SolrInputDocument makeFileDocument(PID pid, String title, PID... ancestors) {
+	private SolrInputDocument makeFileDocument(PID pid, String title, PID... ancestors) {
 		SolrInputDocument newDoc = new SolrInputDocument();
 		newDoc.addField("title", title);
 		newDoc.addField("id", pid.getPid());
@@ -237,7 +256,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		return newDoc;
 	}
 
-	public void addAclProperties(SolrInputDocument doc, String readGroup, String... adminGroups) {
+	private void addAclProperties(SolrInputDocument doc, String readGroup, String... adminGroups) {
 		List<String> adminList = asList(adminGroups);
 
 		List<String> roleGroups = new ArrayList<>();
@@ -249,7 +268,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		doc.addField("adminGroup", adminList);
 	}
 
-	public String makeAncestorIds(PID self, PID... pids) {
+	private String makeAncestorIds(PID self, PID... pids) {
 		String path = "";
 		if (pids == null) {
 			path = "";
@@ -267,7 +286,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		return path;
 	}
 
-	public List<String> makeAncestorPath(PID... pids) {
+	private List<String> makeAncestorPath(PID... pids) {
 		List<String> result = new ArrayList<>();
 		int i = 0;
 		for (PID pid : pids) {
