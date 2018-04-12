@@ -17,11 +17,10 @@ package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -29,32 +28,26 @@ import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
-import org.mockito.exceptions.base.MockitoException;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.PcdmUse;
-import edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor;
 
 public class AddDerivativeProcessorTest {
 
     private final String fileName = "small_thumb";
-    private final String slug = "small_thumbnail";
     private final String fileExtension = "PNG";
-    private final String mimetype = "image/png";
-    private int maxRetries = 3;
-    private long retryDelay = 10;
+    private final String derivativeSubPath = "derivative";
     private File file;
+    private File mvFile;
 
     private AddDerivativeProcessor processor;
 
@@ -62,15 +55,18 @@ public class AddDerivativeProcessorTest {
 
     private String extensionlessName;
 
+    @Rule
+    public TemporaryFolder tmpDir = new TemporaryFolder();
+
+    @Rule
+    public TemporaryFolder moveDir = new TemporaryFolder();
+
     @Mock
     private BinaryObject binary;
     @Mock
     private FileObject parent;
     @Mock
     private ExecResult result;
-
-    @Mock
-    private RepositoryObjectLoader repoObjLoader;
 
     @Mock
     private Exchange exchange;
@@ -81,12 +77,13 @@ public class AddDerivativeProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
-        processor = new AddDerivativeProcessor(repoObjLoader, slug, fileExtension, mimetype, maxRetries, retryDelay);
-        file = File.createTempFile(fileName, ".PNG");
-        file.deleteOnExit();
-        when(exchange.getIn()).thenReturn(message);
 
-        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
+        processor = new AddDerivativeProcessor(fileExtension, moveDir.getRoot().getAbsolutePath());
+
+        file = tmpDir.newFile(fileName + ".PNG");
+        file.deleteOnExit();
+
+        when(exchange.getIn()).thenReturn(message);
 
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn("http://fedora/test/original_file");
@@ -101,6 +98,9 @@ public class AddDerivativeProcessorTest {
         extensionlessPath = file.getAbsolutePath().split("\\.")[0];
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(extensionlessPath);
+        when(message.getHeader(eq(CdrBinarySubPath)))
+                .thenReturn(derivativeSubPath);
+
         extensionlessName = new File(extensionlessPath).getName();
 
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
@@ -109,41 +109,11 @@ public class AddDerivativeProcessorTest {
 
     @Test
     public void createEnhancementTest() throws Exception {
-
-        when(repoObjLoader.getBinaryObject(any(PID.class))).thenReturn(binary);
-        when(binary.getParent()).thenReturn(parent);
-        when(message.getBody()).thenReturn(result);
+        mvFile = moveDir.newFile(fileName + ".PNG");
+        mvFile.deleteOnExit();
 
         processor.process(exchange);
 
-        verify(parent).addDerivative(eq(slug), any(InputStream.class), eq(extensionlessName),
-                eq("image/png"), eq(PcdmUse.ThumbnailImage));
-    }
-
-    @Test
-    public void createEnhancementRetryTest() throws Exception {
-
-        when(binary.getParent())
-                .thenThrow(new MockitoException("Can't add derivative"))
-                .thenReturn(parent);
-
-        processor.process(exchange);
-
-        verify(binary, times(2)).getParent();
-        verify(parent).addDerivative(eq(slug), any(InputStream.class), eq(extensionlessName),
-                eq("image/png"), eq(PcdmUse.ThumbnailImage));
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void createEnhancementRetryFailTest() throws Exception {
-
-        when(binary.getParent())
-                .thenThrow(new RuntimeException());
-
-        try {
-            processor.process(exchange);
-        } finally {
-            verify(binary, times(maxRetries + 1)).getParent();
-        }
+        assertTrue(mvFile.exists());
     }
 }

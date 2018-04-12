@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPa
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
@@ -65,9 +66,20 @@ public class AddDerivativeProcessor implements Processor {
 
     private void moveFile(String binaryUri, String binarySubPath, String derivativeTmpPath)
             throws IOException {
-        FileUtils.moveFileToDirectory(
-                FileUtils.getFile(derivativeTmpPath),
-                FileUtils.getFile(derivativeBasePath + "/" +  binarySubPath + "." + fileExtension), true);
+        String movePath = derivativeBasePath + "/" +  binarySubPath + "." + fileExtension;
+        File derivative = new File(movePath);
+        File parentDir = derivative.getParentFile();
+
+        if (parentDir != null) {
+            parentDir.mkdirs();
+        }
+        derivative.createNewFile();
+
+        FileUtils.copyFileToDirectory(
+                FileUtils.getFile(derivativeTmpPath + "." + fileExtension),
+                FileUtils.getFile(derivativeBasePath));
+
+        new File(derivativeTmpPath + "." + fileExtension).delete();
 
         log.info("Adding derivative for {} from {}", binaryUri, derivativeTmpPath);
     }

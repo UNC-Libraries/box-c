@@ -15,9 +15,12 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -81,6 +84,7 @@ public class BinaryMetadataProcessorTest {
         processor = new BinaryMetadataProcessor(binaryBase);
 
         when(exchange.getIn()).thenReturn(message);
+        when(exchange.getIn().getHeader("CamelFcrepoUri")).thenReturn(RESC_ID);
     }
 
     @Test
@@ -106,6 +110,7 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message).setHeader(CdrBinaryPath, file.getAbsolutePath());
+        verify(message).setHeader(CdrBinarySubPath, idToPath(RESC_ID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
     }
 
     @Test
@@ -141,6 +146,7 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message, never()).setHeader(eq(CdrBinaryPath), anyString());
+        verify(message, never()).setHeader(eq(CdrBinarySubPath), anyString());
     }
 
     private void setMessageBody(Model model) throws Exception {
@@ -149,5 +155,25 @@ public class BinaryMetadataProcessorTest {
             when(message.getBody(eq(InputStream.class)))
                     .thenReturn(new ByteArrayInputStream(bos.toByteArray()));
         }
+    }
+
+    /**
+     * Prepend id with defined levels of hashed containers based on the values.
+     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
+     *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
+     *
+     * @param id
+     * @return
+     */
+    private String idToPath(String id, int pathDepth, int length) {
+        StringBuilder sb = new StringBuilder();
+
+        // Expand the id into chunked subfolders
+        for (int i = 0; i < pathDepth; i++) {
+            sb.append(id.substring(i * length, i * length + length))
+                    .append('/');
+        }
+
+        return sb.toString();
     }
 }
