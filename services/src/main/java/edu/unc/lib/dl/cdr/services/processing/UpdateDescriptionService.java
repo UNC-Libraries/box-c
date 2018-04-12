@@ -45,6 +45,9 @@ public class UpdateDescriptionService {
     private OperationsMessageSender operationsMessageSender;
     private MODSValidator modsValidator;
 
+    public UpdateDescriptionService() {
+    }
+
     /**
      * Updates the MODS description of a single object
      *
@@ -66,7 +69,7 @@ public class UpdateDescriptionService {
         modsValidator.validate(modsStream);
 
         ContentObject obj = (ContentObject) repoObjLoader.getRepositoryObject(pid);
-        obj.addDescription(modsStream);
+        obj.setDescription(modsStream);
 
         operationsMessageSender.sendUpdateDescriptionOperation(username, Arrays.asList(pid));
     }

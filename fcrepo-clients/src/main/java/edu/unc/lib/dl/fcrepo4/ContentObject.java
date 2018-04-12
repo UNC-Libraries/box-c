@@ -43,20 +43,27 @@ public abstract class ContentObject extends RepositoryObject {
     }
 
     /**
-     * Adds description information to this object, which includes a MODS record
+     * If no description exists, adds description information to this object (which includes a MODS record).
+     * If description already exists, updates description information for this object.
      * @param modsStream
      * @return the FileObject containing the BinaryObject for the MODS
      */
-    public FileObject addDescription(InputStream modsStream) {
-        Model descModel = ModelFactory.createDefaultModel();
-        descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
+    public FileObject setDescription(InputStream modsStream) {
+        FileObject fileObj = this.getDescription();
+        if (fileObj == null) {
+            Model descModel = ModelFactory.createDefaultModel();
+            descModel.getResource("").addProperty(RDF.type, Cdr.DescriptiveMetadata);
 
-        FileObject fileObj = repoObjFactory.createFileObject(descModel);
+            fileObj = repoObjFactory.createFileObject(descModel);
 
-        BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null, null);
-        repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
-        repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
-        return fileObj;
+            BinaryObject mods = fileObj.addOriginalFile(modsStream, null, "text/xml", null, null);
+            repoObjFactory.createRelationship(pid, PcdmModels.hasRelatedObject, fileObj.getResource());
+            repoObjFactory.createRelationship(pid, Cdr.hasMods, mods.getResource());
+            return fileObj;
+        } else {
+            fileObj.replaceOriginalFile(modsStream, null, "text/xml", null, null);
+            return fileObj;
+        }
     }
 
     /**

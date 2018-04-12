@@ -96,6 +96,23 @@ public class FileObject extends ContentObject {
     }
 
     /**
+     * Replaces the original file for this file object
+     *
+     * @param contentStream
+     * @param filename
+     * @param mimetype
+     * @param sha1Checksum
+     * @return
+     */
+    public BinaryObject replaceOriginalFile(InputStream contentStream, String filename,
+            String mimetype, String sha1Checksum, String md5Checksum) {
+
+        return repoObjFactory.updateBinary(fileSetUri, ORIGINAL_FILE, contentStream,
+                filename, mimetype, sha1Checksum, md5Checksum, null);
+    }
+
+
+    /**
      * Gets the original file for this file object
      *
      * @return

@@ -140,8 +140,8 @@ public class ExportXMLIT extends AbstractAPIIT {
             throws JsonGenerationException, JsonMappingException, IOException {
         ContentObject folder = repositoryObjectFactory.createFolderObject(null);
         ContentObject work = repositoryObjectFactory.createWorkObject(null);
-        folder.addDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods.xml")));
-        work.addDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods2.xml")));
+        folder.setDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods.xml")));
+        work.setDescription(new FileInputStream(new File("src/test/resources/mods", "valid-mods2.xml")));
 
         String pid1 = folder.getPid().getRepositoryPath();
         String pid2 = work.getPid().getRepositoryPath();

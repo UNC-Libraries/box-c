@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<object pid="uuid:ae0091e0-192d-46f9-a8ad-8b0dc82f33ad" >
+<update type="MODS" lastModified="2017-10-18T12:29:53.396Z">
+<mods xmlns="http://www.loc.gov/mods/v3">
+    <titleInfo>
+        <title>Updated Work Test</title>
+    </titleInfo>
+  <originInfo>
+    <dateCreated encoding="iso8601" keyDate="yes">2018-04-06</dateCreated>
+  </originInfo>
+</mods>
+</update>
+</object>

@@ -129,15 +129,23 @@ public class XMLImportJob implements Runnable {
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
             sendCompletedEmail(updated, failed);
-        } catch (UpdateException | XMLStreamException e) {
+        } catch (XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
             sendValidationFailureEmail(failed);
-
+        } catch (UpdateException e) {
+            log.error("Submitted document is not a bulk-metadata-update doc");
+            failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
+            sendValidationFailureEmail(failed);
+        } catch (FileNotFoundException e) {
+            log.error("The import file could not be found on the server");
+            failed.put(importFile.getAbsolutePath(), "Import file could not be found on the server");
+            sendValidationFailureEmail(failed);
         } finally {
             close();
             cleanup();
         }
+
     }
 
     public UpdateDescriptionService getUpdateService() {
@@ -196,20 +204,25 @@ public class XMLImportJob implements Runnable {
         this.msg = msg;
     }
 
-    private void initializeXMLReader() throws UpdateException {
-        XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
-        try {
-            xmlReader = xmlFactory.createXMLEventReader(new FileInputStream(importFile));
-        } catch (FileNotFoundException | XMLStreamException e) {
-            throw new UpdateException("Failed to read metadata update package for " + username, e);
-        }
+    public List<String> getUpdated() {
+        return updated;
     }
 
-    private void processUpdates() throws XMLStreamException {
+    public Map<String, String> getFailed() {
+        return failed;
+    }
+
+    private void initializeXMLReader() throws FileNotFoundException, XMLStreamException {
+        XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
+        xmlReader = xmlFactory.createXMLEventReader(new FileInputStream(importFile));
+
+    }
+
+    private void processUpdates() throws XMLStreamException, UpdateException {
         processUpdates(null, null);
     }
 
-    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException {
+    private void processUpdates(PID resumePid, String resumeDs) throws XMLStreamException, UpdateException {
         QName contentOpening = null;
         long countOpenings = 0;
         XMLEventWriter xmlWriter = null;
@@ -232,10 +245,7 @@ public class XMLImportJob implements Runnable {
                             if (element.getName().getLocalPart().equals(BULK_MD_TAG)) {
                                 state = DocumentState.IN_BULK;
                             } else {
-                                log.error("Submitted document is not a bulk-metadata-update doc");
-                                failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
-                                sendValidationFailureEmail(failed);
-                                return;
+                                throw new UpdateException("Submitted document is not a bulk-metadata-update doc");
                             }
                         }
                         break;
