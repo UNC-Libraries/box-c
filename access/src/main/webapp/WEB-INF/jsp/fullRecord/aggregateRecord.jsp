@@ -107,9 +107,6 @@
 			
 			<c:choose>
 				<c:when test="${cdr:permitDatastreamAccess(requestScope.accessGroupSet, 'IMAGE_JP2000', briefObject)}">
-					<div class="actionlink left">
-						<a href="" class="inline_viewer_link jp2_viewer_link">View</a>
-					</div>
 					<div class="clear_space"></div>
 					<link rel="stylesheet" href="/static/plugins/leaflet/leaflet.css">
 					<link rel="stylesheet" href="/static/plugins/Leaflet-fullscreen/dist/leaflet.fullscreen.css">
