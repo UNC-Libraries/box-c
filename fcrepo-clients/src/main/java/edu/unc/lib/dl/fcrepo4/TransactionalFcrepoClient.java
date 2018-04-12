@@ -48,6 +48,7 @@ import edu.unc.lib.dl.util.URIUtil;
 public class TransactionalFcrepoClient extends FcrepoClient {
 
     private static final String REST = "rest/";
+    private static final int REST_LENGTH = 4;
     private static final List<String> RDF_MIMETYPES = Arrays.asList(new String[] {
             "application/sparql-update", "text/turtle", "text/rdf+n3", "application/n3",
             "text/n3", "application/rdf+xml", "application/n-triples", "application/ld+json"});
@@ -59,10 +60,12 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     private Pattern txRemovePattern;
 
     private String hostHeader;
+    private String baseUri;
 
     protected TransactionalFcrepoClient(String username, String password, String host,
                 Boolean throwExceptionOnFailure, String baseUri) {
         super(username, password, host, throwExceptionOnFailure);
+        this.baseUri = baseUri;
         txBasePattern = Pattern.compile(baseUri + TX_ID_REGEX);
         txRemovePattern = Pattern.compile(TX_RESPONSE_REGEX);
     }
@@ -93,6 +96,11 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     @Override
     public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
             throws FcrepoOperationFailedException {
+        // Remap request uri to expected fedora host uri if necessary
+        URI requestUri = rebaseUri(uri);
+        request.setURI(requestUri);
+
+        // Add Host header if provided
         if (hostHeader != null) {
             request.addHeader(HOST, hostHeader);
         }
@@ -101,15 +109,33 @@ public class TransactionalFcrepoClient extends FcrepoClient {
             if (needsRequestBodyRewrite(request)) {
                 rewriteRequestBodyUris(request);
             }
-            URI requestUri = uri;
             if (!uri.toString().contains("tx:")) {
-                requestUri = rewriteUri(uri);
+                requestUri = rewriteUri(requestUri);
                 request.setURI(requestUri);
             }
             FcrepoResponse resp = super.executeRequest(requestUri, request);
             return rewriteResponseBodyUris(resp);
         }
-        return super.executeRequest(uri, request);
+        return super.executeRequest(requestUri, request);
+    }
+
+    /**
+     * Rebase fedora URI to the domain expected by this client.
+     *
+     * @param uri
+     * @return
+     */
+    private URI rebaseUri(URI uri) {
+        URI requestUri = uri;
+        String uriString = uri.toString();
+        if (!uriString.startsWith(baseUri)) {
+            int index = uriString.indexOf(REST);
+            if (index == -1) {
+                throw new IllegalArgumentException("Requested URI not within allowed domain");
+            }
+            requestUri = URI.create(URIUtil.join(baseUri, uriString.substring(index + REST_LENGTH)));
+        }
+        return requestUri;
     }
 
     /**
