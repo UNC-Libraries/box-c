@@ -19,19 +19,15 @@ import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPa
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.exec.ExecResult;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,46 +60,14 @@ public class AddDerivativeProcessor implements Processor {
         String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
                 .lines().collect(Collectors.joining("\n"));
 
-        ingestFile(binaryUri, binarySubPath, derivativePath);
+        moveFile(binaryUri, binarySubPath, derivativePath);
     }
 
-    private String derivativeDirType(String derivativePath) {
-        String[] fileType = derivativePath.split("-");
-        String fileBase = fileType[fileType.length - 1];
-        String dirType;
-
-        if (fileBase.equalsIgnoreCase("large.png")) {
-            dirType = "large_thumbnail";
-        } else if (fileBase.equalsIgnoreCase("small.png")) {
-            dirType = "small_thumbnail";
-        } else {
-            dirType = "jp2";
-        }
-
-        return dirType;
-    }
-
-    private void ingestFile(String binaryUri, String binarySubPath, String derivativeTmpPath)
+    private void moveFile(String binaryUri, String binarySubPath, String derivativeTmpPath)
             throws IOException {
-        String dirType = derivativeDirType(derivativeTmpPath);
-        InputStream binaryStream = new FileInputStream(derivativeTmpPath + "." + fileExtension);
-
-        byte[] buffer = new byte[binaryStream.available()];
-        binaryStream.read(buffer);
-
-        File derivative = new File(derivativeBasePath + "/" + dirType + "/" +  binarySubPath + "." + fileExtension);
-        File parentDir = derivative.getParentFile();
-
-        if (parentDir != null) {
-            parentDir.mkdirs();
-        }
-
-        derivative.createNewFile();
-        OutputStream outStream = new FileOutputStream(derivative);
-        outStream.write(buffer);
-        outStream.close();
-
-        binaryStream.close();
+        FileUtils.moveFileToDirectory(
+                FileUtils.getFile(derivativeTmpPath),
+                FileUtils.getFile(derivativeBasePath + "/" +  binarySubPath + "." + fileExtension), true);
 
         log.info("Adding derivative for {} from {}", binaryUri, derivativeTmpPath);
     }

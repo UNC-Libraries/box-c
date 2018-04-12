@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
@@ -46,10 +48,7 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  *
  */
 public class BinaryMetadataProcessor implements Processor {
-
     private final int BINARY_PATH_DEPTH = 3;
-    private final int BINARY_PATH_LENGTH = 2;
-
     private String baseBinaryPath;
 
     protected BinaryMetadataProcessor(String baseBinaryPath) {
@@ -77,7 +76,7 @@ public class BinaryMetadataProcessor implements Processor {
 
                 String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 
-                String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH);
+                String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
 
                 String binaryFullPath = new StringJoiner("")
                     .add(baseBinaryPath)
@@ -87,12 +86,12 @@ public class BinaryMetadataProcessor implements Processor {
                 // Only set the binary path if the computed path exists
                 if (Files.exists(Paths.get(binaryFullPath))) {
                     in.setHeader(CdrBinaryPath, binaryFullPath);
+                    in.setHeader(CdrBinarySubPath, idToPath(fcrepoBinaryUri, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
                 }
 
                 in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
                 in.setHeader(CdrBinaryMimeType, binaryMimeType);
                 in.setHeader(CdrBinaryUri, fcrepoBinaryUri);
-                in.setHeader(CdrBinarySubPath, binaryPath);
             }
         } finally {
             resources.close();
@@ -110,6 +109,7 @@ public class BinaryMetadataProcessor implements Processor {
     private String idToPath(String id, int pathDepth, int length) {
         StringBuilder sb = new StringBuilder();
 
+        // Expand the id into chunked subfolders
         for (int i = 0; i < pathDepth; i++) {
             sb.append(id.substring(i * length, i * length + length))
                     .append('/');

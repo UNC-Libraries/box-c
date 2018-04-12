@@ -69,7 +69,7 @@ public class FulltextProcessor implements Processor {
             return;
         }
 
-        String filepath = derivativeBasePath + "/" + "fulltext/" + binarySubPath + ".txt";
+        String filepath = derivativeBasePath + "/" + binarySubPath + ".txt";
         File derivative = new File(filepath);
         File parentDir = derivative.getParentFile();
 
