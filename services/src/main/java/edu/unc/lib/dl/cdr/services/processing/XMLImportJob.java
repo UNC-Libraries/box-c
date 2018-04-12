@@ -129,13 +129,17 @@ public class XMLImportJob implements Runnable {
             log.info("Finished metadata import for {} objects in {}ms for user {}",
                     new Object[] {objectCount, System.currentTimeMillis() - startTime, username});
             sendCompletedEmail(updated, failed);
-        } catch (FileNotFoundException | XMLStreamException e) {
+        } catch (XMLStreamException e) {
             log.info("Errors reading XML during update " + username, e);
             failed.put(importFile.getAbsolutePath(), "The import file contains XML errors");
             sendValidationFailureEmail(failed);
         } catch (UpdateException e) {
             log.error("Submitted document is not a bulk-metadata-update doc");
             failed.put(importFile.getAbsolutePath(), "File is not a bulk-metadata-update doc");
+            sendValidationFailureEmail(failed);
+        } catch (FileNotFoundException e) {
+            log.error("The import file could not be found on the server");
+            failed.put(importFile.getAbsolutePath(), "Import file could not be found on the server");
             sendValidationFailureEmail(failed);
         } finally {
             close();
