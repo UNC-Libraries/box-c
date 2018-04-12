@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,11 +37,12 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 import edu.unc.lib.dl.ui.util.SerializationUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -48,6 +50,9 @@ import edu.unc.lib.dl.ui.util.SerializationUtil;
 public class SearchRestController extends AbstractSolrSearchController {
 
     private static Pattern jsonpCleanupPattern = Pattern.compile("[^a-zA-Z0-9_$]+");
+
+    @Autowired
+    private ChildrenCountService childrenCountService;
 
     @RequestMapping(value = "/search")
     public @ResponseBody String search(HttpServletRequest request, HttpServletResponse response) {
@@ -74,7 +79,7 @@ public class SearchRestController extends AbstractSolrSearchController {
         // Allow for retrieving of specific fields
         if (fields != null) {
             String[] fieldNames = fields.split(",");
-            List<String> resultFields = new ArrayList<String>();
+            List<String> resultFields = new ArrayList<>();
             for (String fieldName: fieldNames) {
                 String fieldKey = searchSettings.searchFieldKey(fieldName);
                 if (fieldKey != null) {
@@ -87,7 +92,7 @@ public class SearchRestController extends AbstractSolrSearchController {
             String fieldSet = request.getParameter("fieldSet");
             List<String> resultFields = searchSettings.resultFields.get(fieldSet);
             if (resultFields == null) {
-                resultFields = new ArrayList<String>(searchSettings.resultFields.get("brief"));
+                resultFields = new ArrayList<>(searchSettings.resultFields.get("brief"));
             }
             return resultFields;
         }
@@ -120,9 +125,12 @@ public class SearchRestController extends AbstractSolrSearchController {
             return null;
         }
 
-        Map<String, Object> response = new HashMap<String, Object>();
+        childrenCountService.addChildrenCounts(resultResponse.getResultList(),
+                searchRequest.getAccessGroups());
+
+        Map<String, Object> response = new HashMap<>();
         response.put("numFound", resultResponse.getResultCount());
-        List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(resultResponse.getResultList().size());
+        List<Map<String, Object>> results = new ArrayList<>(resultResponse.getResultList().size());
         for (BriefObjectMetadata metadata: resultResponse.getResultList()) {
             results.add(SerializationUtil.metadataToMap(metadata, GroupsThreadStore.getGroups()));
         }

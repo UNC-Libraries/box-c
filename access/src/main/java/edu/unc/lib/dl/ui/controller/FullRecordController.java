@@ -62,6 +62,7 @@ import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
@@ -82,6 +83,8 @@ public class FullRecordController extends AbstractSolrSearchController {
 
     @Autowired
     private AccessControlService aclService;
+    @Autowired
+    private ChildrenCountService childrenCountService;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -151,7 +154,7 @@ public class FullRecordController extends AbstractSolrSearchController {
                 || resourceType.equals(searchSettings.resourceTypeCollection);
 
         if (retrieveChildrenCount) {
-            briefObject.getCountMap().put("child", queryLayer.getChildrenCount(briefObject, principals));
+            briefObject.getCountMap().put("child", childrenCountService.getChildrenCount(briefObject, principals));
         }
 
         if (retrieveFacets) {
@@ -216,7 +219,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
 //        if (briefObject.getResourceType().equals(searchSettings.resourceTypeCollection)
 //                || briefObject.getResourceType().equals(searchSettings.resourceTypeFolder)) {
-//            applyContainerSettings(pidString, foxmlView, model, fullObjectView != null);
+//            applyContainerSettings(pidString, principals, foxmlView, model, fullObjectView != null);
 //        }
 
         model.addAttribute("pageSubtitle", briefObject.getTitle());
@@ -231,7 +234,8 @@ public class FullRecordController extends AbstractSolrSearchController {
             Arrays.asList(ContainerView.DESCRIPTION.name(), ContainerView.STRUCTURE.name(),
                     ContainerView.EXPORTS.name());
 
-    private void applyContainerSettings(String pid, Document foxml, Model model, boolean hasDescription) {
+    private void applyContainerSettings(String pid, AccessGroupSet principals, Document foxml, Model model,
+            boolean hasDescription) {
         if (foxml == null) {
             return;
         }
@@ -270,6 +274,7 @@ public class FullRecordController extends AbstractSolrSearchController {
             listContentsRequest.getSearchState().setRollup(true);
 
             SearchResultResponse contentListResponse = queryLayer.performSearch(listContentsRequest);
+            childrenCountService.addChildrenCounts(contentListResponse.getResultList(), principals);
             model.addAttribute("contentListResponse", contentListResponse);
         }
 

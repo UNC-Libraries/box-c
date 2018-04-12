@@ -15,17 +15,16 @@
  */
 package edu.unc.lib.dl.search.solr.service;
 
-import java.io.IOException;
+import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.RESOURCE_TYPE;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -40,17 +39,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
-import edu.unc.lib.dl.search.solr.model.AbstractHierarchicalFacet;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldFactory;
-import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
 import edu.unc.lib.dl.search.solr.model.GroupedMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -68,30 +63,14 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
  *
  * @author bbpennel
  */
-public class SolrSearchService {
+public class SolrSearchService extends AbstractQueryService {
     private static final Logger LOG = LoggerFactory.getLogger(SolrSearchService.class);
 
-    private SolrClient solrClient;
-    @Autowired
-    protected SolrSettings solrSettings;
-    @Autowired
-    protected SearchSettings searchSettings;
     @Autowired
     protected FacetFieldFactory facetFieldFactory;
     protected FacetFieldUtil facetFieldUtil;
 
-    private boolean disablePermissionFiltering;
-
-    protected GlobalPermissionEvaluator globalPermissionEvaluator;
-
     public SolrSearchService() {
-    }
-
-    /**
-     * Establish the SolrServer object according to the configuration specified in settings.
-     */
-    protected void initializeSolrServer() {
-        solrClient = solrSettings.getSolrClient();
     }
 
     /**
@@ -254,22 +233,6 @@ public class SolrSearchService {
     /**
      * Adds access restrictions to the provided query string buffer. If there
      * are no access groups in the provided group set, then an
-     * AccessRestrictionException is thrown.
-     *
-     * @param query
-     *            string buffer containing the query to append access groups to.
-     * @return The original query restricted to results available to the
-     *         provided access groups
-     * @throws AccessRestrictionException
-     *             thrown if no groups are provided.
-     */
-    public StringBuilder addAccessRestrictions(StringBuilder query) throws AccessRestrictionException {
-        return this.addAccessRestrictions(query, null);
-    }
-
-    /**
-     * Adds access restrictions to the provided query string buffer. If there
-     * are no access groups in the provided group set, then an
      * AccessRestrictionException is thrown as it is invalid for a user to have
      * no permissions. If the user is an admin, then do not restrict access
      *
@@ -284,87 +247,8 @@ public class SolrSearchService {
      */
     public StringBuilder addAccessRestrictions(StringBuilder query, AccessGroupSet accessGroups)
             throws AccessRestrictionException {
-        // Skip adding permission filters if disabled for this search service
-        if (disablePermissionFiltering) {
-            return query;
-        }
-
-        // Agent must provide access groups
-        if (accessGroups == null || accessGroups.size() == 0) {
-            accessGroups = GroupsThreadStore.getGroups();
-            if (accessGroups == null || accessGroups.size() == 0) {
-                throw new AccessRestrictionException("No access groups were provided.");
-            }
-        }
-
-        // If the agent has any global permissions then no filtering is necessary.
-        if (globalPermissionEvaluator.hasGlobalPrincipal(accessGroups)) {
-            return query;
-        }
-
-        boolean allowPatronAccess = searchSettings.getAllowPatronAccess();
-        String joinedGroups = accessGroups.joinAccessGroups(" OR ", null, true);
-        if (allowPatronAccess) {
-            query.append(" AND (").append("readGroup:(").append(joinedGroups).append(')')
-                    .append(" OR adminGroup:(").append(joinedGroups).append("))");
-        } else {
-            query.append(" AND adminGroup:(").append(joinedGroups).append(')');
-        }
+        restrictionUtil.add(query, accessGroups);
         return query;
-    }
-
-    /**
-     * Attempts to retrieve the hierarchical facet from the facet field
-     * corresponding to fieldKey that matches the value of searchValue.
-     * Retrieves and populates all tiers leading up to the tier number given in
-     * searchValue.
-     *
-     * @param fieldKey
-     *            Key of the facet field to search for the facet within.
-     * @param searchValue
-     *            Value to find a matching facet for, should be formatted
-     *            <tier>,<value>
-     * @param accessGroups
-     * @return
-     */
-    public FacetFieldObject getHierarchicalFacet(AbstractHierarchicalFacet facet, AccessGroupSet accessGroups) {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        query.append("[* TO *]");
-
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query, accessGroups);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error(e.getMessage());
-            return null;
-        }
-        solrQuery.setQuery(query.toString());
-        solrQuery.setRows(0);
-
-        solrQuery.setFacet(true);
-        solrQuery.setFacetMinCount(1);
-
-        String solrFieldName = solrSettings.getFieldName(facet.getFieldName());
-
-        solrQuery.addFacetField(solrFieldName);
-        solrQuery.setFacetPrefix(solrFieldName, facet.getSearchValue());
-
-        LOG.debug("getHierarchicalFacet query: " + solrQuery.toString());
-        try {
-            queryResponse = executeQuery(solrQuery);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request", e);
-            return null;
-        }
-        FacetField facetField = queryResponse.getFacetField(solrFieldName);
-        if (facetField.getValueCount() == 0) {
-            return null;
-        }
-        return facetFieldFactory.createFacetFieldObject(
-                facet.getFieldName(), queryResponse.getFacetField(solrFieldName));
     }
 
     /**
@@ -392,40 +276,6 @@ public class SolrSearchService {
         return rootNode.getAncestorPathFacet();
     }
 
-    public Date getTimestamp(String pid, AccessGroupSet accessGroups) {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        query.append(solrSettings.getFieldName(SearchFieldKeys.ID.name()))
-                .append(':').append(SolrSettings.sanitize(pid));
-        try {
-            // Add access restrictions to query
-            addAccessRestrictions(query, accessGroups);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error("Error while attempting to add access restrictions to object " + pid, e);
-            return null;
-        }
-
-        solrQuery.addField(solrSettings.getFieldName(SearchFieldKeys.TIMESTAMP.name()));
-
-        solrQuery.setQuery(query.toString());
-        solrQuery.setRows(1);
-
-        LOG.debug("query: " + solrQuery.toString());
-        try {
-            queryResponse = executeQuery(solrQuery);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Solr object request", e);
-            return null;
-        }
-
-        if (queryResponse.getResults().getNumFound() == 0) {
-            return null;
-        }
-        return (Date) queryResponse.getResults().get(0).getFieldValue("timestamp");
-    }
-
     public BriefObjectMetadata addSelectedContainer(String containerPid, SearchState searchState,
             boolean applyCutoffs) {
         BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid));
@@ -438,22 +288,6 @@ public class SolrSearchService {
         }
         searchState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), selectedPath);
         return selectedContainer;
-    }
-
-    /**
-     * Wrapper method for executing a solr query.
-     *
-     * @param query
-     * @return
-     * @throws SolrServerException
-     */
-    protected QueryResponse executeQuery(SolrQuery query) throws SolrServerException {
-        try {
-            return solrClient.query(query);
-        } catch (IOException e) {
-            throw new SolrServerException(e);
-        }
-
     }
 
     /**
@@ -531,7 +365,7 @@ public class SolrSearchService {
         addSort(solrQuery, searchState.getSortType(), searchState.getSortNormalOrder());
 
         // Set requested resource types
-        String resourceTypeFilter = this.getResourceTypeFilter(searchState.getResourceTypes());
+        String resourceTypeFilter = makeFilter(RESOURCE_TYPE, searchState.getResourceTypes());
         if (resourceTypeFilter != null) {
             solrQuery.addFilterQuery(resourceTypeFilter);
         }
@@ -837,54 +671,6 @@ public class SolrSearchService {
         return response;
     }
 
-    /**
-     * Generates a solr query style string to add a resource type filter for the given list of resources types.
-     *
-     * @param resourceTypes
-     * @return
-     */
-    protected String getResourceTypeFilter(List<String> resourceTypes) {
-        if (resourceTypes == null || resourceTypes.size() == 0) {
-            return null;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        boolean firstType = true;
-        String resourceTypeLabel = solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name());
-        Iterator<String> resourceTypeIt = resourceTypes.iterator();
-        while (resourceTypeIt.hasNext()) {
-            if (firstType) {
-                firstType = false;
-            } else {
-                sb.append(" OR ");
-            }
-            sb.append(resourceTypeLabel).append(':').append(resourceTypeIt.next()).append(' ');
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Returns the value of a single field from the object identified by pid.
-     *
-     * @param pid
-     * @param field
-     * @return The value of the specified field or null if it wasn't found.
-     */
-    public Object getField(String pid, String field) throws SolrServerException {
-        QueryResponse queryResponse = null;
-        SolrQuery solrQuery = new SolrQuery();
-        StringBuilder query = new StringBuilder();
-        query.append("id:").append(SolrSettings.sanitize(pid));
-        solrQuery.setQuery(query.toString());
-        solrQuery.addField(field);
-
-        queryResponse = executeQuery(solrQuery);
-        if (queryResponse.getResults().getNumFound() > 0) {
-            return queryResponse.getResults().get(0).getFieldValue(field);
-        }
-        return null;
-    }
-
     public Map<String, Object> getFields(String pid, List<String> fields) throws SolrServerException {
         QueryResponse queryResponse = null;
         SolrQuery solrQuery = new SolrQuery();
@@ -946,67 +732,11 @@ public class SolrSearchService {
         return fieldValues;
     }
 
-    /**
-     * Verifies that a record exists for the given pid
-     *
-     * @param pid
-     * @return
-     * @throws SolrServerException
-     */
-    public boolean exists(String pid) throws SolrServerException {
-        QueryResponse queryResponse = null;
-
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("id:" + SolrSettings.sanitize(pid));
-        solrQuery.setRows(0);
-
-        queryResponse = executeQuery(solrQuery);
-
-        return queryResponse.getResults().getNumFound() > 0;
-    }
-
-    public SolrSettings getSolrSettings() {
-        return solrSettings;
-    }
-
-    public void setSolrSettings(SolrSettings solrSettings) {
-        this.solrSettings = solrSettings;
-    }
-
-    public SearchSettings getSearchSettings() {
-        return searchSettings;
-    }
-
-    public void setSearchSettings(SearchSettings searchSettings) {
-        this.searchSettings = searchSettings;
-    }
-
     public void setFacetFieldFactory(FacetFieldFactory facetFieldFactory) {
         this.facetFieldFactory = facetFieldFactory;
     }
 
     public void setFacetFieldUtil(FacetFieldUtil facetFieldUtil) {
         this.facetFieldUtil = facetFieldUtil;
-    }
-
-    /**
-     * @param globalPermissionEvaluator the globalPermissionEvaluator to set
-     */
-    public void setGlobalPermissionEvaluator(GlobalPermissionEvaluator globalPermissionEvaluator) {
-        this.globalPermissionEvaluator = globalPermissionEvaluator;
-    }
-
-    /**
-     * @param disablePermissionFiltering the disablePermissionFiltering to set
-     */
-    public void setDisablePermissionFiltering(boolean disablePermissionFiltering) {
-        this.disablePermissionFiltering = disablePermissionFiltering;
-    }
-
-    /**
-     * @param solrClient the solrClient to set
-     */
-    public void setSolrClient(SolrClient solrClient) {
-        this.solrClient = solrClient;
     }
 }

@@ -17,30 +17,32 @@ package edu.unc.lib.dl.admin.controller;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.io.OutputStreamWriter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Date;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
-import edu.unc.lib.dl.search.solr.model.Datastream;
+import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.FacetConstants;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
@@ -48,13 +50,16 @@ import edu.unc.lib.dl.util.ContentModelHelper;
 import edu.unc.lib.dl.util.ResourceType;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 @Controller
 @RequestMapping("export")
 public class ExportController extends AbstractSolrSearchController {
+
+    @Autowired
+    private ChildrenCountService childrenCountService;
 
     protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
@@ -82,7 +87,7 @@ public class ExportController extends AbstractSolrSearchController {
 
         List<BriefObjectMetadata> objects = resultResponse.getResultList();
         objects.add(0, container);
-        queryLayer.getChildrenCounts(objects, searchRequest);
+        childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
         try (ServletOutputStream out = response.getOutputStream()) {
             Writer writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));

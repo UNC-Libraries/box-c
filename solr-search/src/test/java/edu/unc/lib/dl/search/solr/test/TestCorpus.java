@@ -93,9 +93,7 @@ public class TestCorpus {
         List<SolrInputDocument> docs = new ArrayList<>();
 
         SolrInputDocument newDoc = makeContainerDocument(rootPid, "Collections", ResourceType.ContentRoot);
-        newDoc.addField("roleGroup", "");
-        newDoc.addField("readGroup", "");
-        newDoc.addField("adminGroup", "");
+        addAclProperties(newDoc, PUBLIC_PRINC);
         docs.add(newDoc);
 
         newDoc = makeContainerDocument(unitPid, "Unit", ResourceType.AdminUnit,

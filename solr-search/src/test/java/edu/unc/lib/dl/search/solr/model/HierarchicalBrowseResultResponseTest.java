@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.search.solr.model;
 
+import static edu.unc.lib.dl.util.ResourceType.Folder;
+import static java.util.Arrays.asList;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,27 +27,26 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 public class HierarchicalBrowseResultResponseTest extends Assert {
 
     private List<BriefObjectMetadata> getMetadataObjects() {
         BriefObjectMetadataBean md1 = new BriefObjectMetadataBean();
         md1.setId("uuid:test1");
-        md1.setContentModel(Arrays.asList(ContentModelHelper.Model.CONTAINER.toString()));
-        Map<String, Long> countMap = new HashMap<String, Long>();
+        md1.setResourceType(Folder.name());
+        Map<String, Long> countMap = new HashMap<>();
         countMap.put("child", 0L);
         md1.setCountMap(countMap);
 
         BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
         md2.setId("uuid:test2");
-        md2.setContentModel(Arrays.asList(ContentModelHelper.Model.CONTAINER.toString()));
-        countMap = new HashMap<String, Long>();
+        md1.setResourceType(Folder.name());
+        countMap = new HashMap<>();
         countMap.put("child", 2L);
         md2.setCountMap(countMap);
 
 
-        return new ArrayList<BriefObjectMetadata>(Arrays.asList((BriefObjectMetadata)md1, (BriefObjectMetadata)md2));
+        return new ArrayList<>(asList((BriefObjectMetadata)md1, (BriefObjectMetadata)md2));
     }
 
     @Test

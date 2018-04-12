@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
@@ -36,6 +35,7 @@ import edu.unc.lib.dl.search.solr.model.ObjectPathEntry;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.test.BaseEmbeddedSolrTest;
 import edu.unc.lib.dl.search.solr.test.TestCorpus;
+import edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil;
 import edu.unc.lib.dl.test.TestHelpers;
 
 /**
@@ -50,7 +50,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
     private ObjectPathFactory objPathFactory;
 
     @Mock
-    private GlobalPermissionEvaluator globalPermissionEvaluator;
+    private AccessRestrictionUtil restrictionUtil;
 
     public ObjectPathFactoryIT() {
         testCorpus = new TestCorpus();
@@ -64,8 +64,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
         solrSearchService = new SolrSearchService();
         solrSearchService.setSolrSettings(solrSettings);
-        solrSearchService.setGlobalPermissionEvaluator(globalPermissionEvaluator);
-        solrSearchService.setDisablePermissionFiltering(true);
+        solrSearchService.setAccessRestrictionUtil(restrictionUtil);
         TestHelpers.setField(solrSearchService, "solrClient", server);
 
         objPathFactory = new ObjectPathFactory();

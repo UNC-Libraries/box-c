@@ -18,10 +18,13 @@ package edu.unc.lib.dl.admin.controller;
 import java.util.Arrays;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
 
@@ -31,6 +34,9 @@ import edu.unc.lib.dl.ui.controller.AbstractSolrSearchController;
  *
  */
 public class AbstractSearchController extends AbstractSolrSearchController {
+
+    @Autowired
+    protected ChildrenCountService childrenCountService;
 
     protected static List<String> resultsFieldList = Arrays.asList(SearchFieldKeys.ID.name(),
             SearchFieldKeys.TITLE.name(), SearchFieldKeys.CREATOR.name(), SearchFieldKeys.DATASTREAM.name(),
@@ -54,7 +60,7 @@ public class AbstractSearchController extends AbstractSolrSearchController {
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
         List<BriefObjectMetadata> objects = resultResponse.getResultList();
-        queryLayer.getChildrenCounts(objects, searchRequest);
+        childrenCountService.addChildrenCounts(objects, searchRequest.getAccessGroups());
 
         return resultResponse;
     }

@@ -53,6 +53,8 @@ public class SearchSettings extends AbstractSettings {
     public int defaultListResultsPerPage;
     // Upper limit to the number of results allowed to be returned in a single search request.
     public int maxPerPage;
+    // Upper limit to the number of results allowed in a browse request.
+    public int maxBrowsePerPage;
     // Upper limit to the number of page navigation links to display at a time.
     public int pagesToDisplay;
     // Max number of neighbor items to display in the neighbor view
@@ -178,6 +180,7 @@ public class SearchSettings extends AbstractSettings {
         setDefaultListResultsPerPage(Integer.parseInt(properties.getProperty("search.results.defaultListResultsPerPage",
                 "0")));
         setMaxPerPage(Integer.parseInt(properties.getProperty("search.results.maxPerPage", "0")));
+        setMaxBrowsePerPage(Integer.parseInt(properties.getProperty("search.results.maxBrowsePerPage", "0")));
         setPagesToDisplay(Integer.parseInt(properties.getProperty("search.results.pagesToDisplay", "0")));
         setMaxNeighborResults(Integer.parseInt(properties.getProperty("search.results.neighborItems", "0")));
 
@@ -304,6 +307,14 @@ public class SearchSettings extends AbstractSettings {
 
     public void setMaxPerPage(int maxPerPage) {
         this.maxPerPage = maxPerPage;
+    }
+
+    public int getMaxBrowsePerPage() {
+        return maxBrowsePerPage;
+    }
+
+    public void setMaxBrowsePerPage(int maxBrowsePerPage) {
+        this.maxBrowsePerPage = maxBrowsePerPage;
     }
 
     public Set<String> getSearchableFields() {

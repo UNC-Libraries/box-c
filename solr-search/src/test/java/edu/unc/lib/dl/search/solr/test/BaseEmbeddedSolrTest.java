@@ -33,12 +33,15 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 public class BaseEmbeddedSolrTest {
     private static final Logger log = LoggerFactory.getLogger(BaseEmbeddedSolrTest.class);
 
     protected SolrSettings solrSettings;
+
+    protected SearchSettings searchSettings;
 
     protected EmbeddedSolrServer server;
 
@@ -63,6 +66,11 @@ public class BaseEmbeddedSolrTest {
         solrProps.load(this.getClass().getResourceAsStream("/solr.properties"));
         solrSettings = new SolrSettings();
         solrSettings.setProperties(solrProps);
+
+        Properties searchProps = new Properties();
+        searchProps.load(this.getClass().getResourceAsStream("/search.properties"));
+        searchSettings = new SearchSettings();
+        searchSettings.setProperties(searchProps);
     }
 
     protected SolrDocumentList getDocumentList(String query, String fieldList) throws Exception {
