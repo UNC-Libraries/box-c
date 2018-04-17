@@ -79,7 +79,8 @@ public class BinaryMetadataProcessor implements Processor {
 
                 String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 
-                String binaryPath = RepositoryPaths.idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
+                String binaryPath = RepositoryPaths
+                        .idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
 
                 String binaryFullPath = new StringJoiner("")
                     .add(baseBinaryPath)
@@ -89,7 +90,8 @@ public class BinaryMetadataProcessor implements Processor {
                 // Only set the binary path if the computed path exists
                 if (Files.exists(Paths.get(binaryFullPath))) {
                     in.setHeader(CdrBinaryPath, binaryFullPath);
-                    in.setHeader(CdrBinarySubPath, RepositoryPaths.idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
+                    in.setHeader(CdrBinarySubPath, RepositoryPaths
+                            .idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
                 }
 
                 in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
