@@ -48,6 +48,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
@@ -64,14 +66,15 @@ public class BinaryMetadataProcessorTest {
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private static final String FEDORA_BASE = "http://example.com/";
+    private static final String FEDORA_BASE = "http://example.com/rest/";
 
     private String binaryBase;
 
-    private static final String RESC_ID = FEDORA_BASE + "de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
     @Mock
     private Exchange exchange;
+
     @Mock
     private Message message;
 
@@ -96,6 +99,8 @@ public class BinaryMetadataProcessorTest {
         file.getParentFile().mkdirs();
         file.createNewFile();
 
+        String binarySubPath = PIDs.get(RESC_ID).getId();
+
         Model model = ModelFactory.createDefaultModel();
 
         Resource resc = model.createResource(RESC_ID);
@@ -110,7 +115,7 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message).setHeader(CdrBinaryPath, file.getAbsolutePath());
-        verify(message).setHeader(CdrBinarySubPath, idToPath(RESC_ID, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
+        verify(message).setHeader(CdrBinarySubPath, RepositoryPaths.idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
     }
 
     @Test
@@ -155,25 +160,5 @@ public class BinaryMetadataProcessorTest {
             when(message.getBody(eq(InputStream.class)))
                     .thenReturn(new ByteArrayInputStream(bos.toByteArray()));
         }
-    }
-
-    /**
-     * Prepend id with defined levels of hashed containers based on the values.
-     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
-     *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
-     *
-     * @param id
-     * @return
-     */
-    private String idToPath(String id, int pathDepth, int length) {
-        StringBuilder sb = new StringBuilder();
-
-        // Expand the id into chunked subfolders
-        for (int i = 0; i < pathDepth; i++) {
-            sb.append(id.substring(i * length, i * length + length))
-                    .append('/');
-        }
-
-        return sb.toString();
     }
 }

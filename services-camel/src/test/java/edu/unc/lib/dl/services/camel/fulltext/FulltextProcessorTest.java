@@ -17,7 +17,9 @@ package edu.unc.lib.dl.services.camel.fulltext;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
@@ -30,6 +32,7 @@ import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,9 +74,9 @@ public class FulltextProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
-        processor = new FulltextProcessor(fileName);
+
+        processor = new FulltextProcessor(tmpDir.newFolder().getAbsolutePath());
         file = tmpDir.newFile(fileName + ".txt");
-        file.deleteOnExit();
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI))).thenReturn(BINARY_URI);
@@ -93,5 +96,6 @@ public class FulltextProcessorTest {
     public void extractFulltextTest() throws Exception {
         processor.process(exchange);
         assertTrue(file.exists());
+        assertEquals(testText, FileUtils.readFileToString(file, UTF_8));
     }
 }

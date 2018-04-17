@@ -39,6 +39,8 @@ import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
@@ -64,6 +66,7 @@ public class BinaryMetadataProcessor implements Processor {
         final Model model = createDefaultModel();
 
         String fcrepoBinaryUri = (String) in.getHeader("CamelFcrepoUri");
+        String binarySubPath = PIDs.get(fcrepoBinaryUri).getId();
 
         Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
         ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
@@ -76,7 +79,7 @@ public class BinaryMetadataProcessor implements Processor {
 
                 String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 
-                String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
+                String binaryPath = RepositoryPaths.idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
 
                 String binaryFullPath = new StringJoiner("")
                     .add(baseBinaryPath)
@@ -86,7 +89,7 @@ public class BinaryMetadataProcessor implements Processor {
                 // Only set the binary path if the computed path exists
                 if (Files.exists(Paths.get(binaryFullPath))) {
                     in.setHeader(CdrBinaryPath, binaryFullPath);
-                    in.setHeader(CdrBinarySubPath, idToPath(fcrepoBinaryUri, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
+                    in.setHeader(CdrBinarySubPath, RepositoryPaths.idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
                 }
 
                 in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
@@ -97,25 +100,4 @@ public class BinaryMetadataProcessor implements Processor {
             resources.close();
         }
     }
-
-    /**
-     * Prepend id with defined levels of hashed containers based on the values.
-     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
-     *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
-     *
-     * @param id
-     * @return
-     */
-    private String idToPath(String id, int pathDepth, int length) {
-        StringBuilder sb = new StringBuilder();
-
-        // Expand the id into chunked subfolders
-        for (int i = 0; i < pathDepth; i++) {
-            sb.append(id.substring(i * length, i * length + length))
-                    .append('/');
-        }
-
-        return sb.toString();
-    }
-
 }

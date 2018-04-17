@@ -16,19 +16,21 @@
 package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
 import org.apache.camel.component.exec.ExecResult;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,8 +68,7 @@ public class AddDerivativeProcessor implements Processor {
 
     private void moveFile(String binaryUri, String binarySubPath, String derivativeTmpPath)
             throws IOException {
-        String movePath = derivativeBasePath + "/" +  binarySubPath + "." + fileExtension;
-        File derivative = new File(movePath);
+        File derivative = Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension).toFile();
         File parentDir = derivative.getParentFile();
 
         if (parentDir != null) {
@@ -75,12 +76,7 @@ public class AddDerivativeProcessor implements Processor {
         }
         derivative.createNewFile();
 
-        FileUtils.copyFileToDirectory(
-                FileUtils.getFile(derivativeTmpPath + "." + fileExtension),
-                FileUtils.getFile(derivativeBasePath));
-
-        new File(derivativeTmpPath + "." + fileExtension).delete();
-
-        log.info("Adding derivative for {} from {}", binaryUri, derivativeTmpPath);
+        Files.move(Paths.get(derivativeTmpPath + "." + fileExtension), Paths.get(derivativeBasePath), REPLACE_EXISTING);
+        log.info("Adding derivative for {} from {}", binaryUri, derivative.getAbsolutePath());
     }
 }

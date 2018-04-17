@@ -24,6 +24,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -69,15 +71,15 @@ public class FulltextProcessor implements Processor {
             return;
         }
 
-        String filepath = derivativeBasePath + "/" + binarySubPath + ".txt";
-        File derivative = new File(filepath);
+        Path filepath = Paths.get(derivativeBasePath, binarySubPath + ".txt");
+        File derivative = filepath.toFile();
         File parentDir = derivative.getParentFile();
 
         if (parentDir != null) {
             parentDir.mkdirs();
         }
 
-        try (PrintWriter fulltext = new PrintWriter(filepath)) {
+        try (PrintWriter fulltext = new PrintWriter(filepath.toString())) {
             fulltext.println(text);
         }
     }
