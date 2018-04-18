@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
@@ -68,7 +69,8 @@ public class AddDerivativeProcessor implements Processor {
 
     private void moveFile(String binaryUri, String binarySubPath, String derivativeTmpPath)
             throws IOException {
-        File derivative = Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension).toFile();
+        Path derivative_path = Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension);
+        File derivative = derivative_path.toFile();
         File parentDir = derivative.getParentFile();
 
         if (parentDir != null) {
@@ -76,7 +78,8 @@ public class AddDerivativeProcessor implements Processor {
         }
         derivative.createNewFile();
 
-        Files.move(Paths.get(derivativeTmpPath + "." + fileExtension), Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension), REPLACE_EXISTING);
+        Files.move(Paths.get(derivativeTmpPath + "." + fileExtension),
+                derivative_path, REPLACE_EXISTING);
         log.info("Adding derivative for {} from {}", binaryUri, derivative.getAbsolutePath());
     }
 }
