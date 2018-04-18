@@ -76,7 +76,7 @@ public class AddDerivativeProcessor implements Processor {
         }
         derivative.createNewFile();
 
-        Files.move(Paths.get(derivativeTmpPath + "." + fileExtension), Paths.get(derivativeBasePath), REPLACE_EXISTING);
+        Files.move(Paths.get(derivativeTmpPath + "." + fileExtension), Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension), REPLACE_EXISTING);
         log.info("Adding derivative for {} from {}", binaryUri, derivative.getAbsolutePath());
     }
 }
