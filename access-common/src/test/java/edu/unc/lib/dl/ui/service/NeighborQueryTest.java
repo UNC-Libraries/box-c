@@ -17,12 +17,12 @@ package edu.unc.lib.dl.ui.service;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +45,8 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 
 	private static final String PRECEDING_PREFIX = "before";
 	private static final String SUCCEEDING_PREFIX = "succeeding";
+	
+	private static final int NUM_DIGITS_SORT = 6;
 	
 	private static final int WINDOW_SIZE = 10;
 	
@@ -83,7 +85,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		assertEquals(WINDOW_SIZE, results.size());
 		int indexOfTarget = indexOf(results, targetMd);
 		assertEquals(WINDOW_SIZE / 2, indexOfTarget);
-		assertPrecedingResults(results, indexOfTarget);
+		assertPrecedingResults(results, indexOfTarget, WINDOW_SIZE / 2);
 		assertSucceedingResults(results, indexOfTarget);
 	}
 	
@@ -114,7 +116,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		assertEquals(WINDOW_SIZE, results.size());
 		int indexOfTarget = indexOf(results, targetMd);
 		assertEquals(WINDOW_SIZE - 1, indexOfTarget);
-		assertPrecedingResults(results, indexOfTarget);
+		assertPrecedingResults(results, indexOfTarget, 1);
 	}
 	
 	@Test
@@ -143,7 +145,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		assertEquals(3, results.size());
 		int indexOfTarget = indexOf(results, targetMd);
 		assertEquals(1, indexOfTarget);
-		assertPrecedingResults(results, indexOfTarget);
+		assertPrecedingResults(results, indexOfTarget, 0);
 		assertSucceedingResults(results, indexOfTarget);
 	}
 	
@@ -159,13 +161,14 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		assertEquals(WINDOW_SIZE, results.size());
 		int indexOfTarget = indexOf(results, targetMd);
 		assertEquals(WINDOW_SIZE - 3, indexOfTarget);
-		assertPrecedingResults(results, indexOfTarget);
+		assertPrecedingResults(results, indexOfTarget, WINDOW_SIZE / 2 - 2);
 		assertSucceedingResults(results, indexOfTarget);
 	}
 	
 	@Test
 	public void testNeighborsBigTest() throws Exception {
-		populateNeighborhood(ResourceType.File, 500, 500, ResourceType.File,
+		int numNeighbors = 500;
+		populateNeighborhood(ResourceType.File, numNeighbors, numNeighbors, ResourceType.File,
 				rootPid, collectionPid, folderPid);
 		
 		BriefObjectMetadataBean targetMd = getMetadata(targetPid);
@@ -177,7 +180,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		assertEquals(WINDOW_SIZE, results.size());
 		int indexOfTarget = indexOf(results, targetMd);
 		assertEquals(WINDOW_SIZE / 2, indexOfTarget);
-		assertPrecedingResults(results, indexOfTarget);
+		assertPrecedingResults(results, indexOfTarget, numNeighbors - WINDOW_SIZE / 2);
 		assertSucceedingResults(results, indexOfTarget);
 	}
 	
@@ -199,7 +202,7 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 			PID... ancestors) {
 		for (int i = 0; i < count; i++) {
 			PID neighborPid = makePid();
-			addObject(docs, neighborPid, prefix + i, type, ancestors);
+			addObject(docs, neighborPid, prefix + formatSortable(i), type, ancestors);
 		}
 	}
 	
@@ -310,21 +313,27 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		return -1;
 	}
 	
-	private void assertPrecedingResults(List<BriefObjectMetadataBean> results, int end) {
+	private void assertPrecedingResults(List<BriefObjectMetadataBean> results, int end, int offset) {
 		for (int i = 0; i < end; i++) {
 			BriefObjectMetadata result = results.get(i);
-			assertTrue(result.getTitle().startsWith(PRECEDING_PREFIX));
+			assertEquals(PRECEDING_PREFIX + formatSortable(i + offset), result.getTitle());
 		}
 	}
 	
 	private void assertSucceedingResults(List<BriefObjectMetadataBean> results, int start) {
 		for (int i = start + 1; i < results.size(); i++) {
 			BriefObjectMetadata result = results.get(i);
-			assertTrue(result.getTitle().startsWith(SUCCEEDING_PREFIX));
+			assertEquals(SUCCEEDING_PREFIX + formatSortable(i - start - 1), result.getTitle());
 		}
 	}
 	
 	private BriefObjectMetadataBean getMetadata(PID pid) throws Exception {
 		return queryLayer.getObjectById(new SimpleIdRequest(pid.getPid(), groups));
+	}
+	
+	private String formatSortable(int number) {
+		String formatted = Integer.toString(number);
+		int numDigits = formatted.length();
+		return StringUtils.repeat("0", NUM_DIGITS_SORT - numDigits) + formatted;
 	}
 }

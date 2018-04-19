@@ -41,6 +41,8 @@ import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
@@ -332,26 +334,28 @@ public class SolrQueryLayerService extends SolrSearchService {
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
 
-		// Sort neighbors using the title sort
-		addSort(solrQuery, "title", true);
-
 		// Query for a window of results to either side of the target
 		solrQuery.setRows(windowSize - 1);
 		solrQuery.setFields(new String[0]);
 		
 		// Clone base query for reuse in getting succeeding neighbors
-		SolrQuery precedingQuery = solrQuery;
 		SolrQuery succeedingQuery = solrQuery.getCopy();
+		SolrQuery precedingQuery = solrQuery;
 		
 		// Get set of preceding neighbors
 		precedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{* TO \""
 				+ sanitize(metadata.getTitle().toLowerCase()) + "\"} "
 				+ accessRestrictionClause);
 		
+		// Sort neighbors using reverse title sort in order to get items closest to target
+		addSort(precedingQuery, "title", false);
+		
 		List<BriefObjectMetadataBean> precedingNeighbors;
 		try {
 			QueryResponse queryResponse = this.executeQuery(precedingQuery);
 			precedingNeighbors = queryResponse.getBeans(BriefObjectMetadataBean.class);
+			// Reverse order of preceding items from the reverse title sort
+			precedingNeighbors = Lists.reverse(precedingNeighbors);
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Neighboring items: {}" + solrQuery, e);
 			return null;
@@ -361,6 +365,9 @@ public class SolrQueryLayerService extends SolrSearchService {
 		succeedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{\""  
 				+ sanitize(metadata.getTitle().toLowerCase()) + "\" TO *} "
 				+ accessRestrictionClause);
+		
+		// Sort neighbors using the title sort
+		addSort(succeedingQuery, "title", true);
 		
 		List<BriefObjectMetadataBean> succeedingNeighbors;
 		try {
