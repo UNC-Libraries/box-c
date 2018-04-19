@@ -239,12 +239,19 @@
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
     </bean>
     
+    <bean id="metricRegistry" class="io.dropwizard.metrics5.MetricRegistry" />
+    
+    <bean id="metrics" class="edu.unc.lib.dl.cdr.services.metrics.AdminMetrics" >
+        <property name="registry" ref="metricRegistry" />
+    </bean>
+    
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
+        <property name="metrics" ref="metrics" />
     </bean>
     
     <bean id="solrUpdateJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
