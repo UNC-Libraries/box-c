@@ -24,10 +24,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.AccessClient;
 import edu.unc.lib.dl.fedora.AuthorizationException;
@@ -40,12 +41,12 @@ import edu.unc.lib.dl.fedora.types.MIMETypedStream;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class MetadataUIP extends FedoraObjectUIP {
-    private static Logger log = Logger.getLogger(MetadataUIP.class);
+    private static Logger log = LoggerFactory.getLogger(MetadataUIP.class);
 
     public MetadataUIP(PID pid, String user, UpdateOperation operation) {
         super(pid, user, operation);

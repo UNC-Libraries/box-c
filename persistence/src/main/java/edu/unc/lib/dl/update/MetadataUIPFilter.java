@@ -17,16 +17,17 @@ package edu.unc.lib.dl.update;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public abstract class MetadataUIPFilter implements UIPUpdateFilter {
-    private static Logger log = Logger.getLogger(MetadataUIPFilter.class);
+    private static Logger log = LoggerFactory.getLogger(MetadataUIPFilter.class);
 
     protected Element getNewModifiedElement(MetadataUIP uip, String datastreamName) {
         Element incoming = uip.getIncomingData().get(datastreamName);
@@ -39,7 +40,7 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
             return null;
         }        // If this is a replace operation, then the new modified element is simply the incoming element.
         if (uip.getOperation().equals(UpdateOperation.REPLACE)) {
-            return (Element) incoming.clone();
+            return incoming.clone();
         }
         return this.getBaseElement(uip, datastreamName, incoming);
     }
@@ -53,14 +54,14 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
         if (modified == null) {
             // If there is no original or modified data, than return the incoming as new modified
             if (original == null) {
-                return (Element) incoming.clone();
+                return incoming.clone();
             } else {
                 // Set the base for the new modified object to the original data
-                newModified = (Element) original.clone();
+                newModified = original.clone();
             }
         } else {
             // Use the previous modified data
-            newModified = (Element) modified.clone();
+            newModified = modified.clone();
         }
 
         return newModified;
@@ -84,10 +85,10 @@ public abstract class MetadataUIPFilter implements UIPUpdateFilter {
             return null;
         }
         // Clone all the child elements of the incoming metadata
-        List<Element> incomingElements = (List<Element>) incoming.getChildren();
+        List<Element> incomingElements = incoming.getChildren();
         // Add all the incoming element children to the base modified object
         for (Element incomingElement : incomingElements) {
-            newModified.addContent((Element) incomingElement.clone());
+            newModified.addContent(incomingElement.clone());
         }
 
         return newModified;

@@ -17,7 +17,8 @@ package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.Statement;
 import org.swordapp.server.StatementManager;
@@ -39,7 +40,7 @@ import edu.unc.lib.dl.util.ErrorURIRegistry;
  */
 public class StatementManagerImpl extends AbstractFedoraManager implements StatementManager {
 
-    private static Logger log = Logger.getLogger(StatementManagerImpl.class);
+    private static Logger log = LoggerFactory.getLogger(StatementManagerImpl.class);
 
     private DepositReportingUtil depositReportingUtil;
 
@@ -57,27 +58,27 @@ public class StatementManagerImpl extends AbstractFedoraManager implements State
                     "Insufficient privileges to retrieve statement for " + targetPID.getPid());
         }
 
-//        String label = tripleStoreQueryService.lookupLabel(targetPID);
-//        String lastModifiedString = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(targetPID,
-//                ContentModelHelper.FedoraProperty.lastModifiedDate.toString());
-//
-//        Statement statement = new AtomStatementImpl(iri, "CDR", label, lastModifiedString);
-//
-//        if (lastModifiedString != null) {
-//            try {
-//                statement.setLastModified(DateTimeUtil.parseUTCToDate(lastModifiedString));
-//            } catch (ParseException e) {
-//                log.error("Could not parse last modified", e);
-//            }
-//        }
-//        statement.setOriginalDeposits(depositReportingUtil.getOriginalDeposits(targetPID, configImpl));
-//
-//        statement.setResources(new ArrayList<ResourcePart>());
-//
-//        statement.setStates(new HashMap<String, String>());
-//        statement.addState("Activity", tripleStoreQueryService.fetchState(targetPID));
-//
-//        return statement;
+        //        String label = tripleStoreQueryService.lookupLabel(targetPID);
+        //        String lastModifiedString = tripleStoreQueryService.fetchFirstBySubjectAndPredicate(targetPID,
+        //                ContentModelHelper.FedoraProperty.lastModifiedDate.toString());
+        //
+        //        Statement statement = new AtomStatementImpl(iri, "CDR", label, lastModifiedString);
+        //
+        //        if (lastModifiedString != null) {
+        //            try {
+        //                statement.setLastModified(DateTimeUtil.parseUTCToDate(lastModifiedString));
+        //            } catch (ParseException e) {
+        //                log.error("Could not parse last modified", e);
+        //            }
+        //        }
+        //        statement.setOriginalDeposits(depositReportingUtil.getOriginalDeposits(targetPID, configImpl));
+        //
+        //        statement.setResources(new ArrayList<ResourcePart>());
+        //
+        //        statement.setStates(new HashMap<String, String>());
+        //        statement.addState("Activity", tripleStoreQueryService.fetchState(targetPID));
+        //
+        //        return statement;
         return null;
     }
 

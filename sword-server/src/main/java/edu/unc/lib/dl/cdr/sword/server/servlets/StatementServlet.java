@@ -21,7 +21,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -31,33 +32,33 @@ import org.swordapp.server.StatementManager;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 @Controller
 @RequestMapping(SwordConfigurationImpl.STATE_PATH)
 public class StatementServlet extends BaseSwordServlet {
-    private static Logger log = Logger.getLogger(StatementServlet.class);
+    private static Logger log = LoggerFactory.getLogger(StatementServlet.class);
 
     @Resource
     private StatementManager statementManager;
-   private StatementAPI statementApi;
+    private StatementAPI statementApi;
 
-   @PostConstruct
+    @PostConstruct
     public void init() throws ServletException {
-       this.statementApi = new StatementAPI(this.statementManager, this.config);
-   }
+        this.statementApi = new StatementAPI(this.statementManager, this.config);
+    }
 
-   @RequestMapping(value = {"", "/", "/{pid}"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"", "/", "/{pid}"}, method = RequestMethod.GET)
     protected void getStatement(HttpServletRequest req, HttpServletResponse resp) {
-       log.debug("Retrieving statement for " + req.getRequestURI());
-       try {
-           this.statementApi.get(req, resp);
-       } catch (Exception e) {
-           log.error("Error retrieving statement for " + req.getRequestURI(), e);
-       }
-   }
+        log.debug("Retrieving statement for " + req.getRequestURI());
+        try {
+            this.statementApi.get(req, resp);
+        } catch (Exception e) {
+            log.error("Error retrieving statement for " + req.getRequestURI(), e);
+        }
+    }
 
     public StatementManager getStatementManager() {
         return statementManager;

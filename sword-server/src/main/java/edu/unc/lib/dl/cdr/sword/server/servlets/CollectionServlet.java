@@ -24,7 +24,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,14 +37,14 @@ import org.swordapp.server.CollectionListManager;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 @Controller
 @RequestMapping(SwordConfigurationImpl.COLLECTION_PATH)
 public class CollectionServlet extends BaseSwordServlet {
-    private static Logger LOG = Logger.getLogger(CollectionServlet.class);
+    private static Logger LOG = LoggerFactory.getLogger(CollectionServlet.class);
 
     @Resource
     protected CollectionListManager collectionListManager;

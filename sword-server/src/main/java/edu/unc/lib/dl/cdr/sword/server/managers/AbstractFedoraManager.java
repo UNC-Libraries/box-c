@@ -16,7 +16,8 @@
 package edu.unc.lib.dl.cdr.sword.server.managers;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.swordapp.server.AuthCredentials;
 
@@ -32,7 +33,7 @@ import edu.unc.lib.dl.fedora.PID;
  *
  */
 public abstract class AbstractFedoraManager {
-    private static Logger LOG = Logger.getLogger(AbstractFedoraManager.class);
+    private static Logger LOG = LoggerFactory.getLogger(AbstractFedoraManager.class);
 
     @Autowired
     protected String swordPath;
@@ -65,10 +66,10 @@ public abstract class AbstractFedoraManager {
             return true;
         }
         throw new RuntimeException("Not implemented");
-//        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
-//        AccessGroupSet groups = GroupsThreadStore.getGroups();
-//
-//        return aclBean.hasPermission(groups, permission);
+        //        ObjectAccessControlsBean aclBean = aclService.getObjectAccessControls(pid);
+        //        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        //
+        //        return aclBean.hasPermission(groups, permission);
     }
 
     public String getSwordPath() {
