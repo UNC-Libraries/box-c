@@ -34,6 +34,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 
+import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.jena.rdf.model.Model;
@@ -81,6 +82,8 @@ public class BinaryMetadataProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
+
+        TestHelper.setContentBase(FEDORA_BASE);
 
         binaryBase = tmpFolder.newFolder().getAbsolutePath();
 
