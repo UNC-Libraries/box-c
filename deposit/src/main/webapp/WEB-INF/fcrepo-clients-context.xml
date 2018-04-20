@@ -14,13 +14,9 @@
         factory-method="getProperty">
         <constructor-arg index="0" value="deposit.properties.uri" />
     </bean>
-
-    <bean id="serverAddress" class="java.lang.String">
-        <constructor-arg value="${fcrepo.baseUrl}" />
-    </bean>
     
     <bean id="baseAddress" class="java.lang.String">
-        <constructor-arg value="${fcrepo.baseUrl}rest/" />
+        <constructor-arg value="${fcrepo.baseUri}" />
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">

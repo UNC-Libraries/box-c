@@ -23,6 +23,7 @@ import java.net.URI;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoClient;
@@ -131,7 +132,13 @@ public class RepositoryObjectCacheLoader extends CacheLoader<PID, RepositoryObje
         }
 
         if (obj == null) {
-            throw new ObjectTypeMismatchException("Requested object " + pid + " is not a repository object.");
+            StringBuilder types = new StringBuilder();
+            StmtIterator typesIt = resc.listProperties(RDF.type);
+            while (typesIt.hasNext()) {
+                types.append(typesIt.nextStatement().getResource().getURI()).append("\n");
+            }
+            throw new ObjectTypeMismatchException("Requested object " + pid + " is not a repository object."
+                    + "\nHad types:\n" + types.toString());
         }
 
         obj.setEtag(etag);

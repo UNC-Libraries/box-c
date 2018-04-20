@@ -118,6 +118,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     @Autowired
     private TransactionManager txManager;
 
+    @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
 
     public IngestContentObjectsJob() {
