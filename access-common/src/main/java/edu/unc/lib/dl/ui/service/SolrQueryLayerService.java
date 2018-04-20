@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static java.lang.String.format;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TITLE_LC;
 import static edu.unc.lib.dl.search.solr.util.SolrSettings.sanitize;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -40,6 +42,8 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupConstants;
@@ -332,35 +336,53 @@ public class SolrQueryLayerService extends SolrSearchService {
 			facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
 		}
 
-		// Sort neighbors using the title sort
-		addSort(solrQuery, "title", true);
-
 		// Query for a window of results to either side of the target
 		solrQuery.setRows(windowSize - 1);
 		solrQuery.setFields(new String[0]);
 		
 		// Clone base query for reuse in getting succeeding neighbors
-		SolrQuery precedingQuery = solrQuery;
 		SolrQuery succeedingQuery = solrQuery.getCopy();
+		SolrQuery precedingQuery = solrQuery;
 		
+		// Limit results to those with titles alphabetically before the target,
+		// OR if the title is the same, to ids before the target.
+		String pTitlesClause;
+		// Only limit to preceding titles if there is a title on the target, [* TO ""] has special meaning in solr
+		if (!StringUtils.isBlank(metadata.getTitle())) {
+			pTitlesClause = "(%1$s:{* TO \"%2$s\"} OR ";
+		} else {
+			pTitlesClause = "(";
+		}
+		String pItemsQuery = format(pTitlesClause + "(%1$s:\"%2$s\" AND %3$s:{* TO \"%4$s\"})) AND !%3$s:\"%4$s\"",
+				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
+				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
 		// Get set of preceding neighbors
-		precedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{* TO \""
-				+ sanitize(metadata.getTitle().toLowerCase()) + "\"} "
-				+ accessRestrictionClause);
+		precedingQuery.setQuery(pItemsQuery + accessRestrictionClause);
+		
+		// Sort neighbors using reverse title sort in order to get items closest to target
+		addSort(precedingQuery, "title", false);
 		
 		List<BriefObjectMetadataBean> precedingNeighbors;
 		try {
 			QueryResponse queryResponse = this.executeQuery(precedingQuery);
 			precedingNeighbors = queryResponse.getBeans(BriefObjectMetadataBean.class);
+			// Reverse order of preceding items from the reverse title sort
+			precedingNeighbors = Lists.reverse(precedingNeighbors);
 		} catch (SolrServerException e) {
 			LOG.error("Error retrieving Neighboring items: {}" + solrQuery, e);
 			return null;
 		}
 		
+		// Limit results to those with titles alphabetically after the target,
+		// OR if the title is the same, to ids after the target.
+		String sItemsQuery = format("(%1$s:{\"%2$s\" TO *} OR (%1$s:\"%2$s\" AND %3$s:{\"%4$s\" TO *}))  AND !%3$s:\"%4$s\"",
+				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
+				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
 		// Get set of succeeding neighbors
-		succeedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{\""  
-				+ sanitize(metadata.getTitle().toLowerCase()) + "\" TO *} "
-				+ accessRestrictionClause);
+		succeedingQuery.setQuery(sItemsQuery + accessRestrictionClause);
+		
+		// Sort neighbors using the title sort
+		addSort(succeedingQuery, "title", true);
 		
 		List<BriefObjectMetadataBean> succeedingNeighbors;
 		try {
