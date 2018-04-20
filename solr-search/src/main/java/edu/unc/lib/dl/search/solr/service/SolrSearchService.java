@@ -277,8 +277,8 @@ public class SolrSearchService extends AbstractQueryService {
     }
 
     public BriefObjectMetadata addSelectedContainer(String containerPid, SearchState searchState,
-            boolean applyCutoffs) {
-        BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid));
+            boolean applyCutoffs, AccessGroupSet principals) {
+        BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid, principals));
         if (selectedContainer == null) {
             return null;
         }

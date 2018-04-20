@@ -82,7 +82,8 @@ public class ExportController extends AbstractSolrSearchController {
         searchState.setSortType("export");
         searchState.setRowsPerPage(searchSettings.maxPerPage);
 
-        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
+        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
+                searchRequest.getAccessGroups());
         SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
         List<BriefObjectMetadata> objects = resultResponse.getResultList();
