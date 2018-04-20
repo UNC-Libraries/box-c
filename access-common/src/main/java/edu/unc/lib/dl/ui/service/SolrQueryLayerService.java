@@ -345,7 +345,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery precedingQuery = solrQuery;
 		
 		// Limit results to those with titles alphabetically before the target,
-		// OR if the title is the same, an id before the target.
+		// OR if the title is the same, to ids before the target.
 		String pTitlesClause;
 		// Only limit to preceding titles if there is a title on the target, [* TO ""] has special meaning in solr
 		if (!StringUtils.isBlank(metadata.getTitle())) {
@@ -373,8 +373,8 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return null;
 		}
 		
-		// Limit results to those with titles alphabetically before the target,
-		// OR if the title is the same, an id before the target.
+		// Limit results to those with titles alphabetically after the target,
+		// OR if the title is the same, to ids after the target.
 		String sItemsQuery = format("(%1$s:{\"%2$s\" TO *} OR (%1$s:\"%2$s\" AND %3$s:{\"%4$s\" TO *}))  AND !%3$s:\"%4$s\"",
 				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
 				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
