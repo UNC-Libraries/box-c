@@ -60,133 +60,133 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "/service-context.xml" })
 public class AtomDCToMODSFilterTest extends Assert {
-	@Resource
-	private SchematronValidator schematronValidator;
-	private AtomDCToMODSFilter filter;
+    @Resource
+    private SchematronValidator schematronValidator;
+    private AtomDCToMODSFilter filter;
 
-	private static Logger log = LoggerFactory.getLogger(AtomDCToMODSFilter.class);
+    private static Logger log = LoggerFactory.getLogger(AtomDCToMODSFilter.class);
 
-	@Before
-	public void init() throws Exception {
-		initMocks(this);
+    @Before
+    public void init() throws Exception {
+        initMocks(this);
 
-		filter = new AtomDCToMODSFilter();
-		filter.setSchematronValidator(schematronValidator);
-	}
+        filter = new AtomDCToMODSFilter();
+        filter.setSchematronValidator(schematronValidator);
+    }
 
-	@Test
-	public void addNewMODSFromDCTerms() throws Exception {
-		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataDC.xml"));
-		Abdera abdera = new Abdera();
-		Parser parser = abdera.getParser();
-		Document<Entry> entryDoc = parser.parse(entryPart);
-		Entry entry = entryDoc.getRoot();
+    @Test
+    public void addNewMODSFromDCTerms() throws Exception {
+        InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataDC.xml"));
+        Abdera abdera = new Abdera();
+        Parser parser = abdera.getParser();
+        Document<Entry> entryDoc = parser.parse(entryPart);
+        Entry entry = entryDoc.getRoot();
 
-		AccessClient accessClient = mock(AccessClient.class);
-		when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
+        AccessClient accessClient = mock(AccessClient.class);
+        when(accessClient.getDatastreamDissemination(any(PID.class), anyString(), anyString())).thenReturn(null);
 
-		PID pid = new PID("uuid:test");
+        PID pid = new PID("uuid:test");
 
-		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.ADD, entry);
+        AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.ADD, entry);
 
-		assertEquals(0, uip.getOriginalData().size());
-		assertEquals(0, uip.getModifiedData().size());
-		assertEquals(2, uip.getIncomingData().size());
+        assertEquals(0, uip.getOriginalData().size());
+        assertEquals(0, uip.getModifiedData().size());
+        assertEquals(2, uip.getIncomingData().size());
 
-		uip.storeOriginalDatastreams(accessClient);
+        uip.storeOriginalDatastreams(accessClient);
 
-		assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
-		assertFalse(uip.getOriginalData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
-		assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
-		assertTrue(uip.getIncomingData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
+        assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+        assertFalse(uip.getOriginalData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
+        assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+        assertTrue(uip.getIncomingData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
 
-		filter.doFilter(uip);
+        filter.doFilter(uip);
 
-		XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
-		log.debug(outputter.outputString(uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())));
+        XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+        log.debug(outputter.outputString(uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName())));
 
-		assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
-		assertFalse(uip.getOriginalData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
-		assertTrue(uip.getModifiedData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
-		assertFalse(uip.getModifiedData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
-		assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
-		assertTrue(uip.getIncomingData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
+        assertFalse(uip.getOriginalData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+        assertFalse(uip.getOriginalData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
+        assertTrue(uip.getModifiedData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+        assertFalse(uip.getModifiedData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
+        assertTrue(uip.getIncomingData().containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+        assertTrue(uip.getIncomingData().containsKey(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM));
 
-		Element modsElement = uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
-		assertTrue(modsElement.getChildren().size() > 0);
-	}
+        Element modsElement = uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
+        assertTrue(modsElement.getChildren().size() > 0);
+    }
 
-	@Test
-	public void addNewMODSWithDCTerms() throws Exception {
-		AtomPubMetadataUIP uip = mock(AtomPubMetadataUIP.class);
+    @Test
+    public void addNewMODSWithDCTerms() throws Exception {
+        AtomPubMetadataUIP uip = mock(AtomPubMetadataUIP.class);
 
-		@SuppressWarnings("unchecked")
-		Map<String,Element> incomingData = mock(Map.class);
-		when(incomingData.get(eq(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM))).thenReturn(new Element("atom_dc"));
-		when(incomingData.get(eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()))).thenReturn(new Element("mods"));
-		when(incomingData.containsKey(eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()))).thenReturn(true);
-		when(incomingData.containsKey(eq(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM))).thenReturn(true);
+        @SuppressWarnings("unchecked")
+        Map<String,Element> incomingData = mock(Map.class);
+        when(incomingData.get(eq(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM))).thenReturn(new Element("atom_dc"));
+        when(incomingData.get(eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()))).thenReturn(new Element("mods"));
+        when(incomingData.containsKey(eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()))).thenReturn(true);
+        when(incomingData.containsKey(eq(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM))).thenReturn(true);
 
-		when(uip.getIncomingData()).thenReturn(incomingData);
+        when(uip.getIncomingData()).thenReturn(incomingData);
 
-		filter.doFilter(uip);
+        filter.doFilter(uip);
 
-		// No changes should occur since there is also a mods record incoming
-		verify(incomingData, times(1)).get(eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
-		verify(uip, never()).getModifiedData();
-	}
+        // No changes should occur since there is also a mods record incoming
+        verify(incomingData, times(1)).get(eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()));
+        verify(uip, never()).getModifiedData();
+    }
 
-	@Test
-	public void replaceMODSWithDCTerms() throws Exception {
-		InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataDC.xml"));
-		Abdera abdera = new Abdera();
-		Parser parser = abdera.getParser();
-		Document<Entry> entryDoc = parser.parse(entryPart);
-		Entry entry = entryDoc.getRoot();
+    @Test
+    public void replaceMODSWithDCTerms() throws Exception {
+        InputStream entryPart = new FileInputStream(new File("src/test/resources/atompub/metadataDC.xml"));
+        Abdera abdera = new Abdera();
+        Parser parser = abdera.getParser();
+        Document<Entry> entryDoc = parser.parse(entryPart);
+        Entry entry = entryDoc.getRoot();
 
-		AccessClient accessClient = mock(AccessClient.class);
+        AccessClient accessClient = mock(AccessClient.class);
 
-		MIMETypedStream modsStream = new MIMETypedStream();
-		File raf = new File("src/test/resources/testmods.xml");
-		byte[] bytes = FileUtils.readFileToByteArray(raf);
-		modsStream.setStream(bytes);
-		modsStream.setMIMEType("text/xml");
-		when(
-				accessClient.getDatastreamDissemination(any(PID.class),
-						eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(modsStream);
+        MIMETypedStream modsStream = new MIMETypedStream();
+        File raf = new File("src/test/resources/testmods.xml");
+        byte[] bytes = FileUtils.readFileToByteArray(raf);
+        modsStream.setStream(bytes);
+        modsStream.setMIMEType("text/xml");
+        when(
+                accessClient.getDatastreamDissemination(any(PID.class),
+                        eq(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName()), anyString())).thenReturn(modsStream);
 
-		PID pid = new PID("uuid:test");
+        PID pid = new PID("uuid:test");
 
-		AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.REPLACE, entry);
-		uip.storeOriginalDatastreams(accessClient);
+        AtomPubMetadataUIP uip = new AtomPubMetadataUIP(pid, "testuser", UpdateOperation.REPLACE, entry);
+        uip.storeOriginalDatastreams(accessClient);
 
-		filter.doFilter(uip);
+        filter.doFilter(uip);
 
-		Element dcTitleElement = uip.getIncomingData().get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
-		String dcTitle = dcTitleElement.getChildText("title", JDOMNamespaceUtil.DCTERMS_NS);
+        Element dcTitleElement = uip.getIncomingData().get(AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM);
+        String dcTitle = dcTitleElement.getChildText("title", JDOMNamespaceUtil.DCTERMS_NS);
 
-		Element oldMODSElement = uip.getOriginalData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
-		String oldMODSTitle = oldMODSElement.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChildText("title", JDOMNamespaceUtil.MODS_V3_NS);
+        Element oldMODSElement = uip.getOriginalData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
+        String oldMODSTitle = oldMODSElement.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChildText("title", JDOMNamespaceUtil.MODS_V3_NS);
 
-		Element modsElement = uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
-		String newMODSTitle = modsElement.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChildText("title", JDOMNamespaceUtil.MODS_V3_NS);
+        Element modsElement = uip.getModifiedData().get(ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName());
+        String newMODSTitle = modsElement.getChild("titleInfo", JDOMNamespaceUtil.MODS_V3_NS).getChildText("title", JDOMNamespaceUtil.MODS_V3_NS);
 
-		assertEquals("Title", dcTitle);
-		assertEquals("Hiring and recruitment practices in academic libraries", oldMODSTitle);
-		assertEquals(dcTitle, newMODSTitle);
+        assertEquals("Title", dcTitle);
+        assertEquals("Hiring and recruitment practices in academic libraries", oldMODSTitle);
+        assertEquals(dcTitle, newMODSTitle);
 
-		assertEquals(1, uip.getOriginalData().size());
-		assertEquals(1, uip.getModifiedData().size());
-		assertEquals(2, uip.getIncomingData().size());
-	}
+        assertEquals(1, uip.getOriginalData().size());
+        assertEquals(1, uip.getModifiedData().size());
+        assertEquals(2, uip.getIncomingData().size());
+    }
 
-	@Test
-	public void wrongUIPType() throws UIPException{
-		ContentUIP uip = mock(ContentUIP.class);
+    @Test
+    public void wrongUIPType() throws UIPException{
+        ContentUIP uip = mock(ContentUIP.class);
 
-		filter.doFilter(uip);
+        filter.doFilter(uip);
 
-		verify(uip, times(0)).getIncomingData();
-		verify(uip, times(0)).getModifiedData();
-	}
+        verify(uip, times(0)).getIncomingData();
+        verify(uip, times(0)).getModifiedData();
+    }
 }
