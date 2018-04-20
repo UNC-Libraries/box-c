@@ -69,8 +69,8 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
         String mimeType = null;
         String lastModified = null;
 
-        //        CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(fedoraHost, accessClient.getUsername(),
-        //                accessClient.getPassword());
+        //        CloseableHttpClient client = HttpClientUtil.getAuthenticatedClient(fedoraHost,
+        //                accessClient.getUsername(), accessClient.getPassword());
         //
         //        String url = fedoraPath + "/objects/" + targetPID.getPid()
         //                + "/datastreams/" + datastream.getName() + "/content";
@@ -105,9 +105,11 @@ public class MediaResourceManagerImpl extends AbstractFedoraManager implements M
         //                        SAXBuilder saxBuilder = new SAXBuilder();
         //                        Document relsExt = saxBuilder.build(inputStream);
         //                        XMLOutputter outputter = new XMLOutputter();
-        //                        Element accessElement = AccessControlTransformationUtil.rdfToACL(relsExt.getRootElement());
+        //                        Element accessElement =
+        //                          AccessControlTransformationUtil.rdfToACL(relsExt.getRootElement());
         //                        inputStream.close();
-        //                        inputStream = new ByteArrayInputStream(outputter.outputString(accessElement).getBytes());
+        //                        inputStream = new ByteArrayInputStream(
+        //                              outputter.outputString(accessElement).getBytes());
         //                    } catch (Exception e) {
         //                        log.debug("Failed to parse response from " + targetPID.getDatastreamURI()
         //                                + " into ACL format", e);

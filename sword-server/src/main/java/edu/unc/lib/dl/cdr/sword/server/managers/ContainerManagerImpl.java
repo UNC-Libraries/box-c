@@ -88,7 +88,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
         } catch (UIPException e) {
             log.warn("Failed to process UIP for " + targetPID.getPid(), e);
             throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500,
-                    "A problem occurred while attempting to perform the requested update operation on " + editIRI, e);
+                    "A problem occurred while attempting to perform the requested update operation on "
+                            + editIRI, e);
         }
 
         DepositReceipt receipt = new DepositReceipt();
@@ -151,7 +152,8 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
         }
 
         //        try {
-        //            this.digitalObjectManager.delete(targetPID, auth.getUsername(), "Deleted by " + auth.getUsername());
+        //            this.digitalObjectManager.delete(targetPID, auth.getUsername(), "Deleted by "
+        //              + auth.getUsername());
         //        } catch (NotFoundException e) {
         //            throw new SwordError(ErrorURIRegistry.RESOURCE_NOT_FOUND, 404,
         //                    "Unable to delete the object " + targetPID.getPid()
@@ -225,10 +227,12 @@ public class ContainerManagerImpl extends AbstractFedoraManager implements Conta
         //                log.debug("Updating active state of in-progress item");
         //                managementClient.addLiteralStatement(targetPID, FedoraProperty.Active.getFragment(),
         //                        FedoraProperty.Active.getNamespace(), "Active", null);
-        //                receipt.setVerboseDescription(targetPID.getPid() + " is " + ((deposit.isInProgress()) ? "" : "not")
+        //                receipt.setVerboseDescription(targetPID.getPid() + " is " +
+        //                        ((deposit.isInProgress()) ? "" : "not")
         //                        + " in-progress");
         //            } catch (FedoraException e) {
-        //                throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500, "Failed to update active state for "
+        //                throw new SwordError(ErrorURIRegistry.UPDATE_EXCEPTION, 500,
+        //                      "Failed to update active state for "
         //                        + targetPID.getPid());
         //            }
         //        }

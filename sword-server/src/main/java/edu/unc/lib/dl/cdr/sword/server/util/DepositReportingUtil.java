@@ -65,8 +65,10 @@ public class DepositReportingUtil {
         //        if (values != null) {
         //            for (String dissemination : values) {
         //                if (dissemination.endsWith("/" + Datastream.DATA_MANIFEST.getName())) {
-        //                    return new OriginalDepositPair(config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH
-        //                            + "/" + depositPID.getPid() + "/" + Datastream.DATA_MANIFEST.getName(), "text/xml");
+        //                    return new OriginalDepositPair(config.getSwordPath()
+        //                            + SwordConfigurationImpl.EDIT_MEDIA_PATH
+        //                            + "/" + depositPID.getPid() + "/" + Datastream.DATA_MANIFEST.getName(),
+        //                              "text/xml");
         //                }
         //            }
         //        }
@@ -101,7 +103,8 @@ public class DepositReportingUtil {
         //            if (values != null) {
         //                for (String dissemination : values) {
         //                    if (dissemination.endsWith("/" + Datastream.DATA_MANIFEST.getName())) {
-        //                        originalDepositURI = config.getSwordPath() + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/"
+        //                        originalDepositURI = config.getSwordPath()
+        //                                + SwordConfigurationImpl.EDIT_MEDIA_PATH + "/"
         //                                + depositPID.getPid() + "/" + Datastream.DATA_MANIFEST.getName();
         //                        mimetype = "text/xml";
         //                        break;
@@ -152,8 +155,8 @@ public class DepositReportingUtil {
         //                depositedOnBehalfOf = values.get(0);
         //            }
         //
-        //            OriginalDeposit deposit = new OriginalDeposit(originalDepositURI, packageTypes, depositedOn, depositedBy,
-        //                    depositedOnBehalfOf);
+        //            OriginalDeposit deposit = new OriginalDeposit(originalDepositURI, packageTypes,
+        //                    depositedOn, depositedBy, depositedOnBehalfOf);
         //            deposit.setMediaType(mimetype);
         //            results.add(deposit);
         //        }
@@ -238,7 +241,8 @@ public class DepositReportingUtil {
         //                // Build MODS as an Abdera entry and add it to the receipt entry.
         //                Abdera abdera = new Abdera();
         //                Parser parser = abdera.getParser();
-        //                Document<Element> entryDoc = parser.parse(new ByteArrayInputStream(metadataStream.getStream()));
+        //                Document<Element> entryDoc = parser.parse(
+        //                  new ByteArrayInputStream(metadataStream.getStream()));
         //
         //                receipt.getWrappedEntry().addExtension(entryDoc.getRoot());
         //            }
