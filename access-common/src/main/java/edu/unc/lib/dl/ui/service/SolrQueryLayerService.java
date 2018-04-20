@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ui.service;
 
+import static java.lang.String.format;
 import static edu.unc.lib.dl.search.solr.util.SearchFieldKeys.TITLE_LC;
 import static edu.unc.lib.dl.search.solr.util.SolrSettings.sanitize;
 import static edu.unc.lib.dl.util.ContentModelHelper.CDRProperty.invalidTerm;
@@ -342,10 +343,13 @@ public class SolrQueryLayerService extends SolrSearchService {
 		SolrQuery succeedingQuery = solrQuery.getCopy();
 		SolrQuery precedingQuery = solrQuery;
 		
+		// Limit results to those with titles alphabetically before the target,
+		// OR if the title is the same, an id before the target.
+		String pTitlesQuery = format("(%1$s:{* TO \"%2$s\"} OR (%1$s:\"%2$s\" AND %3$s:{* TO \"%4$s\"})) ",
+				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
+				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
 		// Get set of preceding neighbors
-		precedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{* TO \""
-				+ sanitize(metadata.getTitle().toLowerCase()) + "\"} "
-				+ accessRestrictionClause);
+		precedingQuery.setQuery(pTitlesQuery + accessRestrictionClause);
 		
 		// Sort neighbors using reverse title sort in order to get items closest to target
 		addSort(precedingQuery, "title", false);
@@ -361,10 +365,13 @@ public class SolrQueryLayerService extends SolrSearchService {
 			return null;
 		}
 		
+		// Limit results to those with titles alphabetically before the target,
+		// OR if the title is the same, an id before the target.
+		String sTitlesQuery = format("(%1$s:{\"%2$s\" TO *} OR (%1$s:\"%2$s\" AND %3$s:{\"%4$s\" TO *})) ",
+				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
+				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
 		// Get set of succeeding neighbors
-		succeedingQuery.setQuery(solrSettings.getFieldName(TITLE_LC.name()) + ":{\""  
-				+ sanitize(metadata.getTitle().toLowerCase()) + "\" TO *} "
-				+ accessRestrictionClause);
+		succeedingQuery.setQuery(sTitlesQuery + accessRestrictionClause);
 		
 		// Sort neighbors using the title sort
 		addSort(succeedingQuery, "title", true);

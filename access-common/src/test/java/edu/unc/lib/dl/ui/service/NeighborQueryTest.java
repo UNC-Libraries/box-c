@@ -184,6 +184,40 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		assertSucceedingResults(results, indexOfTarget);
 	}
 	
+	@Test
+	public void testNeighborsSameTitle() throws Exception {
+		List<SolrInputDocument> docs = new ArrayList<>();
+		PID basePid = makePid();
+		String baseUuid = basePid.getPid();
+		for (int i = 0; i < 3; i++) {
+			PID pid = new PID(baseUuid + i);
+			addObject(docs, pid, "title", ResourceType.File, rootPid, collectionPid, folderPid);
+		}
+		
+		PID tpid = new PID(baseUuid + 3);
+		addObject(docs, tpid, "title", ResourceType.File, rootPid, collectionPid, folderPid);
+		
+		for (int i = 4; i < 7; i++) {
+			PID pid = new PID(baseUuid + i);
+			addObject(docs, pid, "title", ResourceType.File, rootPid, collectionPid, folderPid);
+		}
+		
+		server.add(docs);
+		server.commit();
+		
+		BriefObjectMetadataBean targetMd = getMetadata(tpid);
+		List<BriefObjectMetadataBean> results = queryLayer.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+		
+		assertEquals(7, results.size());
+		int indexOfTarget = indexOf(results, targetMd);
+		assertEquals(3, indexOfTarget);
+		
+		for (int i = 0; i < 7; i++) {
+			BriefObjectMetadata result = results.get(i);
+			assertEquals(baseUuid + i, result.getId());
+		}
+	}
+	
 	private void populateNeighborhood(ResourceType targetType, int preceding, int succeeding, 
 			ResourceType neighborType, PID... ancestors) throws Exception {
 		List<SolrInputDocument> docs = new ArrayList<>();
