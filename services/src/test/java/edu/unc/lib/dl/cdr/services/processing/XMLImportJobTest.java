@@ -129,7 +129,7 @@ public class XMLImportJobTest {
     @SuppressWarnings("unchecked")
     @Test
     public void fileNotFoundTest() throws Exception {
-        File importFile = new File("");
+        File importFile = new File("doesnotexist.xml");
         setupJob(importFile);
         job.run();
 
@@ -140,7 +140,7 @@ public class XMLImportJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals("The import file contains XML errors", problem.getValue());
+        assertEquals("Import file could not be found on the server", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
@@ -149,7 +149,8 @@ public class XMLImportJobTest {
     @SuppressWarnings("unchecked")
     @Test
     public void incorrectOpeningTagTest() throws Exception {
-        File importFile = new File("");
+        File importFile = createTempImportFile("src/test/resources/mods/bad-update-work-mods.xml");
+
         setupJob(importFile);
 
         when(xmlReader.nextEvent()).thenReturn(xmlEvent);
@@ -167,7 +168,7 @@ public class XMLImportJobTest {
         assertEquals(1, dataMap.get("problemCount"));
         Set<Entry<String, String>> problems = (Set<Entry<String, String>>) dataMap.get("problems");
         Entry<String, String> problem = problems.iterator().next();
-        assertEquals("The import file contains XML errors", problem.getValue());
+        assertEquals("File is not a bulk-metadata-update doc", problem.getValue());
 
         verify(msg).setSubject(subjectCaptor.capture());
         assertEquals("CDR Metadata update failed", subjectCaptor.getValue());
@@ -193,11 +194,15 @@ public class XMLImportJobTest {
         assertTrue(subjectCaptor.getValue().startsWith("CDR Metadata update completed"));
     }
 
-    // creates copy of import file to avoid test file being deleted from project
     private File createTempImportFile() throws IOException {
+        return createTempImportFile("src/test/resources/mods/bulk-md.xml");
+    }
+
+    // creates copy of import file to avoid test file being deleted from project
+    private File createTempImportFile(String path) throws IOException {
         File tempDir = tmpFolder.newFolder();
         File tempImportFile = new File(tempDir, "temp-mods-import");
-        Files.copy(Paths.get("src/test/resources/mods/bulk-md.xml"), tempImportFile.toPath(),
+        Files.copy(Paths.get(path), tempImportFile.toPath(),
                 StandardCopyOption.REPLACE_EXISTING);
         return tempImportFile;
     }
