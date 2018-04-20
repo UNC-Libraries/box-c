@@ -212,7 +212,39 @@ public class NeighborQueryTest extends AbstractSolrQueryLayerTest {
 		int indexOfTarget = indexOf(results, targetMd);
 		assertEquals(3, indexOfTarget);
 		
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < results.size(); i++) {
+			BriefObjectMetadata result = results.get(i);
+			assertEquals(baseUuid + i, result.getId());
+		}
+	}
+	
+	@Test
+	public void testNeighborsNoTitle() throws Exception {
+		List<SolrInputDocument> docs = new ArrayList<>();
+		PID basePid = makePid();
+		String baseUuid = basePid.getPid();
+		PID nPid0 = new PID(baseUuid + "3");
+		addObject(docs, nPid0, "title", ResourceType.File, rootPid, collectionPid, folderPid);
+		PID nPid1 = new PID(baseUuid + "0");
+		addObject(docs, nPid1, "", ResourceType.File, rootPid, collectionPid, folderPid);
+		
+		PID tpid = new PID(baseUuid + 1);
+		addObject(docs, tpid, "", ResourceType.File, rootPid, collectionPid, folderPid);
+		
+		PID nPid2 = new PID(baseUuid + "2");
+		addObject(docs, nPid2, "", ResourceType.File, rootPid, collectionPid, folderPid);
+		
+		server.add(docs);
+		server.commit();
+		
+		BriefObjectMetadataBean targetMd = getMetadata(tpid);
+		List<BriefObjectMetadataBean> results = queryLayer.getNeighboringItems(targetMd, WINDOW_SIZE, groups);
+		
+		assertEquals(4, results.size());
+		int indexOfTarget = indexOf(results, targetMd);
+		assertEquals(1, indexOfTarget);
+		
+		for (int i = 0; i < results.size(); i++) {
 			BriefObjectMetadata result = results.get(i);
 			assertEquals(baseUuid + i, result.getId());
 		}

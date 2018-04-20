@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
@@ -345,11 +346,18 @@ public class SolrQueryLayerService extends SolrSearchService {
 		
 		// Limit results to those with titles alphabetically before the target,
 		// OR if the title is the same, an id before the target.
-		String pTitlesQuery = format("(%1$s:{* TO \"%2$s\"} OR (%1$s:\"%2$s\" AND %3$s:{* TO \"%4$s\"})) ",
+		String pTitlesClause;
+		// Only limit to preceding titles if there is a title on the target, [* TO ""] has special meaning in solr
+		if (!StringUtils.isBlank(metadata.getTitle())) {
+			pTitlesClause = "(%1$s:{* TO \"%2$s\"} OR ";
+		} else {
+			pTitlesClause = "(";
+		}
+		String pItemsQuery = format(pTitlesClause + "(%1$s:\"%2$s\" AND %3$s:{* TO \"%4$s\"})) AND !%3$s:\"%4$s\"",
 				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
 				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
 		// Get set of preceding neighbors
-		precedingQuery.setQuery(pTitlesQuery + accessRestrictionClause);
+		precedingQuery.setQuery(pItemsQuery + accessRestrictionClause);
 		
 		// Sort neighbors using reverse title sort in order to get items closest to target
 		addSort(precedingQuery, "title", false);
@@ -367,11 +375,11 @@ public class SolrQueryLayerService extends SolrSearchService {
 		
 		// Limit results to those with titles alphabetically before the target,
 		// OR if the title is the same, an id before the target.
-		String sTitlesQuery = format("(%1$s:{\"%2$s\" TO *} OR (%1$s:\"%2$s\" AND %3$s:{\"%4$s\" TO *})) ",
+		String sItemsQuery = format("(%1$s:{\"%2$s\" TO *} OR (%1$s:\"%2$s\" AND %3$s:{\"%4$s\" TO *}))  AND !%3$s:\"%4$s\"",
 				solrSettings.getFieldName(TITLE_LC.name()), sanitize(metadata.getTitle().toLowerCase()),
 				solrSettings.getFieldName(SearchFieldKeys.ID.name()), metadata.getId());
 		// Get set of succeeding neighbors
-		succeedingQuery.setQuery(sTitlesQuery + accessRestrictionClause);
+		succeedingQuery.setQuery(sItemsQuery + accessRestrictionClause);
 		
 		// Sort neighbors using the title sort
 		addSort(succeedingQuery, "title", true);
