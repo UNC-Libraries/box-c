@@ -38,7 +38,6 @@
         <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
         <property name="transactionManager" ref="transactionManager" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
-        <property name="metrics" ref="metrics" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
