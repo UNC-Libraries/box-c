@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
-import com.codahale.metrics.Slf4jReporter;
+import io.dropwizard.metrics5.Slf4jReporter;
 
 /**
  * A factory for creating a metrics reporter for the services application. Both the factory
