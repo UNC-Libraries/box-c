@@ -21,7 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
@@ -33,13 +34,13 @@ import edu.unc.lib.dl.util.IndexingActionType;
  *
  */
 public class FedoraObjectUIPProcessor implements UIPProcessor {
-    private static Logger log = Logger.getLogger(FedoraObjectUIPProcessor.class);
+    private static Logger log = LoggerFactory.getLogger(FedoraObjectUIPProcessor.class);
 
-//    private DigitalObjectManager digitalObjectManager;
+    //    private DigitalObjectManager digitalObjectManager;
     private UIPUpdatePipeline pipeline;
-//    private AccessClient accessClient;
+    //    private AccessClient accessClient;
     private OperationsMessageSender operationsMessageSender;
-//    private AccessControlService aclService;
+    //    private AccessControlService aclService;
 
     private Map<String, Datastream> virtualDatastreamMap;
 
@@ -57,12 +58,14 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
 
         FedoraObjectUIP fuip = (FedoraObjectUIP) uip;
 
-//        if (fuip.getIncomingData().containsKey("ACL")
-//                && !aclService.hasAccess(uip.getPID(), GroupsThreadStore.getGroups(), Permission.editAccessControl)) {
-//            throw new UpdateException("Insufficient privileges to update access controls for " + uip.getPID());
-//        }
-//
-//        fuip.storeOriginalDatastreams(accessClient);
+        //        if (fuip.getIncomingData().containsKey("ACL")
+        //                && !aclService.hasAccess(uip.getPID(),
+        //                   GroupsThreadStore.getGroups(), Permission.editAccessControl)) {
+        //            throw new UpdateException(
+        //                "Insufficient privileges to update access controls for " + uip.getPID());
+        //        }
+        //
+        //        fuip.storeOriginalDatastreams(accessClient);
 
         uip = pipeline.processUIP(uip);
         Map<String, File> modifiedFiles = uip.getModifiedFiles();
@@ -74,32 +77,33 @@ public class FedoraObjectUIPProcessor implements UIPProcessor {
                     Datastream datastream = Datastream.getDatastream(modifiedFile.getKey());
                     if (datastream != null && modifiedFile.getValue() != null) {
                         log.debug("Adding/replacing datastream " + datastream.getName() + " on " + uip.getPID());
-//                        digitalObjectManager.addOrReplaceDatastream(uip.getPID(), datastream, modifiedFile.getValue(),
-//                                uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
+                        // digitalObjectManager.addOrReplaceDatastream(uip.getPID(),
+                        //     datastream, modifiedFile.getValue(),
+                        // uip.getMimetype(modifiedFile.getKey()), uip.getUser(), uip.getMessage());
                     }
                 }
             } else {
                 log.debug("Adding/replacing targeted " + targetedDatastream.getName()
-                        + " with " + uip.getModifiedFiles());
+                + " with " + uip.getModifiedFiles());
                 log.debug("Specifically with file: " + modifiedFiles.get(targetedDatastream.getName()));
                 // Datastream was specifically targeted, so only perform updates to it
                 // The reasoning for filtering it down at this step is that other datastreams may have been involved in
                 // early steps to compute the new value for the targeted datastream, but we don't want to commit those
                 // changes
-//                digitalObjectManager.addOrReplaceDatastream(uip.getPID(), targetedDatastream,
-//                        modifiedFiles.get(targetedDatastream.getName()),
-//                        uip.getMimetype(targetedDatastream.getName()),
-//                        uip.getUser(), uip.getMessage());
+                //                digitalObjectManager.addOrReplaceDatastream(uip.getPID(), targetedDatastream,
+                //                        modifiedFiles.get(targetedDatastream.getName()),
+                //                        uip.getMimetype(targetedDatastream.getName()),
+                //                        uip.getUser(), uip.getMessage());
             }
 
             // Issue indexing operations based on the data updated
-//            Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
-//            if (indexingActions != null) {
-//                for (IndexingActionType actionType : indexingActions) {
-//                    operationsMessageSender.sendIndexingOperation(uip.getUser(),
-//                            Arrays.asList(uip.getPID()), actionType);
-//                }
-//            }
+            //            Collection<IndexingActionType> indexingActions = getIndexingActions(fuip);
+            //            if (indexingActions != null) {
+            //                for (IndexingActionType actionType : indexingActions) {
+            //                    operationsMessageSender.sendIndexingOperation(uip.getUser(),
+            //                            Arrays.asList(uip.getPID()), actionType);
+            //                }
+            //            }
         }
     }
 

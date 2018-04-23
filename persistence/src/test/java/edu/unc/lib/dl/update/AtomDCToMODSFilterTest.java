@@ -37,7 +37,6 @@ import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.parser.Parser;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.jdom2.Element;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -45,6 +44,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -63,7 +64,7 @@ public class AtomDCToMODSFilterTest extends Assert {
     private SchematronValidator schematronValidator;
     private AtomDCToMODSFilter filter;
 
-    private static Logger log = Logger.getLogger(AtomDCToMODSFilter.class);
+    private static Logger log = LoggerFactory.getLogger(AtomDCToMODSFilter.class);
 
     @Before
     public void init() throws Exception {

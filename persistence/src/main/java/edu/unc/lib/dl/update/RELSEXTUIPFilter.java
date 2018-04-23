@@ -18,22 +18,23 @@ package edu.unc.lib.dl.update;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.util.RDFUtil;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class RELSEXTUIPFilter extends MetadataUIPFilter {
-    private static Logger log = Logger.getLogger(RELSEXTUIPFilter.class);
+    private static Logger log = LoggerFactory.getLogger(RELSEXTUIPFilter.class);
 
     private final String datastreamName = Datastream.RELS_EXT.getName();
 
@@ -75,19 +76,19 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
         Element newModified = null;
 
         switch (uip.getOperation()) {
-            case REPLACE:
-                log.debug("Replacing " + baseDatastream + " with " + incomingDatastream);
-                newModified = performReplace(uip, baseDatastream, incomingDatastream);
-                break;
-            case ADD:
-                newModified = performAdd(uip, baseDatastream, incomingDatastream);
-                break;
-            case UPDATE:
-                // Doing add for update since the schema does not allow a way to indicate a tag should replace another
-                newModified = performUpdate(uip, baseDatastream, incomingDatastream);
-                break;
-            default:
-                break;
+        case REPLACE:
+            log.debug("Replacing " + baseDatastream + " with " + incomingDatastream);
+            newModified = performReplace(uip, baseDatastream, incomingDatastream);
+            break;
+        case ADD:
+            newModified = performAdd(uip, baseDatastream, incomingDatastream);
+            break;
+        case UPDATE:
+            // Doing add for update since the schema does not allow a way to indicate a tag should replace another
+            newModified = performUpdate(uip, baseDatastream, incomingDatastream);
+            break;
+        default:
+            break;
         }
 
         if (newModified != null) {
@@ -123,8 +124,8 @@ public class RELSEXTUIPFilter extends MetadataUIPFilter {
         Element descriptionElement = relsEXT.getChild("Description", JDOMNamespaceUtil.RDF_NS);
         if (descriptionElement == null || descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) == null
                 || (descriptionElement.getAttribute("about", JDOMNamespaceUtil.RDF_NS) != null
-                    && !uip.getPID().getURI()
-                        .equals(descriptionElement.getAttributeValue("about", JDOMNamespaceUtil.RDF_NS)))) {
+                && !uip.getPID().getURI()
+                .equals(descriptionElement.getAttributeValue("about", JDOMNamespaceUtil.RDF_NS)))) {
             Attribute aboutAttribute = new Attribute("about", uip.getPID().getURI(), JDOMNamespaceUtil.RDF_NS);
             descriptionElement.setAttribute(aboutAttribute);
         }

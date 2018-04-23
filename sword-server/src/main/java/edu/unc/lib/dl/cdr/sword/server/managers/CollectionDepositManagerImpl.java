@@ -19,8 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.jdom2.JDOMException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swordapp.server.AuthCredentials;
 import org.swordapp.server.CollectionDepositManager;
 import org.swordapp.server.Deposit;
@@ -42,12 +43,12 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
  * Manager responsible for performing ingest of new objects or packages
- * 
+ *
  * @author bbpennel
- * 
+ *
  */
 public class CollectionDepositManagerImpl extends AbstractFedoraManager implements CollectionDepositManager {
-    private static Logger log = Logger.getLogger(CollectionDepositManagerImpl.class);
+    private static Logger log = LoggerFactory.getLogger(CollectionDepositManagerImpl.class);
 
     private Map<PackagingType, DepositHandler> packageHandlers;
     private List<String> priorityDepositors;

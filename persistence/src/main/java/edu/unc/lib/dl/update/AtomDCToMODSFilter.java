@@ -17,8 +17,9 @@ package edu.unc.lib.dl.update;
 
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.util.AtomPubMetadataParserUtil;
 import edu.unc.lib.dl.util.ContentModelHelper;
@@ -31,7 +32,7 @@ import edu.unc.lib.dl.xml.ModsXmlHelper;
  */
 @Deprecated
 public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
-    private static Logger log = Logger.getLogger(AtomDCToMODSFilter.class);
+    private static Logger log = LoggerFactory.getLogger(AtomDCToMODSFilter.class);
     private final String datastreamName = AtomPubMetadataParserUtil.ATOM_DC_DATASTREAM;
 
     public AtomDCToMODSFilter() {
@@ -64,20 +65,20 @@ public class AtomDCToMODSFilter extends MODSValidationUIPFilter {
 
             //Use the newly transformed mods as the incoming data, being sent to MD_DESCRIPTIVE
             switch (uip.getOperation()) {
-                case REPLACE:
-                    newModified = performReplace(metadataUIP, ContentModelHelper.Datastream
-                            .MD_DESCRIPTIVE.getName(), mods);
-                    break;
-                case ADD:
-                    newModified = performAdd(metadataUIP, ContentModelHelper.Datastream
-                            .MD_DESCRIPTIVE.getName(), mods);
-                    break;
-                case UPDATE:
-                    // Doing add for update since the schema does not allow a way to indicate
-                    // a tag should replace another
-                    newModified = performAdd(metadataUIP, ContentModelHelper.Datastream
-                            .MD_DESCRIPTIVE.getName(), mods);
-                    break;
+            case REPLACE:
+                newModified = performReplace(metadataUIP, ContentModelHelper.Datastream
+                        .MD_DESCRIPTIVE.getName(), mods);
+                break;
+            case ADD:
+                newModified = performAdd(metadataUIP, ContentModelHelper.Datastream
+                        .MD_DESCRIPTIVE.getName(), mods);
+                break;
+            case UPDATE:
+                // Doing add for update since the schema does not allow a way to indicate
+                // a tag should replace another
+                newModified = performAdd(metadataUIP, ContentModelHelper.Datastream
+                        .MD_DESCRIPTIVE.getName(), mods);
+                break;
             }
 
             if (newModified != null) {

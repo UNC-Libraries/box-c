@@ -15,7 +15,8 @@
  */
 package edu.unc.lib.dl.update;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -27,7 +28,7 @@ import edu.unc.lib.dl.util.VocabularyHelperManager;
  * @date Aug 7, 2015
  */
 public class MODSVocabularyUIPFilter extends MetadataUIPFilter {
-    private static Logger log = Logger.getLogger(MODSVocabularyUIPFilter.class);
+    private static Logger log = LoggerFactory.getLogger(MODSVocabularyUIPFilter.class);
 
     private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
 

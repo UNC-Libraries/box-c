@@ -22,11 +22,12 @@ import java.util.Map;
 
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Feed;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swordapp.server.AuthCredentials;
 
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
@@ -34,7 +35,7 @@ import edu.unc.lib.dl.cdr.sword.server.managers.CollectionListManagerImpl;
 
 @Ignore
 public class CollectionListManagerTest extends Assert {
-    private static Logger log = Logger.getLogger(CollectionListManagerTest.class);
+    private static Logger log = LoggerFactory.getLogger(CollectionListManagerTest.class);
 
     private CollectionListManagerImpl manager;
     private SwordConfigurationImpl config;
@@ -43,15 +44,15 @@ public class CollectionListManagerTest extends Assert {
     public void setUp() throws Exception {
         manager = new CollectionListManagerImpl();
 
-//        aclService = mock(AccessControlService.class);
-//        ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
-//        when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
-//        when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
-//        manager.setAclService(aclService);
-//
-//        tripleStoreQueryService = mock(TripleStoreQueryService.class);
+        //        aclService = mock(AccessControlService.class);
+        //        ObjectAccessControlsBean objectACLs = mock(ObjectAccessControlsBean.class);
+        //        when(objectACLs.hasPermission(any(AccessGroupSet.class), any(Permission.class))).thenReturn(true);
+        //        when(aclService.getObjectAccessControls(any(PID.class))).thenReturn(objectACLs);
+        //        manager.setAclService(aclService);
+        //
+        //        tripleStoreQueryService = mock(TripleStoreQueryService.class);
 
-//        manager.setTripleStoreQueryService(tripleStoreQueryService);
+        //        manager.setTripleStoreQueryService(tripleStoreQueryService);
 
         config = new SwordConfigurationImpl();
         config.setBasePath("https://localhost/services");
@@ -66,9 +67,9 @@ public class CollectionListManagerTest extends Assert {
         String url = "https://localhost/services/collection/" + pidString;
         IRI iri = new IRI(url);
 
-//        Map<?,?> response = this.generateImmediateChildrenResponse(10);
-//
-//        when(tripleStoreQueryService.sendSPARQL(anyString())).thenReturn(response);
+        //        Map<?,?> response = this.generateImmediateChildrenResponse(10);
+        //
+        //        when(tripleStoreQueryService.sendSPARQL(anyString())).thenReturn(response);
 
         Feed feed = manager.listCollectionContents(iri, new AuthCredentials("admin","",""), config);
         assertEquals(feed.getEntries().size(), 10);
@@ -83,10 +84,10 @@ public class CollectionListManagerTest extends Assert {
         String url = "https://localhost/services/collection/" + pidString + "/1";
         IRI iri = new IRI(url);
 
-//        Map<?,?> response = this.generateImmediateChildrenResponse(10);
-//
-//        when(tripleStoreQueryService.sendSPARQL(endsWith(" 0"))).thenReturn(null);
-//        when(tripleStoreQueryService.sendSPARQL(endsWith(" 10"))).thenReturn(response);
+        //        Map<?,?> response = this.generateImmediateChildrenResponse(10);
+        //
+        //        when(tripleStoreQueryService.sendSPARQL(endsWith(" 0"))).thenReturn(null);
+        //        when(tripleStoreQueryService.sendSPARQL(endsWith(" 10"))).thenReturn(response);
 
         Feed feed = manager.listCollectionContents(iri, new AuthCredentials("admin","",""), config);
         assertEquals(feed.getEntries().size(), 10);

@@ -23,7 +23,8 @@ import java.util.List;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -31,13 +32,13 @@ import org.xml.sax.helpers.DefaultHandler;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
- * 
+ *
  * @author count0
  *
  */
 public class PIDListReader extends DefaultHandler {
 
-    private static final Logger logger = Logger.getLogger(PIDListReader.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PIDListReader.class.getName());
 
     private List<PID> m_pids;
     private StringBuffer m_pidBuffer;
@@ -63,11 +64,12 @@ public class PIDListReader extends DefaultHandler {
     public PID[] getPIDArray() {
         PID[] array = new PID[m_pids.size()];
         for (int i = 0; i < array.length; i++) {
-            array[i] = (PID) m_pids.get(i);
+            array[i] = m_pids.get(i);
         }
         return array;
     }
 
+    @Override
     public void startElement(String uri, String localName, String qName, Attributes a) {
         if (localName.equals("pid")) {
             m_inPID = true;
@@ -75,12 +77,14 @@ public class PIDListReader extends DefaultHandler {
         }
     }
 
+    @Override
     public void characters(char[] ch, int start, int length) {
         if (m_inPID) {
             m_pidBuffer.append(ch, start, length);
         }
     }
 
+    @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (localName.equals("pid")) {
             m_pids.add(new PID(m_pidBuffer.toString()));

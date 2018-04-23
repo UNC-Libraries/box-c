@@ -23,7 +23,8 @@ import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.swordapp.server.Deposit;
 import org.swordapp.server.DepositReceipt;
 import org.swordapp.server.SwordConfiguration;
@@ -37,12 +38,12 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class CDRMETSDepositHandler extends AbstractDepositHandler {
-    private static Logger log = Logger.getLogger(CDRMETSDepositHandler.class);
+    private static Logger log = LoggerFactory.getLogger(CDRMETSDepositHandler.class);
 
     @Override
     public DepositReceipt doDeposit(PID destination, Deposit deposit, PackagingType type, Priority priority,

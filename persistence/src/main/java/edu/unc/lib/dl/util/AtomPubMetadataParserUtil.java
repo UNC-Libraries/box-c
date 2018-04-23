@@ -25,21 +25,22 @@ import javax.xml.namespace.QName;
 
 import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
-import org.apache.log4j.Logger;
 import org.jdom2.JDOMException;
 import org.jdom2.input.SAXBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.fedora.DatastreamPID;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public abstract class AtomPubMetadataParserUtil {
-    private static Logger log = Logger
+    private static Logger log = LoggerFactory
             .getLogger(AtomPubMetadataParserUtil.class);
 
     public static final String ATOM_DC_DATASTREAM = "ATOM_DC";
@@ -85,7 +86,7 @@ public abstract class AtomPubMetadataParserUtil {
      */
     public static Map<String, org.jdom2.Element> extractDatastreams(
             Entry entry, String defaultDatastream) throws IOException,
-            JDOMException {
+    JDOMException {
         if (entry == null || entry.getElements().size() == 0) {
             return null;
         }
@@ -109,8 +110,8 @@ public abstract class AtomPubMetadataParserUtil {
                     if (dcOutStream == null) {
                         dcOutStream = new ByteArrayOutputStream();
                         dcOutStream
-                                .write("<dcterms:dc xmlns:dcterms=\"http://purl.org/dc/terms/\">"
-                                        .getBytes("UTF-8"));
+                        .write("<dcterms:dc xmlns:dcterms=\"http://purl.org/dc/terms/\">"
+                                .getBytes("UTF-8"));
                         rootDublinCoreElements = true;
                     }
                     element.writeTo(dcOutStream);
@@ -126,11 +127,11 @@ public abstract class AtomPubMetadataParserUtil {
                             // Store the first child of the datastream tag as
                             // the content for this DS
                             if (jdomElement.getChildren().size() > 0) {
-                                dsContentElement = ((org.jdom2.Element) jdomElement
+                                dsContentElement = (jdomElement
                                         .getChildren().get(0));
                                 datastreamMap.put(id,
-                                        (org.jdom2.Element) dsContentElement
-                                                .detach());
+                                        dsContentElement
+                                        .detach());
                             }
                         }
                         // MODS root tag
@@ -141,7 +142,7 @@ public abstract class AtomPubMetadataParserUtil {
                                 saxBuilder);
                         datastreamMap.put(
                                 ContentModelHelper.Datastream.MD_DESCRIPTIVE
-                                        .getName(), modsElement);
+                                .getName(), modsElement);
                     } else if (JDOMNamespaceUtil.CDR_ACL_NS.getURI().equals(
                             element.getQName().getNamespaceURI())) {
                         log.debug("Extracting access control virtual datastream info");
@@ -190,8 +191,8 @@ public abstract class AtomPubMetadataParserUtil {
             // and there isn't currently a RELS-EXT
             if (datastreamMap.containsKey("ACL")
                     && !datastreamMap
-                            .containsKey(ContentModelHelper.Datastream.RELS_EXT
-                                    .getName())) {
+                    .containsKey(ContentModelHelper.Datastream.RELS_EXT
+                            .getName())) {
                 datastreamMap.put(
                         ContentModelHelper.Datastream.RELS_EXT.getName(), null);
             }
@@ -201,8 +202,8 @@ public abstract class AtomPubMetadataParserUtil {
             if (multiDocumentMode
                     && datastreamMap.containsKey(ATOM_DC_DATASTREAM)
                     && !datastreamMap
-                            .containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE
-                                    .getName())) {
+                    .containsKey(ContentModelHelper.Datastream.MD_DESCRIPTIVE
+                            .getName())) {
                 datastreamMap.put(
                         ContentModelHelper.Datastream.MD_DESCRIPTIVE.getName(),
                         null);

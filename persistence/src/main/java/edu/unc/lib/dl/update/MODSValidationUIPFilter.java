@@ -23,10 +23,11 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.transform.JDOMSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import edu.unc.lib.dl.schematron.SchematronValidator;
@@ -43,7 +44,7 @@ import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
  */
 @Deprecated
 public class MODSValidationUIPFilter extends MetadataUIPFilter {
-    private static Logger log = Logger.getLogger(MODSValidationUIPFilter.class);
+    private static Logger log = LoggerFactory.getLogger(MODSValidationUIPFilter.class);
 
     private final String datastreamName = Datastream.MD_DESCRIPTIVE.getName();
     private SchematronValidator schematronValidator;
@@ -83,18 +84,18 @@ public class MODSValidationUIPFilter extends MetadataUIPFilter {
         Element newModified = null;
 
         switch (uip.getOperation()) {
-            case REPLACE:
-                newModified = performReplace(metadataUIP, datastreamName);
-                break;
-            case ADD:
-                newModified = performAdd(metadataUIP, datastreamName);
-                break;
-            case UPDATE:
-                // Doing add for update since the schema does not allow a way to indicate a tag should replace another
-                newModified = performAdd(metadataUIP, datastreamName);
-                break;
-            case DELETE:
-                break;
+        case REPLACE:
+            newModified = performReplace(metadataUIP, datastreamName);
+            break;
+        case ADD:
+            newModified = performAdd(metadataUIP, datastreamName);
+            break;
+        case UPDATE:
+            // Doing add for update since the schema does not allow a way to indicate a tag should replace another
+            newModified = performAdd(metadataUIP, datastreamName);
+            break;
+        case DELETE:
+            break;
         }
 
         if (newModified != null) {

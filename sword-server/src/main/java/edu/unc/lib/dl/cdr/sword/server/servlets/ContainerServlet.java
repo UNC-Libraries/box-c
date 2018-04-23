@@ -21,7 +21,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,14 +34,14 @@ import org.swordapp.server.StatementManager;
 import edu.unc.lib.dl.cdr.sword.server.SwordConfigurationImpl;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 @Controller
 @RequestMapping(SwordConfigurationImpl.EDIT_PATH)
 public class ContainerServlet extends BaseSwordServlet {
-    private static Logger log = Logger.getLogger(ContainerServlet.class);
+    private static Logger log = LoggerFactory.getLogger(ContainerServlet.class);
 
     @Resource
     private ContainerManager containerManager;
