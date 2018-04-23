@@ -27,13 +27,14 @@ import io.dropwizard.metrics5.Timer;
  */
 public class TimerFactory {
 
-    private TimerFactory() {
+    private static final RegistryService registryService = RegistryService.getInstance();
 
+    private TimerFactory() {
     }
 
-    public static Timer createTimerForClass(MetricRegistry registry, Class<?> metricNameClass) {
+    public static Timer createTimerForClass(Class<?> metricNameClass) {
         MetricName requests = MetricRegistry.name(metricNameClass, "requests", "number-and-duration");
-        Timer timer = registry.timer (requests);
+        Timer timer = registryService.getRegistry().timer (requests);
 
         return timer;
     }

@@ -19,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
-import io.dropwizard.metrics5.MetricRegistry;
 import io.dropwizard.metrics5.Slf4jReporter;
 
 /**
@@ -30,14 +29,14 @@ import io.dropwizard.metrics5.Slf4jReporter;
  */
 public class ReporterFactory {
 
-    private ReporterFactory() {
+    private static final RegistryService registryService = RegistryService.getInstance();
 
+    private ReporterFactory() {
     }
 
-    public static Slf4jReporter createReporter(Logger logger, long timePeriod, TimeUnit timeUnits,
-            MetricRegistry registry) {
+    public static Slf4jReporter createReporter(Logger logger, long timePeriod, TimeUnit timeUnits) {
 
-        final Slf4jReporter reporter = Slf4jReporter.forRegistry(registry)
+        final Slf4jReporter reporter = Slf4jReporter.forRegistry(registryService.getRegistry())
                 .outputTo(logger)
                 .convertRatesTo(TimeUnit.SECONDS)
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
