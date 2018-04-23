@@ -147,9 +147,4 @@
         <constructor-arg value="#{T(edu.unc.lib.dl.util.RedisWorkerConstants).BULK_UPDATE_QUEUE}"/>
     </bean>
     
-    <bean id="metricRegistry" class="io.dropwizard.metrics5.MetricRegistry" />
-    
-    <bean id="metrics" class="edu.unc.lib.dl.cdr.services.metrics.AdminMetrics" >
-        <property name="registry" ref="metricRegistry" />
-    </bean>
 </beans>
