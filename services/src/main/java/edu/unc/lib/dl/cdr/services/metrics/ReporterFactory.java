@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.metrics;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -22,7 +24,8 @@ import org.slf4j.Logger;
 import io.dropwizard.metrics5.Slf4jReporter;
 
 /**
- * A factory for creating class-specific metrics reporters
+ * A factory for creating a metrics reporter for the services application. Both the factory
+ * and the reporter are singletons.
  *
  * @author harring
  *
@@ -30,19 +33,48 @@ import io.dropwizard.metrics5.Slf4jReporter;
 public class ReporterFactory {
 
     private static final RegistryService registryService = RegistryService.getInstance();
+    private static final String SERVICES_METRICS = "services-metrics";
+    private static volatile ReporterFactory factoryInstance = null;
+    private static Slf4jReporter reporterInstance = null;
+
+    private static final Logger LOGGER = getLogger("services-metrics");
+    private static final long TIME_PERIOD = 1;
+    private static final TimeUnit TIME_UNITS = TimeUnit.MINUTES;
 
     private ReporterFactory() {
     }
 
-    public static Slf4jReporter createReporter(Logger logger, long timePeriod, TimeUnit timeUnits) {
+        /**
+         * Create the factory instance
+         *
+         * @return the local object
+         */
+        public synchronized static ReporterFactory getInstance() {
+            ReporterFactory local = factoryInstance;
+            if (local == null) {
+                local = new ReporterFactory();
+                factoryInstance = local;
+            }
+            return local;
+        }
 
-        final Slf4jReporter reporter = Slf4jReporter.forRegistry(registryService.getRegistry())
-                .outputTo(logger)
-                .convertRatesTo(TimeUnit.SECONDS)
-                .convertDurationsTo(TimeUnit.MILLISECONDS)
-                .build();
-        reporter.start(timePeriod, timeUnits);
-
+        /**
+         * Get the metrics reporter for this application, or create a new one if none exists.
+         *
+         * @return the slf4j metrics reporter for this application
+         */
+    public static Slf4jReporter getOrCreateReporter() {
+        Slf4jReporter reporter = reporterInstance;
+        if (reporter == null) {
+            reporter = Slf4jReporter.forRegistry(registryService.getRegistry())
+                    .prefixedWith(SERVICES_METRICS)
+                    .outputTo(LOGGER)
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(TimeUnit.MILLISECONDS)
+                    .build();
+            reporter.start(TIME_PERIOD, TIME_UNITS);
+            reporterInstance = reporter;
+        }
         return reporter;
     }
 

@@ -45,14 +45,16 @@ public final class RegistryService {
         if (local == null) {
             local = new RegistryService();
             instance = local;
+            // associates a reporter with the current registry
+            ReporterFactory.getOrCreateReporter();
         }
         return local;
     }
 
     /**
-     * Get the current registry service
+     * Get the current metrics registry
      *
-     * @return the current registry service
+     * @return the current metrics registry
      */
     @SuppressWarnings("static-method")
     public MetricRegistry getRegistry() {
