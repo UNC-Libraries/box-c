@@ -35,7 +35,14 @@ public class TimerFactory {
 
     public static Timer createTimerForClass(Class<?> metricNameClass) {
         MetricName requests = MetricRegistry.name(metricNameClass, "requests", "number-and-duration");
-        Timer timer = registryService.getRegistry().timer (requests);
+        Timer timer = registryService.getRegistry().timer(requests);
+
+        return timer;
+    }
+
+    public static Timer createTimerForClass(Class<?> metricNameClass, String... metricNames) {
+        MetricName requests = MetricRegistry.name(metricNameClass, metricNames);
+        Timer timer = registryService.getRegistry().timer(requests);
 
         return timer;
     }

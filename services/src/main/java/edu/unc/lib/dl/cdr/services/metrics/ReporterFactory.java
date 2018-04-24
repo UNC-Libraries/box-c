@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
+import io.dropwizard.metrics5.ScheduledReporter;
 import io.dropwizard.metrics5.Slf4jReporter;
 
 /**
@@ -35,7 +36,7 @@ public class ReporterFactory {
     private static final RegistryService registryService = RegistryService.getInstance();
     private static final String SERVICES_METRICS = "services-metrics";
     private static volatile ReporterFactory factoryInstance = null;
-    private static Slf4jReporter reporterInstance = null;
+    private static ScheduledReporter reporterInstance = null;
 
     private static final Logger LOGGER = getLogger("services-metrics");
     private static final long TIME_PERIOD = 1;
@@ -64,8 +65,8 @@ public class ReporterFactory {
          *
          * @return the slf4j metrics reporter for this application
          */
-    public static Slf4jReporter getOrCreateReporter() {
-        Slf4jReporter reporter = reporterInstance;
+    public static ScheduledReporter getOrCreateReporter() {
+        ScheduledReporter reporter = reporterInstance;
         if (reporter == null) {
             reporter = Slf4jReporter.forRegistry(registryService.getRegistry())
                     .prefixedWith(SERVICES_METRICS)
