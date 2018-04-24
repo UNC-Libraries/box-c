@@ -26,7 +26,7 @@
     </bean>
     
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
-        <constructor-arg value="${fcrepo.baseUri}" />
+        <constructor-arg value="${fcrepo.baseUrl}" />
         <constructor-arg value="${fcrepo.client.host}" />
     </bean>
     
