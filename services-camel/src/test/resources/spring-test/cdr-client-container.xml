@@ -6,11 +6,6 @@
 
     <context:property-placeholder />
 
-    <bean id="serverAddress" class="java.lang.String">
-        <constructor-arg
-            value="http://localhost:48085/" />
-    </bean>
-
     <bean id="baseAddress" class="java.lang.String">
         <constructor-arg
             value="http://localhost:48085/rest/" />

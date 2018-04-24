@@ -241,6 +241,10 @@
         <property name="processFilesLocally" value="${fits.processFilesLocally:true}" />
     </bean>
     
+    <bean id="verifyObjectsAreInFedoraService" class="edu.unc.lib.deposit.validate.VerifyObjectsAreInFedoraService" >
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
     <bean id="ingestContentObjectsJob" class="edu.unc.lib.deposit.fcrepo4.IngestContentObjectsJob"
         scope="prototype">
     </bean>

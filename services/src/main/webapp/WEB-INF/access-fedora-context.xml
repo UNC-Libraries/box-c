@@ -70,18 +70,9 @@
         <property name="permissionEvaluator" ref="inheritedPermissionEvaluator" />
     </bean>
     
-        <bean id="serverAddress" class="java.lang.String">
-        <constructor-arg
-            value="${fcrepo.baseUrl}" />
-    </bean>
-    
-    <bean id="baseAddress" class="java.lang.String">
-        <constructor-arg
-            value="${fcrepo.baseUrl}rest/" />
-    </bean>
-    
     <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
-        <constructor-arg ref="baseAddress" />
+        <constructor-arg value="${fcrepo.baseUrl}" />
+        <constructor-arg value="${fcrepo.client.host}" />
     </bean>
     
     <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
