@@ -324,10 +324,9 @@ public class StructureQueryServiceIT extends BaseEmbeddedSolrTest {
     }
 
     private HierarchicalBrowseRequest makeRequest(PID rootPid) {
-        HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(1);
-        browseRequest.setAccessGroups(principals);
+        HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(1, principals);
         browseRequest.setSearchState(new SearchState());
-        browseRequest.setRootPid(rootPid.getId());
+        browseRequest.setRootPid(rootPid);
 
         return browseRequest;
     }
