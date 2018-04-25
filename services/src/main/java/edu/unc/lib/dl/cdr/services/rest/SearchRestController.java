@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.cdr.services.rest;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -151,7 +153,7 @@ public class SearchRestController extends AbstractSolrSearchController {
             HttpServletRequest request, HttpServletResponse response) {
         List<String> resultFields = this.getResultFields(request);
 
-        SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields);
+        SimpleIdRequest idRequest = new SimpleIdRequest(id, resultFields, getAgentPrincipals().getPrincipals());
         BriefObjectMetadataBean briefObject = queryLayer.getObjectById(idRequest);
         if (briefObject == null) {
             response.setStatus(404);
