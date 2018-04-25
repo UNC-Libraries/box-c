@@ -27,7 +27,7 @@ public abstract class CdrFcrepoHeaders {
 
     public static final String CdrBinaryPath = "CdrBinaryPath";
 
-    public static final String CdrBinarySubPath = "CdrBinarySubPath";
+    public static final String CdrBinaryId = "CdrBinaryId";
 
     public static final String CdrBinaryChecksum = "CdrChecksum";
 

@@ -20,7 +20,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -118,7 +118,7 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message).setHeader(CdrBinaryPath, file.getAbsolutePath());
-        verify(message).setHeader(CdrBinarySubPath, RepositoryPaths.idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
+        verify(message).setHeader(CdrBinaryId, RepositoryPaths.idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message, never()).setHeader(eq(CdrBinaryPath), anyString());
-        verify(message, never()).setHeader(eq(CdrBinarySubPath), anyString());
+        verify(message, never()).setHeader(eq(CdrBinaryId), anyString());
     }
 
     private void setMessageBody(Model model) throws Exception {

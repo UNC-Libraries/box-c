@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel.fulltext;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.File;
@@ -60,7 +60,7 @@ public class FulltextProcessor implements Processor {
 
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
-        String binarySubPath = (String) in.getHeader(CdrBinarySubPath);
+        String binarySubPath = (String) in.getHeader(CdrBinaryId);
         String text;
 
         try {
@@ -71,15 +71,15 @@ public class FulltextProcessor implements Processor {
             return;
         }
 
-        Path filepath = Paths.get(derivativeBasePath, binarySubPath + ".txt");
-        File derivative = filepath.toFile();
+        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath + ".txt");
+        File derivative = derivativePath.toFile();
         File parentDir = derivative.getParentFile();
 
         if (parentDir != null) {
             parentDir.mkdirs();
         }
 
-        try (PrintWriter fulltext = new PrintWriter(filepath.toString())) {
+        try (PrintWriter fulltext = new PrintWriter(derivativePath.toString())) {
             fulltext.println(text);
         }
     }

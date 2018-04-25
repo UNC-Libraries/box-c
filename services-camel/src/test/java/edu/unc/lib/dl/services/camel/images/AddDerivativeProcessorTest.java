@@ -17,7 +17,7 @@ package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -62,10 +62,6 @@ public class AddDerivativeProcessorTest {
     public TemporaryFolder moveDir = new TemporaryFolder();
 
     @Mock
-    private BinaryObject binary;
-    @Mock
-    private FileObject parent;
-    @Mock
     private ExecResult result;
 
     @Mock
@@ -81,7 +77,6 @@ public class AddDerivativeProcessorTest {
         processor = new AddDerivativeProcessor(fileExtension, moveDir.getRoot().getAbsolutePath());
 
         file = tmpDir.newFile(fileName + ".PNG");
-        file.deleteOnExit();
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -98,7 +93,7 @@ public class AddDerivativeProcessorTest {
         extensionlessPath = file.getAbsolutePath().split("\\.")[0];
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(extensionlessPath);
-        when(message.getHeader(eq(CdrBinarySubPath)))
+        when(message.getHeader(eq(CdrBinaryId)))
                 .thenReturn(derivativeSubPath);
 
         extensionlessName = new File(extensionlessPath).getName();

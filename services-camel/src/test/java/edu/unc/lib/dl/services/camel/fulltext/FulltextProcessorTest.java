@@ -16,7 +16,7 @@
 package edu.unc.lib.dl.services.camel.fulltext;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertEquals;
@@ -28,7 +28,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.InputStream;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -37,12 +36,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
-
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
 
 public class FulltextProcessorTest {
     private FulltextProcessor processor;
@@ -57,26 +51,17 @@ public class FulltextProcessorTest {
     public TemporaryFolder tmpDir = new TemporaryFolder();
 
     @Mock
-    private BinaryObject binary;
-
-    @Mock
-    private FileObject parent;
-
-    @Mock
     private Exchange exchange;
 
     @Mock
     private Message message;
-
-    @Captor
-    private ArgumentCaptor<InputStream> inputStreamCaptor;
 
     @Before
     public void init() throws Exception {
         initMocks(this);
 
         processor = new FulltextProcessor(tmpDir.newFolder().getAbsolutePath());
-        file = tmpDir.newFile(fileName + ".txt");
+        file = tmpDir.newFile(fileName);
 
         when(exchange.getIn()).thenReturn(message);
         when(message.getHeader(eq(FCREPO_URI))).thenReturn(BINARY_URI);
@@ -85,10 +70,10 @@ public class FulltextProcessorTest {
             writeFile.write(testText);
         }
 
-        String filePath = file.getAbsolutePath().toString();
+        String filePath = file.getAbsolutePath();
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(filePath);
-        when(message.getHeader(eq(CdrBinarySubPath)))
+        when(message.getHeader(eq(CdrBinaryId)))
                 .thenReturn(derivativeSubPath);
     }
 

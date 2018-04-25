@@ -22,7 +22,7 @@ import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinarySubPath;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
 import static org.apache.jena.rdf.model.ModelFactory.createDefaultModel;
 
@@ -66,7 +66,7 @@ public class BinaryMetadataProcessor implements Processor {
         final Model model = createDefaultModel();
 
         String fcrepoBinaryUri = (String) in.getHeader("CamelFcrepoUri");
-        String binarySubPath = PIDs.get(fcrepoBinaryUri).getId();
+        String binaryId = PIDs.get(fcrepoBinaryUri).getId();
 
         Model values = model.read(in.getBody(InputStream.class), null, "Turtle");
         ResIterator resources = values.listResourcesWithProperty(RDF.type, Fcrepo4Repository.Binary);
@@ -90,8 +90,8 @@ public class BinaryMetadataProcessor implements Processor {
                 // Only set the binary path if the computed path exists
                 if (Files.exists(Paths.get(binaryFullPath))) {
                     in.setHeader(CdrBinaryPath, binaryFullPath);
-                    in.setHeader(CdrBinarySubPath, RepositoryPaths
-                            .idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
+                    in.setHeader(CdrBinaryId, RepositoryPaths
+                            .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
                 }
 
                 in.setHeader(CdrBinaryChecksum, binaryFcrepoChecksumSplit[2]);
