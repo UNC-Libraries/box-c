@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.exception.SolrRuntimeException;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
@@ -152,10 +153,10 @@ public class StructureQueryService extends AbstractQueryService {
      * Gets metadata for the requested root object. Defaults to the root of the
      * content tree if no rootId is provided.
      */
-    private BriefObjectMetadata getRootMetadata(String rootId, AccessGroupSet principals) {
+    private BriefObjectMetadata getRootMetadata(PID rootPid, AccessGroupSet principals) {
         BriefObjectMetadata rootNode = null;
-        if (rootId != null) {
-            rootNode = searchService.getObjectById(new SimpleIdRequest(rootId, principals));
+        if (rootPid != null) {
+            rootNode = searchService.getObjectById(new SimpleIdRequest(rootPid, principals));
         }
         // Default the root to the collections object so we always have a root
         if (rootNode == null) {
@@ -284,7 +285,7 @@ public class StructureQueryService extends AbstractQueryService {
             SearchState browseState = browseRequest.getSearchState();
             browseResults.setMatchingContainerPids(getDirectContainerMatches(browseState,
                     browseRequest.getAccessGroups()));
-            browseResults.getMatchingContainerPids().add(browseRequest.getRootPid());
+            browseResults.getMatchingContainerPids().add(browseRequest.getRootPid().getId());
             // Remove all containers that are not direct matches for the user's query and have 0 children
             browseResults.removeContainersWithoutContents();
         } catch (SolrServerException e) {
@@ -306,6 +307,7 @@ public class StructureQueryService extends AbstractQueryService {
         SearchRequest directMatchRequest = new SearchRequest(directMatchState, accessGroups, false);
         SolrQuery directMatchQuery = searchService.generateSearch(directMatchRequest);
         QueryResponse directMatchResponse = this.executeQuery(directMatchQuery);
+
         String idField = solrField(SearchFieldKeys.ID);
         Set<String> directMatchIds = new HashSet<>(directMatchResponse.getResults().size());
         for (SolrDocument document : directMatchResponse.getResults()) {
@@ -317,7 +319,7 @@ public class StructureQueryService extends AbstractQueryService {
     /*
      * Returns the path facet of the object identified by pid.
      */
-    private CutoffFacet getObjectPath(String pid, AccessGroupSet accessGroups) {
+    private CutoffFacet getObjectPath(PID pid, AccessGroupSet accessGroups) {
         List<String> resultFields = asList(SearchFieldKeys.ID.name(), ANCESTOR_PATH.name());
         SimpleIdRequest idRequest = new SimpleIdRequest(pid, resultFields, accessGroups);
 

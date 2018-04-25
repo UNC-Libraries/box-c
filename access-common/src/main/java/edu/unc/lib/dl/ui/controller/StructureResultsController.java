@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentRootPid;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
@@ -48,7 +50,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(getContentRootPid().getId(),
                 "true".equals(includeFiles), false, false, request);
-        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+        return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
 
     @RequestMapping("/structure/{pid}/json")
@@ -59,7 +61,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), false, false,
                 request);
-        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+        return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
 
     @RequestMapping("/structure/path")
@@ -69,7 +71,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(getContentRootPid().getId(),
                 "true".equals(includeFiles), true, false, request);
-        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+        return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
 
     /**
@@ -83,7 +85,7 @@ public class StructureResultsController extends AbstractStructureResultsControll
         response.setContentType("application/json");
         HierarchicalBrowseResultResponse result = getStructureResult(pid, "true".equals(includeFiles), true, false,
                 request);
-        return SerializationUtil.structureToJSON(result, GroupsThreadStore.getGroups());
+        return SerializationUtil.structureToJSON(result, getAgentPrincipals().getPrincipals());
     }
 
     /**
@@ -93,9 +95,11 @@ public class StructureResultsController extends AbstractStructureResultsControll
     public @ResponseBody String getParentChildren(@PathVariable("pid") String pid,
             @RequestParam(value = "files", required = false) String includeFiles,
             Model model, HttpServletRequest request, HttpServletResponse response) {
+
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
         // Get the parent pid for the selected object and get its structure view
-        BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(new SimpleIdRequest(pid,
-                tierResultFieldsList));
+        BriefObjectMetadataBean selectedContainer = queryLayer.getObjectById(
+                new SimpleIdRequest(pid, tierResultFieldsList, principals));
         if (selectedContainer == null) {
             throw new ResourceNotFoundException("Object " + pid + " was not found.");
         }

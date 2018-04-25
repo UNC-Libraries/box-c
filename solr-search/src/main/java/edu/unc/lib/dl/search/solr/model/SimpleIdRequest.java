@@ -18,54 +18,53 @@ package edu.unc.lib.dl.search.solr.model;
 import java.util.List;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Request object for a single ID along with access restrictions and requested result data.
  * @author bbpennel
  */
 public class SimpleIdRequest {
-    protected String id;
+    protected final PID pid;
     protected List<String> resultFields;
-    protected AccessGroupSet accessGroups;
-
-    public SimpleIdRequest(String id) {
-        this.id = id;
-    }
-
-    public SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
-        this.accessGroups = accessGroups;
-        this.resultFields = resultFields;
-    }
-
-    public SimpleIdRequest(String id, List<String> resultFields) {
-        this.id = id;
-        this.resultFields = resultFields;
-    }
-
-    public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups) {
-        this.id = id;
-        this.accessGroups = accessGroups;
-        this.resultFields = resultFields;
-    }
+    protected final AccessGroupSet accessGroups;
 
     public SimpleIdRequest(String id, AccessGroupSet accessGroups) {
         this(id, null, accessGroups);
     }
 
-    public String getId() {
-        return id;
+    public SimpleIdRequest(PID pid, AccessGroupSet accessGroups) {
+        this(pid, null, accessGroups);
     }
 
-    public void setId(String id) {
-        this.id = id;
+    protected SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
+        this((PID) null, resultFields, accessGroups);
+    }
+
+    public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups) {
+        this(PIDs.get(id), resultFields, accessGroups);
+    }
+
+    public SimpleIdRequest(PID pid, List<String> resultFields, AccessGroupSet accessGroups) {
+        this.pid = pid;
+        this.accessGroups = accessGroups;
+        this.resultFields = resultFields;
+    }
+
+    /**
+     * @return the pid
+     */
+    public PID getPid() {
+        return pid;
+    }
+
+    public String getId() {
+        return pid.getId();
     }
 
     public AccessGroupSet getAccessGroups() {
         return accessGroups;
-    }
-
-    public void setAccessGroups(AccessGroupSet accessGroups) {
-        this.accessGroups = accessGroups;
     }
 
     public List<String> getResultFields() {

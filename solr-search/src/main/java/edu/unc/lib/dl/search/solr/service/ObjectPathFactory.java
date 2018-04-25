@@ -97,7 +97,7 @@ public class ObjectPathFactory {
      * @return path
      */
     public ObjectPath getPath(PID pid) {
-        SimpleIdRequest idRequest = new SimpleIdRequest(pid.getId(), startObjectFields);
+        SimpleIdRequest idRequest = new SimpleIdRequest(pid, startObjectFields, null);
         BriefObjectMetadata bom = search.getObjectById(idRequest);
         return getPath(bom);
     }
