@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.services.camel.fulltext;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
@@ -27,6 +29,8 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -60,7 +64,10 @@ public class FulltextProcessor implements Processor {
 
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
-        String binarySubPath = (String) in.getHeader(CdrBinaryId);
+        String fcrepoBinaryUri = (String) in.getHeader("CamelFcrepoUri");
+        String binaryId = PIDs.get(fcrepoBinaryUri).getId();
+        String binarySubPath = RepositoryPaths
+                .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         String text;
 
         try {
@@ -71,7 +78,7 @@ public class FulltextProcessor implements Processor {
             return;
         }
 
-        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath + ".txt");
+        Path derivativePath = Paths.get(derivativeBasePath, binarySubPath + "/" + binaryId + ".txt");
         File derivative = derivativePath.toFile();
         File parentDir = derivative.getParentFile();
 
