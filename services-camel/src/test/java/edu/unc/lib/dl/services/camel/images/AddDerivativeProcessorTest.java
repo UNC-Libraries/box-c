@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileWriter;
 
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
@@ -77,6 +78,8 @@ public class AddDerivativeProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
+
+        TestHelper.setContentBase(FEDORA_BASE);
 
         finalDir = moveDir.getRoot();
 
