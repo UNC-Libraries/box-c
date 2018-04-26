@@ -112,7 +112,7 @@ public class ObjectPathFactoryIT extends BaseEmbeddedSolrTest {
 
     @Test
     public void testGetPathByMetadata() throws Exception {
-        BriefObjectMetadata bom = solrSearchService.getObjectById(new SimpleIdRequest(testCorpus.coll1Pid.getId()));
+        BriefObjectMetadata bom = solrSearchService.getObjectById(new SimpleIdRequest(testCorpus.coll1Pid, null));
 
         ObjectPath path = objPathFactory.getPath(bom);
 

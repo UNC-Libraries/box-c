@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.admin.controller;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -59,10 +61,8 @@ public class DashboardController extends AbstractSolrSearchController {
         depthFacet.setCutoff(FACET_CUTOFF);
         collectionsState.getFacets().put(SearchFieldKeys.ANCESTOR_PATH.name(), depthFacet);
 
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.setAccessGroups(accessGroups);
-        searchRequest.setSearchState(collectionsState);
+        AccessGroupSet accessGroups = getAgentPrincipals().getPrincipals();
+        SearchRequest searchRequest = new SearchRequest(collectionsState, accessGroups);
 
         SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
         // Get children counts

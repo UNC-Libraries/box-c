@@ -66,8 +66,8 @@ public class AbstractStructureResultsController extends AbstractSolrSearchContro
         }
 
         // Request object for the search
-        HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth);
-        browseRequest.setAccessGroups(getAgentPrincipals().getPrincipals());
+        HierarchicalBrowseRequest browseRequest = new HierarchicalBrowseRequest(depth,
+                getAgentPrincipals().getPrincipals());
         browseRequest.setRetrieveFacets(retrieveFacets);
         if (retrieveFacets) {
             browseRequest.setSearchState(this.searchStateFactory.createHierarchicalBrowseSearchState(request

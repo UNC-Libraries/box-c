@@ -82,12 +82,12 @@ public class VocabularyController extends AbstractSearchController {
     }
 
     public Map<String, Object> getInvalidVocab(SearchRequest searchRequest) {
-        AccessGroupSet groups = GroupsThreadStore.getGroups();
+        AccessGroupSet groups = GroupsThreadStore.getAgentPrincipals().getPrincipals();
 
-        BriefObjectMetadata selectedContainer =
-                queryLayer.addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(), false);
+        BriefObjectMetadata selectedContainer = queryLayer.addSelectedContainer(searchRequest.getRootPid(),
+                searchRequest.getSearchState(), false, groups);
 
-        Map<String, Object> results = new LinkedHashMap<String, Object>();
+        Map<String, Object> results = new LinkedHashMap<>();
 
         Map<String, Object> vocabResults = new HashMap<>();
 

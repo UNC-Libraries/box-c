@@ -42,6 +42,7 @@ import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.acl.util.UserRole;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
@@ -276,9 +277,9 @@ public class SolrSearchService extends AbstractQueryService {
         return rootNode.getAncestorPathFacet();
     }
 
-    public BriefObjectMetadata addSelectedContainer(String containerPid, SearchState searchState,
-            boolean applyCutoffs) {
-        BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid));
+    public BriefObjectMetadata addSelectedContainer(PID containerPid, SearchState searchState,
+            boolean applyCutoffs, AccessGroupSet principals) {
+        BriefObjectMetadata selectedContainer = getObjectById(new SimpleIdRequest(containerPid, principals));
         if (selectedContainer == null) {
             return null;
         }

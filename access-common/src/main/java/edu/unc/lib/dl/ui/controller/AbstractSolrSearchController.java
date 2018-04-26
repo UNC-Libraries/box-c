@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,15 +28,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
-import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.search.solr.exception.InvalidHierarchicalFacetException;
-import edu.unc.lib.dl.search.solr.model.SearchState;
+import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
 import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
+import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.service.SearchActionService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchSettings;
-import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseRequest;
 import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
@@ -77,7 +78,7 @@ public abstract class AbstractSolrSearchController {
         //Get user access groups.  Fill this in later, for now just set to public
         HttpSession session = request.getSession();
         //Get the access group list
-        AccessGroupSet accessGroups = GroupsThreadStore.getGroups();
+        AccessGroupSet accessGroups = getAgentPrincipals().getPrincipals();
         searchRequest.setAccessGroups(accessGroups);
 
         //Retrieve the last search state

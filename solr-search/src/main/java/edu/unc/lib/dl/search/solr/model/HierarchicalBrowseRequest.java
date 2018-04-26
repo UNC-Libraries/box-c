@@ -18,7 +18,7 @@ package edu.unc.lib.dl.search.solr.model;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -27,8 +27,8 @@ public class HierarchicalBrowseRequest extends SearchRequest {
     private int retrievalDepth;
     private boolean includeFiles;
 
-    public HierarchicalBrowseRequest(int retrievalDepth) {
-        this.retrievalDepth = retrievalDepth;
+    public HierarchicalBrowseRequest(int retrievalDepth, AccessGroupSet accessGroups) {
+        this(null, retrievalDepth, accessGroups);
     }
 
     public HierarchicalBrowseRequest(SearchState searchState, int retrievalDepth, AccessGroupSet accessGroups) {

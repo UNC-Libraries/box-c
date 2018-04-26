@@ -18,10 +18,12 @@ package edu.unc.lib.dl.search.solr.model;
 import java.io.Serializable;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * Request bean for a brief record search. Handles basic searches and advanced searches.
- * 
+ *
  * @author bbpennel
  */
 public class SearchRequest implements Serializable {
@@ -31,42 +33,31 @@ public class SearchRequest implements Serializable {
     private boolean retrieveFacets;
     private boolean applyCutoffs;
     protected AccessGroupSet accessGroups;
-    protected String rootPid;
+    protected String rootId;
+    protected PID rootPid;
 
     public SearchRequest() {
-        searchState = null;
-        accessGroups = null;
-        applyCutoffs = true;
-        retrieveFacets = false;
-        rootPid = null;
+        this((PID) null, null, null, false);
     }
 
     public SearchRequest(SearchState searchState, AccessGroupSet accessGroups) {
-        setSearchState(searchState);
-        setAccessGroups(accessGroups);
-        applyCutoffs = true;
-        retrieveFacets = false;
+        this((PID) null, searchState, accessGroups, false);
     }
 
     public SearchRequest(String rootPid, SearchState searchState, AccessGroupSet accessGroups) {
-        setSearchState(searchState);
-        setAccessGroups(accessGroups);
-        applyCutoffs = true;
-        retrieveFacets = false;
-        this.rootPid = rootPid;
-    }
-
-    public SearchRequest(SearchState searchState, boolean retrieveFacets) {
-        this();
-        setSearchState(searchState);
-        this.retrieveFacets = retrieveFacets;
+        this(PIDs.get(rootPid), searchState, accessGroups, false);
     }
 
     public SearchRequest(SearchState searchState, AccessGroupSet accessGroups, boolean retrieveFacets) {
+        this((PID) null, searchState, accessGroups, retrieveFacets);
+    }
+
+    public SearchRequest(PID rootPid, SearchState searchState, AccessGroupSet accessGroups, boolean retrieveFacets) {
         setSearchState(searchState);
         setAccessGroups(accessGroups);
         applyCutoffs = true;
         this.retrieveFacets = retrieveFacets;
+        this.rootPid = rootPid;
     }
 
     public SearchState getSearchState() {
@@ -93,12 +84,22 @@ public class SearchRequest implements Serializable {
         this.applyCutoffs = applyCutoffs;
     }
 
-    public String getRootPid() {
+    /**
+     * @return the rootPid
+     */
+    public PID getRootPid() {
         return rootPid;
     }
 
-    public void setRootPid(String rootPid) {
+    /**
+     * @param rootPid the rootPid to set
+     */
+    public void setRootPid(PID rootPid) {
         this.rootPid = rootPid;
+    }
+
+    public void setRootPid(String rootId) {
+        this.rootPid = PIDs.get(rootId);
     }
 
     public boolean isRetrieveFacets() {

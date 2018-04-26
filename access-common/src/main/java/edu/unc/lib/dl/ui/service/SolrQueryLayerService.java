@@ -102,7 +102,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         if (has_pid) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
-                    false);
+                    false, accessGroups);
         }
 
         SearchResultResponse results = getSearchResults(searchRequest);
@@ -136,7 +136,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         BriefObjectMetadata selectedContainer = null;
         if (searchRequest.getRootPid() != null) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
-                    searchRequest.isApplyCutoffs());
+                    searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
         } else {
             CutoffFacet ancestorPath;
             if (!searchState.getFacets().containsKey(SearchFieldKeys.ANCESTOR_PATH.name())) {
@@ -379,7 +379,7 @@ public class SolrQueryLayerService extends SolrSearchService {
         // Get the record for the currently selected container if one is selected.
         if (searchRequest.getRootPid() != null) {
             selectedContainer = addSelectedContainer(searchRequest.getRootPid(), searchState,
-                    searchRequest.isApplyCutoffs());
+                    searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
         } else if (rollup == null) {
             LOG.debug("No container and no rollup, defaulting rollup to true");
             searchState.setRollup(true);
@@ -456,7 +456,7 @@ public class SolrQueryLayerService extends SolrSearchService {
 
         if (searchRequest.getRootPid() != null) {
             addSelectedContainer(searchRequest.getRootPid(), searchRequest.getSearchState(),
-                    searchRequest.isApplyCutoffs());
+                    searchRequest.isApplyCutoffs(), searchRequest.getAccessGroups());
         }
 
         SolrQuery query = generateSearch(searchRequest);

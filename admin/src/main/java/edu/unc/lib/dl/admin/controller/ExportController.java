@@ -37,6 +37,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -64,9 +66,10 @@ public class ExportController extends AbstractSolrSearchController {
     protected SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd kk:mm:ss");
 
     @RequestMapping(value = "{pid}", method = RequestMethod.GET)
-    public void export(@PathVariable("pid") String pid, HttpServletRequest request,
+    public void export(@PathVariable("pid") String pidString, HttpServletRequest request,
             HttpServletResponse response) throws IOException {
-        String filename = pid.replace(":", "_") + ".csv";
+        PID pid = PIDs.get(pidString);
+        String filename = pid.getId().replace(":", "_") + ".csv";
         response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
         response.addHeader("Content-Type", "text/csv");
 
@@ -82,7 +85,8 @@ public class ExportController extends AbstractSolrSearchController {
         searchState.setSortType("export");
         searchState.setRowsPerPage(searchSettings.maxPerPage);
 
-        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false);
+        BriefObjectMetadata container = queryLayer.addSelectedContainer(pid, searchState, false,
+                searchRequest.getAccessGroups());
         SearchResultResponse resultResponse = queryLayer.getSearchResults(searchRequest);
 
         List<BriefObjectMetadata> objects = resultResponse.getResultList();

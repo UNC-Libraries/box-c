@@ -27,6 +27,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.SearchRequest;
@@ -144,15 +145,16 @@ public class SearchActionController extends AbstractSolrSearchController {
 
         // Request object for the search
         SearchState searchState = searchRequest.getSearchState();
+        AccessGroupSet principals = searchRequest.getAccessGroups();
 
         SearchResultResponse resultResponse = queryLayer.performSearch(searchRequest);
 
         if (resultResponse != null) {
             childrenCountService.addChildrenCounts(resultResponse.getResultList(),
-                    searchRequest.getAccessGroups());
+                    principals);
 
             if (searchRequest.isRetrieveFacets()) {
-                SearchRequest facetRequest = new SearchRequest(searchState, true);
+                SearchRequest facetRequest = new SearchRequest(searchState, principals, true);
                 facetRequest.setApplyCutoffs(false);
                 if (resultResponse.getSelectedContainer() != null) {
                     SearchState facetState = (SearchState) searchState.clone();
@@ -171,7 +173,7 @@ public class SearchActionController extends AbstractSolrSearchController {
 
         model.addAttribute("searchStateUrl", SearchStateUtil.generateStateParameterString(searchState));
         model.addAttribute("searchQueryUrl", SearchStateUtil.generateSearchParameterString(searchState));
-        model.addAttribute("userAccessGroups", searchRequest.getAccessGroups());
+        model.addAttribute("userAccessGroups", principals);
         model.addAttribute("resultResponse", resultResponse);
 
         return resultResponse;
