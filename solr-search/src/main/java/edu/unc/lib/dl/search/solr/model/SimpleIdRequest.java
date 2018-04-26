@@ -38,10 +38,6 @@ public class SimpleIdRequest {
         this(pid, null, accessGroups);
     }
 
-    protected SimpleIdRequest(List<String> resultFields, AccessGroupSet accessGroups) {
-        this((PID) null, resultFields, accessGroups);
-    }
-
     public SimpleIdRequest(String id, List<String> resultFields, AccessGroupSet accessGroups) {
         this(PIDs.get(id), resultFields, accessGroups);
     }

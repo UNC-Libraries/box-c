@@ -18,6 +18,7 @@ package edu.unc.lib.dl.search.solr.model;
 import java.util.List;
 
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  * 
@@ -28,7 +29,7 @@ public class IdListRequest extends SimpleIdRequest {
     private List<String> ids;
 
     public IdListRequest(List<String> ids, List<String> resultFields, AccessGroupSet accessGroups) {
-        super(resultFields, accessGroups);
+        super((PID) null, resultFields, accessGroups);
         this.ids = ids;
     }
 
