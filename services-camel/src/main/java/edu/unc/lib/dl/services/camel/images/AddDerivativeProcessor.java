@@ -69,16 +69,16 @@ public class AddDerivativeProcessor implements Processor {
 
     private void moveFile(String binaryUri, String binarySubPath, String derivativeTmpPath)
             throws IOException {
-        Path derivative_path = Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension);
-        File derivative = derivative_path.toFile();
+        Path derivativePath = Paths.get(derivativeBasePath,  binarySubPath + "." + fileExtension);
+        File derivative = derivativePath.toFile();
         File parentDir = derivative.getParentFile();
 
         if (parentDir != null) {
             parentDir.mkdirs();
         }
 
-        Files.move(Paths.get(derivativeTmpPath + "." + fileExtension),
-                derivative_path, REPLACE_EXISTING);
+        Files.move(Paths.get(derivativeTmpPath),
+                derivativePath, REPLACE_EXISTING);
         log.info("Adding derivative for {} from {}", binaryUri, derivative.getAbsolutePath());
     }
 }
