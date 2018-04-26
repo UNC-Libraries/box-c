@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertTrue;
@@ -29,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
@@ -45,15 +45,19 @@ public class AddDerivativeProcessorTest {
 
     private final String fileName = "small_thumb";
     private final String fileExtension = "PNG";
-    private final String derivativeSubPath = "derivative";
+    private String pathId;
     private File file;
     private File mvFile;
 
     private AddDerivativeProcessor processor;
 
-    private String extensionlessPath;
+    private String derivPath;
 
-    private String extensionlessName;
+    private File finalDir;
+
+    private static final String FEDORA_BASE = "http://example.com/rest/";
+
+    private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
     @Rule
     public TemporaryFolder tmpDir = new TemporaryFolder();
@@ -74,9 +78,13 @@ public class AddDerivativeProcessorTest {
     public void init() throws Exception {
         initMocks(this);
 
-        processor = new AddDerivativeProcessor(fileExtension, moveDir.getRoot().getAbsolutePath());
+        finalDir = moveDir.getRoot();
 
-        file = tmpDir.newFile(fileName + ".PNG");
+        processor = new AddDerivativeProcessor(fileExtension, finalDir.getAbsolutePath());
+
+        pathId = PIDs.get(RESC_ID).getId();
+
+        file = tmpDir.newFile(pathId);
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -90,23 +98,18 @@ public class AddDerivativeProcessorTest {
             writeFile.write("fake image");
         }
 
-        extensionlessPath = file.getAbsolutePath().split("\\.")[0];
-        when(message.getHeader(eq(CdrBinaryPath)))
-                .thenReturn(extensionlessPath);
         when(message.getHeader(eq(CdrBinaryId)))
-                .thenReturn(derivativeSubPath);
+                .thenReturn(fileName);
 
-        extensionlessName = new File(extensionlessPath).getName();
-
-        when(result.getStdout()).thenReturn(new ByteArrayInputStream(extensionlessPath.getBytes()));
+        when(result.getStdout()).thenReturn(new ByteArrayInputStream(
+                file.getAbsolutePath().getBytes()
+        ));
         when(message.getBody()).thenReturn(result);
     }
 
     @Test
     public void createEnhancementTest() throws Exception {
-        mvFile = moveDir.newFile(fileName + ".PNG");
-        mvFile.deleteOnExit();
-
+        mvFile = new File(finalDir.getAbsolutePath() + "/"+ fileName + ".PNG");
         processor.process(exchange);
 
         assertTrue(mvFile.exists());
