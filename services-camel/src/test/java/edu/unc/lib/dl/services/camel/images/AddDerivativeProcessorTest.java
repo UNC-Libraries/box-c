@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -87,9 +86,6 @@ public class AddDerivativeProcessorTest {
         when(exchange.getIn()).thenReturn(message);
 
         when(message.getHeader(eq(FCREPO_URI)))
-                .thenReturn("http://fedora/test/original_file");
-
-        when(message.getHeader(CdrBinaryUri))
                 .thenReturn(RESC_ID);
 
         when(message.getHeader(eq(CdrBinaryMimeType)))

@@ -17,7 +17,6 @@ package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
@@ -61,7 +60,7 @@ public class AddDerivativeProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
-        String binaryId = PIDs.get((String) in.getHeader(CdrBinaryUri)).getId();
+        String binaryId = PIDs.get(binaryUri).getId();
         String derivativePath = RepositoryPaths
                 .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
