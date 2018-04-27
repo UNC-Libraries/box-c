@@ -17,6 +17,7 @@ package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
+import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -44,15 +45,13 @@ import edu.unc.lib.dl.fcrepo4.FileObject;
 
 public class AddDerivativeProcessorTest {
 
-    private final String fileName = "small_thumb";
+    private final String fileName = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private final String fileExtension = "PNG";
     private String pathId;
     private File file;
     private File mvFile;
 
     private AddDerivativeProcessor processor;
-
-    private String derivPath;
 
     private File finalDir;
 
@@ -93,6 +92,9 @@ public class AddDerivativeProcessorTest {
 
         when(message.getHeader(eq(FCREPO_URI)))
                 .thenReturn("http://fedora/test/original_file");
+
+        when(message.getHeader(CdrBinaryUri))
+                .thenReturn(RESC_ID);
 
         when(message.getHeader(eq(CdrBinaryMimeType)))
                 .thenReturn("image/png");

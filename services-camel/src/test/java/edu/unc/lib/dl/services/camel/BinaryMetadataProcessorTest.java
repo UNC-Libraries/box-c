@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.services.camel;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
@@ -49,8 +47,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.Premis;
@@ -102,8 +98,6 @@ public class BinaryMetadataProcessorTest {
         file.getParentFile().mkdirs();
         file.createNewFile();
 
-        String binarySubPath = PIDs.get(RESC_ID).getId();
-
         Model model = ModelFactory.createDefaultModel();
 
         Resource resc = model.createResource(RESC_ID);
@@ -118,7 +112,6 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message).setHeader(CdrBinaryPath, file.getAbsolutePath());
-        verify(message).setHeader(CdrBinaryId, RepositoryPaths.idToPath(binarySubPath, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
     }
 
     @Test
