@@ -37,6 +37,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
 
+import edu.unc.lib.dl.test.TestHelper;
+
 public class FulltextProcessorTest {
     private FulltextProcessor processor;
     private final String originalFileName = "full_text.txt";
@@ -44,8 +46,6 @@ public class FulltextProcessorTest {
     private final String derivativeFinalPath = "de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
     private File originalFile;
     private String derivPath;
-    private final static String BINARY_URI =
-            "http://fedora/content/45/66/76/67/45667667-ed3f-41fc-94cc-7764fc266075/datafs/original_file";
     private static final String FEDORA_BASE = "http://example.com/rest/";
 
     private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
@@ -62,6 +62,8 @@ public class FulltextProcessorTest {
     @Before
     public void init() throws Exception {
         initMocks(this);
+
+        TestHelper.setContentBase(FEDORA_BASE);
 
         derivPath = tmpDir.newFolder().getAbsolutePath();
         processor = new FulltextProcessor(derivPath);
