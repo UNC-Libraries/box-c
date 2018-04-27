@@ -63,8 +63,7 @@ public class FulltextProcessor implements Processor {
 
         String binaryUri = (String) in.getHeader(FCREPO_URI);
         String binaryPath = (String) in.getHeader(CdrBinaryPath);
-        String fcrepoBinaryUri = (String) in.getHeader("CamelFcrepoUri");
-        String binaryId = PIDs.get(fcrepoBinaryUri).getId();
+        String binaryId = PIDs.get(binaryUri).getId();
         String binarySubPath = RepositoryPaths
                 .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
         String text;

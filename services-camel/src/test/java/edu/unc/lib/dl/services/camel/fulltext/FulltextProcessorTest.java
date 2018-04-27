@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services.camel.fulltext;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertEquals;
@@ -69,8 +68,7 @@ public class FulltextProcessorTest {
         originalFile = tmpDir.newFile(originalFileName);
 
         when(exchange.getIn()).thenReturn(message);
-        when(message.getHeader(eq(FCREPO_URI))).thenReturn(BINARY_URI);
-        when(message.getHeader(eq("CamelFcrepoUri"))).thenReturn(RESC_ID);
+        when(message.getHeader(eq(FCREPO_URI))).thenReturn(RESC_ID);
 
         try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(originalFile))) {
             writeFile.write(testText);
@@ -80,8 +78,6 @@ public class FulltextProcessorTest {
 
         when(message.getHeader(eq(CdrBinaryPath)))
                 .thenReturn(filePath);
-        when(message.getHeader(eq(CdrBinaryId)))
-                .thenReturn(derivPath + "/" + derivativeFinalPath);
     }
 
     @Test

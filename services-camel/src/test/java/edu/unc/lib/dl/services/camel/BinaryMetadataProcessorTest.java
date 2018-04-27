@@ -18,7 +18,6 @@ package edu.unc.lib.dl.services.camel;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryPath;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -147,7 +146,6 @@ public class BinaryMetadataProcessorTest {
         verify(message).setHeader(CdrBinaryChecksum, checksum);
         verify(message).setHeader(CdrBinaryMimeType, mimetype);
         verify(message, never()).setHeader(eq(CdrBinaryPath), anyString());
-        verify(message, never()).setHeader(eq(CdrBinaryId), anyString());
     }
 
     private void setMessageBody(Model model) throws Exception {

@@ -16,7 +16,6 @@
 package edu.unc.lib.dl.services.camel.images;
 
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryMimeType;
-import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryId;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryUri;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 import static org.junit.Assert.assertTrue;
@@ -39,9 +38,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
-
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
 
 public class AddDerivativeProcessorTest {
 
@@ -102,9 +98,6 @@ public class AddDerivativeProcessorTest {
         try (BufferedWriter writeFile = new BufferedWriter(new FileWriter(file))) {
             writeFile.write("fake image");
         }
-
-        when(message.getHeader(eq(CdrBinaryId)))
-                .thenReturn(fileName);
 
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(
                 file.getAbsolutePath().getBytes()
