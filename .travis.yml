@@ -3,7 +3,7 @@ jdk:
   - oraclejdk8
 services:
 - redis-server
-script: mvn test -pl access-common,access,admin,deposit,fcrepo-clients,metadata,persistence,security,solr-ingest,solr-search,sword-server,services-camel
+script: mvn verify -pl access,access-common,admin,deposit,fcrepo-clients,metadata,persistence,security,services,services-camel,solr-ingest,solr-search,sword-server
 sudo: false
 cache:
   directories:
