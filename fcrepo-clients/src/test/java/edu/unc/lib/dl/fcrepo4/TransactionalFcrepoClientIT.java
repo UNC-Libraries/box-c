@@ -16,13 +16,19 @@
 package edu.unc.lib.dl.fcrepo4;
 
 import static edu.unc.lib.dl.util.RDFModelUtil.createModel;
+import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.net.URI;
+import java.util.UUID;
 
+import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.DC;
 import org.apache.jena.vocabulary.RDF;
 import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
@@ -31,7 +37,9 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.test.TestHelper;
+import edu.unc.lib.dl.util.RDFModelUtil;
 
 /**
  * @author bbpennel
@@ -145,5 +153,100 @@ public class TransactionalFcrepoClientIT {
         assertEquals("Response must use provided Host.",
                 HOST_HEADER, objUri.getHost());
         assertEquals("Response must not specify port", -1, objUri.getPort());
+    }
+
+    @Test
+    public void testPutTriplesWithTx() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .build();
+
+        txManager.setClient(fcrepoClient);
+
+        PID pid = PIDs.get(UUID.randomUUID().toString());
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(pid.getRepositoryPath());
+        resc.addLiteral(DC.title, "My Title");
+
+        FedoraTransaction tx = txManager.startTransaction();
+        createAndVerifyObjectWithBody(pid.getRepositoryUri(), model);
+        try {
+            tx.cancel();
+        } catch (TransactionCancelledException e) {
+            // Expected
+        }
+        // Verify that the created resource went away with transaction
+        try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
+            assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusCode());
+        }
+
+        FedoraTransaction tx2 = txManager.startTransaction();
+        createAndVerifyObjectWithBody(pid.getRepositoryUri(), model);
+        tx2.close();
+
+        try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
+            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        }
+    }
+
+    /*
+     * Verify interactions between transaction uri rewrite and repository base
+     * rewrite to support host header
+     */
+    @Test
+    public void testPutTriplesWithTxAndRebase() throws Exception {
+        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
+                .hostHeader(HOST_HEADER)
+                .build();
+
+        txManager.setClient(fcrepoClient);
+
+        PID pid = PIDs.get(UUID.randomUUID().toString());
+        String altPath = pid.getRepositoryPath().replace(BASE_PATH, ALT_PATH);
+        URI altUri = URI.create(altPath);
+
+        Model model = ModelFactory.createDefaultModel();
+        Resource resc = model.getResource(altPath);
+        resc.addLiteral(DC.title, "My Title");
+
+        FedoraTransaction tx = txManager.startTransaction();
+        createAndVerifyObjectWithBody(altUri, model);
+        try {
+            tx.cancel();
+        } catch (TransactionCancelledException e) {
+            // Expected
+        }
+        // Verify that the created resource went away with transaction
+        try (FcrepoResponse response = fcrepoClient.get(altUri).perform()) {
+            assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusCode());
+        }
+
+        FedoraTransaction tx2 = txManager.startTransaction();
+        URI objUri = createAndVerifyObjectWithBody(altUri, model);
+        tx2.close();
+
+        try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
+            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+        }
+        assertEquals("Response must use provided Host.",
+                HOST_HEADER, objUri.getHost());
+    }
+
+    private URI createAndVerifyObjectWithBody(URI path, Model model) throws Exception {
+        InputStream rdfStream = RDFModelUtil.streamModel(model);
+
+        URI objUri;
+        try (FcrepoResponse response = fcrepoClient.put(path).body(rdfStream).perform()) {
+            assertEquals(HttpStatus.SC_CREATED, response.getStatusCode());
+            objUri = response.getLocation();
+        }
+
+        try (FcrepoResponse response = fcrepoClient.get(objUri).perform()) {
+            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
+            Model respModel = RDFModelUtil.createModel(response.getBody());
+            respModel.contains(createResource(path.toString()), DC.title, "My Title");
+        }
+
+        return objUri;
     }
 }

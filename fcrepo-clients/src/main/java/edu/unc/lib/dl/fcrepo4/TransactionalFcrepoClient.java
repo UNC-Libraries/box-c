@@ -171,7 +171,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
      * Rewrites a resource uri to include a tx id
      */
     private URI rewriteUri(URI rescUri) {
-        URI txUri = FedoraTransaction.txUriThread.get();
+        URI txUri = rebaseUri(FedoraTransaction.txUriThread.get());
         String rescId = rescUri.toString();
         // locate the rest component of the path, everything after is the
         // relative path to the resource
