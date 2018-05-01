@@ -94,7 +94,7 @@
         <project.copyrightYear>2008</project.copyrightYear>
         <maven.failsafe.version>2.20</maven.failsafe.version>
         <maven.surefire.version>2.20</maven.surefire.version>
-        <activemq.core.version>5.7.0</activemq.core.version>
+        <activemq.core.version>5.14.0</activemq.core.version>
         <activemq.version>5.14.1</activemq.version>
         <solr.version>6.5.1</solr.version>
         <taglibs.standard.version>1.1.2</taglibs.standard.version>
@@ -584,6 +584,22 @@
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>1.2.3</version>
+            </dependency>
+            <!-- Activemq -->
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-broker</artifactId>
+                <version>${activemq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-client</artifactId>
+                <version>${activemq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>activemq-pool</artifactId>
+                <version>${activemq.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
