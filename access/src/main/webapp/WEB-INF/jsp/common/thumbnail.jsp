@@ -37,7 +37,7 @@
 <c:set var="href">
 	<c:choose>
 		<c:when test="${param.target == 'file' && permsHelper.hasOriginalAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'DATA_FILE', fedoraUtil)}" />
+			<c:out value="${cdr:getOriginalFileUrl(thumbnailObject)}" />
 		</c:when>
 		<c:when test="${param.target == 'record'}">
 			<c:out value="record/${thumbnailObject.id}" />
@@ -68,10 +68,10 @@
 <c:set var="src">
 	<c:choose>
 		<c:when test="${param.size == 'large' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_LARGE', fedoraUtil)}" />
+			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_LARGE')}" />
 		</c:when>
 		<c:when test="${param.size == 'small' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_SMALL', fedoraUtil)}" />
+			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_SMALL')}" />
 		</c:when>
 	</c:choose>
 </c:set>

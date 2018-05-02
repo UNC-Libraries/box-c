@@ -15,49 +15,37 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import java.util.Arrays;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static java.util.Arrays.asList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.List;
 
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.Datastream;
-import edu.unc.lib.dl.util.ContentModelHelper;
 
 /**
+ * Utility methods for presenting datastreams in views.
  *
- * @author count0
+ * @author bbpennel
  *
  */
-public class FedoraUtil {
-    private String fedoraUrl;
+public class DatastreamUtil {
 
-    public static String getDatastreamUrl(Object object, String datastream, FedoraUtil fedoraUtil) {
-        if (object instanceof String) {
-            return fedoraUtil.getDatastreamUrl((String) object, datastream);
-        }
-        if (object instanceof BriefObjectMetadata) {
-            return fedoraUtil.getDatastreamUrl((BriefObjectMetadata) object, datastream);
-        }
-        return null;
+    private static final List<String> INDEXABLE_EXTENSIONS = asList(
+            "doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml");
+
+    private DatastreamUtil() {
     }
 
     /**
-     * Returns a URL for a specific datastream of the object identified by pid, according to the RESTful Fedora API.
-     * Example: <fedoraBaseURL>/objects/uuid:5fdc16d9-8272-41f7-a7da-a953192174df/datastreams/DC/content
+     * Returns a URL for retrieving a specific datastream of the provided object.
      *
-     * @param pid
-     * @param datastream
-     * @return
+     * @param metadata metadata record for object
+     * @param datastreamName name of datastream to return
+     * @return url for accessing the datastream.
      */
-    public String getDatastreamUrl(String pid, String datastream) {
-        StringBuilder url = new StringBuilder();
-        url.append("content/").append(pid);
-        if (!ContentModelHelper.Datastream.DATA_FILE.getName().equals(datastream)) {
-            url.append("/").append(datastream);
-        }
-        return url.toString();
-    }
-
-    public String getDatastreamUrl(BriefObjectMetadata metadata, String datastreamName) {
+    public static String getDatastreamUrl(BriefObjectMetadata metadata, String datastreamName) {
         // Prefer the matching datastream from this object over the same datastream with a different pid prefix
         Datastream preferredDS = getPreferredDatastream(metadata, datastreamName);
 
@@ -67,24 +55,33 @@ public class FedoraUtil {
 
         StringBuilder url = new StringBuilder();
 
-        if (preferredDS.getExtension() != null) {
-            int extensionIndex = Arrays.binarySearch(new String[] { "doc", "docx", "htm", "html", "pdf", "ppt", "pptx",
-                    "rtf", "txt", "xls", "xlsx", "xml" }, preferredDS.getExtension());
-            if (extensionIndex >= 0) {
+        if (!isBlank(preferredDS.getExtension())) {
+            if (INDEXABLE_EXTENSIONS.contains(preferredDS.getExtension())) {
                 url.append("indexable");
             }
         }
 
         url.append("content/");
-        if (preferredDS.getOwner() == null) {
+        if (isBlank(preferredDS.getOwner())) {
             url.append(metadata.getId());
         } else {
             url.append(preferredDS.getOwner());
         }
-        if (!ContentModelHelper.Datastream.DATA_FILE.getName().equals(datastreamName)) {
+        if (!ORIGINAL_FILE.equals(datastreamName)) {
             url.append("/").append(preferredDS.getName());
         }
         return url.toString();
+    }
+
+    /**
+     * Returns a URL for retrieving the original file datastream of the provided
+     * object if present, otherwise a blank string is returned.
+     *
+     * @param metadata metadata record for object
+     * @return url for accessing the datastream.
+     */
+    public static String getOriginalFileUrl(BriefObjectMetadata metadata) {
+        return getDatastreamUrl(metadata, ORIGINAL_FILE);
     }
 
     /**
@@ -115,14 +112,6 @@ public class FedoraUtil {
         }
 
         return preferredDS;
-    }
-
-    public String getFedoraUrl() {
-        return fedoraUrl;
-    }
-
-    public void setFedoraUrl(String fedoraUrl) {
-        this.fedoraUrl = fedoraUrl;
     }
 
 }

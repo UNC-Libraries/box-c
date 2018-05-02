@@ -66,11 +66,11 @@
 			<c:choose>
 				<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, briefObject)}">
 					<div class="actionlink left download">
-						<a href="${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}?dl=true">Download</a>
+						<a href="${cdr:getOriginalFileUrl(briefObject)}?dl=true">Download</a>
 					</div>
 					<c:if test="${briefObject.contentTypeFacet[0].displayValue == 'mp4'}">
 						<div class="actionlink left">
-							<a href="${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}">View</a>
+							<a href="${cdr:getOriginalFileUrl(briefObject)}">View</a>
 						</div>
 					</c:if>
 				</c:when>
@@ -91,12 +91,12 @@
 					<c:choose>
 						<c:when test="${briefObject.contentTypeFacet[0].searchKey == 'pdf'}">
 							<div class="actionlink left">
-								<a href="${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}">View</a>
+								<a href="${cdr:getOriginalFileUrl(briefObject)}">View</a>
 							</div>
 						</c:when>
 						<c:when test="${briefObject.contentTypeFacet[0].displayValue == 'mp3'}">
 							<div class="clear_space"></div>
-							<audio class="audio_player inline_viewer" src="${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}">
+							<audio class="audio_player inline_viewer" src="${cdr:getOriginalFileUrl(briefObject)}">
 							</audio>
 						</c:when>
 					</c:choose>

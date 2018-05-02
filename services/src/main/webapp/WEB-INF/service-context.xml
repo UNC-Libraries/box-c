@@ -222,11 +222,6 @@
         <property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
     </bean>
     
-    <bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
-        <property name="fedoraUrl"
-            value="${fcrepo.baseUrl}" />
-    </bean>
-    
     <bean id="gaTrackingID" class="java.lang.String">
         <constructor-arg
             value="${google.trackingId}" />

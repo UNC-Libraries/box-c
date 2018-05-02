@@ -31,7 +31,7 @@
 	</c:otherwise>
 </c:choose>
 
-<c:set var="dataFileUrl">${cdr:getDatastreamUrl(briefObject, 'original_file', fedoraUtil)}</c:set>
+<c:set var="dataFileUrl">${cdr:getOriginalFileUrl(briefObject)}</c:set>
 
 <div class="onecol full_record_top">
 	<div class="contentarea">

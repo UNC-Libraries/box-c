@@ -87,7 +87,7 @@
 					<c:choose>
 						<c:when test="${permsHelper.hasOriginalAccess(requestScope.accessGroupSet, metadata)}">
 							<div class="actionlink right download">
-								<a href="${cdr:getDatastreamUrl(metadata, 'DATA_FILE', fedoraUtil)}?dl=true">Download</a>
+								<a href="${cdr:getOriginalFileUrl(metadata)}?dl=true">Download</a>
 							</div>
 						</c:when>
 						<c:otherwise>

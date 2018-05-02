@@ -17,8 +17,11 @@ package edu.unc.lib.dl.test;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+import edu.unc.lib.dl.fedora.PID;
 
 /**
  *  Helper method for IT tests
@@ -42,4 +45,7 @@ public class TestHelper {
         }
     }
 
+    public static PID makePid() {
+        return PIDs.get(UUID.randomUUID().toString());
+    }
 }
