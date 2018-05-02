@@ -59,7 +59,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     private Pattern txBasePattern;
     private Pattern txRemovePattern;
 
+    // Host header value provided to fedora on all requests to produce a consistent base uri in responses.
     private String hostHeader;
+    // Base URI for the fedora instance to make requests to
     private String baseUri;
 
     protected TransactionalFcrepoClient(String username, String password, String host,
@@ -106,6 +108,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
         }
 
         if (hasTxId()) {
+            // Rewrite fedora resource URIs within RDF request body to include tx id
             if (needsRequestBodyRewrite(request)) {
                 rewriteRequestBodyUris(request);
             }
@@ -114,6 +117,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
                 request.setURI(requestUri);
             }
             FcrepoResponse resp = super.executeRequest(requestUri, request);
+            // Strip tx ids out of response so they are invisible to clients
             return rewriteResponseBodyUris(resp);
         }
         return super.executeRequest(requestUri, request);
@@ -121,6 +125,9 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 
     /**
      * Rebase fedora URI to the domain expected by this client.
+     *
+     * Necessary for use in conjunction with host header to remap from provided
+     * host base to the actual URI of fedora instance.
      *
      * @param uri
      * @return
@@ -171,6 +178,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
      * Rewrites a resource uri to include a tx id
      */
     private URI rewriteUri(URI rescUri) {
+        // Transaction uri may be based on host header, rebase to actual fedora base uri
         URI txUri = rebaseUri(FedoraTransaction.txUriThread.get());
         String rescId = rescUri.toString();
         // locate the rest component of the path, everything after is the
