@@ -17,6 +17,7 @@ package edu.unc.lib.dl.search.solr.service;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -87,6 +88,29 @@ public abstract class AbstractQueryService {
             return "";
         }
         return solrField(fieldKey) + ":(" + String.join(" OR ", values) + ")";
+    }
+
+    /**
+     * Adds the sort identified by sortType to the query. If normalOrder is
+     * true, then the query will sort in the default order specified by the
+     * sort, otherwise it will be reversed
+     *
+     * @param solrQuery
+     * @param sortType
+     * @param normalOrder
+     */
+    protected void addSort(SolrQuery solrQuery, String sortType, boolean normalOrder) {
+        List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(sortType);
+        if (sortFields != null) {
+            for (int i = 0; i < sortFields.size(); i++) {
+                SearchSettings.SortField sortField = sortFields.get(i);
+                SolrQuery.ORDER sortOrder = SolrQuery.ORDER.valueOf(sortField.getSortOrder());
+                if (!normalOrder) {
+                    sortOrder = sortOrder.reverse();
+                }
+                solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
+            }
+        }
     }
 
     /**

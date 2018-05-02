@@ -28,7 +28,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.FacetField;
 import org.apache.solr.client.solrj.response.FacetField.Count;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +37,6 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
-import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.CaseInsensitiveFacet;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.FacetFieldObject;
@@ -185,118 +183,6 @@ public class SolrQueryLayerService extends SolrSearchService {
         }
 
         return resultResponse;
-    }
-
-    /**
-     * Retrieves a list of the closest windowSize neighbors within the parent container of the specified object,
-     * using the default sort order. The first windowSize / 2 - 1 neighbors are retrieved to each side
-     * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible.
-     *
-     * @param metadata
-     *           Record which the window pivots around.
-     * @param windowSize
-     *           max number of items in the window. This includes the pivot, so odd numbers are recommended.
-     * @param accessGroups
-     *           Access groups of the user making this request.
-     * @return
-     */
-    public List<BriefObjectMetadataBean> getNeighboringItems(BriefObjectMetadataBean metadata, int windowSize,
-            AccessGroupSet accessGroups) {
-
-        // Get the common access restriction clause (starts with "AND ...")
-        StringBuilder accessRestrictionClause = new StringBuilder();
-
-        try {
-            addAccessRestrictions(accessRestrictionClause, accessGroups);
-        } catch (AccessRestrictionException e) {
-            // If the user doesn't have any access groups, they don't have access to anything, return null.
-            LOG.error("Attempted to get neighboring items without creditentials", e);
-            return null;
-        }
-
-        // Restrict query to files/aggregates and objects within the same parent
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("*:*" + accessRestrictionClause);
-
-        solrQuery.setFacet(true);
-        solrQuery.addFilterQuery(solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name())
-                + ":" + searchSettings.resourceTypeFile + " "
-                + solrSettings.getFieldName(SearchFieldKeys.RESOURCE_TYPE.name())
-                + ":" + searchSettings.resourceTypeAggregate);
-
-        CutoffFacet ancestorPath = null;
-        if (metadata.getResourceType().equals(searchSettings.resourceTypeFile)
-                || metadata.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-            ancestorPath = metadata.getAncestorPathFacet();
-        } else {
-            ancestorPath = metadata.getPath();
-        }
-        if (ancestorPath != null) {
-            // We want only objects at the same level of the hierarchy
-            ancestorPath.setCutoff(ancestorPath.getHighestTier() + 1);
-
-            facetFieldUtil.addToSolrQuery(ancestorPath, solrQuery);
-        }
-
-        // Sort neighbors using the default sort
-        addSort(solrQuery, "default", true);
-
-        // Query for ids in this container in groups of NEIGHBOR_SEEK_PAGE_SIZE until we find the offset of the object
-        solrQuery.setRows(NEIGHBOR_SEEK_PAGE_SIZE);
-        solrQuery.setFields("id");
-
-        long total = -1;
-        int start = 0;
-        pageLoop: do {
-            try {
-                solrQuery.setStart(start);
-                QueryResponse queryResponse = this.executeQuery(solrQuery);
-                total = queryResponse.getResults().getNumFound();
-                for (SolrDocument doc : queryResponse.getResults()) {
-                    if (metadata.getId().equals(doc.getFieldValue("id"))) {
-                        break pageLoop;
-                    }
-                    start++;
-                }
-            } catch (SolrServerException e) {
-                LOG.error("Error retrieving Neighboring items: " + e);
-                return null;
-            }
-        } while (start < total);
-
-        // Wasn't found, no neighbors shall be forthcoming
-        if (start >= total) {
-            return null;
-        }
-
-        // Calculate the starting index for the window, so that object is as close to the middle as possible
-        long left = start - (windowSize / 2);
-        long right = start + (windowSize / 2);
-
-        if (left < 0) {
-            right -= left;
-            left = 0;
-        }
-
-        if (right >= total) {
-            left -= (right - total) + 1;
-            if (left < 0) {
-                left = 0;
-            }
-        }
-
-        // Query for the windowSize of objects
-        solrQuery.setFields(new String[0]);
-        solrQuery.setRows(windowSize);
-        solrQuery.setStart((int) left);
-
-        try {
-            QueryResponse queryResponse = this.executeQuery(solrQuery);
-            return queryResponse.getBeans(BriefObjectMetadataBean.class);
-        } catch (SolrServerException e) {
-            LOG.error("Error retrieving Neighboring items: " + e);
-            return null;
-        }
     }
 
     /**

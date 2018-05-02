@@ -104,6 +104,14 @@
         <property name="searchService" ref="queryLayer" />
     </bean>
     
+    <bean id="neighborQueryService" class="edu.unc.lib.dl.search.solr.service.NeighborQueryService"
+        init-method="initializeSolrServer">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+    </bean>
+    
     <bean id="queryLayer" class="edu.unc.lib.dl.ui.service.SolrQueryLayerService"
         init-method="initializeSolrServer">
         <property name="solrSettings" ref="solrSettings" />

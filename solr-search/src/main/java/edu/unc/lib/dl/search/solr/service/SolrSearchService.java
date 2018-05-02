@@ -56,7 +56,6 @@ import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.util.DateFormatUtil;
 import edu.unc.lib.dl.search.solr.util.FacetFieldUtil;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
-import edu.unc.lib.dl.search.solr.util.SearchSettings;
 import edu.unc.lib.dl.search.solr.util.SolrSettings;
 
 /**
@@ -447,20 +446,6 @@ public class SolrSearchService extends AbstractQueryService {
         }
 
         return solrQuery;
-    }
-
-    protected void addSort(SolrQuery solrQuery, String sortType, boolean normalOrder) {
-        List<SearchSettings.SortField> sortFields = searchSettings.sortTypes.get(sortType);
-        if (sortFields != null) {
-            for (int i = 0; i < sortFields.size(); i++) {
-                SearchSettings.SortField sortField = sortFields.get(i);
-                SolrQuery.ORDER sortOrder = SolrQuery.ORDER.valueOf(sortField.getSortOrder());
-                if (!normalOrder) {
-                    sortOrder = sortOrder.reverse();
-                }
-                solrQuery.addSort(solrSettings.getFieldName(sortField.getFieldName()), sortOrder);
-            }
-        }
     }
 
     /**

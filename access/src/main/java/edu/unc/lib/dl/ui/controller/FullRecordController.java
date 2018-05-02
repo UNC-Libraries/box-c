@@ -63,6 +63,7 @@ import edu.unc.lib.dl.search.solr.model.SearchResultResponse;
 import edu.unc.lib.dl.search.solr.model.SearchState;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
 import edu.unc.lib.dl.search.solr.service.ChildrenCountService;
+import edu.unc.lib.dl.search.solr.service.NeighborQueryService;
 import edu.unc.lib.dl.search.solr.service.SearchStateFactory;
 import edu.unc.lib.dl.search.solr.util.SearchFieldKeys;
 import edu.unc.lib.dl.ui.exception.InvalidRecordRequestException;
@@ -85,6 +86,8 @@ public class FullRecordController extends AbstractSolrSearchController {
     private AccessControlService aclService;
     @Autowired
     private ChildrenCountService childrenCountService;
+    @Autowired
+    private NeighborQueryService neighborService;
 
     @Autowired(required = true)
     private XSLViewResolver xslViewResolver;
@@ -189,7 +192,7 @@ public class FullRecordController extends AbstractSolrSearchController {
 
         if (briefObject.getResourceType().equals(searchSettings.resourceTypeFile) ||
                 briefObject.getResourceType().equals(searchSettings.resourceTypeAggregate)) {
-            List<BriefObjectMetadataBean> neighbors = queryLayer.getNeighboringItems(briefObject,
+            List<BriefObjectMetadataBean> neighbors = neighborService.getNeighboringItems(briefObject,
                     searchSettings.maxNeighborResults, principals);
             model.addAttribute("neighborList", neighbors);
 
