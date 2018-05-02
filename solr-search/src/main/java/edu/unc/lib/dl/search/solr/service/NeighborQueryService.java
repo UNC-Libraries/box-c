@@ -49,7 +49,7 @@ public class NeighborQueryService extends AbstractQueryService {
 
     /**
      * Retrieves a list of the closest windowSize neighbors within the parent container of the specified object,
-     * using title sort order. The first windowSize / 2 - 1 neighbors are retrieved to each side
+     * using title sort order. The first (windowSize - 1)/ 2 neighbors are retrieved to each side
      * of the item, and trimmed so that there are always windowSize - 1 neighbors surrounding the item if possible.
      *
      * @param metadata
