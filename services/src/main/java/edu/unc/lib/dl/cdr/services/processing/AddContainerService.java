@@ -18,10 +18,13 @@ package edu.unc.lib.dl.cdr.services.processing;
 import java.util.Arrays;
 
 import org.apache.jena.rdf.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.cdr.services.metrics.TimerFactory;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
@@ -31,6 +34,7 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Service that manages the creation of containers
@@ -39,12 +43,15 @@ import edu.unc.lib.dl.services.OperationsMessageSender;
  *
  */
 public class AddContainerService {
+    private static final Logger log = LoggerFactory.getLogger(AddContainerService.class);
 
     private AccessControlService aclService;
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
     private OperationsMessageSender operationsMessageSender;
+
+    private static final Timer timer = TimerFactory.createTimerForClass(AddContainerService.class);
 
     /**
      * Creates a new container as a child of the given parent using the agent principals provided.
@@ -55,6 +62,8 @@ public class AddContainerService {
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
         ContentContainerObject child = null;
+        //start timer
+        Timer.Context context = timer.time();
         FedoraTransaction tx = txManager.startTransaction();
         try {
             // Create the appropriate container
@@ -92,6 +101,8 @@ public class AddContainerService {
             tx.cancel(e);
         } finally {
             tx.close();
+            //stop timer
+            context.stop();
         }
 
         // Send message that the action completed
