@@ -24,13 +24,13 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
-import edu.unc.lib.dl.cdr.services.metrics.TimerFactory;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -62,10 +62,9 @@ public class AddContainerService {
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
         ContentContainerObject child = null;
-        //start timer
-        Timer.Context context = timer.time();
         FedoraTransaction tx = txManager.startTransaction();
-        try {
+
+        try (Timer.Context context = timer.time()) {
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
@@ -101,8 +100,6 @@ public class AddContainerService {
             tx.cancel(e);
         } finally {
             tx.close();
-            //stop timer
-            context.stop();
         }
 
         // Send message that the action completed

@@ -51,9 +51,11 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.update.UpdateException;
 import edu.unc.lib.dl.util.ContentModelHelper.Datastream;
 import edu.unc.lib.dl.validation.MetadataValidationException;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * A job for stepping through the bulk metadata update doc and making updates to individual objects
@@ -100,6 +102,8 @@ public class XMLImportJob implements Runnable {
     private List<String> updated;
     private Map<String, String> failed;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(XMLImportJob.class);
+
     public XMLImportJob(String userEmail, AgentPrincipals agent, File importFile) {
         this.userEmail = userEmail;
         this.agent = agent;
@@ -123,7 +127,7 @@ public class XMLImportJob implements Runnable {
                     + " for update " + importFile.getAbsolutePath(), e);
         }
 
-        try {
+        try (Timer.Context context = timer.time()) {
             initializeXMLReader();
             processUpdates();
             log.info("Finished metadata import for {} objects in {}ms for user {}",

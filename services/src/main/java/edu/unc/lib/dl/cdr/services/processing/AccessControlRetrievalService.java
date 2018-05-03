@@ -34,6 +34,8 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Service that retrieves access-control information for an object and its children, if it has any
@@ -48,27 +50,33 @@ public class AccessControlRetrievalService {
     private InheritedAclFactory inheritedAclFactory;
     private RepositoryObjectLoader repoObjLoader;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(AccessControlRetrievalService.class);
+
     /**
      * Get the set of permissions that applies to both a given object and its children
-     * @param pid
-     * @return
+     *
+     * @param agent the agent's authentication principals
+     * @param pid the object's pid
+     * @return a map of permissions for an object and its children
      */
     public Map<String, Object> getPermissions(AgentPrincipals agent, PID pid) {
-        Map<String, Object> result = getObjectPermissions(agent, pid);
-        RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
-        if (parent instanceof ContentContainerObject) {
-            List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
+        Map<String, Object> result = null;
+        try (Timer.Context context = timer.time()) {
+            result = getObjectPermissions(agent, pid);
+            RepositoryObject parent = repoObjLoader.getRepositoryObject(pid);
+            if (parent instanceof ContentContainerObject) {
+                List<ContentObject> members = ((ContentContainerObject) parent).getMembers();
 
-            if (!members.isEmpty()) {
-                List<Map<String, Object>> memberPermissions = new ArrayList<>();
-                for (ContentObject member : members) {
-                    Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
-                    memberPermissions.add(permissions);
+                if (!members.isEmpty()) {
+                    List<Map<String, Object>> memberPermissions = new ArrayList<>();
+                    for (ContentObject member : members) {
+                        Map<String, Object> permissions = getObjectPermissions(agent, member.getPid());
+                        memberPermissions.add(permissions);
+                    }
+                    result.put("memberPermissions", memberPermissions);
                 }
-                result.put("memberPermissions", memberPermissions);
             }
         }
-
         return result;
     }
 

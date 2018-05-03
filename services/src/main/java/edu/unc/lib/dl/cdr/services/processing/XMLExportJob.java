@@ -47,7 +47,9 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.persist.services.EmailHandler;
+import io.dropwizard.metrics5.Timer;
 
 
     /**
@@ -74,6 +76,8 @@ public class XMLExportJob implements Runnable {
     private final AccessGroupSet groups;
     private final XMLExportRequest request;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(XMLExportJob.class);
+
     public XMLExportJob(String user, AccessGroupSet groups, XMLExportRequest request) {
         this.user = user;
         this.groups = groups;
@@ -84,7 +88,7 @@ public class XMLExportJob implements Runnable {
     public void run() {
         long startTime = System.currentTimeMillis();
 
-        try {
+        try (Timer.Context context = timer.time()) {
             File mdExportFile = File.createTempFile("xml_export", ".xml");
 
             try (FileOutputStream xfop = new FileOutputStream(mdExportFile)) {
