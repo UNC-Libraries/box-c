@@ -29,8 +29,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -38,11 +36,15 @@ import org.apache.camel.component.exec.ExecResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
+
 /**
  * Adds a derivative file to an existing file object
  *
  * @author bbpennel
  * @author harring
+ * @author lfarrell
  *
  */
 public class AddDerivativeProcessor implements Processor {
@@ -68,14 +70,18 @@ public class AddDerivativeProcessor implements Processor {
 
         String derivativeTmpPath = new BufferedReader(new InputStreamReader(result.getStdout()))
                 .lines().collect(Collectors.joining("\n"));
+        derivativeTmpPath += "." + fileExtension;
 
-        moveFile(binaryUri, derivativePath + binaryId, derivativeTmpPath);
+        String derivativeFinalRelative = derivativePath + binaryId + "." + fileExtension;
+        Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativeFinalRelative);
+
+        moveFile(derivativeTmpPath, derivativeFinalPath);
+        log.info("Adding derivative for {} from {}", binaryUri, derivativeFinalPath);
     }
 
-    private void moveFile(String binaryUri, String finalPath, String derivativeTmpPath)
+    private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)
             throws IOException {
-        Path derivativePath = Paths.get(derivativeBasePath,  finalPath + "." + fileExtension);
-        File derivative = derivativePath.toFile();
+        File derivative = derivativeFinalPath.toFile();
         File parentDir = derivative.getParentFile();
 
         if (parentDir != null) {
@@ -83,7 +89,6 @@ public class AddDerivativeProcessor implements Processor {
         }
 
         Files.move(Paths.get(derivativeTmpPath),
-                derivativePath, REPLACE_EXISTING);
-        log.info("Adding derivative for {} from {}", binaryUri, derivative.getAbsolutePath());
+                derivativeFinalPath, REPLACE_EXISTING);
     }
 }

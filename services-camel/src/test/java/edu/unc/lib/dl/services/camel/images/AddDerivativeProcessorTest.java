@@ -27,8 +27,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.component.exec.ExecResult;
@@ -37,6 +35,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mock;
+
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.test.TestHelper;
 
 public class AddDerivativeProcessorTest {
 
@@ -81,7 +82,11 @@ public class AddDerivativeProcessorTest {
 
         pathId = PIDs.get(RESC_ID).getId();
 
-        file = tmpDir.newFile(pathId);
+        // Derivative file stored with extension
+        file = tmpDir.newFile(pathId + "." + fileExtension);
+        String derivTmpPath = file.getAbsolutePath();
+        // Path to file from exec result not expected to have extension
+        derivTmpPath = derivTmpPath.substring(0, derivTmpPath.length() - fileExtension.length() - 1);
 
         when(exchange.getIn()).thenReturn(message);
 
@@ -96,7 +101,7 @@ public class AddDerivativeProcessorTest {
         }
 
         when(result.getStdout()).thenReturn(new ByteArrayInputStream(
-                file.getAbsolutePath().getBytes()
+                derivTmpPath.getBytes()
         ));
         when(message.getBody()).thenReturn(result);
     }
