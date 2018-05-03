@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.metrics;
+package edu.unc.lib.dl.metrics;
 
 import static io.dropwizard.metrics5.SharedMetricRegistries.getOrCreate;
 
@@ -40,7 +40,7 @@ public final class RegistryService {
      *
      * @return the local object
      */
-    public synchronized static RegistryService getInstance() {
+    public static synchronized RegistryService getInstance() {
         RegistryService local = instance;
         if (local == null) {
             local = new RegistryService();

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.metrics;
+package edu.unc.lib.dl.metrics;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -38,7 +38,7 @@ public class ReporterFactory {
     private static volatile ReporterFactory factoryInstance = null;
     private static ScheduledReporter reporterInstance = null;
 
-    private static final Logger LOGGER = getLogger("services-metrics");
+    private static final Logger LOGGER = getLogger(SERVICES_METRICS);
     private static final long TIME_PERIOD = 1;
     private static final TimeUnit TIME_UNITS = TimeUnit.MINUTES;
 
@@ -51,7 +51,7 @@ public class ReporterFactory {
          *
          * @return the local object
          */
-        public synchronized static ReporterFactory getInstance() {
+        public static synchronized ReporterFactory getInstance() {
             ReporterFactory local = factoryInstance;
             if (local == null) {
                 local = new ReporterFactory();

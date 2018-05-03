@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.unc.lib.dl.cdr.services.metrics;
+package edu.unc.lib.dl.metrics;
 
 import io.dropwizard.metrics5.MetricName;
 import io.dropwizard.metrics5.MetricRegistry;
@@ -35,16 +35,15 @@ public class TimerFactory {
 
     public static Timer createTimerForClass(Class<?> metricNameClass) {
         MetricName requests = MetricRegistry.name(metricNameClass, "requests", "number-and-duration");
-        Timer timer = registryService.getRegistry().timer(requests);
 
-        return timer;
+        return registryService.getRegistry().timer(requests);
+
     }
 
     public static Timer createTimerForClass(Class<?> metricNameClass, String... metricNames) {
         MetricName requests = MetricRegistry.name(metricNameClass, metricNames);
-        Timer timer = registryService.getRegistry().timer(requests);
 
-        return timer;
+        return registryService.getRegistry().timer(requests);
     }
 
 }
