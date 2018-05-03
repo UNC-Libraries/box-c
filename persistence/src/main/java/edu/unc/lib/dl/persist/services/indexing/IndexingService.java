@@ -19,8 +19,10 @@ import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.services.IndexingMessageSender;
 import edu.unc.lib.dl.util.IndexingActionType;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Service that manages reindexing of the repository
@@ -32,6 +34,8 @@ public class IndexingService {
     private AccessControlService aclService;
     private IndexingMessageSender indexingMessageSender;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(IndexingService.class);
+
     /**
      * Performs an in-place recursive reindexing of an object and its descendants
      * or a clean reindexing, as indicated by the request
@@ -41,16 +45,18 @@ public class IndexingService {
      * @param inplace whether in-place reindexing has been requested
      */
     public void reindexObjectAndChildren(AgentPrincipals agent, PID objectPid, Boolean inplace) {
-        aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
-                Permission.reindex);
-        if (inplace == null || inplace) {
-            // Add message to indexing queue
-            indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
-                    IndexingActionType.RECURSIVE_REINDEX);
-        } else {
-            // Add message to indexing queue
-            indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
-                    IndexingActionType.CLEAN_REINDEX);
+        try (Timer.Context context = timer.time()) {
+            aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
+                    Permission.reindex);
+            if (inplace == null || inplace) {
+                // Add message to indexing queue
+                indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
+                        IndexingActionType.RECURSIVE_REINDEX);
+            } else {
+                // Add message to indexing queue
+                indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
+                        IndexingActionType.CLEAN_REINDEX);
+            }
         }
     }
 
@@ -61,11 +67,13 @@ public class IndexingService {
      * @param objectPid the PID of the object to be reindexed
      */
     public void reindexObject(AgentPrincipals agent, PID objectPid) {
-        aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
-                Permission.reindex);
-        // Add message to indexing queue
-        indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
-                IndexingActionType.ADD);
+        try (Timer.Context context = timer.time()) {
+            aclService.assertHasAccess("User does not have permission to reindex", objectPid, agent.getPrincipals(),
+                    Permission.reindex);
+            // Add message to indexing queue
+            indexingMessageSender.sendIndexingOperation(agent.getUsername(), objectPid,
+                    IndexingActionType.ADD);
+        }
     }
 
     public void setAclService(AccessControlService aclService) {
