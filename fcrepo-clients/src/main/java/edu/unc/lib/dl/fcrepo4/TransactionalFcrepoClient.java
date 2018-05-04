@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import static org.apache.http.HttpHeaders.HOST;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,8 +45,7 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class TransactionalFcrepoClient extends FcrepoClient {
 
-    private static final String REST = "rest/";
-    private static final int REST_LENGTH = 4;
+    private static final String REST = "/rest";
     private static final List<String> RDF_MIMETYPES = Arrays.asList(new String[] {
             "application/sparql-update", "text/turtle", "text/rdf+n3", "application/n3",
             "text/n3", "application/rdf+xml", "application/n-triples", "application/ld+json"});
@@ -59,24 +56,13 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     private Pattern txBasePattern;
     private Pattern txRemovePattern;
 
-    // Host header value provided to fedora on all requests to produce a consistent base uri in responses.
-    private String hostHeader;
-    // Base URI for the fedora instance to make requests to
-    private String baseUri;
-
     protected TransactionalFcrepoClient(String username, String password, String host,
                 Boolean throwExceptionOnFailure, String baseUri) {
         super(username, password, host, throwExceptionOnFailure);
-        this.baseUri = baseUri;
-        txBasePattern = Pattern.compile(baseUri + TX_ID_REGEX);
+        String base = baseUri + (baseUri.endsWith("/") ? "" : "/");
+        txBasePattern = Pattern.compile(base + TX_ID_REGEX);
         txRemovePattern = Pattern.compile(TX_RESPONSE_REGEX);
     }
-
-    protected TransactionalFcrepoClient(String username, String password, String host,
-            Boolean throwExceptionOnFailure, String baseUri, String hostHeader) {
-        this(username, password, host, throwExceptionOnFailure, baseUri);
-        this.hostHeader = hostHeader;
-}
 
     /**
      * Build a TransactionalFcrepoClient
@@ -98,14 +84,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
     @Override
     public FcrepoResponse executeRequest(URI uri, HttpRequestBase request)
             throws FcrepoOperationFailedException {
-        // Remap request uri to expected fedora host uri if necessary
-        URI requestUri = rebaseUri(uri);
-        request.setURI(requestUri);
-
-        // Add Host header if provided
-        if (hostHeader != null) {
-            request.addHeader(HOST, hostHeader);
-        }
+        URI requestUri = uri;
 
         if (hasTxId()) {
             // Rewrite fedora resource URIs within RDF request body to include tx id
@@ -121,28 +100,6 @@ public class TransactionalFcrepoClient extends FcrepoClient {
             return rewriteResponseBodyUris(resp);
         }
         return super.executeRequest(requestUri, request);
-    }
-
-    /**
-     * Rebase fedora URI to the domain expected by this client.
-     *
-     * Necessary for use in conjunction with host header to remap from provided
-     * host base to the actual URI of fedora instance.
-     *
-     * @param uri
-     * @return
-     */
-    private URI rebaseUri(URI uri) {
-        URI requestUri = uri;
-        String uriString = uri.toString();
-        if (!uriString.startsWith(baseUri)) {
-            int index = uriString.indexOf(REST);
-            if (index == -1) {
-                throw new IllegalArgumentException("Requested URI not within allowed domain");
-            }
-            requestUri = URI.create(URIUtil.join(baseUri, uriString.substring(index + REST_LENGTH)));
-        }
-        return requestUri;
     }
 
     /**
@@ -179,7 +136,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
      */
     private URI rewriteUri(URI rescUri) {
         // Transaction uri may be based on host header, rebase to actual fedora base uri
-        URI txUri = rebaseUri(FedoraTransaction.txUriThread.get());
+        URI txUri = FedoraTransaction.txUriThread.get();
         String rescId = rescUri.toString();
         // locate the rest component of the path, everything after is the
         // relative path to the resource
@@ -251,8 +208,6 @@ public class TransactionalFcrepoClient extends FcrepoClient {
 
         private String baseUri;
 
-        private String hostHeader;
-
         public TransactionalFcrepoClientBuilder(String baseUri) {
             this.baseUri = baseUri;
         }
@@ -306,18 +261,6 @@ public class TransactionalFcrepoClient extends FcrepoClient {
         }
 
         /**
-         * Add Host header to this client
-         *
-         * @param hostHeader value to use as Host header on requests made by
-         *            this client.
-         * @return this builder
-         */
-        public TransactionalFcrepoClientBuilder hostHeader(final String hostHeader) {
-            this.hostHeader = hostHeader;
-            return this;
-        }
-
-        /**
          * Get the client
          *
          * @return the client constructed by this builder
@@ -325,7 +268,7 @@ public class TransactionalFcrepoClient extends FcrepoClient {
         @Override
         public TransactionalFcrepoClient build() {
             return new TransactionalFcrepoClient(authUser, authPassword, authHost,
-                    throwExceptionOnFailure, baseUri, hostHeader);
+                    throwExceptionOnFailure, baseUri);
         }
     }
 }
