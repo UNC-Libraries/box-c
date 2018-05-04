@@ -100,6 +100,7 @@
         <javax.servlet.api.version>3.1.0</javax.servlet.api.version>
         <javax.servlet.jsp.version>2.3.1</javax.servlet.jsp.version>
         <javax.servlet.jstl.version>1.2</javax.servlet.jstl.version>
+        <jdom.version>2.0.6</jdom.version>
     </properties>
 
     <distributionManagement>
@@ -539,7 +540,7 @@
             <dependency>
                 <groupId>org.jdom</groupId>
                 <artifactId>jdom2</artifactId>
-                <version>2.0.6</version>
+                <version>${jdom.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-codec</groupId>
