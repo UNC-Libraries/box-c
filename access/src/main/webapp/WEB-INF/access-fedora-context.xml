@@ -31,6 +31,7 @@
     
     <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
+        <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
     </bean>
 
     <bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">

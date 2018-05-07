@@ -122,6 +122,19 @@
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
     </bean>
     
+    <bean id="unrestrictedSolrAccessRestrictionUtil" class="edu.unc.lib.dl.search.solr.util.AccessRestrictionUtil">
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="disablePermissionFiltering" value="true" />
+    </bean>
+    
+    <bean id="unrestrictedSolrSearchService" class="edu.unc.lib.dl.search.solr.service.SolrSearchService"
+        init-method="initializeSolrServer">
+        <property name="solrSettings" ref="solrSettings" />
+        <property name="searchSettings" ref="searchSettings" />
+        <property name="facetFieldUtil" ref="facetFieldUtil" />
+        <property name="accessRestrictionUtil" ref="unrestrictedSolrAccessRestrictionUtil" />
+    </bean>
+    
      <bean id="pathFactory" class="edu.unc.lib.dl.search.solr.service.ObjectPathFactory">
         <property name="search" ref="queryLayer" />
         <property name="cacheSize" value="2000" />
