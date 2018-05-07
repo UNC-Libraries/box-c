@@ -21,6 +21,7 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.REPOSITORY_ROOT_ID;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getBaseUri;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.getContentBase;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
 
 import java.net.URI;
 import java.util.regex.Matcher;
@@ -181,10 +182,7 @@ public class PIDs {
 
         if (expand) {
             // Expand the id into chunked subfolders
-            for (int i = 0; i < HASHED_PATH_DEPTH; i++) {
-                builder.append(id.substring(i * HASHED_PATH_SIZE, i * HASHED_PATH_SIZE + HASHED_PATH_SIZE))
-                        .append('/');
-            }
+            builder.append(idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE));
         }
 
         builder.append(id);
