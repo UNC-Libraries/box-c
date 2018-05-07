@@ -29,17 +29,10 @@ public class FcrepoClientFactory {
 
     private String baseUri;
 
-    private String hostHeader;
-
     private static FcrepoClientFactory instance;
 
     private FcrepoClientFactory(String base) {
         baseUri = base;
-    }
-
-    private FcrepoClientFactory(String base, String hostHeader) {
-        baseUri = base;
-        this.hostHeader = hostHeader;
     }
 
     /**
@@ -52,26 +45,12 @@ public class FcrepoClientFactory {
      *         previously constructed factory.
      */
     public static FcrepoClientFactory factory(String baseUri) {
-        return factory(baseUri, null);
-    }
-
-    /**
-     * Returns a FcrepoClientFactory if the factory has not been previously
-     * constructed, otherwise the existing factory will be returned.
-     *
-     * @param baseUri base uri for the repository. Required.
-     * @param hostHeader value to provide as Host header on all requests to
-     *            fedora. Optional.
-     * @return a new FcrepoClientFactory with the given baseUri or the
-     *         previously constructed factory.
-     */
-    public static FcrepoClientFactory factory(String baseUri, String hostHeader) {
         if (baseUri == null) {
             throw new IllegalArgumentException("A base URI is required to construct a factory");
         }
 
         if (instance == null) {
-            instance = new FcrepoClientFactory(baseUri, hostHeader);
+            instance = new FcrepoClientFactory(baseUri);
         } else {
             log.warn("Requested to construct a factory when a previous instance has "
                     + "already been initialized (current base uri: {0}, requested {1}), ignoring.",
@@ -103,7 +82,6 @@ public class FcrepoClientFactory {
                 .credentials(user, password)
                 .authScope(host)
                 .throwExceptionOnFailure()
-                .hostHeader(hostHeader)
                 .build();
     }
 
@@ -115,7 +93,6 @@ public class FcrepoClientFactory {
     public FcrepoClient makeClient() {
         return TransactionalFcrepoClient.client(baseUri)
                 .throwExceptionOnFailure()
-                .hostHeader(hostHeader)
                 .build();
     }
 }

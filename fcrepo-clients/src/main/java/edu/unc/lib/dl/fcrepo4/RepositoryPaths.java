@@ -127,6 +127,38 @@ public class RepositoryPaths {
     }
 
     /**
+     * Returns hashed container container path for id,
+     * Prepend id with defined levels of hashed containers based on the values.
+     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would return
+     *    9b/d8/b6
+     *
+     * @param id
+     * @return
+     */
+    /**
+     * Returns hashed container path for id.
+     *
+     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 with pathDepth = 3 and chunkLength = 2 returns
+     *    9b/d8/b6
+     *
+     * @param id id to generate hashed path for.
+     * @param pathDepth number of hashed levels to add to the path
+     * @param hashLength number of characters per level
+     * @return hash container path for id
+     */
+    public static String idToPath(String id, int pathDepth, int hashLength) {
+        StringBuilder sb = new StringBuilder();
+
+        // Expand the id into chunked subfolders
+        for (int i = 0; i < pathDepth; i++) {
+            sb.append(id.substring(i * hashLength, i * hashLength + hashLength))
+                    .append('/');
+        }
+
+        return sb.toString();
+    }
+
+    /**
      * Initializes paths from repository base uri
      *
      * @param uri base uri for repository

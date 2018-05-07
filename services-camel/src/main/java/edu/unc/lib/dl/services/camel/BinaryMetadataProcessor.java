@@ -15,6 +15,7 @@
  */
 package edu.unc.lib.dl.services.camel;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.rdf.Ebucore.hasMimeType;
 import static edu.unc.lib.dl.rdf.Premis.hasMessageDigest;
 import static edu.unc.lib.dl.services.camel.util.CdrFcrepoHeaders.CdrBinaryChecksum;
@@ -36,6 +37,7 @@ import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
@@ -45,13 +47,10 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  *
  */
 public class BinaryMetadataProcessor implements Processor {
-
     private final int BINARY_PATH_DEPTH = 3;
-    private final int BINARY_PATH_LENGTH = 2;
-
     private String baseBinaryPath;
 
-    protected BinaryMetadataProcessor(String baseBinaryPath) {
+    public BinaryMetadataProcessor(String baseBinaryPath) {
         this.baseBinaryPath = baseBinaryPath;
         if (!baseBinaryPath.endsWith("/")) {
             this.baseBinaryPath += "/";
@@ -76,7 +75,8 @@ public class BinaryMetadataProcessor implements Processor {
 
                 String[] binaryFcrepoChecksumSplit = binaryFcrepoChecksum.split(":");
 
-                String binaryPath = idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, BINARY_PATH_LENGTH);
+                String binaryPath = RepositoryPaths
+                        .idToPath(binaryFcrepoChecksumSplit[2], BINARY_PATH_DEPTH, HASHED_PATH_SIZE);
 
                 String binaryFullPath = new StringJoiner("")
                     .add(baseBinaryPath)
@@ -96,24 +96,4 @@ public class BinaryMetadataProcessor implements Processor {
             resources.close();
         }
     }
-
-    /**
-     * Prepend id with defined levels of hashed containers based on the values.
-     * For example, 9bd8b60e-93a2-4b66-8f0a-b62338483b39 would become
-     *    9b/d8/b6/9bd8b60e-93a2-4b66-8f0a-b62338483b39
-     *
-     * @param id
-     * @return
-     */
-    private String idToPath(String id, int pathDepth, int length) {
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < pathDepth; i++) {
-            sb.append(id.substring(i * length, i * length + length))
-                    .append('/');
-        }
-
-        return sb.toString();
-    }
-
 }

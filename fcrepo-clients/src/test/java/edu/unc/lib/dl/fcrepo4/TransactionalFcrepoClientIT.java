@@ -48,12 +48,8 @@ import edu.unc.lib.dl.util.RDFModelUtil;
 @ContextConfiguration({"/spring-test/test-fedora-container.xml"})
 public class TransactionalFcrepoClientIT {
 
-    private static final int BASE_PORT = 48085;
-    private static final String BASE_PATH = "http://localhost:48085/rest/";
+    private static final String BASE_PATH = "http://localhost:48085/rest";
     private static final URI BASE_URI = URI.create(BASE_PATH);
-
-    private static final String HOST_HEADER = "boxy.example.com";
-    private static final String ALT_PATH = "http://boxy.example.com:123/rest/";
 
     private TransactionalFcrepoClient fcrepoClient;
 
@@ -98,64 +94,6 @@ public class TransactionalFcrepoClientIT {
     }
 
     @Test
-    public void testRequestWithHostParam() throws Exception {
-        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
-                .hostHeader(HOST_HEADER)
-                .build();
-
-        URI objUri;
-        try (FcrepoResponse response = fcrepoClient.post(BASE_URI).perform()) {
-            objUri = response.getLocation();
-        }
-
-        assertEquals("Response must use provided Host.",
-                HOST_HEADER, objUri.getHost());
-        assertEquals("Response must not specify port", -1, objUri.getPort());
-    }
-
-    @Test
-    public void testRequestWithRebasedUri() throws Exception {
-        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
-                .build();
-
-        URI offBaseUri = URI.create(ALT_PATH);
-
-        URI objUri;
-        try (FcrepoResponse response = fcrepoClient.post(offBaseUri).perform()) {
-            objUri = response.getLocation();
-        }
-
-        assertEquals("Response must use real host", "localhost", objUri.getHost());
-        assertEquals("Response must use real port", BASE_PORT, objUri.getPort());
-    }
-
-    @Test
-    public void testRequestWithRebasedHostAndTx() throws Exception {
-        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
-                .hostHeader(HOST_HEADER)
-                .build();
-
-        txManager.setClient(fcrepoClient);
-
-        FedoraTransaction tx = txManager.startTransaction();
-        String txPath = tx.getTxUri().toString();
-
-        String requestPath = txPath.replace(BASE_PATH, ALT_PATH);
-        URI offBaseUri = URI.create(requestPath);
-
-        URI objUri;
-        try (FcrepoResponse response = fcrepoClient.post(offBaseUri).perform()) {
-            objUri = response.getLocation();
-        } finally {
-            tx.close();
-        }
-
-        assertEquals("Response must use provided Host.",
-                HOST_HEADER, objUri.getHost());
-        assertEquals("Response must not specify port", -1, objUri.getPort());
-    }
-
-    @Test
     public void testPutTriplesWithTx() throws Exception {
         fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
                 .build();
@@ -187,49 +125,6 @@ public class TransactionalFcrepoClientIT {
         try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
             assertEquals(HttpStatus.SC_OK, response.getStatusCode());
         }
-    }
-
-    /*
-     * Verify interactions between transaction uri rewrite and repository base
-     * rewrite to support host header
-     */
-    @Test
-    public void testPutTriplesWithTxAndRebase() throws Exception {
-        fcrepoClient = TransactionalFcrepoClient.client(BASE_PATH)
-                .hostHeader(HOST_HEADER)
-                .build();
-
-        txManager.setClient(fcrepoClient);
-
-        PID pid = PIDs.get(UUID.randomUUID().toString());
-        String altPath = pid.getRepositoryPath().replace(BASE_PATH, ALT_PATH);
-        URI altUri = URI.create(altPath);
-
-        Model model = ModelFactory.createDefaultModel();
-        Resource resc = model.getResource(altPath);
-        resc.addLiteral(DC.title, "My Title");
-
-        FedoraTransaction tx = txManager.startTransaction();
-        createAndVerifyObjectWithBody(altUri, model);
-        try {
-            tx.cancel();
-        } catch (TransactionCancelledException e) {
-            // Expected
-        }
-        // Verify that the created resource went away with transaction
-        try (FcrepoResponse response = fcrepoClient.get(altUri).perform()) {
-            assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusCode());
-        }
-
-        FedoraTransaction tx2 = txManager.startTransaction();
-        URI objUri = createAndVerifyObjectWithBody(altUri, model);
-        tx2.close();
-
-        try (FcrepoResponse response = fcrepoClient.get(pid.getRepositoryUri()).perform()) {
-            assertEquals(HttpStatus.SC_OK, response.getStatusCode());
-        }
-        assertEquals("Response must use provided Host.",
-                HOST_HEADER, objUri.getHost());
     }
 
     private URI createAndVerifyObjectWithBody(URI path, Model model) throws Exception {

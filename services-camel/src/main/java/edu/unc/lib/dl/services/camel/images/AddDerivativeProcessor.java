@@ -15,14 +15,18 @@
  */
 package edu.unc.lib.dl.services.camel.images;
 
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.fcrepo.camel.FcrepoHeaders.FCREPO_URI;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.TimeUnit;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import org.apache.camel.Exchange;
@@ -32,77 +36,59 @@ import org.apache.camel.component.exec.ExecResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.unc.lib.dl.fcrepo4.BinaryObject;
-import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
-import edu.unc.lib.dl.rdf.PcdmUse;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  * Adds a derivative file to an existing file object
  *
  * @author bbpennel
  * @author harring
+ * @author lfarrell
  *
  */
 public class AddDerivativeProcessor implements Processor {
     private static final Logger log = LoggerFactory.getLogger(AddDerivativeProcessor.class);
 
-    private final RepositoryObjectLoader repoObjLoader;
-    private final String slug;
     private final String fileExtension;
-    private final String mimetype;
+    private final String derivativeBasePath;
 
-    private final int maxRetries;
-    private final long retryDelay;
-
-    public AddDerivativeProcessor(RepositoryObjectLoader repoObjLoader, String slug, String fileExtension,
-            String mimetype, int maxRetries, long retryDelay) {
-        this.repoObjLoader = repoObjLoader;
-        this.slug = slug;
+    public AddDerivativeProcessor(String fileExtension, String derivativeBasePath) {
         this.fileExtension = fileExtension;
-        this.maxRetries = maxRetries;
-        this.retryDelay = retryDelay;
-        this.mimetype = mimetype;
+        this.derivativeBasePath = derivativeBasePath;
     }
 
     @Override
     public void process(Exchange exchange) throws Exception {
         Message in = exchange.getIn();
         String binaryUri = (String) in.getHeader(FCREPO_URI);
-        int retryAttempt = 0;
+        String binaryId = PIDs.get(binaryUri).getId();
+        String derivativePath = RepositoryPaths
+                .idToPath(binaryId, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
         final ExecResult result = (ExecResult) in.getBody();
 
-        String derivativePath = new BufferedReader(new InputStreamReader(result.getStdout()))
+        String derivativeTmpPath = new BufferedReader(new InputStreamReader(result.getStdout()))
                 .lines().collect(Collectors.joining("\n"));
+        derivativeTmpPath += "." + fileExtension;
 
-        while (true) {
-            try {
-                ingestFile(binaryUri, mimetype, derivativePath);
-                break;
-            } catch (Exception e) {
-                if (retryAttempt == maxRetries) {
-                    throw e;
-                }
+        String derivativeFinalRelative = derivativePath + binaryId + "." + fileExtension;
+        Path derivativeFinalPath = Paths.get(derivativeBasePath,  derivativeFinalRelative);
 
-                retryAttempt++;
-                log.info("Unable to add derivative for {} from {}. Retrying, attempt {}",
-                        binaryUri, derivativePath, retryAttempt);
-                TimeUnit.MILLISECONDS.sleep(retryDelay);
-            }
-        }
+        moveFile(derivativeTmpPath, derivativeFinalPath);
+        log.info("Adding derivative for {} from {}", binaryUri, derivativeFinalPath);
     }
 
-    private void ingestFile(String binaryUri, String binaryMimeType, String derivativePath)
-            throws FileNotFoundException {
-        String filename = derivativePath.substring(derivativePath.lastIndexOf('/') + 1);
-        InputStream binaryStream = new FileInputStream(derivativePath + "." + fileExtension);
+    private void moveFile(String derivativeTmpPath, Path derivativeFinalPath)
+            throws IOException {
+        File derivative = derivativeFinalPath.toFile();
+        File parentDir = derivative.getParentFile();
 
-        BinaryObject binary = repoObjLoader.getBinaryObject(PIDs.get(binaryUri));
-        FileObject parent = (FileObject) binary.getParent();
-        parent.addDerivative(slug, binaryStream, filename, binaryMimeType, PcdmUse.ThumbnailImage);
+        if (parentDir != null && !parentDir.mkdirs()) {
+            throw new IOException("Failed to create parent directories for " + derivative);
+        }
 
-        log.info("Adding derivative for {} from {}", binaryUri, derivativePath);
+        Files.move(Paths.get(derivativeTmpPath),
+                derivativeFinalPath, REPLACE_EXISTING);
     }
 }

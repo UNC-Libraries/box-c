@@ -31,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 
+import edu.unc.lib.dl.test.TestHelper;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.jena.rdf.model.Model;
@@ -61,14 +62,15 @@ public class BinaryMetadataProcessorTest {
     @Rule
     public final TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    private static final String FEDORA_BASE = "http://example.com/";
+    private static final String FEDORA_BASE = "http://example.com/rest/";
 
     private String binaryBase;
 
-    private static final String RESC_ID = FEDORA_BASE + "de75d811-9e0f-4b1f-8631-2060ab3580cc";
+    private static final String RESC_ID = FEDORA_BASE + "content/de/75/d8/11/de75d811-9e0f-4b1f-8631-2060ab3580cc";
 
     @Mock
     private Exchange exchange;
+
     @Mock
     private Message message;
 
@@ -76,11 +78,14 @@ public class BinaryMetadataProcessorTest {
     public void init() throws Exception {
         initMocks(this);
 
+        TestHelper.setContentBase(FEDORA_BASE);
+
         binaryBase = tmpFolder.newFolder().getAbsolutePath();
 
         processor = new BinaryMetadataProcessor(binaryBase);
 
         when(exchange.getIn()).thenReturn(message);
+        when(exchange.getIn().getHeader("CamelFcrepoUri")).thenReturn(RESC_ID);
     }
 
     @Test
