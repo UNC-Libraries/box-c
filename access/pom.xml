@@ -94,6 +94,27 @@
                     </webResources>
                 </configuration>
             </plugin>
+            
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <!--Set reuseForks=false due to the need for different instances of the -->
+                    <!--Singleton ServletContainerAuthenticationProvider -->
+                    <reuseForks>false</reuseForks>
+                    <argLine>${jacoco.agent.it.arg}</argLine>
+                    <systemPropertyVariables>
+                        <project.build.outputDirectory>${project.build.outputDirectory}</project.build.outputDirectory>
+                    </systemPropertyVariables>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -225,6 +246,18 @@
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>metadata</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>fcrepo-clients</artifactId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
 
         <!-- CDR -->
         <dependency>
@@ -251,6 +284,88 @@
             <groupId>edu.unc.lib.cdr</groupId>
             <artifactId>solr-search</artifactId>
             <version>${cdr.version}</version>
+        </dependency>
+        <!-- integration testing -->
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-http-commons</artifactId>
+            <version>${fcrepo4.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-lang</groupId>
+                    <artifactId>commons-lang</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-auth-common</artifactId>
+            <version>${fcrepo4.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http-servlet</artifactId>
+            <version>${grizzly.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-spring3</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.test-framework.providers</groupId>
+            <artifactId>jersey-test-framework-provider-grizzly2</artifactId>
+            <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-client-java</artifactId>
+            <version>${mock.server.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>${mock.server.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-kernel-modeshape</artifactId>
+            <version>${fcrepo4.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-http-api</artifactId>
+            <version>${fcrepo4.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-http-commons</artifactId>
+            <version>${fcrepo4.version}</version>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.fcrepo</groupId>
+            <artifactId>fcrepo-auth-common</artifactId>
+            <version>${fcrepo4.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

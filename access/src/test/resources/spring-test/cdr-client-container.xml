@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder />
+    
+    <bean id="baseAddress" class="java.lang.String">
+        <constructor-arg
+            value="http://localhost:48085/rest/" />
+    </bean>
+    
+    <bean id="fcrepoClientFactory" class="edu.unc.lib.dl.fcrepo4.FcrepoClientFactory" factory-method="factory">
+        <constructor-arg ref="baseAddress" />
+    </bean>
+    
+    <bean id="fcrepoClient" class="org.fcrepo.client.FcrepoClient"
+            factory-bean="fcrepoClientFactory" factory-method="makeClient">
+    </bean>
+    
+    <bean id="ldpContainerFactory" class="edu.unc.lib.dl.fcrepo4.LdpContainerFactory">
+        <property name="client" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="repositoryPIDMinter" class="edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter"></bean>
+    
+    <bean id="fedoraSparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+
+    <bean id="repositoryObjectFactory" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory">
+        <property name="client" ref="fcrepoClient" />
+        <property name="ldpFactory" ref="ldpContainerFactory" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="sparqlUpdateService" ref="fedoraSparqlUpdateService" />
+    </bean>
+    
+    <bean id="cacheTimeToLive" class="java.lang.Long">
+        <constructor-arg value="100" />
+    </bean>
+    
+    <bean id="cacheMaxSize" class="java.lang.Long">
+        <constructor-arg value="5" />
+    </bean>
+    
+    <bean id="repositoryObjectLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader" init-method="init">
+        <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+        <property name="cacheTimeToLive" ref="cacheTimeToLive" />
+        <property name="cacheMaxSize" ref="cacheMaxSize" />
+    </bean>
+    
+    <bean id="repositoryObjectDriver" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectDriver">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="pidMinter" ref="repositoryPIDMinter" />
+    </bean>
+
+    <bean id="queryModel" class="org.apache.jena.rdf.model.ModelFactory" factory-method="createDefaultModel">
+    </bean>
+    
+    <bean id="sparqlQueryService" class="edu.unc.lib.dl.sparql.JenaSparqlQueryServiceImpl">
+        <constructor-arg ref="queryModel" />
+    </bean>
+    
+    <bean id="repositoryObjectCacheLoader" class="edu.unc.lib.dl.fcrepo4.RepositoryObjectCacheLoader">
+        <property name="client" ref="fcrepoClient" />
+        <property name="repositoryObjectDriver" ref="repositoryObjectDriver" />
+        <property name="repositoryObjectFactory" ref="repositoryObjectFactory" />
+    </bean>
+    
+    <bean id="transactionManager" class="edu.unc.lib.dl.fcrepo4.TransactionManager">
+        <property name="client" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="sparqlUpdateService" class="edu.unc.lib.dl.sparql.FedoraSparqlUpdateService">
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
+    <bean id="analyticsTracker" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil" />
+    </bean>
+    
+    <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
+    </bean>
+</beans>
