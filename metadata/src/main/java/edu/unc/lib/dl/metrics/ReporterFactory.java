@@ -25,8 +25,7 @@ import io.dropwizard.metrics5.ScheduledReporter;
 import io.dropwizard.metrics5.Slf4jReporter;
 
 /**
- * A factory for creating a metrics reporter for the services application. Both the factory
- * and the reporter are singletons.
+ * A factory for creating a metrics reporter. Each created reporter is a singleton.
  *
  * @author harring
  *
@@ -34,42 +33,27 @@ import io.dropwizard.metrics5.Slf4jReporter;
 public class ReporterFactory {
 
     private static final RegistryService registryService = RegistryService.getInstance();
-    private static final String SERVICES_METRICS = "services-metrics";
-    private static volatile ReporterFactory factoryInstance = null;
+    private static final String METRICS = System.getProperty("metrics.report.name");
     private static ScheduledReporter reporterInstance = null;
 
-    private static final Logger LOGGER = getLogger(SERVICES_METRICS);
-    private static final long TIME_PERIOD = 1;
-    private static final TimeUnit TIME_UNITS = TimeUnit.MINUTES;
+    private static final Logger LOGGER = getLogger(METRICS);
+    private static final long TIME_PERIOD = Long.parseLong(System.getProperty("metrics.report.time"));
+    private static final TimeUnit TIME_UNITS = TimeUnit.SECONDS;
 
     private ReporterFactory() {
 
     }
 
-        /**
-         * Create the factory instance
-         *
-         * @return the local object
-         */
-        public static synchronized ReporterFactory getInstance() {
-            ReporterFactory local = factoryInstance;
-            if (local == null) {
-                local = new ReporterFactory();
-                factoryInstance = local;
-            }
-            return local;
-        }
-
-        /**
-         * Get the metrics reporter for this application, or create a new one if none exists.
-         *
-         * @return the slf4j metrics reporter for this application
-         */
+    /**
+     * Get the metrics reporter for this application, or create a new one if none exists.
+     *
+     * @return the slf4j metrics reporter for this application
+     */
     public static ScheduledReporter getOrCreateReporter() {
         ScheduledReporter reporter = reporterInstance;
         if (reporter == null) {
             reporter = Slf4jReporter.forRegistry(registryService.getRegistry())
-                    .prefixedWith(SERVICES_METRICS)
+                    .prefixedWith(METRICS)
                     .outputTo(LOGGER)
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)

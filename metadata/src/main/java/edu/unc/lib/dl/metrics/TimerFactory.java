@@ -33,6 +33,12 @@ public class TimerFactory {
 
     }
 
+    /**
+     * Returns a timer for the given class, or creates a new one if none exists
+     *
+     * @param metricNameClass the class to create a timer for
+     * @return the newly created timer
+     */
     public static Timer createTimerForClass(Class<?> metricNameClass) {
         MetricName requests = MetricRegistry.name(metricNameClass, "requests", "number-and-duration");
 
@@ -40,6 +46,13 @@ public class TimerFactory {
 
     }
 
+    /**
+     * Creates a timer for the given class registered under the specified name, or creates a new one if none exists
+     *
+     * @param metricNameClass the class to create a timer for
+     * @param metricNames a fully specified metric name for the timer
+     * @return the timer
+     */
     public static Timer createTimerForClass(Class<?> metricNameClass, String... metricNames) {
         MetricName requests = MetricRegistry.name(metricNameClass, metricNames);
 

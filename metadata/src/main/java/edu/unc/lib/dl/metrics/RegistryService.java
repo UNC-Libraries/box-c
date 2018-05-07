@@ -41,14 +41,12 @@ public final class RegistryService {
      * @return the local object
      */
     public static synchronized RegistryService getInstance() {
-        RegistryService local = instance;
-        if (local == null) {
-            local = new RegistryService();
-            instance = local;
+        if (instance == null) {
+            instance = new RegistryService();
             // associates a reporter with the current registry
             ReporterFactory.getOrCreateReporter();
         }
-        return local;
+        return instance;
     }
 
     /**
@@ -56,7 +54,6 @@ public final class RegistryService {
      *
      * @return the current metrics registry
      */
-    @SuppressWarnings("static-method")
     public MetricRegistry getRegistry() {
         return REGISTRY;
     }
