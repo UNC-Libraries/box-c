@@ -28,8 +28,6 @@ import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -41,6 +39,9 @@ import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+
+import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fcrepo4.RepositoryPaths;
 
 /**
  * Extracts fulltext from documents and adds it as a derivative file on existing file object
@@ -80,8 +81,9 @@ public class FulltextProcessor implements Processor {
         File derivative = derivativePath.toFile();
         File parentDir = derivative.getParentFile();
 
-        if (parentDir != null) {
-            parentDir.mkdirs();
+        // Create missing parent directories if necessary
+        if (parentDir != null && !parentDir.mkdirs()) {
+            throw new IOException("Failed to create parent directories for " + derivativePath);
         }
 
         try (PrintWriter fulltext = new PrintWriter(derivativePath.toString())) {

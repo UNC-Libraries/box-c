@@ -50,7 +50,7 @@ public class BinaryMetadataProcessor implements Processor {
     private final int BINARY_PATH_DEPTH = 3;
     private String baseBinaryPath;
 
-    protected BinaryMetadataProcessor(String baseBinaryPath) {
+    public BinaryMetadataProcessor(String baseBinaryPath) {
         this.baseBinaryPath = baseBinaryPath;
         if (!baseBinaryPath.endsWith("/")) {
             this.baseBinaryPath += "/";
