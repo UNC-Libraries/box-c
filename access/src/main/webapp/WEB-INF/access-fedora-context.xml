@@ -140,4 +140,9 @@
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
     </bean>
+    
+    <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="accessControlService" ref="aclService" />
+    </bean>
 </beans>

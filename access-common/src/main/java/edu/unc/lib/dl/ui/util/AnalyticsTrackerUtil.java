@@ -124,6 +124,13 @@ public class AnalyticsTrackerUtil {
         trackerThread.start();
     }
 
+    /**
+     * @param solrSearchService the solrSearchService to set
+     */
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
+
     public static class AnalyticsUserData {
         public String uip;
         public String cid;

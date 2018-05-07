@@ -233,6 +233,8 @@
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="accessControlService" ref="aclService" />
     </bean>
     
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">
