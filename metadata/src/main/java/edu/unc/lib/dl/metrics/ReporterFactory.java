@@ -33,11 +33,11 @@ import io.dropwizard.metrics5.Slf4jReporter;
 public class ReporterFactory {
 
     private static final RegistryService registryService = RegistryService.getInstance();
-    private static final String METRICS = System.getProperty("metrics.report.name");
+    private static final String METRICS = System.getProperty("metrics.report.name", "metrics");
     private static ScheduledReporter reporterInstance = null;
 
     private static final Logger LOGGER = getLogger(METRICS);
-    private static final long TIME_PERIOD = Long.parseLong(System.getProperty("metrics.report.time"));
+    private static final long TIME_PERIOD = Long.parseLong(System.getProperty("metrics.report.time", "60"));
     private static final TimeUnit TIME_UNITS = TimeUnit.SECONDS;
 
     private ReporterFactory() {
