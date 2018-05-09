@@ -53,12 +53,14 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.DateTimeUtil;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Job which performs a single move operation to transfer a list of objects from
@@ -90,6 +92,8 @@ public class MoveObjectsJob implements Runnable {
 
     private Map<String, Collection<PID>> sourceToPid;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(MoveObjectsJob.class);
+
     public MoveObjectsJob(AgentPrincipals agent, PID destination, List<PID> pids) {
         this.agent = agent;
         this.destinationPid = destination;
@@ -102,26 +106,27 @@ public class MoveObjectsJob implements Runnable {
     public void run() {
         log.debug("Performing move for agent {} of {} objects to destination {}",
                 agent.getUsername(), pids.size(), destinationPid);
+        try (Timer.Context context = timer.time()) {
+            // Check that agent has permission to add items to destination
+            aclService.assertHasAccess("Agent " + agent.getUsername() + " does not have permission"
+                    + " to move objects into destination " + destinationPid,
+                    destinationPid, agent.getPrincipals(), Permission.move);
 
-        // Check that agent has permission to add items to destination
-        aclService.assertHasAccess("Agent " + agent.getUsername() + " does not have permission"
-                + " to move objects into destination " + destinationPid,
-                destinationPid, agent.getPrincipals(), Permission.move);
+            retrieveDestinationContainer();
 
-        retrieveDestinationContainer();
-
-        FedoraTransaction tx = transactionManager.startTransaction();
-        try {
-            for (PID movePid : pids) {
-                moveObject(movePid);
+            FedoraTransaction tx = transactionManager.startTransaction();
+            try {
+                for (PID movePid : pids) {
+                    moveObject(movePid);
+                }
+            } catch (Exception e) {
+                tx.cancel(e);
+            } finally {
+                tx.close();
             }
-        } catch (Exception e) {
-            tx.cancel(e);
-        } finally {
-            tx.close();
-        }
 
-        reportCompleted();
+            reportCompleted();
+        }
     }
 
     private void reportCompleted() {

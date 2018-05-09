@@ -26,8 +26,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.services.OperationsMessageSender;
+import io.dropwizard.metrics5.Timer;
 
 
 /**
@@ -42,6 +44,8 @@ public class SetAsPrimaryObjectService {
     private RepositoryObjectLoader repoObjLoader;
     private OperationsMessageSender operationsMessageSender;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(SetAsPrimaryObjectService.class);
+
     /**
      * Sets file object with the given pid as the primary object for its work using the agent principals provided.
      *
@@ -49,29 +53,30 @@ public class SetAsPrimaryObjectService {
      * @param fileObjPid the file object to be set as primary object
      */
     public void setAsPrimaryObject(AgentPrincipals agent, PID fileObjPid) {
+        try (Timer.Context context = timer.time()) {
+            aclService.assertHasAccess("Insufficient privileges to set " + fileObjPid.getUUID() + " as primary object",
+                    fileObjPid, agent.getPrincipals(), editResourceType);
 
-        aclService.assertHasAccess("Insufficient privileges to set " + fileObjPid.getUUID() + " as primary object",
-                fileObjPid, agent.getPrincipals(), editResourceType);
+            RepositoryObject repoObj = repoObjLoader.getRepositoryObject(fileObjPid);
 
-        RepositoryObject repoObj = repoObjLoader.getRepositoryObject(fileObjPid);
+            if (!(repoObj instanceof FileObject)) {
+                throw new InvalidOperationForObjectType("Cannot set " + fileObjPid.getUUID()
+                        + " as primary object, since objects of type " + repoObj.getClass().getName()
+                        + " are not eligible.");
+            }
 
-        if (!(repoObj instanceof FileObject)) {
-            throw new InvalidOperationForObjectType("Cannot set " + fileObjPid.getUUID()
-                    + " as primary object, since objects of type " + repoObj.getClass().getName()
-                    + " are not eligible.");
+            RepositoryObject parent = repoObj.getParent();
+            if (!(parent instanceof WorkObject)) {
+                throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
+                + " cannot have a primary object.");
+            }
+            WorkObject work = (WorkObject) parent;
+            work.setPrimaryObject(fileObjPid);
+
+            // Send message that the action completed
+            operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(),
+                    Arrays.asList(parent.getPid(), fileObjPid));
         }
-
-        RepositoryObject parent = repoObj.getParent();
-        if (!(parent instanceof WorkObject)) {
-            throw new InvalidOperationForObjectType("Object of type " + parent.getClass().getName()
-            + " cannot have a primary object.");
-        }
-        WorkObject work = (WorkObject) parent;
-        work.setPrimaryObject(fileObjPid);
-
-        // Send message that the action completed
-        operationsMessageSender.sendSetAsPrimaryObjectOperation(agent.getUsername(),
-                Arrays.asList(parent.getPid(), fileObjPid));
     }
 
     /**

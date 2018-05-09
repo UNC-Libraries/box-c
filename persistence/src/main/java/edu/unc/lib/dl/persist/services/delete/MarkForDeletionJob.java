@@ -19,6 +19,7 @@ import static edu.unc.lib.dl.acl.util.Permission.markForDeletion;
 import static edu.unc.lib.dl.acl.util.Permission.markForDeletionUnit;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
+
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
@@ -26,9 +27,11 @@ import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.model.InvalidOperationForObjectType;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Operation to mark a repository content object as deleted
@@ -45,6 +48,8 @@ public class MarkForDeletionJob implements Runnable {
     private AgentPrincipals agent;
     private PID pid;
 
+    private static final Timer timer = TimerFactory.createTimerForClass(MarkForDeletionJob.class);
+
 
     public MarkForDeletionJob(PID pid, AgentPrincipals agent,
             RepositoryObjectLoader repositoryObjectLoader, SparqlUpdateService sparqlUpdateService,
@@ -58,29 +63,30 @@ public class MarkForDeletionJob implements Runnable {
 
     @Override
     public void run() {
-        aclService.assertHasAccess("Insufficient privileges to delete object " + pid.getUUID(),
-                pid, agent.getPrincipals(), markForDeletion);
+        try (Timer.Context context = timer.time()) {
+            aclService.assertHasAccess("Insufficient privileges to delete object " + pid.getUUID(),
+                    pid, agent.getPrincipals(), markForDeletion);
 
-        RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
+            RepositoryObject repoObj = repositoryObjectLoader.getRepositoryObject(pid);
 
-        if (repoObj instanceof AdminUnit) {
-            aclService.assertHasAccess("Insufficient privileges to delete admin unit " + pid.getUUID(),
-                    pid, agent.getPrincipals(), markForDeletionUnit);
+            if (repoObj instanceof AdminUnit) {
+                aclService.assertHasAccess("Insufficient privileges to delete admin unit " + pid.getUUID(),
+                        pid, agent.getPrincipals(), markForDeletionUnit);
+            }
+
+            if (!(repoObj instanceof ContentObject)) {
+                throw new InvalidOperationForObjectType("Cannot mark object " + pid.getUUID()
+                        + " for deletion, objects of type " + repoObj.getClass().getName() + " are not eligible.");
+            }
+
+            String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion, true);
+
+            sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
+
+            repoObj.getPremisLog().buildEvent(Premis.Deletion)
+                    .addImplementorAgent(agent.getUsernameUri())
+                    .addEventDetail("Item marked for deletion and not available without permissions")
+                    .write();
         }
-
-        if (!(repoObj instanceof ContentObject)) {
-            throw new InvalidOperationForObjectType("Cannot mark object " + pid.getUUID()
-                    + " for deletion, objects of type " + repoObj.getClass().getName() + " are not eligible.");
-        }
-
-        String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion, true);
-
-        sparqlUpdateService.executeUpdate(repoObj.getMetadataUri().toString(), updateString);
-
-        repoObj.getPremisLog().buildEvent(Premis.Deletion)
-                .addImplementorAgent(agent.getUsernameUri())
-                .addEventDetail("Item marked for deletion and not available without permissions")
-                .write();
     }
-
 }
