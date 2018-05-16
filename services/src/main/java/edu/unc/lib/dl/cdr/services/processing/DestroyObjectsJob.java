@@ -20,9 +20,12 @@ import java.util.List;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
+import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
+import edu.unc.lib.dl.fcrepo4.Tombstone;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.rdf.Premis;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -34,9 +37,10 @@ public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
+    private AgentPrincipals agent;
     private RepositoryObjectFactory repoObjFactory;
 
-    public DestroyObjectsJob(List<PID> objsToDestroy) {
+    public DestroyObjectsJob(AgentPrincipals agent, List<PID> objsToDestroy) {
         this.objsToDestroy = objsToDestroy;
     }
 
@@ -44,15 +48,24 @@ public class DestroyObjectsJob implements Runnable {
     public void run() {
         try (Timer.Context context = timer.time()) {
             // create tombstone for each destroyed obj
+            Tombstone tStone = null;
             for (PID pid : objsToDestroy) {
                 Model model = ModelFactory.createDefaultModel();
-                repoObjFactory.createTombstone(pid, model);
+                tStone = repoObjFactory.createTombstone(pid, model);
+
+                //TODO: remove containment relation from obj's parent
+
+                //add premis event to tombstone
+                tStone.getPremisLog().buildEvent(Premis.Deletion)
+                .addImplementorAgent(agent.getUsernameUri())
+                .addEventDetail("Item deleted from repository and replaced by this tombstone")
+                .write();
+
+                tStone.getRecord().put("PREMIS log", tStone.getPremisLog().getEvents().toString());
             }
-
-            //remove containment relation from each parent
-
         }
-
     }
+
+
 
 }
