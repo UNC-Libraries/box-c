@@ -15,7 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import edu.unc.lib.dl.fedora.FedoraException;
@@ -31,11 +30,12 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  */
 public class Tombstone extends RepositoryObject {
 
-    private Map<String,String> record = new HashMap<>();
-    private RepositoryObjectLoader repoObjLoader;
+    private Map<String,String> record;
 
-    public Tombstone(PID pid, RepositoryObjectDriver driver, RepositoryObjectFactory repoObjFactory) {
+    public Tombstone(PID pid, RepositoryObjectDriver driver, RepositoryObjectFactory repoObjFactory,
+            Map<String, String> record) {
         super(pid, driver, repoObjFactory);
+        this.record = record;
     }
 
     @Override
@@ -51,33 +51,7 @@ public class Tombstone extends RepositoryObject {
         return driver.getParentObject(this);
     }
 
-    private void populateRecord() {
-        record.put("PREMIS log", this.getPremisLog().getEvents().toString());
-        //TODO: link to deposit record
-        //TODO: display name of obj
-        RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
-        String objectType = obj.getContentObjectType();
-        record.put("object type", objectType);
-        if (objectType.equals("file")) {
-            // get binobj(s) of this file obj and call insertBinaryDetails...
-        }
+    public Map<String,String> getRecord() {
+        return record;
     }
-
-    private void insertBinaryDetailsIntoRecord(BinaryObject binObj) {
-        record.put("filename", binObj.getFilename());
-
-        String sha1Checksum = binObj.getSha1Checksum();
-        String md5Checksum = binObj.getMd5Checksum();
-        if (sha1Checksum != null) {
-            record.put("sha1 checksum", sha1Checksum);
-        }
-        if ( md5Checksum  != null) {
-            record.put("md5 checksum", md5Checksum);
-        }
-
-        record.put("filesize", binObj.getFilesize().toString());
-
-        record.put("mimetype", binObj.getMimetype());
-    }
-
 }
