@@ -67,7 +67,7 @@ public class DatastreamUtil {
         } else {
             url.append(preferredDS.getOwner());
         }
-        if (!ORIGINAL_FILE.equals(datastreamName)) {
+        if (!ORIGINAL_FILE.equals(preferredDS.getName())) {
             url.append("/").append(preferredDS.getName());
         }
         return url.toString();

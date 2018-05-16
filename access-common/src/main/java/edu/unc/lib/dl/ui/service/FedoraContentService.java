@@ -44,6 +44,8 @@ import edu.unc.lib.dl.fedora.PID;
 public class FedoraContentService {
     private static final Logger LOG = LoggerFactory.getLogger(FedoraContentService.class);
 
+    private static final int BUFFER_SIZE = 4096;
+
     public static final String CONTENT_DISPOSITION = "Content-Disposition";
 
     private AccessControlService accessControlService;
@@ -56,12 +58,12 @@ public class FedoraContentService {
      *
      * @param pid pid of object containing datastream
      * @param dsName name of datastream being requested. If null, then original
-     *            file assume.
+     *            file datastream is assumed.
      * @param principals principals of requesting client
      * @param asAttachment if true, then content-disposition header will specify
      *            as "attachment" instead of "inline"
      * @param response response content and headers will be added to.
-     * @throws IOException
+     * @throws IOException if unable to stream content to the response.
      */
     public void streamData(PID pid, String dsName, AccessGroupSet principals, boolean asAttachment,
             HttpServletResponse response) throws IOException {
@@ -84,7 +86,8 @@ public class FedoraContentService {
         // Set binary detail response headers
         response.setHeader(CONTENT_LENGTH, Long.toString(binObj.getFilesize()));
         response.setHeader(CONTENT_TYPE, binObj.getMimetype());
-        String filename = binObj.getFilename() == null ? pid.getId() : binObj.getFilename();
+        String binaryName = binObj.getFilename();
+        String filename = binaryName == null ? pid.getId() : binaryName;
         if (asAttachment) {
             response.setHeader(CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
         } else {
@@ -93,7 +96,7 @@ public class FedoraContentService {
 
         // Stream binary content to http response
         OutputStream outStream = response.getOutputStream();
-        IOUtils.copy(binObj.getBinaryStream(), outStream, 4096);
+        IOUtils.copy(binObj.getBinaryStream(), outStream, BUFFER_SIZE);
     }
 
     /**

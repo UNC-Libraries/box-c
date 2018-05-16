@@ -40,6 +40,8 @@ import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
 
 /**
  *
+ * Controller which provides access to datastreams of objects held in the repository.
+ *
  * @author bbpennel
  *
  */

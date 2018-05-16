@@ -187,10 +187,12 @@ public class FileObject extends ContentObject {
      * Retrieve binary object by name from the set of binaries contained by this
      * FileObject.
      *
-     * @param name
-     * @return
+     * @param name name of the binary object to retrieve
+     * @return BinaryObject identified by name
+     * @throws NotFoundException thrown if no datastream with the given name is
+     *             present in this FileObject.
      */
-    public BinaryObject getBinaryObject(String name) {
+    public BinaryObject getBinaryObject(String name) throws NotFoundException {
         Resource resc = getResource();
 
         StmtIterator it = resc.listProperties(PcdmModels.hasFile);

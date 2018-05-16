@@ -180,7 +180,7 @@ public class FedoraContentControllerIT {
         testGetMultipleDatastreams("/indexablecontent/");
     }
 
-    public void testGetMultipleDatastreams(String requestPath) throws Exception {
+    private void testGetMultipleDatastreams(String requestPath) throws Exception {
         PID filePid = makePid();
 
         String content = "<fits>content</fits>";

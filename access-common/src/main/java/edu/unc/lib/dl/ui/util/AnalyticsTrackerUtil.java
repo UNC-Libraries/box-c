@@ -96,16 +96,18 @@ public class AnalyticsTrackerUtil {
      * @param request request
      * @param action action for the event
      * @param pid pid identifying the object involved in the event
-     * @param principals
+     * @param principals authorization principals
      */
     public void trackEvent(HttpServletRequest request, String action, PID pid, AccessGroupSet principals) {
         try {
             AnalyticsUserData userData = new AnalyticsUserData(request);
 
             BriefObjectMetadata briefObject = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
-            trackEvent(userData, briefObject.getParentCollection() == null ? "(no collection)"
-                  : briefObject.getParentCollectionName(),
-                  "download", briefObject.getTitle() + "|" + pid, null);
+            String parentCollection = briefObject.getParentCollection() == null ?
+                    "(no collection)"
+                    : briefObject.getParentCollectionName();
+            String viewedObjectLabel = briefObject.getTitle() + "|" + pid;
+            trackEvent(userData, parentCollection, "download", viewedObjectLabel, null);
         } catch (Exception e) {
             // Prevent analytics exceptions from impacting user
             log.warn("An exception occurred while recording {} event on {}", action, pid, e);
@@ -132,7 +134,9 @@ public class AnalyticsTrackerUtil {
     }
 
     public static class AnalyticsUserData {
+        // ip of client
         public String uip;
+        // client id
         public String cid;
         public String userAgent;
 
@@ -213,6 +217,7 @@ public class AnalyticsTrackerUtil {
                 return;
             }
 
+            // See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("v", "1"));
             params.add(new BasicNameValuePair("tid", gaTrackingID));
