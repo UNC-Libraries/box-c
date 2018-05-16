@@ -60,42 +60,21 @@ public class FedoraContentController {
     @Autowired
     private AnalyticsTrackerUtil analyticsTracker;
 
-    @RequestMapping("/indexablecontent/{pid}")
-    public void getDefaultIndexableContent(@PathVariable("pid") String pid,
-            @RequestParam(value = "dl", defaultValue = "false") boolean download,
-            HttpServletRequest request, HttpServletResponse response) {
-        streamData(pid, ORIGINAL_FILE, download, request, response);
-    }
-
-    @RequestMapping("/indexablecontent/{pid}/{datastream}")
-    public void getIndexableContent(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
-            @RequestParam(value = "dl", defaultValue = "false") boolean download,
-            HttpServletRequest request, HttpServletResponse response) {
-        streamData(pid, datastream, download, request, response);
-    }
-
-    @RequestMapping("/indexablecontent")
-    public void getIndexableContentByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
-            @RequestParam(value = "dl", defaultValue = "false") boolean download,
-            HttpServletRequest request, HttpServletResponse response) {
-        streamData(id, ORIGINAL_FILE, download, request, response);
-    }
-
-    @RequestMapping("/content/{pid}")
+    @RequestMapping(value = {"/content/{pid}", "/indexablecontent/{pid}"})
     public void getDefaultDatastream(@PathVariable("pid") String pid,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request, HttpServletResponse response) {
         streamData(pid, ORIGINAL_FILE, download, request, response);
     }
 
-    @RequestMapping("/content/{pid}/{datastream}")
+    @RequestMapping(value = {"/content/{pid}/{datastream}", "/indexablecontent/{pid}/{datastream}"})
     public void getDatastream(@PathVariable("pid") String pid, @PathVariable("datastream") String datastream,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request, HttpServletResponse response) {
         streamData(pid, datastream, download, request, response);
     }
 
-    @RequestMapping("/content")
+    @RequestMapping(value = {"/indexablecontent", "/content"})
     public void getDatastreamByParameters(@RequestParam("id") String id, @RequestParam("ds") String datastream,
             @RequestParam(value = "dl", defaultValue = "false") boolean download,
             HttpServletRequest request, HttpServletResponse response) {
