@@ -462,7 +462,7 @@ public class RepositoryObjectFactory {
      */
     public Tombstone createTombstone(PID pid, Model model) {
         URI path = pid.getRepositoryUri();
-        Map<String,String> tombstoneRecord = new HashMap<>();
+        Map<String,String> tombstoneRecord = populateTombstoneRecord(pid);
 
         // Add types to the object being created
         model = populateModelTypes(path, model, Arrays.asList(Fcrepo4Repository.Tombstone, PcdmModels.Object));
@@ -472,7 +472,8 @@ public class RepositoryObjectFactory {
         return new Tombstone(pid, repoObjDriver, this, tombstoneRecord);
     }
 
-    private void populateTombstoneRecord(Map<String,String> tombstoneRecord, PID pid) {
+    private Map<String,String> populateTombstoneRecord(PID pid) {
+        Map<String,String> tombstoneRecord = new HashMap<>();
         //TODO: display name of obj
         RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
         String objectType = obj.getContentObjectType();
@@ -485,6 +486,7 @@ public class RepositoryObjectFactory {
                 insertBinaryDetailsIntoTombstoneRecord(tombstoneRecord, binObj);
             }
         }
+        return tombstoneRecord;
     }
 
     private void insertBinaryDetailsIntoTombstoneRecord(Map<String,String> tombstoneRecord, BinaryObject binObj) {
