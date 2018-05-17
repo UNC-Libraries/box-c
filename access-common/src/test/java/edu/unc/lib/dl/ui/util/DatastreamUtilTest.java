@@ -16,11 +16,13 @@
 package edu.unc.lib.dl.ui.util;
 
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.SMALL_THUMBNAIL;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.unc.lib.dl.fedora.PID;
@@ -33,9 +35,17 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
  */
 public class DatastreamUtilTest {
 
+    private final static String ENDPOINT_URL = "services/api/";
+
     private final static String ORIGINAL_DS = ORIGINAL_FILE + "|image/jpg|image|jpg|555||";
     private final static String ORIGINAL_INDEXABLE = ORIGINAL_FILE + "|application/pdf|doc.pdf|pdf|5555||";
     private final static String FITS_DS = TECHNICAL_METADATA + "|text/xml|fits.xml|xml|5555||";
+    private final static String THUMB_SMALL_DS = SMALL_THUMBNAIL + "|image/png|small|png|3333||";
+
+    @Before
+    public void setup() {
+        DatastreamUtil.setDatastreamEndpoint(ENDPOINT_URL);
+    }
 
     @Test
     public void testGetOriginalFileUrl() {
@@ -68,5 +78,40 @@ public class DatastreamUtilTest {
 
         String url = DatastreamUtil.getDatastreamUrl(mdObj, TECHNICAL_METADATA);
         assertEquals("indexablecontent/" + pid.getId() + "/techmd_fits", url);
+    }
+
+    @Test
+    public void testGetThumbnailUrl() {
+        PID pid = makePid();
+        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        mdObj.setId(pid.getId());
+        mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS));
+
+        String url = DatastreamUtil.getThumbnailUrl(mdObj, "small");
+        assertEquals(ENDPOINT_URL + "thumb/" + pid.getId() + "/small", url);
+    }
+
+    @Test
+    public void testGetThumbnailUrlForPrimaryObject() {
+        PID primaryObjPid = makePid();
+
+        PID pid = makePid();
+        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        mdObj.setId(pid.getId());
+        mdObj.setDatastream(asList(ORIGINAL_DS, THUMB_SMALL_DS + primaryObjPid.getId()));
+
+        String url = DatastreamUtil.getThumbnailUrl(mdObj, "small");
+        assertEquals(ENDPOINT_URL + "thumb/" + primaryObjPid.getId() + "/small", url);
+    }
+
+    @Test
+    public void testGetThumbnailUrlNoThumbs() {
+        PID pid = makePid();
+        BriefObjectMetadataBean mdObj = new BriefObjectMetadataBean();
+        mdObj.setId(pid.getId());
+        mdObj.setDatastream(asList(ORIGINAL_DS));
+
+        String url = DatastreamUtil.getThumbnailUrl(mdObj, "small");
+        assertEquals("", url);
     }
 }

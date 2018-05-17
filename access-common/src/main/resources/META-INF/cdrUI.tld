@@ -77,6 +77,13 @@
 		</function-signature>
 	</function>
 	<function>
+		<name>getThumbnailUrl</name>
+		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
+		<function-signature>
+			java.lang.String getThumbnailUrl(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+		</function-signature>
+	</function>
+	<function>
 		<name>formatFilesize</name>
 		<function-class>edu.unc.lib.dl.ui.util.StringFormatUtil</function-class>
 		<function-signature>

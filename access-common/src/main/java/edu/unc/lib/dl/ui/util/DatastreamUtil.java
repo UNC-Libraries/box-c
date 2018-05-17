@@ -32,12 +32,17 @@ import edu.unc.lib.dl.search.solr.model.Datastream;
  */
 public class DatastreamUtil {
 
+    private static String datastreamEndpoint;
+
     private static final List<String> INDEXABLE_EXTENSIONS = asList(
             "doc", "docx", "htm", "html", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx", "xml");
 
     private DatastreamUtil() {
     }
 
+    public static void setDatastreamEndpoint(String uri) {
+        datastreamEndpoint = uri;
+    }
     /**
      * Returns a URL for retrieving a specific datastream of the provided object.
      *
@@ -114,4 +119,37 @@ public class DatastreamUtil {
         return preferredDS;
     }
 
+    /**
+     * Returns the url for accessing a thumbnail of the specified size for the provided object. If the object does not have a thumbnail of that size, an empty string is returned.
+     *
+     * @param metadata metadata record for object
+     * @param size name of thumbnail size being requested.
+     * @return url for thumbnail or empty string if the requested size thumbnail is not available.
+     */
+    public static String getThumbnailUrl(BriefObjectMetadata metadata, String size) {
+        String selectedSize = size == null ? "small" : size;
+        selectedSize = selectedSize.toLowerCase().trim();
+        String derivativeName = selectedSize + "_thumbnail";
+
+        // Prefer the matching derivative from this object
+        Datastream preferredDS = getPreferredDatastream(metadata, derivativeName);
+
+        // Ensure that this item has the appropriate thumbnail
+        if (preferredDS == null) {
+            return "";
+        }
+
+        StringBuilder url = new StringBuilder(datastreamEndpoint);
+
+        url.append("thumb/");
+        if (isBlank(preferredDS.getOwner())) {
+            url.append(metadata.getId());
+        } else {
+            url.append(preferredDS.getOwner());
+        }
+
+        url.append("/").append(selectedSize);
+
+        return url.toString();
+    }
 }
