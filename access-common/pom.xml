@@ -113,6 +113,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>edu.unc.lib.cdr</groupId>
+            <artifactId>fcrepo-clients</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
             <version>${solr.version}</version>

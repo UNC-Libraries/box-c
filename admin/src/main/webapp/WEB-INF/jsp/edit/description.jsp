@@ -26,7 +26,7 @@
 		config: {
 			'editDescription' : {
 				'recordUrl' : '${accessBaseUrl}/record/${resultObject.id}',
-				'originalUrl' : '${accessBaseUrl}/${cdr:getDatastreamUrl(resultObject, "DATA_FILE", fedoraUtil)}'
+				'originalUrl' : '${accessBaseUrl}/${cdr:getOriginalFileUrl(resultObject)}'
 			}
 		}
 	};

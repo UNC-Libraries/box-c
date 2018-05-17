@@ -57,14 +57,16 @@ public class Datastream {
 
         this.name = dsParts[0];
         this.mimetype = dsParts[1];
-        this.extension = dsParts[2];
+        this.filename = dsParts[2];
+        this.extension = dsParts[3];
+
         try {
-            this.filesize = new Long(dsParts[3]);
+            this.filesize = new Long(dsParts[4]);
         } catch (NumberFormatException e) {
             this.filesize = null;
         }
-        this.checksum = dsParts[4];
-        this.owner = dsParts[5];
+        this.checksum = dsParts[5];
+        this.owner = dsParts[6];
     }
 
     @Override

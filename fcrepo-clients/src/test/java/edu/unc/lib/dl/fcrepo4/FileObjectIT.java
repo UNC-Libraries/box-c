@@ -122,6 +122,17 @@ public class FileObjectIT extends AbstractFedoraIT {
         verifyOriginalFile(rObj3);
     }
 
+    @Test
+    public void testGetBinaryByName() throws Exception {
+        FileObject fileObj = repoObjFactory.createFileObject(null);
+
+        InputStream contentStream = new ByteArrayInputStream(origBodyString.getBytes());
+        fileObj.addBinary("some_binary", contentStream, origFilename, origMimetype, null, null, null);
+
+        BinaryObject binObj = fileObj.getBinaryObject("some_binary");
+        verifyFile(binObj, origFilename, origMimetype, origBodyString);
+    }
+
     @Test(expected = ObjectTypeMismatchException.class)
     public void getNonFileObject() throws Exception {
         PID objPid = PIDs.get("uuid:" + UUID.randomUUID().toString());

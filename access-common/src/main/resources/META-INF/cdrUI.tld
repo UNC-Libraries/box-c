@@ -57,14 +57,21 @@
 	</function>
 	<function>
 		<name>getDatastreamUrl</name>
-		<function-class>edu.unc.lib.dl.ui.util.FedoraUtil</function-class>
+		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
-			java.lang.String getDatastreamUrl(java.lang.Object, java.lang.String, edu.unc.lib.dl.ui.util.FedoraUtil)
+			java.lang.String getDatastreamUrl(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
+		</function-signature>
+	</function>
+	<function>
+		<name>getOriginalFileUrl</name>
+		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
+		<function-signature>
+			java.lang.String getOriginalFileUrl(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata)
 		</function-signature>
 	</function>
 	<function>
 		<name>getPreferredDatastream</name>
-		<function-class>edu.unc.lib.dl.ui.util.FedoraUtil</function-class>
+		<function-class>edu.unc.lib.dl.ui.util.DatastreamUtil</function-class>
 		<function-signature>
 			edu.unc.lib.dl.search.solr.model.Datastream getPreferredDatastream(edu.unc.lib.dl.search.solr.model.BriefObjectMetadata, java.lang.String)
 		</function-signature>

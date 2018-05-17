@@ -65,7 +65,7 @@ public class RepositoryObjectLoader {
     public AdminUnit getAdminUnit(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof AdminUnit)) {
-            throw new FedoraException("Object with pid " + pid + "is not an admin unit");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not an admin unit");
         }
         return (AdminUnit) repoObj;
     }
@@ -73,7 +73,7 @@ public class RepositoryObjectLoader {
     public CollectionObject getCollectionObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof CollectionObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not a collection");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a collection");
         }
         return (CollectionObject) repoObj;
     }
@@ -81,7 +81,7 @@ public class RepositoryObjectLoader {
     public ContentRootObject getContentRootObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof ContentRootObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not the content root");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not the content root");
         }
         return (ContentRootObject) repoObj;
     }
@@ -89,7 +89,7 @@ public class RepositoryObjectLoader {
     public FolderObject getFolderObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof FolderObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not a folder");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a folder");
         }
         return (FolderObject) repoObj;
     }
@@ -97,7 +97,7 @@ public class RepositoryObjectLoader {
     public WorkObject getWorkObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof WorkObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not a work");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a work");
         }
         return (WorkObject) repoObj;
     }
@@ -105,7 +105,7 @@ public class RepositoryObjectLoader {
     public FileObject getFileObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof FileObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not a file");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a file");
         }
         return (FileObject) repoObj;
     }
@@ -113,7 +113,7 @@ public class RepositoryObjectLoader {
     public BinaryObject getBinaryObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof BinaryObject)) {
-            throw new FedoraException("Object with pid " + pid + "is not a binary");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a binary");
         }
         return (BinaryObject) repoObj;
     }
@@ -121,7 +121,7 @@ public class RepositoryObjectLoader {
     public PremisEventObject getPremisEventObject(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof PremisEventObject)) {
-            throw new FedoraException("Object with pid " + pid + " is not a premis event");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a premis event");
         }
         return (PremisEventObject) repoObj;
     }
@@ -129,7 +129,7 @@ public class RepositoryObjectLoader {
     public DepositRecord getDepositRecord(PID pid) {
         RepositoryObject repoObj = getRepositoryObject(pid);
         if (!(repoObj instanceof DepositRecord)) {
-            throw new ObjectTypeMismatchException("Object with pid " + pid + "is not a deposit record");
+            throw new ObjectTypeMismatchException("Object with pid " + pid + " is not a deposit record");
         }
         return (DepositRecord) repoObj;
     }

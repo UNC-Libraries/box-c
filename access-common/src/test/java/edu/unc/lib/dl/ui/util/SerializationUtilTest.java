@@ -46,7 +46,7 @@ import edu.unc.lib.dl.search.solr.util.SolrSettings;
 @RunWith(MockitoJUnitRunner.class)
 public class SerializationUtilTest extends Assert {
     private static final List<String> DATASTREAMS =
-            singletonList("datastream|image/jpeg|jpg|orig|582753|");
+            singletonList("datastream|image/jpeg|image.jpg|jpg|orig|582753|");
 
     private static final String API_PATH = "http://example.com/api/";
 

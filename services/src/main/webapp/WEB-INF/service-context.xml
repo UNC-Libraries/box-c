@@ -222,11 +222,6 @@
         <property name="apiRecordPath" value="${repository.protocol}://${repository.host}/record/" />
     </bean>
     
-    <bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
-        <property name="fedoraUrl"
-            value="${fcrepo.baseUrl}" />
-    </bean>
-    
     <bean id="gaTrackingID" class="java.lang.String">
         <constructor-arg
             value="${google.trackingId}" />
@@ -234,9 +229,12 @@
     
     <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
+        <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
     </bean>
     
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="accessControlService" ref="aclService" />
     </bean>
     
     <bean id="addContainerService" class="edu.unc.lib.dl.cdr.services.processing.AddContainerService">

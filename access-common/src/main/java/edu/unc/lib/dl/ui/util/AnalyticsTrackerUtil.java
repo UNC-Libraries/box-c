@@ -37,6 +37,12 @@ import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
+import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
+import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+
 /**
  * Utility for performing asynchronous analytics tracking events when unable to use the javascript api
  *
@@ -57,6 +63,8 @@ public class AnalyticsTrackerUtil {
 
     private final HttpClientConnectionManager httpManager;
     private final CloseableHttpClient httpClient;
+
+    private SolrSearchService solrSearchService;
 
     public AnalyticsTrackerUtil() {
 
@@ -82,6 +90,30 @@ public class AnalyticsTrackerUtil {
         this.gaTrackingID = trackingID;
     }
 
+    /**
+     * Track an event with the specified action for object pid for the active user on the request.
+     *
+     * @param request request
+     * @param action action for the event
+     * @param pid pid identifying the object involved in the event
+     * @param principals authorization principals
+     */
+    public void trackEvent(HttpServletRequest request, String action, PID pid, AccessGroupSet principals) {
+        try {
+            AnalyticsUserData userData = new AnalyticsUserData(request);
+
+            BriefObjectMetadata briefObject = solrSearchService.getObjectById(new SimpleIdRequest(pid, principals));
+            String parentCollection = briefObject.getParentCollection() == null ?
+                    "(no collection)"
+                    : briefObject.getParentCollectionName();
+            String viewedObjectLabel = briefObject.getTitle() + "|" + pid;
+            trackEvent(userData, parentCollection, "download", viewedObjectLabel, null);
+        } catch (Exception e) {
+            // Prevent analytics exceptions from impacting user
+            log.warn("An exception occurred while recording {} event on {}", action, pid, e);
+        }
+    }
+
     public void trackEvent(AnalyticsUserData userData, String category, String action, String label, Integer value) {
 
         // Use a default customer ID if none was provided, since it is required
@@ -94,8 +126,17 @@ public class AnalyticsTrackerUtil {
         trackerThread.start();
     }
 
+    /**
+     * @param solrSearchService the solrSearchService to set
+     */
+    public void setSolrSearchService(SolrSearchService solrSearchService) {
+        this.solrSearchService = solrSearchService;
+    }
+
     public static class AnalyticsUserData {
+        // ip of client
         public String uip;
+        // client id
         public String cid;
         public String userAgent;
 
@@ -165,7 +206,7 @@ public class AnalyticsTrackerUtil {
         public void run() {
             if (log.isDebugEnabled()) {
                 log.debug("Tracking user {} with event {} in category {} with label {}",
-                        new String[] { userData.cid, action, category, label });
+                        userData.cid, action, category, label);
             }
 
             URIBuilder builder;
@@ -176,6 +217,7 @@ public class AnalyticsTrackerUtil {
                 return;
             }
 
+            // See https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("v", "1"));
             params.add(new BasicNameValuePair("tid", gaTrackingID));
@@ -187,7 +229,7 @@ public class AnalyticsTrackerUtil {
             params.add(new BasicNameValuePair("de", "UTF-8"));
             params.add(new BasicNameValuePair("ul", "en-us"));
             log.debug("Tracking user {} with event {} in category {} with label {}",
-                    new String[] { userData.cid, action, category, label });
+                    userData.cid, action, category, label);
             log.debug("Tracking:{} {} {} {}", new Object[] { GA_URL, gaTrackingID, userData.cid, userData.uip});
 
             if (category != null) {

@@ -29,13 +29,9 @@
         <property name="ignoreResourceNotFound" value="false" />
     </bean>
     
-    <bean id="fedoraUtil" class="edu.unc.lib.dl.ui.util.FedoraUtil">
-        <property name="fedoraUrl"
-            value="${fcrepo.baseUrl}" />
-    </bean>
-    
     <bean id="analyticsTracker" class="edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil">
         <property name="gaTrackingID" ref="gaTrackingID" />
+        <property name="solrSearchService" ref="unrestrictedSolrSearchService" />
     </bean>
 
     <bean id="applicationPathSettings" class="edu.unc.lib.dl.ui.util.ApplicationPathSettings">
@@ -143,5 +139,10 @@
         <property name="cacheTimeToLive" value="1000" />
         <property name="cacheMaxSize" value="50" />
         <property name="repositoryObjectCacheLoader" ref="repositoryObjectCacheLoader" />
+    </bean>
+    
+    <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
+        <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
+        <property name="accessControlService" ref="aclService" />
     </bean>
 </beans>

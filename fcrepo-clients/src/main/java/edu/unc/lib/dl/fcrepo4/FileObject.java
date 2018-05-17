@@ -32,6 +32,7 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 
 import edu.unc.lib.dl.fedora.FedoraException;
+import edu.unc.lib.dl.fedora.NotFoundException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
@@ -180,5 +181,33 @@ public class FileObject extends ContentObject {
         }
 
         return binaries;
+    }
+
+    /**
+     * Retrieve binary object by name from the set of binaries contained by this
+     * FileObject.
+     *
+     * @param name name of the binary object to retrieve
+     * @return BinaryObject identified by name
+     * @throws NotFoundException thrown if no datastream with the given name is
+     *             present in this FileObject.
+     */
+    public BinaryObject getBinaryObject(String name) throws NotFoundException {
+        Resource resc = getResource();
+
+        StmtIterator it = resc.listProperties(PcdmModels.hasFile);
+        try {
+            for (; it.hasNext(); ) {
+                PID binaryPid = PIDs.get(it.nextStatement().getResource().getURI());
+
+                if (binaryPid.getComponentPath().endsWith("/" + name)) {
+                    return driver.getRepositoryObject(binaryPid, BinaryObject.class);
+                }
+            }
+        } finally {
+            it.close();
+        }
+
+        throw new NotFoundException("No such binary " + name + " contained by " + pid);
     }
 }
