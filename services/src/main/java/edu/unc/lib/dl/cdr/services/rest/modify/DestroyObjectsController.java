@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
-import edu.unc.lib.dl.cdr.services.processing.DestroyObjectsService;
+import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService;
 
 /**
  * API controller for destroying objects
