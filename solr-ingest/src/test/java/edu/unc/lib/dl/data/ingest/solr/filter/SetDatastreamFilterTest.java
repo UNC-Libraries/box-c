@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.LARGE_THUMBNAIL;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
@@ -54,7 +54,7 @@ import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
@@ -112,7 +112,7 @@ public class SetDatastreamFilterTest {
 
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
         when(binObj.getResource()).thenReturn(
-                fileResource(ORIGINAL_FILE, FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST));
+                fileResource(ORIGINAL_FILE.getId(), FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class SetDatastreamFilterTest {
         filter.filter(dip);
 
         verify(idb).setDatastream(listCaptor.capture());
-        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE,
+        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
@@ -133,11 +133,11 @@ public class SetDatastreamFilterTest {
     public void fileObjectMultipleBinariesTest() throws Exception {
         BinaryObject binObj2 = mock(BinaryObject.class);
         when(binObj2.getResource()).thenReturn(
-                fileResource(TECHNICAL_METADATA, FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
 
         BinaryObject binObj3 = mock(BinaryObject.class);
         when(binObj3.getResource()).thenReturn(
-                fileResource(LARGE_THUMBNAIL, FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST));
+                fileResource(THUMBNAIL_LARGE.getId(), FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST));
 
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj, binObj2, binObj3));
         when(dip.getContentObject()).thenReturn(fileObj);
@@ -145,11 +145,11 @@ public class SetDatastreamFilterTest {
         filter.filter(dip);
 
         verify(idb).setDatastream(listCaptor.capture());
-        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE,
+        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
-        assertContainsDatastream(listCaptor.getValue(), TECHNICAL_METADATA,
+        assertContainsDatastream(listCaptor.getValue(), TECHNICAL_METADATA.getId(),
                 FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST, null);
-        assertContainsDatastream(listCaptor.getValue(), LARGE_THUMBNAIL,
+        assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_LARGE.getId(),
                 FILE3_SIZE, FILE3_MIMETYPE, FILE3_NAME, FILE3_DIGEST, null);
 
         verify(idb).setFilesizeSort(eq(FILE_SIZE));
@@ -159,7 +159,7 @@ public class SetDatastreamFilterTest {
     @Test(expected = IndexingException.class)
     public void fileObjectNoOriginalTest() throws Exception {
         when(binObj.getResource()).thenReturn(
-                fileResource(TECHNICAL_METADATA, FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
+                fileResource(TECHNICAL_METADATA.getId(), FILE2_SIZE, FILE2_MIMETYPE, FILE2_NAME, FILE2_DIGEST));
 
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
         when(dip.getContentObject()).thenReturn(fileObj);
@@ -183,7 +183,7 @@ public class SetDatastreamFilterTest {
         filter.filter(dip);
 
         verify(idb).setDatastream(listCaptor.capture());
-        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE,
+        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
                 FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, fileId);
 
         // Sort size is based off primary object's size

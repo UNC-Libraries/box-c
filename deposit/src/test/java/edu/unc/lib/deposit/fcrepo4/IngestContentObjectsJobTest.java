@@ -16,7 +16,7 @@
 package edu.unc.lib.deposit.fcrepo4;
 
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.AUTHENTICATED_PRINC;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelpers.setField;
 import static edu.unc.lib.dl.util.DepositConstants.TECHMD_DIR;
 import static org.junit.Assert.assertTrue;
@@ -291,7 +291,7 @@ public class IngestContentObjectsJobTest extends AbstractDepositJobTest {
 
         verify(jobStatusFactory, times(3)).incrCompletion(eq(jobUUID), eq(1));
 
-        verify(mockFileObj, times(2)).addBinary(eq(TECHNICAL_METADATA), any(InputStream.class),
+        verify(mockFileObj, times(2)).addBinary(eq(TECHNICAL_METADATA.getId()), any(InputStream.class),
                 anyString(), anyString(), any(Property.class), eq(DCTerms.conformsTo),
                 any(Resource.class));
     }

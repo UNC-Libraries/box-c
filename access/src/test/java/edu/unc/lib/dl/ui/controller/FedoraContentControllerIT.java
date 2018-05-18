@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
 import static org.junit.Assert.assertEquals;
@@ -187,7 +187,7 @@ public class FedoraContentControllerIT {
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
         fileObj.addOriginalFile(new ByteArrayInputStream(BINARY_CONTENT.getBytes()), null, "text/plain", null, null);
-        fileObj.addBinary(TECHNICAL_METADATA, new ByteArrayInputStream(content.getBytes()),
+        fileObj.addBinary(TECHNICAL_METADATA.getId(), new ByteArrayInputStream(content.getBytes()),
                 "fits.xml", "application/xml", null, null, null);
 
         // Verify original file content retrievable
@@ -198,7 +198,7 @@ public class FedoraContentControllerIT {
         assertEquals(BINARY_CONTENT, result1.getResponse().getContentAsString());
 
         // Verify administrative datastream retrievable
-        MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA))
+        MvcResult result2 = mvc.perform(get(requestPath + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
                 .andExpect(status().is2xxSuccessful())
                 .andReturn();
 
@@ -217,7 +217,7 @@ public class FedoraContentControllerIT {
         String content = "<fits>content</fits>";
 
         FileObject fileObj = repositoryObjectFactory.createFileObject(filePid, null);
-        fileObj.addBinary(TECHNICAL_METADATA, new ByteArrayInputStream(content.getBytes()),
+        fileObj.addBinary(TECHNICAL_METADATA.getId(), new ByteArrayInputStream(content.getBytes()),
                 "fits.xml", "application/xml", null, null, null);
 
         // Requires viewHidden permission
@@ -225,7 +225,7 @@ public class FedoraContentControllerIT {
                 .assertHasAccess(anyString(), eq(filePid), any(AccessGroupSet.class), eq(Permission.viewHidden));
 
         // Verify administrative datastream retrievable
-        MvcResult result = mvc.perform(get("/content/" + filePid.getId() + "/" + TECHNICAL_METADATA))
+        MvcResult result = mvc.perform(get("/content/" + filePid.getId() + "/" + TECHNICAL_METADATA.getId()))
                 .andExpect(status().isForbidden())
                 .andReturn();
 

@@ -15,7 +15,7 @@
  */
 package edu.unc.lib.deposit.fcrepo4;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.xml.NamespaceConstants.FITS_URI;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 
@@ -368,7 +368,7 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
     private void addFitsReport(FileObject fileObj) throws DepositException {
         File fitsFile = new File(getTechMdDirectory(), fileObj.getPid().getUUID() + ".xml");
         try (InputStream fitsStream = new FileInputStream(fitsFile)) {
-            fileObj.addBinary(TECHNICAL_METADATA, fitsStream, fitsFile.getName(), "text/xml",
+            fileObj.addBinary(TECHNICAL_METADATA.getId(), fitsStream, fitsFile.getName(), "text/xml",
                     IanaRelation.derivedfrom, DCTerms.conformsTo, createResource(FITS_URI));
         } catch (IOException e) {
             throw new DepositException("Unable to ingest technical metadata for "

@@ -15,9 +15,9 @@
  */
 package edu.unc.lib.dl.ui.util;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.SMALL_THUMBNAIL;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static edu.unc.lib.dl.test.TestHelper.makePid;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -37,10 +37,10 @@ public class DatastreamUtilTest {
 
     private final static String ENDPOINT_URL = "services/api/";
 
-    private final static String ORIGINAL_DS = ORIGINAL_FILE + "|image/jpg|image|jpg|555||";
-    private final static String ORIGINAL_INDEXABLE = ORIGINAL_FILE + "|application/pdf|doc.pdf|pdf|5555||";
-    private final static String FITS_DS = TECHNICAL_METADATA + "|text/xml|fits.xml|xml|5555||";
-    private final static String THUMB_SMALL_DS = SMALL_THUMBNAIL + "|image/png|small|png|3333||";
+    private final static String ORIGINAL_DS = ORIGINAL_FILE.getId() + "|image/jpg|image|jpg|555||";
+    private final static String ORIGINAL_INDEXABLE = ORIGINAL_FILE.getId() + "|application/pdf|doc.pdf|pdf|5555||";
+    private final static String FITS_DS = TECHNICAL_METADATA.getId() + "|text/xml|fits.xml|xml|5555||";
+    private final static String THUMB_SMALL_DS = THUMBNAIL_SMALL.getId() + "|image/png|small|png|3333||";
 
     @Before
     public void setup() {
@@ -76,7 +76,7 @@ public class DatastreamUtilTest {
         mdObj.setId(pid.getId());
         mdObj.setDatastream(asList(FITS_DS));
 
-        String url = DatastreamUtil.getDatastreamUrl(mdObj, TECHNICAL_METADATA);
+        String url = DatastreamUtil.getDatastreamUrl(mdObj, TECHNICAL_METADATA.getId());
         assertEquals("indexablecontent/" + pid.getId() + "/techmd_fits", url);
     }
 

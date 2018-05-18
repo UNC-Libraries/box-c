@@ -129,7 +129,7 @@ public class DatastreamUtil {
     public static String getThumbnailUrl(BriefObjectMetadata metadata, String size) {
         String selectedSize = size == null ? "small" : size;
         selectedSize = selectedSize.toLowerCase().trim();
-        String derivativeName = selectedSize + "_thumbnail";
+        String derivativeName = "thumbnail_" + selectedSize;
 
         // Prefer the matching derivative from this object
         Datastream preferredDS = getPreferredDatastream(metadata, derivativeName);
