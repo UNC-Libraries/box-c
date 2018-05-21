@@ -27,6 +27,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
@@ -51,6 +52,7 @@ public class MoveObjectsService {
     private boolean asynchronous;
     private ExecutorService moveExecutor;
     private ActivityMetricsClient operationMetrics;
+    private DestroyProxyService proxyService;
 
     /**
      * Move a list of objects to the destination container as the provided
@@ -68,7 +70,7 @@ public class MoveObjectsService {
             throw new IllegalArgumentException("Must provide agent identification information");
         }
 
-        MoveObjectsJob job = new MoveObjectsJob(agent, destinationPid, pids);
+        MoveObjectsJob job = new MoveObjectsJob(agent, destinationPid, pids, proxyService);
         job.setAclService(aclService);
         job.setFcrepoClient(fcrepoClient);
         job.setRepositoryObjectLoader(repositoryObjectLoader);
@@ -79,7 +81,7 @@ public class MoveObjectsService {
         job.setOperationMetrics(operationMetrics);
 
         if (asynchronous) {
-            log.info("User {} is queuing move operation {} of {} objects to destination {}",
+            log.info("User {} is queueing move operation {} of {} objects to destination {}",
                     new Object[] { agent.getUsername(), job.getMoveId(), pids.size(), destinationPid });
             moveExecutor.submit(job);
         } else {
@@ -158,4 +160,11 @@ public class MoveObjectsService {
     public void setMoveExecutor(ExecutorService moveExecutor) {
         this.moveExecutor = moveExecutor;
     }
+
+    /**
+    * @param proxyService the proxyService to set
+    */
+   public void setProxyService(DestroyProxyService proxyService) {
+       this.proxyService = proxyService;
+   }
 }
