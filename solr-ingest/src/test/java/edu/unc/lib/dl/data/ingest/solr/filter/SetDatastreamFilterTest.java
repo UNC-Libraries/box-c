@@ -18,6 +18,7 @@ package edu.unc.lib.dl.data.ingest.solr.filter;
 import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static edu.unc.lib.dl.model.DatastreamType.TECHNICAL_METADATA;
 import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_LARGE;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyListOf;
@@ -29,15 +30,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -52,6 +57,8 @@ import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.DerivativeService;
+import edu.unc.lib.dl.util.DerivativeService.Derivative;
 
 /**
  *
@@ -79,6 +86,9 @@ public class SetDatastreamFilterTest {
     private static final String FILE3_DIGEST = "urn:sha1:280f5922b6487c39d6d01a5a8e93bfa07b8f1740";
     private static final long FILE3_SIZE = 17136l;
 
+    @Rule
+    public TemporaryFolder derivDir = new TemporaryFolder();
+
     @Mock
     private DocumentIndexingPackage dip;
     @Mock
@@ -93,6 +103,9 @@ public class SetDatastreamFilterTest {
     private IndexDocumentBean idb;
     @Captor
     private ArgumentCaptor<List<String>> listCaptor;
+
+    @Mock
+    private DerivativeService derivativeService;
 
     private SetDatastreamFilter filter;
 
@@ -109,6 +122,7 @@ public class SetDatastreamFilterTest {
         when(fileObj.getOriginalFile()).thenReturn(binObj);
 
         filter = new SetDatastreamFilter();
+        filter.setDerivativeService(derivativeService);
 
         when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
         when(binObj.getResource()).thenReturn(
@@ -216,6 +230,31 @@ public class SetDatastreamFilterTest {
         verify(idb, never()).setDatastream(anyListOf(String.class));
         verify(idb, never()).setFilesizeSort(anyLong());
         verify(idb, never()).setFilesizeTotal(anyLong());
+    }
+
+    @Test
+    public void fileObjectWithDerivativeTest() throws Exception {
+        when(fileObj.getPid()).thenReturn(pid);
+        when(fileObj.getBinaryObjects()).thenReturn(Arrays.asList(binObj));
+        when(dip.getContentObject()).thenReturn(fileObj);
+
+        File derivFile = derivDir.newFile("deriv.png");
+        FileUtils.write(derivFile, "content", "UTF-8");
+        long derivSize = 7l;
+
+        List<Derivative> derivs = Arrays.asList(new Derivative(THUMBNAIL_SMALL, derivFile));
+        when(derivativeService.getDerivatives(pid)).thenReturn(derivs);
+
+        filter.filter(dip);
+
+        verify(idb).setDatastream(listCaptor.capture());
+        assertContainsDatastream(listCaptor.getValue(), ORIGINAL_FILE.getId(),
+                FILE_SIZE, FILE_MIMETYPE, FILE_NAME, FILE_DIGEST, null);
+        assertContainsDatastream(listCaptor.getValue(), THUMBNAIL_SMALL.getId(),
+                derivSize, THUMBNAIL_SMALL.getMimetype(), derivFile.getName(), null, null);
+
+        verify(idb).setFilesizeSort(eq(FILE_SIZE));
+        verify(idb).setFilesizeTotal(eq(FILE_SIZE + derivSize));
     }
 
     private Resource fileResource(String name, long filesize, String mimetype, String filename, String digest) {
