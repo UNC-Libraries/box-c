@@ -120,11 +120,14 @@ public class DatastreamUtil {
     }
 
     /**
-     * Returns the url for accessing a thumbnail of the specified size for the provided object. If the object does not have a thumbnail of that size, an empty string is returned.
+     * Returns the url for accessing a thumbnail of the specified size for the
+     * provided object. If the object does not have a thumbnail of that size, an
+     * empty string is returned.
      *
      * @param metadata metadata record for object
      * @param size name of thumbnail size being requested.
-     * @return url for thumbnail or empty string if the requested size thumbnail is not available.
+     * @return url for thumbnail or empty string if the requested size thumbnail
+     *         is not available.
      */
     public static String getThumbnailUrl(BriefObjectMetadata metadata, String size) {
         String selectedSize = size == null ? "small" : size;

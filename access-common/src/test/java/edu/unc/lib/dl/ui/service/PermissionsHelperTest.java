@@ -18,6 +18,8 @@ package edu.unc.lib.dl.ui.service;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
+import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -67,8 +69,8 @@ public class PermissionsHelperTest {
         mdObject.setId("uuid:test");
         mdObject.setRoleGroup(roleGroups);
         List<String> datastreams = Arrays.asList(
-                "original_file|application/pdf|file.pdf|pdf|766|urn:sha1:36a318bb36f5b2c9aa218bad6e43c952d0a0f413|",
-                "jp2_access_copy|application/jp2|file.jp2|jp2|884|urn:sha1:fc9ac8a1af222d4179934fe2815f2acf9cefaca3|");
+                ORIGINAL_FILE.getId() + "|application/pdf|file.pdf|pdf|766|urn:sha1:checksum|",
+                JP2_ACCESS_COPY.getId() + "|application/jp2|file.jp2|jp2|884||");
         mdObject.setDatastream(datastreams);
 
         principals = new AccessGroupSet("group");
@@ -105,21 +107,21 @@ public class PermissionsHelperTest {
     public void testPermitOriginalAccess() {
         assignPermission(viewOriginal, true);
 
-        assertTrue(helper.hasDatastreamAccess(principals, "original_file", mdObject));
+        assertTrue(helper.hasDatastreamAccess(principals, ORIGINAL_FILE, mdObject));
     }
 
     @Test
     public void testPermitDerivativeAccess() {
         assignPermission(viewAccessCopies, true);
 
-        assertTrue(helper.hasDatastreamAccess(principals, "jp2_access_copy", mdObject));
+        assertTrue(helper.hasDatastreamAccess(principals, JP2_ACCESS_COPY, mdObject));
     }
 
     @Test
     public void testDenyOriginalAccess() {
         assignPermission(viewOriginal, false);
 
-        assertFalse(helper.hasDatastreamAccess(principals, "original_file", mdObject));
+        assertFalse(helper.hasDatastreamAccess(principals, ORIGINAL_FILE, mdObject));
     }
 
     @Test
