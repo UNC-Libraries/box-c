@@ -84,8 +84,8 @@ public class AddDerivativeProcessor implements Processor {
         File derivative = derivativeFinalPath.toFile();
         File parentDir = derivative.getParentFile();
 
-        if (parentDir != null && !parentDir.mkdirs()) {
-            throw new IOException("Failed to create parent directories for " + derivative);
+        if (parentDir != null) {
+            parentDir.mkdirs();
         }
 
         Files.move(Paths.get(derivativeTmpPath),

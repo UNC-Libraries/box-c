@@ -62,7 +62,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .routeId("SmallThumbnail")
             .log(LoggingLevel.INFO, "Creating/Updating Small Thumbnail for ${headers[CdrBinaryPath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                    + "${headers[CdrBinaryPath]} PNG 64 64 "
+                    + "${headers[CdrBinaryPath]} png 64 64 "
                     + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-small"))
             .bean(addSmallThumbnailProcessor);
 
@@ -70,7 +70,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .routeId("LargeThumbnail")
             .log(LoggingLevel.INFO, "Creating/Updating Large Thumbnail for ${headers[CdrBinaryPath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertScaleStage.sh "
-                    + "${headers[CdrBinaryPath]} PNG 128 128 "
+                    + "${headers[CdrBinaryPath]} png 128 128 "
                     + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-large"))
             .bean(addLargeThumbProcessor);
 
@@ -78,7 +78,7 @@ public class ImageEnhancementsRouter extends RouteBuilder {
             .routeId("AccessCopy")
             .log(LoggingLevel.INFO, "Creating/Updating JP2 access copy for ${headers[CdrBinaryPath]}")
             .recipientList(simple("exec:/bin/sh?args=${properties:cdr.enhancement.bin}/convertJp2.sh "
-                    + "${headers[CdrBinaryPath]} JP2 "
+                    + "${headers[CdrBinaryPath]} jp2 "
                     + "${properties:services.tempDirectory}/${headers[CdrCheckSum]}-access"))
             .bean(addAccessCopyProcessor);
     }
