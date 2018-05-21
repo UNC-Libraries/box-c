@@ -37,6 +37,10 @@
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
     </bean>
     
+    <bean id="derivativeContentService" class="edu.unc.lib.dl.ui.service.DerivativeContentService">
+        <property name="accessControlService" ref="aclService" />
+    </bean>
+    
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="edu.unc.lib.dl.acl.fcrepo4.AccessControlServiceImpl" />
     </bean>

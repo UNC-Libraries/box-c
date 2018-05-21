@@ -18,6 +18,7 @@ package edu.unc.lib.dl.cdr.services.rest;
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,14 +28,22 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.PIDs;
+import edu.unc.lib.dl.fedora.NotFoundException;
+import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.ui.exception.ResourceNotFoundException;
+import edu.unc.lib.dl.ui.service.DerivativeContentService;
 import edu.unc.lib.dl.ui.service.FedoraContentService;
 import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
 
@@ -53,6 +62,8 @@ public class DatastreamRestController {
     private FedoraContentService fedoraContentService;
     @Autowired
     private AnalyticsTrackerUtil analyticsTracker;
+    @Autowired
+    private DerivativeContentService derivativeContentService;
 
     @RequestMapping("/file/{pid}")
     public void getDatastream(@PathVariable("pid") String pidString,
@@ -91,14 +102,35 @@ public class DatastreamRestController {
     @RequestMapping("/thumb/{pid}")
     public void getThumbnailSmall(@PathVariable("pid") String pid,
             @RequestParam(value = "size", defaultValue = "small") String size, HttpServletRequest request,
-            HttpServletResponse response) {
-        // TODO implement retrieval of derivatives
+            HttpServletResponse response) throws IOException {
+
+        getThumbnail(pid, size, request, response);
     }
 
     @RequestMapping("/thumb/{pid}/{size}")
-    public void getThumbnail(@PathVariable("pid") String pid,
+    public void getThumbnail(@PathVariable("pid") String pidString,
             @PathVariable("size") String size, HttpServletRequest request,
-            HttpServletResponse response) {
-        // TODO implement retrieval of derivatives
+            HttpServletResponse response) throws IOException {
+
+        PID pid = PIDs.get(pidString);
+        AccessGroupSet principals = getAgentPrincipals().getPrincipals();
+        String thumbName = "thumbnail_" + size.toLowerCase().trim();
+
+        derivativeContentService.streamData(pid, thumbName, principals, false, response);
+    }
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler({ResourceNotFoundException.class, NotFoundException.class, FileNotFoundException.class})
+    public void handleResourceNotFound() {
+    }
+
+    @ResponseStatus(value = HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessRestrictionException.class)
+    public void handleInvalidRecordRequest() {
+    }
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({ObjectTypeMismatchException.class, IllegalArgumentException.class})
+    public void handleBadRequestException() {
     }
 }
