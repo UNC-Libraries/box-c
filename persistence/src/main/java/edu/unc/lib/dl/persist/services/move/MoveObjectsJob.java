@@ -18,6 +18,7 @@ package edu.unc.lib.dl.persist.services.move;
 import java.io.IOException;
 import java.security.SecureRandom;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.fcrepo.client.FcrepoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +48,6 @@ import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import io.dropwizard.metrics5.Timer;
 
@@ -66,8 +65,6 @@ public class MoveObjectsJob implements Runnable {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private TransactionManager transactionManager;
-    private SparqlQueryService sparqlQueryService;
-    private FcrepoClient fcrepoClient;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
     private ActivityMetricsClient operationMetrics;
@@ -85,11 +82,10 @@ public class MoveObjectsJob implements Runnable {
 
     private static final Timer timer = TimerFactory.createTimerForClass(MoveObjectsJob.class);
 
-    public MoveObjectsJob(AgentPrincipals agent, PID destination, List<PID> pids, DestroyProxyService proxyService) {
+    public MoveObjectsJob(AgentPrincipals agent, PID destination, List<PID> pids) {
         this.agent = agent;
         this.destinationPid = destination;
         this.pids = pids;
-        this.proxyService = proxyService;
         sourceToPid = new HashMap<>();
         moveId = Long.toString(new SecureRandom().nextLong());
     }
@@ -145,9 +141,21 @@ public class MoveObjectsJob implements Runnable {
 
         ContentObject moveContent = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
 
-        proxyService.destroyProxy(objPid);
+        String sourcePath = proxyService.destroyProxy(objPid);
+        // Store the pid of the content container owning this proxy as a move source
+        addPidToSource(objPid, sourcePath);
 
         destContainer.addMember(moveContent);
+    }
+
+    private void addPidToSource(PID pid, String sourcePath) {
+        String sourceId = PIDs.get(sourcePath).getId();
+        Collection<PID> pidsForSource = sourceToPid.get(sourceId);
+        if (pidsForSource == null) {
+            pidsForSource = new ArrayList<>();
+            sourceToPid.put(sourceId, pidsForSource);
+        }
+        pidsForSource.add(pid);
     }
 
     private void logMoveAction() {
@@ -216,20 +224,6 @@ public class MoveObjectsJob implements Runnable {
     }
 
     /**
-     * @param sparqlQueryService the sparqlQueryService to set
-     */
-    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
-        this.sparqlQueryService = sparqlQueryService;
-    }
-
-    /**
-     * @param fcrepoClient the fcrepoClient to set
-     */
-    public void setFcrepoClient(FcrepoClient fcrepoClient) {
-        this.fcrepoClient = fcrepoClient;
-    }
-
-    /**
      * @param operationsMessageSender the operationsMessageSender to set
      */
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
@@ -255,5 +249,12 @@ public class MoveObjectsJob implements Runnable {
      */
     public String getMoveId() {
         return moveId;
+    }
+
+    /**
+     * @param proxyService the proxyService to set
+     */
+    public void setProxyService(DestroyProxyService proxyService) {
+        this.proxyService = proxyService;
     }
 }

@@ -32,15 +32,19 @@
 
     <context:component-scan resource-pattern="**/MoveObjectsController*" base-package="edu.unc.lib.dl.cdr.services.rest.modify"/>
     
+    <bean id="destroyProxyService" class="edu.unc.lib.dl.persist.services.destroy.DestroyProxyService">
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
     <bean id="moveObjectsService" class="edu.unc.lib.dl.persist.services.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="operationMetrics" ref="operationMetrics" />
         <property name="objectPathFactory" ref="objectPathFactory" />
-        <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="transactionManager" ref="transactionManager" />
+        <property name="proxyService" ref="destroyProxyService" />
     </bean>
     
     <bean id="aclService" class="org.mockito.Mockito" factory-method="mock">
