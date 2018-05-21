@@ -122,7 +122,7 @@ public class DerivativeServiceTest {
     }
 
     private File createDerivative(PID pid, DatastreamType dsType) throws Exception {
-        Path derivPath = Paths.get(derivativePath, dsType.getId(), HASHED_ID + dsType.getExtension());
+        Path derivPath = Paths.get(derivativePath, dsType.getId(), HASHED_ID + "." + dsType.getExtension());
         File derivFile = derivPath.toFile();
         derivFile.getParentFile().mkdirs();
 

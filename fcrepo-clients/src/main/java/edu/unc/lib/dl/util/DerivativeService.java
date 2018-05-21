@@ -63,7 +63,7 @@ public class DerivativeService {
         String hashedPath = idToPath(id, HASHED_PATH_DEPTH, HASHED_PATH_SIZE);
 
         // Construct the full path of the derivative
-        Path derivPath = Paths.get(derivativeDir, dsType.getId(), hashedPath, id + dsType.getExtension());
+        Path derivPath = Paths.get(derivativeDir, dsType.getId(), hashedPath, id + "." + dsType.getExtension());
         File derivFile = derivPath.toFile();
 
         // If the derivative file does not exist, then return no result
