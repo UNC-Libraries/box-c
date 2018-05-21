@@ -18,7 +18,6 @@ package edu.unc.lib.dl.persist.services.move;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.fcrepo.client.FcrepoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,6 @@ import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  * Service which moves content objects between containers.
@@ -45,8 +43,6 @@ public class MoveObjectsService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private TransactionManager transactionManager;
-    private SparqlQueryService sparqlQueryService;
-    private FcrepoClient fcrepoClient;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
     private boolean asynchronous;
@@ -70,15 +66,14 @@ public class MoveObjectsService {
             throw new IllegalArgumentException("Must provide agent identification information");
         }
 
-        MoveObjectsJob job = new MoveObjectsJob(agent, destinationPid, pids, proxyService);
+        MoveObjectsJob job = new MoveObjectsJob(agent, destinationPid, pids);
         job.setAclService(aclService);
-        job.setFcrepoClient(fcrepoClient);
         job.setRepositoryObjectLoader(repositoryObjectLoader);
-        job.setSparqlQueryService(sparqlQueryService);
         job.setTransactionManager(transactionManager);
         job.setOperationsMessageSender(operationsMessageSender);
         job.setObjectPathFactory(objectPathFactory);
         job.setOperationMetrics(operationMetrics);
+        job.setProxyService(proxyService);
 
         if (asynchronous) {
             log.info("User {} is queueing move operation {} of {} objects to destination {}",
@@ -110,20 +105,6 @@ public class MoveObjectsService {
      */
     public void setTransactionManager(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
-    }
-
-    /**
-     * @param sparqlQueryService the sparqlQueryService to set
-     */
-    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
-        this.sparqlQueryService = sparqlQueryService;
-    }
-
-    /**
-     * @param fcrepoClient the fcrepoClient to set
-     */
-    public void setFcrepoClient(FcrepoClient fcrepoClient) {
-        this.fcrepoClient = fcrepoClient;
     }
 
     /**

@@ -141,7 +141,6 @@ public class MoveObjectsServiceTest {
     @Mock
     private ObjectPath sourceObjPath;
 
-
     private MoveObjectsService service;
 
     private ListAppender<ILoggingEvent> actionAppender;
@@ -152,9 +151,8 @@ public class MoveObjectsServiceTest {
 
         service = new MoveObjectsService();
         service.setAclService(aclService);
-        service.setFcrepoClient(fcrepoClient);
+
         service.setRepositoryObjectLoader(repositoryObjectLoader);
-        service.setSparqlQueryService(sparqlQueryService);
         service.setTransactionManager(transactionManager);
         service.setOperationsMessageSender(operationsMessageSender);
         service.setObjectPathFactory(objectPathFactory);
@@ -239,16 +237,17 @@ public class MoveObjectsServiceTest {
         when(mockResultSet.hasNext()).thenReturn(true, false);
         when(mockProxyResource.getURI()).thenReturn(proxyUri);
         when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
+        when(proxyService.destroyProxy(any(PID.class))).thenReturn(sourcePid.getRepositoryPath());
 
         List<PID> movePids = asList(makeMoveObject());
         service.moveObjects(mockAgent, destPid, movePids);
 
-        //verify(fcrepoClient).delete(eq(URI.create(proxyUri)));
+        verify(proxyService).destroyProxy(movePids.get(0));
         verify(mockDestObj).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));
 
-        //verifyLogMessage(sourcePid, movePids);
+        verifyLogMessage(sourcePid, movePids);
     }
 
     @Test
@@ -259,11 +258,12 @@ public class MoveObjectsServiceTest {
         when(mockResultSet.hasNext()).thenReturn(true, true, false);
         when(mockProxyResource.getURI()).thenReturn(proxyUri1, proxyUri2);
         when(mockParentResource.getURI()).thenReturn(sourcePid.getRepositoryPath());
+        when(proxyService.destroyProxy(any(PID.class))).thenReturn(sourcePid.getRepositoryPath());
 
         List<PID> movePids = asList(makeMoveObject(), makeMoveObject());
         service.moveObjects(mockAgent, destPid, movePids);
 
-        //verify(fcrepoClient, times(4)).delete(any(URI.class));
+        verify(proxyService, times(2)).destroyProxy(any(PID.class));
         verify(mockDestObj, times(2)).addMember(any(ContentObject.class));
         verify(operationsMessageSender).sendMoveOperation(anyString(), anyListOf(PID.class),
                 eq(destPid), anyListOf(PID.class), eq(null));

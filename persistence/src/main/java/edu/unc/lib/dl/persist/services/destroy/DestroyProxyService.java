@@ -19,9 +19,6 @@ import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
 
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QuerySolution;
@@ -31,12 +28,12 @@ import org.fcrepo.client.FcrepoClient;
 import org.fcrepo.client.FcrepoOperationFailedException;
 import org.fcrepo.client.FcrepoResponse;
 
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
+ * Service for destroying membership proxies from ldp IndirectContainers.
  *
  * @author bbpennel
  * @author harring
@@ -44,19 +41,21 @@ import edu.unc.lib.dl.sparql.SparqlQueryService;
  */
 public class DestroyProxyService {
 
-    private Map<String, Collection<PID>> sourceToPid;
     private SparqlQueryService sparqlQueryService;
     private FcrepoClient fcrepoClient;
 
-    public DestroyProxyService(Map<String, Collection<PID>> sourceToPid, SparqlQueryService sparqlQueryService,
-            FcrepoClient fcrepoClient) {
-        this.sourceToPid = sourceToPid;
-        this.sparqlQueryService = sparqlQueryService;
-        this.fcrepoClient = fcrepoClient;
+    public DestroyProxyService() {
     }
 
-    public void destroyProxy(PID objPid) {
-        URI proxyUri = getProxyUri(objPid);
+    /**
+     * Destroys the membership proxy referencing objPid.
+     *
+     * @param objPid pid of the object whose proxy will be destroyed.
+     * @return the path of the parent object the proxy was removed from.
+     */
+    public String destroyProxy(PID objPid) {
+        ProxyInfo proxyInfo = getProxyInfo(objPid);
+        URI proxyUri = proxyInfo.proxyUri;
 
         try (FcrepoResponse resp = fcrepoClient.delete(proxyUri).perform()) {
         } catch (FcrepoOperationFailedException | IOException e) {
@@ -68,6 +67,8 @@ public class DestroyProxyService {
         } catch (FcrepoOperationFailedException | IOException e) {
             throw new ServiceException("Unable to clean up proxy tombstone for " + objPid, e);
         }
+
+        return proxyInfo.sourcePath;
     }
 
     private final static String PROXY_QUERY =
@@ -78,7 +79,7 @@ public class DestroyProxyService {
             "  FILTER regex(str(?proxyuri), \"/member\")\n" +
             "}";
 
-    private URI getProxyUri(PID pid) {
+    private ProxyInfo getProxyInfo(PID pid) {
         String query = String.format(PROXY_QUERY, pid.getRepositoryPath());
 
         try (QueryExecution exec = sparqlQueryService.executeQuery(query)) {
@@ -89,23 +90,34 @@ public class DestroyProxyService {
                 Resource proxyUri = soln.getResource("proxyuri");
                 Resource parentResc = soln.getResource("parent");
 
-                // Store the pid of the content container owning this proxy as a move source
-                addPidToSource(pid, parentResc.getURI());
-
-                return URI.create(proxyUri.getURI());
+                return new ProxyInfo(URI.create(proxyUri.getURI()), parentResc.getURI());
             }
         }
         return null;
     }
 
-        private void addPidToSource(PID pid, String sourcePath) {
-            String sourceId = PIDs.get(sourcePath).getId();
-            Collection<PID> pidsForSource = sourceToPid.get(sourceId);
-            if (pidsForSource == null) {
-                pidsForSource = new ArrayList<>();
-                sourceToPid.put(sourceId, pidsForSource);
-            }
-            pidsForSource.add(pid);
+    /**
+     * @param sparqlQueryService the sparqlQueryService to set
+     */
+    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
+        this.sparqlQueryService = sparqlQueryService;
+    }
+
+    /**
+     * @param fcrepoClient the fcrepoClient to set
+     */
+    public void setFcrepoClient(FcrepoClient fcrepoClient) {
+        this.fcrepoClient = fcrepoClient;
+    }
+
+    private static class ProxyInfo {
+        public URI proxyUri;
+        public String sourcePath;
+
+        public ProxyInfo(URI proxyUri, String sourcePath) {
+            this.proxyUri = proxyUri;
+            this.sourcePath = sourcePath;
         }
 
+    }
 }
