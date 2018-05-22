@@ -246,6 +246,10 @@
         <constructor-arg value="edu.unc.lib.dl.util.VocabularyHelperManager" />
     </bean>
     
+    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+        <property name="derivativeDir" value="target/" />
+    </bean>
+    
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
         class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
@@ -270,6 +274,7 @@
     
     <bean id="setDatastreamFilter"
         class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+        <property name="derivativeService" ref="derivativeService" />
     </bean>
     
     <bean id="setDescriptiveMetadataFilter"
