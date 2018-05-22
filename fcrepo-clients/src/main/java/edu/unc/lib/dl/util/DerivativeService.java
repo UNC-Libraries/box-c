@@ -18,6 +18,7 @@ package edu.unc.lib.dl.util;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_DEPTH;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.HASHED_PATH_SIZE;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPaths.idToPath;
+import static edu.unc.lib.dl.model.DatastreamType.getByIdentifier;
 import static edu.unc.lib.dl.model.StoragePolicy.EXTERNAL;
 import static org.springframework.util.Assert.notNull;
 
@@ -42,7 +43,7 @@ public class DerivativeService {
 
     private String derivativeDir;
 
-    private List<DatastreamType> derivativeTypes;
+    private volatile static List<DatastreamType> derivativeTypes;
 
     public DerivativeService() {
     }
@@ -95,7 +96,7 @@ public class DerivativeService {
      *
      * @return
      */
-    public List<DatastreamType> listDerivativeTypes() {
+    public static List<DatastreamType> listDerivativeTypes() {
         if (derivativeTypes == null) {
             derivativeTypes = Arrays.stream(DatastreamType.values())
                     .filter(dt -> EXTERNAL.equals(dt.getStoragePolicy()))
@@ -103,6 +104,16 @@ public class DerivativeService {
         }
 
         return derivativeTypes;
+    }
+
+    /**
+     * Returns true if the datastream provided is a derivative type
+     *
+     * @param dsName
+     * @return
+     */
+    public static boolean isDerivative(String dsName) {
+        return listDerivativeTypes().contains(getByIdentifier(dsName));
     }
 
     /**

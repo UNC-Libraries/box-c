@@ -17,6 +17,7 @@ package edu.unc.lib.dl.cdr.services.rest;
 
 import static edu.unc.lib.dl.acl.util.GroupsThreadStore.getAgentPrincipals;
 import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
+import static edu.unc.lib.dl.util.DerivativeService.isDerivative;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -84,8 +85,12 @@ public class DatastreamRestController {
         AccessGroupSet principals = getAgentPrincipals().getPrincipals();
 
         try {
-            fedoraContentService.streamData(pid, datastream, principals, download, response);
-            recordDownloadEvent(pid, datastream, principals, request);
+            if (isDerivative(datastream)) {
+                derivativeContentService.streamData(pid, datastream, principals, false, response);
+            } else {
+                fedoraContentService.streamData(pid, datastream, principals, download, response);
+                recordDownloadEvent(pid, datastream, principals, request);
+            }
         } catch (IOException e) {
             log.error("Problem retrieving {} for {}", pid.toString(), datastream, e);
         }

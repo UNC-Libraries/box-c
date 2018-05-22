@@ -198,6 +198,25 @@ public class DatastreamRestControllerIT extends AbstractAPIIT {
     }
 
     @Test
+    public void testGetFileDerivative() throws Exception {
+        PID filePid = makePid();
+        String id = filePid.getId();
+        createDerivative(id, THUMBNAIL_SMALL, BINARY_CONTENT.getBytes());
+
+        MvcResult result = mvc.perform(get("/file/" + filePid.getId() + "/" + THUMBNAIL_SMALL.getId()))
+                .andExpect(status().is2xxSuccessful())
+                .andReturn();
+
+        // Verify content was retrieved
+        MockHttpServletResponse response = result.getResponse();
+        assertEquals(BINARY_CONTENT, response.getContentAsString());
+        assertEquals(BINARY_CONTENT.length(), response.getContentLength());
+        assertEquals("image/png", response.getContentType());
+        assertEquals("inline; filename=\"" + id + "." + THUMBNAIL_SMALL.getExtension() + "\"",
+                response.getHeader(CONTENT_DISPOSITION));
+    }
+
+    @Test
     public void testGetThumbnailNotPresent() throws Exception {
         PID filePid = makePid();
 
