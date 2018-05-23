@@ -83,6 +83,22 @@ public class Cdr {
     public static final Property hasSourceMetadataProfile = createProperty(
             "http://cdr.unc.edu/definitions/model#hasSourceMetadataProfile" );
 
+    /**
+     * Refers to the list of PIDs of parent objects that contained an object slated
+     * for removal from the repository. Includes PIDs of objects beginning from
+     * the immediate parent all the way to the root of the repository.
+     */
+    public static final Property historicalIdPath = createProperty(
+            "http://cdr.unc.edu/definitions/model#historicalIdPath" );
+
+    /**
+     * Refers to the list of names of parent objects that contained an object slated
+     * for removal from the repository. Includes names of objects beginning from
+     * the immediate parent all the way to the root of the repository.
+     */
+    public static final Property historicalPath = createProperty(
+            "http://cdr.unc.edu/definitions/model#historicalPath" );
+
     /** Reference to a vocabulary object. For objects in this collection, if the given
      *  vocabulary applies to a descriptive field it will only index its value if
      *  it is found within the vocabulary.
@@ -149,5 +165,6 @@ public class Cdr {
             "http://cdr.unc.edu/definitions/model#SourceMetadata" );
     public static final Resource DescriptiveMetadata = createResource(
             "http://cdr.unc.edu/definitions/model#DescriptiveMetadata" );
-
+    public static final Resource Tombstone = createResource(
+            "http://cdr.unc.edu/definitions/model#Tombstone" );
 }
