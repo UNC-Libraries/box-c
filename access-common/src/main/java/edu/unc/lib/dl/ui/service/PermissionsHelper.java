@@ -87,7 +87,7 @@ public class PermissionsHelper {
      * requested datastream, and the datastream is present.
      *
      * @param principals agent principals
-     * @param datastream datastream being requested
+     * @param datastream type of datastream being requested
      * @param metadata object
      * @return
      */

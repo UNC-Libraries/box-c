@@ -18,6 +18,7 @@ package edu.unc.lib.dl.ui.service;
 import static edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil.getPermissionForDatastream;
 import static edu.unc.lib.dl.model.DatastreamType.getByIdentifier;
 import static edu.unc.lib.dl.ui.service.FedoraContentService.CONTENT_DISPOSITION;
+import static edu.unc.lib.dl.util.DerivativeService.listDerivativeTypes;
 import static org.apache.http.HttpHeaders.CONTENT_LENGTH;
 import static org.apache.http.HttpHeaders.CONTENT_TYPE;
 
@@ -56,22 +57,25 @@ public class DerivativeContentService {
     }
 
     /**
-     * Set content headers and stream the content of the specified derivative from the object identified by pid.
+     * Set content headers and stream the content of the specified derivative
+     * from the object identified by pid.
      *
      * @param pid pid of object containing the derivative
-     * @param dsName name of derivative being requested.
+     * @param dsName name of derivative being requested. Must be a derivative
+     *            type, otherwise an IllegalArgumentException will be thrown.
      * @param principals principals of requesting client
      * @param asAttachment if true, then content-disposition header will specify
      *            as "attachment" instead of "inline"
      * @param response response content and headers will be added to.
      * @throws IOException if unable to stream content to the response.
-     * @throws ResourceNotFoundException if an invalid derivative type is requested.
+     * @throws ResourceNotFoundException if an invalid derivative type is
+     *             requested.
      */
     public void streamData(PID pid, String dsName, AccessGroupSet principals, boolean asAttachment,
             HttpServletResponse response) throws IOException, ResourceNotFoundException {
 
         DatastreamType derivType = getByIdentifier(dsName);
-        if (derivType == null || !derivativeService.listDerivativeTypes().contains(derivType)) {
+        if (derivType == null || !listDerivativeTypes().contains(derivType)) {
             throw new IllegalArgumentException(dsName + " is not a valid derivative type.");
         }
 
