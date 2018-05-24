@@ -115,7 +115,7 @@ public class DestroyObjectsJob implements Runnable {
         Resource resc = destroyedObj.getResource();
 
         MultiPropertySelector selector = new MultiPropertySelector(resc);
-        StmtIterator iter = oldModel.listStatements();
+        StmtIterator iter = oldModel.listStatements(selector);
         while (iter.hasNext()) {
             Statement s = iter.nextStatement();
             if (selector.selects(s)) {
