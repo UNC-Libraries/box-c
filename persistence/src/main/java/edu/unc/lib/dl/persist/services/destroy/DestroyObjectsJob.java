@@ -18,9 +18,8 @@ package edu.unc.lib.dl.persist.services.destroy;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Selector;
-import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
@@ -39,13 +38,13 @@ import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.DcElements;
-import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
+import edu.unc.lib.dl.util.MultiPropertySelector;
 import io.dropwizard.metrics5.Timer;
 
 /**
+ * A job for removing objects from the repository and replacing them with tombstones
  *
  * @author harring
  *
@@ -101,54 +100,32 @@ public class DestroyObjectsJob implements Runnable {
         // destroy root of tree
         Model stoneModel = rootOfTree.getModel();
         stoneModel = convertModelToTombstone(rootOfTree);
-        repoObjFactory.createObject(rootOfTree.getUri(), stoneModel);
+        repoObjFactory.createOrTransformObject(rootOfTree.getUri(), stoneModel);
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
         .addImplementorAgent(agent.getUsernameUri())
         .addEventDetail("Item deleted from repository and replaced by tombstone")
         .write();
-
-        // persist model
-        repoObjFactory.createObject(rootOfTree.getUri(), stoneModel);
     }
 
     private Model convertModelToTombstone(RepositoryObject destroyedObj) {
-        Model model = destroyedObj.getModel();
+        Model oldModel = destroyedObj.getModel();
+        Model stoneModel = ModelFactory.createDefaultModel();
         Resource resc = destroyedObj.getResource();
 
-        if (destroyedObj instanceof BinaryObject) {
-            // whitelisted properties for tombstone model of binaries
-            Selector selectEbucoreFilename = new SimpleSelector(resc, Ebucore.filename, (Object) null);
-            Selector selectDcFilename = new SimpleSelector(resc, DcElements.title, (Object) null);
-            Selector selectPremisOriginalName = new SimpleSelector(resc, Premis.hasOriginalName, (Object) null);
-            Selector selectMimetype = new SimpleSelector(resc, Ebucore.hasMimeType, (Object) null);
-            Selector selectChecksum= new SimpleSelector(resc, Premis.hasMessageDigest, (Object) null);
-            Selector selectFilesize = new SimpleSelector(resc, Premis.hasSize, (Long) null);
-
-            StmtIterator iter = model.listStatements();
-            while (iter.hasNext()) {
-                Statement s = iter.nextStatement();
-                if (!(selectEbucoreFilename.test(s) || selectDcFilename.test(s) || selectPremisOriginalName.test(s)
-                        || selectMimetype.test(s) || selectChecksum.test(s) || selectFilesize.test(s))) {
-                    model.remove(s);
-                }
-            }
-        } else {
-            // retain only the object-type of a non-binary object
-            Selector selectRdfType = new SimpleSelector(resc, RDF.type, (Object) null);
-            StmtIterator iter = model.listStatements();
-            while (iter.hasNext()) {
-                Statement s = iter.nextStatement();
-                if (!selectRdfType.test(s)) {
-                    model.remove(s);
-                }
+        MultiPropertySelector selector = new MultiPropertySelector(resc);
+        StmtIterator iter = oldModel.listStatements();
+        while (iter.hasNext()) {
+            Statement s = iter.nextStatement();
+            if (selector.selects(s)) {
+                stoneModel.add(s);
             }
         }
         // determine path and store in tombstone model
         String path = pathFactory.getPath(destroyedObj.getPid()).toNamePath();
-        model.add(resc, Cdr.historicalPath, path);
-        model.add(resc, RDF.type, Cdr.Tombstone);
-        return model;
+        stoneModel.add(resc, Cdr.historicalPath, path);
+        stoneModel.add(resc, RDF.type, Cdr.Tombstone);
+        return stoneModel;
     }
 }
