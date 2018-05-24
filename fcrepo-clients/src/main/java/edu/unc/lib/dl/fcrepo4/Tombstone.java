@@ -15,8 +15,6 @@
  */
 package edu.unc.lib.dl.fcrepo4;
 
-import java.util.Map;
-
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.ObjectTypeMismatchException;
 import edu.unc.lib.dl.fedora.PID;
@@ -30,12 +28,8 @@ import edu.unc.lib.dl.rdf.Fcrepo4Repository;
  */
 public class Tombstone extends RepositoryObject {
 
-    private Map<String,String> record;
-
-    public Tombstone(PID pid, RepositoryObjectDriver driver, RepositoryObjectFactory repoObjFactory,
-            Map<String, String> record) {
+    public Tombstone(PID pid, RepositoryObjectDriver driver, RepositoryObjectFactory repoObjFactory) {
         super(pid, driver, repoObjFactory);
-        this.record = record;
     }
 
     @Override
@@ -49,9 +43,5 @@ public class Tombstone extends RepositoryObject {
     @Override
     public RepositoryObject getParent() {
         return driver.getParentObject(this);
-    }
-
-    public Map<String,String> getRecord() {
-        return record;
     }
 }
