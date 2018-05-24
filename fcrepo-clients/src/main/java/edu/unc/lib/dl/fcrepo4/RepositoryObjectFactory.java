@@ -439,7 +439,7 @@ public class RepositoryObjectFactory {
      */
     public PremisEventObject createPremisEvent(PID eventPid, Model model) throws FedoraException {
 
-        URI createdUri = createObject(eventPid.getRepositoryUri(), model);
+        URI createdUri = createOrTransformObject(eventPid.getRepositoryUri(), model);
 
         return new PremisEventObject(PIDs.get(createdUri), repoObjDriver, this);
     }
@@ -525,14 +525,15 @@ public class RepositoryObjectFactory {
 
     /**
      * Creates a fedora object at the given location with the provided
-     * properties
+     * properties, or replaces an existing object's triples with those in
+     * the provided model
      *
      * @param uri
      * @param model
      * @return
      * @throws FedoraException
      */
-    public URI createObject(URI uri, Model model) throws FedoraException {
+    public URI createOrTransformObject(URI uri, Model model) throws FedoraException {
 
         try (FcrepoResponse response = getClient().put(uri)
                 .body(RDFModelUtil.streamModel(model), TURTLE_MIMETYPE)
