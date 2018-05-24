@@ -25,9 +25,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.http.HttpStatus;
 import org.apache.jena.rdf.model.Model;
@@ -44,7 +42,6 @@ import edu.unc.lib.dl.fedora.ChecksumMismatchException;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Cdr;
-import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.sparql.SparqlUpdateHelper;
@@ -70,8 +67,6 @@ public class RepositoryObjectFactory {
     private RepositoryPIDMinter pidMinter;
 
     private SparqlUpdateService sparqlUpdateService;
-
-    private RepositoryObjectLoader repoObjLoader;
 
     /**
      * Creates a new deposit record object with the given model.
@@ -451,59 +446,6 @@ public class RepositoryObjectFactory {
 
     public PremisEventObject getPremisEvent(PID pid) throws FedoraException {
         return new PremisEventObject(pid, repoObjDriver, this).validateType();
-    }
-
-    /**
-     * Create a tombstone object with the given pid and model
-     *
-     * @param destroyedObjPid pid of the destroyed object the tombstone is replacing
-     * @param model an rdf model to hold triples for the tombstone
-     * @return the tombstone for the destroyed object with the given pid
-     */
-    public Tombstone createTombstone(PID pid, Model model) {
-        URI path = pid.getRepositoryUri();
-        Map<String,String> tombstoneRecord = populateTombstoneRecord(pid);
-
-        // Add types to the object being created
-        model = populateModelTypes(path, model, Arrays.asList(Fcrepo4Repository.Tombstone, PcdmModels.Object));
-
-        createObject(pid.getRepositoryUri(), model);
-
-        return new Tombstone(pid, repoObjDriver, this, tombstoneRecord);
-    }
-
-    private Map<String,String> populateTombstoneRecord(PID pid) {
-        Map<String,String> tombstoneRecord = new HashMap<>();
-        //TODO: display name of obj
-        RepositoryObject obj = repoObjLoader.getRepositoryObject(pid);
-        String objectType = obj.getContentObjectType();
-        tombstoneRecord.put("object type", objectType);
-        if (objectType.equals("file")) {
-            // retrieve binaries of this file object and insert their details into tombstone record
-            FileObject fileObj = (FileObject) obj;
-            List<BinaryObject> binObjs = fileObj.getBinaryObjects();
-            for (BinaryObject binObj : binObjs) {
-                insertBinaryDetailsIntoTombstoneRecord(tombstoneRecord, binObj);
-            }
-        }
-        return tombstoneRecord;
-    }
-
-    private void insertBinaryDetailsIntoTombstoneRecord(Map<String,String> tombstoneRecord, BinaryObject binObj) {
-        tombstoneRecord.put("filename", binObj.getFilename());
-
-        String sha1Checksum = binObj.getSha1Checksum();
-        String md5Checksum = binObj.getMd5Checksum();
-        if (sha1Checksum != null) {
-            tombstoneRecord.put("sha1 checksum", sha1Checksum);
-        }
-        if ( md5Checksum  != null) {
-            tombstoneRecord.put("md5 checksum", md5Checksum);
-        }
-
-        tombstoneRecord.put("filesize", binObj.getFilesize().toString());
-
-        tombstoneRecord.put("mimetype", binObj.getMimetype());
     }
 
     /**

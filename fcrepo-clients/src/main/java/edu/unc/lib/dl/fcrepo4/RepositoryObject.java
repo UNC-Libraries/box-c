@@ -26,7 +26,6 @@ import org.apache.jena.rdf.model.Resource;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Fcrepo4Repository;
 
 /**
@@ -228,32 +227,6 @@ public abstract class RepositoryObject {
             driver.loadTypes(this);
         }
         return types;
-    }
-
-    /**
-     * If this repository object is a content object, return its object type
-     *
-     * @return the object type of this repository object, or null in case this object is not a content object
-     * @throws FedoraException if there is an error loading the RDF types for this object
-     */
-    public String getContentObjectType() throws FedoraException {
-        List<String> types = getTypes();
-        if (types.contains(Cdr.FileObject)) {
-            return "file";
-        } else if (types.contains(Cdr.Work)) {
-            return "work";
-        } else if (types.contains(Cdr.Folder)) {
-            return "folder";
-        } else if (types.contains(Cdr.Collection)) {
-            return "collection";
-        } else if (types.contains(Cdr.AdminUnit)) {
-            return "admin unit";
-        } else if (types.contains(Cdr.ContentRoot)) {
-            return "content root";
-        } else {
-            // not a content object
-            return null;
-        }
     }
 
     /**
