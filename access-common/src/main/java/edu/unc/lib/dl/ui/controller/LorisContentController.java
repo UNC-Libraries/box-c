@@ -15,6 +15,8 @@
  */
 package edu.unc.lib.dl.ui.controller;
 
+import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
+
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
@@ -31,7 +33,6 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.PIDs;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
@@ -51,18 +52,16 @@ public class LorisContentController extends AbstractSolrSearchController {
     private AccessControlService accessControlService;
 
     /**
-     * Determines if the user is allowed to access a specific datastream on the selected object. If so, then the result
-     * is cached for future use.
+     * Determines if the user is allowed to access a specific datastream on the selected object.
      *
-     * @param id
+     * @param pid
      * @param datastream
-     * @param request
      * @return
      */
     private boolean hasAccess(PID pid, String datastream) {
         // Defaults to jp2 surrogate if no datastream specified
         if (datastream == null) {
-            datastream = RepositoryPathConstants.JPEG_2000;
+            datastream = JP2_ACCESS_COPY.getId();
         }
 
         Permission permission = DatastreamPermissionUtil.getPermissionForDatastream(datastream);

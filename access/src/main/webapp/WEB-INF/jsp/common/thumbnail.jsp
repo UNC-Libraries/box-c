@@ -68,10 +68,10 @@
 <c:set var="src">
 	<c:choose>
 		<c:when test="${param.size == 'large' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_LARGE')}" />
+			<c:out value="${cdr:getThumbnailUrl(thumbnailObject, 'large')}" />
 		</c:when>
 		<c:when test="${param.size == 'small' && permsHelper.hasThumbnailAccess(requestScope.accessGroupSet, thumbnailObject)}">
-			<c:out value="${cdr:getDatastreamUrl(thumbnailObject, 'THUMB_SMALL')}" />
+			<c:out value="${cdr:getThumbnailUrl(thumbnailObject, 'small')}" />
 		</c:when>
 	</c:choose>
 </c:set>

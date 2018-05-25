@@ -185,6 +185,10 @@
         <property name="accessRestrictionUtil" ref="solrAccessRestrictionUtil" />
     </bean>
     
+    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+        <property name="derivativeDir" value="${derivative.dir}" />
+    </bean>
+    
     <!-- Solr ingest filters -->
     <bean id="setAccessControlFilter"
         class="edu.unc.lib.dl.data.ingest.solr.filter.SetAccessControlFilter">
@@ -209,6 +213,7 @@
     
     <bean id="setDatastreamFilter"
         class="edu.unc.lib.dl.data.ingest.solr.filter.SetDatastreamFilter">
+        <property name="derivativeService" ref="derivativeService" />
     </bean>
     
     <bean id="setDescriptiveMetadataFilter"

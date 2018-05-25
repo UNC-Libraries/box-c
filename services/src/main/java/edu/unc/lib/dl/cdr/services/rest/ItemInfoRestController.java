@@ -40,7 +40,7 @@ import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.IdListRequest;
 import edu.unc.lib.dl.search.solr.model.SimpleIdRequest;
-import edu.unc.lib.dl.search.solr.service.SolrSearchService;
+import edu.unc.lib.dl.ui.service.SolrQueryLayerService;
 
 /**
  *
@@ -55,7 +55,7 @@ public class ItemInfoRestController implements ServletContextAware {
     protected ServletContext servletContext = null;
 
     @Resource
-    private SolrSearchService solrSearchService;
+    private SolrQueryLayerService solrSearchService;
 
     @Resource(name = "contextUrl")
     protected String contextUrl = null;
@@ -107,10 +107,6 @@ public class ItemInfoRestController implements ServletContextAware {
         }
 
         return results;
-    }
-
-    public void setSolrSearchService(SolrSearchService solrSearchService) {
-        this.solrSearchService = solrSearchService;
     }
 
     @Override

@@ -352,6 +352,15 @@
       <property name="failedTemplate" ref="updateFailedTemplate" />
       <property name="fromAddress" ref="fromAddress" />
    </bean>
+   
+    <bean id="derivativeService" class="edu.unc.lib.dl.util.DerivativeService">
+        <property name="derivativeDir" value="${derivative.dir}" />
+    </bean>
+   
+    <bean id="derivativeContentService" class="edu.unc.lib.dl.ui.service.DerivativeContentService">
+        <property name="accessControlService" ref="aclService" />
+        <property name="derivativeService" ref="derivativeService" />
+    </bean>
     
     <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
         <property name="staticMethod" value="edu.unc.lib.dl.ui.util.SerializationUtil.injectSettings"/>

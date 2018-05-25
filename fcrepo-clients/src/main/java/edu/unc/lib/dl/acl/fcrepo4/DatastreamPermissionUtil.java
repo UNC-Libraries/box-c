@@ -15,18 +15,14 @@
  */
 package edu.unc.lib.dl.acl.fcrepo4;
 
-import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
-import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
-import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.JPEG_2000;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.LARGE_THUMBNAIL;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.SMALL_THUMBNAIL;
+import static edu.unc.lib.dl.model.DatastreamType.getByIdentifier;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.Assert;
 
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.model.DatastreamType;
 
 /**
  * Helper methods for determining permissions of datastreams.
@@ -41,27 +37,32 @@ public class DatastreamPermissionUtil {
     /**
      * Determine the Permission which applies to accessing the specified datastream.
      *
-     * @param datastream name of the datastream.  Required.
+     * @param dsName name of the datastream.  Required.
      * @return permission
      */
-    public static Permission getPermissionForDatastream(String datastream) {
-        if (StringUtils.isBlank(datastream)) {
+    public static Permission getPermissionForDatastream(String dsName) {
+        if (StringUtils.isBlank(dsName)) {
             throw new IllegalArgumentException("A non-null datastream name must be provided");
         }
 
-        if (ORIGINAL_FILE.equals(datastream)) {
-            return viewOriginal;
+        DatastreamType datastream = getByIdentifier(dsName);
+        // If the requested datastream is not a known type, consider it to be administrative
+        if (datastream == null) {
+            return viewHidden;
         }
-        if (SMALL_THUMBNAIL.equals(datastream)) {
-            return viewMetadata;
-        }
-        if (LARGE_THUMBNAIL.equals(datastream)) {
-            return viewMetadata;
-        }
-        if (JPEG_2000.equals(datastream)) {
-            return viewAccessCopies;
-        }
-        // All other datastreams are considered administrative
-        return viewHidden;
+
+        return getPermissionForDatastream(datastream);
+    }
+
+    /**
+     * Determine the Permission which applies to accessing the specified datastream.
+     *
+     * @param datastream datastream type to check. Required.
+     * @return permission
+     */
+    public static Permission getPermissionForDatastream(DatastreamType datastream) {
+        Assert.notNull(datastream);
+
+        return datastream.getAccessPermission();
     }
 }

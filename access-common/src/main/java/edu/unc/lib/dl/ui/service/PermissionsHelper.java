@@ -19,15 +19,15 @@ import static edu.unc.lib.dl.acl.fcrepo4.DatastreamPermissionUtil.getPermissionF
 import static edu.unc.lib.dl.acl.util.AccessPrincipalConstants.PUBLIC_PRINC;
 import static edu.unc.lib.dl.acl.util.Permission.editDescription;
 import static edu.unc.lib.dl.acl.util.UserRole.canViewOriginals;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.JPEG_2000;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.ORIGINAL_FILE;
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.SMALL_THUMBNAIL;
-import static org.springframework.util.Assert.hasText;
+import static edu.unc.lib.dl.model.DatastreamType.JP2_ACCESS_COPY;
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+import static edu.unc.lib.dl.model.DatastreamType.THUMBNAIL_SMALL;
 import static org.springframework.util.Assert.notNull;
 
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.Permission;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 
 /**
@@ -67,7 +67,7 @@ public class PermissionsHelper {
      * @return
      */
     public boolean hasThumbnailAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
-        return hasDatastreamAccess(principals, SMALL_THUMBNAIL, metadata);
+        return hasDatastreamAccess(principals, THUMBNAIL_SMALL, metadata);
     }
 
     /**
@@ -79,7 +79,7 @@ public class PermissionsHelper {
      * @return
      */
     public boolean hasImagePreviewAccess(AccessGroupSet principals, BriefObjectMetadata metadata) {
-        return hasDatastreamAccess(principals, JPEG_2000, metadata);
+        return hasDatastreamAccess(principals, JP2_ACCESS_COPY, metadata);
     }
 
     /**
@@ -87,18 +87,19 @@ public class PermissionsHelper {
      * requested datastream, and the datastream is present.
      *
      * @param principals agent principals
-     * @param datastream name of datastream being requested
+     * @param datastream type of datastream being requested
      * @param metadata object
      * @return
      */
-    public boolean hasDatastreamAccess(AccessGroupSet principals, String datastream,
+    public boolean hasDatastreamAccess(AccessGroupSet principals, DatastreamType datastream,
             BriefObjectMetadata metadata) {
         notNull(principals, "Requires agent principals");
-        hasText(datastream, "Requires datastream name");
+        notNull(datastream, "Requires datastream type");
         notNull(metadata, "Requires metadata object");
 
+        String dsIdentifier = datastream.getId();
         if (metadata.getDatastreamObjects() == null
-                || !containsDatastream(metadata, datastream)) {
+                || !containsDatastream(metadata, dsIdentifier)) {
             return false;
         }
 

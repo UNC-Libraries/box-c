@@ -15,6 +15,9 @@
  */
 package edu.unc.lib.dl.data.ingest.solr.filter;
 
+import static edu.unc.lib.dl.model.DatastreamType.ORIGINAL_FILE;
+
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,12 +30,14 @@ import edu.unc.lib.dl.data.ingest.solr.exception.IndexingException;
 import edu.unc.lib.dl.data.ingest.solr.indexing.DocumentIndexingPackage;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FileObject;
-import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
+import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.model.DatastreamType;
 import edu.unc.lib.dl.rdf.Ebucore;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.model.Datastream;
 import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
+import edu.unc.lib.dl.util.DerivativeService;
 
 /**
  * Extracts datastreams from an object and sets related properties concerning the default datastream for the object.
@@ -44,6 +49,8 @@ import edu.unc.lib.dl.search.solr.model.IndexDocumentBean;
  */
 public class SetDatastreamFilter implements IndexDocumentFilter {
     private static final Logger log = LoggerFactory.getLogger(SetDatastreamFilter.class);
+
+    private DerivativeService derivativeService;
 
     @Override
     public void filter(DocumentIndexingPackage dip) throws IndexingException {
@@ -57,7 +64,11 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
 
         boolean ownedByOtherObject = contentObj instanceof WorkObject;
+        // Retrieve list of datastreams associated with this object
         List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
+        // Retrieve list of derivatives associated with the object
+        List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);
+        datastreams.addAll(derivatives);
 
         IndexDocumentBean doc = dip.getDocument();
 
@@ -83,7 +94,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
      * provided FileObject. If the datastreams are being recorded on an object
      * other than their owning file object, the pid of the owning file object is
      * recorded
-     * 
+     *
      * @param fileObj
      * @param ownedByOtherObject
      * @return
@@ -120,7 +131,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
     /**
      * Returns the sum of filesizes for all datastreams which do no belong to
      * other objects
-     * 
+     *
      * @param datastreams
      * @return
      */
@@ -133,7 +144,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
 
     private long getFilesize(List<Datastream> datastreams) throws IndexingException {
         Optional<Datastream> original = datastreams.stream()
-                .filter(ds -> RepositoryPathConstants.ORIGINAL_FILE.equals(ds.getName()))
+                .filter(ds -> ORIGINAL_FILE.getId().equals(ds.getName()))
                 .findFirst();
 
         if (!original.isPresent()) {
@@ -141,5 +152,31 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
 
         return original.get().getFilesize();
+    }
+
+    private List<Datastream> getDerivatives(PID pid, boolean ownedByOtherObject) {
+        return derivativeService.getDerivatives(pid).stream()
+                .map(deriv -> {
+                    String owner = (ownedByOtherObject ? pid.getId() : null);
+
+                    DatastreamType type = deriv.getType();
+                    String name = type.getId();
+                    String mimetype = type.getMimetype();
+                    String extension = type.getExtension();
+
+                    File derivFile = deriv.getFile();
+                    Long filesize = derivFile.length();
+                    String filename = derivFile.getName();
+
+                    return new Datastream(owner, name, filesize, mimetype, filename, extension, null);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * @param derivativeService the derivativeService to set
+     */
+    public void setDerivativeService(DerivativeService derivativeService) {
+        this.derivativeService = derivativeService;
     }
 }

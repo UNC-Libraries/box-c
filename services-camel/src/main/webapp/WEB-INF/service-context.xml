@@ -148,17 +148,17 @@
     </bean>
 
     <bean id="addSmallThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_SMALL.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.small}" />
     </bean>
     
     <bean id="addLargeThumbnailProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="${cdr.enhancement.thumbnail.fileExtension}" />
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).THUMBNAIL_LARGE.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.thumbnail.large}" />
     </bean>
     
     <bean id="addAccessCopyProcessor" class="edu.unc.lib.dl.services.camel.images.AddDerivativeProcessor">
-        <constructor-arg value="${cdr.enhancement.jp2.fileExtension}" />
+        <constructor-arg value="#{T(edu.unc.lib.dl.model.DatastreamType).JP2_ACCESS_COPY.getExtension()}" />
         <constructor-arg value="${cdr.enhancement.path.jp2}" />
     </bean>
     
