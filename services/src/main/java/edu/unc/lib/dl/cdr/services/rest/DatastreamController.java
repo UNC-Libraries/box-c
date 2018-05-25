@@ -56,8 +56,8 @@ import edu.unc.lib.dl.ui.util.AnalyticsTrackerUtil;
  *
  */
 @Controller
-public class DatastreamRestController {
-    private static final Logger log = LoggerFactory.getLogger(DatastreamRestController.class);
+public class DatastreamController {
+    private static final Logger log = LoggerFactory.getLogger(DatastreamController.class);
 
     @Autowired
     private FedoraContentService fedoraContentService;
@@ -136,6 +136,6 @@ public class DatastreamRestController {
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler({ObjectTypeMismatchException.class, IllegalArgumentException.class})
-    public void handleBadRequestException() {
+    public void handleBadRequest() {
     }
 }

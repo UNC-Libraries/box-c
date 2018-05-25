@@ -64,7 +64,7 @@ public class SetDatastreamFilter implements IndexDocumentFilter {
         }
 
         boolean ownedByOtherObject = contentObj instanceof WorkObject;
-        // Retrieve list of datastreams preserved with this object
+        // Retrieve list of datastreams associated with this object
         List<Datastream> datastreams = getDatastreams(fileObj, ownedByOtherObject);
         // Retrieve list of derivatives associated with the object
         List<Datastream> derivatives = getDerivatives(fileObj.getPid(), ownedByOtherObject);

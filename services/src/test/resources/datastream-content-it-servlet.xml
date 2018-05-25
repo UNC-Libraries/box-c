@@ -30,7 +30,7 @@
         
     <mvc:annotation-driven/>
 
-    <context:component-scan resource-pattern="**/DatastreamRestController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
+    <context:component-scan resource-pattern="**/DatastreamController*" base-package="edu.unc.lib.dl.cdr.services.rest"/>
     
     <bean id="fedoraContentService" class="edu.unc.lib.dl.ui.service.FedoraContentService">
         <property name="accessControlService" ref="aclService" />
