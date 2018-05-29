@@ -17,8 +17,12 @@ package edu.unc.lib.dl.ui.util;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +35,9 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
+import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadataBean;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
@@ -58,19 +65,27 @@ public class SerializationUtilTest extends Assert {
     private SearchSettings searchSettings;
     @Mock
     private SolrSettings solrSettings;
+    @Mock
+    private GlobalPermissionEvaluator globalPermissionEvaluator;
+
+    private BriefObjectMetadataBean md;
 
     @Before
     public void init() {
         mapper = new ObjectMapper();
         when(applicationPathSettings.getApiRecordPath()).thenReturn(API_PATH);
-        SerializationUtil.injectSettings(applicationPathSettings, searchSettings, solrSettings);
+        SerializationUtil.injectSettings(applicationPathSettings, searchSettings, solrSettings,
+                globalPermissionEvaluator);
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+                .thenReturn(Collections.emptySet());
+
+        md = new BriefObjectMetadataBean();
+        md.setId("uuid:test");
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void briefMetadataToJSONTest() throws Exception {
-        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
-        md.setId("uuid:test");
         md.setTitle("Test Item");
         md.setIsPart(Boolean.FALSE);
         md.setDatastream(DATASTREAMS);
@@ -87,8 +102,6 @@ public class SerializationUtilTest extends Assert {
 
     @Test
     public void briefMetadataListToJSONTest() throws Exception {
-        BriefObjectMetadataBean md = new BriefObjectMetadataBean();
-        md.setId("uuid:test");
         md.setTitle("Test Item");
 
         BriefObjectMetadataBean md2 = new BriefObjectMetadataBean();
@@ -138,6 +151,78 @@ public class SerializationUtilTest extends Assert {
         Map<String, Object> childObj = (Map<String, Object>) childrenList.get(0);
         Map<String, Object> childEntry = (Map<String, Object>) childObj.get("entry");
         assertEquals("uuid:child", childEntry.get("id"));
+    }
+
+    @Test
+    public void testPermissionSerialization() throws Exception {
+        md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1",
+                UserRole.canViewOriginals.name() + "|group2"));
+
+        // Verify principal with administrative permissions
+        assertHasRolePermissions(md, new AccessGroupSet("group1"), UserRole.canManage);
+
+        // Verify principal with patron permissions
+        assertHasRolePermissions(md, new AccessGroupSet("group2"), UserRole.canViewOriginals);
+
+        // Verify group with no permissions
+        assertHasRolePermissions(md, new AccessGroupSet("group3"), null);
+
+        // Verify that highest permissions out of set of principals are assigned
+        assertHasRolePermissions(md, new AccessGroupSet("group2;group3"), UserRole.canViewOriginals);
+    }
+
+    // Check for only global match
+    @Test
+    public void testGlobalPermissionSerialization1() throws Exception {
+        md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1"));
+        AccessGroupSet adminPrincipals = new AccessGroupSet("adminGrp");
+
+        // Check for exclusive global match
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+                .thenReturn(new HashSet<>(Arrays.asList(UserRole.administrator)));
+
+        assertHasRolePermissions(md, adminPrincipals, UserRole.administrator);
+    }
+
+    // Check for global and local, with global winning
+    @Test
+    public void testGlobalPermissionSerialization2() throws Exception {
+        md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1"));
+        AccessGroupSet mixedPrincipals = new AccessGroupSet("adminGrp;group1");
+
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+                .thenReturn(new HashSet<>(Arrays.asList(UserRole.canAccess)));
+
+        assertHasRolePermissions(md, mixedPrincipals, UserRole.canManage);
+    }
+
+    // Check for global and local, with local winning
+    @Test
+    public void testGlobalPermissionSerialization3() throws Exception {
+        md.setRoleGroup(Arrays.asList(UserRole.canManage.name() + "|group1"));
+        AccessGroupSet mixedPrincipals = new AccessGroupSet("adminGrp;group1");
+
+        when(globalPermissionEvaluator.getGlobalUserRoles(any(AccessGroupSet.class)))
+        .thenReturn(new HashSet<>(Arrays.asList(UserRole.canAccess)));
+
+        assertHasRolePermissions(md, mixedPrincipals, UserRole.canManage);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> assertHasRolePermissions(BriefObjectMetadataBean md, AccessGroupSet principals,
+            UserRole expectedRole) throws Exception {
+        String groupJson = SerializationUtil.metadataToJSON(md, principals);
+        Map<String, Object> groupMap = getResultMap(groupJson);
+        List<String> permissions = (List<String>) groupMap.get("permissions");
+        if (expectedRole == null) {
+            assertTrue(permissions.isEmpty());
+        } else {
+            assertTrue(permissions.containsAll(expectedRole.getPermissionNames()));
+            assertEquals("Unexpected additional permissions present",
+                    expectedRole.getPermissions().size(), permissions.size());
+        }
+
+        return groupMap;
     }
 
     private Map<String, Object> getResultMap(String json) throws Exception {
