@@ -8,8 +8,8 @@ define('DeleteBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, Abst
 	DeleteBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	DeleteBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() && $.inArray("moveToTrash", target.metadata.permissions) != -1
-					&& $.inArray("Active", target.getMetadata().status) != -1;
+		return target.isSelected() && target.isEnabled() && $.inArray("markForDeletion", target.metadata.permissions) != -1
+					&& $.inArray("Marked For Deletion", target.getMetadata().status) == -1;
 	};
 	
 	DeleteBatchAction.prototype.execute = function() {

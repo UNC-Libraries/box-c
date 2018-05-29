@@ -103,9 +103,10 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		
 		var items = {};
 		var isContainerFlag = false;
-		if (resultObject.isContainer)
+		if (resultObject.isContainer) {
 			isContainerFlag = true;
 			items["openContainer"] = {name : "Open"};
+		}
 		items["viewInCDR"] = {name : "View in CDR"};
 		var dataFile = resultObject.getDatastream("DATA_FILE");
 		if (dataFile) {
@@ -120,15 +121,17 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		
 		// Modification options
 		items["sepedit"] = "";
-		if ($.inArray('addRemoveContents', metadata.permissions) != -1 && metadata.isPart) {
+		if ($.inArray('editResourceType', metadata.permissions) != -1 && metadata.isPart) {
 			var isDWO = $.inArray('Default Access Object', metadata.contentStatus) != -1;
 			items[isDWO? 'clearDefaultWebObject' : 'setDefaultWebObject'] = {
 				name : isDWO? 'Clear Primary Object' : 'Set as Primary Object'
 			};
 		}
+		/* Publish action being replaced
 		if ($.inArray('publish', metadata.permissions) != -1)
 			items["publish"] = {name : $.inArray('Unpublished', metadata.status) == -1 ? 'Unpublish' : 'Publish'};
-		if ($.inArray('editAccessControl', metadata.permissions) != -1) 
+		*/
+		if ($.inArray('assignStaffRoles', metadata.permissions) != -1) 
 			items["editAccess"] = {name : 'Edit Access'};
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
@@ -139,23 +142,25 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 			}
 		}
 		
+		/* Evaluating if retaining feature
 		if ($.inArray('editAccessControl', metadata.permissions) != -1
 				&& $.inArray('info:fedora/cdr-model:Collection', metadata.model) != -1) {
 			items["editCollectionSettings"] = {name : 'Edit Collection Settings'};
 		}
+		*/
 		
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
 			items["editDescription"] = {name : 'Edit Description'};
 		}
 
-		// Add files to collections and compound objects
-		if (metadata.type === 'Aggregate') {
+		// Add files to work objects
+		if (metadata.type === 'Work' && $.inArray('ingest', metadata.permissions) != -1) {
 			items["addFile"] = {name : 'Add File'};
 		}
 
 		// Export actions
 		items["sepexport"] = "";
-		if ($.inArray('info:fedora/cdr-model:Container', metadata.model) != -1) {
+		if (metadata.type !== 'File' ) {
 			items["exportCSV"] = {name : 'Export as CSV'};
 		}
 		if ($.inArray('editDescription', metadata.permissions) != -1) {
@@ -164,20 +169,23 @@ define('ResultObjectActionMenu', [ 'jquery', 'jquery-ui', 'StringUtilities',  'A
 		items["copyid"] = {name : 'Copy PID to Clipboard'};
 		
 		// Admin actions
-		if ($.inArray('editAccessControl', metadata.permissions) != -1) {
+		var adminItems = [];
+		if ($.inArray('destroy', metadata.permissions) != -1 || $.inArray('reindex', metadata.permissions) != -1) {
 			items["sepdestroy"] = "";
-			items["runEnhancements"] = {name : 'Run enhancements'};
-			if ($.inArray('purgeForever', metadata.permissions) != -1) {
+			if ($.inArray('reindex', metadata.permissions) != -1) {
+				items["runEnhancements"] = {name : 'Run enhancements'};
 				items["reindex"] = {name : 'Reindex'};
-				items["destroy"] = {name : 'Destroy', disabled :  $.inArray('Active', metadata.status) != -1};
+			}
+			if ($.inArray('destroy', metadata.permissions) != -1) {
+				items["destroy"] = {name : 'Destroy', disabled :  !metadata.isDeleted};
 			}
 		}
 		
 		// Trash actions
-		if ($.inArray('moveToTrash', metadata.permissions) != -1) {
+		if ($.inArray('markForDeletionUnit', metadata.permissions) != -1 || ($.inArray('markForDeletion', metadata.permissions) != -1 && metadata.type !== 'Unit')) {
 			items["septrash"] = "";
-			items["restoreResult"] = {name : 'Restore', disabled : $.inArray('Deleted', metadata.status) == -1};
-			items["deleteResult"] = {name : 'Delete', disabled : $.inArray('Active', metadata.status) == -1};
+			items["restoreResult"] = {name : 'Restore', disabled : !metadata.isDeleted};
+			items["deleteResult"] = {name : 'Delete', disabled : metadata.isDeleted};
 		}
 		
 		return {

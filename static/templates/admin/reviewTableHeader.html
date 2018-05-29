@@ -1,4 +1,4 @@
-<% var containerDeleted = container? !_.contains(container.status, 'Active') : false; %>
+<% var containerDeleted = container? container.isDeleted : false; %>
 <div class="result_header">
 	<% if (data.invalidVocabCount) { %>
 		<div class="result_warning">

@@ -10,35 +10,35 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 	AddMenu.prototype.getMenuItems = function() {
 		var items = {};
 
-		if ($.inArray('addRemoveContents', this.container.permissions) != -1) {
+		if ($.inArray('ingest', this.container.permissions) != -1) {
 			var self = this;
 
 			items["addContainer"] = {
 				name : "Add Container",
 				visible: function(key, opt){
-					return self.isAggregate(self);
+					return self.allowIngestInto(self);
 				}
 			};
 			items["ingestPackage"] = {
 				name : "Add Ingest Package",
 				visible: function(key, opt){
-					return self.isAggregate(self);
+					return self.allowIngestInto(self);
 				}
 			};
 			items["ingestSource"] = {
 				name : "Add from File Server",
 				visible: function(key, opt){
-					return self.isAggregate(self);
+					return self.allowIngestInto(self);
 				}
 			};
 			items["addWork"] = {name : "Add Work",
 				visible: function(key, opt){
-					return self.isAggregate(self);
+					return self.allowIngestInto(self);
 				}
 			};
 			items["addFile"] = {name : "Add File",
 				visible: function(key, opt){
-					if (self.container.type == "Aggregate") {
+					if (self.container.type == "Work") {
 						return true;
 					}
 					return false;
@@ -46,15 +46,15 @@ define('AddMenu', [ 'jquery', 'jquery-ui', 'underscore', 'CreateContainerForm', 
 			};
 
 		}
-		if ($.inArray('editDescription', this.container.permissions) != -1) {
+		if ($.inArray('bulkUpdateDescription', this.container.permissions) != -1) {
 			items["importMetadata"] = {name : "Import MODS"};
 		}
 		
 		return items;
 	};
 
-	AddMenu.prototype.isAggregate = function(self) {
-		if (self.container.type == "Aggregate") {
+	AddMenu.prototype.allowIngestInto = function(self) {
+		if (self.container.type == "Work" || self.container.type == "File") {
 			return false;
 		}
 		return true;

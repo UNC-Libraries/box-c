@@ -1,5 +1,5 @@
 <div id="<%= entryId %>" class="entry_wrap<%= isRoot? ' root': '' %><%= (childEntries && childEntries.length > 0)? ' expanded': '' 
-		%><%= isSelected? ' selected': '' %><%= _.contains(metadata.permissions, 'addRemoveContents')? " move_into" : "" %>">
+		%><%= isSelected? ' selected': '' %><%= _.contains(metadata.permissions, 'move')? " move_into" : "" %>">
 	<% if (!hideEntry) { %>
 		<div class="entry">
 			<% if (isAContainer) { %>

@@ -19,7 +19,7 @@ define('ResultObject', [ 'jquery', 'jquery-ui', 'underscore', 'ModalLoadingOverl
 		this.metadata = metadata;
 		this.pid = metadata.id;
 		this.isContainer = this.metadata.type != "File";
-		this.isDeleted = $.inArray("Active", this.metadata.status) == -1;
+		this.isDeleted = $.inArray("Marked For Deletion", this.metadata.status) != -1;
 
 		var validationProblem = "";
 		if (this.metadata.tags) {
