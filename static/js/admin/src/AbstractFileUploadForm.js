@@ -185,7 +185,7 @@ define('AbstractFileUploadForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteS
 		}
 		
 		// Make request to either the computed action url, or url retrieved from form
-		var action_url = this.action_url? this.action_url : this.$form.find("form")[0].action;
+		var action_url = this.action_url ? this.action_url : this.$form.find("form")[0].action;
 		this.xhr.open("POST", action_url);
 		this.xhr.send(formData);
 	};
