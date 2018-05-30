@@ -24,9 +24,16 @@ define('CreateContainerForm', [ 'jquery', 'jquery-ui', 'underscore', 'RemoteStat
 		return errors;
 	};
 	
-	CreateContainerForm.prototype.preprocessForm = function() {
+	CreateContainerForm.prototype.preprocessForm = function(resultObject) {
 		this.containerName = $("input[name='name']", this.$form).val();
 		this.containerType = $("select", this.$form).val();
+		var pid;
+		if ($.type(resultObject) === 'string') {
+			pid = resultObject;
+		} else {
+			pid = resultObject.metadata.id;
+		}
+		this.action_url = "/services/api/edit/create/" + this.containerType + "/" + pid;
 	};
 	
 	CreateContainerForm.prototype.getSuccessMessage = function(data) {

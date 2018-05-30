@@ -11,7 +11,7 @@ define('SetAsDefaultWebObjectBatchAction', [ 'jquery', 'AbstractBatchAction', "t
 	SetAsDefaultWebObjectBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	SetAsDefaultWebObjectBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() && $.inArray("addRemoveContents", target.metadata.permissions) != -1
+		return target.isSelected() && target.isEnabled() && $.inArray("editResourceType", target.metadata.permissions) != -1
 				&& (target.getMetadata().isPart);
 	};
 	

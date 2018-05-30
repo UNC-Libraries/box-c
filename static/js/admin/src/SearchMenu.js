@@ -149,7 +149,7 @@ define('SearchMenu', [ 'jquery', 'jquery-ui', 'URLUtilities', 'StructureView'], 
 								function($dropTarget){
 									var dropObject = $dropTarget.closest(".entry_wrap").data("structureEntry");
 									// Needs to be a valid container with sufficient perms
-									if (!dropObject || dropObject.options.isSelected || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1)
+									if (!dropObject || dropObject.options.isSelected || $.inArray("move", dropObject.metadata.permissions) == -1)
 										return false;
 									return dropObject.metadata;
 								}

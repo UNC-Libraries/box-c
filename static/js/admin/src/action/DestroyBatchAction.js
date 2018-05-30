@@ -7,7 +7,7 @@ define('DestroyBatchAction', [ 'jquery', 'AbstractBatchAction'], function($, Abs
 	DestroyBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	DestroyBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() && $.inArray("purgeForever", target.metadata.permissions) != -1
+		return target.isSelected() && target.isEnabled() && $.inArray("destroy", target.metadata.permissions) != -1
 			&& $.inArray("Active", target.getMetadata().status) == -1;
 	};
 	

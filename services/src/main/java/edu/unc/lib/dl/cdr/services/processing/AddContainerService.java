@@ -15,12 +15,15 @@
  */
 package edu.unc.lib.dl.cdr.services.processing;
 
+import static org.springframework.util.Assert.notNull;
+
 import java.util.Arrays;
 
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
 import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
@@ -61,6 +64,9 @@ public class AddContainerService {
      * @param containerType the type of new container to be created
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
+        notNull(parentPid);
+        notNull(containerType);
+
         ContentContainerObject child = null;
         FedoraTransaction tx = txManager.startTransaction();
 
@@ -86,6 +92,8 @@ public class AddContainerService {
                         "User does not have permissions to create works",
                         parentPid, agent.getPrincipals(), Permission.ingest);
                 child = repoObjFactory.createWorkObject(null);
+            } else {
+                throw new AccessRestrictionException("User cannot add a container to object of type " + containerType);
             }
 
             ContentContainerObject parent = (ContentContainerObject) repoObjLoader.getRepositoryObject(parentPid);

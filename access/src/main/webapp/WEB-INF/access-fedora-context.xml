@@ -52,6 +52,7 @@
                 <ref bean="applicationPathSettings" />
                 <ref bean="searchSettings" />
                 <ref bean="solrSettings" />
+                <ref bean="globalPermissionEvaluator" />
             </list>
         </property>
     </bean>

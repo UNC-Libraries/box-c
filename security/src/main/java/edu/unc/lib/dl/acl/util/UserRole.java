@@ -33,6 +33,7 @@ import static edu.unc.lib.dl.acl.util.Permission.viewAccessCopies;
 import static edu.unc.lib.dl.acl.util.Permission.viewHidden;
 import static edu.unc.lib.dl.acl.util.Permission.viewMetadata;
 import static edu.unc.lib.dl.acl.util.Permission.viewOriginal;
+import static java.util.stream.Collectors.toSet;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -88,6 +89,7 @@ public enum UserRole {
     private String predicate;
     private String propertyString;
     private Set<Permission> permissions;
+    private Set<String> permissionNames;
     private Boolean isStaffRole;
 
     UserRole(String predicate, boolean isStaffRole, Permission... perms) {
@@ -96,6 +98,7 @@ public enum UserRole {
         this.uri = URI.create(propertyString);
         this.isStaffRole = isStaffRole;
         this.permissions = new HashSet<>(Arrays.asList(perms));
+        this.permissionNames = permissions.stream().map(p -> p.name()).collect(toSet());
     }
 
     @Deprecated
@@ -204,6 +207,10 @@ public enum UserRole {
 
     public Set<Permission> getPermissions() {
         return permissions;
+    }
+
+    public Set<String> getPermissionNames() {
+        return permissionNames;
     }
 
     public String getPredicate() {

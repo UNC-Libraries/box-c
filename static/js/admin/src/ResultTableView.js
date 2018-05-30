@@ -440,7 +440,7 @@ define('ResultTableView', [ 'jquery', 'jquery-ui', 'ResultObjectList', 'URLUtili
 		this.addMoveDropLocation(this.$resultTable, ".res_entry.container.move_into .title", function($dropTarget){
 			var dropObject = $dropTarget.closest(".res_entry").data("resultObject");
 			// Needs to be a valid container with sufficient perms
-			if (!dropObject || !dropObject.isContainer || $.inArray("addRemoveContents", dropObject.metadata.permissions) == -1) return false;
+			if (!dropObject || !dropObject.isContainer || $.inArray("move", dropObject.metadata.permissions) == -1) return false;
 			return dropObject.metadata;
 		});
 	};

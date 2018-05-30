@@ -8,7 +8,7 @@ define('RunEnhancementsBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../
 	RunEnhancementsBatchAction.prototype = Object.create( AbstractBatchAction.prototype );
 	
 	RunEnhancementsBatchAction.prototype.isValidTarget = function(target) {
-		return target.isSelected() && target.isEnabled() && $.inArray("editAccessControl", target.metadata.permissions) != -1;
+		return target.isSelected() && target.isEnabled() && $.inArray("reindex", target.metadata.permissions) != -1;
 	};
 	
 	RunEnhancementsBatchAction.prototype.getTargets = function(targets) {

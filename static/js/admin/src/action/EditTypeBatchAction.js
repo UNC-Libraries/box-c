@@ -9,7 +9,7 @@ define('EditTypeBatchAction', [ 'jquery', 'AbstractBatchAction', "tpl!../templat
 	EditTypeBatchAction.prototype.isValidTarget = function(target) {
 		return target.isSelected() && target.isEnabled() && $.inArray("editResourceType", target.metadata.permissions) != -1
 			&& ("Collection" == target.getMetadata().type
-			|| "Aggregate" == target.getMetadata().type
+			|| "Work" == target.getMetadata().type
 			|| "Folder" == target.getMetadata().type);
 	};
 	

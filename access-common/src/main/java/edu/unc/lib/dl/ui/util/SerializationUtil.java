@@ -18,11 +18,15 @@ package edu.unc.lib.dl.ui.util;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -31,7 +35,9 @@ import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.unc.lib.dl.acl.fcrepo4.GlobalPermissionEvaluator;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
+import edu.unc.lib.dl.acl.util.UserRole;
 import edu.unc.lib.dl.search.solr.model.BriefObjectMetadata;
 import edu.unc.lib.dl.search.solr.model.CutoffFacet;
 import edu.unc.lib.dl.search.solr.model.HierarchicalBrowseResultResponse;
@@ -56,6 +62,7 @@ public class SerializationUtil {
     private static ApplicationPathSettings applicationPathSettings;
     private static SearchSettings searchSettings;
     private static SolrSettings solrSettings;
+    private static GlobalPermissionEvaluator globalPermissionEvaluator;
 
     private SerializationUtil() {
     }
@@ -209,8 +216,8 @@ public class SerializationUtil {
             result.put("timestamp", metadata.getTimestamp());
         }
 
-        if (groups != null && metadata.getAccessControlBean() != null) {
-            result.put("permissions", metadata.getAccessControlBean().getPermissionsByGroups(groups));
+        if (groups != null && metadata.getRoleGroup() != null) {
+            result.put("permissions", getPermissionsByGroups(metadata, groups));
         }
 
         if (metadata.getDynamicFields() != null) {
@@ -266,10 +273,37 @@ public class SerializationUtil {
         return "";
     }
 
-    public static void injectSettings(
-            ApplicationPathSettings applicationPathSettings, SearchSettings searchSettings, SolrSettings solrSettings) {
+    public static void injectSettings(ApplicationPathSettings applicationPathSettings, SearchSettings searchSettings,
+            SolrSettings solrSettings, GlobalPermissionEvaluator globalPermissionEvaluator) {
         SerializationUtil.applicationPathSettings = applicationPathSettings;
         SerializationUtil.searchSettings = searchSettings;
         SerializationUtil.solrSettings = solrSettings;
+        SerializationUtil.globalPermissionEvaluator = globalPermissionEvaluator;
+    }
+
+    /**
+     * Returns the aggregated set of permissions granted to the agent with the provided principals for the given object.
+     *
+     * @param metadata object to which permissions are granted.
+     * @param principals agent principals
+     * @return set of permissions
+     */
+    private static Set<String> getPermissionsByGroups(BriefObjectMetadata metadata, AccessGroupSet principals) {
+        Set<UserRole> globalRoles = globalPermissionEvaluator.getGlobalUserRoles(principals);
+
+        Map<String, Collection<String>> groupRoleMap = metadata.getGroupRoleMap();
+
+        Stream<UserRole> localRoleStream = principals.stream()
+                .map(p -> groupRoleMap.get(p))
+                .filter(r -> r != null)
+                // Start streaming the list of roles for the principal
+                .flatMap(princRoles -> princRoles.stream())
+                .map(roleName -> UserRole.valueOf(roleName))
+                .filter(role -> role != null);
+
+        // Combine local roles with global, then collect as permissions
+        return Stream.concat(localRoleStream, globalRoles.stream())
+                .flatMap(role -> role.getPermissionNames().stream())
+                .collect(Collectors.toSet());
     }
 }
