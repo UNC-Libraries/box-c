@@ -35,7 +35,7 @@ import edu.unc.lib.dl.rdf.Premis;
  * @author harring
  *
  */
-public class MultiPropertySelector extends SimpleSelector {
+public class TombstonePropertySelector extends SimpleSelector {
 
     List<Property> permittedPredicates = Arrays.asList(
             DcElements.title, Ebucore.filename, Ebucore.hasMimeType,
@@ -52,55 +52,55 @@ public class MultiPropertySelector extends SimpleSelector {
                 && (object == null || s.getObject().equals(object)) ;
     }
 
-    public MultiPropertySelector(Resource subject) {
+    public TombstonePropertySelector(Resource subject) {
         super(subject, (Property) null, (Object) null);
      }
 
-    public MultiPropertySelector() {
+    public TombstonePropertySelector() {
         super();
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, RDFNode object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, RDFNode object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, boolean object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, boolean object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, long object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, long object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, char object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, char object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, float object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, float object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, double object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, double object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, String object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, String object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, Object object) {
+    public TombstonePropertySelector(Resource subject, Property predicate, Object object) {
         super(subject, predicate, object);
 
     }
 
-    public MultiPropertySelector(Resource subject, Property predicate, String object, String language) {
+    public TombstonePropertySelector(Resource subject, Property predicate, String object, String language) {
         super(subject, predicate, object, language);
 
     }

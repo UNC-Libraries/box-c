@@ -40,7 +40,7 @@ import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
-import edu.unc.lib.dl.util.MultiPropertySelector;
+import edu.unc.lib.dl.util.TombstonePropertySelector;
 import io.dropwizard.metrics5.Timer;
 
 /**
@@ -97,7 +97,7 @@ public class DestroyObjectsJob implements Runnable {
                 destroyTree(binary);
             }
         }
-        // destroy root of tree
+        // destroy root of remaining tree
         Model stoneModel = rootOfTree.getModel();
         stoneModel = convertModelToTombstone(rootOfTree);
         repoObjFactory.createOrTransformObject(rootOfTree.getUri(), stoneModel);
@@ -114,7 +114,7 @@ public class DestroyObjectsJob implements Runnable {
         Model stoneModel = ModelFactory.createDefaultModel();
         Resource resc = destroyedObj.getResource();
 
-        MultiPropertySelector selector = new MultiPropertySelector(resc);
+        TombstonePropertySelector selector = new TombstonePropertySelector(resc);
         StmtIterator iter = oldModel.listStatements(selector);
         while (iter.hasNext()) {
             Statement s = iter.nextStatement();

@@ -28,6 +28,7 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
 
 /**
+ * Service that manages the destruction of objects in the repository and their replacement by tombstones
  *
  * @author harring
  *
@@ -39,6 +40,8 @@ public class DestroyObjectsService {
     private AccessControlService aclService;
 
     /**
+     * Checks whether the active user has permissions to destroy the listed objects,
+     * and then kicks off a job to destroy the permitted ones asynchronously
      *
      * @param agent security principals of the agent making request
      * @param ids list of objects to destroy

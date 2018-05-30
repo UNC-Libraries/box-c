@@ -34,7 +34,7 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.persist.services.destroy.DestroyObjectsService;
 
 /**
- * API controller for destroying objects
+ * API controller for destroying repository objects and replacing them with tombstones
  *
  * @author harring
  *
@@ -46,14 +46,16 @@ public class DestroyObjectsController {
     @Autowired
     private DestroyObjectsService service;
 
-    @RequestMapping(value = "edit/destroy/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/destroy/{ids}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> destroyObjects(@PathVariable("id") List<String> ids) {
+    public ResponseEntity<Object> destroyObjects(@PathVariable("ids") List<String> ids) {
         Map<String, Object> result = new HashMap<>();
         result.put("object ids", ids.toString());
         result.put("action", "destroy");
 
-        service.destroyObjects(AgentPrincipals.createFromThread(), ids);
+        AgentPrincipals agent = AgentPrincipals.createFromThread();
+        service.destroyObjects(agent, ids);
+        log.info("{} initiated destruction of {} objects from the repository", agent.getUsername(), ids.size());
 
         result.put("timestamp", System.currentTimeMillis());
         return new ResponseEntity<>(result, HttpStatus.OK);
