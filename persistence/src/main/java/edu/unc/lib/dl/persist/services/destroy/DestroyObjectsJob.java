@@ -24,7 +24,6 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 
-import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.ContentObject;
@@ -53,14 +52,13 @@ public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
-    private AgentPrincipals agent;
     private RepositoryObjectFactory repoObjFactory;
     private RepositoryObjectLoader repoObjLoader;
     private TransactionManager txManager;
     private DestroyProxyService proxyService;
     private ObjectPathFactory pathFactory;
 
-    public DestroyObjectsJob(AgentPrincipals agent, List<PID> objsToDestroy) {
+    public DestroyObjectsJob(List<PID> objsToDestroy) {
         this.objsToDestroy = objsToDestroy;
     }
 
@@ -104,7 +102,6 @@ public class DestroyObjectsJob implements Runnable {
 
         //add premis event to tombstone
         rootOfTree.getPremisLog().buildEvent(Premis.Deletion)
-        .addImplementorAgent(agent.getUsernameUri())
         .addEventDetail("Item deleted from repository and replaced by tombstone")
         .write();
     }
@@ -127,5 +124,29 @@ public class DestroyObjectsJob implements Runnable {
         stoneModel.add(resc, Cdr.historicalPath, path);
         stoneModel.add(resc, RDF.type, Cdr.Tombstone);
         return stoneModel;
+    }
+
+    public void setObjsToDestroy(List<PID> objsToDestroy) {
+        this.objsToDestroy = objsToDestroy;
+    }
+
+    public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
+        this.repoObjFactory = repoObjFactory;
+    }
+
+    public void setRepoObjLoader(RepositoryObjectLoader repoObjLoader) {
+        this.repoObjLoader = repoObjLoader;
+    }
+
+    public void setTxManager(TransactionManager txManager) {
+        this.txManager = txManager;
+    }
+
+    public void setProxyService(DestroyProxyService proxyService) {
+        this.proxyService = proxyService;
+    }
+
+    public void setPathFactory(ObjectPathFactory pathFactory) {
+        this.pathFactory = pathFactory;
     }
 }

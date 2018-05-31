@@ -56,8 +56,8 @@ public class DestroyObjectsService {
             objsToDestroy.add(pid);
         }
         if (!objsToDestroy.isEmpty()) {
-            DestroyObjectsJob job = new DestroyObjectsJob(agent, objsToDestroy);
-            log.info("Starting destroy job for {} objects", objsToDestroy.size());
+            DestroyObjectsJob job = new DestroyObjectsJob(objsToDestroy);
+            log.info("Destroy job for {} objects started by {}", objsToDestroy.size(), agent.getUsernameUri());
             job.run();
         }
     }
