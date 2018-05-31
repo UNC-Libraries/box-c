@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.SimpleSelector;
 import org.apache.jena.rdf.model.Statement;
@@ -48,8 +47,7 @@ public class TombstonePropertySelector extends SimpleSelector {
     @Override
     public boolean selects(Statement s) {
         return (subject == null || s.getSubject().equals(subject))
-            && (permittedPredicates.contains(s.getPredicate()))
-                && (object == null || s.getObject().equals(object)) ;
+            && (permittedPredicates.contains(s.getPredicate()));
     }
 
     public TombstonePropertySelector(Resource subject) {
@@ -58,51 +56,6 @@ public class TombstonePropertySelector extends SimpleSelector {
 
     public TombstonePropertySelector() {
         super();
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, RDFNode object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, boolean object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, long object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, char object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, float object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, double object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, String object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, Object object) {
-        super(subject, predicate, object);
-
-    }
-
-    public TombstonePropertySelector(Resource subject, Property predicate, String object, String language) {
-        super(subject, predicate, object, language);
-
     }
 
 }
