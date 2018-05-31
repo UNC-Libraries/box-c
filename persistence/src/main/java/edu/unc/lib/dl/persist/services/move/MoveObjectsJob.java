@@ -15,10 +15,7 @@
  */
 package edu.unc.lib.dl.persist.services.move;
 
-import static edu.unc.lib.dl.fcrepo4.RepositoryPathConstants.FCR_TOMBSTONE;
-
 import java.io.IOException;
-import java.net.URI;
 import java.security.SecureRandom;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -29,13 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QuerySolution;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.rdf.model.Resource;
-import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoOperationFailedException;
-import org.fcrepo.client.FcrepoResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,13 +42,12 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.fedora.ServiceException;
 import edu.unc.lib.dl.metrics.TimerFactory;
+import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 import edu.unc.lib.dl.util.DateTimeUtil;
 import io.dropwizard.metrics5.Timer;
 
@@ -76,11 +65,10 @@ public class MoveObjectsJob implements Runnable {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private TransactionManager transactionManager;
-    private SparqlQueryService sparqlQueryService;
-    private FcrepoClient fcrepoClient;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
     private ActivityMetricsClient operationMetrics;
+    private DestroyProxyService proxyService;
 
     private AgentPrincipals agent;
     private PID destinationPid;
@@ -153,53 +141,11 @@ public class MoveObjectsJob implements Runnable {
 
         ContentObject moveContent = (ContentObject) repositoryObjectLoader.getRepositoryObject(objPid);
 
-        destroyProxy(objPid);
+        String sourcePath = proxyService.destroyProxy(objPid);
+        // Store the pid of the content container owning this proxy as a move source
+        addPidToSource(objPid, sourcePath);
 
         destContainer.addMember(moveContent);
-    }
-
-    private void destroyProxy(PID objPid) {
-        URI proxyUri = getProxyUri(objPid);
-
-        try (FcrepoResponse resp = fcrepoClient.delete(proxyUri).perform()) {
-        } catch (FcrepoOperationFailedException | IOException e) {
-            throw new ServiceException("Unable to clean up proxy for " + objPid, e);
-        }
-
-        URI tombstoneUri = URI.create(proxyUri.toString() + "/" + FCR_TOMBSTONE);
-        try (FcrepoResponse resp = fcrepoClient.delete(tombstoneUri).perform()) {
-        } catch (FcrepoOperationFailedException | IOException e) {
-            throw new ServiceException("Unable to clean up proxy tombstone for " + objPid, e);
-        }
-    }
-
-    private final static String PROXY_QUERY =
-            "select ?proxyuri ?parent\n" +
-            "where {\n" +
-            "  ?proxyuri <http://www.openarchives.org/ore/terms/proxyFor> <%s> .\n" +
-            "  ?proxyuri <http://www.openarchives.org/ore/terms/proxyIn> ?parent .\n" +
-            "  FILTER regex(str(?proxyuri), \"/member\")\n" +
-            "}";
-
-    private URI getProxyUri(PID pid) {
-        String query = String.format(PROXY_QUERY, pid.getRepositoryPath());
-
-        try (QueryExecution exec = sparqlQueryService.executeQuery(query)) {
-            ResultSet resultSet = exec.execSelect();
-
-            for (; resultSet.hasNext() ;) {
-                QuerySolution soln = resultSet.nextSolution();
-                Resource proxyUri = soln.getResource("proxyuri");
-                Resource parentResc = soln.getResource("parent");
-
-                // Store the pid of the content container owning this proxy as a move source
-                addPidToSource(pid, parentResc.getURI());
-
-                return URI.create(proxyUri.getURI());
-            }
-        }
-
-        return null;
     }
 
     private void addPidToSource(PID pid, String sourcePath) {
@@ -278,20 +224,6 @@ public class MoveObjectsJob implements Runnable {
     }
 
     /**
-     * @param sparqlQueryService the sparqlQueryService to set
-     */
-    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
-        this.sparqlQueryService = sparqlQueryService;
-    }
-
-    /**
-     * @param fcrepoClient the fcrepoClient to set
-     */
-    public void setFcrepoClient(FcrepoClient fcrepoClient) {
-        this.fcrepoClient = fcrepoClient;
-    }
-
-    /**
      * @param operationsMessageSender the operationsMessageSender to set
      */
     public void setOperationsMessageSender(OperationsMessageSender operationsMessageSender) {
@@ -317,5 +249,12 @@ public class MoveObjectsJob implements Runnable {
      */
     public String getMoveId() {
         return moveId;
+    }
+
+    /**
+     * @param proxyService the proxyService to set
+     */
+    public void setProxyService(DestroyProxyService proxyService) {
+        this.proxyService = proxyService;
     }
 }

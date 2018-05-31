@@ -18,7 +18,6 @@ package edu.unc.lib.dl.persist.services.move;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-import org.fcrepo.client.FcrepoClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +26,10 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.persist.services.destroy.DestroyProxyService;
 import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
-import edu.unc.lib.dl.sparql.SparqlQueryService;
 
 /**
  * Service which moves content objects between containers.
@@ -44,13 +43,12 @@ public class MoveObjectsService {
     private AccessControlService aclService;
     private RepositoryObjectLoader repositoryObjectLoader;
     private TransactionManager transactionManager;
-    private SparqlQueryService sparqlQueryService;
-    private FcrepoClient fcrepoClient;
     private OperationsMessageSender operationsMessageSender;
     private ObjectPathFactory objectPathFactory;
     private boolean asynchronous;
     private ExecutorService moveExecutor;
     private ActivityMetricsClient operationMetrics;
+    private DestroyProxyService proxyService;
 
     /**
      * Move a list of objects to the destination container as the provided
@@ -70,16 +68,15 @@ public class MoveObjectsService {
 
         MoveObjectsJob job = new MoveObjectsJob(agent, destinationPid, pids);
         job.setAclService(aclService);
-        job.setFcrepoClient(fcrepoClient);
         job.setRepositoryObjectLoader(repositoryObjectLoader);
-        job.setSparqlQueryService(sparqlQueryService);
         job.setTransactionManager(transactionManager);
         job.setOperationsMessageSender(operationsMessageSender);
         job.setObjectPathFactory(objectPathFactory);
         job.setOperationMetrics(operationMetrics);
+        job.setProxyService(proxyService);
 
         if (asynchronous) {
-            log.info("User {} is queuing move operation {} of {} objects to destination {}",
+            log.info("User {} is queueing move operation {} of {} objects to destination {}",
                     new Object[] { agent.getUsername(), job.getMoveId(), pids.size(), destinationPid });
             moveExecutor.submit(job);
         } else {
@@ -108,20 +105,6 @@ public class MoveObjectsService {
      */
     public void setTransactionManager(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
-    }
-
-    /**
-     * @param sparqlQueryService the sparqlQueryService to set
-     */
-    public void setSparqlQueryService(SparqlQueryService sparqlQueryService) {
-        this.sparqlQueryService = sparqlQueryService;
-    }
-
-    /**
-     * @param fcrepoClient the fcrepoClient to set
-     */
-    public void setFcrepoClient(FcrepoClient fcrepoClient) {
-        this.fcrepoClient = fcrepoClient;
     }
 
     /**
@@ -158,4 +141,11 @@ public class MoveObjectsService {
     public void setMoveExecutor(ExecutorService moveExecutor) {
         this.moveExecutor = moveExecutor;
     }
+
+    /**
+    * @param proxyService the proxyService to set
+    */
+   public void setProxyService(DestroyProxyService proxyService) {
+       this.proxyService = proxyService;
+   }
 }

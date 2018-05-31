@@ -81,18 +81,22 @@
         <constructor-arg ref="jedisPool" />
     </bean>
     
+    <bean id="destroyProxyService" class="edu.unc.lib.dl.persist.services.destroy.DestroyProxyService">
+        <property name="sparqlQueryService" ref="sparqlQueryService" />
+        <property name="fcrepoClient" ref="fcrepoClient" />
+    </bean>
+    
     <bean id="moveObjectsService"
         class="edu.unc.lib.dl.persist.services.move.MoveObjectsService">
         <property name="aclService" ref="aclService" />
         <property name="repositoryObjectLoader" ref="repositoryObjectLoader" />
         <property name="transactionManager" ref="transactionManager" />
-        <property name="sparqlQueryService" ref="sparqlQueryService" />
-        <property name="fcrepoClient" ref="fcrepoClient" />
         <property name="operationsMessageSender" ref="operationsMessageSender" />
         <property name="objectPathFactory" ref="objectPathFactory" />
         <property name="asynchronous" value="true" />
         <property name="moveExecutor" ref="moveExecutor" />
         <property name="operationMetrics" ref="activityMetricsClient" />
+        <property name="proxyService" ref="destroyProxyService" />
     </bean>
 
     <!-- <bean id="rollbackMoveJob" class="edu.unc.lib.dl.cdr.services.processing.MoveRollbackJob"></bean>
