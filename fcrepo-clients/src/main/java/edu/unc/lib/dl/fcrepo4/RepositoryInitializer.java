@@ -74,7 +74,7 @@ public class RepositoryInitializer {
         Resource resc = model.createResource(containerString);
         resc.addProperty(DC.title, title);
 
-        objFactory.createObject(containerUri, model);
+        objFactory.createOrTransformObject(containerUri, model);
 
         return containerUri;
     }
