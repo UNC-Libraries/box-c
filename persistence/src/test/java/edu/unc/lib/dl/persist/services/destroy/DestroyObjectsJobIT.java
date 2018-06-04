@@ -18,38 +18,40 @@ package edu.unc.lib.dl.persist.services.destroy;
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
+import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
-import org.junit.After;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.riot.Lang;
+import org.fcrepo.client.FcrepoClient;
+import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.ContextHierarchy;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
-import edu.unc.lib.dl.acl.service.AccessControlService;
 import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.acl.util.GroupsThreadStore;
 import edu.unc.lib.dl.fcrepo4.FileObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
-import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.Ldp;
+import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.TestHelper;
@@ -60,12 +62,11 @@ import edu.unc.lib.dl.test.TestHelper;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
+@ContextHierarchy({
+    @ContextConfiguration("/spring-test/test-fedora-container.xml"),
+    @ContextConfiguration("/spring-test/cdr-client-container.xml"),
+})
 public class DestroyObjectsJobIT {
-
-    @Autowired
-    private WebApplicationContext context;
-    @Autowired
-    private AccessControlService aclService;
 
     @Autowired
     private RepositoryObjectFactory repoObjFactory;
@@ -79,53 +80,59 @@ public class DestroyObjectsJobIT {
     private ObjectPathFactory pathFactory;
     @Autowired
     private SparqlUpdateService sparqlUpdateService;
+    @Autowired
+    private Model queryModel;
+    @Autowired
+    private FcrepoClient fcrepoClient;
 
     private List<PID> objsToDestroy = new ArrayList<>();
 
-    private MockMvc mvc;
+    private DestroyObjectsJob job;
 
     @Before
-    public void init() {
-        mvc = MockMvcBuilders
-                .webAppContextSetup(context)
-                .build();
-
+    public void init() throws Exception {
         TestHelper.setContentBase("http://localhost:48085/rest");
-
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+
+        createContentTree();
+        job = new DestroyObjectsJob(objsToDestroy);
+        job.setPathFactory(pathFactory);
+        job.setProxyService(proxyService);
+        job.setRepoObjFactory(repoObjFactory);
+        job.setRepoObjLoader(repoObjLoader);
+        job.setTxManager(txManager);
     }
 
-    @After
-    public void tearDown() {
-        GroupsThreadStore.clearStore();
+    @Test
+    public void destroyObjectsTest() {
+        job.run();
+
     }
 
-    private PID makePid() {
-        return PIDs.get(UUID.randomUUID().toString());
-    }
-
-    private Map<String, Object> getMapFromResponse(MvcResult result) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(result.getResponse().getContentAsString(),
-                new TypeReference<Map<String, Object>>(){});
-    }
-
-    private void createContentTree() {
-        Model model = ModelFactory.createDefaultModel();
-        FolderObject folder = repoObjFactory.createFolderObject(model);
-        PID folderPid = folder.getPid();
-        WorkObject work = repoObjFactory.createWorkObject(model);
+    private void createContentTree() throws Exception {
+        Model folderModel = ModelFactory.createDefaultModel();
+        FolderObject folder = repoObjFactory.createFolderObject(folderModel);
+        Model workModel = ModelFactory.createDefaultModel();
+        WorkObject work = repoObjFactory.createWorkObject(workModel);
         folder.addMember(work);
-        FileObject file = repoObjFactory.createFileObject(model);
-        work.addDataFile(contentStream, filename, mimetype, sha1Checksum, md5Checksum);
+        String bodyString = "Content";
+        String filename = "file.txt";
+        String mimetype = "text/plain";
+        InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
+        FileObject file = work.addDataFile(contentStream, filename, mimetype, null, null);
+
+//        queryModel.add(folder.getModel());
+//        queryModel.add(work.getModel());
+//        queryModel.add(file.getModel());
+        queryModel.removeAll();
+
+        indexAll(folder.getModel());
 
         objsToDestroy.add(folder.getPid());
         objsToDestroy.add(work.getPid());
         objsToDestroy.add(file.getPid());
         markObjsForDeletion(objsToDestroy);
-
-
     }
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {
@@ -135,9 +142,30 @@ public class DestroyObjectsJobIT {
         }
     }
 
-    @Test
-    public void destroyObjectsTest() {
+    private void indexAll(Model model) throws Exception {
+        queryModel.removeAll();
 
+        indexTree(model);
+    }
+
+    private void indexTree(Model model) throws Exception {
+        queryModel.add(model);
+
+        indexRelated(model, Ldp.contains);
+        indexRelated(model, PcdmModels.hasMember);
+    }
+
+    private void indexRelated(Model model, Property relationProp) throws Exception {
+        NodeIterator containedIt = model.listObjectsOfProperty(relationProp);
+        while (containedIt.hasNext()) {
+            RDFNode contained = containedIt.next();
+            URI rescUri = URI.create(contained.asResource().getURI());
+            try (FcrepoResponse resp = fcrepoClient.get(rescUri).perform()) {
+                Model childModel = ModelFactory.createDefaultModel();
+                childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
+                indexTree(childModel);
+            }
+        }
     }
 
 }
