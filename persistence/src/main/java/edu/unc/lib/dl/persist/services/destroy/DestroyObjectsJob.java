@@ -23,6 +23,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import edu.unc.lib.dl.fcrepo4.BinaryObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
@@ -52,10 +53,15 @@ public class DestroyObjectsJob implements Runnable {
     private static final Timer timer = TimerFactory.createTimerForClass(DestroyObjectsJob.class);
 
     private List<PID> objsToDestroy;
+    @Autowired
     private RepositoryObjectFactory repoObjFactory;
+    @Autowired
     private RepositoryObjectLoader repoObjLoader;
+    @Autowired
     private TransactionManager txManager;
+    @Autowired
     private DestroyProxyService proxyService;
+    @Autowired
     private ObjectPathFactory pathFactory;
 
     public DestroyObjectsJob(List<PID> objsToDestroy) {
@@ -124,10 +130,6 @@ public class DestroyObjectsJob implements Runnable {
         stoneModel.add(resc, Cdr.historicalPath, path);
         stoneModel.add(resc, RDF.type, Cdr.Tombstone);
         return stoneModel;
-    }
-
-    public void setObjsToDestroy(List<PID> objsToDestroy) {
-        this.objsToDestroy = objsToDestroy;
     }
 
     public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
