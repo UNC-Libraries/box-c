@@ -17,6 +17,9 @@ package edu.unc.lib.dl.persist.services.destroy;
 
 import static edu.unc.lib.dl.rdf.CdrAcl.markedForDeletion;
 import static edu.unc.lib.dl.sparql.SparqlUpdateHelper.createSparqlReplace;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -35,6 +38,7 @@ import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ContextHierarchy;
@@ -52,6 +56,7 @@ import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.rdf.Ldp;
 import edu.unc.lib.dl.rdf.PcdmModels;
+import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
 import edu.unc.lib.dl.test.TestHelper;
@@ -74,10 +79,12 @@ public class DestroyObjectsJobIT {
     private RepositoryObjectLoader repoObjLoader;
     @Autowired
     private TransactionManager txManager;
-    @Autowired
+    @Mock
     private DestroyProxyService proxyService;
     @Autowired
     private ObjectPathFactory pathFactory;
+    @Mock
+    private ObjectPath path;
     @Autowired
     private SparqlUpdateService sparqlUpdateService;
     @Autowired
@@ -91,6 +98,7 @@ public class DestroyObjectsJobIT {
 
     @Before
     public void init() throws Exception {
+        initMocks(this);
         TestHelper.setContentBase("http://localhost:48085/rest");
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
@@ -102,6 +110,10 @@ public class DestroyObjectsJobIT {
         job.setRepoObjFactory(repoObjFactory);
         job.setRepoObjLoader(repoObjLoader);
         job.setTxManager(txManager);
+
+        when(proxyService.destroyProxy(any(PID.class))).thenReturn("path/to/parent");
+        when(pathFactory.getPath(any(PID.class))).thenReturn(path);
+        when(path.toNamePath()).thenReturn("path/to/object");
     }
 
     @Test
@@ -137,7 +149,8 @@ public class DestroyObjectsJobIT {
 
     private void markObjsForDeletion(List<PID> objsToDestroy) {
         for (PID pid : objsToDestroy) {
-            String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion, true);
+            String updateString = createSparqlReplace(pid.getRepositoryPath(), markedForDeletion,
+                    true);
             sparqlUpdateService.executeUpdate(pid.getRepositoryUri().toString(), updateString);
         }
     }
@@ -159,7 +172,7 @@ public class DestroyObjectsJobIT {
         NodeIterator containedIt = model.listObjectsOfProperty(relationProp);
         while (containedIt.hasNext()) {
             RDFNode contained = containedIt.next();
-            URI rescUri = URI.create(contained.asResource().getURI());
+            URI rescUri = URI.create(contained.asResource().getURI() + "/fcr:metadata");
             try (FcrepoResponse resp = fcrepoClient.get(rescUri).perform()) {
                 Model childModel = ModelFactory.createDefaultModel();
                 childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
