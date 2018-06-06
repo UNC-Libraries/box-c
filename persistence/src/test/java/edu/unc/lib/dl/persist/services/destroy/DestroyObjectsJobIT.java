@@ -22,19 +22,13 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.activemq.util.ByteArrayInputStream;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.riot.Lang;
 import org.fcrepo.client.FcrepoClient;
-import org.fcrepo.client.FcrepoResponse;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,11 +48,10 @@ import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.rdf.Ldp;
-import edu.unc.lib.dl.rdf.PcdmModels;
 import edu.unc.lib.dl.search.solr.model.ObjectPath;
 import edu.unc.lib.dl.search.solr.service.ObjectPathFactory;
 import edu.unc.lib.dl.sparql.SparqlUpdateService;
+import edu.unc.lib.dl.test.RepositoryObjectTreeIndexer;
 import edu.unc.lib.dl.test.TestHelper;
 /**
  *
@@ -92,6 +85,8 @@ public class DestroyObjectsJobIT {
     @Autowired
     private FcrepoClient fcrepoClient;
 
+    private RepositoryObjectTreeIndexer treeIndexer;
+
     private List<PID> objsToDestroy = new ArrayList<>();
 
     private DestroyObjectsJob job;
@@ -102,6 +97,8 @@ public class DestroyObjectsJobIT {
         TestHelper.setContentBase("http://localhost:48085/rest");
         GroupsThreadStore.storeUsername("test_user");
         GroupsThreadStore.storeGroups(new AccessGroupSet("adminGroup"));
+
+        treeIndexer = new RepositoryObjectTreeIndexer(queryModel, fcrepoClient);
 
         createContentTree();
         job = new DestroyObjectsJob(objsToDestroy);
@@ -139,7 +136,7 @@ public class DestroyObjectsJobIT {
 //        queryModel.add(file.getModel());
         queryModel.removeAll();
 
-        indexAll(folder.getModel());
+        treeIndexer.indexAll(folder.getModel());
 
         objsToDestroy.add(folder.getPid());
         objsToDestroy.add(work.getPid());
@@ -154,31 +151,4 @@ public class DestroyObjectsJobIT {
             sparqlUpdateService.executeUpdate(pid.getRepositoryUri().toString(), updateString);
         }
     }
-
-    private void indexAll(Model model) throws Exception {
-        queryModel.removeAll();
-
-        indexTree(model);
-    }
-
-    private void indexTree(Model model) throws Exception {
-        queryModel.add(model);
-
-        indexRelated(model, Ldp.contains);
-        indexRelated(model, PcdmModels.hasMember);
-    }
-
-    private void indexRelated(Model model, Property relationProp) throws Exception {
-        NodeIterator containedIt = model.listObjectsOfProperty(relationProp);
-        while (containedIt.hasNext()) {
-            RDFNode contained = containedIt.next();
-            URI rescUri = URI.create(contained.asResource().getURI() + "/fcr:metadata");
-            try (FcrepoResponse resp = fcrepoClient.get(rescUri).perform()) {
-                Model childModel = ModelFactory.createDefaultModel();
-                childModel.read(resp.getBody(), null, Lang.TURTLE.getName());
-                indexTree(childModel);
-            }
-        }
-    }
-
 }
