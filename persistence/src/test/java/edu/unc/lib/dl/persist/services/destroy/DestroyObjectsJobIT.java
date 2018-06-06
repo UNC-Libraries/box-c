@@ -131,11 +131,6 @@ public class DestroyObjectsJobIT {
         InputStream contentStream = new ByteArrayInputStream(bodyString.getBytes());
         FileObject file = work.addDataFile(contentStream, filename, mimetype, null, null);
 
-//        queryModel.add(folder.getModel());
-//        queryModel.add(work.getModel());
-//        queryModel.add(file.getModel());
-        queryModel.removeAll();
-
         treeIndexer.indexAll(folder.getModel());
 
         objsToDestroy.add(folder.getPid());

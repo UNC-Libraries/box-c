@@ -98,7 +98,7 @@ public class DestroyObjectsJob implements Runnable {
             FileObject file = (FileObject) rootOfTree;
             List<BinaryObject> binaries = file.getBinaryObjects();
             for (BinaryObject binary : binaries) {
-                destroyTree(binary);
+                addBinaryMetadataToParent(rootOfTree, binary);
             }
         }
         // destroy root of remaining tree
@@ -130,6 +130,21 @@ public class DestroyObjectsJob implements Runnable {
         stoneModel.add(resc, Cdr.historicalPath, path);
         stoneModel.add(resc, RDF.type, Cdr.Tombstone);
         return stoneModel;
+    }
+
+    private void addBinaryMetadataToParent(RepositoryObject parent, BinaryObject child) {
+        Model childModel = child.getModel();
+        Model parentModel = parent.getModel();
+        Resource resc = child.getResource();
+
+        TombstonePropertySelector selector = new TombstonePropertySelector(resc);
+        StmtIterator iter = childModel.listStatements(selector);
+        while (iter.hasNext()) {
+            Statement s = iter.nextStatement();
+            if (selector.selects(s)) {
+                parentModel.add(s);
+            }
+        }
     }
 
     public void setRepoObjFactory(RepositoryObjectFactory repoObjFactory) {
