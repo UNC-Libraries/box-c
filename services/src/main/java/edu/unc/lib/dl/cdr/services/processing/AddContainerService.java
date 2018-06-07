@@ -66,6 +66,7 @@ public class AddContainerService {
      *
      * @param agent security principals of the agent making request.
      * @param parentPid pid of parent obj to add child container to
+     * @param label label for the new container, to be stored as dc:title
      * @param containerType the type of new container to be created
      */
     public void addContainer(AgentPrincipals agent, PID parentPid, String label, Resource containerType) {

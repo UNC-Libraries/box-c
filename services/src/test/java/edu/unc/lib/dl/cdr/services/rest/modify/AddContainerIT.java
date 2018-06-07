@@ -73,11 +73,11 @@ public class AddContainerIT extends AbstractAPIIT {
 
         assertChildContainerNotAdded(parent);
 
-
         String label = "collection_label";
-        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getUUID() + "/" + "collection_label"))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
+        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getUUID())
+                .param("label", label))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn();
 
         assertChildContainerAdded(parent, label);
 
@@ -95,9 +95,11 @@ public class AddContainerIT extends AbstractAPIIT {
 
         assertChildContainerNotAdded(parent);
 
-        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID() + "/admin_label"))
-                .andExpect(status().isInternalServerError())
-                .andReturn();
+        String label = "admin_unit";
+        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID())
+                .param("label", label))
+            .andExpect(status().isInternalServerError())
+            .andReturn();
 
         assertChildContainerNotAdded(parent);
 
@@ -116,8 +118,9 @@ public class AddContainerIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(ingest));
 
-        MvcResult result = mvc.perform(post("/edit/create/folder/" + pid.getUUID() + "/folder_label"))
-            .andExpect(status().isForbidden())
+        String label = "folder";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + pid.getUUID())
+                .param("label", label))
             .andReturn();
 
         assertChildContainerNotAdded(folder);

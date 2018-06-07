@@ -28,6 +28,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import edu.unc.lib.dl.acl.exception.AccessRestrictionException;
@@ -51,27 +52,27 @@ public class AddContainerController {
     @Autowired
     private AddContainerService addContainerService;
 
-    @RequestMapping(value = "edit/create/adminUnit/{id}/{label}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, @PathVariable("label") String label) {
+    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, @RequestParam("label") String label) {
         return createContainer(id, label, Cdr.AdminUnit);
     }
 
-    @RequestMapping(value = "edit/create/collection/{id}/{label}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @PathVariable("label") String label) {
+    public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @RequestParam("label") String label) {
         return createContainer(id, label, Cdr.Collection);
     }
 
-    @RequestMapping(value = "edit/create/folder/{id}/{label}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @PathVariable("label") String label) {
+    public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @RequestParam("label") String label) {
         return createContainer(id, label, Cdr.Folder);
     }
 
-    @RequestMapping(value = "edit/create/work/{id}/{label}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createWork(@PathVariable("id") String id, @PathVariable("label") String label) {
+    public ResponseEntity<Object> createWork(@PathVariable("id") String id, @RequestParam("label") String label) {
         return createContainer(id, label, Cdr.Work);
     }
 
