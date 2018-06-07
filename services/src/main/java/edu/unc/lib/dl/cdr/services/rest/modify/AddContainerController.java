@@ -51,31 +51,31 @@ public class AddContainerController {
     @Autowired
     private AddContainerService addContainerService;
 
-    @RequestMapping(value = "edit/create/adminUnit/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/adminUnit/{id}/{label}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.AdminUnit);
+    public ResponseEntity<Object> createAdminUnit(@PathVariable("id") String id, @PathVariable("label") String label) {
+        return createContainer(id, label, Cdr.AdminUnit);
     }
 
-    @RequestMapping(value = "edit/create/collection/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/collection/{id}/{label}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createCollection(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.Collection);
+    public ResponseEntity<Object> createCollection(@PathVariable("id") String id, @PathVariable("label") String label) {
+        return createContainer(id, label, Cdr.Collection);
     }
 
-    @RequestMapping(value = "edit/create/folder/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/folder/{id}/{label}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createFolder(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.Folder);
+    public ResponseEntity<Object> createFolder(@PathVariable("id") String id, @PathVariable("label") String label) {
+        return createContainer(id, label, Cdr.Folder);
     }
 
-    @RequestMapping(value = "edit/create/work/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "edit/create/work/{id}/{label}", method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<Object> createWork(@PathVariable("id") String id) {
-        return createContainer(id, Cdr.Work);
+    public ResponseEntity<Object> createWork(@PathVariable("id") String id, @PathVariable("label") String label) {
+        return createContainer(id, label, Cdr.Work);
     }
 
-    private ResponseEntity<Object> createContainer(String id, Resource containerType) {
+    private ResponseEntity<Object> createContainer(String id, String label, Resource containerType) {
         Map<String, Object> result = new HashMap<>();
         result.put("action", "create");
         result.put("pid", id);
@@ -83,7 +83,7 @@ public class AddContainerController {
         PID parentPid = PIDs.get(id);
 
         try {
-            addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, containerType);
+            addContainerService.addContainer(AgentPrincipals.createFromThread(), parentPid, label, containerType);
         } catch (Exception e) {
             result.put("error", e.getMessage());
             Throwable t = e.getCause();

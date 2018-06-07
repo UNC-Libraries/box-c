@@ -18,7 +18,10 @@ package edu.unc.lib.dl.cdr.services.processing;
 import static org.springframework.util.Assert.notNull;
 
 import java.util.Arrays;
+import java.util.UUID;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +32,14 @@ import edu.unc.lib.dl.acl.util.AgentPrincipals;
 import edu.unc.lib.dl.acl.util.Permission;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
 import edu.unc.lib.dl.fcrepo4.FedoraTransaction;
+import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fedora.PID;
 import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
+import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import io.dropwizard.metrics5.Timer;
@@ -63,7 +68,7 @@ public class AddContainerService {
      * @param parentPid pid of parent obj to add child container to
      * @param containerType the type of new container to be created
      */
-    public void addContainer(AgentPrincipals agent, PID parentPid, Resource containerType) {
+    public void addContainer(AgentPrincipals agent, PID parentPid, String label, Resource containerType) {
         notNull(parentPid);
         notNull(containerType);
 
@@ -71,27 +76,31 @@ public class AddContainerService {
         FedoraTransaction tx = txManager.startTransaction();
 
         try (Timer.Context context = timer.time()) {
+            PID containerPid = PIDs.get(UUID.randomUUID().toString());
+            Model containerModel = ModelFactory.createDefaultModel();
+            containerModel.add(containerModel.createResource(containerPid.getRepositoryPath()), DcElements.title,
+                    label);
             // Create the appropriate container
             if (Cdr.AdminUnit.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create admin units",
                         parentPid, agent.getPrincipals(), Permission.createAdminUnit);
-                child = repoObjFactory.createAdminUnit(null);
+                child = repoObjFactory.createAdminUnit(containerPid, containerModel);
             } else if (Cdr.Collection.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create collections",
                         parentPid, agent.getPrincipals(), Permission.createCollection);
-                child = repoObjFactory.createCollectionObject(null);
+                child = repoObjFactory.createCollectionObject(containerPid, containerModel);
             } else if (Cdr.Folder.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create folders",
                         parentPid, agent.getPrincipals(), Permission.ingest);
-                child = repoObjFactory.createFolderObject(null);
+                child = repoObjFactory.createFolderObject(containerPid, containerModel);
             } else if (Cdr.Work.equals(containerType)) {
                 aclService.assertHasAccess(
                         "User does not have permissions to create works",
                         parentPid, agent.getPrincipals(), Permission.ingest);
-                child = repoObjFactory.createWorkObject(null);
+                child = repoObjFactory.createWorkObject(containerPid, containerModel);
             } else {
                 throw new AccessRestrictionException("User cannot add a container to object of type " + containerType);
             }
