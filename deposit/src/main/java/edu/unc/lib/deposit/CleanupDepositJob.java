@@ -29,17 +29,18 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.RDFNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.staging.StagingPolicy.CleanupPolicy;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * This job deletes the deposit's processing folder and sets all
@@ -53,6 +54,7 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 public class CleanupDepositJob extends AbstractDepositJob {
     private static final Logger LOG = LoggerFactory
             .getLogger(CleanupDepositJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(CleanupDepositJob.class, "job-duration");
 
     private StagingPolicyManager stagingPolicyManager;
 
@@ -91,31 +93,33 @@ public class CleanupDepositJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model m = getWritableModel();
+        try (Timer.Context context = timer.time()) {
+            Model m = getWritableModel();
 
-        // clean up staged files according to staging area policy
-        deleteStagedFiles(m);
+            // clean up staged files according to staging area policy
+            deleteStagedFiles(m);
 
-        // delete files identified for cleanup
-        deleteCleanupFiles(m);
+            // delete files identified for cleanup
+            deleteCleanupFiles(m);
 
-        // delete deposit folder
-        try {
-            FileUtils.deleteDirectory(getDepositDirectory());
-            LOG.info("Deleted deposit directory: {}", getDepositDirectory());
-        } catch (IOException e) {
-            LOG.error("Cannot delete deposit directory: "
-                    + getDepositDirectory().getAbsolutePath(), e);
+            // delete deposit folder
+            try {
+                FileUtils.deleteDirectory(getDepositDirectory());
+                LOG.info("Deleted deposit directory: {}", getDepositDirectory());
+            } catch (IOException e) {
+                LOG.error("Cannot delete deposit directory: "
+                        + getDepositDirectory().getAbsolutePath(), e);
+            }
+
+            // destroy the Jena model for this deposit
+            this.destroyModel();
+
+            // set this deposit's Redis keys to expire
+            getDepositStatusFactory().expireKeys(getDepositUUID(),
+                    this.getStatusKeysExpireSeconds());
+            getJobStatusFactory().expireKeys(getDepositUUID(),
+                    this.getStatusKeysExpireSeconds());
         }
-
-        // destroy the Jena model for this deposit
-        this.destroyModel();
-
-        // set this deposit's Redis keys to expire
-        getDepositStatusFactory().expireKeys(getDepositUUID(),
-                this.getStatusKeysExpireSeconds());
-        getJobStatusFactory().expireKeys(getDepositUUID(),
-                this.getStatusKeysExpireSeconds());
     }
 
     private void deleteStagedFiles(Model m) {

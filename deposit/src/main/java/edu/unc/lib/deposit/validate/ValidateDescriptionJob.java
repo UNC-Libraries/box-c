@@ -25,8 +25,10 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.validation.MODSValidator;
 import edu.unc.lib.dl.validation.MetadataValidationException;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Asserts that all descriptions in the deposit comply with repository schema
@@ -38,6 +40,7 @@ import edu.unc.lib.dl.validation.MetadataValidationException;
  */
 public class ValidateDescriptionJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ValidateDescriptionJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(ValidateDescriptionJob.class, "job-duration");
 
     private MODSValidator modsValidator;
 
@@ -51,45 +54,47 @@ public class ValidateDescriptionJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        int invalidCount = 0;
+        try (Timer.Context context = timer.time()) {
+            int invalidCount = 0;
 
-        if (!getDescriptionDir().exists()) {
-            log.debug("MODS directory does not exist");
-            return;
-        }
-
-        File[] modsFiles = getDescriptionDir().listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return (f.isFile() && f.getName().endsWith(".xml"));
-            }
-        });
-
-        StringBuilder errors = new StringBuilder();
-
-        setTotalClicks(modsFiles.length);
-        for (File f : modsFiles) {
-            PID p = getPIDFromFile(f);
-
-            try {
-                modsValidator.validate(f);
-            } catch (MetadataValidationException e) {
-                errors.append("Description for object ").append(p)
-                    .append(" is invalid:\n")
-                    .append(e.getDetailedMessage());
-
-                invalidCount++;
-                continue;
-            } catch (IOException e) {
-                failJob(e, "Failed to read description for {0} at path {1}", p, f.getAbsolutePath());
+            if (!getDescriptionDir().exists()) {
+                log.debug("MODS directory does not exist");
+                return;
             }
 
-            addClicks(1);
-        }
+            File[] modsFiles = getDescriptionDir().listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File f) {
+                    return (f.isFile() && f.getName().endsWith(".xml"));
+                }
+            });
 
-        if (invalidCount > 0) {
-            failJob("Descriptive metadata (MODS) for " + invalidCount + " object(s) did not meet requirements.",
-                    errors.toString());
+            StringBuilder errors = new StringBuilder();
+
+            setTotalClicks(modsFiles.length);
+            for (File f : modsFiles) {
+                PID p = getPIDFromFile(f);
+
+                try {
+                    modsValidator.validate(f);
+                } catch (MetadataValidationException e) {
+                    errors.append("Description for object ").append(p)
+                        .append(" is invalid:\n")
+                        .append(e.getDetailedMessage());
+
+                    invalidCount++;
+                    continue;
+                } catch (IOException e) {
+                    failJob(e, "Failed to read description for {0} at path {1}", p, f.getAbsolutePath());
+                }
+
+                addClicks(1);
+            }
+
+            if (invalidCount > 0) {
+                failJob("Descriptive metadata (MODS) for " + invalidCount + " object(s) did not meet requirements.",
+                        errors.toString());
+            }
         }
     }
 

@@ -37,12 +37,14 @@ import edu.unc.lib.dl.fcrepo4.DepositRecord;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.DcElements;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.rdf.Rdfs;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Creates and ingests the deposit record object
@@ -56,6 +58,8 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(IngestDepositRecordJob.class);
 
+    private static final Timer timer = TimerFactory.createTimerForClass(IngestDepositRecordJob.class, "job-duration");
+
     public IngestDepositRecordJob() {
         super();
     }
@@ -66,51 +70,53 @@ public class IngestDepositRecordJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        PID depositPID = getDepositPID();
-        String depositUri = depositPID.getURI();
+        try (Timer.Context context = timer.time()) {
+            PID depositPID = getDepositPID();
+            String depositUri = depositPID.getURI();
 
-        log.debug("Creating record for deposit {}", depositUri);
+            log.debug("Creating record for deposit {}", depositUri);
 
-        Model dModel = getReadOnlyModel();
-        Map<String, String> status = getDepositStatus();
+            Model dModel = getReadOnlyModel();
+            Map<String, String> status = getDepositStatus();
 
-        Resource deposit = dModel.getResource(depositUri);
+            Resource deposit = dModel.getResource(depositUri);
 
-        // Create aip model for the deposit record
-        Resource aipObjResc = makeDepositRecord(deposit, status);
-        Model aipModel = aipObjResc.getModel();
+            // Create aip model for the deposit record
+            Resource aipObjResc = makeDepositRecord(deposit, status);
+            Model aipModel = aipObjResc.getModel();
 
-        // Add ingestion event to PREMIS log
-        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        premisDepositLogger.buildEvent(Premis.Ingestion)
-                .addEventDetail("ingested as PID: {0}. {1}", depositPID.getPid(),
-                        aipObjResc.getProperty(DcElements.title).getObject().toString())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .addAuthorizingAgent(DepositField.depositorName.name())
-                .write();
+            // Add ingestion event to PREMIS log
+            PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+            premisDepositLogger.buildEvent(Premis.Ingestion)
+                    .addEventDetail("ingested as PID: {0}. {1}", depositPID.toString(),
+                            aipObjResc.getProperty(DcElements.title).getObject().toString())
+                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .addAuthorizingAgent(DepositField.depositorName.name())
+                    .write();
 
-        // Create the deposit record object in Fedora
-        DepositRecord depositRecord;
-        try {
-            depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel)
-                    .addPremisEvents(premisDepositLogger.getEvents());
+            // Create the deposit record object in Fedora
+            DepositRecord depositRecord;
+            try {
+                depositRecord = repoObjFactory.createDepositRecord(depositPID, aipModel)
+                        .addPremisEvents(premisDepositLogger.getEvents());
 
-            // Add manifest files
-            List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
-            for (String manifestPath : manifestURIs) {
-                String path = URI.create(manifestPath).getPath();
-                depositRecord.addManifest(new File(path), "text/plain");
+                // Add manifest files
+                List<String> manifestURIs = getDepositStatusFactory().getManifestURIs(getDepositUUID());
+                for (String manifestPath : manifestURIs) {
+                    String path = URI.create(manifestPath).getPath();
+                    depositRecord.addManifest(new File(path), "text/plain");
+                }
+
+                // Add references to deposited objects
+                Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
+                List<Resource> children = new ArrayList<>();
+                // walks through the bag and adds children to the list
+                DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
+                depositRecord.addIngestedObjects(children);
+
+            } catch (IOException | FedoraException e) {
+                failJob(e, "Failed to ingest deposit record {0}", depositPID);
             }
-
-            // Add references to deposited objects
-            Bag depositBag = dModel.getBag(depositPID.getRepositoryPath());
-            List<Resource> children = new ArrayList<>();
-            // walks through the bag and adds children to the list
-            DepositGraphUtils.walkObjectsDepthFirst(depositBag, children);
-            depositRecord.addIngestedObjects(children);
-
-        } catch (IOException | FedoraException e) {
-            failJob(e, "Failed to ingest deposit record {0}", depositPID);
         }
     }
 

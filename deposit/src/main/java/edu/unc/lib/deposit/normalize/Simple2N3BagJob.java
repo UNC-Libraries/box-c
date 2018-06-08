@@ -29,12 +29,14 @@ import org.springframework.web.util.UriUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Normalizes a simple deposit object into an N3 deposit structure.
@@ -47,6 +49,7 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 public class Simple2N3BagJob extends AbstractDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(Simple2N3BagJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(Simple2N3BagJob.class, "job-duration");
 
     public Simple2N3BagJob() {
         super();
@@ -58,42 +61,43 @@ public class Simple2N3BagJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
+        try (Timer.Context context = timer.time()) {
+            // deposit RDF bag
+            PID depositPID = getDepositPID();
+            Model model = getWritableModel();
+            Bag depositBag = model.createBag(depositPID.getURI().toString());
 
-        // deposit RDF bag
-        PID depositPID = getDepositPID();
-        Model model = getWritableModel();
-        Bag depositBag = model.createBag(depositPID.getURI().toString());
+            // Generate a uuid for the main object
+            PID mainPID = pidMinter.mintContentPid();
 
-        // Generate a uuid for the main object
-        PID mainPID = pidMinter.mintContentPid();
+            // Identify the important file from the deposit
+            Map<String, String> depositStatus = getDepositStatus();
+            String filename = depositStatus.get(DepositField.fileName.name());
+            String slug = depositStatus.get(DepositField.depositSlug.name());
+            String mimetype = depositStatus.get(DepositField.fileMimetype.name());
 
-        // Identify the important file from the deposit
-        Map<String, String> depositStatus = getDepositStatus();
-        String filename = depositStatus.get(DepositField.fileName.name());
-        String slug = depositStatus.get(DepositField.depositSlug.name());
-        String mimetype = depositStatus.get(DepositField.fileMimetype.name());
+            // Create the main resource as a simple resource
+            Resource mainResource = model.createResource(mainPID.getURI());
 
-        // Create the main resource as a simple resource
-        Resource mainResource = model.createResource(mainPID.getURI());
+            populateFileObject(model, mainResource, slug, filename, mimetype);
 
-        populateFileObject(model, mainResource, slug, filename, mimetype);
+            // Store main resource as child of the deposit
+            depositBag.add(mainResource);
 
-        // Store main resource as child of the deposit
-        depositBag.add(mainResource);
+            if (!this.getDepositDirectory().exists()) {
+                log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
+                this.getDepositDirectory().mkdir();
+            }
 
-        if (!this.getDepositDirectory().exists()) {
-            log.info("Creating deposit dir {}", this.getDepositDirectory().getAbsolutePath());
-            this.getDepositDirectory().mkdir();
+            // Add normalization event to deposit record
+            PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+            Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+                    .addEventDetail("Normalized deposit package from {0} to {1}",
+                            PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
+                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .create();
+            premisDepositLogger.writeEvent(premisDepositEvent);
         }
-
-        // Add normalization event to deposit record
-        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
-                .addEventDetail("Normalized deposit package from {0} to {1}",
-                        PackagingType.SIMPLE_OBJECT.getUri(), PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
     }
 
     private void populateFileObject(Model model, Resource mainResource, String alabel, String filename,

@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
@@ -62,6 +63,7 @@ import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.JDOMNamespaceUtil;
 import edu.unc.lib.dl.xml.METSProfile;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * @author bbpennel
@@ -74,6 +76,8 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
     private static final String fLocatHrefPath =
             "/m:mets/m:fileSec/m:fileGrp/m:file[@ID = '%s']/m:FLocat/@xlink:href";
     private static final Pattern mainArticlePattern = Pattern.compile(".*\\_Article\\_.*\\.[pP][dD][fF]");
+
+    private static final Timer timer = TimerFactory.createTimerForClass(BioMedToN3BagJob.class, "job-duration");
 
     private Transformer epdcx2modsTransformer = null;
 
@@ -91,50 +95,52 @@ public class BioMedToN3BagJob extends AbstractMETS2N3BagJob {
 
     @Override
     public void runJob() {
-        validateMETS();
+        try (Timer.Context context = timer.time()) {
+            validateMETS();
 
-        // Store a reference to the manifest file
-        addManifestURI();
+            // Store a reference to the manifest file
+            addManifestURI();
 
-        validateProfile(METSProfile.DSPACE_SIP);
-        Document mets = loadMETS();
-        assignPIDs(mets); // assign any missing PIDs
-        saveMETS(mets); // manifest updated to have record of all PIDs
+            validateProfile(METSProfile.DSPACE_SIP);
+            Document mets = loadMETS();
+            assignPIDs(mets); // assign any missing PIDs
+            saveMETS(mets); // manifest updated to have record of all PIDs
 
-        Model model = getWritableModel();
-        METSHelper helper = new METSHelper(mets);
+            Model model = getWritableModel();
+            METSHelper helper = new METSHelper(mets);
 
-        // deposit RDF bag
-        Bag top = model.createBag(getDepositPID().getURI().toString());
-        // add aggregate work bag
-        Element aggregateEl = helper.mets.getRootElement().getChild("structMap", METS_NS).getChild("div", METS_NS);
+            // deposit RDF bag
+            Bag top = model.createBag(getDepositPID().getURI().toString());
+            // add aggregate work bag
+            Element aggregateEl = helper.mets.getRootElement().getChild("structMap", METS_NS).getChild("div", METS_NS);
 
-        List<Element> topChildren = new ArrayList<>();
-        String metadataFileName = retrieveChildrenMinusMetadata(aggregateEl, helper.mets, topChildren);
+            List<Element> topChildren = new ArrayList<>();
+            String metadataFileName = retrieveChildrenMinusMetadata(aggregateEl, helper.mets, topChildren);
 
-        Resource rootResource = constructResources(model, aggregateEl, topChildren, helper);
-        top.add(rootResource);
+            Resource rootResource = constructResources(model, aggregateEl, topChildren, helper);
+            top.add(rootResource);
 
-        if (topChildren.size() > 1) {
-            setDefaultWebObject(model, model.getBag(rootResource));
+            if (topChildren.size() > 1) {
+                setDefaultWebObject(model, model.getBag(rootResource));
+            }
+
+            extractEPDCX(helper.mets, rootResource);
+
+            try {
+                addSourceMetadata(model, rootResource, metadataFileName);
+            } catch (JDOMException | IOException e) {
+                failJob(e, "Failed to add source metadata.");
+            }
+
+            PID depositPID = getDepositPID();
+            PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+            Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+                    .addEventDetail("Normalized deposit package from {0} to {1}",
+                            PackagingType.METS_DSPACE_SIP_1.getUri(), PackagingType.BAG_WITH_N3.getUri())
+                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .create();
+            premisDepositLogger.writeEvent(premisDepositEvent);
         }
-
-        extractEPDCX(helper.mets, rootResource);
-
-        try {
-            addSourceMetadata(model, rootResource, metadataFileName);
-        } catch (JDOMException | IOException e) {
-            failJob(e, "Failed to add source metadata.");
-        }
-
-        PID depositPID = getDepositPID();
-        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
-                .addEventDetail("Normalized deposit package from {0} to {1}",
-                        PackagingType.METS_DSPACE_SIP_1.getUri(), PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
     }
 
     private String retrieveChildrenMinusMetadata(Element aggregateEl, Document mets, List<Element> topChildren) {

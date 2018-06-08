@@ -52,6 +52,7 @@ import org.springframework.web.util.UriUtils;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -60,6 +61,7 @@ import edu.unc.lib.dl.util.DateTimeUtil;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.ZipFileUtil;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Normalizes a Proquest ETD deposit object into an N3 deposit structure.
@@ -73,6 +75,7 @@ import edu.unc.lib.dl.util.ZipFileUtil;
 public class Proquest2N3BagJob extends AbstractDepositJob {
 
     private static final Logger log = LoggerFactory.getLogger(Proquest2N3BagJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(Proquest2N3BagJob.class, "job-duration");
 
     public static final String DATA_SUFFIX = "_DATA.xml";
 
@@ -87,29 +90,30 @@ public class Proquest2N3BagJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
+        try (Timer.Context context = timer.time()) {
+            unzipPackages();
 
-        unzipPackages();
+            // deposit RDF bag
+            PID depositPID = getDepositPID();
+            Model model = getWritableModel();
+            Bag depositBag = model.createBag(depositPID.getURI().toString());
 
-        // deposit RDF bag
-        PID depositPID = getDepositPID();
-        Model model = getWritableModel();
-        Bag depositBag = model.createBag(depositPID.getURI().toString());
-
-        File[] packageDirs = this.getDataDirectory().listFiles();
-        for (File packageDir : packageDirs) {
-            if (packageDir.isDirectory()) {
-                normalizePackage(packageDir, model, depositBag);
+            File[] packageDirs = this.getDataDirectory().listFiles();
+            for (File packageDir : packageDirs) {
+                if (packageDir.isDirectory()) {
+                    normalizePackage(packageDir, model, depositBag);
+                }
             }
-        }
 
-        // Add normalization event to deposit record
-        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
-                .addEventDetail("Normalized deposit package from {0} to {1}",
-                        PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
+            // Add normalization event to deposit record
+            PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+            Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+                    .addEventDetail("Normalized deposit package from {0} to {1}",
+                            PackagingType.PROQUEST_ETD.getUri(), PackagingType.BAG_WITH_N3.getUri())
+                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .create();
+            premisDepositLogger.writeEvent(premisDepositEvent);
+        }
     }
 
     private void normalizePackage(File packageDir, Model model, Bag depositBag) {

@@ -32,7 +32,9 @@ import edu.unc.lib.deposit.staging.StagingException;
 import edu.unc.lib.deposit.staging.StagingPolicyManager;
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.CdrDeposit;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Verifies that files referenced by this deposit for ingest are present and
@@ -44,6 +46,8 @@ import edu.unc.lib.dl.rdf.CdrDeposit;
 public class ValidateFileAvailabilityJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory
             .getLogger(ValidateFileAvailabilityJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(ValidateFileAvailabilityJob.class,
+            "job-duration");
 
     private StagingPolicyManager policyManager;
 
@@ -56,70 +60,71 @@ public class ValidateFileAvailabilityJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
+        try (Timer.Context context = timer.time()) {
+            Set<String> failures = new HashSet<>();
+            Set<String> badlyStagedFiles = new HashSet<>();
 
-        Set<String> failures = new HashSet<>();
-        Set<String> badlyStagedFiles = new HashSet<>();
+            Model model = getReadOnlyModel();
+            // Construct a map of objects to file paths to verify
+            List<Entry<PID, String>> hrefs = new ArrayList<>();
+            hrefs.addAll(getPropertyPairList(model, CdrDeposit.stagingLocation));
 
-        Model model = getReadOnlyModel();
-        // Construct a map of objects to file paths to verify
-        List<Entry<PID, String>> hrefs = new ArrayList<>();
-        hrefs.addAll(getPropertyPairList(model, CdrDeposit.stagingLocation));
+            setTotalClicks(hrefs.size());
 
-        setTotalClicks(hrefs.size());
+            // Verify that the deposit is still running before proceeding with check
+            verifyRunning();
 
-        // Verify that the deposit is still running before proceeding with check
-        verifyRunning();
+            // Iterate through local file hrefs and verify that each one exists
+            for (Entry<PID, String> entry : hrefs) {
+                String href = entry.getValue();
+                try {
+                    URI manifestURI = getStagedUri(href);
 
-        // Iterate through local file hrefs and verify that each one exists
-        for (Entry<PID, String> entry : hrefs) {
-            String href = entry.getValue();
-            try {
-                URI manifestURI = getStagedUri(href);
+                    File file = new File(manifestURI.getPath());
+                    if (!file.exists()) {
+                        failures.add(manifestURI.toString());
+                    }
 
-                File file = new File(manifestURI.getPath());
-                if (!file.exists()) {
-                    failures.add(manifestURI.toString());
+                    if (!policyManager.isValidStagingLocation(manifestURI)) {
+                        badlyStagedFiles.add(manifestURI.toString());
+                    }
+                } catch (StagingException e) {
+                    log.debug("Failed to get staged file in deposit {}", getDepositUUID(), e);
+                    badlyStagedFiles.add(href);
                 }
 
-                if (!policyManager.isValidStagingLocation(manifestURI)) {
-                    badlyStagedFiles.add(manifestURI.toString());
+                addClicks(1);
+            }
+
+            // Generate failure message of all files from invalid staging locations
+            StringBuilder sbInvalid = null;
+            int invalidCount = badlyStagedFiles.size();
+            if (invalidCount > 0) {
+                sbInvalid = new StringBuilder(badlyStagedFiles.size() +
+                        " files referenced by the deposit are located in invalid staging areas:\n");
+                for (String file : badlyStagedFiles) {
+                    sbInvalid.append(" - ").append(file).append("\n");
                 }
-            } catch (StagingException e) {
-                log.debug("Failed to get staged file in deposit {}", getDepositUUID(), e);
-                badlyStagedFiles.add(href);
             }
 
-            addClicks(1);
-        }
-
-        // Generate failure message of all files from invalid staging locations
-        StringBuilder sbInvalid = null;
-        int invalidCount = badlyStagedFiles.size();
-        if (invalidCount > 0) {
-            sbInvalid = new StringBuilder(badlyStagedFiles.size() +
-                    " files referenced by the deposit are located in invalid staging areas:\n");
-            for (String file : badlyStagedFiles) {
-                sbInvalid.append(" - ").append(file).append("\n");
+            // Generate failure message of all missing files
+            StringBuilder sbFailure = null;
+            int failureCount = failures.size();
+            if (failureCount > 0) {
+                sbFailure = new StringBuilder(failureCount + "  files referenced by the deposit could not be found:\n");
+                for (String uri : failures) {
+                    sbFailure.append(" - ").append(uri).append("\n");
+                }
             }
-        }
 
-        // Generate failure message of all missing files
-        StringBuilder sbFailure = null;
-        int failureCount = failures.size();
-        if (failureCount > 0) {
-            sbFailure = new StringBuilder(failureCount + "  files referenced by the deposit could not be found:\n");
-            for (String uri : failures) {
-                sbFailure.append(" - ").append(uri).append("\n");
+            // fails job if any files were from invalid staging areas or could not be found
+            if (invalidCount > 0 && failureCount > 0) {
+                failJob("Deposit references invalid files", (sbInvalid.toString() + sbFailure.toString()));
+            } else if (invalidCount > 0) {
+                failJob("Deposit references invalid files", (sbInvalid.toString()));
+            } else if (failureCount > 0) {
+                failJob("Deposit references invalid files", (sbFailure.toString()));
             }
-        }
-
-        // fails job if any files were from invalid staging areas or could not be found
-        if (invalidCount > 0 && failureCount > 0) {
-            failJob("Deposit references invalid files", (sbInvalid.toString() + sbFailure.toString()));
-        } else if (invalidCount > 0) {
-            failJob("Deposit references invalid files", (sbInvalid.toString()));
-        } else if (failureCount > 0) {
-            failJob("Deposit references invalid files", (sbFailure.toString()));
         }
     }
 

@@ -17,28 +17,32 @@ package edu.unc.lib.deposit.normalize;
 
 import java.io.File;
 
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.PackagingType;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.xml.METSProfile;
+import io.dropwizard.metrics5.Timer;
 
 /**
- * 
+ *
  * @author bbpennel
  *
  */
 public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
     private static final Logger LOG = LoggerFactory.getLogger(CDRMETS2N3BagJob.class);
+
+    private static final Timer timer = TimerFactory.createTimerForClass(CDRMETS2N3BagJob.class, "job-duration");
+
     public CDRMETS2N3BagJob() {
         super();
     }
@@ -49,45 +53,47 @@ public class CDRMETS2N3BagJob extends AbstractMETS2N3BagJob {
 
     @Override
     public void runJob() {
-        validateMETS();
-        // Store a reference to the manifest file
-        addManifestURI();
-        validateProfile(METSProfile.CDR_SIMPLE);
-        Document mets = loadMETS();
-        // assign any missing PIDs
-        assignPIDs(mets);
-        // manifest updated to have record of all PIDs
-        saveMETS(mets);
+        try (Timer.Context context = timer.time()) {
+            validateMETS();
+            // Store a reference to the manifest file
+            addManifestURI();
+            validateProfile(METSProfile.CDR_SIMPLE);
+            Document mets = loadMETS();
+            // assign any missing PIDs
+            assignPIDs(mets);
+            // manifest updated to have record of all PIDs
+            saveMETS(mets);
 
-        Model model = getWritableModel();
-        CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
-        LOG.info("Extractor initialized");
-        extractor.addArrangement(model);
-        LOG.info("Extractor arrangement added");
-        extractor.helper.addFileAssociations(model, true);
-        LOG.info("Extractor file associations added");
-        extractor.addAccessControls(model);
-        LOG.info("Extractor access controls added");
+            Model model = getWritableModel();
+            CDRMETSGraphExtractor extractor = new CDRMETSGraphExtractor(mets, this.getDepositPID());
+            LOG.info("Extractor initialized");
+            extractor.addArrangement(model);
+            LOG.info("Extractor arrangement added");
+            extractor.helper.addFileAssociations(model, true);
+            LOG.info("Extractor file associations added");
+            extractor.addAccessControls(model);
+            LOG.info("Extractor access controls added");
 
-        final File modsFolder = getDescriptionDir();
-        modsFolder.mkdir();
-        extractor.saveDescriptions(new FilePathFunction() {
-        @Override
-            public String getPath(String piduri) {
-                String uuid = PIDs.get(piduri).getUUID();
-                return new File(modsFolder, uuid + ".xml").getAbsolutePath();
-            }
-        });
-        LOG.info("MODS descriptions saved");
+            final File modsFolder = getDescriptionDir();
+            modsFolder.mkdir();
+            extractor.saveDescriptions(new FilePathFunction() {
+            @Override
+                public String getPath(String piduri) {
+                    String uuid = PIDs.get(piduri).getUUID();
+                    return new File(modsFolder, uuid + ".xml").getAbsolutePath();
+                }
+            });
+            LOG.info("MODS descriptions saved");
 
-        PID depositPID = getDepositPID();
-        PremisLogger premisDepositLogger = getPremisLogger(depositPID);
-        Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
-                .addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(),
-                        PackagingType.BAG_WITH_N3.getUri())
-                .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
-                .create();
-        premisDepositLogger.writeEvent(premisDepositEvent);
+            PID depositPID = getDepositPID();
+            PremisLogger premisDepositLogger = getPremisLogger(depositPID);
+            Resource premisDepositEvent = premisDepositLogger.buildEvent(Premis.Normalization)
+                    .addEventDetail("Normalized deposit package from {0} to {1}", PackagingType.METS_CDR.getUri(),
+                            PackagingType.BAG_WITH_N3.getUri())
+                    .addSoftwareAgent(SoftwareAgent.depositService.getFullname())
+                    .create();
+            premisDepositLogger.writeEvent(premisDepositEvent);
+        }
     }
 
 }

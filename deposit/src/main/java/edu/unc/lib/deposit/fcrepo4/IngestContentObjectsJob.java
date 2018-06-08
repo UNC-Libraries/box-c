@@ -75,6 +75,7 @@ import edu.unc.lib.dl.fcrepo4.TransactionManager;
 import edu.unc.lib.dl.fcrepo4.WorkObject;
 import edu.unc.lib.dl.fedora.FedoraException;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
@@ -84,6 +85,7 @@ import edu.unc.lib.dl.reporting.ActivityMetricsClient;
 import edu.unc.lib.dl.util.DepositException;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Ingests all content objects in the deposit into the Fedora repository.
@@ -120,6 +122,8 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Autowired
     private VerifyObjectsAreInFedoraService verificationService;
+
+    private static final Timer timer = TimerFactory.createTimerForClass(IngestContentObjectsJob.class, "job-duration");
 
     public IngestContentObjectsJob() {
         super();
@@ -168,60 +172,62 @@ public class IngestContentObjectsJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
+        try (Timer.Context context = timer.time()) {
 
-        log.debug("Creating content AIPS for deposit {}", getDepositPID());
+            log.debug("Creating content AIPS for deposit {}", getDepositPID());
 
-        Model model = getReadOnlyModel();
+            Model model = getReadOnlyModel();
 
-        log.debug("Ingesting content for deposit {} containing {} objects", getDepositPID());
+            log.debug("Ingesting content for deposit {} containing {} objects", getDepositPID());
 
-        // Retrieve the object where this deposit will be ingested to.
-        Map<String, String> depositStatus = getDepositStatus();
-        String destinationPath = depositStatus.get(DepositField.containerId.name());
-        PID destPid = PIDs.get(destinationPath);
-        if (destPid == null) {
-            failJob("Invalid destination URI", "The provide destination uri " + destinationPath
-                    + " was not a valid repository path");
-        }
+            // Retrieve the object where this deposit will be ingested to.
+            Map<String, String> depositStatus = getDepositStatus();
+            String destinationPath = depositStatus.get(DepositField.containerId.name());
+            PID destPid = PIDs.get(destinationPath);
+            if (destPid == null) {
+                failJob("Invalid destination URI", "The provide destination uri " + destinationPath
+                        + " was not a valid repository path");
+            }
 
-        RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
-        if (!(destObj instanceof ContentContainerObject)) {
-            failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
-                    + ", types does not support children");
-        }
-        String groups = depositStatus.get(DepositField.permissionGroups.name());
-        AccessGroupSet groupSet = new AccessGroupSet(groups);
+            RepositoryObject destObj = repoObjLoader.getRepositoryObject(destPid);
+            if (!(destObj instanceof ContentContainerObject)) {
+                failJob("Cannot add children to destination", "Cannot deposit to destination " + destPid
+                        + ", types does not support children");
+            }
+            String groups = depositStatus.get(DepositField.permissionGroups.name());
+            AccessGroupSet groupSet = new AccessGroupSet(groups);
 
-        // Verify that the depositor is allowed to ingest to the given destination
-        aclService.assertHasAccess(
-                "Depositor does not have permissions to ingest to destination " + destPid,
-                destPid, groupSet, Permission.ingest);
+            // Verify that the depositor is allowed to ingest to the given destination
+            aclService.assertHasAccess(
+                    "Depositor does not have permissions to ingest to destination " + destPid,
+                    destPid, groupSet, Permission.ingest);
 
-        Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
+            Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
-        calculateWorkRemaining(depositBag);
+            calculateWorkRemaining(depositBag);
 
-        // Mark the deposit as in progress, if it was not already
-        if (!resumed) {
-            getDepositStatusFactory().setIngestInprogress(getDepositUUID(), true);
-        }
+            // Mark the deposit as in progress, if it was not already
+            if (!resumed) {
+                getDepositStatusFactory().setIngestInprogress(getDepositUUID(), true);
+            }
 
-        // Ingest objects included in this deposit into the destination object
-        try {
-            ingestChildren((ContentContainerObject) destObj, depositBag, groupSet);
-            // Add ingestion event for the parent container
-            addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource());
-        } catch (DepositException | FedoraException | IOException e) {
-            failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
-        }
+            // Ingest objects included in this deposit into the destination object
+            try {
+                ingestChildren((ContentContainerObject) destObj, depositBag, groupSet);
+                // Add ingestion event for the parent container
+                addIngestionEventForContainer((ContentContainerObject) destObj, depositBag.asResource());
+            } catch (DepositException | FedoraException | IOException e) {
+                failJob(e, "Failed to ingest content for deposit {0}", getDepositPID().getQualifiedId());
+            }
 
-        // Verify objects from deposit are present in fcrepo
-        Collection<String> pids = new ArrayList<>();
-        DepositGraphUtils.walkChildrenDepthFirst(depositBag, pids, true);
-        List<PID> objectsNotInFedora = verificationService.listObjectsNotInFedora(pids);
-        if (objectsNotInFedora.size() > 0) {
-            failJob("Some objects from this deposit didn't make it to Fedora:\n",
-                    verificationService.listObjectPIDs(getDepositPID().getQualifiedId(), objectsNotInFedora));
+            // Verify objects from deposit are present in fcrepo
+            Collection<String> pids = new ArrayList<>();
+            DepositGraphUtils.walkChildrenDepthFirst(depositBag, pids, true);
+            List<PID> objectsNotInFedora = verificationService.listObjectsNotInFedora(pids);
+            if (objectsNotInFedora.size() > 0) {
+                failJob("Some objects from this deposit didn't make it to Fedora:\n",
+                        verificationService.listObjectPIDs(getDepositPID().getQualifiedId(), objectsNotInFedora));
+            }
         }
     }
 

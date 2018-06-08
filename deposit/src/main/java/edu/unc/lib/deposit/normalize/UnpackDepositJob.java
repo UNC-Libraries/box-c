@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.ZipFileUtil;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Unpacks the submission package into the deposit directory.
@@ -29,19 +31,24 @@ import edu.unc.lib.dl.util.ZipFileUtil;
  */
 public class UnpackDepositJob extends AbstractDepositJob {
 
+    private static final Timer timer = TimerFactory.createTimerForClass(UnpackDepositJob.class, "job-duration");
+
     public UnpackDepositJob(String uuid, String depositUUID) {
         super(uuid, depositUUID);
     }
 
+    @Override
     public void runJob() {
-        // unzip deposit file to directory
-        String filename = getDepositStatus().get(DepositField.fileName.name());
-        if (filename.toLowerCase().endsWith(".zip")) {
-            File depositFile = new File(getDataDirectory(), filename);
-            try {
-                ZipFileUtil.unzipToDir(depositFile, getDataDirectory());
-            } catch (IOException e) {
-                throw new Error("Unable to unpack your deposit: " + getDepositPID().getUUID(), e);
+        try (Timer.Context context = timer.time()) {
+            // unzip deposit file to directory
+            String filename = getDepositStatus().get(DepositField.fileName.name());
+            if (filename.toLowerCase().endsWith(".zip")) {
+                File depositFile = new File(getDataDirectory(), filename);
+                try {
+                    ZipFileUtil.unzipToDir(depositFile, getDataDirectory());
+                } catch (IOException e) {
+                    throw new Error("Unable to unpack your deposit: " + getDepositPID().getUUID(), e);
+                }
             }
         }
     }

@@ -26,6 +26,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.jena.rdf.model.Bag;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Resource;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -37,17 +40,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.apache.jena.rdf.model.Bag;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.Resource;
-
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.VocabularyHelperManager;
 import edu.unc.lib.dl.xml.VocabularyHelper;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Examines the descriptive metadata for this ingest and determines if it is valid according to the given vocabularies.
@@ -58,6 +59,7 @@ import edu.unc.lib.dl.xml.VocabularyHelper;
  */
 public class VocabularyEnforcementJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory.getLogger(VocabularyEnforcementJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(VocabularyEnforcementJob.class, "job-duration");
 
     @Autowired
     VocabularyHelperManager vocabManager;
@@ -71,45 +73,47 @@ public class VocabularyEnforcementJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        try (Timer.Context context = timer.time()) {
+            Model model = getWritableModel();
 
-        // Get the list of all objects being ingested in this job
-        List<String> resourcePIDs = new ArrayList<>();
-        Bag deposit = model.getBag(getDepositPID().getURI());
-        walkChildrenDepthFirst(deposit, resourcePIDs, true);
+            // Get the list of all objects being ingested in this job
+            List<String> resourcePIDs = new ArrayList<>();
+            Bag deposit = model.getBag(getDepositPID().getURI());
+            walkChildrenDepthFirst(deposit, resourcePIDs, true);
 
-        SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
+            SAXBuilder sb = new SAXBuilder(new XMLReaderSAX2Factory(false));
 
-        // Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
-        PID destinationPID = PIDs.get(getDepositStatus().get(DepositField.containerId.name()));
+            // Vocabulary mappings need to be resolved against the destination since they are not in the hierarchy yet
+            PID destinationPID = PIDs.get(getDepositStatus().get(DepositField.containerId.name()));
 
-        for (String resourcePID : resourcePIDs) {
-            PID pid = PIDs.get(resourcePID);
-            File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
+            for (String resourcePID : resourcePIDs) {
+                PID pid = PIDs.get(resourcePID);
+                File modsFile = new File(getDescriptionDir(), pid.getUUID() + ".xml");
 
-            // Check if the resource has a description
-            if (modsFile.exists()) {
-                try {
-                    Document modsDoc = sb.build(modsFile);
+                // Check if the resource has a description
+                if (modsFile.exists()) {
+                    try {
+                        Document modsDoc = sb.build(modsFile);
 
-                    // Update the MODS document to use approved terms when possible
-                    // if the vocabularies support remapping
-                    log.debug("Updating document terms for {} within destination {}", pid, destinationPID);
-                    boolean modified = updateDocumentTerms(destinationPID, modsDoc.getRootElement());
+                        // Update the MODS document to use approved terms when possible
+                        // if the vocabularies support remapping
+                        log.debug("Updating document terms for {} within destination {}", pid, destinationPID);
+                        boolean modified = updateDocumentTerms(destinationPID, modsDoc.getRootElement());
 
-                    // Update the mods document if it was changed
-                    if (modified) {
-                        try (FileOutputStream fos = new FileOutputStream(modsFile)) {
-                            new XMLOutputter(Format.getPrettyFormat()).output(modsDoc.getDocument(), fos);
+                        // Update the mods document if it was changed
+                        if (modified) {
+                            try (FileOutputStream fos = new FileOutputStream(modsFile)) {
+                                new XMLOutputter(Format.getPrettyFormat()).output(modsDoc.getDocument(), fos);
+                            }
                         }
+
+                        // Capture any invalid affiliations as relations
+                        log.debug("Adding invalid terms for {} within destination {}", pid, destinationPID);
+                        addInvalidTerms(pid, destinationPID, modsDoc.getRootElement(), model);
+
+                    } catch (JDOMException | IOException e) {
+                        log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
                     }
-
-                    // Capture any invalid affiliations as relations
-                    log.debug("Adding invalid terms for {} within destination {}", pid, destinationPID);
-                    addInvalidTerms(pid, destinationPID, modsDoc.getRootElement(), model);
-
-                } catch (JDOMException | IOException e) {
-                    log.error("Failed to parse description file {}", modsFile.getAbsolutePath(), e);
                 }
             }
         }

@@ -36,11 +36,13 @@ import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
 import edu.unc.lib.dl.rdf.CdrAcl;
 import edu.unc.lib.dl.rdf.CdrDeposit;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Normalization job to ensure all FileObjects being ingested are wrapped in
@@ -50,6 +52,8 @@ import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
  *
  */
 public class NormalizeFileObjectsJob extends AbstractDepositJob {
+
+    private static final Timer timer = TimerFactory.createTimerForClass(NormalizeFileObjectsJob.class, "job-duration");
 
     public NormalizeFileObjectsJob() {
         super();
@@ -61,10 +65,12 @@ public class NormalizeFileObjectsJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
-        Bag depositBag = model.getBag(getDepositPID().getURI().toString());
+        try (Timer.Context context = timer.time()) {
+            Model model = getWritableModel();
+            Bag depositBag = model.getBag(getDepositPID().getURI().toString());
 
-        normalizeChildren(depositBag);
+            normalizeChildren(depositBag);
+        }
     }
 
     private void normalizeChildren(Resource parent) {
