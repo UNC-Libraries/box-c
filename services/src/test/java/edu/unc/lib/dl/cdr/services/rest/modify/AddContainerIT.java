@@ -26,8 +26,10 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Map;
 
+import org.apache.jena.rdf.model.Model;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -39,10 +41,12 @@ import edu.unc.lib.dl.acl.util.AccessGroupSet;
 import edu.unc.lib.dl.fcrepo4.AdminUnit;
 import edu.unc.lib.dl.fcrepo4.CollectionObject;
 import edu.unc.lib.dl.fcrepo4.ContentContainerObject;
+import edu.unc.lib.dl.fcrepo4.ContentObject;
 import edu.unc.lib.dl.fcrepo4.FolderObject;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectFactory;
 import edu.unc.lib.dl.fcrepo4.RepositoryObjectLoader;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.rdf.DcElements;
 
 /**
  *
@@ -69,11 +73,13 @@ public class AddContainerIT extends AbstractAPIIT {
 
         assertChildContainerNotAdded(parent);
 
-        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getUUID()))
-                .andExpect(status().is2xxSuccessful())
-                .andReturn();
+        String label = "collection_label";
+        MvcResult result = mvc.perform(post("/edit/create/collection/" + parentPid.getUUID())
+                .param("label", label))
+            .andExpect(status().is2xxSuccessful())
+            .andReturn();
 
-        assertChildContainerAdded(parent);
+        assertChildContainerAdded(parent, label);
 
         // Verify response from api
         Map<String, Object> respMap = getMapFromResponse(result);
@@ -89,9 +95,11 @@ public class AddContainerIT extends AbstractAPIIT {
 
         assertChildContainerNotAdded(parent);
 
-        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID()))
-                .andExpect(status().isInternalServerError())
-                .andReturn();
+        String label = "admin_unit";
+        MvcResult result = mvc.perform(post("/edit/create/adminUnit/" + parentPid.getUUID())
+                .param("label", label))
+            .andExpect(status().isInternalServerError())
+            .andReturn();
 
         assertChildContainerNotAdded(parent);
 
@@ -110,8 +118,9 @@ public class AddContainerIT extends AbstractAPIIT {
         doThrow(new AccessRestrictionException()).when(aclService)
                 .assertHasAccess(anyString(), eq(pid), any(AccessGroupSet.class), eq(ingest));
 
-        MvcResult result = mvc.perform(post("/edit/create/folder/" + pid.getUUID()))
-            .andExpect(status().isForbidden())
+        String label = "folder";
+        MvcResult result = mvc.perform(post("/edit/create/folder/" + pid.getUUID())
+                .param("label", label))
             .andReturn();
 
         assertChildContainerNotAdded(folder);
@@ -123,14 +132,19 @@ public class AddContainerIT extends AbstractAPIIT {
         assertTrue(respMap.containsKey("error"));
     }
 
-    private void assertChildContainerAdded(ContentContainerObject parent) {
+    private void assertChildContainerAdded(ContentContainerObject parent, String label) {
         // Refresh the model
         parent = repositoryObjectLoader.getAdminUnit(parent.getPid());
-        if (parent.getMembers().size() != 0) {
-            assertTrue(parent.getMembers().get(0) instanceof ContentContainerObject);
+        List<ContentObject> members = parent.getMembers();
+        if (members.size() != 0) {
+            assertTrue(members.get(0) instanceof ContentContainerObject);
         } else {
             fail("No child container was added to parent");
         }
+        ContentContainerObject childContainer = (ContentContainerObject) members.get(0);
+        Model childModel = childContainer.getModel();
+        assertTrue(childModel.contains(childModel.getResource(childContainer.getUri().toString()), DcElements.title,
+                label));
     }
 
     private void assertChildContainerNotAdded(ContentContainerObject parent) {

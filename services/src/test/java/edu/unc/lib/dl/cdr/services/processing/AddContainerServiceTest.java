@@ -134,7 +134,7 @@ public class AddContainerServiceTest {
                 .assertHasAccess(anyString(), eq(parentPid), any(AccessGroupSet.class), eq(ingest));
 
         try {
-            service.addContainer(agent, parentPid, Cdr.Folder);
+            service.addContainer(agent, parentPid, "folder", Cdr.Folder);
         } catch (TransactionCancelledException e) {
             assertEquals(AccessRestrictionException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -146,11 +146,11 @@ public class AddContainerServiceTest {
         FolderObject folder = mock(FolderObject.class);
         CollectionObject collection = mock(CollectionObject.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
-        when(repoObjFactory.createCollectionObject(any(ModelCom.class))).thenReturn(collection);
+        when(repoObjFactory.createCollectionObject(any(PID.class), any(ModelCom.class))).thenReturn(collection);
         doThrow(new ObjectTypeMismatchException("")).when(folder).addMember(collection);
 
         try {
-            service.addContainer(agent, parentPid, Cdr.Collection);
+            service.addContainer(agent, parentPid, "collection", Cdr.Collection);
         } catch (TransactionCancelledException e) {
             assertEquals(ObjectTypeMismatchException.class, e.getCause().getClass());
             throw new TransactionCancelledException();
@@ -163,11 +163,11 @@ public class AddContainerServiceTest {
         CollectionObject collection = mock(CollectionObject.class);
         FolderObject folder = mock(FolderObject.class);
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(collection);
-        when(repoObjFactory.createFolderObject(any(ModelCom.class))).thenReturn(folder);
+        when(repoObjFactory.createFolderObject(any(PID.class), any(ModelCom.class))).thenReturn(folder);
         when(folder.getPid()).thenReturn(childPid);
         when(folder.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, Cdr.Folder);
+        service.addContainer(agent, parentPid, "folder", Cdr.Folder);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
@@ -189,11 +189,11 @@ public class AddContainerServiceTest {
         FolderObject folder = mock(FolderObject.class);
 
         when(repoObjLoader.getRepositoryObject(eq(parentPid))).thenReturn(folder);
-        when(repoObjFactory.createWorkObject(any(ModelCom.class))).thenReturn(work);
+        when(repoObjFactory.createWorkObject(any(PID.class), any(ModelCom.class))).thenReturn(work);
         when(work.getPid()).thenReturn(childPid);
         when(work.getPremisLog()).thenReturn(premisLogger);
 
-        service.addContainer(agent, parentPid, Cdr.Work);
+        service.addContainer(agent, parentPid, "work", Cdr.Work);
 
         verify(premisLogger).buildEvent(eq(Premis.Creation));
         verify(eventBuilder).write();
