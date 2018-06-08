@@ -25,7 +25,9 @@ import java.util.Map;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
+import io.dropwizard.metrics5.Timer;
 
 /**
  *
@@ -34,6 +36,7 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
  */
 public class PackageIntegrityCheckJob extends AbstractDepositJob {
 
+    private static final Timer timer = TimerFactory.createTimerForClass(PackageIntegrityCheckJob.class, "job-duration");
     /**
      * Verifies the integrity of the deposit file received from SWORD.
      * @param uuid
@@ -49,25 +52,26 @@ public class PackageIntegrityCheckJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Map<String, String> status = getDepositStatus();
-        String md5 = status.get(DepositField.depositMd5.name());
-        String file = status.get(DepositField.fileName.name());
-        if (md5 != null && file != null) {
-            File payload = new File(getSubdir("data"), file);
-            String computed = null;
-            try (InputStream is = new FileInputStream(payload)) {
-                computed = DigestUtils.md5Hex(is);
-            } catch (IOException e) {
-                failJob(e, "Unable to read deposit file while verifying package");
-            }
+        try (Timer.Context context = timer.time()) {
+            Map<String, String> status = getDepositStatus();
+            String md5 = status.get(DepositField.depositMd5.name());
+            String file = status.get(DepositField.fileName.name());
+            if (md5 != null && file != null) {
+                File payload = new File(getSubdir("data"), file);
+                String computed = null;
+                try (InputStream is = new FileInputStream(payload)) {
+                    computed = DigestUtils.md5Hex(is);
+                } catch (IOException e) {
+                    failJob(e, "Unable to read deposit file while verifying package");
+                }
 
-            if (!md5.equals(computed)) {
-                String msg = MessageFormat.format(
-                        "The computed checksum ({1}) did not match the one provided ({0}) for \"{2}\".", md5, computed,
-                        file);
-                failJob("The deposit file \"" + file + "\" was corrupted during submission or upload.", msg);
+                if (!md5.equals(computed)) {
+                    String msg = MessageFormat.format(
+                            "The computed checksum ({1}) did not match the one provided ({0}) for \"{2}\".", md5,
+                            computed, file);
+                    failJob("The deposit file \"" + file + "\" was corrupted during submission or upload.", msg);
+                }
             }
         }
     }
-
 }

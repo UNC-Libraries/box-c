@@ -65,9 +65,11 @@ import edu.unc.lib.deposit.work.JobFailedException;
 import edu.unc.lib.dl.event.PremisLogger;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Premis;
 import edu.unc.lib.dl.util.SoftwareAgentConstants.SoftwareAgent;
 import edu.unc.lib.dl.util.URIUtil;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Job which performs technical metadata extraction on binary files included in
@@ -78,6 +80,8 @@ import edu.unc.lib.dl.util.URIUtil;
  */
 public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
     private static final Logger log = LoggerFactory.getLogger(ExtractTechnicalMetadataJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(ExtractTechnicalMetadataJob.class,
+            "job-duration");
 
     private static final String FITS_SINGLE_STATUS = "SINGLE_RESULT";
     private final static String FITS_EXAMINE_PATH = "examine";
@@ -107,43 +111,45 @@ public class ExtractTechnicalMetadataJob extends AbstractDepositJob {
 
     @Override
     public void runJob() {
-        Model model = getWritableModel();
+        try (Timer.Context context = timer.time()) {
+            Model model = getWritableModel();
 
-        // Create the techmd report directory if it doesn't exist
-        getTechMdDirectory().mkdir();
+            // Create the techmd report directory if it doesn't exist
+            getTechMdDirectory().mkdir();
 
-        // Get the list of files that need processing
-        List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
+            // Get the list of files that need processing
+            List<Entry<PID, String>> stagingList = generateStagingLocationsToProcess(model);
 
-        for (Entry<PID, String> stagedPair : stagingList) {
-            PID objPid = stagedPair.getKey();
-            String stagedPath = stagedPair.getValue();
+            for (Entry<PID, String> stagedPair : stagingList) {
+                PID objPid = stagedPair.getKey();
+                String stagedPath = stagedPair.getValue();
 
-            // Generate the FITS report as a document
-            Document fitsDoc = getFitsDocument(objPid, stagedPath);
+                // Generate the FITS report as a document
+                Document fitsDoc = getFitsDocument(objPid, stagedPath);
 
-            try {
+                try {
 
-                // Create the PREMIS report wrapper for the FITS results
-                Document premisDoc = generatePremisReport(objPid, fitsDoc);
-                Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
+                    // Create the PREMIS report wrapper for the FITS results
+                    Document premisDoc = generatePremisReport(objPid, fitsDoc);
+                    Element premisObjCharsEl = getObjectCharacteristics(premisDoc);
 
-                Resource objResc = model.getResource(objPid.getRepositoryPath());
+                    Resource objResc = model.getResource(objPid.getRepositoryPath());
 
-                // Record the format info for this file
-                addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
+                    // Record the format info for this file
+                    addFileIdentification(objResc, fitsDoc, premisObjCharsEl);
 
-                addFileinfoToReport(objResc, fitsDoc, premisObjCharsEl);
+                    addFileinfoToReport(objResc, fitsDoc, premisObjCharsEl);
 
-                addFitsResults(premisDoc, fitsDoc);
+                    addFitsResults(premisDoc, fitsDoc);
 
-                // Store the premis report to file
-                writePremisReport(objPid, premisDoc);
-            } catch (JobFailedException e) {
-                throw e;
-            } catch (Exception e) {
-                failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",
-                        objPid, xmlOutputter.outputString(fitsDoc));
+                    // Store the premis report to file
+                    writePremisReport(objPid, premisDoc);
+                } catch (JobFailedException e) {
+                    throw e;
+                } catch (Exception e) {
+                    failJob(e, "Failed to extract FITS details for {0} from document:\n{1}",
+                            objPid, xmlOutputter.outputString(fitsDoc));
+                }
             }
         }
     }

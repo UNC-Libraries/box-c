@@ -44,7 +44,9 @@ import org.slf4j.LoggerFactory;
 
 import edu.unc.lib.deposit.work.AbstractDepositJob;
 import edu.unc.lib.dl.acl.fcrepo4.ContentObjectAccessRestrictionValidator;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.rdf.Cdr;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Verify that the content objects in this deposit are valid according to our schema and expected field usage.
@@ -54,6 +56,7 @@ import edu.unc.lib.dl.rdf.Cdr;
  */
 public class ValidateContentModelJob extends AbstractDepositJob{
     private static final Logger log = LoggerFactory.getLogger(ValidateContentModelJob.class);
+    private static final Timer timer = TimerFactory.createTimerForClass(ValidateContentModelJob.class, "job-duration");
 
     private final Set<Resource> validObjectTypes;
 
@@ -88,17 +91,18 @@ public class ValidateContentModelJob extends AbstractDepositJob{
 
     @Override
     public void runJob() {
+        try (Timer.Context context = timer.time()) {
+            Model model = getReadOnlyModel();
+            Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
 
-        Model model = getReadOnlyModel();
-        Bag depositBag = model.getBag(getDepositPID().getRepositoryPath());
+            // Validate all objects in the deposit model against the schema
+            validateSchema(model);
 
-        // Validate all objects in the deposit model against the schema
-        validateSchema(model);
+            validatePrimaryObjects(model);
 
-        validatePrimaryObjects(model);
-
-        // Validate each object in this deposit for ACL issues and others not covered by the schema
-        validateChildren(depositBag);
+            // Validate each object in this deposit for ACL issues and others not covered by the schema
+            validateChildren(depositBag);
+        }
     }
 
     private void validatePrimaryObjects(Model model) {
