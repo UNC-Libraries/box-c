@@ -77,7 +77,7 @@ public abstract class AbstractDepositJob implements Runnable {
             .getLogger(AbstractDepositJob.class);
     public static final String DEPOSIT_QUEUE = "Deposit";
 
-    protected final Timer timer = TimerFactory.createTimerForClass(getClass());
+    protected final Timer timer = TimerFactory.createTimerForClass(getClass(), "job-duration");
 
     @Autowired
     private JobStatusFactory jobStatusFactory;

@@ -63,7 +63,8 @@ import edu.unc.lib.deposit.validate.VirusScanJob;
 import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fedora.FedoraTimeoutException;
 import edu.unc.lib.dl.fedora.PID;
-import edu.unc.lib.dl.metrics.RegistryService;
+import edu.unc.lib.dl.metrics.CounterFactory;
+import edu.unc.lib.dl.metrics.GaugeFactory;
 import edu.unc.lib.dl.services.OperationsMessageSender;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
@@ -74,7 +75,6 @@ import edu.unc.lib.dl.util.RedisWorkerConstants.DepositField;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
 import edu.unc.lib.dl.util.RedisWorkerConstants.Priority;
 import io.dropwizard.metrics5.Counter;
-import io.dropwizard.metrics5.Gauge;
 import io.dropwizard.metrics5.MetricRegistry;
 import net.greghaines.jesque.Job;
 import net.greghaines.jesque.client.Client;
@@ -118,8 +118,6 @@ public class DepositSupervisor implements WorkerListener {
 
     @Autowired
     private DepositEmailHandler depositEmailHandler;
-
-    private static final MetricRegistry metricRegistry = RegistryService.getInstance().getRegistry();
 
     public net.greghaines.jesque.Config getJesqueConfig() {
         return jesqueConfig;
@@ -187,12 +185,8 @@ public class DepositSupervisor implements WorkerListener {
         long depositEndTime = System.currentTimeMillis();
         long depositTotalTime = depositEndTime - depositStartTime;
 
-        metricRegistry.register(MetricRegistry.name(depositUUID, "deposit-duration"), new Gauge<Long>() {
-           @Override
-           public Long getValue() {
-               return depositTotalTime;
-           }
-       });
+        GaugeFactory.createDurationGauge(MetricRegistry.name("deposit " + depositUUID, "deposit-duration"),
+                depositTotalTime);
 
         String strDepositEndTime = Long.toString(depositEndTime);
         depositStatusFactory.set(depositUUID, DepositField.endTime, strDepositEndTime);
@@ -468,13 +462,8 @@ public class DepositSupervisor implements WorkerListener {
                     long queuedStartTime = Long.parseLong(strQueuedStartTime);
                     long queuedTime = depositStartTime - queuedStartTime;
 
-                    metricRegistry.register(
-                            MetricRegistry.name(depositUUID, "queuedDepositDuration"), new Gauge<Long>() {
-                        @Override
-                        public Long getValue() {
-                            return queuedTime;
-                        }
-                    });
+                    GaugeFactory.createDurationGauge(
+                            MetricRegistry.name("deposit " + depositUUID, "queuedDepositDuration"), queuedTime);
                 }
 
                 break;
@@ -529,8 +518,7 @@ public class DepositSupervisor implements WorkerListener {
                 // End job timer if failed
                 depositDuration(depositUUID, status);
 
-                final Counter failed = metricRegistry.counter(
-                        MetricRegistry.name(job.getClassName(), "failed-deposits"));
+                final Counter failed = CounterFactory.createCounter(job.getClassName(), "failed-deposits");
                 failed.inc();
 
                 depositEmailHandler.sendDepositResults(depositUUID);
@@ -707,8 +695,8 @@ public class DepositSupervisor implements WorkerListener {
             enqueueJob(nextJob, status, delay);
         } else {
             depositStatusFactory.setState(depositUUID, DepositState.finished);
-            final Counter finished = metricRegistry.counter(
-                    MetricRegistry.name(job.getClassName(), "finished-deposits"));
+
+            final Counter finished = CounterFactory.createCounter(job.getClassName(), "finished-deposits");
             finished.inc();
 
             depositDuration(depositUUID, status);
