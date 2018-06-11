@@ -57,11 +57,13 @@ import edu.unc.lib.dl.fcrepo4.PIDs;
 import edu.unc.lib.dl.fcrepo4.RepositoryPIDMinter;
 import edu.unc.lib.dl.fcrepo4.RepositoryPathConstants;
 import edu.unc.lib.dl.fedora.PID;
+import edu.unc.lib.dl.metrics.TimerFactory;
 import edu.unc.lib.dl.util.DepositConstants;
 import edu.unc.lib.dl.util.DepositStatusFactory;
 import edu.unc.lib.dl.util.JobStatusFactory;
 import edu.unc.lib.dl.util.RDFModelUtil;
 import edu.unc.lib.dl.util.RedisWorkerConstants.DepositState;
+import io.dropwizard.metrics5.Timer;
 
 /**
  * Constructed with deposit directory and deposit ID. Facilitates event logging
@@ -74,6 +76,8 @@ public abstract class AbstractDepositJob implements Runnable {
     private static final Logger log = LoggerFactory
             .getLogger(AbstractDepositJob.class);
     public static final String DEPOSIT_QUEUE = "Deposit";
+
+    protected final Timer timer = TimerFactory.createTimerForClass(getClass());
 
     @Autowired
     private JobStatusFactory jobStatusFactory;
@@ -136,7 +140,7 @@ public abstract class AbstractDepositJob implements Runnable {
 
     @Override
     public final void run() {
-        try {
+        try (Timer.Context context = timer.time()) {
             runJob();
             if (dataset.isInTransaction()) {
                 dataset.commit();
