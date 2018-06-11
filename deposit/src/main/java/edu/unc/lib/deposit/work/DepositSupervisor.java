@@ -529,7 +529,8 @@ public class DepositSupervisor implements WorkerListener {
                 // End job timer if failed
                 depositDuration(depositUUID, status);
 
-                final Counter failed = metricRegistry.counter(MetricRegistry.name(job.getClassName(), "failed-deposits"));
+                final Counter failed = metricRegistry.counter(
+                        MetricRegistry.name(job.getClassName(), "failed-deposits"));
                 failed.inc();
 
                 depositEmailHandler.sendDepositResults(depositUUID);
@@ -706,7 +707,8 @@ public class DepositSupervisor implements WorkerListener {
             enqueueJob(nextJob, status, delay);
         } else {
             depositStatusFactory.setState(depositUUID, DepositState.finished);
-            final Counter finished = metricRegistry.counter(MetricRegistry.name(job.getClassName(), "finished-deposits"));
+            final Counter finished = metricRegistry.counter(
+                    MetricRegistry.name(job.getClassName(), "finished-deposits"));
             finished.inc();
 
             depositDuration(depositUUID, status);
