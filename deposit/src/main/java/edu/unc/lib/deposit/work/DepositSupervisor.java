@@ -466,8 +466,8 @@ public class DepositSupervisor implements WorkerListener {
                     long queuedStartTime = Long.parseLong(strQueuedStartTime);
                     long queuedTime = depositStartTime - queuedStartTime;
 
-                queuedDepositHist.update(queuedTime);
-            }
+                    queuedDepositHist.update(queuedTime);
+                }
 
                 break;
             case JOB_SUCCESS:
@@ -518,11 +518,11 @@ public class DepositSupervisor implements WorkerListener {
                     depositStatusFactory.fail(depositUUID, "Failed while performing service " + serviceName);
                 }
 
-            // End job timer if failed
-            depositDuration(depositUUID, status);
+                // End job timer if failed
+                depositDuration(depositUUID, status);
 
-            final Counter failed = CounterFactory.createCounter(job.getClass(), "failed-deposits");
-            failed.inc();
+                final Counter failed = CounterFactory.createCounter(job.getClass(), "failed-deposits");
+                failed.inc();
 
                 depositEmailHandler.sendDepositResults(depositUUID);
 
