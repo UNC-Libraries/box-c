@@ -36,7 +36,7 @@ public class HistogramFactory {
     /**
      * Creates and registers a histogram under the given name
      *
-     * @param metricName the name under which to register the gauge
+     * @param metricName the name under which to register the histogram
      */
     public static Histogram createHistogram(String name) {
         return registry.histogram(name);
@@ -46,7 +46,7 @@ public class HistogramFactory {
     /**
      * Creates and registers a histogram under the given metric name
      *
-     * @param metricName the name under which to register the gauge
+     * @param metricName the name under which to register the histogram
      */
     public static Histogram createHistogram(MetricName metricName) {
         return registry.histogram(metricName);

@@ -38,7 +38,7 @@ public class CounterFactory {
      * @param className the class name under which to register the counter
      * @param metricNames any further specific name(s) for the counter (Optional)
      */
-    public static Counter createCounter(String className, String... metricNames) {
+    public static Counter createCounter(Class<?> className, String... metricNames) {
         return registry.counter(MetricRegistry.name(className, metricNames));
     }
 
